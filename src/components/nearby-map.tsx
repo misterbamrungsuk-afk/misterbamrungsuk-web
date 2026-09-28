@@ -1,5 +1,6 @@
 "use client";
 
+import "leaflet/dist/leaflet.css";
 import { useEffect, useRef } from "react";
 import type { Map as LeafletMap, Circle, Marker } from "leaflet";
 
@@ -50,9 +51,9 @@ export default function NearbyMap({ points, me, height = 400 }: { points: MapPoi
               </div>
               ${p.price ? `<span class="pin-price">${p.price}</span>` : ""}
             </div>`,
-          iconSize: [46, 64],
-          iconAnchor: [23, 60],
-          popupAnchor: [0, -56],
+          iconSize: [64, 66],
+          iconAnchor: [32, 42], // ปลายหมุดชี้ตรงพิกัดจริง (หมุดสูง 42px)
+          popupAnchor: [0, -44],
         });
         L.marker([p.lat, p.lng], { icon, riseOnHover: true })
           .addTo(map.current)

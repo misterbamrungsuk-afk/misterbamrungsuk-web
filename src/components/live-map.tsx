@@ -1,5 +1,6 @@
 "use client";
 
+import "leaflet/dist/leaflet.css";
 import { useEffect, useRef } from "react";
 import type { Map as LeafletMap, Marker, Polyline } from "leaflet";
 
@@ -47,7 +48,7 @@ export default function LiveMap({
             <div class="pin">${providerAvatar ? `<img src="${providerAvatar}" alt="" />` : ""}<span class="pin-badge">🛵</span></div>
             <span class="pin-price">${providerName}</span>
           </div>`,
-          iconSize: [46, 64], iconAnchor: [23, 60], popupAnchor: [0, -56],
+          iconSize: [64, 66], iconAnchor: [32, 42], popupAnchor: [0, -44],
         }),
       }).addTo(map.current).bindPopup(`<b>${providerName}</b><br/><span style="font-size:11px;color:#a8a8bd">กำลังเดินทางมาหาคุณ</span>`);
 
