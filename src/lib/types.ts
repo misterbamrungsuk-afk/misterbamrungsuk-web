@@ -1,0 +1,155 @@
+// ── Domain types (แชร์ทั้งฝั่ง demo-mode และ Prisma) ──
+export type Gender = "male" | "female" | "other";
+export type KycStatus = "none" | "pending" | "verified" | "rejected";
+export type MemberStatus = "active" | "suspended" | "banned";
+export type JobRole = "hirer" | "provider";
+export type PaymentType = "deposit" | "final";
+export type PaymentStatus = "created" | "slip_uploaded" | "confirmed" | "failed";
+export type OrderStatus = "negotiated" | "deposit_paid" | "in_progress" | "completed" | "reviewed";
+
+export interface MemberLite {
+  id: string;
+  name: string;
+  avatar: string;
+  gender: Gender | null;
+  age: number | null;
+  kycVerified: boolean;
+  province?: string | null;
+}
+
+export interface Post {
+  id: string;
+  member: MemberLite;
+  images: string[];
+  categories: string[]; // slugs
+  pricePerHour: number;
+  minHours: number;
+  deposit: number;
+  workingHours: string; // "12:00-23:00"
+  languages: string[];
+  acceptGender: "any" | "male" | "female";
+  serviceArea: string;
+  province: string;
+  personality: string;
+  interests: string;
+  extraInfo: string;
+  rules: string[];
+  rating: number | null;
+  reviewCount: number;
+  expiresAt: string;
+  isHidden: boolean;
+  createdAt: string;
+}
+
+export interface Review {
+  id: string;
+  postId: string;
+  reviewer: MemberLite;
+  rating: number;
+  content: string;
+  createdAt: string;
+}
+
+export interface JobBoard {
+  id: string;
+  owner: MemberLite;
+  role: JobRole;
+  title: string;
+  durationHours: number;
+  scheduleDate: string; // ISO date
+  startTime: string;
+  endTime: string;
+  placeName: string;
+  province: string;
+  lat: number;
+  lng: number;
+  budget: number;
+  images: string[];
+  interestedCount: number;
+  isInterested: boolean;
+  createdAt: string;
+}
+
+export interface ChatPayment {
+  id: string;
+  type: PaymentType;
+  amount: number;
+  status: PaymentStatus;
+  bankLabel: string;
+  slipUrl?: string;
+  promoCode?: string;
+  discount: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  roomId: string;
+  senderId: string;
+  kind: "text" | "image" | "payment" | "system";
+  content: string;
+  payment?: ChatPayment;
+  createdAt: string;
+  isRead: boolean;
+}
+
+export interface ChatRoom {
+  id: string;
+  partner: MemberLite;
+  lastMessage: string;
+  lastAt: string;
+  unread: number;
+  orderStatus: OrderStatus;
+  depositCreated: boolean;
+  depositConfirmed: boolean;
+  finalCreated: boolean;
+  finalConfirmed: boolean;
+  reviewed: boolean;
+  messages: ChatMessage[];
+}
+
+export interface Order {
+  id: string;
+  roomId: string;
+  hirer: MemberLite;
+  provider: MemberLite;
+  status: OrderStatus;
+  totalAmount: number;
+  depositAmount: number;
+  discount: number;
+  promoCode?: string;
+  commission: number;
+  createdAt: string;
+}
+
+export interface BankAccount {
+  id: string;
+  bankCode: string;
+  bankName: string;
+  accountNo: string;
+  accountName: string;
+  isPromptPay: boolean;
+}
+
+export interface SavedReply {
+  id: string;
+  title: string;
+  message: string;
+}
+
+export interface AppNotification {
+  id: string;
+  type: "kyc" | "post" | "job" | "chat" | "order";
+  title: string;
+  body: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface PromoCode {
+  code: string;
+  type: "percent" | "fixed";
+  value: number;
+  active: boolean;
+  usedCount: number;
+  quota: number;
+}

@@ -1,0 +1,525 @@
+// HaMoo — Rent-a-Friend Platform · Full database schema
+// Postgres (Supabase) + Prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────── Member & KYC ───────────
+
+enum Gender {
+  male
+  female
+  other
+}
+
+enum KycStatus {
+  none
+  pending
+  verified
+  rejected
+}
+
+enum MemberStatus {
+  active
+  suspended
+  banned
+}
+
+model Member {
+  id           String         @id @default(cuid())
+  authUserId   String?        @unique // Supabase auth.users.id
+  email        String?        @unique
+  name         String
+  avatarUrl    String?
+  gender       Gender?
+  birthDate    DateTime?
+  province     String?
+  phone        String?
+  locale       String         @default("th")
+  kycStatus    KycStatus      @default(none)
+  status       MemberStatus   @default(active)
+  strikeCount  Int            @default(0)
+  isAdmin      Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  posts            Post[]
+  reviewsGiven     Review[]            @relation("Reviewer")
+  favorites        Favorite[]
+  reportsFiled     Report[]            @relation("Reporter")
+  jobs             JobBoard[]
+  interests        JobInterest[]
+  bankAccounts     BankAccount[]
+  autoReply        AutoReply?
+  savedReplies     SavedReply[]
+  blocksInitiated  Block[]             @relation("Blocker")
+  blocksReceived   Block[]             @relation("Blocked")
+  notifications    Notification[]
+  strikes          StrikeRecord[]
+  ordersAsHirer    Order[]             @relation("Hirer")
+  ordersAsProvider Order[]             @relation("Provider")
+  matchRequests    MatchingRequest[]
+  kycSubmissions   KycSubmission[]
+  auditLogs        AuditLog[]
+
+  @@index([kycStatus, status])
+}
+
+model KycSubmission {
+  id            String   @id @default(cuid())
+  memberId      String
+  selfieWithId  String // storage path (private bucket)
+  idCardFront   String
+  status        KycStatus @default(pending)
+  reviewedBy    String?
+  note          String?
+  submittedAt   DateTime @default(now())
+  reviewedAt    DateTime?
+  member        Member   @relation(fields: [memberId], references: [id], onDelete:cascade)
+
+  @@index([status])
+}
+
+// ─────────── Posts (ฟีดเพื่อนรับจ้าง) ───────────
+
+model Category {
+  slug     String   @id
+  nameTh   String
+  nameEn   String
+  emoji    String
+  sortOrder Int     @default(0)
+  posts    PostCategory[]
+}
+
+model Post {
+  id           String   @id @default(cuid())
+  memberId     String
+  province     String
+  serviceArea  String?
+  pricePerHour Int
+  minHours     Int      @default(1)
+  deposit      Int      @default(0)
+  workingHours String? // "12:00-23:00"
+  languages    String[] @default(["ไทย"])
+  acceptGender String   @default("any") // any | male | female
+  personality  String?
+  interests    String?
+  extraInfo    String?
+  rules        String[]
+  lat          Float?
+  lng          Float?
+  expiresAt    DateTime
+  isHidden     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  member     Member         @relation(fields: [memberId], references: [id], onDelete: cascade)
+  images     PostImage[]
+  categories PostCategory[]
+  reviews    Review[]
+  favorites  Favorite[]
+
+  @@index([province, isHidden, expiresAt])
+  @@index([memberId])
+}
+
+model PostImage {
+  id       String @id @default(cuid())
+  postId   String
+  url      String
+  sortOrder Int   @default(0)
+  post     Post   @relation(fields: [postId], references: [id], onDelete: cascade)
+}
+
+model PostCategory {
+  postId     String
+  categorySlug String
+  post       Post     @relation(fields: [postId], references: [id], onDelete: cascade)
+  category   Category @relation(fields: [categorySlug], references: [slug], onDelete: cascade)
+  @@id([postId, categorySlug])
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  postId     String
+  reviewerId String
+  orderId    String?  // ผูกกับ Order ที่จบจริงเท่านั้น
+  rating     Int
+  content    String?
+  createdAt  DateTime @default(now())
+
+  post     Post   @relation(fields: [postId], references: [id], onDelete: cascade)
+  reviewer Member @relation("Reviewer", fields: [reviewerId], references: [id])
+  order    Order? @relation(fields: [orderId], references: [id])
+
+  @@unique([postId, reviewerId, orderId])
+  @@index([postId])
+}
+
+model Favorite {
+  memberId  String
+  postId    String
+  createdAt DateTime @default(now())
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: cascade)
+
+  @@id([memberId, postId])
+}
+
+// ─────────── Jobboard ───────────
+
+enum JobRole {
+  hirer
+  provider
+}
+
+model JobBoard {
+  id            String   @id @default(cuid())
+  ownerId       String
+  role          JobRole
+  title         String
+  durationHours Int
+  scheduleDate  DateTime
+  startTime     String
+  endTime       String
+  placeName     String?
+  province      String?
+  lat           Float?
+  lng           Float?
+  budget        Int
+  images        String[]
+  status        String   @default("open") // open | matched | deleted
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+
+  owner      Member        @relation(fields: [ownerId], references: [id], onDelete: cascade)
+  interests  JobInterest[]
+
+  @@index([role, province, scheduleDate])
+}
+
+model JobInterest {
+  jobId     String
+  memberId  String
+  createdAt DateTime @default(now())
+  job       JobBoard @relation(fields: [jobId], references: [id], onDelete: cascade)
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: cascade)
+
+  @@id([jobId, memberId])
+}
+
+// ─────────── Chat + Payment workflow ───────────
+
+model ChatRoom {
+  id        String   @id @default(cuid())
+  memberAId String
+  memberBId String
+  lastMessage String?
+  lastAt    DateTime @default(now())
+
+  depositCreatedAt    DateTime?
+  depositConfirmedAt  DateTime?
+  finalCreatedAt      DateTime?
+  finalConfirmedAt    DateTime?
+
+  messages   ChatMessage[]
+  payments   PaymentTransaction[]
+  orders     Order[]
+  callSessions CallSession[]
+
+  @@unique([memberAId, memberBId])
+  @@index([lastAt])
+}
+
+enum MessageKind {
+  text
+  image
+  payment
+  system
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  roomId    String
+  senderId  String
+  kind      MessageKind @default(text)
+  content   String?
+  paymentId String?
+  isRead    Boolean     @default(false)
+  createdAt DateTime    @default(now())
+
+  room    ChatRoom           @relation(fields: [roomId], references: [id], onDelete: cascade)
+  payment PaymentTransaction? @relation(fields: [paymentId], references: [id])
+
+  @@index([roomId, createdAt])
+}
+
+enum PaymentType {
+  deposit
+  final
+}
+
+enum PaymentStatus {
+  created
+  slip_uploaded
+  confirmed
+  failed
+}
+
+model PaymentTransaction {
+  id          String         @id @default(cuid())
+  roomId      String
+  payerId     String
+  payeeId     String
+  type        PaymentType
+  amount      Int
+  discount    Int            @default(0)
+  promoCode   String?
+  status      PaymentStatus  @default(created)
+  bankAccountId String?
+  slipPath    String? // private bucket
+  method      String         @default("simulated_promptpay")
+  gatewayRef  String?
+  confirmedAt DateTime?
+  createdAt   DateTime       @default(now())
+
+  room     ChatRoom     @relation(fields: [roomId], references: [id], onDelete: cascade)
+  messages ChatMessage[]
+  order    Order?       @relation("OrderPayments")
+  orderRef String?      @unique
+
+  @@index([roomId])
+}
+
+model BankAccount {
+  id          String  @id @default(cuid())
+  memberId    String
+  bankCode    String
+  bankName    String
+  accountNo   String
+  accountName String
+  bookImagePath String?
+  isPromptPay Boolean @default(false)
+  isDefault   Boolean @default(false)
+  createdAt   DateTime @default(now())
+
+  member Member @relation(fields: [memberId], references: [id], onDelete: cascade)
+}
+
+model AutoReply {
+  id        String  @id @default(cuid())
+  memberId  String  @unique
+  enabled   Boolean @default(true)
+  message   String
+  member    Member  @relation(fields: [memberId], references: [id], onDelete: cascade)
+}
+
+model SavedReply {
+  id       String @id @default(cuid())
+  memberId String
+  title    String
+  message  String
+  member   Member @relation(fields: [memberId], references: [id], onDelete: cascade)
+}
+
+model Block {
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+  blocker   Member   @relation("Blocker", fields: [blockerId], references: [id], onDelete: cascade)
+  blocked   Member   @relation("Blocked", fields: [blockedId], references: [id], onDelete: cascade)
+
+  @@id([blockerId, blockedId])
+}
+
+// ─────────── Order / Escrow backbone (ของเรา — แน่นกว่า) ───────────
+
+enum OrderStatus {
+  negotiated
+  deposit_paid
+  in_progress
+  completed
+  reviewed
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  roomId        String?
+  hirerId       String
+  providerId    String
+  postId        String?
+  jobId         String?
+  matchRequestId String?    @unique
+  status        OrderStatus @default(negotiated)
+  totalAmount   Int         @default(0)
+  depositAmount Int         @default(0)
+  discount      Int         @default(0)
+  promoCode     String?
+  commission    Int         @default(0) // GP ค่าธรรมเนียม (บาท)
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime    @default(now())
+
+  hirer         Member              @relation("Hirer", fields: [hirerId], references: [id])
+  provider      Member              @relation("Provider", fields: [providerId], references: [id])
+  room          ChatRoom?           @relation(fields: [roomId], references: [id])
+  payments      PaymentTransaction[] @relation("OrderPayments")
+  matchRequest  MatchingRequest?
+  reviews       Review[]
+  tracking      TrackingSession?
+
+  @@index([status])
+}
+
+// ─────────── Quick Match + Broadcast (ของเรา) ───────────
+
+model MatchingRequest {
+  id           String   @id @default(cuid())
+  hirerId      String
+  categorySlugs String[]
+  province     String?
+  budget       Int?
+  startAt      DateTime
+  hours        Int
+  note         String?
+  status       String   @default("matching") // matching | matched | timed_out | cancelled
+  createdAt    DateTime @default(now())
+
+  hirer    Member        @relation(fields: [hirerId], references: [id])
+  dispatches MatchDispatch[]
+  order    Order?
+
+  @@index([status, createdAt])
+}
+
+model MatchDispatch {
+  id          String   @id @default(cuid())
+  requestId   String
+  providerId  String
+  offeredAt   DateTime @default(now())
+  expiresAt   DateTime // offeredAt + 15s
+  acceptedAt  DateTime?
+  status      String   @default("offered") // offered | accepted | declined | expired
+
+  request      MatchingRequest @relation(fields: [requestId], references: [id], onDelete: cascade)
+  provider     Member          @relation(fields: [providerId], references: [id])
+
+  @@index([requestId, status])
+}
+
+// ─────────── Live Tracking (ของเรา) ───────────
+
+model TrackingSession {
+  id        String   @id @default(cuid())
+  orderId   String   @unique
+  providerId String
+  startedAt DateTime @default(now())
+  endedAt   DateTime?
+  order     Order    @relation(fields: [orderId], references: [id])
+
+  points TrackingPoint[]
+}
+
+model TrackingPoint {
+  id        String   @id @default(cuid())
+  sessionId String
+  lat       Float
+  lng       Float
+  recordedAt DateTime @default(now())
+  session   TrackingSession @relation(fields: [sessionId], references: [id], onDelete: cascade)
+
+  @@index([sessionId, recordedAt])
+}
+
+// ─────────── Masked Call (WebRTC) ───────────
+
+model CallSession {
+  id        String   @id @default(cuid())
+  roomId    String
+  callerId  String
+  calleeId  String
+  status    String   @default("ringing") // ringing | active | ended | missed
+  startedAt DateTime @default(now())
+  endedAt   DateTime?
+  room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: cascade)
+}
+
+// ─────────── Platform ───────────
+
+model PromoCode {
+  code      String   @id
+  type      String   @default("percent") // percent | fixed
+  value     Int
+  quota     Int      @default(0) // 0 = ไม่จำกัด
+  usedCount Int      @default(0)
+  active    Boolean  @default(true)
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+}
+
+enum NotiType {
+  kyc
+  post
+  job
+  chat
+  order
+  match
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  memberId  String
+  type      NotiType
+  title     String
+  body      String
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  member Member @relation(fields: [memberId], references: [id], onDelete: cascade)
+
+  @@index([memberId, isRead])
+}
+
+model Report {
+  id         String   @id @default(cuid())
+  reporterId String
+  targetType String // post | job | chat | member
+  targetId   String
+  reason     String
+  images     String[]
+  status     String   @default("open") // open | handled | dismissed
+  createdAt  DateTime @default(now())
+
+  reporter Member @relation("Reporter", fields: [reporterId], references: [id])
+}
+
+model StrikeRecord {
+  id        String   @id @default(cuid())
+  memberId  String
+  reason    String
+  weight    Int      @default(1)
+  createdBy String
+  createdAt DateTime @default(now())
+
+  member Member @relation(fields: [memberId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  action    String
+  entity    String
+  entityId  String?
+  detail    String?
+  createdAt DateTime @default(now())
+
+  actor Member? @relation(fields: [actorId], references: [id])
+}
