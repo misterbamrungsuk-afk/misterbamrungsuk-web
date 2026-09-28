@@ -26,7 +26,12 @@ export default function LiveMap({
 
       const center = points[points.length - 1] ?? { lat: 13.7563, lng: 100.5018 };
       map.current = L.map(el.current, { zoomControl: false, attributionControl: true }).setView([center.lat, center.lng], 14);
-      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map.current);
+      // CARTO Dark Matter — สไตล์เดียวกับแผนที่ใกล้ฉัน
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+        maxZoom: 19,
+        subdomains: "abcd",
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      }).addTo(map.current);
 
       if (myPos) {
         myMarker.current = L.circleMarker([myPos.lat, myPos.lng], {

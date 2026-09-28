@@ -175,6 +175,5 @@ body {
 
 /* Leaflet dark */
 .leaflet-container { background: #0b0b0f; border-radius: 16px; }
-.leaflet-tile { filter: brightness(0.72) contrast(1.06) saturate(0.85) hue-rotate(190deg) invert(1) brightness(0.95) hue-rotate(180deg); }
 .leaflet-control-attribution { background: rgba(0,0,0,0.5) !important; color: #7b7b93 !important; font-size: 10px !important; }
 .leaflet-control-attribution a { color: #a8a8bd !important; }

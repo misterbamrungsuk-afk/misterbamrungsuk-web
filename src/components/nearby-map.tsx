@@ -25,7 +25,12 @@ export default function NearbyMap({ points, me, height = 360 }: { points: MapPoi
       if (cancelled || !el.current || map.current) return;
       const center = me ?? points[0] ?? { lat: 13.7563, lng: 100.5018 };
       map.current = L.map(el.current, { zoomControl: false }).setView([center.lat, center.lng], 12);
-      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map.current);
+      // CARTO Dark Matter — แผนที่มืดสำเร็จรูป ฟรี ไม่ต้องใช้ API key (ใส่เครดิตให้ตามเงื่อนไข)
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+        maxZoom: 19,
+        subdomains: "abcd",
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      }).addTo(map.current);
       L.control.zoom({ position: "bottomright" }).addTo(map.current);
 
       for (const p of points) {
