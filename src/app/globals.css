@@ -177,3 +177,97 @@ body {
 .leaflet-container { background: #0b0b0f; border-radius: 16px; }
 .leaflet-control-attribution { background: rgba(0,0,0,0.5) !important; color: #7b7b93 !important; font-size: 10px !important; }
 .leaflet-control-attribution a { color: #a8a8bd !important; }
+
+/* ── Map pins แบบแอปจริง: หยดน้ำ + รูปโปรไฟล์ข้างใน ── */
+.hamoo-pin { background: none !important; border: none !important; }
+.pin-wrap {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.55));
+  animation: pinDrop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes pinDrop {
+  0% { transform: translateY(-18px) scale(0.5); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+.pin {
+  position: relative;
+  width: 42px; height: 42px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: #16161c;
+  border: 3px solid #e5484d;
+  box-shadow: 0 0 16px rgba(229, 72, 77, 0.45);
+  overflow: hidden;
+  transition: transform 0.2s;
+}
+.pin:hover { transform: rotate(-45deg) scale(1.12); }
+.pin-job { border-color: #d4af37; box-shadow: 0 0 16px rgba(212, 175, 55, 0.45); }
+.pin img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transform: rotate(45deg);
+  transform-origin: center;
+}
+.pin-badge {
+  position: absolute; top: -4px; right: -4px;
+  width: 17px; height: 17px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 10px;
+  background: #16161c;
+  border: 2px solid #e5484d;
+  transform: rotate(45deg);
+  z-index: 2;
+}
+.pin-job .pin-badge { border-color: #d4af37; }
+.pin-price {
+  margin-top: 5px;
+  font-size: 10.5px; font-weight: 700;
+  color: #f3dd8f;
+  background: rgba(10, 10, 14, 0.88);
+  border: 1px solid rgba(212, 175, 55, 0.55);
+  padding: 2px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+  transform: rotate(0);
+}
+.pin-job .pin-price-wrap, .pin-price-wrap { transform: none !important; }
+
+/* จุดตัวเอง (ผู้ใช้) เต้นเป็นจังหวะ */
+.me-dot {
+  position: relative;
+  width: 18px; height: 18px;
+}
+.me-dot::before {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  background: #7b7b93;
+  border: 3px solid #fff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+  z-index: 2;
+}
+.me-dot::after {
+  content: "";
+  position: absolute; inset: -9px;
+  border-radius: 50%;
+  border: 2px solid rgba(212, 175, 55, 0.8);
+  animation: mePulse 1.8s ease-out infinite;
+}
+@keyframes mePulse {
+  0% { transform: scale(0.4); opacity: 1; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+
+/* popup มืด */
+.leaflet-popup-content-wrapper {
+  background: rgba(16, 16, 20, 0.95) !important;
+  color: #d6d6e4 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+}
+.leaflet-popup-tip { background: rgba(16, 16, 20, 0.95) !important; border: 1px solid rgba(255,255,255,.12); }
+.leaflet-popup-content { margin: 12px 14px !important; font-family: var(--font-sans) !important; }
+.leaflet-popup b { color: #fff; }

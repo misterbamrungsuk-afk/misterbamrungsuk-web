@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { Map as LeafletMap, CircleMarker, Circle } from "leaflet";
+import type { Map as LeafletMap, Circle, Marker } from "leaflet";
 
 export interface MapPoint {
   id: string;
@@ -10,13 +10,17 @@ export interface MapPoint {
   label: string;
   sub: string;
   kind: "friend" | "job";
-  href?: string;
+  avatar?: string;
+  price?: string;
+  emoji?: string;
+  verified?: boolean;
 }
 
-export default function NearbyMap({ points, me, height = 360 }: { points: MapPoint[]; me?: { lat: number; lng: number } | null; height?: number }) {
+export default function NearbyMap({ points, me, height = 400 }: { points: MapPoint[]; me?: { lat: number; lng: number } | null; height?: number }) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<LeafletMap | null>(null);
-  const meCircle = useRef<Circle | null>(null);
+  const meMarker = useRef<Marker | null>(null);
+  const radius = useRef<Circle | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -24,38 +28,57 @@ export default function NearbyMap({ points, me, height = 360 }: { points: MapPoi
       const L = (await import("leaflet")).default;
       if (cancelled || !el.current || map.current) return;
       const center = me ?? points[0] ?? { lat: 13.7563, lng: 100.5018 };
-      map.current = L.map(el.current, { zoomControl: false }).setView([center.lat, center.lng], 12);
-      // CARTO Dark Matter — แผนที่มืดสำเร็จรูป ฟรี ไม่ต้องใช้ API key (ใส่เครดิตให้ตามเงื่อนไข)
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-        maxZoom: 19,
-        subdomains: "abcd",
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      }).addTo(map.current);
+      map.current = L.map(el.current, { zoomControl: false }).setView([center.lat, center.lng], me ? 13 : 12);
       L.control.zoom({ position: "bottomright" }).addTo(map.current);
 
+      // CARTO Dark Matter — ฟรี ไม่ต้องใช้ key + คมบนจอ Retina
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+        maxZoom: 19, detectRetina: true, subdomains: "abcd",
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      }).addTo(map.current);
+
+      // หมุดหยดน้ำ + รูปโปรไฟล์ + ป้ายราคา
       for (const p of points) {
-        const marker = L.circleMarker([p.lat, p.lng], {
-          radius: 9,
-          color: p.kind === "friend" ? "#e5484d" : "#d4af37",
-          fillColor: p.kind === "friend" ? "#e5484d" : "#d4af37",
-          fillOpacity: 0.9,
-          weight: 3,
-        }).addTo(map.current);
-        marker.bindPopup(
-          `<div style="font-family:sans-serif">
-            <b style="color:${p.kind === "friend" ? "#e5484d" : "#b8860b"}">${p.kind === "friend" ? "👤" : "💼"} ${p.label}</b><br/>
-            <span style="font-size:11px;color:#666">${p.sub}</span>
-          </div>`
-        );
+        const isFriend = p.kind === "friend";
+        const icon = L.divIcon({
+          className: "hamoo-pin",
+          html: `
+            <div class="pin-wrap">
+              <div class="pin ${isFriend ? "" : "pin-job"}">
+                ${p.avatar ? `<img src="${p.avatar}" alt="" />` : ""}
+                <span class="pin-badge">${p.emoji ?? (isFriend ? "👤" : "💼")}</span>
+              </div>
+              ${p.price ? `<span class="pin-price">${p.price}</span>` : ""}
+            </div>`,
+          iconSize: [46, 64],
+          iconAnchor: [23, 60],
+          popupAnchor: [0, -56],
+        });
+        L.marker([p.lat, p.lng], { icon, riseOnHover: true })
+          .addTo(map.current)
+          .bindPopup(
+            `<div style="min-width:150px">
+              <b style="font-size:13px">${isFriend ? "👤" : "💼"} ${p.label}${p.verified ? ' <span style="color:#d4af37">✓</span>' : ""}</b><br/>
+              <span style="font-size:11px;color:#a8a8bd">${p.sub}</span>
+            </div>`
+          );
       }
 
+      // ตำแหน่งผู้ใช้ + รัศมี
       if (me) {
-        meCircle.current = L.circle([me.lat, me.lng], {
-          radius: 1500, color: "#d4af37", fillColor: "#d4af37", fillOpacity: 0.06, weight: 1.5, dashArray: "4 6",
+        radius.current = L.circle([me.lat, me.lng], {
+          radius: 1200, color: "#d4af37", weight: 1.5, opacity: 0.5,
+          fillColor: "#d4af37", fillOpacity: 0.05, dashArray: "5 7",
         }).addTo(map.current);
-        L.circleMarker([me.lat, me.lng], { radius: 7, color: "#fff", fillColor: "#7b7b93", fillOpacity: 1, weight: 3 })
-          .addTo(map.current).bindPopup("📍 คุณอยู่ที่นี่");
+        meMarker.current = L.marker([me.lat, me.lng], {
+          icon: L.divIcon({ className: "hamoo-pin", html: `<div class="pin-wrap"><div class="me-dot"></div></div>`, iconSize: [18, 18], iconAnchor: [9, 9] }),
+          zIndexOffset: 1000,
+        }).addTo(map.current).bindPopup("📍 คุณอยู่ที่นี่");
       }
+
+      // ซูมพอดีกลุ่มหมุด
+      const all = [...points.map((p) => [p.lat, p.lng] as [number, number]), ...(me ? [[me.lat, me.lng] as [number, number]] : [])];
+      if (all.length > 1) map.current.fitBounds(L.latLngBounds(all).pad(0.22), { maxZoom: 14 });
     })();
     return () => { cancelled = true; map.current?.remove(); map.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -64,7 +87,8 @@ export default function NearbyMap({ points, me, height = 360 }: { points: MapPoi
   useEffect(() => {
     if (!me || !map.current) return;
     map.current.panTo([me.lat, me.lng]);
-    meCircle.current?.setLatLng([me.lat, me.lng]);
+    meMarker.current?.setLatLng([me.lat, me.lng]);
+    radius.current?.setLatLng([me.lat, me.lng]);
   }, [me]);
 
   return <div ref={el} style={{ height }} className="rounded-2xl border border-white/10 z-0" />;

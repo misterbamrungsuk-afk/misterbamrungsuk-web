@@ -57,7 +57,7 @@ export default function TrackingPage({ params }: { params: Promise<{ id: string 
         </div>
 
         <div className="animate-rise">
-          <LiveMap points={points} myPos={myPos} height={340} followIdx={idx} />
+          <LiveMap points={points} myPos={myPos} height={340} followIdx={idx} providerAvatar={provider.avatar} providerName={provider.name} />
         </div>
 
         <div className="grid grid-cols-3 gap-3 animate-rise">

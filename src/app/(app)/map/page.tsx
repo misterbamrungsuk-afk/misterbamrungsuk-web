@@ -32,14 +32,17 @@ export default function NearbyMapPage() {
       .filter((p) => p.lat && p.lng)
       .map((p) => ({
         id: p.id, lat: p.lat!, lng: p.lng!, kind: "friend" as const,
-        label: p.member.name, sub: `${baht(p.pricePerHour)}${t.perHour} · ⭐ ${p.rating ?? "-"}`,
+        label: p.member.name, sub: `⭐ ${p.rating ?? "-"} · 📍 ${p.province}`,
+        avatar: p.member.avatar, verified: p.member.kycVerified,
+        price: `${baht(p.pricePerHour)}${t.perHour}`,
         href: `/post/${p.id}`,
       }));
     const jobs: MapPoint[] = DEMO_JOBS
       .filter((j) => j.lat && j.lng)
       .map((j) => ({
         id: j.id, lat: j.lat, lng: j.lng, kind: "job" as const,
-        label: j.title.slice(0, 24), sub: `${baht(j.budget)} · ${j.startTime}–${j.endTime}`,
+        label: j.title.slice(0, 22), sub: `${baht(j.budget)} · 🕒 ${j.startTime}`,
+        avatar: j.owner.avatar, emoji: "💼",
         href: "/jobs",
       }));
     return show === "friend" ? friends : show === "job" ? jobs : [...friends, ...jobs];

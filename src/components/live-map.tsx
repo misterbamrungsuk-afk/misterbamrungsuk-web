@@ -1,21 +1,23 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { Map as LeafletMap, CircleMarker, Polyline } from "leaflet";
+import type { Map as LeafletMap, Marker, Polyline } from "leaflet";
 
 export default function LiveMap({
-  points, myPos, height = 320, followIdx, className = "",
+  points, myPos, height = 320, followIdx, className = "", providerAvatar, providerName = "เพื่อนของคุณ",
 }: {
   points: { lat: number; lng: number }[];
   myPos?: { lat: number; lng: number };
   height?: number;
   followIdx?: number;
   className?: string;
+  providerAvatar?: string;
+  providerName?: string;
 }) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<LeafletMap | null>(null);
-  const providerMarker = useRef<CircleMarker | null>(null);
-  const myMarker = useRef<CircleMarker | null>(null);
+  const providerMarker = useRef<Marker | null>(null);
+  const myMarker = useRef<Marker | null>(null);
   const line = useRef<Polyline | null>(null);
 
   useEffect(() => {
@@ -25,26 +27,34 @@ export default function LiveMap({
       if (cancelled || !el.current || map.current) return;
 
       const center = points[points.length - 1] ?? { lat: 13.7563, lng: 100.5018 };
-      map.current = L.map(el.current, { zoomControl: false, attributionControl: true }).setView([center.lat, center.lng], 14);
+      map.current = L.map(el.current, { zoomControl: false, attributionControl: true }).setView([center.lat, center.lng], 15);
       // CARTO Dark Matter — สไตล์เดียวกับแผนที่ใกล้ฉัน
       L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-        maxZoom: 19,
-        subdomains: "abcd",
+        maxZoom: 19, detectRetina: true, subdomains: "abcd",
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
       }).addTo(map.current);
 
       if (myPos) {
-        myMarker.current = L.circleMarker([myPos.lat, myPos.lng], {
-          radius: 9, color: "#d4af37", fillColor: "#d4af37", fillOpacity: 0.9, weight: 2,
-        }).addTo(map.current).bindPopup("คุณอยู่ที่นี่");
+        myMarker.current = L.marker([myPos.lat, myPos.lng], {
+          icon: L.divIcon({ className: "hamoo-pin", html: `<div class="pin-wrap"><div class="me-dot"></div></div>`, iconSize: [18, 18], iconAnchor: [9, 9] }),
+          zIndexOffset: 1000,
+        }).addTo(map.current).bindPopup("📍 คุณอยู่ที่นี่");
       }
-      providerMarker.current = L.circleMarker([center.lat, center.lng], {
-        radius: 10, color: "#e5484d", fillColor: "#e5484d", fillOpacity: 0.95, weight: 3,
-      }).addTo(map.current).bindPopup("เพื่อนของคุณ");
+      providerMarker.current = L.marker([center.lat, center.lng], {
+        icon: L.divIcon({
+          className: "hamoo-pin",
+          html: `<div class="pin-wrap">
+            <div class="pin">${providerAvatar ? `<img src="${providerAvatar}" alt="" />` : ""}<span class="pin-badge">🛵</span></div>
+            <span class="pin-price">${providerName}</span>
+          </div>`,
+          iconSize: [46, 64], iconAnchor: [23, 60], popupAnchor: [0, -56],
+        }),
+      }).addTo(map.current).bindPopup(`<b>${providerName}</b><br/><span style="font-size:11px;color:#a8a8bd">กำลังเดินทางมาหาคุณ</span>`);
+
       line.current = L.polyline(points.map((p) => [p.lat, p.lng] as [number, number]), {
-        color: "#e5484d", weight: 3, opacity: 0.7, dashArray: "6 6",
+        color: "#e5484d", weight: 3.5, opacity: 0.85, dashArray: "1 8", lineCap: "round",
       }).addTo(map.current);
-      if (points.length > 1) map.current.fitBounds(line.current.getBounds(), { padding: [30, 30] });
+      if (points.length > 1) map.current.fitBounds(line.current.getBounds(), { padding: [40, 40], maxZoom: 16 });
     })();
     return () => { cancelled = true; map.current?.remove(); map.current = null; };
   }, []); // init ครั้งเดียว
