@@ -26,7 +26,13 @@ export default function VerifyPage() {
 
   function submit() {
     setSubmitting(true);
-    setTimeout(() => { setSubmitting(false); setDone(true); }, 900);
+    fetch("/api/kyc", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ selfiePath: "kyc/me/selfie.jpg", cardPath: "kyc/me/card.jpg" }),
+    }).catch(() => {}).finally(() => {
+      setSubmitting(false);
+      setDone(true);
+    });
   }
 
   return (

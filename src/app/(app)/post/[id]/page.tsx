@@ -155,7 +155,18 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
         </Field>
         <div className="flex gap-2">
           <button onClick={() => setReportOpen(false)} className="btn-ghost rounded-xl flex-1 py-2.5 text-sm">{t.cancel}</button>
-          <button onClick={() => setReportOpen(false)} className="btn-crimson rounded-xl flex-1 py-2.5 text-sm font-semibold">{t.send}</button>
+          <button
+            onClick={() => {
+              setReportOpen(false);
+              if (reportReason.trim()) {
+                fetch("/api/report", {
+                  method: "POST", headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ targetType: "post", targetId: id, reason: reportReason }),
+                }).catch(() => {});
+              }
+            }}
+            className="btn-crimson rounded-xl flex-1 py-2.5 text-sm font-semibold"
+          >{t.send}</button>
         </div>
       </Modal>
 

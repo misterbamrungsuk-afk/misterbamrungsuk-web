@@ -15,7 +15,6 @@ export default function MyPostPage() {
   const [expired, setExpired] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [needVerify, setNeedVerify] = useState(false);
   const [days, setDays] = useState(12);
 
   return (
@@ -25,7 +24,7 @@ export default function MyPostPage() {
         {!post ? (
           <div className="text-center py-16">
             <EmptyState icon="📝" title={t.noPost} sub={t.postLimitNote} />
-            <button onClick={() => setNeedVerify(true)} className="btn-crimson rounded-xl px-6 py-3 font-semibold mt-2">＋ {t.createPost}</button>
+            <Link href="/post/create" className="btn-crimson rounded-xl px-6 py-3 font-semibold mt-2 inline-block">＋ {t.createPost}</Link>
           </div>
         ) : (
           <div className="glass rounded-2xl overflow-hidden animate-rise">
@@ -60,7 +59,8 @@ export default function MyPostPage() {
                 <button onClick={() => setHidden(!hidden)} className="btn-ghost rounded-xl py-2.5 text-sm">
                   {hidden ? "👁 " + t.showPost : "🚫 " + t.hidePost}
                 </button>
-                <Link href="/post/p7" className="btn-ghost rounded-xl py-2.5 text-sm text-center">✏️ {t.editPost}</Link>
+                <Link href="/post/create?id=p7" className="btn-ghost rounded-xl py-2.5 text-sm text-center">✏️ {t.editPost}</Link>
+                <Link href="/jobs/interested" className="btn-ghost rounded-xl py-2.5 text-sm text-center">❤️ {t.interestedCount}</Link>
                 <button onClick={() => setDeleteOpen(true)} className="btn-ghost rounded-xl py-2.5 text-sm text-crimson-300">🗑 {t.delete}</button>
               </div>
               <p className="text-[11px] text-ink-500 text-center">{t.postLimitNote}</p>
@@ -68,17 +68,6 @@ export default function MyPostPage() {
           </div>
         )}
       </div>
-
-      <Modal open={needVerify} onClose={() => setNeedVerify(false)} title="🔒">
-        <div className="text-center py-2">
-          <p className="text-4xl mb-3">🛡️</p>
-          <p className="text-sm text-ink-300 mt-1">{t.needVerify}</p>
-          <div className="flex gap-2 mt-5">
-            <button onClick={() => setNeedVerify(false)} className="btn-ghost rounded-xl flex-1 py-2.5 text-sm">{t.cancel}</button>
-            <Link href="/profile/verify" className="btn-crimson rounded-xl flex-1 py-2.5 text-sm font-semibold grid place-items-center">{t.verifyNow}</Link>
-          </div>
-        </div>
-      </Modal>
 
       <Modal open={deleteOpen} onClose={() => setDeleteOpen(false)} title={`🗑 ${t.delete}`}>
         <p className="text-sm text-ink-300 mb-4">{lang === "th" ? "ลบโพสต์นี้ถาวร?" : "Delete this post permanently?"}</p>

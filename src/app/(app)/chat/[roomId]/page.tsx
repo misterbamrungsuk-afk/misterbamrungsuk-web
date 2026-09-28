@@ -27,10 +27,27 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
   const [finalConfirmed, setFinalConfirmed] = useState(room?.finalConfirmed ?? false);
   const [reviewed, setReviewed] = useState(room?.reviewed ?? false);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [blocked, setBlocked] = useState(false);
+  const [blockOpen, setBlockOpen] = useState(false);
   const [rating, setRating] = useState(5);
   const [reviewText, setReviewText] = useState("");
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+
+  // ดึงข้อความจาก server (demo memory store / LIVE: Supabase) — ถ้า fail ใช้ข้อมูล local
+  useEffect(() => {
+    fetch(`/api/chat/${roomId}/messages`)
+      .then((r) => r.json())
+      .then((d) => { if (Array.isArray(d.messages) && d.messages.length) setMessages(d.messages); })
+      .catch(() => {});
+  }, [roomId]);
+
+  function pushToServer(payload: Record<string, unknown>) {
+    fetch(`/api/chat/${roomId}/messages`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ senderId: "me", ...payload }),
+    }).catch(() => {});
+  }
 
   if (!room) {
     return (
@@ -44,14 +61,38 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
 
   function flash(msg: string) { setToast(msg); setTimeout(() => setToast(""), 2000); }
 
+  function sendImage(src: string) {
+    setMessages((m) => [...m, {
+      id: String(Date.now()), roomId, senderId: "me", kind: "image", content: src,
+      createdAt: new Date().toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" }), isRead: false,
+    }]);
+    if (!src.startsWith("data:")) pushToServer({ kind: "image", content: src });
+  }
+
+  function pickImage() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => sendImage(String(reader.result));
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  }
+
   function send() {
     if (!input.trim() || !room) return;
     const partnerId = room.partner.id;
+    const text = input.trim();
     setMessages((m) => [...m, {
       id: String(Date.now()), roomId, senderId: "me", kind: "text",
-      content: input.trim(), createdAt: new Date().toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" }), isRead: false,
+      content: text, createdAt: new Date().toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" }), isRead: false,
     }]);
     setInput("");
+    pushToServer({ kind: "text", content: text });
     // จำลอง auto-reply ของอีกฝ่าย
     setTimeout(() => {
       setMessages((m) => [...m, {
@@ -158,6 +199,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
           </div>
           <Link href={`/call/${room.id}`} className="btn-ghost rounded-full w-9 h-9 grid place-items-center" aria-label="call">📞</Link>
           <button onClick={() => setPromoOpen(true)} className="btn-ghost rounded-full w-9 h-9 grid place-items-center" aria-label="promo">🎟️</button>
+          <button onClick={() => setBlockOpen(true)} className="btn-ghost rounded-full w-9 h-9 grid place-items-center" aria-label="block">🚫</button>
         </div>
 
         {/* order timeline (escrow ของเรา) */}
@@ -186,6 +228,21 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
           const mine = msg.senderId === "me";
           if (msg.kind === "payment" && msg.payment) {
             return <div key={msg.id}>{paymentCard(msg.payment, mine)}</div>;
+          }
+          if (msg.kind === "image") {
+            return (
+              <div key={msg.id} className={`flex ${mine ? "justify-end" : "justify-start"} animate-rise`}>
+                {!mine && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={room.partner.avatar} alt="" className="w-7 h-7 rounded-full bg-ink-700 self-end mb-1 mr-2" />
+                )}
+                <div className="max-w-[70%]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={msg.content} alt="chat image" className="rounded-2xl w-full border border-white/10" />
+                  <span className={`block text-[9px] mt-1 ${mine ? "text-ink-500 text-right" : "text-ink-500"}`}>{msg.createdAt}</span>
+                </div>
+              </div>
+            );
           }
           return (
             <div key={msg.id} className={`flex ${mine ? "justify-end" : "justify-start"} animate-rise`}>
@@ -237,19 +294,46 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
       )}
 
       {/* input */}
-      <div className="px-3 pb-[calc(12px+env(safe-area-inset-bottom))] pt-1 flex gap-2 items-center border-t border-white/5 bg-ink-950/90">
-        <button className="text-ink-300 hover:text-gold-300 text-xl" aria-label="emoji">😊</button>
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && send()}
-          placeholder={t.typeMessage}
-          className="input-dark flex-1 !rounded-full"
-        />
-        <button onClick={send} className="btn-crimson rounded-full w-10 h-10 grid place-items-center" aria-label="send">
-          <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M3 11.5L21 3l-8.5 18-2.6-7.4L3 11.5z"/></svg>
-        </button>
-      </div>
+      {blocked ? (
+        <div className="px-4 pb-[calc(14px+env(safe-area-inset-bottom))] pt-2 border-t border-white/5 bg-ink-950/90 text-center">
+          <p className="text-xs text-ink-400">🚫 {t.blocked} — <button onClick={() => setBlocked(false)} className="text-crimson-300 underline">{t.unblock}</button></p>
+        </div>
+      ) : (
+        <div className="px-3 pb-[calc(12px+env(safe-area-inset-bottom))] pt-1 flex gap-2 items-center border-t border-white/5 bg-ink-950/90">
+          <button className="text-ink-300 hover:text-gold-300 text-xl" aria-label="emoji">😊</button>
+          <button onClick={pickImage} className="text-ink-300 hover:text-gold-300 text-xl" aria-label="attach image">📎</button>
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && send()}
+            placeholder={t.typeMessage}
+            className="input-dark flex-1 !rounded-full"
+          />
+          <button onClick={send} className="btn-crimson rounded-full w-10 h-10 grid place-items-center" aria-label="send">
+            <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M3 11.5L21 3l-8.5 18-2.6-7.4L3 11.5z"/></svg>
+          </button>
+        </div>
+      )}
+
+      {/* block sheet */}
+      <Sheet open={blockOpen} onClose={() => setBlockOpen(false)} title={`🚫 ${t.block}`}>
+        <div className="glass rounded-2xl p-4 flex items-center gap-3 mb-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={room.partner.avatar} alt="" className="w-12 h-12 rounded-full bg-ink-700" />
+          <div>
+            <p className="font-semibold">{room.partner.name}</p>
+            <p className="text-xs text-ink-400">{t.block === "Block" ? "Block this user?" : "บล็อกผู้ใช้นี้?"}</p>
+          </div>
+        </div>
+        <p className="text-xs text-ink-400 mb-4">{lang === "th" ? "เมื่อบล็อกแล้ว อีกฝ่ายจะส่งข้อความหาคุณไม่ได้ และปลดบล็อกได้ตลอดเวลา" : "Blocked users cannot message you. You can unblock anytime."}</p>
+        <div className="flex gap-2">
+          <button onClick={() => setBlockOpen(false)} className="btn-ghost rounded-xl flex-1 py-2.5 text-sm">{t.cancel}</button>
+          <button
+            onClick={() => { setBlocked(true); setBlockOpen(false); flash(lang === "th" ? "บล็อกเรียบร้อย" : "Blocked"); }}
+            className="btn-crimson rounded-xl flex-1 py-2.5 text-sm font-semibold"
+          >🚫 {t.block}</button>
+        </div>
+      </Sheet>
 
       {/* promo modal */}
       <Modal open={promoOpen} onClose={() => setPromoOpen(false)} title={`🎟️ ${t.promoCode}`}>
@@ -277,7 +361,14 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
           <textarea value={reviewText} onChange={(e) => setReviewText(e.target.value)} rows={4} className="input-dark" placeholder={t.reviewPlaceholder} />
         </Field>
         <button
-          onClick={() => { flash(lang === "th" ? "ขอบคุณสำหรับรีวิว ⭐" : "Thanks for your review ⭐"); setReviewed(true); setReviewOpen(false); }}
+          onClick={() => {
+            flash(lang === "th" ? "ขอบคุณสำหรับรีวิว ⭐" : "Thanks for your review ⭐");
+            setReviewed(true); setReviewOpen(false);
+            fetch("/api/review", {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ postId: "p1", rating, content: reviewText }),
+            }).catch(() => {});
+          }}
           className="btn-crimson rounded-xl w-full py-2.5 text-sm font-semibold"
         >{t.send}</button>
       </Sheet>

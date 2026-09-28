@@ -14,9 +14,11 @@ export default function LoginPage() {
 
   async function login() {
     if (isDemo || !hasSupabase) {
-      // โหมดสาธิต — เข้าชมระบบด้วยบัญชีตัวอย่าง
+      // โหมดสาธิต — ตั้ง session cookie แล้วเข้าชมระบบด้วยบัญชีตัวอย่าง
       setLoading(true);
-      setTimeout(() => router.push("/home"), 600);
+      document.cookie = "hamoo_session=demo; path=/; max-age=604800";
+      const next = new URLSearchParams(window.location.search).get("next") || "/home";
+      setTimeout(() => router.push(next), 600);
       return;
     }
     const { supabaseBrowser } = await import("@/lib/supabase");

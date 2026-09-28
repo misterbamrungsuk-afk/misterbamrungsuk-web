@@ -6,7 +6,15 @@ import { EmptyState } from "@/components/ui";
 import { DEMO_PROMOS } from "@/lib/demo-data";
 import { baht } from "@/components/ui";
 
-type Tab = "kyc" | "reports" | "members" | "promos" | "gp";
+type Tab = "kyc" | "reports" | "members" | "promos" | "gp" | "audit";
+
+const AUDIT_LOG = [
+  { id: "a1", actor: "admin@hamoo", action: "kyc.approve", entity: "Member u1", at: "14:02" },
+  { id: "a2", actor: "admin@hamoo", action: "strike.add", entity: "Member หมูยอ🐷", at: "13:40" },
+  { id: "a3", actor: "admin@hamoo", action: "promo.toggle", entity: "SUMMER → off", at: "12:15" },
+  { id: "a4", actor: "admin@hamoo", action: "report.dismiss", entity: "Chat room2", at: "11:58" },
+  { id: "a5", actor: "admin@hamoo", action: "member.suspend", entity: "นักเลงบอท (3 strikes)", at: "10:22" },
+];
 
 export default function AdminPage() {
   const { t, lang } = useI18n();
@@ -32,6 +40,7 @@ export default function AdminPage() {
     ["members", `👥 ${t.admin.members}`],
     ["promos", `🎟️ ${t.admin.promos}`],
     ["gp", `💰 ${t.admin.gp}`],
+    ["audit", `📜 ${t.admin.audit}`],
   ];
 
   return (
@@ -96,6 +105,17 @@ export default function AdminPage() {
               <span className={`chip ${p.active ? "chip-gold" : ""}`}>{p.active ? "Active" : "Off"}</span>
             </div>
             <p className="text-xs text-ink-400 mt-1">{p.type === "percent" ? `−${p.value}%` : `−${baht(p.value)}`} · {p.usedCount}/{p.quota || "∞"}</p>
+          </div>
+        ))}
+
+        {tab === "audit" && AUDIT_LOG.map((a) => (
+          <div key={a.id} className="glass rounded-2xl p-4 animate-rise">
+            <div className="flex items-center justify-between">
+              <code className="text-xs text-gold-300">{a.action}</code>
+              <span className="text-[10px] text-ink-500">{a.at}</span>
+            </div>
+            <p className="text-sm text-ink-200 mt-1">{a.entity}</p>
+            <p className="text-[10px] text-ink-500 mt-0.5">by {a.actor}</p>
           </div>
         ))}
 

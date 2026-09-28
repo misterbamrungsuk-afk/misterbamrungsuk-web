@@ -16,6 +16,10 @@ export default function JobCard({ job, onInterested }: { job: JobBoard; onIntere
     setInterested(v);
     setCount((c) => c + (v ? 1 : -1));
     onInterested?.(job.id, v);
+    fetch("/api/interest", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jobId: job.id }),
+    }).catch(() => {});
   }
 
   const dateLabel = (() => {

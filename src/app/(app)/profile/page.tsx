@@ -16,8 +16,10 @@ export default function ProfilePage() {
   const [kyc, setKyc] = useState<"none" | "pending" | "verified">("none");
 
   const menu = [
+    { href: "/profile/edit", icon: "✏️", label: t.profileInfo },
     { href: "/post/manage", icon: menuIcon.post, label: t.myPost },
     { href: "/profile/verify", icon: "🛡️", label: t.verifyIdentity, badge: kyc === "verified" ? t.verified : kyc === "pending" ? t.kycPending : t.unverified },
+    { href: "/jobs/interested", icon: "❤️", label: t.interestedCount },
     { href: "/chat", icon: menuIcon.banks, label: t.bankAccounts },
     { href: "/matching", icon: menuIcon.match, label: t.quickMatch },
     { href: "/admin", icon: menuIcon.admin, label: t.admin.kyc + " (Admin)" },
@@ -73,7 +75,7 @@ export default function ProfilePage() {
 
         <div className="flex gap-2 mt-4 mb-4">
           <Link href="/login" className="btn-ghost rounded-xl flex-1 py-3 text-sm text-center">{t.logout}</Link>
-          <button className="btn-ghost rounded-xl flex-1 py-3 text-sm text-crimson-300">{t.deleteAccount}</button>
+          <Link href="/profile/edit" className="btn-ghost rounded-xl flex-1 py-3 text-sm text-crimson-300 text-center">{t.deleteAccount}</Link>
         </div>
         <p className="text-center text-[10px] text-ink-600">© 2026 HaMoo · {lang === "th" ? "ใช้งานฟรี (อาจมีค่าธรรมเนียมในอนาคต)" : "Free to use"}</p>
       </div>
