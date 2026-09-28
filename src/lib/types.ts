@@ -30,6 +30,8 @@ export interface Post {
   acceptGender: "any" | "male" | "female";
   serviceArea: string;
   province: string;
+  lat?: number;
+  lng?: number;
   personality: string;
   interests: string;
   extraInfo: string;

@@ -45,6 +45,7 @@ export const DEMO_POSTS: Post[] = [
     languages: ["ไทย"], acceptGender: "any", serviceArea: "ได้ทั่วกรุงเทพเลยคั้บ",
     province: "กรุงเทพมหานคร", personality: "เฟรนลี่ ชิลๆ คับบ", interests: "เอนจอยด้วยได้หมดเลยคั้บ",
     extraInfo: "สูง 175 พูดคุยเก่ง มีไหวพริบ", rules: baseRules,
+    lat: 13.7465, lng: 100.5349,
     rating: 5, reviewCount: 5, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-01",
   },
   {
@@ -55,6 +56,7 @@ export const DEMO_POSTS: Post[] = [
     languages: ["ไทย", "English"], acceptGender: "any", serviceArea: "กรุงเทพ + เทศบาล",
     province: "กรุงเทพมหานคร", personality: "ร่าเริง พูดเยอะ เก่งเรื่องของกินหวาน", interests: "คาเฟ่ ถ่ายรูป ดูหนังโรแมนติก",
     extraInfo: "แนะนำคาเฟ่ลับได้เพียบ!", rules: baseRules,
+    lat: 13.7279, lng: 100.5685,
     rating: 4.9, reviewCount: 4, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-03",
   },
   {
@@ -65,6 +67,7 @@ export const DEMO_POSTS: Post[] = [
     languages: ["ไทย"], acceptGender: "male", serviceArea: "กรุงเทพ / นนทบุรี",
     province: "กรุงเทพมหานคร", personality: "สายชิล คุยเรื่องไว ไม่อายคนแปลกหน้า", interests: "เที่ยวทะเล แคมป์ ดูหนังผี",
     extraInfo: "มีรถ ออกทริปต่างจังหวัดได้สบาย", rules: baseRules,
+    lat: 13.7011, lng: 100.6016,
     rating: 4.8, reviewCount: 3, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-05",
   },
   {
@@ -75,6 +78,7 @@ export const DEMO_POSTS: Post[] = [
     languages: ["ไทย", "English"], acceptGender: "any", serviceArea: "กรุงเทพและปริมณฑล",
     province: "กรุงเทพมหานคร", personality: "ผู้ใหญ่ใจดี มืออาชีพ", interests: "กอล์ฟ ธุรกิจ การลงทุน",
     extraInfo: "แคดดี้มืออาชีพ พาตีกอล์ฟได้ทุกสนาม กรุงเทพฯ", rules: baseRules,
+    lat: 13.7706, lng: 100.5698,
     rating: 5, reviewCount: 3, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-02",
   },
   {
@@ -85,6 +89,7 @@ export const DEMO_POSTS: Post[] = [
     languages: ["ไทย"], acceptGender: "any", serviceArea: "กรุงเทพ ทั้งหมด",
     province: "กรุงเทพมหานคร", personality: "ใจเย็น อดทน ดูแลเอาใจใส่", interests: "งานดูแลผู้สูงอายุ อาหารเพื่อสุขภาพ",
     extraInfo: "เคยดูแลคุณยาย 5 ปี มีใบรับรองผู้ช่วยพยาบาล", rules: baseRules,
+    lat: 13.7805, lng: 100.5414,
     rating: 5, reviewCount: 4, expiresAt: "+30d", isHidden: false, createdAt: "2026-08-28",
   },
   {
@@ -95,6 +100,7 @@ export const DEMO_POSTS: Post[] = [
     languages: ["ไทย"], acceptGender: "any", serviceArea: "กรุงเทพ / นนทบุรี",
     province: "นนทบุรี", personality: "สายมันส์ มีกีตาร์พร้อมเสมอ", interests: "ดนตรี คอนเสิร์ต แต่งเพลง",
     extraInfo: "พี่เลี้ยงจัดงานเล็กๆ พร้อมคอร์ดเพลงทุกยุค", rules: baseRules,
+    lat: 13.8591, lng: 100.5148,
     rating: 4.9, reviewCount: 3, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-08",
   },
   {
@@ -115,6 +121,7 @@ export const DEMO_POSTS: Post[] = [
     languages: ["ไทย"], acceptGender: "any", serviceArea: "เชียงใหม่ + ทั่วประเทศ",
     province: "เชียงใหม่", personality: "ชอบถ่ายรูปธรรมชาติ คุยเรื่องการเดินทางเก่ง", interests: "ภาพถ่าย ธรรมชาติ แบ็กแพ็ค",
     extraInfo: "มีกล้อ + โดรน พาเที่ยวเชียงใหม่ช่วยถ่ายรูปสวยๆ ได้", rules: baseRules,
+    lat: 18.7964, lng: 98.9628,
     rating: 5, reviewCount: 3, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-12",
   },
 ];
@@ -275,4 +282,48 @@ export const DEMO_PROMOS: PromoCode[] = [
   { code: "HAMOO10", type: "percent", value: 10, active: true, usedCount: 25, quota: 100 },
   { code: "WELCOME50", type: "fixed", value: 50, active: true, usedCount: 8, quota: 50 },
   { code: "SUMMER", type: "percent", value: 15, active: false, usedCount: 60, quota: 60 },
+];
+
+// ── ประวัติออเดอร์ของฉัน ──
+export const DEMO_MY_ORDERS: Order[] = [
+  { ...DEMO_ORDER, id: "o1" },
+  {
+    id: "o2", roomId: "room2", hirer: DEMO_ME, provider: DEMO_MEMBERS[1],
+    status: "negotiated", totalAmount: 800, depositAmount: 200, discount: 0, commission: 128, createdAt: "2026-09-27",
+  },
+  {
+    id: "o3", roomId: "", hirer: DEMO_ME, provider: DEMO_MEMBERS[6],
+    status: "completed", totalAmount: 1050, depositAmount: 150, discount: 0, commission: 210, createdAt: "2026-09-20",
+  },
+  {
+    id: "o4", roomId: "", hirer: DEMO_ME, provider: DEMO_MEMBERS[7],
+    status: "reviewed", totalAmount: 1200, depositAmount: 300, discount: 120, promoCode: "HAMOO10", commission: 216, createdAt: "2026-09-12",
+  },
+];
+
+// ── งานเข้า (บรอดแคสต์หาเพื่อนรับจ้าง) ──
+export interface IncomingJob {
+  id: string;
+  hirer: MemberLite;
+  title: string;
+  hours: number;
+  place: string;
+  lat: number;
+  lng: number;
+  budget: number;
+  distanceKm: number;
+  acceptSeconds: number;
+}
+
+export const DEMO_INCOMING: IncomingJob[] = [
+  {
+    id: "ij1", hirer: m("ih1", "คุณแนท", "female", 29, "photo-1610088441520-4352457e7095"),
+    title: "ไปกินข้าว+ดูหนังเรื่องใหม่", hours: 3, place: "สยาม พารากอน", lat: 13.7465, lng: 100.5350,
+    budget: 1200, distanceKm: 1.2, acceptSeconds: 15,
+  },
+  {
+    id: "ij2", hirer: m("ih2", "พี่บอส", "male", 41, "photo-1601412436009-d964bd02edbc"),
+    title: "พาไปหาหมอ รพ.จุฬา", hours: 2, place: "จุฬาลงกรณ์มหาวิทยาลัย", lat: 13.7384, lng: 100.5306,
+    budget: 800, distanceKm: 2.8, acceptSeconds: 15,
+  },
 ];

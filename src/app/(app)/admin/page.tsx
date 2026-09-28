@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/ui";
 import { DEMO_PROMOS } from "@/lib/demo-data";
 import { baht } from "@/components/ui";
 
-type Tab = "kyc" | "reports" | "members" | "promos" | "gp" | "audit";
+type Tab = "kyc" | "reports" | "members" | "promos" | "gp" | "jobs" | "money" | "cs" | "audit";
 
 const AUDIT_LOG = [
   { id: "a1", actor: "admin@hamoo", action: "kyc.approve", entity: "Member u1", at: "14:02" },
@@ -16,9 +16,30 @@ const AUDIT_LOG = [
   { id: "a5", actor: "admin@hamoo", action: "member.suspend", entity: "นักเลงบอท (3 strikes)", at: "10:22" },
 ];
 
+const ORDER_QUEUE = [
+  { id: "o1", pair: "Mo หมู → ทริคกี้", amount: 1500, status: "in_progress", place: "สยาม พารากอน", at: "17:00" },
+  { id: "o9", pair: "คุณแนท → Smart", amount: 1200, status: "deposit_paid", place: "สยาม พารากอน", at: "17:05" },
+  { id: "o10", pair: "พี่บอส → มายด์", amount: 800, status: "completed", place: "รพ.จุฬา", at: "09:30" },
+];
+
+const PAYOUTS = [
+  { id: "w1", provider: "ทริคกี้", amount: 1260, method: "กสิกร x-4451", status: "pending" },
+  { id: "w2", provider: "มายด์", amount: 640, method: "พร้อมเพย์ 089xxx", status: "pending" },
+  { id: "w3", provider: "Guitar", amount: 960, method: "SCB x-7788", status: "paid" },
+];
+
+const CS_TICKETS = [
+  { id: "c1", by: "Mo หมู", topic: "สลิปโอนแล้วแต่กดยืนยันไม่ได้", status: "open", at: "15:20" },
+  { id: "c2", by: "เนย", topic: "ขอต่ออายุโพสต์แบบอัตโนมัติ", status: "open", at: "14:05" },
+  { id: "c3", by: "คุณแนท", topic: "ถามเรื่องโค้ดส่วนลบ", status: "resolved", at: "11:40" },
+];
+
 export default function AdminPage() {
   const { t, lang } = useI18n();
   const [tab, setTab] = useState<Tab>("kyc");
+  const [orders, setOrders] = useState(ORDER_QUEUE);
+  const [payouts, setPayouts] = useState(PAYOUTS);
+  const [tickets, setTickets] = useState(CS_TICKETS);
   const [kycQueue, setKycQueue] = useState([
     { id: "k1", name: "ทริคกี้", submitted: "2 ชม.ที่แล้ว", selfie: "🤳 ✓", card: "🪪 ✓" },
     { id: "k2", name: "Smart", submitted: "5 ชม.ที่แล้ว", selfie: "🤳 ✓", card: "🪪 ✓" },
@@ -36,7 +57,10 @@ export default function AdminPage() {
 
   const tabs: [Tab, string][] = [
     ["kyc", `🛡️ ${t.admin.kyc}`],
+    ["jobs", `🧰 ${lang === "th" ? "ตรวจงาน" : "Orders"}`],
+    ["money", `💸 ${lang === "th" ? "รับเงิน/โอนให้" : "Payouts"}`],
     ["reports", `🚩 ${t.admin.reports}`],
+    ["cs", `🎧 ${lang === "th" ? "CS" : "CS"}`],
     ["members", `👥 ${t.admin.members}`],
     ["promos", `🎟️ ${t.admin.promos}`],
     ["gp", `💰 ${t.admin.gp}`],
@@ -105,6 +129,66 @@ export default function AdminPage() {
               <span className={`chip ${p.active ? "chip-gold" : ""}`}>{p.active ? "Active" : "Off"}</span>
             </div>
             <p className="text-xs text-ink-400 mt-1">{p.type === "percent" ? `−${p.value}%` : `−${baht(p.value)}`} · {p.usedCount}/{p.quota || "∞"}</p>
+          </div>
+        ))}
+
+        {tab === "jobs" && orders.map((o) => (
+          <div key={o.id} className="glass rounded-2xl p-4 animate-rise">
+            <div className="flex items-center justify-between">
+              <p className="font-semibold text-sm">{o.pair}</p>
+              <span className={`chip ${o.status === "completed" ? "chip-gold" : "chip-red"}`}>
+                {o.status === "completed" ? (lang === "th" ? "จบงาน" : "Completed") : o.status === "deposit_paid" ? (lang === "th" ? "มัดจำแล้ว" : "Deposit paid") : (lang === "th" ? "กำลังใช้งาน" : "In progress")}
+              </span>
+            </div>
+            <p className="text-xs text-ink-400 mt-1">📍 {o.place} · 🕒 {o.at} · 💰 {baht(o.amount)} <span className="text-gold-400">(GP {baht(Math.round(o.amount * 0.2))})</span></p>
+            {o.status !== "completed" && (
+              <div className="flex gap-2 mt-3">
+                <button onClick={() => setOrders(os => os.map(x => x.id === o.id ? { ...x, status: "cancelled" as never } : x))} className="btn-ghost rounded-lg flex-1 py-2 text-xs">{lang === "th" ? "ยกเลิกงาน" : "Cancel"}</button>
+                <button onClick={() => setOrders(os => os.map(x => x.id === o.id ? { ...x, status: "completed" as never } : x))} className="btn-crimson rounded-lg flex-1 py-2 text-xs font-semibold">{lang === "th" ? "ปิดงาน (จ่ายครบ)" : "Close (paid)"}</button>
+              </div>
+            )}
+          </div>
+        ))}
+
+        {tab === "money" && (
+          <div className="animate-rise">
+            <div className="glass rounded-2xl p-5 text-center mb-3">
+              <p className="text-xs text-ink-400 uppercase tracking-widest">{lang === "th" ? "ค้างโอนให้เพื่อนรับจ้าง" : "Pending payouts"}</p>
+              <p className="text-3xl font-bold text-gold-400 mt-1">{baht(payouts.filter((p) => p.status === "pending").reduce((a, p) => a + p.amount, 0))}</p>
+              <p className="text-[11px] text-ink-500 mt-1">{lang === "th" ? "หัก GP 20% แล้ว · โอนภายใน 24 ชม." : "After 20% GP · pay within 24h"}</p>
+            </div>
+            {payouts.map((p) => (
+              <div key={p.id} className="glass rounded-2xl p-4 mb-2 flex items-center gap-3">
+                <div className="flex-1">
+                  <p className="font-semibold text-sm">{p.provider}</p>
+                  <p className="text-xs text-ink-400">🏦 {p.method} · {baht(p.amount)}</p>
+                </div>
+                {p.status === "pending" ? (
+                  <button onClick={() => setPayouts(ps => ps.map(x => x.id === p.id ? { ...x, status: "paid" } : x))} className="btn-crimson rounded-lg px-4 py-2 text-xs font-semibold">
+                    ✓ {lang === "th" ? "ยืนยันโอนแล้ว" : "Mark paid"}
+                  </button>
+                ) : (
+                  <span className="chip chip-gold">{lang === "th" ? "โอนแล้ว" : "Paid"}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === "cs" && tickets.map((c) => (
+          <div key={c.id} className="glass rounded-2xl p-4 animate-rise">
+            <div className="flex items-center justify-between">
+              <p className="font-semibold text-sm">{c.by}</p>
+              <span className={`chip ${c.status === "open" ? "chip-red" : "chip-gold"}`}>{c.status === "open" ? (lang === "th" ? "เปิดเรื่อง" : "Open") : (lang === "th" ? "จบแล้ว" : "Resolved")}</span>
+            </div>
+            <p className="text-sm text-ink-300 mt-1">💬 {c.topic}</p>
+            <p className="text-[10px] text-ink-500 mt-1">{c.at}</p>
+            {c.status === "open" && (
+              <div className="flex gap-2 mt-3">
+                <button onClick={() => setTickets(ts => ts.filter(x => x.id !== c.id))} className="btn-ghost rounded-lg flex-1 py-2 text-xs">{lang === "th" ? "รับเรื่อง (แชท)" : "Take (chat)"}</button>
+                <button onClick={() => setTickets(ts => ts.map(x => x.id === c.id ? { ...x, status: "resolved" } : x))} className="btn-crimson rounded-lg flex-1 py-2 text-xs font-semibold">{lang === "th" ? "ปิดเรื่อง" : "Resolve"}</button>
+              </div>
+            )}
           </div>
         ))}
 

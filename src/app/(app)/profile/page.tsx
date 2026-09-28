@@ -17,9 +17,12 @@ export default function ProfilePage() {
 
   const menu = [
     { href: "/profile/edit", icon: "✏️", label: t.profileInfo },
+    { href: "/orders", icon: "🧾", label: lang === "th" ? "ประวัติการจ้างงาน" : "My orders" },
+    { href: "/provider", icon: "🌟", label: lang === "th" ? "โหมดเพื่อนรับจ้าง" : "Provider mode" },
     { href: "/post/manage", icon: menuIcon.post, label: t.myPost },
     { href: "/profile/verify", icon: "🛡️", label: t.verifyIdentity, badge: kyc === "verified" ? t.verified : kyc === "pending" ? t.kycPending : t.unverified },
     { href: "/jobs/interested", icon: "❤️", label: t.interestedCount },
+    { href: "/map", icon: "🗺️", label: lang === "th" ? "แผนที่ใกล้ฉัน" : "Nearby map" },
     { href: "/chat", icon: menuIcon.banks, label: t.bankAccounts },
     { href: "/matching", icon: menuIcon.match, label: t.quickMatch },
     { href: "/admin", icon: menuIcon.admin, label: t.admin.kyc + " (Admin)" },

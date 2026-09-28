@@ -54,9 +54,12 @@ function HomeInner({ posts }: { posts: Post[] }) {
           </div>
         }
         right={
-          <Link href="/matching" className="btn-crimson rounded-full px-3.5 py-1.5 text-xs font-bold flex items-center gap-1.5 animate-[pulseRed_2.4s_ease-in-out_infinite]">
-            ⚡ {t.quickMatch}
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/map" className="btn-ghost rounded-full w-9 h-9 grid place-items-center" aria-label="nearby map">🗺️</Link>
+            <Link href="/matching" className="btn-crimson rounded-full px-3.5 py-1.5 text-xs font-bold flex items-center gap-1.5 animate-[pulseRed_2.4s_ease-in-out_infinite]">
+              ⚡ {t.quickMatch}
+            </Link>
+          </div>
         }
       />
 
