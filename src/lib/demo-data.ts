@@ -1,28 +1,30 @@
 import type { Post, Review, JobBoard, ChatRoom, MemberLite, Order, AppNotification, BankAccount, SavedReply, PromoCode } from "./types";
 
 // ── ข้อมูลจำลองสำหรับโหมดสาธิต (ไม่มีฐานข้อมูลจริง) ──
+// รูปโปรไฟล์ = รูปคนจริงจาก Unsplash (stock) เพื่อให้เดโมสมจริง
 const img = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=800&q=70`;
-const av = (g: string, seed: string) => `https://api.dicebear.com/7.x/${g}/svg?seed=${seed}&backgroundColor=1e1e26`;
+const face = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=400&q=70&crop=faces`;
 
-const m = (id: string, name: string, gender: "male" | "female", age: number, verified: boolean, province = "กรุงเทพมหานคร"): MemberLite => ({
-  id, name,
-  avatar: av(gender === "female" ? "notionists-neutral" : "adventurer-neutral", id),
-  gender, age, kycVerified: verified, province,
+const m = (id: string, name: string, gender: "male" | "female", age: number, photo: string, province = "กรุงเทพมหานคร"): MemberLite => ({
+  id, name, avatar: face(photo), gender, age, kycVerified: true, province,
 });
 
-export const DEMO_ME: MemberLite = { id: "me", name: "Mo หมู", avatar: av("micah", "me"), gender: "male", age: 28, kycVerified: false, province: "กรุงเทพมหานคร" };
+export const DEMO_ME: MemberLite = {
+  id: "me", name: "Mo หมู", avatar: face("photo-1633332755192-727a05c4013d"),
+  gender: "male", age: 28, kycVerified: false, province: "กรุงเทพมหานคร",
+};
 
 export const DEMO_MEMBERS: MemberLite[] = [
-  m("u1", "ทริคกี้", "male", 19, true),
-  m("u2", "เนย", "female", 19, true),
-  m("u3", "Top", "male", 34, true),
-  m("u4", "น้ำส้ม", "female", 21, true),
-  m("u5", "C", "male", 31, true),
-  m("u6", "Smart", "male", 23, false),
-  m("u7", "มายด์", "female", 27, true),
-  m("u8", "Guitar", "male", 25, true, "นนทบุรี"),
-  m("u9", "อิ๊งค์", "female", 23, true, "นนทบุรี"),
-  m("u10", "Satang", "male", 30, true, "เชียงใหม่"),
+  m("u1", "ทริคกี้", "male", 19, "photo-1507003211169-0a1dd7228f2d"),
+  m("u2", "เนย", "female", 19, "photo-1494790108377-be9c29b29330"),
+  m("u3", "Top", "male", 34, "photo-1566492031773-4f4e44671857"),
+  m("u4", "น้ำส้ม", "female", 21, "photo-1529626455594-4ff0802cfb7e"),
+  m("u5", "C", "male", 31, "photo-1544723795-3fb6469f5b39"),
+  m("u6", "Smart", "male", 23, "photo-1519085360753-af0119f7cbe7"),
+  m("u7", "มายด์", "female", 27, "photo-1580489944761-15a19d654956"),
+  m("u8", "Guitar", "male", 25, "photo-1546539782-6fc531453083", "นนทบุรี"),
+  m("u9", "อิ๊งค์", "female", 23, "photo-1534528741775-53994a69daeb", "นนทบุรี"),
+  m("u10", "Satang", "male", 30, "photo-1628890923662-2cb23c2e0cfe", "เชียงใหม่"),
 ];
 
 const baseRules = [
@@ -37,37 +39,37 @@ const baseRules = [
 export const DEMO_POSTS: Post[] = [
   {
     id: "p1", member: DEMO_MEMBERS[0],
-    images: [img("photo-1519345182560-3f2917c472ef"), img("photo-1511632765486-a01980e01a18")],
+    images: [img("photo-1519345182560-3f2917c472ef"), img("photo-1511632765486-a01980e01a18"), img("photo-1504674900247-0877df9cc836")],
     categories: ["eat-travel", "consult", "video-call", "chill", "movie", "shopping", "event", "model", "upcountry"],
     pricePerHour: 500, minHours: 2, deposit: 300, workingHours: "12:00-23:00",
     languages: ["ไทย"], acceptGender: "any", serviceArea: "ได้ทั่วกรุงเทพเลยคั้บ",
     province: "กรุงเทพมหานคร", personality: "เฟรนลี่ ชิลๆ คับบ", interests: "เอนจอยด้วยได้หมดเลยคั้บ",
     extraInfo: "สูง 175 พูดคุยเก่ง มีไหวพริบ", rules: baseRules,
-    rating: 5, reviewCount: 6, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-01",
+    rating: 5, reviewCount: 5, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-01",
   },
   {
     id: "p2", member: DEMO_MEMBERS[1],
-    images: [img("photo-1494790108377-be9c29b29330"), img("photo-1524504388940-b1c1722653e1")],
+    images: [img("photo-1495474472287-4d71bcdd2085"), img("photo-1524504388940-b1c1722653e1"), img("photo-1447933601403-0c6688de566e")],
     categories: ["cafe", "eat-travel", "shopping", "movie", "photographer"],
     pricePerHour: 400, minHours: 2, deposit: 200, workingHours: "10:00-20:00",
     languages: ["ไทย", "English"], acceptGender: "any", serviceArea: "กรุงเทพ + เทศบาล",
     province: "กรุงเทพมหานคร", personality: "ร่าเริง พูดเยอะ เก่งเรื่องของกินหวาน", interests: "คาเฟ่ ถ่ายรูป ดูหนังโรแมนติก",
     extraInfo: "แนะนำคาเฟ่ลับได้เพียบ!", rules: baseRules,
-    rating: 5, reviewCount: 4, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-03",
+    rating: 4.9, reviewCount: 4, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-03",
   },
   {
     id: "p3", member: DEMO_MEMBERS[3],
-    images: [img("photo-1487412720507-e7ab37603c6f"), img("photo-1529626455594-4ff0802cfb7e")],
+    images: [img("photo-1487412720507-e7ab37603c6f"), img("photo-1529626455594-4ff0802cfb7e"), img("photo-1533777857889-4be7c70b33f7")],
     categories: ["eat-travel", "movie", "chill", "event", "camping"],
     pricePerHour: 400, minHours: 2, deposit: 200, workingHours: "11:00-22:00",
     languages: ["ไทย"], acceptGender: "male", serviceArea: "กรุงเทพ / นนทบุรี",
     province: "กรุงเทพมหานคร", personality: "สายชิล คุยเรื่องไว ไม่อายคนแปลกหน้า", interests: "เที่ยวทะเล แคมป์ ดูหนังผี",
     extraInfo: "มีรถ ออกทริปต่างจังหวัดได้สบาย", rules: baseRules,
-    rating: 4.8, reviewCount: 5, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-05",
+    rating: 4.8, reviewCount: 3, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-05",
   },
   {
     id: "p4", member: DEMO_MEMBERS[2],
-    images: [img("photo-1507003211169-0a1dd7228f2d"), img("photo-1500648767791-00dcc994a43e")],
+    images: [img("photo-1537944434965-cf4679d1a598"), img("photo-1500648767791-00dcc994a43e"), img("photo-1531973576160-7125cd663d86")],
     categories: ["golf", "caddy", "driver", "consult", "language"],
     pricePerHour: 600, minHours: 3, deposit: 500, workingHours: "06:00-18:00",
     languages: ["ไทย", "English"], acceptGender: "any", serviceArea: "กรุงเทพและปริมณฑล",
@@ -77,27 +79,27 @@ export const DEMO_POSTS: Post[] = [
   },
   {
     id: "p5", member: DEMO_MEMBERS[6],
-    images: [img("photo-1531123897727-8f129e1688ce"), img("photo-1544005313-94ddf0286df2")],
+    images: [img("photo-1584515933487-779824d29309"), img("photo-1576091160399-112ba8d25d1d"), img("photo-1544367567-0f2fcb009e0b")],
     categories: ["hospital", "elderly", "errand", "consult"],
     pricePerHour: 350, minHours: 2, deposit: 150, workingHours: "08:00-18:00",
     languages: ["ไทย"], acceptGender: "any", serviceArea: "กรุงเทพ ทั้งหมด",
     province: "กรุงเทพมหานคร", personality: "ใจเย็น อดทน ดูแลเอาใจใส่", interests: "งานดูแลผู้สูงอายุ อาหารเพื่อสุขภาพ",
     extraInfo: "เคยดูแลคุณยาย 5 ปี มีใบรับรองผู้ช่วยพยาบาล", rules: baseRules,
-    rating: 5, reviewCount: 8, expiresAt: "+30d", isHidden: false, createdAt: "2026-08-28",
+    rating: 5, reviewCount: 4, expiresAt: "+30d", isHidden: false, createdAt: "2026-08-28",
   },
   {
     id: "p6", member: DEMO_MEMBERS[7],
-    images: [img("photo-1516280440614-37939bbacd81"), img("photo-1510915361894-db8b60106cb1")],
+    images: [img("photo-1510915361894-db8b60106cb1"), img("photo-1470229722913-7c0e2dbbafd3"), img("photo-1516280440614-37939bbacd81")],
     categories: ["musician", "event", "content", "other"],
     pricePerHour: 600, minHours: 2, deposit: 300, workingHours: "15:00-24:00",
     languages: ["ไทย"], acceptGender: "any", serviceArea: "กรุงเทพ / นนทบุรี",
     province: "นนทบุรี", personality: "สายมันส์ มีกีตาร์พร้อมเสมอ", interests: "ดนตรี คอนเสิร์ต แต่งเพลง",
     extraInfo: "พี่เลี้ยงจัดงานเล็กๆ พร้อมคอร์ดเพลงทุกยุค", rules: baseRules,
-    rating: 4.9, reviewCount: 7, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-08",
+    rating: 4.9, reviewCount: 3, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-08",
   },
   {
     id: "p7", member: DEMO_MEMBERS[5],
-    images: [img("photo-1519085360753-af0119f7cbe7"), img("photo-1506794778202-cad84cf45f1d")],
+    images: [img("photo-1542751371-adc38448a05e"), img("photo-1511512578047-dfb367046420"), img("photo-1552820728-8b83bb6b773f")],
     categories: ["gaming", "language", "video-call", "movie"],
     pricePerHour: 150, minHours: 1, deposit: 0, workingHours: "18:00-02:00",
     languages: ["ไทย", "English"], acceptGender: "any", serviceArea: "ออนไลน์ / วิดีโอคอล",
@@ -107,23 +109,59 @@ export const DEMO_POSTS: Post[] = [
   },
   {
     id: "p8", member: DEMO_MEMBERS[9],
-    images: [img("photo-1508214751196-bcfd4ca60f91"), img("photo-1492562080023-ab3db95bfbce")],
+    images: [img("photo-1528181304800-259b08848526"), img("photo-1508214751196-bcfd4ca60f91"), img("photo-1493976040374-85c8e12f0c0e")],
     categories: ["photographer", "cafe", "camping", "upcountry", "abroad"],
     pricePerHour: 300, minHours: 2, deposit: 200, workingHours: "09:00-19:00",
-    languages: ["ไทย"], acceptGender: "any", serviceArea: "เชียงใหม่ + ประเทศไทย",
+    languages: ["ไทย"], acceptGender: "any", serviceArea: "เชียงใหม่ + ทั่วประเทศ",
     province: "เชียงใหม่", personality: "ชอบถ่ายรูปธรรมชาติ คุยเรื่องการเดินทางเก่ง", interests: "ภาพถ่าย ธรรมชาติ แบ็กแพ็ค",
-    extraInfo: "มีกล้อ + โดรน เอาไปเที่ยวเชียงใหม่ช่วยถ่ายรูปสวยๆ ได้", rules: baseRules,
-    rating: 5, reviewCount: 4, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-12",
+    extraInfo: "มีกล้อ + โดรน พาเที่ยวเชียงใหม่ช่วยถ่ายรูปสวยๆ ได้", rules: baseRules,
+    rating: 5, reviewCount: 3, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-12",
   },
 ];
 
+// ── รีวิวตัวอย่าง (โหมดสาธิต) — ตอนใช้งานจริง รีวิวจะเปิดให้เขียนได้เฉพาะเมื่อจบออเดอร์+จ่ายเงินครบเท่านั้น ──
+const rv = (id: string, name: string, gender: "male" | "female", photo: string, rating: number, content: string, date: string, postId: string): Review => ({
+  id, postId,
+  reviewer: { id, name, avatar: face(photo), gender, age: null, kycVerified: true },
+  rating, content, createdAt: date,
+});
+
 export const DEMO_REVIEWS: Review[] = [
-  { id: "r1", postId: "p1", reviewer: m("v1", "Ninegd93", "male", 26, true), rating: 5, content: "ตัวจริงหล่อมากกกกครับ เอ็นจอยอีทติ้งมาก น่าชวนไปกินอีกบ่อยบ่อยเลย", createdAt: "2026-08-24" },
-  { id: "r2", postId: "p1", reviewer: m("v2", "Kate", "female", 24, true), rating: 5, content: "ตัวจริงน่ารักมาก หล่อกว่าในรูปอีก เทคแคร์ดีมาก สนุกมากเลยวันนี้", createdAt: "2026-08-12" },
-  { id: "r3", postId: "p1", reviewer: m("v3", "Jib", "female", 22, true), rating: 5, content: "น้องน่ารักมากๆ เป็นกันเอง ชวนคุยเก่งมาก ลุยๆ ไปได้ทุกที่ 🥰", createdAt: "2026-08-17" },
-  { id: "r4", postId: "p2", reviewer: m("v4", "Ploy", "female", 25, true), rating: 5, content: "พาตามหาคาเฟ่ดีมาก ร้านไหนอร่อยรู้หมด เป็นเพื่อนถ่ายรูปก็เก่ง", createdAt: "2026-09-01" },
-  { id: "r5", postId: "p5", reviewer: m("v5", "คุณสมชาย", "male", 45, true), rating: 5, content: "พาคุณพ่อไปหาหมอ ดูแลดีมากครับ ใจเย็น เอาใจใส่ แนะนำมากๆ", createdAt: "2026-09-05" },
-  { id: "r6", postId: "p4", reviewer: m("v6", "หัวหน้าตี๋", "male", 52, true), rating: 5, content: "แคดดี้โปรจริงๆ ตีกอล์ฟเป็นเรื่องเป็นราว อธิบายดีมาก", createdAt: "2026-08-30" },
+  // ทริคกี้
+  rv("r1", "Ninegd93", "male", "photo-1590086782957-93c06ef21604", 5, "ตัวจริงหล่อมากกกกครับ เอ็นจอยอีทติ้งมาก น่าชวนไปกินอีกบ่อยบ่อยเลย", "2026-08-24", "p1"),
+  rv("r2", "Kate", "female", "photo-1610088441520-4352457e7095", 5, "ตัวจริงน่ารักมาก หล่อกว่าในรูปอีก เทคแคร์ดีมาก บอกให้ทำอะไรก็ทำ 🤣 สนุกมากเลยวันนี้", "2026-08-12", "p1"),
+  rv("r3", "Jib", "female", "photo-1487412720507-e7ab37603c6f", 5, "น้องน่ารักมากๆๆๆ เป็นกันเอง นิสัยดี ชวนคุยเก่งมาก ลุยๆ ไปได้ทุกที่ เต็ม100🥰", "2026-08-17", "p1"),
+  rv("r4", "ต้าเหนิง", "male", "photo-1535713875002-d1d0cf377fde", 5, "จ้างไปงานแต่งเพื่อน เป็นเพื่อนยืนถ่ายรูป บรรยากาศดีมาก เพื่อนๆ ถามตลอดว่าหาได้จากไหน 😂", "2026-07-30", "p1"),
+  rv("r5", "แพร", "female", "photo-1508214751196-bcfd4ca60f91", 4, "สายชิลมาก คุยเรื่องทั่วไปได้สบาย วันนั้นฝนตกเลยเปลี่ยนจากเดินเล่นเป็นนั่งคาเฟ่ก็ยังสนุกดี", "2026-09-02", "p1"),
+  // เนย
+  rv("r6", "Ploy", "female", "photo-1544005313-94ddf0286df2", 5, "พาตามหาคาเฟ่ดีมาก ร้านไหนอร่อยรู้หมด เป็นเพื่อนถ่ายรูปก็เก่ง เอามุมสวยมาก", "2026-09-01", "p2"),
+  rv("r7", "โบว์", "female", "photo-1614289371518-722f2615943d", 5, "น้องเนยน่ารักสุดๆ แนะนำคาเฟ่ลับที่หาเองไม่มีทางเจอ ขนมอร่อยทุกร้าน เก็บเป็น favorite เลย", "2026-08-21", "p2"),
+  rv("r8", "เจมส์", "male", "photo-1628157588553-5eeea00af15c", 4, "ตรงเวลา สุภาพมาก ช่วยถ่ายรูปเยอะมาก ราคาคุ้ม จะจ้างอีกแน่นอน", "2026-08-05", "p2"),
+  rv("r9", "กร", "male", "photo-1492562080023-ab3db95bfbce", 5, "คุยสนุก อังกฤษดีด้วย ป้ายยายที่ร้านถามว่าแฟนกันไหม 😂", "2026-07-18", "p2"),
+  // น้ำส้ม
+  rv("r10", "มาย", "female", "photo-1595152772835-219674b2a8a6", 5, "สายทริปแท้ๆ พาไปนอกเวลาอย่างสนุก มีรถสบาย ๆ ปลอดภัย พาไปมุมถ่ายรูปสวยเพียบ", "2026-09-04", "p3"),
+  rv("r11", "อาร์ม", "male", "photo-1506794778202-cad84cf45f1d", 4, "ดูหนังผีด้วยกัน บรรยากาศฮามาก ตกใจพร้อมกันเลย 555 แนะนำ", "2026-08-14", "p3"),
+  rv("r12", "แพรวา", "female", "photo-1508214751196-bcfd4ca60f91", 5, "จ้างไปงานแฟรนไชส์ ช่วยถือของถ่ายรูป เป็นกันเองมาก จบงานราบรื่น", "2026-07-22", "p3"),
+  // Top
+  rv("r13", "คุณสมชาย", "male", "photo-1601412436009-d964bd02edbc", 5, "พาคุณพ่อไปตีกอล์ฟ ดูแลดีมากครับ อธิบายมิตรดี แนะนำสนามได้เป็นอย่างดี", "2026-08-30", "p4"),
+  rv("r14", "หัวหน้าตี๋", "male", "photo-1583195764036-6dc248ac07d9", 5, "แคดดี้โปรจริงๆ ตีกอล์ฟเป็นเรื่องเป็นราว อ่านกรีนแม่นมาก", "2026-08-12", "p4"),
+  rv("r15", "Tanwa", "male", "photo-1535713875002-d1d0cf377fde", 5, "คุยธุรกิจได้ทรงภาษา ขับรถนุ่มมาก วันนั้นต้องไป 3 ที่ในเวลาเร็ว จัดการได้เรียบร้อย", "2026-07-29", "p4"),
+  // มายด์
+  rv("r16", "คุณสมชาย", "male", "photo-1601412436009-d964bd02edbc", 5, "พาคุณพ่อไปหาหมอ ดูแลดีมากครับ ใจเย็น เอาใจใส่ แนะนำมากๆ", "2026-09-05", "p5"),
+  rv("r17", "ป้าสมศรี", "female", "photo-1544005313-94ddf0286df2", 5, "หนูมายด์ใจดีมากแม่ เข้ากับผู้สูงอายุได้ดี คุยเล่นทั้งบ่าย หลานสาวเสมอ", "2026-08-20", "p5"),
+  rv("r18", "Fon", "female", "photo-1517841905240-472988babdf9", 5, "ช่วยรับยา จ่ายบิล ทำธุระแทนคุณยาย รายงานทุกขั้นตอนในแชท ปลอดภัยมาก", "2026-08-02", "p5"),
+  rv("r19", "Ninegd93", "male", "photo-1590086782957-93c06ef21604", 4, "จ้างไปเช็คสุขภาพประจำปี ช่วยจดคำถามหมอ แปลศัพท์ยากๆ ให้ ดีมากครับ", "2026-07-11", "p5"),
+  // Guitar
+  rv("r20", "ปอนด์", "male", "photo-1628157588553-5eeea00af15c", 5, "มาเล่นเพลงให้ในงานวันเกิดแฟน เซอร์ไพรส์สำเร็จมาก ทุกคนประทับใจ", "2026-09-07", "p6"),
+  rv("r21", "มายด์ค่า", "female", "photo-1595152772835-219674b2a8a6", 5, "คอร์ดเพลงครบทุกยุคจริง ขอเพลงยากๆ ก็เล่นได้ บรรยากาศดีมาก", "2026-08-25", "p6"),
+  rv("r22", "Film", "male", "photo-1544723795-3fb6469f5b39", 4, "ช่วยคิดคอนเทนต์ร้านคาเฟ่ ได้ไอเดียเยอะมาก ทำงานเป็นระบบ สุดยอด", "2026-08-01", "p6"),
+  // Smart
+  rv("r23", "กัน", "male", "photo-1492562080023-ab3db95bfbce", 5, "ดันแรง Valorant จากแรงก็ขึ้นแรงค์ใหญ่ สอนจุดยิงด้วย คุ้มสุดๆ 150 บาท", "2026-09-09", "p7"),
+  rv("r24", "เต้", "male", "photo-1519085360753-af0119f7cbe7", 4, "ซ้อมคุยอังกฤษผ่านเกม ได้ทั้งสนุกทั้งเก่งขึ้น ไว้ค่อยจองอีกรอบ", "2026-08-28", "p7"),
+  // Satang
+  rv("r25", "บี้", "male", "photo-1506794778202-cad84cf45f1d", 5, "ถ่ายรูปเชียงใหม่สวยระดับพรีเวดดิ้ง มีโดรนด้วย มุมไหนออกมาเป็นภาพโฆษณาทั้งนั้น", "2026-09-11", "p8"),
+  rv("r26", "Namwhan", "female", "photo-1524504388940-b1c1722653e1", 5, "พาเที่ยวนิมมานครบทุกมุม คุยเรื่องการเดินทางเพลินมาก แนะนำร้านอาหารเจ้าเด็ด", "2026-08-16", "p8"),
+  rv("r27", "โอ๋", "female", "photo-1489424731084-a5d8b219a5bb", 4, "ไปแคมป์ที่ดอยสุเทพ ช่วยถ่ายภาพพระอาทิตย์ขึ้นแบบมืออาชีพ ตื่นเช้าด้วยกันเลย", "2026-07-25", "p8"),
 ];
 
 const now = new Date();
@@ -134,13 +172,13 @@ const daysFromNow = (n: number, h = 15) => {
 
 export const DEMO_JOBS: JobBoard[] = [
   {
-    id: "j1", owner: m("h1", "พลอยแท้✨", "female", 23, true), role: "hirer",
+    id: "j1", owner: m("h1", "พลอยแท้✨", "female", 23, "photo-1524504388940-b1c1722653e1"), role: "hirer",
     title: "ว่างน้าา ไปไหนดี", durationHours: 2, scheduleDate: daysFromNow(0), startTime: "15:00", endTime: "17:00",
     placeName: "สยามสแควร์วัน", province: "กรุงเทพมหานคร", lat: 13.7465, lng: 100.5349,
     budget: 1000, images: [img("photo-1517248135467-4c7edcad34c4")], interestedCount: 1, isInterested: false, createdAt: "18h",
   },
   {
-    id: "j2", owner: m("h2", "Fuyuko Chan", "female", 30, true), role: "hirer",
+    id: "j2", owner: m("h2", "Fuyuko Chan", "female", 30, "photo-1517841905240-472988babdf9"), role: "hirer",
     title: "ทานข้าว ดูหนัง เดินเล่น หาเพื่อนไปคาเฟ่ศิลปิน", durationHours: 4, scheduleDate: daysFromNow(0), startTime: "13:00", endTime: "17:00",
     placeName: "The Commons Thonglor", province: "กรุงเทพมหานคร", lat: 13.7279, lng: 100.5685,
     budget: 1000, images: [img("photo-1554118811-1e0d58224f24")], interestedCount: 2, isInterested: false, createdAt: "2d",
@@ -158,7 +196,7 @@ export const DEMO_JOBS: JobBoard[] = [
     budget: 1500, images: [img("photo-1504674900247-0877df9cc836")], interestedCount: 0, isInterested: false, createdAt: "17h",
   },
   {
-    id: "j5", owner: m("h3", "หมูยอ🐷", "female", 25, true), role: "provider",
+    id: "j5", owner: m("h3", "หมูยอ🐷", "female", 25, "photo-1489424731084-a5d8b219a5bb"), role: "provider",
     title: "ว่างง หาคนชวนกินข้าวดูหนังดึกๆ", durationHours: 4, scheduleDate: daysFromNow(0), startTime: "22:00", endTime: "02:00",
     placeName: "รัชดา ห้าง", province: "กรุงเทพมหานคร", lat: 13.7589, lng: 100.5605,
     budget: 1000, images: [img("photo-1482049016688-2d3e1b311543")], interestedCount: 1, isInterested: false, createdAt: "20h",
@@ -172,10 +210,9 @@ export const DEMO_JOBS: JobBoard[] = [
 ];
 
 // แชทห้องตัวอย่าง: วงจรเงินครบทุกขั้น (deposit ยืนยันแล้ว, final รอสลิป)
-const chatPartner = DEMO_MEMBERS[0];
 export const DEMO_ROOMS: ChatRoom[] = [
   {
-    id: "room1", partner: chatPartner,
+    id: "room1", partner: DEMO_MEMBERS[0],
     lastMessage: "โอนเข้าไปแล้วนะครับ ตามสลิปเลย", lastAt: "14:32", unread: 1,
     orderStatus: "in_progress",
     depositCreated: true, depositConfirmed: true, finalCreated: true, finalConfirmed: false, reviewed: false,
