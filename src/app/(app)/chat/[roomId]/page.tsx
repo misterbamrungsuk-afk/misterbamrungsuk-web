@@ -198,6 +198,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
             </p>
           </div>
           <Link href={`/call/${room.id}`} className="btn-ghost rounded-full w-9 h-9 grid place-items-center" aria-label="call">📞</Link>
+          <Link href="/escrow/e1" className="btn-ghost rounded-full w-9 h-9 grid place-items-center border-gold-500/50" aria-label="escrow">🏦</Link>
           <button onClick={() => setPromoOpen(true)} className="btn-ghost rounded-full w-9 h-9 grid place-items-center" aria-label="promo">🎟️</button>
           <button onClick={() => setBlockOpen(true)} className="btn-ghost rounded-full w-9 h-9 grid place-items-center" aria-label="block">🚫</button>
         </div>

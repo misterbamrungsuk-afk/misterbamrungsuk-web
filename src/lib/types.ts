@@ -155,3 +155,30 @@ export interface PromoCode {
   usedCount: number;
   quota: number;
 }
+
+// ── ระบบกลาง (Escrow) ── วงจร: รับงาน → โอนเข้าระบบกลาง → ส่งงาน → รับเงิน
+export type EscrowState =
+  | "accepted"        // รับงานแล้ว — รอลูกค้าโอนเข้าระบบกลาง
+  | "awaiting_check"  // ลูกค้าแนบสลิปแล้ว — ระบบตรวจสอบ
+  | "funded"          // เงินถูกกันไว้กับระบบกลาง 🔒 — เพื่อนเริ่มงานได้
+  | "in_progress"     // กำลังทำงาน
+  | "delivered"       // เพื่อนส่งงานแล้ว — รอลูกค้ายืนยันรับงาน (หรือ auto-release 24 ชม.)
+  | "released"        // ปล่อยเงินให้เพื่อนแล้ว (หัก GP) — ปิดงาน
+  | "disputed";       // มีข้อพิพาท — แอดมินพิจารณา
+
+export interface EscrowOrder {
+  id: string;
+  roomId: string;
+  hirer: MemberLite;
+  provider: MemberLite;
+  title: string;
+  hours: number;
+  place: string;
+  amount: number;       // ยอดเต็มที่ลูกค้าจ่าย
+  gpPercent: number;    // ค่าธรรมเนียมระบบกลาง (%)
+  state: EscrowState;
+  slipUrl?: string;
+  deliveredAt?: string;
+  autoReleaseAt?: string;
+  createdAt: string;
+}

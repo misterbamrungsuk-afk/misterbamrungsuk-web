@@ -57,7 +57,10 @@ export default function OrdersPage() {
               </div>
               <div className="flex justify-between mt-1.5">
                 <span className={`text-[10px] font-medium ${step >= 4 ? "text-gold-400" : "text-crimson-300"}`}>{label(o.status)}</span>
-                {o.roomId && <Link href={`/chat/${o.roomId}`} className="text-[10px] text-ink-400 hover:text-gold-300 underline">{t.chat} ›</Link>}
+                <div className="flex gap-2">
+                  {o.id === "o1" && <Link href="/escrow/e1" className="text-[10px] text-gold-300 hover:underline">🏦 {lang === "th" ? "ระบบกลาง" : "Escrow"} ›</Link>}
+                  {o.roomId && <Link href={`/chat/${o.roomId}`} className="text-[10px] text-ink-400 hover:text-gold-300 underline">{t.chat} ›</Link>}
+                </div>
               </div>
             </div>
           );
