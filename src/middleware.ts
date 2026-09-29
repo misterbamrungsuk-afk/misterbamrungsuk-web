@@ -1,13 +1,36 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { ADMIN_COOKIE, canAccess, homeFor, verifySession } from "@/lib/admin-auth";
 
-// Auth guard — ทุกหน้าแอปต้องผ่านล็อกอิน (cookie hamoo_session)
-// โหมดจริง: ตรวจ Supabase session; โหมดเดโม: cookie ถูกตั้งตอนกดเข้าสู่ระบบ
-export function middleware(request: NextRequest) {
+// Auth guard
+// - หน้าแอปทั่วไป: ต้องมี cookie hamoo_session (โหมดจริง: ตรวจ Supabase session; โหมดเดโม: ตั้งตอนกดเข้าสู่ระบบ)
+// - หลังบ้าน /admin/*: ต้องมี session แอดมินที่ลงลายเซ็นถูกต้อง + บทบาทมีสิทธิ์เข้าหน้านั้น
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+    const admin = await verifySession(request.cookies.get(ADMIN_COOKIE)?.value);
+    if (!admin) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin-login";
+      url.search = "";
+      url.searchParams.set("next", pathname);
+      const res = NextResponse.redirect(url);
+      res.cookies.delete(ADMIN_COOKIE); // ล้าง token ที่หมดอายุ/ปลอม
+      return res;
+    }
+    if (!canAccess(admin.role, pathname)) {
+      const url = request.nextUrl.clone();
+      url.pathname = homeFor(admin.role);
+      url.search = "?denied=1";
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next();
+  }
 
   const isPublic =
     pathname === "/login" ||
+    pathname === "/admin-login" ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/auth") ||
