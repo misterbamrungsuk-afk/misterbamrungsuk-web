@@ -20,12 +20,12 @@ export default function EditProfilePage() {
   const [deleteText, setDeleteText] = useState("");
   const [saved, setSaved] = useState(false);
 
-  const avatarPool = [
+  const avatarPool = [...new Set([
     DEMO_ME.avatar,
     "https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&w=400&q=70&crop=faces",
     "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=70&crop=faces",
     "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=400&q=70&crop=faces",
-  ];
+  ])];
 
   function save() {
     // demo: บันทึก local (โหมดจริง: PATCH /api/member)
