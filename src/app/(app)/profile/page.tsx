@@ -18,7 +18,10 @@ export default function ProfilePage() {
   const menu = [
     { href: "/profile/edit", icon: "✏️", label: t.profileInfo },
     { href: "/orders", icon: "🧾", label: lang === "th" ? "ประวัติการจ้างงาน" : "My orders" },
-    { href: "/provider", icon: "🌟", label: lang === "th" ? "โหมดเพื่อนรับจ้าง" : "Provider mode" },
+    { href: "/favorites", icon: "❤️", label: lang === "th" ? "หมอคนโปรด" : "Favorite therapists" },
+    { href: "/notifications", icon: "🔔", label: lang === "th" ? "การแจ้งเตือน" : "Notifications" },
+    { href: "/jobs", icon: "📋", label: lang === "th" ? "บอร์ดประกาศงาน" : "Job board" },
+    { href: "/provider", icon: "🌟", label: lang === "th" ? "โหมดหมอนวด" : "Provider mode" },
     { href: "/post/manage", icon: menuIcon.post, label: t.myPost },
     { href: "/profile/verify", icon: "🛡️", label: t.verifyIdentity, badge: kyc === "verified" ? t.verified : kyc === "pending" ? t.kycPending : t.unverified },
     { href: "/jobs/interested", icon: "❤️", label: t.interestedCount },
@@ -80,7 +83,7 @@ export default function ProfilePage() {
           <Link href="/login" className="btn-ghost rounded-xl flex-1 py-3 text-sm text-center">{t.logout}</Link>
           <Link href="/profile/edit" className="btn-ghost rounded-xl flex-1 py-3 text-sm text-crimson-300 text-center">{t.deleteAccount}</Link>
         </div>
-        <p className="text-center text-[10px] text-ink-600">© 2026 HaMoo · {lang === "th" ? "ใช้งานฟรี (อาจมีค่าธรรมเนียมในอนาคต)" : "Free to use"}</p>
+        <p className="text-center text-[10px] text-ink-600">© 2026 MorD · {lang === "th" ? "ใช้งานฟรี (อาจมีค่าธรรมเนียมในอนาคต)" : "Free to use"}</p>
       </div>
       <span className="hidden">{String(kyc === "verified")}</span>
       <button className="hidden" onClick={() => setKyc("verified")} />

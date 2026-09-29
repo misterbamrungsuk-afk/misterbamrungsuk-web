@@ -77,7 +77,7 @@ export default function IncomingJobsPage() {
                   ✓ {t.acceptJob}
                 </button>
               </div>
-              {expired && <p className="text-[10px] text-crimson-300 text-center mt-2">{lang === "th" ? "หมดเวลา — ส่งต่อให้เพื่อนคนอื่นแล้ว" : "Timed out — passed to others"}</p>}
+              {expired && <p className="text-[10px] text-crimson-300 text-center mt-2">{lang === "th" ? "หมดเวลา — ส่งต่อให้หมอคนอื่นแล้ว" : "Timed out — passed to others"}</p>}
             </div>
           );
         })}

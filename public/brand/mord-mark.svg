@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 32 32" fill="none">
+  <title>MorD mark</title>
+  <rect width="32" height="32" rx="7" fill="#0b0b0d"/>
+  <g transform="translate(5.2 4.4) scale(0.68)">
+    <path d="M16 29.5s-9.5-8.4-9.5-15.6a9.5 9.5 0 0 1 19 0c0 7.2-9.5 15.6-9.5 15.6z" stroke="#d4af37" stroke-width="2.6" stroke-linejoin="round"/>
+    <circle cx="16" cy="13.9" r="3.9" fill="#e0243c"/>
+  </g>
+</svg>

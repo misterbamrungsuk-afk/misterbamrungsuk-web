@@ -1,28 +1,36 @@
 import type { Metadata, Viewport } from "next";
-import { Anuphan, Playfair_Display } from "next/font/google";
+import { IBM_Plex_Sans_Thai, Kanit } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/i18n/provider";
+import { PwaRegister } from "@/components/pwa-register";
 
-const anuphan = Anuphan({ subsets: ["thai", "latin"], weight: ["300", "400", "500", "600", "700"], variable: "--font-anuphan" });
-const playfair = Playfair_Display({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-playfair" });
+const plex = IBM_Plex_Sans_Thai({ subsets: ["thai", "latin"], weight: ["400", "500", "600", "700"], variable: "--font-plex" });
+const kanit = Kanit({ subsets: ["thai", "latin"], weight: ["500", "600", "700", "800"], variable: "--font-kanit" });
 
 export const metadata: Metadata = {
-  title: "HaMoo — เพื่อนที่คุณเลือกได้",
-  description: "แพลตฟอร์มเพื่อนเช่าอันดับหนึ่ง ค้นหา แชทหา นัดเจอ ปลอดภัยทุกการนัดพบ",
+  title: "MorD — หมอนวดชายมืออาชีพ มาหาคุณถึงที่",
+  description: "จองหมอนวดชายที่ยืนยันตัวตนและใบรับรองแล้ว นวดไทย ออฟฟิศซินโดรม อโรมา นวดกีฬา ถึงบ้าน คอนโด โรงแรม จ่ายผ่านระบบกลางที่ปลอดภัย",
+  applicationName: "MorD",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: { capable: true, title: "MorD", statusBarStyle: "black-translucent" },
+  icons: { icon: "/pwa-icon/192", apple: "/pwa-icon/180" },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#0b0b0f",
+  viewportFit: "cover",
+  themeColor: "#0b0b0d",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="th" className={`${anuphan.variable} ${playfair.variable}`}>
+    <html lang="th" className={`${plex.variable} ${kanit.variable}`}>
       <body>
         <I18nProvider>{children}</I18nProvider>
+        <PwaRegister />
       </body>
     </html>
   );

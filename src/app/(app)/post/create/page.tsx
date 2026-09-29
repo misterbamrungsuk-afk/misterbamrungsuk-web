@@ -81,7 +81,7 @@ function CreatePostForm() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={src} alt="" className="w-20 h-20 rounded-xl object-cover border border-white/10" />
                 <button onClick={() => setImages(images.filter((_, x) => x !== i))}
-                  className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-crimson-600 text-white text-xs grid place-items-center">✕</button>
+                  aria-label="remove image" className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-crimson-500 text-white text-sm grid place-items-center border-2 border-ink-900">✕</button>
               </div>
             ))}
             {images.length < 6 && (
@@ -155,7 +155,7 @@ function CreatePostForm() {
               <div key={i} className="flex items-center gap-2 glass rounded-xl px-3 py-2">
                 <span className="text-gold-400">✓</span>
                 <input value={r} onChange={(e) => setRules(rules.map((x, xi) => (xi === i ? e.target.value : x)))} className="flex-1 bg-transparent outline-none text-sm" />
-                <button onClick={() => setRules(rules.filter((_, x) => x !== i))} className="text-ink-500 hover:text-crimson-400">✕</button>
+                <button onClick={() => setRules(rules.filter((_, x) => x !== i))} aria-label="remove rule" className="w-9 h-9 -mr-2 shrink-0 grid place-items-center text-ink-300 hover:text-crimson-400">✕</button>
               </div>
             ))}
             <div className="flex gap-2">

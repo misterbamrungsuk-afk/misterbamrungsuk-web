@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="140" viewBox="0 0 480 140" fill="none">
+  <title>MorD — หมอนวดใกล้คุณ</title>
+  <rect width="480" height="140" fill="#0b0b0d"/>
+  <g transform="translate(28 22) scale(3)">
+    <path d="M16 29.5s-9.5-8.4-9.5-15.6a9.5 9.5 0 0 1 19 0c0 7.2-9.5 15.6-9.5 15.6z" stroke="#d4af37" stroke-width="2.6" stroke-linejoin="round"/>
+    <circle cx="16" cy="13.9" r="3.9" fill="#e0243c"/>
+  </g>
+  <text x="138" y="96" font-family="Kanit, 'IBM Plex Sans Thai', sans-serif" font-weight="800" font-size="78" letter-spacing="-2" fill="#f5f2ec">Mor<tspan fill="#d4af37">D</tspan></text>
+</svg>

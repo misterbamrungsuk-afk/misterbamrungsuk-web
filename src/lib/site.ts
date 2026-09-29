@@ -1,8 +1,8 @@
 export const site = {
-  brand: "HaMoo",
-  brandTh: "ฮามูู",
-  tagline: { th: "เพื่อนที่คุณเลือกได้", en: "The friend you choose" },
-  subTagline: { th: "ค้นหา แชทหา นัดเจอ — ปลอดภัยทุกการนัดพบ", en: "Search, chat, meet — safely every time" },
+  brand: "MorD",
+  brandTh: "หมอดี",
+  tagline: { th: "หมอนวดใกล้คุณ", en: "Massage therapists near you" },
+  subTagline: { th: "หมอนวดชายมืออาชีพ มาหาคุณถึงที่", en: "Pro male massage, at your door" },
   url: "https://hamoo.app",
   commissionPercent: 20, // GP ค่าธรรมเนียมแพลตฟอร์ม (%)
   depositDefault: 300,

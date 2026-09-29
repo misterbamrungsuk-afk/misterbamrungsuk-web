@@ -41,8 +41,9 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
         <img src={post.images[imgIdx]} alt={post.member.name} className="w-full aspect-[4/3] object-cover" />
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
           {post.images.map((_, i) => (
-            <button key={i} onClick={() => setImgIdx(i)} aria-label={`image ${i + 1}`}
-              className={`h-1.5 rounded-full transition-all ${i === imgIdx ? "w-5 bg-crimson-400" : "w-1.5 bg-white/60"}`} />
+            <button key={i} onClick={() => setImgIdx(i)} aria-label={`image ${i + 1}`} className="h-9 min-w-9 px-1.5 grid place-items-center">
+              <span className={`block h-1.5 rounded-full transition-all ${i === imgIdx ? "w-5 bg-crimson-400" : "w-1.5 bg-white/60"}`} />
+            </button>
           ))}
         </div>
       </div>
@@ -117,7 +118,8 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
             <p className="text-xs text-ink-400 mt-0.5">{lang === "th" ? "จ่ายผ่านระบบในแอป ปลอดภัย" : "Secure in-app payment"}</p>
           </div>
           <div className="flex gap-2">
-            <Link href={`/chat/room1`} className="btn-crimson rounded-xl px-5 py-3 font-semibold">{t.chat}</Link>
+            <Link href={`/chat/room1`} className="btn-ghost rounded-xl px-4 py-3 font-semibold">{t.chat}</Link>
+            <Link href={`/book/${post.id}`} className="btn-crimson rounded-xl px-5 py-3 font-semibold">{lang === "th" ? "จองเลย" : "Book"}</Link>
           </div>
         </section>
 

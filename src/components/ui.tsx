@@ -2,22 +2,22 @@
 
 import React from "react";
 
-export function Logo({ size = 34 }: { size?: number }) {
+// โลโก้ MorD: หมุดแผนที่สีทอง + จุดแดง (= หมอนวดใกล้คุณ) + ตัวอักษร Mor/D
+export function LogoMark({ size = 28 }: { size?: number }) {
   return (
-    <span className="inline-flex items-center gap-2 select-none">
-      <span
-        className="grid place-items-center rounded-xl font-black text-white"
-        style={{
-          width: size, height: size,
-          background: "linear-gradient(135deg,#e5484d,#8f1d2c)",
-          boxShadow: "0 0 18px rgba(229,72,77,.45)",
-          fontSize: size * 0.5,
-        }}
-      >
-        H
-      </span>
-      <span className="font-display text-xl font-bold tracking-wide">
-        <span className="text-gradient-gold">Ha</span><span className="text-gradient-red">Moo</span>
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden="true" className="shrink-0">
+      <path d="M16 29.5s-9.5-8.4-9.5-15.6a9.5 9.5 0 0 1 19 0c0 7.2-9.5 15.6-9.5 15.6z" stroke="#d4af37" strokeWidth="2.6" strokeLinejoin="round" />
+      <circle cx="16" cy="13.9" r="3.9" fill="#e0243c" />
+    </svg>
+  );
+}
+
+export function Logo({ size = 34, mark = true }: { size?: number; mark?: boolean }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 select-none" aria-label="MorD">
+      {mark && <LogoMark size={Math.round(size * 0.9)} />}
+      <span className="font-display font-extrabold tracking-tight text-ink-100 whitespace-nowrap" style={{ fontSize: Math.round(size * 0.78), lineHeight: 1 }}>
+        Mor<span className="text-gold-500">D</span>
       </span>
     </span>
   );

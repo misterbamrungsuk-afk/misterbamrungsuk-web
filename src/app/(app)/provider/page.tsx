@@ -16,7 +16,7 @@ export default function ProviderDashboard() {
 
   return (
     <>
-      <TopBar back="/profile" title={`🌟 ${lang === "th" ? "โหมดเพื่อนรับจ้าง" : "Provider mode"}`} />
+      <TopBar back="/profile" title={`🌟 ${lang === "th" ? "โหมดหมอนวด" : "Provider mode"}`} />
 
       <div className="px-4 py-4 space-y-4">
         {/* stats */}
@@ -61,6 +61,8 @@ export default function ProviderDashboard() {
         <div className="glass rounded-2xl divide-y divide-white/5 overflow-hidden animate-rise">
           {[
             { href: "/post/manage", icon: "📝", label: t.myPost },
+            { href: "/provider/incoming", icon: "📡", label: lang === "th" ? "งานเข้า" : "Incoming jobs" },
+            { href: "/profile/verify", icon: "🛡️", label: t.verifyIdentity },
             { href: "/jobs?role=hirer", icon: "💼", label: lang === "th" ? "ประกาศรับงานของฉัน" : "My listings" },
             { href: "/orders", icon: "🧾", label: lang === "th" ? "ประวัติรับงาน/รายได้" : "Earning history" },
             { href: "/chat", icon: "🏦", label: t.bankAccounts },

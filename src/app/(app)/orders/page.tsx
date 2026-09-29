@@ -58,8 +58,11 @@ export default function OrdersPage() {
               <div className="flex justify-between mt-1.5">
                 <span className={`text-[10px] font-medium ${step >= 4 ? "text-gold-400" : "text-crimson-300"}`}>{label(o.status)}</span>
                 <div className="flex gap-2">
-                  {o.id === "o1" && <Link href="/escrow/e1" className="text-[10px] text-gold-300 hover:underline">🏦 {lang === "th" ? "ระบบกลาง" : "Escrow"} ›</Link>}
-                  {o.roomId && <Link href={`/chat/${o.roomId}`} className="text-[10px] text-ink-400 hover:text-gold-300 underline">{t.chat} ›</Link>}
+                  {o.id === "o1" && <Link href="/escrow/e1" className="inline-flex items-center min-h-9 px-2 -mx-1 text-xs text-gold-300 hover:underline">🏦 {lang === "th" ? "ระบบกลาง" : "Escrow"} ›</Link>}
+                  {(o.status === "negotiated" || o.status === "deposit_paid") && <Link href={`/order/${o.id}/cancel`} className="inline-flex items-center min-h-9 px-2 -mx-1 text-xs text-crimson-200 underline">{lang === "th" ? "ยกเลิก" : "Cancel"} ›</Link>}
+                  {o.status === "in_progress" && <Link href={`/order/${o.id}/session`} className="inline-flex items-center min-h-9 px-2 -mx-1 text-xs text-gold-300 underline">{lang === "th" ? "ระหว่างนวด" : "Session"} ›</Link>}
+                  {o.status === "completed" && <Link href={`/order/${o.id}/complete`} className="inline-flex items-center min-h-9 px-2 -mx-1 text-xs text-gold-300 underline">{lang === "th" ? "ปล่อยเงิน / รีวิว" : "Release / review"} ›</Link>}
+                  {o.roomId && <Link href={`/chat/${o.roomId}`} className="inline-flex items-center min-h-9 px-2 -mx-1 text-xs text-ink-200 hover:text-gold-300 underline">{t.chat} ›</Link>}
                 </div>
               </div>
             </div>

@@ -1,24 +1,24 @@
 @import "tailwindcss";
 
 @theme {
-  /* ── HaMoo Luxury: Obsidian Black × Crimson × Gold ── */
-  --color-ink-950: #070709;
-  --color-ink-900: #0b0b0f;
-  --color-ink-850: #101014;
-  --color-ink-800: #16161c;
-  --color-ink-700: #1e1e26;
-  --color-ink-600: #2a2a34;
+  /* ── MorD v2: Black × Red × Gold (ตรงกับดีไซน์บนแคนวาส) ── */
+  --color-ink-950: #070708;
+  --color-ink-900: #0b0b0d;
+  --color-ink-850: #111114;
+  --color-ink-800: #16161a;
+  --color-ink-700: #1f1f25;
+  --color-ink-600: #2a2a32;
   --color-ink-500: #3a3a48;
   --color-ink-400: #55556a;
-  --color-ink-300: #7b7b93;
-  --color-ink-200: #a8a8bd;
-  --color-ink-100: #d6d6e4;
+  --color-ink-300: #8e8e9c;
+  --color-ink-200: #a8a8b5;
+  --color-ink-100: #f5f2ec;
 
   --color-crimson-700: #8f1d2c;
-  --color-crimson-600: #b3243a;
-  --color-crimson-500: #d92c46;
-  --color-crimson-400: #e5484d;
-  --color-crimson-300: #ff5c6e;
+  --color-crimson-600: #c21c32;
+  --color-crimson-500: #e0243c;
+  --color-crimson-400: #eb3f55;
+  --color-crimson-300: #ff6b7d;
   --color-crimson-200: #ff8a97;
   --color-crimson-100: #ffc4cb;
 
@@ -27,8 +27,8 @@
   --color-gold-400: #e6c75a;
   --color-gold-300: #f3dd8f;
 
-  --font-sans: "Anuphan", "Noto Sans Thai", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Playfair Display", "Anuphan", serif;
+  --font-sans: var(--font-plex), "IBM Plex Sans Thai", "Noto Sans Thai", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-kanit), "Kanit", var(--font-plex), sans-serif;
 
   --shadow-glow-red: 0 0 24px rgba(229, 72, 77, 0.35), 0 0 64px rgba(229, 72, 77, 0.12);
   --shadow-glow-gold: 0 0 20px rgba(212, 175, 55, 0.28);
@@ -62,10 +62,7 @@ html {
 }
 
 body {
-  background:
-    radial-gradient(1200px 500px at 85% -10%, rgba(217, 44, 70, 0.14), transparent 60%),
-    radial-gradient(900px 420px at -10% 30%, rgba(212, 175, 55, 0.07), transparent 55%),
-    var(--color-ink-900);
+  background: var(--color-ink-900);
   color: var(--color-ink-100);
   font-family: var(--font-sans);
   min-height: 100dvh;
@@ -74,19 +71,14 @@ body {
 
 ::selection { background: rgba(229, 72, 77, 0.4); color: #fff; }
 
-/* ── Reusable luxury primitives ── */
+/* ── Reusable primitives (อยู่ใน layer components ให้ utility override ได้) ── */
+@layer components {
 .glass {
-  background: linear-gradient(160deg, rgba(30, 30, 38, 0.72), rgba(16, 16, 20, 0.82));
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(14px);
-  box-shadow: var(--shadow-card);
+  background: var(--color-ink-800);
+  border: 1px solid var(--color-ink-600);
 }
-.glass-hover { transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s; }
-.glass-hover:hover {
-  border-color: rgba(229, 72, 77, 0.45);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow-red);
-}
+.glass-hover { transition: border-color 0.2s, transform 0.2s; }
+.glass-hover:hover { border-color: rgba(212, 175, 55, 0.5); transform: translateY(-1px); }
 .gold-line {
   background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.55), transparent);
   height: 1px;
@@ -104,16 +96,15 @@ body {
   color: transparent;
 }
 .btn-crimson {
-  background: linear-gradient(135deg, #e5484d, #b3243a);
+  background: var(--color-crimson-500);
   color: #fff;
-  box-shadow: 0 4px 20px rgba(217, 44, 70, 0.4);
-  transition: filter 0.2s, transform 0.15s, box-shadow 0.2s;
+  transition: background 0.2s, transform 0.15s;
 }
-.btn-crimson:hover { filter: brightness(1.12); box-shadow: 0 6px 28px rgba(217, 44, 70, 0.55); }
+.btn-crimson:hover { background: var(--color-crimson-400); }
 .btn-crimson:active { transform: scale(0.97); }
-.btn-crimson:disabled { filter: grayscale(0.6) brightness(0.6); box-shadow: none; }
+.btn-crimson:disabled { opacity: 0.45; }
 .btn-ghost {
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid var(--color-ink-600);
   color: var(--color-ink-100);
   transition: border-color 0.2s, background 0.2s;
 }
@@ -126,34 +117,31 @@ body {
   padding: 4px 10px;
   color: var(--color-ink-200);
 }
-.chip-red { border-color: rgba(229, 72, 77, 0.5); background: rgba(229, 72, 77, 0.12); color: #ffb3bb; }
+.chip-red { border-color: var(--color-ink-100); background: var(--color-ink-100); color: var(--color-ink-950); font-weight: 600; }
 .chip-gold { border-color: rgba(212, 175, 55, 0.5); background: rgba(212, 175, 55, 0.1); color: var(--color-gold-300); }
 .input-dark {
   width: 100%;
-  background: rgba(10, 10, 14, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  min-width: 0; /* ให้ช่อง date/time หดได้ในแถว flex/grid ไม่ล้นขอบ */
+  background: var(--color-ink-800);
+  border: 1px solid var(--color-ink-600);
+  border-radius: 14px;
   padding: 10px 14px;
   color: var(--color-ink-100);
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-.input-dark:focus { border-color: rgba(229, 72, 77, 0.65); box-shadow: 0 0 0 3px rgba(229, 72, 77, 0.15); }
+.input-dark:focus { border-color: var(--color-gold-500); box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15); }
 .input-dark::placeholder { color: var(--color-ink-400); }
 .section-title {
-  font-size: 15px;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 500;
   letter-spacing: 0.02em;
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.section-title::before {
-  content: "";
-  width: 3px;
-  height: 16px;
-  border-radius: 2px;
-  background: linear-gradient(#e5484d, #d4af37);
+
 }
 
 /* App frame: mobile-first, centered on desktop */
@@ -164,7 +152,11 @@ body {
   min-height: 100dvh;
   position: relative;
 }
-.safe-bottom { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+.safe-bottom { padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
+
+/* การ์ดรูปเต็ม + ไล่เฉดดำใต้ข้อความ (photo-first card) */
+.photo-scrim { background: linear-gradient(180deg, rgba(11,11,13,0) 0%, rgba(11,11,13,.92) 70%); }
+h1, h2, h3 { font-family: var(--font-display); }
 
 /* scrollbar */
 *::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -181,6 +173,8 @@ body {
   font-family: var(--font-sans);
 }
 .leaflet-pane { z-index: 0; } /* กันแผนที่ทับปุ่ม/popup ของหน้าเว็บ */
+/* แผนที่ OSM โทนมืดให้เข้ากับธีม (หมุด/ป้ายไม่โดนฟิลเตอร์ เพราะอยู่คนละ pane) */
+.tiles-dark { filter: invert(1) hue-rotate(180deg) brightness(0.8) contrast(0.92) saturate(0.35); }
 .leaflet-top, .leaflet-bottom { z-index: 5 !important; }
 .leaflet-control-attribution { background: rgba(0,0,0,0.5) !important; color: #7b7b93 !important; font-size: 10px !important; }
 .leaflet-control-attribution a { color: #a8a8bd !important; }

@@ -182,29 +182,29 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
   };
 
   return (
-    <main className="app-frame safe-bottom flex flex-col h-dvh">
+    <main className="app-frame flex flex-col h-dvh">
       {/* header */}
       <header className="sticky top-0 z-30 bg-ink-950/90 backdrop-blur-xl border-b border-white/5">
-        <div className="flex items-center gap-3 px-4 h-14">
-          <Link href="/chat" className="text-ink-200" aria-label="back">
+        <div className="flex items-center gap-2 px-4 h-14">
+          <Link href="/chat" className="w-10 h-10 -ml-2 grid place-items-center text-ink-200" aria-label="back">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6"><path d="M15 5l-7 7 7 7" strokeLinecap="round"/></svg>
           </Link>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={room.partner.avatar} alt="" className="w-9 h-9 rounded-full bg-ink-700" />
           <div className="flex-1 min-w-0">
             <p className="font-semibold truncate">{room.partner.name}</p>
-            <p className="text-[10px] text-gold-400">
+            <p className="text-[11px] text-gold-400 truncate">
               {depositConfirmed && finalConfirmed ? t.stCompleted : depositConfirmed ? t.stInProgress : t.stNegotiated}
             </p>
           </div>
-          <Link href={`/call/${room.id}`} className="btn-ghost rounded-full w-9 h-9 grid place-items-center" aria-label="call">📞</Link>
-          <Link href="/escrow/e1" className="btn-ghost rounded-full w-9 h-9 grid place-items-center border-gold-500/50" aria-label="escrow">🏦</Link>
-          <button onClick={() => setPromoOpen(true)} className="btn-ghost rounded-full w-9 h-9 grid place-items-center" aria-label="promo">🎟️</button>
-          <button onClick={() => setBlockOpen(true)} className="btn-ghost rounded-full w-9 h-9 grid place-items-center" aria-label="block">🚫</button>
+          <Link href={`/call/${room.id}`} className="btn-ghost rounded-full w-9 h-9 grid place-items-center shrink-0" aria-label="call">📞</Link>
+          <Link href="/escrow/e1" className="btn-ghost rounded-full w-9 h-9 grid place-items-center shrink-0 border-gold-500/50" aria-label="escrow">🏦</Link>
+          <button onClick={() => setPromoOpen(true)} className="btn-ghost rounded-full w-9 h-9 hidden min-[360px]:grid place-items-center shrink-0" aria-label="promo">🎟️</button>
+          <button onClick={() => setBlockOpen(true)} className="btn-ghost rounded-full w-9 h-9 grid place-items-center shrink-0" aria-label="block">🚫</button>
         </div>
 
         {/* order timeline (escrow ของเรา) */}
-        <div className="flex items-center justify-between px-5 pb-2.5 gap-1">
+        <div className="flex items-start justify-between px-4 pb-2.5 gap-1">
           {[
             [t.stNegotiated, true],
             [t.stDeposit, depositConfirmed],
@@ -212,12 +212,12 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
             [t.stCompleted, depositConfirmed && finalConfirmed],
             [t.stReviewed, reviewed],
           ].map(([label, done], i, arr) => (
-            <div key={i} className="flex items-center flex-1 last:flex-none">
-              <div className="flex flex-col items-center">
+            <div key={i} className="flex items-start flex-1 last:flex-none">
+              <div className="flex flex-col items-center shrink-0 w-12">
                 <span className={`w-2.5 h-2.5 rounded-full ${done ? "bg-gold-500 shadow-[0_0_10px_rgba(212,175,55,.6)]" : "bg-ink-600"}`} />
-                <span className={`text-[8px] mt-1 whitespace-nowrap ${done ? "text-gold-400" : "text-ink-500"}`}>{label as string}</span>
+                <span className={`text-[9px] mt-1 leading-tight text-center max-w-[48px] ${done ? "text-gold-400" : "text-ink-500"}`}>{label as string}</span>
               </div>
-              {i < arr.length - 1 && <div className={`h-0.5 flex-1 mx-1 mb-4 ${arr[i + 1][1] ? "bg-gold-500/60" : "bg-ink-600"}`} />}
+              {i < arr.length - 1 && <div className={`h-0.5 flex-1 -mx-4 mt-[4px] ${arr[i + 1][1] ? "bg-gold-500/60" : "bg-ink-600"}`} />}
             </div>
           ))}
         </div>
@@ -301,8 +301,8 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
         </div>
       ) : (
         <div className="px-3 pb-[calc(12px+env(safe-area-inset-bottom))] pt-1 flex gap-2 items-center border-t border-white/5 bg-ink-950/90">
-          <button className="text-ink-300 hover:text-gold-300 text-xl" aria-label="emoji">😊</button>
-          <button onClick={pickImage} className="text-ink-300 hover:text-gold-300 text-xl" aria-label="attach image">📎</button>
+          <button onClick={() => setInput((v) => v + "🙏")} className="w-10 h-10 shrink-0 grid place-items-center text-ink-300 hover:text-gold-300 text-xl" aria-label="emoji">😊</button>
+          <button onClick={pickImage} className="w-10 h-10 shrink-0 grid place-items-center text-ink-300 hover:text-gold-300 text-xl" aria-label="attach image">📎</button>
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}

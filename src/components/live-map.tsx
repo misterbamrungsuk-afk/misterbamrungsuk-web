@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import type { Map as LeafletMap, Marker, Polyline } from "leaflet";
 
 export default function LiveMap({
-  points, myPos, height = 320, followIdx, className = "", providerAvatar, providerName = "เพื่อนของคุณ",
+  points, myPos, height = 320, followIdx, className = "", providerAvatar, providerName = "หมอนวดของคุณ",
 }: {
   points: { lat: number; lng: number }[];
   myPos?: { lat: number; lng: number };
@@ -29,10 +29,11 @@ export default function LiveMap({
 
       const center = points[points.length - 1] ?? { lat: 13.7563, lng: 100.5018 };
       map.current = L.map(el.current, { zoomControl: false, attributionControl: true }).setView([center.lat, center.lng], 15);
-      // CARTO Dark Matter — สไตล์เดียวกับแผนที่ใกล้ฉัน
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-        maxZoom: 19, detectRetina: true, subdomains: "abcd",
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      // OpenStreetMap (ไม่ต้องใช้ key แบบเดียวกับ bazi-sft-dataset) + ฟิลเตอร์ทำโทนมืดใน CSS (.tiles-dark)
+      // หมายเหตุ: CARTO basemaps ตอนนี้ขึ้น "API KEY REQUIRED" จึงเลิกใช้
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19, className: "tiles-dark",
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       }).addTo(map.current);
 
       if (myPos) {

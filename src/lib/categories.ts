@@ -5,35 +5,17 @@ export interface Category {
   emoji: string;
 }
 
-// 26 หมวด ตามทรง Hafriend
+// หมวดบริการนวด (หมอนวดชาย) — แก้ได้จากหลังบ้านในอนาคต
 export const CATEGORIES: Category[] = [
-  { slug: "eat-travel", th: "กิน & เที่ยว", en: "Eat & Travel", emoji: "🍽️" },
-  { slug: "photographer", th: "ช่างภาพ", en: "Photographer", emoji: "📸" },
-  { slug: "workout", th: "ออกกำลังกาย", en: "Workout", emoji: "🏋️" },
-  { slug: "cafe", th: "คาเฟ่", en: "Cafe", emoji: "☕" },
-  { slug: "video-call", th: "วิดีโอคอล", en: "Video Call", emoji: "📹" },
-  { slug: "movie", th: "ดูหนัง", en: "Movies", emoji: "🎬" },
-  { slug: "chill", th: "นั่งชิล", en: "Chill", emoji: "🛋️" },
-  { slug: "shopping", th: "ช้อปปิ้ง", en: "Shopping", emoji: "🛍️" },
-  { slug: "consult", th: "ปรึกษา & รับฟัง", en: "Consulting", emoji: "💬" },
-  { slug: "language", th: "ฝึกภาษา", en: "Language", emoji: "🗣️" },
-  { slug: "event", th: "อีเวนต์", en: "Events", emoji: "🎪" },
-  { slug: "dharma", th: "ธรรมะ & ทำบุญ", en: "Temple", emoji: "🙏" },
-  { slug: "hospital", th: "พาไปหาหมอ", en: "Hospital Visit", emoji: "🏥" },
-  { slug: "elderly", th: "เพื่อนผู้สูงอายุ", en: "Elderly Care", emoji: "🧓" },
-  { slug: "errand", th: "ทำธุระ", en: "Errands", emoji: "📋" },
-  { slug: "content", th: "ทำคอนเทนต์", en: "Content Creator", emoji: "🎥" },
-  { slug: "gaming", th: "เล่นเกม", en: "Gaming", emoji: "🎮" },
-  { slug: "model", th: "ถ่ายแบบ", en: "Modeling", emoji: "✨" },
-  { slug: "camping", th: "แคมป์ปิ้ง", en: "Camping", emoji: "⛺" },
-  { slug: "upcountry", th: "ต่างจังหวัด", en: "Up-country", emoji: "🚗" },
-  { slug: "abroad", th: "ต่างประเทศ", en: "Travel Abroad", emoji: "✈️" },
-  { slug: "driver", th: "ขับรถ", en: "Driver", emoji: "🚙" },
-  { slug: "fortune", th: "ดูดวง", en: "Fortune Telling", emoji: "🔮" },
-  { slug: "musician", th: "นักดนตรี", en: "Musician", emoji: "🎸" },
-  { slug: "golf", th: "ตีกอล์ฟ", en: "Golf", emoji: "⛳" },
-  { slug: "caddy", th: "แคดดี้", en: "Caddy", emoji: "🏌️" },
-  { slug: "other", th: "อื่นๆ", en: "Other", emoji: "🌟" },
+  { slug: "thai", th: "นวดไทย", en: "Thai Massage", emoji: "" },
+  { slug: "oil", th: "นวดน้ำมัน / อโรมา", en: "Oil / Aroma", emoji: "" },
+  { slug: "office", th: "ออฟฟิศซินโดรม", en: "Office Syndrome", emoji: "" },
+  { slug: "foot", th: "นวดเท้า", en: "Foot Massage", emoji: "" },
+  { slug: "sport", th: "นวดกีฬา", en: "Sports Massage", emoji: "" },
+  { slug: "herbal", th: "ประคบสมุนไพร", en: "Herbal Compress", emoji: "" },
+  { slug: "neck", th: "คอ บ่า ไหล่", en: "Neck & Shoulder", emoji: "" },
+  { slug: "couple", th: "นวดคู่", en: "Couple Massage", emoji: "" },
+  { slug: "other", th: "อื่นๆ", en: "Other", emoji: "" },
 ];
 
 export const catBySlug = (slug: string) => CATEGORIES.find((c) => c.slug === slug);

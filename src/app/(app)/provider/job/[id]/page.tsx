@@ -38,7 +38,7 @@ export default function OnSiteJobPage({ params }: { params: Promise<{ id: string
   return (
     <main className="app-frame safe-bottom pb-8">
       <header className="sticky top-0 z-30 bg-ink-950/90 backdrop-blur-xl border-b border-white/5 px-4 h-14 flex items-center gap-3">
-        <Link href="/provider" className="text-ink-200" aria-label="back">‹</Link>
+        <Link href="/provider" className="w-10 h-10 -ml-2 rounded-full border border-ink-600 grid place-items-center text-ink-100 text-xl leading-none" aria-label="back">‹</Link>
         <h1 className="font-semibold flex-1">🧰 {lang === "th" ? "หน้างาน" : "On-site job"}</h1>
         <span className={`chip ${phase === "running" ? "chip-red animate-pulse" : phase === "done" ? "chip-gold" : ""}`}>
           {phase === "waiting" ? (lang === "th" ? "รอลูกค้า" : "Waiting") : phase === "running" ? (lang === "th" ? "กำลังทำงาน" : "Working") : (lang === "th" ? "จบงาน" : "Done")}

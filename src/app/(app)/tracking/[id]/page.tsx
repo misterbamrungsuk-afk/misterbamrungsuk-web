@@ -40,7 +40,7 @@ export default function TrackingPage({ params }: { params: Promise<{ id: string 
   return (
     <main className="app-frame safe-bottom pb-8">
       <header className="sticky top-0 z-30 bg-ink-950/90 backdrop-blur-xl border-b border-white/5 px-4 h-14 flex items-center gap-3">
-        <Link href="/home" className="text-ink-200" aria-label="back">‹</Link>
+        <Link href="/home" className="w-10 h-10 -ml-2 rounded-full border border-ink-600 grid place-items-center text-ink-100 text-xl leading-none" aria-label="back">‹</Link>
         <h1 className="font-semibold flex-1">📍 {t.tracking}</h1>
         <span className={`chip ${arrived ? "chip-gold" : "chip-red animate-pulse"}`}>● LIVE</span>
       </header>
@@ -76,8 +76,14 @@ export default function TrackingPage({ params }: { params: Promise<{ id: string 
         </div>
 
         <p className="text-[11px] text-ink-500 text-center">
-          {running && !arrived ? `🛰️ ${t.liveLocation}` : arrived ? (lang === "th" ? "🎉 เพื่อนของคุณมาถึงแล้ว!" : "🎉 Your friend has arrived!") : ""}
+          {running && !arrived ? `🛰️ ${t.liveLocation}` : arrived ? (lang === "th" ? "🎉 หมอนวดของคุณมาถึงแล้ว!" : "🎉 Your therapist has arrived!") : ""}
         </p>
+
+        {arrived && (
+          <Link href="/order/o1/session" className="btn-crimson h-12 rounded-xl w-full font-display font-semibold flex items-center justify-center">
+            {lang === "th" ? "หมอถึงแล้ว · เริ่มนวด" : "Therapist arrived · Start"}
+          </Link>
+        )}
 
         {!running && !arrived && (
           <button onClick={() => setRunning(true)} className="btn-ghost rounded-xl w-full py-2.5 text-sm">

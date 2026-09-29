@@ -32,10 +32,11 @@ export default function NearbyMap({ points, me, height = 400 }: { points: MapPoi
       map.current = L.map(el.current, { zoomControl: false }).setView([center.lat, center.lng], me ? 13 : 12);
       L.control.zoom({ position: "bottomright" }).addTo(map.current);
 
-      // CARTO Dark Matter — ฟรี ไม่ต้องใช้ key + คมบนจอ Retina
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-        maxZoom: 19, detectRetina: true, subdomains: "abcd",
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      // OpenStreetMap (ไม่ต้องใช้ key แบบเดียวกับ bazi-sft-dataset) + ฟิลเตอร์ทำโทนมืดใน CSS (.tiles-dark)
+      // หมายเหตุ: CARTO basemaps ตอนนี้ขึ้น "API KEY REQUIRED" จึงเลิกใช้
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19, className: "tiles-dark",
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       }).addTo(map.current);
 
       // หมุดหยดน้ำ + รูปโปรไฟล์ + ป้ายราคา

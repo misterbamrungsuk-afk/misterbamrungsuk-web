@@ -40,22 +40,22 @@ export default function CreateJobPage() {
           </div>
         </Field>
         <Field label={lang === "th" ? "หัวข้อประกาศ" : "Title"}>
-          <input value={title} onChange={(e) => setTitle(e.target.value)} className="input-dark" placeholder={role === "hirer" ? (lang === "th" ? "หาเพื่อนไปกินข้าวดูหนัง…" : "Looking for a friend to…") : (lang === "th" ? "ว่างวันนี้ ชวนได้…" : "Free today…")} />
+          <input value={title} onChange={(e) => setTitle(e.target.value)} className="input-dark" placeholder={role === "hirer" ? (lang === "th" ? "หาหมอนวดไทย 2 ชม. ที่คอนโด…" : "Looking for a massage…") : (lang === "th" ? "ว่างวันนี้ ชวนได้…" : "Free today…")} />
         </Field>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <Field label={lang === "th" ? "จำนวนชม." : "Hours"}>
             <input type="number" min={1} value={duration} onChange={(e) => setDuration(e.target.value)} className="input-dark" />
           </Field>
           <Field label={lang === "th" ? "วันที่" : "Date"}>
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="input-dark" />
           </Field>
-          <Field label={lang === "th" ? "เวลา" : "Time"}>
-            <div className="flex gap-1 items-center">
+          <div className="col-span-2"><Field label={lang === "th" ? "เวลา" : "Time"}>
+            <div className="flex gap-2 items-center">
               <input type="time" value={start} onChange={(e) => setStart(e.target.value)} className="input-dark !px-2" />
               <span className="text-ink-400 text-xs">–</span>
               <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} className="input-dark !px-2" />
             </div>
-          </Field>
+          </Field></div>
         </div>
         <Field label={t.jobPlace}>
           <input value={place} onChange={(e) => setPlace(e.target.value)} className="input-dark" placeholder={lang === "th" ? "เช่น สยามสแควร์วัน / BTS อ่อนนุช" : "e.g. Siam Square One"} />

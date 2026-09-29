@@ -31,40 +31,44 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="app-frame flex flex-col items-center justify-center px-8 relative overflow-hidden">
-      {/* ambient glow */}
-      <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-crimson-500/20 blur-[100px]" />
-      <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-gold-500/10 blur-[100px]" />
+    <main className="app-frame relative overflow-hidden bg-ink-950">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="https://images.unsplash.com/photo-1615269143162-592b3882fcbe?auto=format&fit=crop&w=900&q=70" alt="" className="absolute inset-x-0 top-0 h-[66dvh] w-full object-cover" />
+      <div className="absolute inset-x-0 top-0 h-[66dvh] bg-gradient-to-b from-ink-950/40 via-transparent to-ink-950" />
 
-      <div className="absolute top-5 right-5"><LangToggle /></div>
+      <div className="relative z-10 flex items-center justify-between px-6 pt-6">
+        <Logo size={30} />
+        <LangToggle />
+      </div>
 
-      <div className="relative z-10 flex flex-col items-center animate-rise">
-        <div className="mb-6"><Logo size={56} /></div>
-        <h1 className="font-display text-3xl font-bold mb-2">
-          <span className="text-gradient-gold">where new </span>
-          <span className="text-gradient-red">friendships</span>
-          <span className="text-gradient-gold"> begin</span>
-        </h1>
-        <p className="text-ink-300 text-sm mb-10 text-center">{t.brandSub}</p>
+      <section className="absolute inset-x-0 bottom-0 z-10 px-6 pb-9 flex flex-col gap-5 animate-rise">
+        <div>
+          <p className="text-[12px] font-semibold tracking-[0.18em] text-gold-500">PREMIUM MALE MASSAGE</p>
+          <h1 className="font-display text-[30px] leading-tight font-bold mt-1.5"><span className="whitespace-nowrap">ผ่อนคลายแบบมืออาชีพ</span><br />ถึงที่ของคุณ</h1>
+          <p className="text-ink-200 text-[15px] mt-2.5 leading-relaxed">{t.brandSub}</p>
+        </div>
 
         <button
           onClick={login}
           disabled={loading}
-          className="btn-crimson w-72 rounded-full py-3 font-semibold flex items-center justify-center gap-3 disabled:opacity-60"
+          className="h-14 w-full rounded-2xl bg-ink-100 text-ink-950 font-semibold flex items-center justify-center gap-3 transition active:scale-[.98] disabled:opacity-60"
         >
           {!loading && (
             <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C41.4 35.4 44 30.1 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
           )}
           {loading ? "…" : t.loginWithGoogle}
         </button>
-        <p className="text-ink-400 text-xs mt-4">{t.loginHint}</p>
+
+        <p className="flex items-center gap-2 text-[13px] text-ink-300">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-5 h-5 text-gold-500 shrink-0"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
+          {t.loginHint}
+        </p>
 
         {(isDemo || !hasSupabase) && (
-          <p className="mt-8 chip chip-gold">🧪 {t.demoBadge} — ข้อมูลจำลอง ไม่ต้องตั้งค่า</p>
+          <p className="chip chip-gold self-start">{t.demoBadge} — ข้อมูลจำลอง ไม่ต้องตั้งค่า</p>
         )}
-      </div>
-
-      <p className="absolute bottom-8 text-ink-500 text-xs">© 2026 HaMoo · 18+</p>
+        <p className="text-ink-400 text-xs">© 2026 MorD · สำหรับผู้มีอายุ 18 ปีขึ้นไป · นวดเพื่อสุขภาพเท่านั้น</p>
+      </section>
     </main>
   );
 }

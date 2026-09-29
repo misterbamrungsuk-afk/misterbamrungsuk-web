@@ -14,7 +14,7 @@ type Phase = "form" | "matching" | "incoming" | "found";
 export default function MatchingPage() {
   const { t, lang } = useI18n();
   const [phase, setPhase] = useState<Phase>("form");
-  const [cats, setCats] = useState<string[]>(["eat-travel"]);
+  const [cats, setCats] = useState<string[]>(["thai"]);
   const [hours, setHours] = useState(2);
   const [budget, setBudget] = useState(800);
   const [note, setNote] = useState("");
@@ -99,7 +99,7 @@ export default function MatchingPage() {
             <span className="text-5xl">📡</span>
           </div>
           <p className="mt-6 font-semibold text-lg">{t.matching}</p>
-          <p className="text-xs text-ink-400 mt-1">{lang === "th" ? "กำลังบรอดแคสต์ไปยังเพื่อนใกล้เคียง…" : "Broadcasting to nearby friends…"}</p>
+          <p className="text-xs text-ink-400 mt-1">{lang === "th" ? "กำลังบรอดแคสต์ไปยังหมอนวดใกล้เคียง…" : "Broadcasting to nearby therapists…"}</p>
 
           <div className="mt-8 w-full grid gap-2">
             {candidates.slice(0, 4).map((c, i) => (

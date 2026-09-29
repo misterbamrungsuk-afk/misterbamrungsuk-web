@@ -29,12 +29,12 @@ export default function SOSButton() {
       body: JSON.stringify({ lat: coords?.lat, lng: coords?.lng, at: new Date().toISOString() }),
     }).catch(() => {});
     setSent(true);
-    flash(lang === "th" ? "🚨 แจ้งทีมงาน HaMoo แล้ว — เราจะติดต่อกลับทันที" : "🚨 HaMoo team alerted");
+    flash(lang === "th" ? "🚨 แจ้งทีมงาน MorD แล้ว — เราจะติดต่อกลับทันที" : "🚨 MorD team alerted");
   }
 
   function shareLocation() {
     if (!coords) { locate(); return; }
-    const text = `SOS HaMoo — ตำแหน่งของฉัน: https://maps.google.com/?q=${coords.lat},${coords.lng}`;
+    const text = `SOS MorD — ตำแหน่งของฉัน: https://maps.google.com/?q=${coords.lat},${coords.lng}`;
     if (navigator.share) navigator.share({ text }).catch(() => {});
     else navigator.clipboard?.writeText(text).then(() => flash(lang === "th" ? "คัดลอกลิงก์ตำแหน่งแล้ว" : "Link copied"));
   }
@@ -44,7 +44,7 @@ export default function SOSButton() {
       <button
         onClick={() => setOpen(true)}
         aria-label="SOS emergency"
-        className="fixed right-4 bottom-24 z-40 w-14 h-14 rounded-full grid place-items-center font-black text-white text-sm tracking-wider transition-transform active:scale-95"
+        className="fixed right-4 bottom-[104px] z-40 w-14 h-14 rounded-full grid place-items-center font-black text-white text-sm tracking-wider transition-transform active:scale-95"
         style={{
           background: "radial-gradient(circle at 30% 30%, #ff5c6e, #b3243a)",
           boxShadow: "0 0 0 4px rgba(229,72,77,.25), 0 0 24px rgba(229,72,77,.6)",
@@ -66,7 +66,7 @@ export default function SOSButton() {
               : lang === "th" ? "ขอตำแหน่ง GPS แล้วแชร์" : "Get GPS & share"}
           </button>
           <button onClick={alertTeam} disabled={sent} className={`rounded-xl py-3.5 font-semibold ${sent ? "btn-ghost text-emerald-400" : "btn-crimson animate-[pulseRed_2s_ease-in-out_infinite]"}`}>
-            {sent ? `✓ ${lang === "th" ? "แจ้งทีมงานแล้ว" : "Team alerted"}` : `🛡️ ${lang === "th" ? "แจ้งทีมงาน HaMoo (พร้อมตำแหน่ง)" : "Alert HaMoo team (with location)"}`}
+            {sent ? `✓ ${lang === "th" ? "แจ้งทีมงานแล้ว" : "Team alerted"}` : `🛡️ ${lang === "th" ? "แจ้งทีมงาน MorD (พร้อมตำแหน่ง)" : "Alert MorD team (with location)"}`}
           </button>
         </div>
 

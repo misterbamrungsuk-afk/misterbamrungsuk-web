@@ -57,7 +57,7 @@ export default function NearbyMapPage() {
           <button onClick={locate} disabled={locating} className="btn-crimson rounded-xl px-4 py-2.5 text-sm font-semibold flex-1">
             {locating ? "…" : `🧭 ${t.useMyLocation}`}
           </button>
-          {([["all", t.all], ["friend", lang === "th" ? "เพื่อน" : "Friends"], ["job", lang === "th" ? "งาน" : "Jobs"]] as const).map(([v, l]) => (
+          {([["all", t.all], ["friend", lang === "th" ? "หมอนวด" : "Therapists"], ["job", lang === "th" ? "งาน" : "Jobs"]] as const).map(([v, l]) => (
             <button key={v} onClick={() => setShow(v)} className={`chip ${show === v ? "chip-red" : ""}`}>{l}</button>
           ))}
         </div>
@@ -65,7 +65,7 @@ export default function NearbyMapPage() {
         <div className="animate-rise"><NearbyMap points={points} me={me} height={380} /></div>
 
         <p className="text-[11px] text-ink-500 text-center">
-          🔴 {lang === "th" ? "เพื่อนรับจ้าง" : "Friends"} · 🟡 {lang === "th" ? "ประกาศงาน" : "Jobs"} {me ? `· ⭕ ${lang === "th" ? "รัศมี 1.5 กม. รอบคุณ" : "1.5km around you"}` : ""}
+          🔴 {lang === "th" ? "หมอนวด" : "Therapists"} · 🟡 {lang === "th" ? "ประกาศงาน" : "Jobs"} {me ? `· ⭕ ${lang === "th" ? "รัศมี 1.5 กม. รอบคุณ" : "1.5km around you"}` : ""}
         </p>
 
         {/* list รอบตัว */}

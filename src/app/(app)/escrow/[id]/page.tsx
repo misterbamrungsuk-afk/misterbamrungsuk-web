@@ -71,18 +71,18 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
   const moneyAt =
     step < 2 ? { icon: "👤", label: th ? "อยู่กับลูกค้า (ยังไม่โอน)" : "With hirer (not paid)", tone: "text-ink-300" }
     : step < 5 ? { icon: "🔒", label: th ? "ระบบกลางกันเงินไว้" : "HELD IN ESCROW", tone: "text-gold-400" }
-    : { icon: "💸", label: th ? "โอนให้เพื่อนแล้ว" : "Released to friend", tone: "text-emerald-400" };
+    : { icon: "💸", label: th ? "โอนให้หมอแล้ว" : "Released to therapist", tone: "text-emerald-400" };
 
   return (
     <main className="app-frame safe-bottom pb-8">
       <header className="sticky top-0 z-30 bg-ink-950/90 backdrop-blur-xl border-b border-white/5 px-4 h-14 flex items-center gap-3">
-        <Link href="/orders" className="text-ink-200" aria-label="back">‹</Link>
+        <Link href="/orders" className="w-10 h-10 -ml-2 rounded-full border border-ink-600 grid place-items-center text-ink-100 text-xl leading-none" aria-label="back">‹</Link>
         <h1 className="font-semibold flex-1">🏦 {th ? "ระบบกลาง (Escrow)" : "Escrow center"}</h1>
         {/* สลับมุมมองบทบาท (เดโม) */}
         <div className="glass rounded-full p-0.5 flex">
           {(["hirer", "provider"] as Role[]).map((r) => (
             <button key={r} onClick={() => setRole(r)} className={`px-3 py-1 rounded-full text-[11px] font-semibold ${role === r ? "btn-crimson" : "text-ink-400"}`}>
-              {r === "hirer" ? (th ? "ลูกค้า" : "Hirer") : (th ? "เพื่อน" : "Friend")}
+              {r === "hirer" ? (th ? "ลูกค้า" : "Hirer") : (th ? "หมอนวด" : "Therapist")}
             </button>
           ))}
         </div>
@@ -109,7 +109,7 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
           <p className="text-3xl font-black text-gold-400 mt-2">{baht(order.amount)}</p>
           <div className="flex justify-center gap-4 text-[11px] text-ink-400 mt-2">
             <span>{th ? "ระบบกันไว้" : "Held"}: {step >= 2 && step < 5 ? baht(order.amount) : baht(0)}</span>
-            <span>{th ? "เพื่อนจะได้รับ" : "Friend gets"}: {baht(providerNet)} <span className="text-ink-500">(GP {order.gpPercent}%)</span></span>
+            <span>{th ? "หมอจะได้รับ" : "Therapist gets"}: {baht(providerNet)} <span className="text-ink-500">(GP {order.gpPercent}%)</span></span>
           </div>
         </div>
 
@@ -150,7 +150,7 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
                         <span key={i} className="w-2.5 h-2.5 rounded-[1px]" style={{ background: (i * 7 + order.amount) % 3 === 0 ? "#111" : "transparent" }} />
                       ))}
                     </div>
-                    <p className="text-[9px] text-black/70 text-center mt-1.5">PromptPay HaMoo Escrow (demo) · {baht(order.amount)}</p>
+                    <p className="text-[9px] text-black/70 text-center mt-1.5">PromptPay MorD Escrow (demo) · {baht(order.amount)}</p>
                   </div>
                   <button onClick={() => act("fund")} disabled={busy} className="btn-crimson rounded-xl py-3.5 font-bold">
                     📎 {th ? `แนบสลิปโอน ${baht(order.amount)} เข้าระบบกลาง` : `Attach slip — pay ${baht(order.amount)} into escrow`}
@@ -163,16 +163,16 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
               {role === "hirer" && order.state === "delivered" && (
                 <>
                   <button onClick={() => act("release")} disabled={busy} className="btn-crimson rounded-xl py-3.5 font-bold animate-[pulseRed_2.4s_ease-in-out_infinite]">
-                    ✅ {th ? "รับงานแล้ว — ปล่อยเงินให้เพื่อน" : "Approve & release money"}
+                    ✅ {th ? "รับงานแล้ว — ปล่อยเงินให้หมอ" : "Approve & release money"}
                   </button>
                   <p className="text-[10px] text-ink-500 text-center">{th ? "ไม่กดภายใน 24 ชม. ระบบปล่อยเงินให้อัตโนมัติ" : "Auto-releases after 24h"}</p>
                 </>
               )}
               {role === "hirer" && (order.state === "funded" || order.state === "in_progress") && (
-                <p className="text-center text-xs text-ink-400 py-3">🔒 {th ? "เงินของคุณถูกกันไว้แล้ว ปลอดภัย — จ่ายเพื่อนเมื่องานเสร็จเท่านั้น" : "Your money is held safely — released only when work is done"}</p>
+                <p className="text-center text-xs text-ink-400 py-3">🔒 {th ? "เงินของคุณถูกกันไว้แล้ว ปลอดภัย — จ่ายหมอเมื่องานเสร็จเท่านั้น" : "Your money is held safely — released only when work is done"}</p>
               )}
 
-              {/* ฝั่งเพื่อน */}
+              {/* ฝั่งหมอนวด */}
               {role === "provider" && order.state === "accepted" && (
                 <p className="text-center text-xs text-ink-400 py-3">⏳ {th ? "รอลูกค้าโอนเข้าระบบกลาง — ยังไม่ต้องเริ่มงาน" : "Waiting for hirer to fund escrow — don't start yet"}</p>
               )}
@@ -215,8 +215,8 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
 
         <p className="text-[10px] text-ink-500 text-center leading-relaxed">
           {th
-            ? "🏦 ระบบกลาง HaMoo กันเงินไว้ให้ทั้งสองฝ่าย — ลูกค้ามั่นใจว่าจ่ายเมื่องานเสร็จ เพื่อนมั่นใจว่าเงินมีจริงก่อนเริ่มงาน (โหมดจริง: เชื่อม Omise PromptPay + webhook ตรวจสอบอัตโนมัติ)"
-            : "HaMoo escrow protects both sides — hirer pays on completion, friend starts only when funds are secured"}
+            ? "🏦 ระบบกลาง MorD กันเงินไว้ให้ทั้งสองฝ่าย — ลูกค้ามั่นใจว่าจ่ายเมื่องานเสร็จ หมอมั่นใจว่าเงินมีจริงก่อนเริ่มงาน (โหมดจริง: เชื่อม Omise PromptPay + webhook ตรวจสอบอัตโนมัติ)"
+            : "MorD escrow protects both sides — hirer pays on completion, therapist starts only when funds are secured"}
         </p>
       </div>
 

@@ -11,7 +11,13 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/auth") ||
-    pathname === "/favicon.ico";
+    pathname === "/favicon.ico" ||
+    // PWA: manifest / ไอคอน / service worker / หน้าออฟไลน์ ต้องโหลดได้ก่อนล็อกอิน
+    pathname === "/manifest.webmanifest" ||
+    pathname === "/sw.js" ||
+    pathname === "/offline" ||
+    pathname.startsWith("/pwa-icon") ||
+    pathname.startsWith("/brand");
 
   if (isPublic) return NextResponse.next();
 
