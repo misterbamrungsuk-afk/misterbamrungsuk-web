@@ -102,7 +102,7 @@ export default function OnSiteJobPage({ params }: { params: Promise<{ id: string
             <p className="text-sm text-ink-300 mt-2">{lang === "th" ? "ส่งงานในระบบกลางเพื่อรับเงิน (หัก GP แล้วโอนเข้าบัญชีคุณ)" : "Deliver via escrow to receive your payout"}</p>
             <div className="flex gap-2 mt-4">
               <Link href="/provider" className="btn-ghost rounded-xl flex-1 py-3 text-sm">{lang === "th" ? "แดชบอร์ด" : "Dashboard"}</Link>
-              <Link href="/escrow/e1" className="btn-crimson rounded-xl flex-1 py-3 text-sm font-bold">📦 {lang === "th" ? "ส่งงาน รับเงิน" : "Deliver & get paid"}</Link>
+              <Link href={`/provider/job/${id}/done`} className="btn-crimson rounded-xl flex-1 py-3 text-sm font-bold">📦 {lang === "th" ? "ส่งงาน รับเงิน" : "Deliver & get paid"}</Link>
             </div>
           </div>
         )}

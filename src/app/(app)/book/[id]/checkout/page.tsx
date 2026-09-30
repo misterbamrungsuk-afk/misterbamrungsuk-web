@@ -33,6 +33,7 @@ function CheckoutInner({ id }: { id: string }) {
   const [health, setHealth] = useState<Record<string, boolean>>({});
   const [avoid, setAvoid] = useState("");
   const [confirmed, setConfirmed] = useState(false);
+  const [method, setMethod] = useState("promptpay");
   const [herbal, setHerbal] = useState(false);
   const [code, setCode] = useState("");
   const [applied, setApplied] = useState<string | null>(null);
@@ -51,6 +52,11 @@ function CheckoutInner({ id }: { id: string }) {
   }
 
   const base = packagePrice(post, pkg);
+  const METHODS = [
+    { id: "promptpay", th: "พร้อมเพย์ (QR)", en: "PromptPay (QR)", sub: th ? "สแกนจ่ายผ่านแอปธนาคาร" : "Scan with any bank app", mark: "PP", color: "#113566" },
+    { id: "card", th: "บัตรเครดิต / เดบิต", en: "Credit / debit card", sub: "Visa •••• 4242", mark: "VISA", color: "#1a1f71" },
+    { id: "truemoney", th: "TrueMoney Wallet", en: "TrueMoney Wallet", sub: th ? "ผูกเบอร์ 08x-xxx-5678" : "Linked 08x-xxx-5678", mark: "TM", color: "#f26522" },
+  ];
   const subtotal = base + (herbal ? HERBAL_PRICE : 0);
   const promo = DEMO_PROMOS.find((p) => p.code === applied);
   const discount = promoDiscount(promo, subtotal);
@@ -67,7 +73,7 @@ function CheckoutInner({ id }: { id: string }) {
   };
 
   const pay = () => {
-    const q = new URLSearchParams({ id: post.id, pkg: String(pkg), date, time, addr: addr.id, total: String(total) });
+    const q = new URLSearchParams({ id: post.id, pkg: String(pkg), date, time, addr: addr.id, total: String(total), method });
     router.push(`/book/success?${q}`);
   };
 
@@ -129,6 +135,21 @@ function CheckoutInner({ id }: { id: string }) {
           </div>
           {codeErr && <p className="text-xs text-crimson-200">{codeErr}</p>}
           {applied && !codeErr && <p className="text-xs text-gold-300">✓ {th ? "ใช้โค้ด" : "Applied"} {applied} · −{baht(discount)}</p>}
+        </section>
+
+        <section className="flex flex-col gap-2.5">
+          <h2 className="section-title">{th ? "วิธีชำระเงิน" : "Payment method"}</h2>
+          {METHODS.map((m) => (
+            <button key={m.id} onClick={() => setMethod(m.id)} aria-pressed={method === m.id}
+              className={`glass rounded-2xl p-3.5 flex items-center gap-3 text-left transition ${method === m.id ? "!border-gold-500" : ""}`}>
+              <span className="w-11 h-11 rounded-xl grid place-items-center text-[11px] font-bold text-white shrink-0" style={{ background: m.color }}>{m.mark}</span>
+              <span className="flex-1 min-w-0">
+                <span className="block text-sm font-medium">{th ? m.th : m.en}</span>
+                <span className="block text-xs text-ink-300 truncate">{m.sub}</span>
+              </span>
+              <span className={`w-5 h-5 rounded-full border-2 grid place-items-center shrink-0 ${method === m.id ? "border-gold-500" : "border-ink-500"}`}>{method === m.id && <span className="w-2.5 h-2.5 rounded-full bg-gold-500" />}</span>
+            </button>
+          ))}
         </section>
 
         <section className="glass rounded-2xl p-4 flex flex-col gap-2 text-sm">

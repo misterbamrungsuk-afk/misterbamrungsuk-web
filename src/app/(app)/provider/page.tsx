@@ -64,7 +64,13 @@ export default function ProviderDashboard() {
             { href: "/provider/incoming", icon: "📡", label: lang === "th" ? "งานเข้า" : "Incoming jobs" },
             { href: "/profile/verify", icon: "🛡️", label: t.verifyIdentity },
             { href: "/jobs?role=hirer", icon: "💼", label: lang === "th" ? "ประกาศรับงานของฉัน" : "My listings" },
-            { href: "/orders", icon: "🧾", label: lang === "th" ? "ประวัติรับงาน/รายได้" : "Earning history" },
+            { href: "/provider/earnings", icon: "💰", label: lang === "th" ? "รายได้" : "Earnings" },
+            { href: "/provider/availability", icon: "🗓️", label: lang === "th" ? "เวลาว่าง / พื้นที่" : "Availability" },
+            { href: "/provider/reviews", icon: "⭐", label: lang === "th" ? "รีวิวของฉัน" : "My reviews" },
+            { href: "/provider/strikes", icon: "⚠️", label: lang === "th" ? "ใบเตือน / อุทธรณ์" : "Strikes & appeals" },
+            { href: "/provider/settings", icon: "⚙️", label: lang === "th" ? "ตั้งค่าหมอ" : "Provider settings" },
+            { href: "/provider/apply", icon: "📝", label: lang === "th" ? "สมัครเป็นหมอ / KYC" : "Apply / KYC" },
+            { href: "/orders", icon: "🧾", label: lang === "th" ? "ประวัติรับงาน" : "Job history" },
             { href: "/chat", icon: "🏦", label: t.bankAccounts },
           ].map((m) => (
             <Link key={m.href} href={m.href} className="flex items-center gap-3 px-4 py-3.5 hover:bg-white/[0.03] transition">

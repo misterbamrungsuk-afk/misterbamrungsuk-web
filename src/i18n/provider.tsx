@@ -40,7 +40,7 @@ export function LangToggle({ className = "" }: { className?: string }) {
   return (
     <button
       onClick={() => setLang(lang === "th" ? "en" : "th")}
-      className={`btn-ghost rounded-full px-3 py-1 text-xs font-semibold tracking-wide ${className}`}
+      className={`btn-ghost rounded-full px-3 min-h-9 inline-flex items-center text-xs font-semibold tracking-wide ${className}`}
       aria-label="switch language"
     >
       <span className={lang === "th" ? "text-crimson-300" : "text-ink-300"}>ไทย</span>

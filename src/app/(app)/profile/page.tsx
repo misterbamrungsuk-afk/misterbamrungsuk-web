@@ -18,6 +18,9 @@ export default function ProfilePage() {
   const menu = [
     { href: "/profile/edit", icon: "✏️", label: t.profileInfo },
     { href: "/orders", icon: "🧾", label: lang === "th" ? "ประวัติการจ้างงาน" : "My orders" },
+    { href: "/search", icon: "🔍", label: lang === "th" ? "ค้นหาหมอนวด" : "Search therapists" },
+    { href: "/profile/addresses", icon: "📍", label: lang === "th" ? "ที่อยู่ที่บันทึก" : "Saved addresses" },
+    { href: "/profile/language", icon: "🌐", label: lang === "th" ? "ภาษา" : "Language" },
     { href: "/favorites", icon: "❤️", label: lang === "th" ? "หมอคนโปรด" : "Favorite therapists" },
     { href: "/notifications", icon: "🔔", label: lang === "th" ? "การแจ้งเตือน" : "Notifications" },
     { href: "/jobs", icon: "📋", label: lang === "th" ? "บอร์ดประกาศงาน" : "Job board" },

@@ -54,7 +54,7 @@ export function TabBar({ unread = 0 }: { unread?: number }) {
               href={tab.href}
               className={`relative flex flex-col items-center gap-1 transition-colors ${active ? "text-ink-100" : "text-ink-300 hover:text-ink-200"}`}
             >
-              <span className="relative">
+              <span className={`relative grid place-items-center transition-all ${active ? "w-12 h-12 -mt-7 rounded-full bg-gold-500 text-ink-950 ring-4 ring-ink-900 shadow-[0_6px_18px_rgba(245,183,0,0.35)]" : ""}`}>
                 {icons[tab.key]}
                 {badge ? (
                   <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-crimson-500 text-[10px] font-bold text-white grid place-items-center">{badge}</span>

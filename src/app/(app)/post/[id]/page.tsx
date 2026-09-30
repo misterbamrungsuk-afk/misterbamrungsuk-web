@@ -35,34 +35,58 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
     <>
       <TopBar back="/home" title={post.member.name} />
 
-      {/* gallery */}
-      <div className="relative bg-ink-800">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={post.images[imgIdx]} alt={post.member.name} className="w-full aspect-[4/3] object-cover" />
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-          {post.images.map((_, i) => (
-            <button key={i} onClick={() => setImgIdx(i)} aria-label={`image ${i + 1}`} className="h-9 min-w-9 px-1.5 grid place-items-center">
-              <span className={`block h-1.5 rounded-full transition-all ${i === imgIdx ? "w-5 bg-crimson-400" : "w-1.5 bg-white/60"}`} />
-            </button>
-          ))}
+      {/* gallery (แนว Spafy: รูปโค้งในกรอบ) */}
+      <div className="px-4 pt-2">
+        <div className="relative rounded-3xl overflow-hidden bg-ink-800">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={post.images[imgIdx]} alt={post.member.name} className="w-full aspect-[4/3] object-cover" />
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+            {post.images.map((_, i) => (
+              <button key={i} onClick={() => setImgIdx(i)} aria-label={`image ${i + 1}`} className="h-9 min-w-9 px-1.5 grid place-items-center">
+                <span className={`block h-1.5 rounded-full transition-all ${i === imgIdx ? "w-5 bg-gold-500" : "w-1.5 bg-white/60"}`} />
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       <div className="px-4 py-4 space-y-5">
-        {/* head */}
+        {/* head: ชื่อ + ราคา */}
         <section className="animate-rise">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-xl font-bold">{post.member.name}, {post.member.age}</h1>
-            {post.member.kycVerified && <VerifiedBadge label={t.verified} />}
+          <div className="flex items-start gap-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-xl font-semibold">{post.member.name}, {post.member.age}</h1>
+                {post.member.kycVerified && <VerifiedBadge label={t.verified} />}
+              </div>
+              <p className="text-xs text-ink-300 mt-1">🕓 {post.workingHours} · 📍 {post.province}</p>
+            </div>
+            <div className="text-right shrink-0">
+              <p className="font-display font-semibold text-lg text-gold-400">{baht(post.pricePerHour)}<span className="text-xs text-ink-300 font-normal">{t.perHour}</span></p>
+              <p className="text-xs text-ink-300 flex items-center justify-end gap-1"><span className="text-gold-500">★</span> {(post.rating ?? 0).toFixed(1)} ({post.reviewCount} {lang === "th" ? "รีวิว" : "reviews"})</p>
+            </div>
           </div>
-          <div className="flex items-center gap-3 mt-1.5">
-            <Stars value={post.rating} />
-            <span className="text-xs text-ink-400">({post.reviewCount} {lang === "th" ? "รีวิว" : "reviews"})</span>
+
+          {/* แถบไอคอน 4 ช่อง */}
+          <div className="glass rounded-2xl grid grid-cols-4 mt-4 py-3">
+            {[
+              ["M12 8v4l3 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z", lang === "th" ? "ขั้นต่ำ" : "Min", `${post.minHours} ${t.hoursUnit}`],
+              ["M4 7h16M4 12h16M4 17h10", lang === "th" ? "ผ้า/น้ำมัน" : "Kit", lang === "th" ? "เตรียมให้" : "Included"],
+              ["M3 10h18M7 3v4M17 3v4M5 6h14v14H5z", lang === "th" ? "วันทำงาน" : "Days", lang === "th" ? "ทุกวัน" : "Daily"],
+              ["M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z", lang === "th" ? "มัดจำ" : "Deposit", baht(post.deposit)],
+            ].map(([d, k, v]) => (
+              <div key={k} className="flex flex-col items-center gap-1 text-center px-1 min-w-0">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-gold-500"><path d={d} /></svg>
+                <span className="text-[11px] text-ink-300">{k}</span>
+                <span className="text-xs font-medium truncate max-w-full">{v}</span>
+              </div>
+            ))}
           </div>
+
           <div className="flex flex-wrap gap-1.5 mt-3">
             {post.categories.map((c) => {
               const cat = catBySlug(c);
-              return <span key={c} className="chip">{cat?.emoji} {lang === "th" ? cat?.th : cat?.en}</span>;
+              return <span key={c} className="chip">{lang === "th" ? cat?.th : cat?.en}</span>;
             })}
           </div>
         </section>
@@ -111,16 +135,10 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
           </ul>
         </section>
 
-        {/* price + CTA */}
-        <section className="glass rounded-2xl p-4 flex items-center justify-between animate-rise">
-          <div>
-            <p className="text-2xl font-bold text-gold-400">{baht(post.pricePerHour)}<span className="text-sm text-ink-400 font-normal">{t.perHour}</span></p>
-            <p className="text-xs text-ink-400 mt-0.5">{lang === "th" ? "จ่ายผ่านระบบในแอป ปลอดภัย" : "Secure in-app payment"}</p>
-          </div>
-          <div className="flex gap-2">
-            <Link href={`/chat/room1`} className="btn-ghost rounded-xl px-4 py-3 font-semibold">{t.chat}</Link>
-            <Link href={`/book/${post.id}`} className="btn-crimson rounded-xl px-5 py-3 font-semibold">{lang === "th" ? "จองเลย" : "Book"}</Link>
-          </div>
+        {/* CTA */}
+        <section className="flex gap-2 animate-rise">
+          <Link href={`/chat/room1`} className="btn-ghost h-12 px-6 grid place-items-center font-semibold">{t.chat}</Link>
+          <Link href={`/book/${post.id}`} className="btn-crimson flex-1 h-12 grid place-items-center font-display font-semibold text-base">{lang === "th" ? "จองเลย" : "Book now"}</Link>
         </section>
 
         <button onClick={() => setReportOpen(true)} className="text-xs text-ink-400 hover:text-crimson-300 underline underline-offset-4">

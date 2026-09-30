@@ -82,7 +82,7 @@ function CompleteInner({ id }: { id: string }) {
           {stars ? (th ? "ยืนยันและปล่อยเงิน" : "Confirm & release") : th ? "ให้ดาวก่อน" : "Rate first"}
         </button>
         <div className="flex justify-between text-sm">
-          <Link href="/escrow/o1" className="min-h-10 inline-flex items-center text-ink-300">{th ? "มีปัญหา? เปิดข้อพิพาท" : "Problem? Open a dispute"}</Link>
+          <Link href={`/order/${id}/dispute`} className="min-h-10 inline-flex items-center text-ink-300">{th ? "มีปัญหา? เปิดข้อพิพาท" : "Problem? Open a dispute"}</Link>
           {post && <Link href={`/book/${post.id}`} className="min-h-10 inline-flex items-center text-gold-500">{th ? "จองคนนี้อีกครั้ง" : "Book again"}</Link>}
         </div>
         <p className="text-xs text-ink-300 text-center">{th ? "ถ้าไม่ยืนยันภายใน 24 ชม. ระบบจะปล่อยเงินอัตโนมัติ" : "Auto-released after 24h if not confirmed"}</p>

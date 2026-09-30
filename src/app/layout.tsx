@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Sans_Thai, Kanit } from "next/font/google";
+import { Poppins, Prompt } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/i18n/provider";
 import { PwaRegister } from "@/components/pwa-register";
 
-const plex = IBM_Plex_Sans_Thai({ subsets: ["thai", "latin"], weight: ["400", "500", "600", "700"], variable: "--font-plex" });
-const kanit = Kanit({ subsets: ["thai", "latin"], weight: ["500", "600", "700", "800"], variable: "--font-kanit" });
+const plex = Prompt({ subsets: ["thai", "latin"], weight: ["300", "400", "500", "600"], variable: "--font-plex" });
+const kanit = Poppins({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-kanit" });
 
 export const metadata: Metadata = {
   title: "MorD — หมอนวดชายมืออาชีพ มาหาคุณถึงที่",
@@ -22,7 +22,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
-  themeColor: "#0b0b0d",
+  themeColor: "#0c0930",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useI18n } from "@/i18n/provider";
+import Link from "next/link";
 import { Sheet, Toast } from "./ui";
 
 // ── ปุ่มฉุกเฉิน SOS ── โทรเหตุฉุกเฉิน / แชร์ตำแหน่งสด / แจ้งทีมงานทันที
@@ -69,6 +70,10 @@ export default function SOSButton() {
             {sent ? `✓ ${lang === "th" ? "แจ้งทีมงานแล้ว" : "Team alerted"}` : `🛡️ ${lang === "th" ? "แจ้งทีมงาน MorD (พร้อมตำแหน่ง)" : "Alert MorD team (with location)"}`}
           </button>
         </div>
+
+        <Link href="/sos" onClick={() => setOpen(false)} className="block text-center text-sm text-crimson-300 underline underline-offset-4 mt-3 py-2">
+          {lang === "th" ? "เปิดหน้า SOS เต็มจอ →" : "Open full-screen SOS →"}
+        </Link>
 
         <p className="text-[10px] text-ink-500 mt-4 text-center">
           {lang === "th" ? "ประวัติ SOS ทั้งหมดถูกบันทึกเข้าระบบเพื่อความปลอดภัยของคุณ" : "All SOS events are logged for your safety"}

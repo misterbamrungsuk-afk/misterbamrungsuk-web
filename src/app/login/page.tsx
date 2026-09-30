@@ -67,6 +67,7 @@ export default function LoginPage() {
         {(isDemo || !hasSupabase) && (
           <p className="chip chip-gold self-start">{t.demoBadge} — ข้อมูลจำลอง ไม่ต้องตั้งค่า</p>
         )}
+        <a href="/welcome" className="text-gold-300 text-sm underline underline-offset-4 self-start py-2">รู้จัก MorD ก่อน / About MorD →</a>
         <p className="text-ink-400 text-xs">© 2026 MorD · สำหรับผู้มีอายุ 18 ปีขึ้นไป · นวดเพื่อสุขภาพเท่านั้น</p>
       </section>
     </main>

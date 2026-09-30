@@ -18,6 +18,14 @@ export default function MatchingPage() {
   const [hours, setHours] = useState(2);
   const [budget, setBudget] = useState(800);
   const [note, setNote] = useState("");
+  // มาจากการ์ดแพ็กเกจหน้าแรก: ?cat=thai&min=90
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    const c = sp.get("cat");
+    if (c && CATEGORIES.some((x) => x.slug === c)) setCats([c]);
+    const m = Number(sp.get("min"));
+    if (m) setHours(Math.max(1, Math.round(m / 60)));
+  }, []);
   const [countdown, setCountdown] = useState(site.matchAcceptSeconds);
   const [scanningIdx, setScanningIdx] = useState(0);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
