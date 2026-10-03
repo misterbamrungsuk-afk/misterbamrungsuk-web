@@ -45,13 +45,13 @@ export default function SOSButton() {
       <button
         onClick={() => setOpen(true)}
         aria-label="SOS emergency"
-        className="fixed right-4 bottom-[104px] z-40 w-14 h-14 rounded-full grid place-items-center font-black text-white text-sm tracking-wider transition-transform active:scale-95"
-        style={{
-          background: "radial-gradient(circle at 30% 30%, #ff5c6e, #b3243a)",
-          boxShadow: "0 0 0 4px rgba(229,72,77,.25), 0 0 24px rgba(229,72,77,.6)",
-          animation: "pulseRed 2.4s ease-in-out infinite",
-        }}
+        className="fixed z-40 h-10 pl-2 pr-3.5 rounded-full bg-white border border-crimson-500/25 shadow-[0_6px_20px_rgba(16,16,24,.12)] flex items-center gap-1.5 text-crimson-600 font-bold text-[13px] tracking-wide active:scale-95 transition-transform"
+        style={{ right: "max(16px, calc(50% - 224px))", bottom: "calc(84px + env(safe-area-inset-bottom))" }}
       >
+        <span className="relative w-6 h-6 rounded-full bg-crimson-500 grid place-items-center">
+          <span className="absolute inset-0 rounded-full bg-crimson-500/40 animate-ping" />
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="relative w-3.5 h-3.5"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3z" /><path d="M12 8v4M12 15.5h.01" /></svg>
+        </span>
         SOS
       </button>
 
