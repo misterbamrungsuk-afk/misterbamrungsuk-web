@@ -65,9 +65,9 @@ export default function IncomingJobsPage() {
                 </div>
               </div>
 
-              <p className="font-semibold mt-3">{job.title} <span className="text-gold-400">({job.hours}{t.hoursUnit})</span></p>
+              <p className="font-semibold mt-3">{job.title} <span className="text-gold-600">({job.hours}{t.hoursUnit})</span></p>
               <div className="flex items-center justify-between mt-2">
-                <span className="text-gold-400 font-bold">{baht(job.budget)}<span className="text-ink-400 text-xs font-normal"> ({lang === "th" ? "เหมา" : "lump"})</span></span>
+                <span className="text-gold-600 font-bold">{baht(job.budget)}<span className="text-ink-400 text-xs font-normal"> ({lang === "th" ? "เหมา" : "lump"})</span></span>
                 <Stars value={4.8} />
               </div>
 

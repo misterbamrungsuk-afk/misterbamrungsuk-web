@@ -103,7 +103,7 @@ export default function SOSPage() {
       )}
 
       <div className="glass rounded-3xl p-4 text-sm">
-        <div className="flex items-center justify-between gap-2 py-2 border-b border-white/10">
+        <div className="flex items-center justify-between gap-2 py-2 border-b border-ink-600">
           <span>📍 {th ? "ตำแหน่งสดให้แอดมิน" : "Live location to admin"}</span>
           <span className={coords ? "text-emerald-400" : "text-ink-500"}>{coords ? `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}` : th ? "ไม่มี GPS" : "No GPS"}</span>
         </div>

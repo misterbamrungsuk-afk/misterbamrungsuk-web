@@ -51,7 +51,7 @@ export default function BookSchedulePage({ params }: { params: Promise<{ id: str
             <p className="font-display font-semibold truncate">{post.member.name}</p>
             <p className="text-xs text-ink-300 truncate">{post.serviceArea}</p>
           </div>
-          {post.rating != null && <span className="text-xs font-semibold text-gold-500 shrink-0">★ {post.rating.toFixed(1)}</span>}
+          {post.rating != null && <span className="shrink-0 inline-flex items-center gap-0.5 h-[22px] px-2 rounded-full bg-white shadow-sm text-[11.5px] font-bold text-ink-100"><span className="text-amber-500">★</span>{post.rating.toFixed(1)}</span>}
         </Link>
 
         <section>
@@ -102,7 +102,7 @@ export default function BookSchedulePage({ params }: { params: Promise<{ id: str
         <section>
           <div className="flex items-baseline justify-between mb-3">
             <h2 className="section-title">{th ? "สถานที่" : "Location"}</h2>
-            <Link href="/profile/edit" className="text-xs text-gold-500 min-h-9 inline-flex items-center">{th ? "+ จัดการที่อยู่" : "+ Manage"}</Link>
+            <Link href="/profile/edit" className="text-xs text-gold-600 min-h-9 inline-flex items-center">{th ? "+ จัดการที่อยู่" : "+ Manage"}</Link>
           </div>
           <div className="flex flex-col gap-2">
             {ADDRESSES.map((a) => (

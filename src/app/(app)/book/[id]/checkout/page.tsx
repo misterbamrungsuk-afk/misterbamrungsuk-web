@@ -88,7 +88,7 @@ function CheckoutInner({ id }: { id: string }) {
             <p className="text-sm text-ink-300">{thaiDate(date)} · {time}</p>
             <p className="text-sm text-ink-300 truncate">{th ? addr.th : addr.en}{note ? ` · ${note}` : ""}</p>
           </div>
-          <Link href={`/book/${post.id}`} className="text-sm text-gold-500 min-h-9 px-1 inline-flex items-center shrink-0">{th ? "แก้ไข" : "Edit"}</Link>
+          <Link href={`/book/${post.id}`} className="text-sm text-gold-600 min-h-9 px-1 inline-flex items-center shrink-0">{th ? "แก้ไข" : "Edit"}</Link>
         </section>
 
         <section className="glass rounded-2xl p-4 flex flex-col gap-3">

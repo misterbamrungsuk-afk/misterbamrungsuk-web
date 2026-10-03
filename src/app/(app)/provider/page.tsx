@@ -24,7 +24,7 @@ export default function ProviderDashboard() {
           {stats.map((s) => (
             <div key={s.label} className="glass rounded-2xl p-4">
               <p className="text-xl">{s.icon}</p>
-              <p className="text-xl font-bold text-gold-400 mt-1">{s.value}</p>
+              <p className="text-xl font-bold text-gold-600 mt-1">{s.value}</p>
               <p className="text-[10px] text-ink-400 mt-0.5">{s.label}</p>
             </div>
           ))}

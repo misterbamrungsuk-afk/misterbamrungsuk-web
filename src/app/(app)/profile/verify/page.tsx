@@ -44,7 +44,7 @@ export default function VerifyPage() {
           <h2 className="section-title mb-2">📷 {t.kycHowTo}</h2>
           <ul className="text-sm text-ink-200 space-y-2">
             {[t.kycRule1, t.kycRule2, t.kycRule3, t.kycRule4].map((r, i) => (
-              <li key={i} className="flex gap-2"><span className="text-gold-400">{i + 1}.</span>{r}</li>
+              <li key={i} className="flex gap-2"><span className="text-gold-600">{i + 1}.</span>{r}</li>
             ))}
           </ul>
           <p className="text-[11px] text-ink-500 mt-3">

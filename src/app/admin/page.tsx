@@ -25,7 +25,7 @@ export default function AdminGpPage() {
       )}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card><p className="text-xs text-ink-300">GMV เดือนนี้</p><p className="font-display font-semibold text-2xl mt-1">{baht(gmv)}</p></Card>
-        <Card className="border-gold-500"><p className="text-xs text-gold-500">รายได้ GP 20%</p><p className="font-display font-semibold text-2xl mt-1 text-gold-300">{baht(gp)}</p></Card>
+        <Card className="border-gold-500"><p className="text-xs text-gold-600">รายได้ GP 20%</p><p className="font-display font-semibold text-2xl mt-1 text-gold-300">{baht(gp)}</p></Card>
         <Card><p className="text-xs text-ink-300">เงินถูกกันในระบบ</p><p className="font-display font-semibold text-2xl mt-1">{baht(held)}</p></Card>
         <Link href="/admin/payouts" className="block"><Card className="h-full hover:border-gold-500 transition"><p className="text-xs text-ink-300">ค้างโอนให้หมอ</p><p className="font-display font-semibold text-2xl mt-1">{baht(pendingPay)}</p></Card></Link>
       </div>

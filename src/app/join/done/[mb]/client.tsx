@@ -8,7 +8,7 @@ export function CopyCode({ code }: { code: string }) {
     <button onClick={async () => { try { await navigator.clipboard.writeText(code); setOk(true); setTimeout(() => setOk(false), 1800); } catch {} }}
       className="mt-1 flex flex-col items-center min-h-12" aria-label={`คัดลอกรหัส ${code}`}>
       <span className="font-display text-[40px] leading-none font-bold tracking-wider text-gradient-gold">{code}</span>
-      <span className="text-xs text-gold-500 mt-2">{ok ? "✓ คัดลอกแล้ว" : "แตะเพื่อคัดลอก"}</span>
+      <span className="text-xs text-gold-600 mt-2">{ok ? "✓ คัดลอกแล้ว" : "แตะเพื่อคัดลอก"}</span>
     </button>
   );
 }

@@ -18,7 +18,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
         <div>
           <a href="/home" className="inline-flex items-center gap-1 text-sm text-gold-300 min-h-9 mb-4">← กลับหน้าแอป</a>
           <Logo size={32} />
-          <p className="text-[11px] font-semibold tracking-[0.15em] text-gold-500 mt-1">ADMIN CONSOLE</p>
+          <p className="text-[11px] font-semibold tracking-[0.15em] text-gold-600 mt-1">ADMIN CONSOLE</p>
         </div>
         <h1 className="text-2xl font-semibold mt-6">เข้าสู่ระบบแอดมิน</h1>
         {!adminLoginEnabled() ? (
@@ -56,7 +56,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
             ].map(([label, roles]) => (
               <tr key={label as string} className="border-t border-ink-600">
                 <td className="py-2.5">{label as string}</td>
-                {(Object.keys(ROLE_LABEL) as AdminRole[]).map((r) => <td key={r} className={`text-center ${(roles as string[]).includes(r) ? "text-gold-500" : "text-ink-600"}`}>●</td>)}
+                {(Object.keys(ROLE_LABEL) as AdminRole[]).map((r) => <td key={r} className={`text-center ${(roles as string[]).includes(r) ? "text-gold-600" : "text-ink-600"}`}>●</td>)}
               </tr>
             ))}
           </tbody>

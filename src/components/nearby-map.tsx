@@ -93,5 +93,5 @@ export default function NearbyMap({ points, me, height = 400 }: { points: MapPoi
     radius.current?.setLatLng([me.lat, me.lng]);
   }, [me]);
 
-  return <div ref={el} style={{ height }} className="rounded-2xl border border-white/10 z-0" />;
+  return <div ref={el} style={{ height }} className="rounded-2xl border border-ink-600 z-0" />;
 }

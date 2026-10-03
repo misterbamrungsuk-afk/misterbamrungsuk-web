@@ -41,7 +41,7 @@ export default function OrdersPage() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-gold-400">{baht(o.totalAmount - o.discount)}</p>
+                  <p className="font-bold text-gold-600">{baht(o.totalAmount - o.discount)}</p>
                   {o.discount > 0 && <p className="text-[10px] text-emerald-400">−{baht(o.discount)}</p>}
                 </div>
               </div>
@@ -56,7 +56,7 @@ export default function OrdersPage() {
                 ))}
               </div>
               <div className="flex justify-between mt-1.5">
-                <span className={`text-[10px] font-medium ${step >= 4 ? "text-gold-400" : "text-crimson-300"}`}>{label(o.status)}</span>
+                <span className={`text-[10px] font-medium ${step >= 4 ? "text-gold-600" : "text-crimson-300"}`}>{label(o.status)}</span>
                 <div className="flex gap-2">
                   {o.id === "o1" && <Link href="/escrow/e1" className="inline-flex items-center min-h-9 px-2 -mx-1 text-xs text-gold-300 hover:underline">🏦 {lang === "th" ? "ระบบกลาง" : "Escrow"} ›</Link>}
                   {(o.status === "negotiated" || o.status === "deposit_paid") && <Link href={`/order/${o.id}/cancel`} className="inline-flex items-center min-h-9 px-2 -mx-1 text-xs text-crimson-200 underline">{lang === "th" ? "ยกเลิก" : "Cancel"} ›</Link>}

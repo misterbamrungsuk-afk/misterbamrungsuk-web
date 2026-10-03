@@ -36,7 +36,7 @@ export default function AdminMembersPage() {
                 ? <img src={m.avatar} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
                 : <span className="w-10 h-10 rounded-full border border-ink-600 grid place-items-center text-sm shrink-0">{m.name.slice(-2, -1)}</span>}
               <span className="flex-1 min-w-0">
-                <span className="block font-medium truncate">{m.name} {m.kyc && <span className="text-gold-500 text-xs">✓</span>}</span>
+                <span className="block font-medium truncate">{m.name} {m.kyc && <span className="text-gold-600 text-xs">✓</span>}</span>
                 <span className="block text-xs text-ink-300">{m.role === "therapist" ? "หมอนวด" : "ลูกค้า"} · {m.jobs} งาน · ★ {m.rating}</span>
               </span>
               <span className="flex flex-col items-end gap-1 shrink-0"><Strikes n={m.strikes} />{m.suspended ? <Pill tone="red">ระงับ</Pill> : m.strikes === 2 ? <Pill tone="gold">เฝ้าระวัง</Pill> : <Pill>ปกติ</Pill>}</span>

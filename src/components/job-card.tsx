@@ -47,7 +47,7 @@ export default function JobCard({ job, onInterested }: { job: JobBoard; onIntere
         </span>
       </div>
 
-      <h3 className="font-semibold mt-3 leading-snug">{job.title} <span className="text-gold-400">({job.durationHours}{t.hoursUnit})</span></h3>
+      <h3 className="font-semibold mt-3 leading-snug">{job.title} <span className="text-gold-600">({job.durationHours}{t.hoursUnit})</span></h3>
 
       <div className="grid grid-cols-2 gap-2 mt-3 text-xs text-ink-300">
         <span>📍 {job.placeName}</span>
@@ -60,15 +60,15 @@ export default function JobCard({ job, onInterested }: { job: JobBoard; onIntere
         <div className="flex gap-2 mt-3 overflow-x-auto no-scrollbar">
           {job.images.map((img, i) => (
             // eslint-disable-next-line @next/next/no-img-element
-            <img key={i} src={img} alt="" className="h-20 rounded-xl object-cover border border-white/10" />
+            <img key={i} src={img} alt="" className="h-20 rounded-xl object-cover border border-ink-600" />
           ))}
         </div>
       )}
 
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
+      <div className="flex items-center justify-between mt-3 pt-3 border-t border-ink-600">
         <div>
           <p className="text-[10px] text-ink-400">{t.jobBudget}</p>
-          <p className="text-gold-400 font-bold">{baht(job.budget)}</p>
+          <p className="text-gold-600 font-bold">{baht(job.budget)}</p>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-ink-400">❤️ {count} {lang === "th" ? "สนใจ" : ""}</span>

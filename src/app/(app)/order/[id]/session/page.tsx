@@ -66,7 +66,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-5 h-5"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" /></svg>{th ? "แชทกับหมอ" : "Chat"}
         </Link>
         <Link href="/escrow/o1" className="h-16 rounded-2xl border border-ink-600 bg-ink-800 text-xs flex flex-col items-center justify-center gap-1">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-5 h-5 text-gold-500"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>{th ? "ระบบกลางเงิน" : "Escrow"}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-5 h-5 text-gold-600"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>{th ? "ระบบกลางเงิน" : "Escrow"}
         </Link>
       </div>
 
@@ -82,7 +82,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
       {extra > 0 && <p className="text-xs text-gold-300 text-center mt-3">{th ? `ต่อเวลาแล้ว ${extra} นาที · +${baht((extra / 30) * extendCost)}` : `Extended ${extra} min · +${baht((extra / 30) * extendCost)}`}</p>}
 
       <p className="mt-4 rounded-2xl border border-gold-500/40 p-3.5 text-sm flex gap-2.5 items-start">
-        <span className="text-gold-500">🔒</span>{th ? "เงินยังอยู่ในระบบกลาง จะปล่อยให้หมอเมื่อคุณยืนยันหลังจบงาน" : "Money stays in escrow until you confirm after the session"}
+        <span className="text-gold-600">🔒</span>{th ? "เงินยังอยู่ในระบบกลาง จะปล่อยให้หมอเมื่อคุณยืนยันหลังจบงาน" : "Money stays in escrow until you confirm after the session"}
       </p>
 
       <div className="mt-auto pt-6 flex flex-col gap-2">

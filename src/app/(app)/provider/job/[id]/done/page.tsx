@@ -47,7 +47,7 @@ export default function JobDonePage({ params }: { params: Promise<{ id: string }
         <div className="flex gap-1" role="radiogroup" aria-label={th ? "คะแนน" : "Rating"}>
           {[1, 2, 3, 4, 5].map((n) => (
             <button key={n} onClick={() => !rated && setStars(n)} role="radio" aria-checked={stars === n} aria-label={`${n}`}
-              className={`w-11 h-11 grid place-items-center text-3xl ${n <= stars ? "text-gold-500" : "text-ink-600"}`}>★</button>
+              className={`w-11 h-11 grid place-items-center text-3xl ${n <= stars ? "text-amber-500" : "text-ink-600"}`}>★</button>
           ))}
         </div>
         <div className="flex flex-wrap justify-center gap-2">

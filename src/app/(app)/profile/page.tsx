@@ -37,7 +37,7 @@ export default function ProfilePage() {
 
   return (
     <>
-      <header className="sticky top-0 z-30 bg-ink-950/85 backdrop-blur-xl border-b border-white/5">
+      <header className="sticky top-0 z-30 bg-ink-950/85 backdrop-blur-xl border-b border-ink-600">
         <div className="flex items-center justify-between px-4 h-14">
           <h1 className="font-semibold">{t.nav.profile}</h1>
           <LangToggle />

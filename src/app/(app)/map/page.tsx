@@ -78,7 +78,7 @@ export default function NearbyMapPage() {
                 <p className="font-semibold text-sm truncate">{p.member.name}</p>
                 <p className="text-xs text-ink-400 truncate">{p.serviceArea}</p>
               </div>
-              <span className="text-gold-400 font-bold text-sm">{baht(p.pricePerHour)}<span className="text-ink-400 text-[10px]">{t.perHour}</span></span>
+              <span className="text-gold-600 font-bold text-sm">{baht(p.pricePerHour)}<span className="text-ink-400 text-[10px]">{t.perHour}</span></span>
             </Link>
           ))}
         </div>

@@ -25,7 +25,7 @@ export function Logo({ size = 34, mark = true }: { size?: number; mark?: boolean
     <span className="inline-flex items-center gap-2 select-none" aria-label="Mister Bamrungsuk">
       {mark && <LogoMark size={Math.round(size * 1.05)} />}
       <span className="flex flex-col leading-none">
-        <span className="font-display font-semibold tracking-[0.18em] text-gold-400 uppercase" style={{ fontSize: Math.round(size * 0.3) }}>Mister</span>
+        <span className="font-display font-semibold tracking-[0.18em] text-gold-600 uppercase" style={{ fontSize: Math.round(size * 0.3) }}>Mister</span>
         <span className="font-display font-bold text-ink-100 whitespace-nowrap" style={{ fontSize: Math.round(size * 0.52) }}>Bamrungsuk</span>
       </span>
     </span>
@@ -37,7 +37,7 @@ export function Stars({ value, size = 14 }: { value: number | null; size?: numbe
   return (
     <span className="inline-flex items-center gap-0.5" style={{ fontSize: size }}>
       {[1, 2, 3, 4, 5].map((i) => (
-        <span key={i} className={i <= Math.round(value) ? "text-gold-500" : "text-ink-500"}>★</span>
+        <span key={i} className={i <= Math.round(value) ? "text-amber-500" : "text-ink-500"}>★</span>
       ))}
       <span className="ml-1 text-xs text-gold-300 font-medium">{value.toFixed(1)}</span>
     </span>
@@ -61,7 +61,7 @@ export function Sheet({ open, onClose, children, title }: { open: boolean; onClo
     <div className="fixed inset-0 z-50" role="dialog">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] glass rounded-t-3xl animate-[sheetUp_.35s_cubic-bezier(.16,1,.3,1)] max-h-[85dvh] overflow-y-auto">
-        <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 bg-ink-900/80 backdrop-blur border-b border-white/5">
+        <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 bg-ink-900/80 backdrop-blur border-b border-ink-600">
           <h3 className="font-semibold text-ink-100">{title}</h3>
           <button onClick={onClose} className="text-ink-300 hover:text-crimson-300 transition" aria-label="close">✕</button>
         </div>

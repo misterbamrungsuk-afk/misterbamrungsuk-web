@@ -70,12 +70,12 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
   // ตำแหน่งเงินตอนนี้
   const moneyAt =
     step < 2 ? { icon: "👤", label: th ? "อยู่กับลูกค้า (ยังไม่โอน)" : "With hirer (not paid)", tone: "text-ink-300" }
-    : step < 5 ? { icon: "🔒", label: th ? "ระบบกลางกันเงินไว้" : "HELD IN ESCROW", tone: "text-gold-400" }
+    : step < 5 ? { icon: "🔒", label: th ? "ระบบกลางกันเงินไว้" : "HELD IN ESCROW", tone: "text-gold-600" }
     : { icon: "💸", label: th ? "โอนให้หมอแล้ว" : "Released to therapist", tone: "text-emerald-400" };
 
   return (
     <main className="app-frame safe-bottom pb-8">
-      <header className="sticky top-0 z-30 bg-ink-950/90 backdrop-blur-xl border-b border-white/5 px-4 h-14 flex items-center gap-3">
+      <header className="sticky top-0 z-30 bg-ink-950/90 backdrop-blur-xl border-b border-ink-600 px-4 h-14 flex items-center gap-3">
         <Link href="/orders" className="w-10 h-10 -ml-2 rounded-full border border-ink-600 grid place-items-center text-ink-100 text-xl leading-none" aria-label="back">‹</Link>
         <h1 className="font-semibold flex-1">🏦 {th ? "ระบบกลาง (Escrow)" : "Escrow center"}</h1>
         {/* สลับมุมมองบทบาท (เดโม) */}
@@ -91,7 +91,7 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
       <div className="px-4 py-4 space-y-4">
         {/* deal */}
         <div className="glass rounded-2xl p-4 animate-rise">
-          <p className="font-semibold">{order.title} <span className="text-gold-400">({order.hours}{th ? "ชม." : "hrs"})</span></p>
+          <p className="font-semibold">{order.title} <span className="text-gold-600">({order.hours}{th ? "ชม." : "hrs"})</span></p>
           <p className="text-xs text-ink-400 mt-1">📍 {order.place}</p>
           <div className="flex items-center gap-3 mt-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -106,7 +106,7 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
         <div className={`glass rounded-2xl p-5 text-center animate-rise border ${step >= 2 && step < 5 ? "border-gold-500/50" : ""}`}>
           <p className="text-[10px] text-ink-400 uppercase tracking-widest">{th ? "เงินอยู่ที่ไหนตอนนี้" : "Where is the money now"}</p>
           <p className={`text-2xl font-bold mt-1.5 ${moneyAt.tone}`}>{moneyAt.icon} {moneyAt.label}</p>
-          <p className="text-3xl font-black text-gold-400 mt-2">{baht(order.amount)}</p>
+          <p className="text-3xl font-black text-gold-600 mt-2">{baht(order.amount)}</p>
           <div className="flex justify-center gap-4 text-[11px] text-ink-400 mt-2">
             <span>{th ? "ระบบกันไว้" : "Held"}: {step >= 2 && step < 5 ? baht(order.amount) : baht(0)}</span>
             <span>{th ? "หมอจะได้รับ" : "Therapist gets"}: {baht(providerNet)} <span className="text-ink-500">(GP {order.gpPercent}%)</span></span>
@@ -158,7 +158,7 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
                 </>
               )}
               {role === "hirer" && order.state === "awaiting_check" && (
-                <p className="text-center text-sm text-gold-400 py-3">🔎 {th ? "ระบบกลางกำลังตรวจสลิป…" : "Verifying your payment…"}</p>
+                <p className="text-center text-sm text-gold-600 py-3">🔎 {th ? "ระบบกลางกำลังตรวจสลิป…" : "Verifying your payment…"}</p>
               )}
               {role === "hirer" && order.state === "delivered" && (
                 <>
@@ -187,7 +187,7 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
                 </button>
               )}
               {role === "provider" && order.state === "delivered" && (
-                <p className="text-center text-xs text-gold-400 py-3">⏳ {th ? "ส่งงานแล้ว รอลูกค้ากดรับงาน (หรือปล่อยอัตโนมัติ 24 ชม.)" : "Delivered — awaiting approval (auto 24h)"}</p>
+                <p className="text-center text-xs text-gold-600 py-3">⏳ {th ? "ส่งงานแล้ว รอลูกค้ากดรับงาน (หรือปล่อยอัตโนมัติ 24 ชม.)" : "Delivered — awaiting approval (auto 24h)"}</p>
               )}
               {role === "provider" && order.state === "released" && (
                 <div className="glass rounded-2xl p-5 text-center border-emerald-500/40">

@@ -39,7 +39,7 @@ export default function TrackingPage({ params }: { params: Promise<{ id: string 
 
   return (
     <main className="app-frame safe-bottom pb-8">
-      <header className="sticky top-0 z-30 bg-ink-950/90 backdrop-blur-xl border-b border-white/5 px-4 h-14 flex items-center gap-3">
+      <header className="sticky top-0 z-30 bg-ink-950/90 backdrop-blur-xl border-b border-ink-600 px-4 h-14 flex items-center gap-3">
         <Link href="/home" className="w-10 h-10 -ml-2 rounded-full border border-ink-600 grid place-items-center text-ink-100 text-xl leading-none" aria-label="back">‹</Link>
         <h1 className="font-semibold flex-1">📍 {t.tracking}</h1>
         <span className={`chip ${arrived ? "chip-gold" : "chip-red animate-pulse"}`}>● LIVE</span>
@@ -63,7 +63,7 @@ export default function TrackingPage({ params }: { params: Promise<{ id: string 
         <div className="grid grid-cols-3 gap-3 animate-rise">
           <div className="glass rounded-xl p-3 text-center">
             <p className="text-[10px] text-ink-400 uppercase">ETA</p>
-            <p className="text-xl font-bold text-gold-400">{arrived ? "0" : Math.ceil(eta)}<span className="text-xs text-ink-400"> {lang === "th" ? "นาที" : "min"}</span></p>
+            <p className="text-xl font-bold text-gold-600">{arrived ? "0" : Math.ceil(eta)}<span className="text-xs text-ink-400"> {lang === "th" ? "นาที" : "min"}</span></p>
           </div>
           <div className="glass rounded-xl p-3 text-center">
             <p className="text-[10px] text-ink-400 uppercase">{t.orderTimeline}</p>
@@ -71,7 +71,7 @@ export default function TrackingPage({ params }: { params: Promise<{ id: string 
           </div>
           <div className="glass rounded-xl p-3 text-center">
             <p className="text-[10px] text-ink-400 uppercase">{lang === "th" ? "ยอดรวม" : "Total"}</p>
-            <p className="text-xl font-bold text-gold-400">{baht(DEMO_ORDER.totalAmount)}</p>
+            <p className="text-xl font-bold text-gold-600">{baht(DEMO_ORDER.totalAmount)}</p>
           </div>
         </div>
 

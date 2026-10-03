@@ -17,7 +17,7 @@ export default async function DonePage({ params }: { params: Promise<{ mb: strin
       <header className="flex items-center h-16"><Logo size={26} /></header>
 
       <section className="flex flex-col items-center text-center mt-6">
-        <span className="w-24 h-24 rounded-full border-2 border-gold-500 grid place-items-center text-gold-500 shadow-[0_0_40px_rgba(224,164,0,.25)]">
+        <span className="w-24 h-24 rounded-full border-2 border-gold-500 grid place-items-center text-gold-600 shadow-[0_0_40px_rgba(224,164,0,.25)]">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-12 h-12"><path d="m5 12 5 5 9-10" /></svg>
         </span>
         <h1 className="font-display text-3xl font-semibold mt-5">การสมัครเสร็จสมบูรณ์</h1>

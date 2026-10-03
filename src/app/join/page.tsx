@@ -117,7 +117,7 @@ export default function SalePage() {
 
           <header className="relative z-10 flex items-center justify-between px-5 pt-[max(14px,env(safe-area-inset-top))] h-16">
             <Logo size={28} />
-            <span className="text-[10px] font-semibold tracking-[0.25em] text-gold-400 border border-gold-500/40 rounded-full px-3 py-1.5 bg-white/80 backdrop-blur">PREMIUM</span>
+            <span className="text-[10px] font-semibold tracking-[0.25em] text-gold-600 border border-gold-500/40 rounded-full px-3 py-1.5 bg-white/80 backdrop-blur">PREMIUM</span>
           </header>
 
           <div className="relative z-10 mt-auto px-5 pb-8">
@@ -133,7 +133,7 @@ export default function SalePage() {
             <p className="text-[15px] text-ink-200 mt-3 leading-relaxed">รายได้มั่นคง พร้อมการฝึกอบรมมาตรฐานสากล สำหรับดูแลลูกค้า VVIP <span className="text-gold-300">(เฉพาะสุภาพสตรี)</span></p>
 
             {/* แถบตัวเลขความน่าเชื่อถือ */}
-            <div className="grid grid-cols-3 mt-5 rounded-2xl bg-white/[0.06] border border-white/10 backdrop-blur divide-x divide-white/10">
+            <div className="grid grid-cols-3 mt-5 rounded-2xl bg-white/[0.06] border border-ink-600 backdrop-blur divide-x divide-white/10">
               {[
                 [String(closed ? 0 : left), "ที่นั่งคงเหลือ"],
                 ["2 วัน", "อบรมเข้มข้น"],
@@ -165,7 +165,7 @@ export default function SalePage() {
                     <span className="block text-[16px] font-semibold">{w.t}</span>
                     <span className="block text-[13px] text-ink-300 mt-0.5">{w.d}</span>
                   </span>
-                  <span className="w-10 h-10 rounded-full border border-gold-500/40 grid place-items-center text-gold-400 shrink-0">
+                  <span className="w-10 h-10 rounded-full border border-gold-500/40 grid place-items-center text-gold-600 shrink-0">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d={w.icon} /></svg>
                   </span>
                 </div>
@@ -188,7 +188,7 @@ export default function SalePage() {
                       {premium && <span className="absolute -top-3 right-5 rounded-full bg-gold-500 text-[#1a1206] text-[11px] font-bold px-3 py-1 shadow-lg">PREMIUM</span>}
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <p className="text-[11px] font-semibold tracking-[0.2em] text-gold-500">แพ็กเกจ {k}</p>
+                          <p className="text-[11px] font-semibold tracking-[0.2em] text-gold-600">แพ็กเกจ {k}</p>
                           <p className="font-display text-xl font-semibold mt-1">{p.name}</p>
                         </div>
                         <span className={`mt-1 w-7 h-7 rounded-full border-2 grid place-items-center shrink-0 ${on ? "border-gold-400 bg-gold-500" : "border-ink-500"}`}>
@@ -196,14 +196,14 @@ export default function SalePage() {
                         </span>
                       </div>
                       <p className="mt-4 flex items-baseline gap-1">
-                        <span className="text-gold-400 text-lg">฿</span>
+                        <span className="text-gold-600 text-lg">฿</span>
                         <span className="font-display text-[40px] leading-none font-bold text-gradient-gold">{baht(p.price)}</span>
                       </p>
                       <div className="h-px bg-ink-700 my-4" />
                       <ul className="space-y-2.5 text-[14px] text-ink-100">
                         {p.items.map((it) => (
                           <li key={it} className="flex gap-2.5 items-start">
-                            <span className="w-5 h-5 rounded-full bg-gold-500/15 text-gold-400 grid place-items-center text-[11px] shrink-0 mt-0.5">✓</span>{it}
+                            <span className="w-5 h-5 rounded-full bg-gold-500/15 text-gold-600 grid place-items-center text-[11px] shrink-0 mt-0.5">✓</span>{it}
                           </li>
                         ))}
                       </ul>
@@ -224,10 +224,10 @@ export default function SalePage() {
               {FAQ.map((x, i) => {
                 const open = faq === i;
                 return (
-                  <div key={x.q} className={`reveal rounded-2xl border transition-colors ${open ? "border-gold-500/50 bg-white/[0.05]" : "border-white/10 bg-white/[0.02]"}`}>
+                  <div key={x.q} className={`reveal rounded-2xl border transition-colors ${open ? "border-gold-500/50 bg-white/[0.05]" : "border-ink-600 bg-white/[0.02]"}`}>
                     <button onClick={() => setFaq(open ? null : i)} aria-expanded={open} className="w-full min-h-14 px-4 flex items-center justify-between gap-3 text-left text-[15px] font-medium">
                       {x.q}
-                      <span className={`w-7 h-7 rounded-full grid place-items-center shrink-0 transition ${open ? "bg-gold-500 text-[#1a1206] rotate-45" : "bg-ink-700 text-gold-400"}`}>+</span>
+                      <span className={`w-7 h-7 rounded-full grid place-items-center shrink-0 transition ${open ? "bg-gold-500 text-[#1a1206] rotate-45" : "bg-ink-700 text-gold-600"}`}>+</span>
                     </button>
                     <div className={`grid transition-all duration-300 ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
                       <p className="overflow-hidden px-4 text-[14px] text-ink-200 leading-relaxed"><span className="block pb-4">{x.a}</span></p>
@@ -248,8 +248,8 @@ export default function SalePage() {
                 <div className="grid grid-cols-2 gap-2">
                   {(Object.keys(PACKAGES) as PackageKey[]).map((k) => (
                     <button key={k} type="button" onClick={() => set("package", k)} aria-pressed={f.package === k}
-                      className={`rounded-2xl border px-3 py-3 text-left transition ${f.package === k ? "border-gold-500 bg-gold-500/10" : "border-white/10"}`}>
-                      <span className="block text-[11px] text-gold-500 font-semibold">แพ็กเกจ {k}</span>
+                      className={`rounded-2xl border px-3 py-3 text-left transition ${f.package === k ? "border-gold-500 bg-gold-500/10" : "border-ink-600"}`}>
+                      <span className="block text-[11px] text-gold-600 font-semibold">แพ็กเกจ {k}</span>
                       <span className="block text-[13px] font-medium mt-0.5">{PACKAGES[k].name}</span>
                       <span className="block font-display text-gold-300 mt-1">฿{baht(PACKAGES[k].price)}</span>
                     </button>
@@ -352,7 +352,7 @@ export default function SalePage() {
 function SectionHead({ kicker, title, sub }: { kicker: string; title: string; sub?: string }) {
   return (
     <div className="reveal">
-      <p className="text-[11px] font-semibold tracking-[0.25em] text-gold-500">{kicker}</p>
+      <p className="text-[11px] font-semibold tracking-[0.25em] text-gold-600">{kicker}</p>
       <h2 className="font-display text-[26px] font-semibold mt-1 leading-tight">{title}</h2>
       {sub && <p className="text-[13px] text-ink-300 mt-1">{sub}</p>}
     </div>
@@ -390,7 +390,7 @@ function Upload({ label, hint, value, err, onPick }: { label: string; hint: stri
         {value
           // eslint-disable-next-line @next/next/no-img-element
           ? <img src={value} alt={label} className="absolute inset-0 w-full h-full object-cover" />
-          : <span className="flex flex-col items-center gap-1.5 text-gold-400">
+          : <span className="flex flex-col items-center gap-1.5 text-gold-600">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="w-8 h-8"><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
               <span className="text-[11px]">แตะเพื่อเลือก</span>
             </span>}
@@ -418,7 +418,7 @@ function Consent({ checked, onChange, required, children }: { checked: boolean; 
 
 function Card({ title, err, children }: { title: string; err?: string; children: React.ReactNode }) {
   return (
-    <div className={`rounded-3xl border p-4 flex flex-col gap-4 bg-white/[0.03] ${err ? "border-crimson-500" : "border-white/10"}`} data-err={err ? "1" : undefined}>
+    <div className={`rounded-3xl border p-4 flex flex-col gap-4 bg-white/[0.03] ${err ? "border-crimson-500" : "border-ink-600"}`} data-err={err ? "1" : undefined}>
       <p className="text-[15px] font-semibold">{title}</p>
       {children}
       {err && <span role="alert" className="text-xs text-crimson-300 -mt-2">{err}</span>}

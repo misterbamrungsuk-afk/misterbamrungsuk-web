@@ -22,8 +22,8 @@ export default function PostCard({ post }: { post: Post }) {
       </Link>
 
       {post.member.kycVerified && (
-        <span className="absolute top-2.5 left-2.5 h-[22px] px-2 rounded-full bg-ink-950/70 border border-gold-500 text-gold-300 text-[11px] font-semibold flex items-center gap-1 pointer-events-none">
-          ✓ {t.verified}
+        <span className="absolute top-2.5 left-2.5 h-[22px] px-2 rounded-full bg-white/95 shadow-sm text-ink-100 text-[11px] font-semibold flex items-center gap-1 pointer-events-none">
+          <span className="text-emerald-600">✓</span> {t.verified}
         </span>
       )}
       <button
@@ -31,7 +31,7 @@ export default function PostCard({ post }: { post: Post }) {
         aria-label="favorite"
         aria-pressed={fav}
         className={`absolute top-1.5 right-1.5 w-9 h-9 grid place-items-center rounded-full transition
-          ${fav ? "bg-crimson-500 text-white" : "bg-ink-950/60 text-white hover:text-crimson-300"}`}
+          ${fav ? "bg-crimson-500 text-white" : "bg-white/95 shadow-sm text-ink-200 hover:text-crimson-500"}`}
       >
         <svg viewBox="0 0 24 24" fill={fav ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" className="w-[17px] h-[17px]">
           <path d="M12 20s-7-4.4-9-9a4.8 4.8 0 0 1 9-3 4.8 4.8 0 0 1 9 3c-2 4.6-9 9-9 9z" />
@@ -41,7 +41,7 @@ export default function PostCard({ post }: { post: Post }) {
       <Link href={`/post/${post.id}`} className="photo-scrim absolute inset-x-0 bottom-0 pt-10 px-3 pb-3 block">
         <div className="flex items-center justify-between gap-2">
           <p className="font-display font-semibold text-[17px] truncate">{post.member.name}, {post.member.age}</p>
-          {post.rating != null && <span className="text-xs font-semibold text-gold-500 shrink-0">★ {post.rating.toFixed(1)}</span>}
+          {post.rating != null && <span className="shrink-0 inline-flex items-center gap-0.5 h-[22px] px-2 rounded-full bg-white shadow-sm text-[11.5px] font-bold text-ink-100"><span className="text-amber-500">★</span>{post.rating.toFixed(1)}</span>}
         </div>
         <p className="text-xs text-ink-200 truncate">
           {mainCat ? (lang === "th" ? mainCat.th : mainCat.en) : ""} · {post.province}

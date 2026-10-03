@@ -138,14 +138,14 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
 
   const paymentCard = (pay: ChatPayment, mine: boolean) => {
     const statusLabel = pay.status === "created" ? t.statusCreated : pay.status === "slip_uploaded" ? t.statusSlip : t.statusConfirmed;
-    const statusTone = pay.status === "confirmed" ? "text-emerald-400" : pay.status === "slip_uploaded" ? "text-gold-400" : "text-crimson-300";
+    const statusTone = pay.status === "confirmed" ? "text-emerald-400" : pay.status === "slip_uploaded" ? "text-gold-600" : "text-crimson-300";
     return (
       <div className={`glass rounded-2xl p-4 min-w-[240px] ${mine ? "ml-auto border-crimson-500/30" : "border-gold-500/25"}`}>
         <div className="flex items-center justify-between mb-2">
           <span className="chip chip-red">{pay.type === "deposit" ? `💰 ${t.paymentDeposit}` : `🧾 ${t.paymentFinal}`}</span>
           <span className={`text-xs font-semibold ${statusTone}`}>● {statusLabel}</span>
         </div>
-        <p className="text-2xl font-bold text-gold-400">{baht(pay.amount)}</p>
+        <p className="text-2xl font-bold text-gold-600">{baht(pay.amount)}</p>
         {pay.discount > 0 && <p className="text-xs text-emerald-400 mt-0.5">{t.promoCode} {pay.promoCode} −{baht(pay.discount)}</p>}
         <p className="text-xs text-ink-400 mt-1">🏦 {pay.bankLabel}</p>
 
@@ -164,7 +164,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
         {pay.slipUrl && (
           <div className="mt-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={pay.slipUrl} alt="slip" className="rounded-xl w-40 border border-white/10" />
+            <img src={pay.slipUrl} alt="slip" className="rounded-xl w-40 border border-ink-600" />
           </div>
         )}
 
@@ -184,7 +184,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
   return (
     <main className="app-frame flex flex-col h-dvh">
       {/* header */}
-      <header className="sticky top-0 z-30 bg-ink-950/90 backdrop-blur-xl border-b border-white/5">
+      <header className="sticky top-0 z-30 bg-ink-950/90 backdrop-blur-xl border-b border-ink-600">
         <div className="flex items-center gap-2 px-4 h-14">
           <Link href="/chat" className="w-10 h-10 -ml-2 grid place-items-center text-ink-200" aria-label="back">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6"><path d="M15 5l-7 7 7 7" strokeLinecap="round"/></svg>
@@ -193,7 +193,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
           <img src={room.partner.avatar} alt="" className="w-9 h-9 rounded-full bg-ink-700" />
           <div className="flex-1 min-w-0">
             <p className="font-semibold truncate">{room.partner.name}</p>
-            <p className="text-[11px] text-gold-400 truncate">
+            <p className="text-[11px] text-gold-600 truncate">
               {depositConfirmed && finalConfirmed ? t.stCompleted : depositConfirmed ? t.stInProgress : t.stNegotiated}
             </p>
           </div>
@@ -215,7 +215,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
             <div key={i} className="flex items-start flex-1 last:flex-none">
               <div className="flex flex-col items-center shrink-0 w-12">
                 <span className={`w-2.5 h-2.5 rounded-full ${done ? "bg-gold-500 shadow-[0_0_10px_rgba(224,164,0,.6)]" : "bg-ink-600"}`} />
-                <span className={`text-[9px] mt-1 leading-tight text-center max-w-[48px] ${done ? "text-gold-400" : "text-ink-500"}`}>{label as string}</span>
+                <span className={`text-[9px] mt-1 leading-tight text-center max-w-[48px] ${done ? "text-gold-600" : "text-ink-500"}`}>{label as string}</span>
               </div>
               {i < arr.length - 1 && <div className={`h-0.5 flex-1 -mx-4 mt-[4px] ${arr[i + 1][1] ? "bg-gold-500/60" : "bg-ink-600"}`} />}
             </div>
@@ -239,7 +239,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
                 )}
                 <div className="max-w-[70%]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={msg.content} alt="chat image" className="rounded-2xl w-full border border-white/10" />
+                  <img src={msg.content} alt="chat image" className="rounded-2xl w-full border border-ink-600" />
                   <span className={`block text-[9px] mt-1 ${mine ? "text-ink-500 text-right" : "text-ink-500"}`}>{msg.createdAt}</span>
                 </div>
               </div>
@@ -266,7 +266,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
 
       {/* payment action bar (ฝั่งผู้ว่าจ้าง: ปุ่มส่งมัดจำ/ค่าจ้าง; ฝั่งเพื่อน: ยืนยันในการ์ด) */}
       {!(depositConfirmed && finalConfirmed) && (
-        <div className="px-4 pb-2 pt-2 border-t border-white/5 bg-ink-950/80 backdrop-blur flex gap-2">
+        <div className="px-4 pb-2 pt-2 border-t border-ink-600 bg-ink-950/80 backdrop-blur flex gap-2">
           {!depositCreated && (
             <button onClick={() => sendPayment("deposit")} className="btn-crimson rounded-xl px-4 py-2.5 text-xs font-bold flex-1">
               💰 {t.depositBtn} {baht(300 - promoApplied)}
@@ -278,7 +278,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
             </button>
           )}
           {depositCreated && !depositConfirmed && (
-            <span className="flex-1 text-center text-xs text-gold-400 py-2.5">⏳ {lang === "th" ? "รอผู้รับเงินยืนยันมัดจำ…" : "Waiting deposit confirmation…"}</span>
+            <span className="flex-1 text-center text-xs text-gold-600 py-2.5">⏳ {lang === "th" ? "รอผู้รับเงินยืนยันมัดจำ…" : "Waiting deposit confirmation…"}</span>
           )}
           <button onClick={() => setPromoOpen(true)} className="btn-ghost rounded-xl px-3 text-sm">🎟️</button>
         </div>
@@ -286,21 +286,21 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
 
       {/* review unlock */}
       {depositConfirmed && finalConfirmed && !reviewed && (
-        <div className="px-4 pb-2 pt-2 border-t border-white/5 bg-ink-950/80">
+        <div className="px-4 pb-2 pt-2 border-t border-ink-600 bg-ink-950/80">
           <button onClick={() => setReviewOpen(true)} className="btn-crimson w-full rounded-xl py-2.5 text-xs font-bold">⭐ {t.writeReview}</button>
         </div>
       )}
       {reviewed && (
-        <div className="px-4 pb-2 pt-2 border-t border-white/5 text-center text-xs text-gold-400 py-3">⭐ {t.stReviewed}</div>
+        <div className="px-4 pb-2 pt-2 border-t border-ink-600 text-center text-xs text-gold-600 py-3">⭐ {t.stReviewed}</div>
       )}
 
       {/* input */}
       {blocked ? (
-        <div className="px-4 pb-[calc(14px+env(safe-area-inset-bottom))] pt-2 border-t border-white/5 bg-ink-950/90 text-center">
+        <div className="px-4 pb-[calc(14px+env(safe-area-inset-bottom))] pt-2 border-t border-ink-600 bg-ink-950/90 text-center">
           <p className="text-xs text-ink-400">🚫 {t.blocked} — <button onClick={() => setBlocked(false)} className="text-crimson-300 underline">{t.unblock}</button></p>
         </div>
       ) : (
-        <div className="px-3 pb-[calc(12px+env(safe-area-inset-bottom))] pt-1 flex gap-2 items-center border-t border-white/5 bg-ink-950/90">
+        <div className="px-3 pb-[calc(12px+env(safe-area-inset-bottom))] pt-1 flex gap-2 items-center border-t border-ink-600 bg-ink-950/90">
           <button onClick={() => setInput((v) => v + "🙏")} className="w-10 h-10 shrink-0 grid place-items-center text-ink-300 hover:text-gold-300 text-xl" aria-label="emoji">😊</button>
           <button onClick={pickImage} className="w-10 h-10 shrink-0 grid place-items-center text-ink-300 hover:text-gold-300 text-xl" aria-label="attach image">📎</button>
           <input
@@ -355,7 +355,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
       <Sheet open={reviewOpen} onClose={() => setReviewOpen(false)} title={t.writeReview}>
         <div className="flex gap-2 justify-center mb-4">
           {[1, 2, 3, 4, 5].map((i) => (
-            <button key={i} onClick={() => setRating(i)} className={`text-3xl ${i <= rating ? "text-gold-500" : "text-ink-600"}`}>★</button>
+            <button key={i} onClick={() => setRating(i)} className={`text-3xl ${i <= rating ? "text-amber-500" : "text-ink-600"}`}>★</button>
           ))}
         </div>
         <Field label={t.writeReview}>

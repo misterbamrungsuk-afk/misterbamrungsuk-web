@@ -56,7 +56,7 @@ export default function AvailabilityPage() {
         <div className="glass rounded-3xl p-4">
           <div className="flex justify-between text-sm mb-2">
             <span>{th ? "รัศมีรับงาน" : "Service radius"}</span>
-            <b className="text-gold-400">{radius} km</b>
+            <b className="text-gold-600">{radius} km</b>
           </div>
           <input type="range" min={2} max={20} value={radius} onChange={(e) => setRadius(Number(e.target.value))} className="w-full h-9 accent-[#e5484d]" aria-label={th ? "รัศมี" : "Radius"} />
           <div className="flex justify-between text-[10px] text-ink-400"><span>2 km</span><span>20 km</span></div>

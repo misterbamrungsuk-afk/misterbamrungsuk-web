@@ -92,8 +92,8 @@ export default function SearchPage() {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={p.images[0]} alt="" className="w-[84px] h-[104px] rounded-2xl object-cover shrink-0" />
                   <div className="flex-1 min-w-0 flex flex-col gap-1">
-                    <p className="font-semibold truncate">{p.member.name}{p.member.age ? `, ${p.member.age}` : ""} {p.member.kycVerified && <span className="text-gold-500">✓</span>}</p>
-                    <p className="text-xs text-ink-300 truncate"><span className="text-gold-300">★ {p.rating?.toFixed(1) ?? "–"}</span> · {d < 1 ? `${Math.round(d * 1000)} ${th ? "ม." : "m"}` : `${d.toFixed(1)} ${th ? "กม." : "km"}`} · {p.serviceArea}</p>
+                    <p className="font-semibold truncate">{p.member.name}{p.member.age ? `, ${p.member.age}` : ""} {p.member.kycVerified && <span className="text-gold-600">✓</span>}</p>
+                    <p className="text-xs text-ink-300 truncate"><span className="font-semibold text-ink-100"><span className="text-amber-500">★</span> {p.rating?.toFixed(1) ?? "–"}</span> · {d < 1 ? `${Math.round(d * 1000)} ${th ? "ม." : "m"}` : `${d.toFixed(1)} ${th ? "กม." : "km"}`} · {p.serviceArea}</p>
                     <div className="flex flex-wrap gap-1 mt-0.5">
                       {p.categories.slice(0, 2).map((c) => <span key={c} className="text-[11px] h-6 px-2 rounded-full border border-ink-600 text-ink-300 inline-flex items-center">{th ? catBySlug(c)?.th : catBySlug(c)?.en}</span>)}
                     </div>

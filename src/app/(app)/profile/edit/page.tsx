@@ -41,7 +41,7 @@ export default function EditProfilePage() {
           <div className="flex gap-3 flex-wrap">
             {avatarPool.map((u) => (
               <button key={u} onClick={() => setAvatarUrl(u)}
-                className={`w-16 h-16 rounded-full overflow-hidden border-2 transition ${avatarUrl === u ? "border-crimson-500 scale-105" : "border-white/10"}`}>
+                className={`w-16 h-16 rounded-full overflow-hidden border-2 transition ${avatarUrl === u ? "border-crimson-500 scale-105" : "border-ink-600"}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={u} alt="" className="w-full h-full object-cover" />
               </button>

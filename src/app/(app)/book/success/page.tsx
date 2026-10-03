@@ -43,7 +43,7 @@ function SuccessInner() {
 
   return (
     <main className="px-4 pt-12 pb-10 flex flex-col items-center text-center gap-2 animate-rise">
-      <div className="w-24 h-24 rounded-full border border-gold-500 grid place-items-center text-gold-500">
+      <div className="w-24 h-24 rounded-full border border-gold-500 grid place-items-center text-gold-600">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-12 h-12"><path d="m5 12 5 5 9-10" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </div>
       <h1 className="text-[28px] font-semibold mt-3">{th ? "จองสำเร็จ" : "Booked!"}</h1>

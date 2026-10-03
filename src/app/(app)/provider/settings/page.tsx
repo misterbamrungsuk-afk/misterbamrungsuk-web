@@ -69,12 +69,12 @@ export default function ProviderSettingsPage() {
                   </div>
                   {a.primary ? <span className="chip chip-gold shrink-0">{th ? "หลัก" : "Primary"}</span> : (
                     <button onClick={() => { setAccounts(accounts.map((x, j) => ({ ...x, primary: j === i }))); say(th ? "ตั้งเป็นบัญชีหลักแล้ว" : "Set as primary"); }}
-                      className="min-h-9 px-2 text-xs text-gold-400 shrink-0">{th ? "ตั้งเป็นหลัก" : "Make primary"}</button>
+                      className="min-h-9 px-2 text-xs text-gold-600 shrink-0">{th ? "ตั้งเป็นหลัก" : "Make primary"}</button>
                   )}
                 </div>
               );
             })}
-            <button onClick={() => say(th ? "เพิ่มบัญชีได้ในขั้นตอนสมัคร (ขั้น 3)" : "Add accounts in the apply flow (step 3)")} className="w-full px-4 py-3 text-sm text-left text-gold-400">+ {th ? "เพิ่มบัญชี" : "Add account"}</button>
+            <button onClick={() => say(th ? "เพิ่มบัญชีได้ในขั้นตอนสมัคร (ขั้น 3)" : "Add accounts in the apply flow (step 3)")} className="w-full px-4 py-3 text-sm text-left text-gold-600">+ {th ? "เพิ่มบัญชี" : "Add account"}</button>
           </div>
         </div>
 

@@ -47,7 +47,7 @@ function CompleteInner({ id }: { id: string }) {
         <div className="flex gap-1" role="radiogroup" aria-label={th ? "คะแนน" : "Rating"}>
           {[1, 2, 3, 4, 5].map((n) => (
             <button key={n} onClick={() => setStars(n)} role="radio" aria-checked={stars === n} aria-label={`${n} ${th ? "ดาว" : "stars"}`}
-              className={`w-11 h-11 grid place-items-center text-3xl transition ${n <= stars ? "text-gold-500" : "text-ink-600"}`}>★</button>
+              className={`w-11 h-11 grid place-items-center text-3xl transition ${n <= stars ? "text-amber-500" : "text-ink-600"}`}>★</button>
           ))}
         </div>
         <div className="flex flex-wrap justify-center gap-2">
@@ -83,7 +83,7 @@ function CompleteInner({ id }: { id: string }) {
         </button>
         <div className="flex justify-between text-sm">
           <Link href={`/order/${id}/dispute`} className="min-h-10 inline-flex items-center text-ink-300">{th ? "มีปัญหา? เปิดข้อพิพาท" : "Problem? Open a dispute"}</Link>
-          {post && <Link href={`/book/${post.id}`} className="min-h-10 inline-flex items-center text-gold-500">{th ? "จองคนนี้อีกครั้ง" : "Book again"}</Link>}
+          {post && <Link href={`/book/${post.id}`} className="min-h-10 inline-flex items-center text-gold-600">{th ? "จองคนนี้อีกครั้ง" : "Book again"}</Link>}
         </div>
         <p className="text-xs text-ink-300 text-center">{th ? "ถ้าไม่ยืนยันภายใน 24 ชม. ระบบจะปล่อยเงินอัตโนมัติ" : "Auto-released after 24h if not confirmed"}</p>
       </div>

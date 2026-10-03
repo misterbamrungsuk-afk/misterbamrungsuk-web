@@ -43,7 +43,7 @@ export default function LoginPage() {
 
       <section className="absolute inset-x-0 bottom-0 z-10 px-6 pb-9 flex flex-col gap-5 animate-rise">
         <div>
-          <p className="text-[12px] font-semibold tracking-[0.18em] text-gold-500">PREMIUM MALE MASSAGE</p>
+          <p className="text-[12px] font-semibold tracking-[0.18em] text-gold-600">PREMIUM MALE MASSAGE</p>
           <h1 className="font-display text-[30px] leading-tight font-bold mt-1.5"><span className="whitespace-nowrap">ผ่อนคลายแบบมืออาชีพ</span><br />ถึงที่ของคุณ</h1>
           <p className="text-ink-200 text-[15px] mt-2.5 leading-relaxed">{t.brandSub}</p>
         </div>
@@ -60,7 +60,7 @@ export default function LoginPage() {
         </button>
 
         <p className="flex items-center gap-2 text-[13px] text-ink-300">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-5 h-5 text-gold-500 shrink-0"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-5 h-5 text-gold-600 shrink-0"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
           {t.loginHint}
         </p>
 

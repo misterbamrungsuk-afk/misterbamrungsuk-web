@@ -39,7 +39,7 @@ export default function OnboardingPage() {
       </div>
       <div key={i} className="flex-1 flex flex-col items-center justify-center text-center animate-rise">
         <div className="w-40 h-40 rounded-full glass grid place-items-center text-6xl">{s.icon}</div>
-        <p className="text-xs font-semibold tracking-[0.18em] text-gold-500 mt-8">STEP {i + 1} / {slides.length}</p>
+        <p className="text-xs font-semibold tracking-[0.18em] text-gold-600 mt-8">STEP {i + 1} / {slides.length}</p>
         <h1 className="font-display text-2xl font-bold mt-2">{s.t}</h1>
         <p className="text-ink-300 mt-2 max-w-xs">{s.d}</p>
       </div>

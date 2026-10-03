@@ -70,5 +70,5 @@ export default function LiveMap({
     if (followIdx !== undefined) map.current.panTo([p.lat, p.lng], { animate: true });
   }, [points, followIdx]);
 
-  return <div ref={el} style={{ height }} className={`rounded-2xl border border-white/10 z-0 ${className}`} />;
+  return <div ref={el} style={{ height }} className={`rounded-2xl border border-ink-600 z-0 ${className}`} />;
 }

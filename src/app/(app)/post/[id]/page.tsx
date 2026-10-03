@@ -62,8 +62,8 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
               <p className="text-xs text-ink-300 mt-1">🕓 {post.workingHours} · 📍 {post.province}</p>
             </div>
             <div className="text-right shrink-0">
-              <p className="font-display font-semibold text-lg text-gold-400">{baht(post.pricePerHour)}<span className="text-xs text-ink-300 font-normal">{t.perHour}</span></p>
-              <p className="text-xs text-ink-300 flex items-center justify-end gap-1"><span className="text-gold-500">★</span> {(post.rating ?? 0).toFixed(1)} ({post.reviewCount} {lang === "th" ? "รีวิว" : "reviews"})</p>
+              <p className="font-display font-semibold text-lg text-gold-600">{baht(post.pricePerHour)}<span className="text-xs text-ink-300 font-normal">{t.perHour}</span></p>
+              <p className="text-xs text-ink-300 flex items-center justify-end gap-1"><span className="text-amber-500">★</span> {(post.rating ?? 0).toFixed(1)} ({post.reviewCount} {lang === "th" ? "รีวิว" : "reviews"})</p>
             </div>
           </div>
 
@@ -76,7 +76,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
               ["M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z", lang === "th" ? "มัดจำ" : "Deposit", baht(post.deposit)],
             ].map(([d, k, v]) => (
               <div key={k} className="flex flex-col items-center gap-1 text-center px-1 min-w-0">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-gold-500"><path d={d} /></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-gold-600"><path d={d} /></svg>
                 <span className="text-[11px] text-ink-300">{k}</span>
                 <span className="text-xs font-medium truncate max-w-full">{v}</span>
               </div>
@@ -194,7 +194,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
       <Sheet open={reviewOpen} onClose={() => setReviewOpen(false)} title={t.writeReview}>
         <div className="flex gap-2 justify-center mb-4">
           {[1, 2, 3, 4, 5].map((i) => (
-            <button key={i} onClick={() => setRating(i)} className={`text-3xl transition ${i <= rating ? "text-gold-500" : "text-ink-600"}`}>★</button>
+            <button key={i} onClick={() => setRating(i)} className={`text-3xl transition ${i <= rating ? "text-amber-500" : "text-ink-600"}`}>★</button>
           ))}
         </div>
         <Field label={t.writeReview}>

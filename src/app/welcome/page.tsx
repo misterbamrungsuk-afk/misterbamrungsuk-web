@@ -23,7 +23,7 @@ export default function WelcomePage() {
 
   return (
     <main className="min-h-dvh bg-ink-950 text-ink-100 overflow-x-hidden">
-      <header className="sticky top-0 z-20 bg-ink-950/80 backdrop-blur border-b border-white/5">
+      <header className="sticky top-0 z-20 bg-ink-950/80 backdrop-blur border-b border-ink-600">
         <div className="mx-auto max-w-6xl px-4 h-16 flex items-center justify-between gap-3">
           <Logo size={24} />
           <nav className="hidden md:flex gap-6 text-sm text-ink-300">
@@ -40,7 +40,7 @@ export default function WelcomePage() {
 
       <section className="mx-auto max-w-6xl px-4 pt-10 pb-12 md:pt-20 grid md:grid-cols-2 gap-10 items-center">
         <div>
-          <p className="text-xs font-semibold tracking-[0.18em] text-gold-500">PREMIUM MALE MASSAGE · BANGKOK</p>
+          <p className="text-xs font-semibold tracking-[0.18em] text-gold-600">PREMIUM MALE MASSAGE · BANGKOK</p>
           <h1 className="font-display text-[32px] md:text-5xl leading-tight font-bold mt-3">{th ? "หมอนวดชายมืออาชีพ มาหาคุณถึงที่" : "Professional male therapists, at your door"}</h1>
           <p className="text-ink-300 mt-4 text-[15px] leading-relaxed">{th ? "หมอนวดทุกคนยืนยันตัวตนและใบรับรอง จองง่าย จ่ายผ่านระบบกลางที่ปลอดภัย" : "Every therapist is ID- and certificate-verified. Easy booking, secure escrow payments."}</p>
           <div className="flex flex-wrap gap-3 mt-7">
@@ -57,12 +57,12 @@ export default function WelcomePage() {
       </section>
 
       <section id="how" className="mx-auto max-w-6xl px-4 py-12">
-        <p className="text-xs font-semibold tracking-[0.18em] text-gold-500">HOW IT WORKS</p>
+        <p className="text-xs font-semibold tracking-[0.18em] text-gold-600">HOW IT WORKS</p>
         <h2 className="font-display text-2xl md:text-3xl font-bold mt-2">{th ? "ใช้งานง่ายใน 3 ขั้นตอน" : "Three simple steps"}</h2>
         <div className="grid md:grid-cols-3 gap-4 mt-6">
           {steps.map((s) => (
             <div key={s.n} className="glass rounded-3xl p-6">
-              <span className="font-display text-gold-500 text-2xl font-bold">{s.n}</span>
+              <span className="font-display text-gold-600 text-2xl font-bold">{s.n}</span>
               <h3 className="font-semibold mt-2">{s.t}</h3>
               <p className="text-sm text-ink-400 mt-1">{s.d}</p>
             </div>
@@ -71,7 +71,7 @@ export default function WelcomePage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-12">
-        <p className="text-xs font-semibold tracking-[0.18em] text-gold-500">FEATURED</p>
+        <p className="text-xs font-semibold tracking-[0.18em] text-gold-600">FEATURED</p>
         <h2 className="font-display text-2xl md:text-3xl font-bold mt-2">{th ? "หมอนวดแนะนำ" : "Featured therapists"}</h2>
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mt-6">
           {featured.map((p) => (
@@ -79,7 +79,7 @@ export default function WelcomePage() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={p.images[0] || p.member.avatar} alt={p.member.name} className="absolute inset-0 w-full h-full object-cover" />
               <div className="absolute inset-x-0 bottom-0 p-4 pt-14 bg-gradient-to-t from-ink-950 via-ink-950/80 to-transparent">
-                <p className="font-display font-semibold text-lg">{p.member.name}{p.member.kycVerified && <span className="text-gold-500 text-sm"> ✓</span>}</p>
+                <p className="font-display font-semibold text-lg">{p.member.name}{p.member.kycVerified && <span className="text-gold-600 text-sm"> ✓</span>}</p>
                 <p className="text-xs text-ink-300 truncate">{p.serviceArea}</p>
                 <div className="flex items-center justify-between mt-1.5 gap-2">
                   <Stars value={p.rating} size={12} />
@@ -92,7 +92,7 @@ export default function WelcomePage() {
       </section>
 
       <section id="safety" className="mx-auto max-w-6xl px-4 py-12">
-        <p className="text-xs font-semibold tracking-[0.18em] text-gold-500">TRUST &amp; SAFETY</p>
+        <p className="text-xs font-semibold tracking-[0.18em] text-gold-600">TRUST &amp; SAFETY</p>
         <h2 className="font-display text-2xl md:text-3xl font-bold mt-2">{th ? "ปลอดภัยทุกขั้นตอน" : "Safe at every step"}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
           {trust.map((x) => (
@@ -118,7 +118,7 @@ export default function WelcomePage() {
         </div>
       </section>
 
-      <footer className="mx-auto max-w-6xl px-4 py-8 text-xs text-ink-500 border-t border-white/5">
+      <footer className="mx-auto max-w-6xl px-4 py-8 text-xs text-ink-500 border-t border-ink-600">
         © 2026 Mister Bamrungsuk · {th ? "สำหรับผู้มีอายุ 18 ปีขึ้นไป · นวดเพื่อสุขภาพเท่านั้น" : "18+ only · Wellness massage only"}
       </footer>
     </main>

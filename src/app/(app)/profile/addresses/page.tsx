@@ -43,7 +43,7 @@ export default function AddressesPage() {
             <div className="flex-1 min-w-0">
               <p className="font-medium truncate">{a.label} {def === a.id && <span className="chip chip-gold ml-1">{th ? "หลัก" : "Default"}</span>}</p>
               <p className="text-xs text-ink-300 truncate">{a.detail}{a.note ? ` · ${a.note}` : ""}</p>
-              {def !== a.id && <button onClick={() => { setDef(a.id); flash(th ? "ตั้งเป็นที่อยู่หลักแล้ว" : "Set as default"); }} className="text-xs text-gold-500 min-h-9">{th ? "ตั้งเป็นหลัก" : "Set default"}</button>}
+              {def !== a.id && <button onClick={() => { setDef(a.id); flash(th ? "ตั้งเป็นที่อยู่หลักแล้ว" : "Set as default"); }} className="text-xs text-gold-600 min-h-9">{th ? "ตั้งเป็นหลัก" : "Set default"}</button>}
             </div>
             <button onClick={() => setEdit(a)} className="btn-ghost rounded-full h-9 px-3.5 text-xs shrink-0">{th ? "แก้ไข" : "Edit"}</button>
           </div>

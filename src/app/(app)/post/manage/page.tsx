@@ -42,7 +42,7 @@ export default function MyPostPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-bold">{post.member.name}</p>
-                  <p className="text-gold-400 font-semibold">{baht(post.pricePerHour)}{t.perHour}</p>
+                  <p className="text-gold-600 font-semibold">{baht(post.pricePerHour)}{t.perHour}</p>
                 </div>
                 <div className="flex flex-wrap gap-1 justify-end max-w-[55%]">
                   {post.categories.slice(0, 4).map((c) => {

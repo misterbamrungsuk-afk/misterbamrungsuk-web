@@ -46,8 +46,8 @@ export default function EarningsPage() {
 
         <div className="glass rounded-3xl p-5 border-gold-500/40">
           <p className="text-xs text-ink-400">{th ? "รายได้สุทธิ" : "Net earnings"}</p>
-          <p className="font-display text-3xl font-bold text-gold-400 mt-1">{baht(TOTAL[period])}</p>
-          <div className="flex items-center justify-between gap-3 mt-4 pt-4 border-t border-white/5">
+          <p className="font-display text-3xl font-bold text-gold-600 mt-1">{baht(TOTAL[period])}</p>
+          <div className="flex items-center justify-between gap-3 mt-4 pt-4 border-t border-ink-600">
             <div className="min-w-0">
               <p className="text-xs text-ink-400">{th ? "ถอนได้" : "Withdrawable"}</p>
               <p className="font-display text-xl text-gold-300">{baht(balance)}</p>

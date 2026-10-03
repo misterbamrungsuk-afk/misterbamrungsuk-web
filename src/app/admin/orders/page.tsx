@@ -68,7 +68,7 @@ export default function AdminOrdersPage() {
               <li>ตรวจสลิปผ่าน · เงินถูกกัน</li>
               <li className={sel.status === "released" ? "" : "text-ink-300"}>{sel.status === "cancelled" ? "ยกเลิก · คืนเงินลูกค้า" : "ปล่อยเงินให้หมอ (หรืออัตโนมัติใน 24 ชม.)"}</li>
             </ol>
-            <Link href="/escrow/o1" className="text-sm text-gold-500 min-h-9 inline-flex items-center">ดูหน้าระบบกลางเงินของออเดอร์ →</Link>
+            <Link href="/escrow/o1" className="text-sm text-gold-600 min-h-9 inline-flex items-center">ดูหน้าระบบกลางเงินของออเดอร์ →</Link>
             <div className="flex gap-2">
               <button onClick={() => setStatus("cancelled", `ยกเลิก ${sel.id} และคืนเงินลูกค้าแล้ว`)} disabled={!open} className="flex-1 h-11 rounded-xl border border-crimson-500 text-crimson-200 disabled:opacity-40">ยกเลิก + คืนเงิน</button>
               <button onClick={() => setStatus("released", `ปิดงาน ${sel.id} · ปล่อยเงินให้หมอแล้ว`)} disabled={!open} className="flex-1 h-11 rounded-xl bg-crimson-500 text-white font-semibold disabled:opacity-40">ปิดงาน</button>
