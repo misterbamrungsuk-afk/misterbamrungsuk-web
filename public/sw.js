@@ -1,8 +1,8 @@
-// MorD service worker — PWA ขั้นพื้นฐาน
+// Mister Bamrungsuk service worker — PWA ขั้นพื้นฐาน
 // - static assets (_next/static, ไอคอน, ฟอนต์): cache-first
 // - หน้าเว็บ: network-first ถ้าเน็ตหลุดใช้ของที่แคชไว้ ไม่มีก็แสดง /offline
 // - API และข้อมูลเงิน/แชท: ไม่แคชเด็ดขาด (ต้องสดเสมอ)
-const VERSION = "mord-v2"; // เปลี่ยนเลขเมื่อไอคอน/แอปเปลี่ยน เพื่อล้างแคชเก่า
+const VERSION = "mb-v1"; // เปลี่ยนเลขเมื่อไอคอน/แอปเปลี่ยน เพื่อล้างแคชเก่า
 const STATIC = `${VERSION}-static`;
 const PAGES = `${VERSION}-pages`;
 const PRECACHE = ["/offline", "/pwa-icon/192", "/pwa-icon/512"];

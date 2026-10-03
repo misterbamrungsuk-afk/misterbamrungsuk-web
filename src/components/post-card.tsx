@@ -7,7 +7,7 @@ import { baht } from "./ui";
 import { catBySlug } from "@/lib/categories";
 import type { Post } from "@/lib/types";
 
-// การ์ดแบบรูปเต็ม (photo-first) ตามดีไซน์ MorD v2 — ใช้ในกริด 2 คอลัมน์
+// การ์ดแบบรูปเต็ม (photo-first) ตามดีไซน์ Mister Bamrungsuk v2 — ใช้ในกริด 2 คอลัมน์
 export default function PostCard({ post }: { post: Post }) {
   const { t, lang } = useI18n();
   const [fav, setFav] = useState(false);

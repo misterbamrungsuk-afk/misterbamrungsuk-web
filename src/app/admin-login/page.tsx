@@ -1,8 +1,9 @@
 import { usingDemoAccounts, adminLoginEnabled, DEMO_ADMIN_EMAILS } from "@/lib/admin-accounts";
 import { ROLE_LABEL, type AdminRole } from "@/lib/admin-auth";
 import { AdminLoginForm } from "./form";
+import { Logo } from "@/components/ui";
 
-export const metadata = { title: "เข้าสู่ระบบแอดมิน — MorD" };
+export const metadata = { title: "เข้าสู่ระบบแอดมิน — Mister Bamrungsuk" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminLoginPage({ searchParams }: { searchParams: Promise<{ next?: string; denied?: string }> }) {
@@ -15,7 +16,8 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
     <main className="min-h-dvh grid lg:grid-cols-[520px_1fr]">
       <section className="px-6 sm:px-12 py-12 lg:py-20 flex flex-col gap-5 max-w-[520px] w-full mx-auto">
         <div>
-          <p className="font-display font-extrabold text-3xl">Mor<span className="text-gold-500">D</span></p>
+          <a href="/home" className="inline-flex items-center gap-1 text-sm text-gold-300 min-h-9 mb-4">← กลับหน้าแอป</a>
+          <Logo size={32} />
           <p className="text-[11px] font-semibold tracking-[0.15em] text-gold-500 mt-1">ADMIN CONSOLE</p>
         </div>
         <h1 className="text-2xl font-semibold mt-6">เข้าสู่ระบบแอดมิน</h1>

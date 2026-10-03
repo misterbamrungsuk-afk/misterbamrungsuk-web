@@ -61,7 +61,7 @@ export default function SOSPage() {
 
   function share() {
     if (!coords) { setMsg(th ? "ยังไม่ได้ตำแหน่ง GPS" : "No GPS location yet"); return; }
-    const text = `SOS MorD — ${th ? "ตำแหน่งของฉัน" : "my location"}: https://maps.google.com/?q=${coords.lat},${coords.lng}`;
+    const text = `SOS Mister Bamrungsuk — ${th ? "ตำแหน่งของฉัน" : "my location"}: https://maps.google.com/?q=${coords.lat},${coords.lng}`;
     if (navigator.share) navigator.share({ text }).catch(() => {});
     else navigator.clipboard?.writeText(text).then(() => setMsg(th ? "คัดลอกลิงก์ตำแหน่งแล้ว" : "Location link copied"));
   }
@@ -75,7 +75,7 @@ export default function SOSPage() {
         {status === "sent" ? (th ? "แจ้งทีมงานแล้ว" : "Team alerted") : countdown != null ? (th ? "กำลังส่ง SOS" : "Sending SOS") : (th ? "ขอความช่วยเหลือฉุกเฉิน" : "Emergency help")}
       </h1>
       <p className="text-sm text-ink-400 text-center mt-1">
-        {status === "sent" ? (th ? "ทีมงาน MorD จะติดต่อกลับทันที" : "The MorD team will contact you right away")
+        {status === "sent" ? (th ? "ทีมงาน Mister Bamrungsuk จะติดต่อกลับทันที" : "The Mister Bamrungsuk team will contact you right away")
           : countdown != null ? (th ? "แตะยกเลิกได้ภายในเวลาที่เหลือ" : "Tap cancel before time runs out")
           : (th ? "แตะปุ่มเพื่อส่ง SOS (ยกเลิกได้ใน 3 วินาที)" : "Tap to send SOS (3s to cancel)")}
       </p>

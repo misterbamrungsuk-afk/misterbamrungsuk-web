@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useI18n, LangToggle } from "@/i18n/provider";
 import { Logo } from "./ui";
+import { ModeSwitch, useMode } from "./mode-switch";
 import type { ReactNode } from "react";
 
 const icons = {
@@ -19,45 +20,60 @@ const icons = {
   chat: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-6 h-6"><path d="M21 12a8 8 0 01-8 8H4l2.5-2.5A8 8 0 1121 12z" strokeLinejoin="round"/></svg>
   ),
+  jobs: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-6 h-6"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/></svg>
+  ),
+  incoming: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6"><path d="M18 10a6 6 0 10-12 0c0 6-2 7-2 7h16s-2-1-2-7M10.3 21a2 2 0 003.4 0" strokeLinecap="round"/></svg>
+  ),
   profile: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-6 h-6"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-3.7 4.4-5.5 8-5.5s6.5 1.8 8 5.5"/></svg>
   ),
 };
 
+type Tab = { href: string; key: keyof typeof icons; label: string; center?: boolean; badge?: number; match?: RegExp };
+
 export function TabBar({ unread = 0 }: { unread?: number }) {
   const { t, lang } = useI18n();
   const path = usePathname();
-  const tabs = [
-    { href: "/home", key: "home", label: t.nav.home },
-    { href: "/map", key: "map", label: lang === "th" ? "ใกล้ฉัน" : "Nearby" },
-    { href: "/matching", key: "quick", label: t.quickMatch },
-    { href: "/chat", key: "chat", label: t.nav.chat, badge: unread },
-    { href: "/profile", key: "profile", label: t.nav.profile },
-  ] as const;
+  const mode = useMode();
+  const th = lang === "th";
+  // เมนูล่างเปลี่ยนตามโหมด: ลูกค้า / หมอ
+  const tabs: Tab[] = mode === "provider"
+    ? [
+        { href: "/provider", key: "home", label: th ? "แดชบอร์ด" : "Dashboard", match: /^\/provider$|^\/provider\/(earnings|availability|reviews|strikes|job)/ },
+        { href: "/jobs", key: "jobs", label: th ? "ประกาศงาน" : "Jobs" },
+        { href: "/provider/incoming", key: "incoming", label: th ? "งานเข้า" : "Incoming", center: true },
+        { href: "/chat", key: "chat", label: t.nav.chat, badge: unread },
+        { href: "/provider/settings", key: "profile", label: th ? "ตั้งค่า" : "Settings" },
+      ]
+    : [
+        { href: "/home", key: "home", label: t.nav.home },
+        { href: "/map", key: "map", label: th ? "ใกล้ฉัน" : "Nearby" },
+        { href: "/matching", key: "quick", label: t.quickMatch, center: true },
+        { href: "/chat", key: "chat", label: t.nav.chat, badge: unread },
+        { href: "/profile", key: "profile", label: t.nav.profile },
+      ];
 
   return (
     <nav className="fixed left-1/2 -translate-x-1/2 w-[calc(100%-24px)] max-w-[456px] z-40 rounded-3xl border border-ink-600 bg-ink-800/95 backdrop-blur-xl" style={{ bottom: "calc(14px + env(safe-area-inset-bottom))" }}>
       <div className="grid grid-cols-5 h-[68px] items-center">
         {tabs.map((tab) => {
-          const active = path.startsWith(tab.href);
-          if (tab.key === "quick") {
+          const active = tab.match ? tab.match.test(path) : path === tab.href || path.startsWith(tab.href + "/");
+          if (tab.center) {
             return (
               <Link key={tab.key} href={tab.href} aria-label={tab.label} className="grid place-items-center">
-                <span className="w-12 h-12 rounded-2xl bg-crimson-500 text-white grid place-items-center transition active:scale-95">{icons.quick}</span>
+                <span className={`w-12 h-12 rounded-2xl text-white grid place-items-center transition active:scale-95 ${active ? "bg-crimson-600 ring-2 ring-crimson-300" : "bg-crimson-500"}`}>{icons[tab.key]}</span>
               </Link>
             );
           }
-          const badge = "badge" in tab ? tab.badge : 0;
           return (
-            <Link
-              key={tab.key}
-              href={tab.href}
-              className={`relative flex flex-col items-center gap-1 transition-colors ${active ? "text-ink-100" : "text-ink-300 hover:text-ink-200"}`}
-            >
-              <span className={`relative grid place-items-center transition-all ${active ? "w-12 h-12 -mt-7 rounded-full bg-gold-500 text-ink-950 ring-4 ring-ink-900 shadow-[0_6px_18px_rgba(245,183,0,0.35)]" : ""}`}>
+            <Link key={tab.key} href={tab.href}
+              className={`relative flex flex-col items-center gap-1 transition-colors ${active ? "text-gold-300" : "text-ink-300 hover:text-ink-200"}`}>
+              <span className="relative">
                 {icons[tab.key]}
-                {badge ? (
-                  <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-crimson-500 text-[10px] font-bold text-white grid place-items-center">{badge}</span>
+                {tab.badge ? (
+                  <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-crimson-500 text-[10px] font-bold text-white grid place-items-center">{tab.badge}</span>
                 ) : null}
               </span>
               <span className="text-[11px]">{tab.label}</span>
@@ -70,6 +86,9 @@ export function TabBar({ unread = 0 }: { unread?: number }) {
 }
 
 export function TopBar({ title, back, right, notis = 0 }: { title?: ReactNode; back?: string; right?: ReactNode; notis?: number }) {
+  const path = usePathname();
+  // สวิตช์โหมดแสดงบนหน้าหลักของแต่ละโหมด
+  const showMode = !back || path === "/provider" || path === "/jobs";
   return (
     <header className="sticky top-0 z-30 bg-ink-900/90 backdrop-blur-xl border-b border-ink-600/60">
       <div className="flex items-center gap-3 px-4 h-14">
@@ -93,6 +112,11 @@ export function TopBar({ title, back, right, notis = 0 }: { title?: ReactNode; b
           </div>
         )}
       </div>
+      {showMode && (
+        <div className="px-4 pb-2.5">
+          <ModeSwitch />
+        </div>
+      )}
     </header>
   );
 }

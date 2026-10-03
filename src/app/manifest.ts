@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "MorD — หมอนวดชายมืออาชีพ",
-    short_name: "MorD",
+    name: "Mister Bamrungsuk — หมอนวดชายมืออาชีพ",
+    short_name: "Bamrungsuk",
     description: "จองหมอนวดชายที่ยืนยันตัวตนแล้ว ถึงที่ของคุณ",
     lang: "th",
     start_url: "/home",

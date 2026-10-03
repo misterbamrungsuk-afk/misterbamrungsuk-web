@@ -25,15 +25,15 @@ export default function WelcomePage() {
     <main className="min-h-dvh bg-ink-950 text-ink-100 overflow-x-hidden">
       <header className="sticky top-0 z-20 bg-ink-950/80 backdrop-blur border-b border-white/5">
         <div className="mx-auto max-w-6xl px-4 h-16 flex items-center justify-between gap-3">
-          <Logo size={28} />
+          <Logo size={24} />
           <nav className="hidden md:flex gap-6 text-sm text-ink-300">
             <a href="#how" className="hover:text-gold-300">{th ? "วิธีใช้งาน" : "How it works"}</a>
             <a href="#safety" className="hover:text-gold-300">{th ? "ความปลอดภัย" : "Safety"}</a>
             <Link href="/provider/apply" className="hover:text-gold-300">{th ? "สมัครเป็นหมอนวด" : "Become a therapist"}</Link>
           </nav>
-          <div className="flex items-center gap-2">
-            <LangToggle />
-            <Link href="/login" className="btn-crimson rounded-full px-4 h-10 inline-flex items-center text-sm font-semibold whitespace-nowrap">{th ? "เปิดแอป" : "Open app"}</Link>
+          <div className="flex items-center gap-2 shrink-0">
+            <LangToggle className="hidden min-[400px]:inline-flex" />
+            <Link href="/login" className="btn-crimson rounded-full px-3.5 h-10 inline-flex items-center text-sm font-semibold whitespace-nowrap">{th ? "เปิดแอป" : "Open app"}</Link>
           </div>
         </div>
       </header>
@@ -108,7 +108,7 @@ export default function WelcomePage() {
       <section className="mx-auto max-w-6xl px-4 py-12">
         <div className="glass rounded-3xl p-6 md:p-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div>
-            <h2 className="font-display text-2xl font-bold">{th ? "เป็นหมอนวดกับ MorD" : "Become a MorD therapist"}</h2>
+            <h2 className="font-display text-2xl font-bold">{th ? "เป็นหมอนวดกับ Mister Bamrungsuk" : "Become a Mister Bamrungsuk therapist"}</h2>
             <p className="text-ink-400 text-sm mt-1">{th ? "รับงานใกล้คุณ รายได้โปร่งใส จ่ายตรงเวลา" : "Nearby jobs, transparent earnings, on-time payouts"}</p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -119,7 +119,7 @@ export default function WelcomePage() {
       </section>
 
       <footer className="mx-auto max-w-6xl px-4 py-8 text-xs text-ink-500 border-t border-white/5">
-        © 2026 MorD · {th ? "สำหรับผู้มีอายุ 18 ปีขึ้นไป · นวดเพื่อสุขภาพเท่านั้น" : "18+ only · Wellness massage only"}
+        © 2026 Mister Bamrungsuk · {th ? "สำหรับผู้มีอายุ 18 ปีขึ้นไป · นวดเพื่อสุขภาพเท่านั้น" : "18+ only · Wellness massage only"}
       </footer>
     </main>
   );

@@ -2,22 +2,31 @@
 
 import React from "react";
 
-// โลโก้ MorD: หมุดแผนที่สีทอง + จุดแดง (= หมอนวดใกล้คุณ) + ตัวอักษร Mor/D
+// โลโก้ Mister Bamrungsuk: ตรา MB ในวงทอง + ชื่อแบรนด์ (ชุดเดียวกับเว็บรับสมัคร)
 export function LogoMark({ size = 28 }: { size?: number }) {
+  const id = React.useId();
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden="true" className="shrink-0">
-      <path d="M16 29.5s-9.5-8.4-9.5-15.6a9.5 9.5 0 0 1 19 0c0 7.2-9.5 15.6-9.5 15.6z" stroke="#d4af37" strokeWidth="2.6" strokeLinejoin="round" />
-      <circle cx="16" cy="13.9" r="3.9" fill="#e0243c" />
+    <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden="true" className="shrink-0">
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#f3dd8f" />
+          <stop offset=".55" stopColor="#d4af37" />
+          <stop offset="1" stopColor="#a8862c" />
+        </linearGradient>
+      </defs>
+      <circle cx="20" cy="20" r="18.5" fill="#0b0b0d" stroke={`url(#${id})`} strokeWidth="2" />
+      <text x="20" y="25.5" textAnchor="middle" fontFamily="Kanit, sans-serif" fontWeight="700" fontSize="15" fill={`url(#${id})`} letterSpacing="-0.5">MB</text>
     </svg>
   );
 }
 
 export function Logo({ size = 34, mark = true }: { size?: number; mark?: boolean }) {
   return (
-    <span className="inline-flex items-center gap-1.5 select-none" aria-label="MorD">
-      {mark && <LogoMark size={Math.round(size * 0.9)} />}
-      <span className="font-display font-extrabold tracking-tight text-ink-100 whitespace-nowrap" style={{ fontSize: Math.round(size * 0.78), lineHeight: 1 }}>
-        Mor<span className="text-gold-500">D</span>
+    <span className="inline-flex items-center gap-2 select-none" aria-label="Mister Bamrungsuk">
+      {mark && <LogoMark size={Math.round(size * 1.05)} />}
+      <span className="flex flex-col leading-none">
+        <span className="font-display font-semibold tracking-[0.18em] text-gold-400 uppercase" style={{ fontSize: Math.round(size * 0.3) }}>Mister</span>
+        <span className="font-display font-bold text-ink-100 whitespace-nowrap" style={{ fontSize: Math.round(size * 0.52) }}>Bamrungsuk</span>
       </span>
     </span>
   );

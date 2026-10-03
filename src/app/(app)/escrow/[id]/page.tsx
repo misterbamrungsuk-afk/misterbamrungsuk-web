@@ -150,7 +150,7 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
                         <span key={i} className="w-2.5 h-2.5 rounded-[1px]" style={{ background: (i * 7 + order.amount) % 3 === 0 ? "#111" : "transparent" }} />
                       ))}
                     </div>
-                    <p className="text-[9px] text-black/70 text-center mt-1.5">PromptPay MorD Escrow (demo) · {baht(order.amount)}</p>
+                    <p className="text-[9px] text-black/70 text-center mt-1.5">PromptPay Mister Bamrungsuk Escrow (demo) · {baht(order.amount)}</p>
                   </div>
                   <button onClick={() => act("fund")} disabled={busy} className="btn-crimson rounded-xl py-3.5 font-bold">
                     📎 {th ? `แนบสลิปโอน ${baht(order.amount)} เข้าระบบกลาง` : `Attach slip — pay ${baht(order.amount)} into escrow`}
@@ -215,8 +215,8 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
 
         <p className="text-[10px] text-ink-500 text-center leading-relaxed">
           {th
-            ? "🏦 ระบบกลาง MorD กันเงินไว้ให้ทั้งสองฝ่าย — ลูกค้ามั่นใจว่าจ่ายเมื่องานเสร็จ หมอมั่นใจว่าเงินมีจริงก่อนเริ่มงาน (โหมดจริง: เชื่อม Omise PromptPay + webhook ตรวจสอบอัตโนมัติ)"
-            : "MorD escrow protects both sides — hirer pays on completion, therapist starts only when funds are secured"}
+            ? "🏦 ระบบกลาง Mister Bamrungsuk กันเงินไว้ให้ทั้งสองฝ่าย — ลูกค้ามั่นใจว่าจ่ายเมื่องานเสร็จ หมอมั่นใจว่าเงินมีจริงก่อนเริ่มงาน (โหมดจริง: เชื่อม Omise PromptPay + webhook ตรวจสอบอัตโนมัติ)"
+            : "Mister Bamrungsuk escrow protects both sides — hirer pays on completion, therapist starts only when funds are secured"}
         </p>
       </div>
 

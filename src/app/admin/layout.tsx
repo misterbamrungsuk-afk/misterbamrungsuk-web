@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { ADMIN_COOKIE, verifySession } from "@/lib/admin-auth";
 import { AdminNav, DeniedBanner } from "./admin-nav";
 
-export const metadata = { title: "แอดมิน — MorD" };
+export const metadata = { title: "แอดมิน — Mister Bamrungsuk" };
 export const dynamic = "force-dynamic";
 
 // หลังบ้านแอดมิน: อยู่นอก (app) จึงไม่ถูกบีบในกรอบมือถือ 480px และไม่มีแถบเมนูลูกค้า

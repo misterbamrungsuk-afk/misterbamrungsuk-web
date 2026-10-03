@@ -30,12 +30,12 @@ export default function SOSButton() {
       body: JSON.stringify({ lat: coords?.lat, lng: coords?.lng, at: new Date().toISOString() }),
     }).catch(() => {});
     setSent(true);
-    flash(lang === "th" ? "🚨 แจ้งทีมงาน MorD แล้ว — เราจะติดต่อกลับทันที" : "🚨 MorD team alerted");
+    flash(lang === "th" ? "🚨 แจ้งทีมงาน Mister Bamrungsuk แล้ว — เราจะติดต่อกลับทันที" : "🚨 Mister Bamrungsuk team alerted");
   }
 
   function shareLocation() {
     if (!coords) { locate(); return; }
-    const text = `SOS MorD — ตำแหน่งของฉัน: https://maps.google.com/?q=${coords.lat},${coords.lng}`;
+    const text = `SOS Mister Bamrungsuk — ตำแหน่งของฉัน: https://maps.google.com/?q=${coords.lat},${coords.lng}`;
     if (navigator.share) navigator.share({ text }).catch(() => {});
     else navigator.clipboard?.writeText(text).then(() => flash(lang === "th" ? "คัดลอกลิงก์ตำแหน่งแล้ว" : "Link copied"));
   }
@@ -67,7 +67,7 @@ export default function SOSButton() {
               : lang === "th" ? "ขอตำแหน่ง GPS แล้วแชร์" : "Get GPS & share"}
           </button>
           <button onClick={alertTeam} disabled={sent} className={`rounded-xl py-3.5 font-semibold ${sent ? "btn-ghost text-emerald-400" : "btn-crimson animate-[pulseRed_2s_ease-in-out_infinite]"}`}>
-            {sent ? `✓ ${lang === "th" ? "แจ้งทีมงานแล้ว" : "Team alerted"}` : `🛡️ ${lang === "th" ? "แจ้งทีมงาน MorD (พร้อมตำแหน่ง)" : "Alert MorD team (with location)"}`}
+            {sent ? `✓ ${lang === "th" ? "แจ้งทีมงานแล้ว" : "Team alerted"}` : `🛡️ ${lang === "th" ? "แจ้งทีมงาน Mister Bamrungsuk (พร้อมตำแหน่ง)" : "Alert Mister Bamrungsuk team (with location)"}`}
           </button>
         </div>
 

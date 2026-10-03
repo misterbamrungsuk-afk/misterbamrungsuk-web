@@ -1,9 +1,9 @@
 export const site = {
-  brand: "MorD",
-  brandTh: "หมอดี",
+  brand: "Mister Bamrungsuk",
+  brandTh: "มิสเตอร์บำรุงสุข",
   tagline: { th: "หมอนวดใกล้คุณ", en: "Massage therapists near you" },
   subTagline: { th: "หมอนวดชายมืออาชีพ มาหาคุณถึงที่", en: "Pro male massage, at your door" },
-  url: "https://hamoo.app",
+  url: "https://app.misterbamrungsuk.com",
   commissionPercent: 20, // GP ค่าธรรมเนียมแพลตฟอร์ม (%)
   depositDefault: 300,
   postExpiryDays: 30,

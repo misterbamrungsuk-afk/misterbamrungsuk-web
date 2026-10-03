@@ -339,13 +339,13 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
       {/* promo modal */}
       <Modal open={promoOpen} onClose={() => setPromoOpen(false)} title={`🎟️ ${t.promoCode}`}>
         <Field label={t.promoCode}>
-          <input value={promoCode} onChange={(e) => setPromoCode(e.target.value.toUpperCase())} placeholder="MORD10" className="input-dark" />
+          <input value={promoCode} onChange={(e) => setPromoCode(e.target.value.toUpperCase())} placeholder="MB10" className="input-dark" />
         </Field>
         {promoApplied > 0 && <p className="text-emerald-400 text-sm mb-3">✓ {t.promoApplied} −{baht(promoApplied)}</p>}
         <div className="flex gap-2">
           <button onClick={() => { setPromoApplied(0); setPromoOpen(false); }} className="btn-ghost rounded-xl flex-1 py-2.5 text-sm">{t.reset}</button>
           <button
-            onClick={() => { if (promoCode === "MORD10") setPromoApplied(50); else flash(t.promoInvalid); setPromoOpen(false); }}
+            onClick={() => { if (promoCode === "MB10") setPromoApplied(50); else flash(t.promoInvalid); setPromoOpen(false); }}
             className="btn-crimson rounded-xl flex-1 py-2.5 text-sm font-semibold"
           >{t.applyPromo}</button>
         </div>

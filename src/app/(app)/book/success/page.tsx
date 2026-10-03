@@ -29,14 +29,14 @@ function SuccessInner() {
     endD.setMinutes(endD.getMinutes() + Number(pkg));
     const p = (n: number) => String(n).padStart(2, "0");
     const end = `${endD.getFullYear()}${p(endD.getMonth() + 1)}${p(endD.getDate())}T${p(endD.getHours())}${p(endD.getMinutes())}00`;
-    const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "BEGIN:VEVENT", `DTSTART:${start}`, `DTEND:${end}`, `SUMMARY:MorD · นวดกับ ${post.member.name}`, `DESCRIPTION:รหัสจอง ${code}`, "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+    const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "BEGIN:VEVENT", `DTSTART:${start}`, `DTEND:${end}`, `SUMMARY:Mister Bamrungsuk · นวดกับ ${post.member.name}`, `DESCRIPTION:รหัสจอง ${code}`, "END:VEVENT", "END:VCALENDAR"].join("\r\n");
     return `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`;
   })();
 
   const share = async () => {
-    const text = `${th ? "นัดนวด MorD" : "MorD booking"} ${thaiDate(date)} ${time} · ${post.member.name} · ${code}`;
+    const text = `${th ? "นัดนวด Mister Bamrungsuk" : "Mister Bamrungsuk booking"} ${thaiDate(date)} ${time} · ${post.member.name} · ${code}`;
     try {
-      if (navigator.share) await navigator.share({ title: "MorD", text });
+      if (navigator.share) await navigator.share({ title: "Mister Bamrungsuk", text });
       else await navigator.clipboard.writeText(text);
     } catch { /* ผู้ใช้ยกเลิก */ }
   };

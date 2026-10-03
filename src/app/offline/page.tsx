@@ -1,4 +1,4 @@
-export const metadata = { title: "ออฟไลน์ — MorD" };
+export const metadata = { title: "ออฟไลน์ — Mister Bamrungsuk" };
 
 export default function OfflinePage() {
   return (

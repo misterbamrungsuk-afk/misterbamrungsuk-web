@@ -9,21 +9,14 @@ import { Sheet, Field } from "@/components/ui";
 import { CATEGORIES, PROVINCES } from "@/lib/categories";
 import type { Post } from "@/lib/types";
 import { isDemo } from "@/lib/data";
-import { DEMO_ME, DEMO_POSTS } from "@/lib/demo-data";
-import { HERO_SLIDES, SPA_PACKAGES } from "@/lib/packages";
+import { DEMO_POSTS } from "@/lib/demo-data";
 
-function greet(lang: string) {
-  const h = new Date().getHours();
-  if (lang === "th") return h < 12 ? "ตอนเช้า" : h < 17 ? "ตอนบ่าย" : "ตอนเย็น";
-  return h < 12 ? "morning" : h < 17 ? "afternoon" : "evening";
-}
 
 function HomeInner({ posts }: { posts: Post[] }) {
   const { t, lang } = useI18n();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string>("");
   const [filterOpen, setFilterOpen] = useState(false);
-  const [slide, setSlide] = useState(0);
   const [province, setProvince] = useState("");
   const [ageMin, setAgeMin] = useState("");
   const [ageMax, setAgeMax] = useState("");
@@ -49,94 +42,92 @@ function HomeInner({ posts }: { posts: Post[] }) {
   }, [posts, q, cat, province, ageMin, ageMax, rateMin, rateMax]);
 
   const activeFilters = [province, ageMin, ageMax, rateMin, rateMax].filter(Boolean).length;
+  // รูป hero: หมอคนแรกที่ยืนยันตัวตนแล้ว
+  const heroPhoto = (posts.find((p) => p.member.kycVerified) ?? posts[0])?.images[0] ?? "";
 
   return (
     <>
       <TopBar />
 
-      <div className="px-4 pt-3">
-        {/* 1 · ทักทาย */}
-        <p className="text-sm text-ink-300">{lang === "th" ? "สวัสดี" + greet(lang) : "Good " + greet(lang)}, {DEMO_ME.name}</p>
-        <h1 className="text-[22px] leading-snug font-semibold mt-0.5">{lang === "th" ? "วันนี้อยากผ่อนคลายแบบไหน?" : "How would you like to relax today?"}</h1>
-
-        {/* 2 · ค้นหาแคปซูล */}
-        <div className="flex gap-2 mt-4">
-          <div className="relative flex-1 min-w-0">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[18px] h-[18px] absolute left-4 top-1/2 -translate-y-1/2 text-ink-300">
-              <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" strokeLinecap="round" />
-            </svg>
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t.search} aria-label={t.search} className="input-dark h-12 pl-11 !rounded-full" />
-          </div>
-          <button onClick={() => setFilterOpen(true)} className={`btn-ghost w-12 h-12 grid place-items-center relative bg-ink-800 ${activeFilters ? "border-gold-500 text-gold-300" : "text-gold-500"}`} aria-label={t.filters}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="w-[22px] h-[22px]"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
-            {activeFilters > 0 && <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-crimson-500 text-[10px] grid place-items-center font-bold text-white">{activeFilters}</span>}
-          </button>
-        </div>
-      </div>
-
-      {/* 3 · แบนเนอร์สไลด์ */}
-      <div className="flex gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory px-4 pt-4" onScroll={(e) => { const el = e.currentTarget; setSlide(Math.round(el.scrollLeft / (el.clientWidth - 32))); }}>
-        {HERO_SLIDES.map((h) => (
-          <Link key={h.key} href={h.href} className="relative snap-center shrink-0 w-[calc(100%-8px)] h-[160px] rounded-3xl overflow-hidden">
+      {/* ── Hero (แนว editorial: หัวข้อตัวโต + รูปหมอ) ── */}
+      <section className="px-4 pt-3">
+        <div className="relative overflow-hidden rounded-[28px] border border-ink-600 bg-ink-850">
+          <div className="relative h-[300px]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={h.photo} alt="" className="absolute inset-0 w-full h-full object-cover" />
-            <span className="absolute inset-0 bg-gradient-to-r from-ink-950/95 via-ink-900/70 to-transparent" />
-            <span className="relative flex flex-col h-full p-4 max-w-[70%]">
-              <span className="font-display font-semibold text-lg leading-tight">{lang === "th" ? h.th : h.en}</span>
-              <span className="text-xs text-ink-200 mt-1">{lang === "th" ? h.subTh : h.subEn}</span>
-              <span className="btn-crimson mt-auto self-start px-4 h-9 inline-flex items-center text-sm font-semibold">{lang === "th" ? "จองเลย" : "Book now"}</span>
-            </span>
-            <span className="absolute top-3 right-3 w-14 h-14 rounded-full border-2 border-gold-400 text-gold-300 grid place-items-center text-center leading-none font-display font-bold text-sm bg-ink-950/40">{h.badge}</span>
-          </Link>
-        ))}
-      </div>
-      <div className="flex justify-center gap-1.5 mt-2.5" aria-hidden>
-        {HERO_SLIDES.map((h, i) => <span key={h.key} className={`h-1.5 rounded-full transition-all ${slide === i ? "w-5 bg-gold-500" : "w-1.5 bg-ink-500"}`} />)}
-      </div>
+            <img src={heroPhoto} alt="" className="absolute inset-0 w-full h-full object-cover object-[50%_20%]" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-ink-850/30 to-ink-850" />
+          </div>
+          <div className="relative -mt-24 px-5 pb-6">
+            <p className="flex items-center gap-2 text-[12px] text-ink-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-crimson-500" />
+              {lang === "th" ? "ผ่อนคลาย ถึงที่ของคุณ" : "Wellbeing, brought to you"}
+            </p>
+            <h1 className="font-display font-bold text-[40px] leading-[1.05] tracking-tight mt-3">
+              {lang === "th" ? <>ให้เวลา<br />กับตัวเอง<span className="text-crimson-500">.</span></> : <>Make room<br />for yourself<span className="text-crimson-500">.</span></>}
+            </h1>
+            <p className="text-[14px] text-ink-300 leading-relaxed mt-3 max-w-[34ch]">
+              {lang === "th" ? "พักผ่อนในพื้นที่ของคุณเอง เลือกหมอนวดชายที่ยืนยันตัวตนแล้ว ให้การนวดที่ใช่สำหรับคุณ" : "Unwind in your own space. Discover verified male therapists for a massage that feels right for you."}
+            </p>
+            <button onClick={() => document.getElementById("find")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+              className="mt-5 h-12 px-5 rounded-xl bg-ink-100 text-ink-950 font-semibold text-[15px] inline-flex items-center gap-3 active:scale-[0.98] transition">
+              {lang === "th" ? "ค้นหาหมอนวด" : "Find your therapist"}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="w-4 h-4"><path d="M12 5v14M6 13l6 6 6-6" /></svg>
+            </button>
+            <p className="text-[11px] text-ink-400 mt-3">{lang === "th" ? "พื้นที่ของคุณ จังหวะของคุณ" : "Your space. Your pace."}</p>
+          </div>
+        </div>
+      </section>
 
-      <div className="px-4">
-        {/* หมวด */}
+      {/* ── หาความผ่อนคลายในแบบคุณ ── */}
+      <section id="find" className="px-4 pt-8 scroll-mt-16">
+        <h2 className="font-display font-bold text-[26px] leading-tight tracking-tight">{lang === "th" ? "หาความผ่อนคลายในแบบคุณ" : "Find your kind of calm"}</h2>
+        <p className="text-[13px] text-ink-300 mt-1">{lang === "th" ? "เลือกเทคนิค แล้วพบหมอนวดของคุณ" : "Choose a technique. Meet your therapist."}</p>
+
+        <div className="relative mt-4">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[18px] h-[18px] absolute left-4 top-1/2 -translate-y-1/2 text-ink-300">
+            <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" strokeLinecap="round" />
+          </svg>
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t.search} aria-label={t.search} className="input-dark h-12 pl-11" />
+        </div>
+
+        {/* หมวด: ปุ่มกล่อง */}
         <div className="flex gap-2 overflow-x-auto no-scrollbar py-4 -mx-4 px-4">
-          <button onClick={() => setCat("")} className={`chip whitespace-nowrap h-9 px-4 text-[13px] ${!cat ? "chip-red" : ""}`}>{t.allCategories}</button>
+          <button onClick={() => setCat("")} className={`shrink-0 h-11 px-5 rounded-xl border text-[14px] transition ${!cat ? "bg-ink-100 text-ink-950 border-ink-100 font-semibold" : "border-ink-600 text-ink-200"}`}>{t.allCategories}</button>
           {CATEGORIES.filter((c) => c.slug !== "other").map((c) => (
-            <button key={c.slug} onClick={() => setCat(cat === c.slug ? "" : c.slug)} className={`chip whitespace-nowrap h-9 px-4 text-[13px] ${cat === c.slug ? "chip-red" : ""}`}>
+            <button key={c.slug} onClick={() => setCat(cat === c.slug ? "" : c.slug)}
+              className={`shrink-0 h-11 px-5 rounded-xl border text-[14px] whitespace-nowrap transition ${cat === c.slug ? "bg-ink-100 text-ink-950 border-ink-100 font-semibold" : "border-ink-600 text-ink-200"}`}>
               {lang === "th" ? c.th : c.en}
             </button>
           ))}
         </div>
 
-        {/* 4 · แพ็กเกจยอดนิยม */}
-        <div className="flex items-baseline justify-between mb-3">
-          <h2 className="text-[19px] font-semibold">{lang === "th" ? "แพ็กเกจยอดนิยม" : "Popular packages"}</h2>
-          <Link href="/matching" className="text-[13px] font-semibold text-gold-500">{lang === "th" ? "ดูทั้งหมด" : "See all"}</Link>
+        {/* ตัวกรอง */}
+        <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 pb-1">
+          {[
+            { k: "age", th: "อายุ", en: "Age", on: !!(ageMin || ageMax), icon: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0" },
+            { k: "rate", th: "ราคา", en: "Rate", on: !!(rateMin || rateMax), icon: "M12 3v18M17 7H9.5a3 3 0 0 0 0 6h5a3 3 0 0 1 0 6H6" },
+            { k: "area", th: "พื้นที่", en: "Area", on: !!province, icon: "M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21zM12 12a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" },
+          ].map((x) => (
+            <button key={x.k} onClick={() => setFilterOpen(true)}
+              className={`shrink-0 h-10 pl-3 pr-3.5 rounded-xl border text-[13px] inline-flex items-center gap-1.5 ${x.on ? "border-gold-500 text-gold-300" : "border-ink-600 text-ink-200"}`}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d={x.icon} /></svg>
+              {lang === "th" ? x.th : x.en}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5 opacity-60"><path d="m6 9 6 6 6-6" /></svg>
+            </button>
+          ))}
         </div>
-      </div>
-      <div className="flex gap-3 overflow-x-auto no-scrollbar snap-x px-4 pb-2">
-        {SPA_PACKAGES.filter((p) => !cat || p.cat === cat).map((p) => (
-          <div key={p.id} className="glass snap-start shrink-0 w-[236px] rounded-3xl p-2.5 flex flex-col">
-            <div className="relative h-[130px] rounded-2xl overflow-hidden">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p.photo} alt="" className="w-full h-full object-cover" />
-            </div>
-            <p className="font-semibold mt-2.5 px-1">{lang === "th" ? p.th : p.en}</p>
-            <p className="text-xs text-ink-300 px-1 mt-0.5 line-clamp-2 min-h-8">{lang === "th" ? p.descTh : p.descEn}</p>
-            <div className="flex flex-wrap gap-1.5 px-1 mt-2">
-              <span className="chip h-6 px-2 text-[11px] inline-flex items-center">{p.minutes} {lang === "th" ? "นาที" : "min"}</span>
-              <span className="chip h-6 px-2 text-[11px] inline-flex items-center">1 {lang === "th" ? "คน" : "person"}</span>
-              <span className="chip-gold chip h-6 px-2 text-[11px] inline-flex items-center font-semibold">฿{p.price.toLocaleString()}</span>
-            </div>
-            <Link href={`/matching?cat=${p.cat}&min=${p.minutes}`} className="btn-crimson mt-3 h-10 grid place-items-center text-sm font-semibold">{lang === "th" ? "จองเลย" : "Book now"}</Link>
-          </div>
-        ))}
-      </div>
 
-      <div className="px-4">
-        {/* 5 · หมอใกล้คุณ */}
-        <div className="flex items-baseline justify-between mt-5 mb-3">
-          <h2 className="text-[19px] font-semibold">{lang === "th" ? "หมอใกล้คุณ" : "Therapists near you"}</h2>
-          <Link href="/map" className="text-[13px] font-semibold text-gold-500">{lang === "th" ? "ดูบนแผนที่" : "View on map"}</Link>
+        <div className="flex items-center justify-between mt-3 mb-3">
+          <span className="text-[12px] font-semibold rounded-full bg-ink-800 border border-ink-600 px-3 py-1">{lang === "th" ? `พบ ${filtered.length} คน` : `${filtered.length} found`}</span>
+          {(activeFilters > 0 || cat || q) && (
+            <button onClick={() => { setCat(""); setQ(""); setProvince(""); setAgeMin(""); setAgeMax(""); setRateMin(""); setRateMax(""); }}
+              className="text-[13px] text-ink-200 inline-flex items-center gap-1.5 min-h-9 px-1">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="w-4 h-4"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5" /></svg>
+              {lang === "th" ? "รีเซ็ตตัวกรอง" : "Reset filters"}
+            </button>
+          )}
         </div>
-      </div>
+      </section>
 
       {/* feed: กริด 2 คอลัมน์แบบรูปเต็ม */}
       <div className="px-4 pb-6">

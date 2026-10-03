@@ -279,7 +279,7 @@ export const DEMO_NOTIS: AppNotification[] = [
 ];
 
 export const DEMO_PROMOS: PromoCode[] = [
-  { code: "MORD10", type: "percent", value: 10, active: true, usedCount: 25, quota: 100 },
+  { code: "MB10", type: "percent", value: 10, active: true, usedCount: 25, quota: 100 },
   { code: "WELCOME50", type: "fixed", value: 50, active: true, usedCount: 8, quota: 50 },
   { code: "SUMMER", type: "percent", value: 15, active: false, usedCount: 60, quota: 60 },
 ];
@@ -297,7 +297,7 @@ export const DEMO_MY_ORDERS: Order[] = [
   },
   {
     id: "o4", roomId: "", hirer: DEMO_ME, provider: DEMO_MEMBERS[7],
-    status: "reviewed", totalAmount: 1200, depositAmount: 300, discount: 120, promoCode: "MORD10", commission: 216, createdAt: "2026-09-12",
+    status: "reviewed", totalAmount: 1200, depositAmount: 300, discount: 120, promoCode: "MB10", commission: 216, createdAt: "2026-09-12",
   },
 ];
 

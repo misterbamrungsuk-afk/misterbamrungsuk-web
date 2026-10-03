@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { Logo } from "@/components/ui";
 import { KYC_QUEUE, PAYOUTS, REPORTS, TICKETS } from "@/lib/admin-data";
 import { ROLE_LABEL, canAccess, type AdminRole } from "@/lib/admin-auth";
+import { ModeSwitch } from "@/components/mode-switch";
 
 export const ADMIN_TABS = [
   { href: "/admin", label: "รายได้ GP", exact: true },
@@ -33,7 +34,8 @@ export function AdminNav({ email, role }: { email: string; role: AdminRole }) {
       {/* จอใหญ่: เมนูซ้าย */}
       <aside className="hidden lg:flex w-60 shrink-0 flex-col gap-1 border-r border-ink-600 px-3 py-6 sticky top-0 h-dvh">
         <div className="px-2 pb-1"><Logo size={30} /></div>
-        <p className="px-2 pb-4 text-[11px] font-semibold tracking-[0.15em] text-gold-500">ADMIN CONSOLE</p>
+        <p className="px-2 pb-3 text-[11px] font-semibold tracking-[0.15em] text-gold-500">ADMIN CONSOLE</p>
+        <div className="pb-4"><ModeSwitch /></div>
         {tabs.map((t) => (
           <Link key={t.href} href={t.href}
             className={`flex items-center gap-2 h-10 px-3 rounded-xl text-sm transition ${isOn(t) ? "bg-ink-700 text-ink-100 shadow-[inset_2px_0_0_var(--color-crimson-500)]" : "text-ink-300 hover:text-ink-100"}`}>
@@ -58,6 +60,7 @@ export function AdminNav({ email, role }: { email: string; role: AdminRole }) {
           <span className="ml-auto text-[11px] text-ink-300 truncate max-w-[90px]">{ROLE_LABEL[role]}</span>
           <button onClick={logout} className="text-xs text-crimson-200 min-h-9 px-2">ออก</button>
         </div>
+        <div className="px-4 pb-2.5"><ModeSwitch /></div>
         <nav className="flex gap-2 overflow-x-auto no-scrollbar px-4 pb-3">
           {tabs.map((t) => (
             <Link key={t.href} href={t.href} className={`chip whitespace-nowrap h-9 px-3.5 inline-flex items-center gap-1.5 ${isOn(t) ? "chip-red" : ""}`}>

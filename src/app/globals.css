@@ -1,37 +1,37 @@
 @import "tailwindcss";
 
 @theme {
-  /* ── MorD v3: Crimson × Yellow × Gold (โครงแนว Spafy) ── */
-  --color-ink-950: #0d0203;
-  --color-ink-900: #1a0507;
-  --color-ink-850: #22070a;
-  --color-ink-800: #2c0a0e;
-  --color-ink-700: #3a0f14;
-  --color-ink-600: #4d1619;
-  --color-ink-500: #66201f;
-  --color-ink-400: #8a4a3c;
-  --color-ink-300: #cfae98;
-  --color-ink-200: #e2c9b3;
-  --color-ink-100: #fff8ec;
+  /* ── MorD v2: Black × Red × Gold (ตรงกับดีไซน์บนแคนวาส) ── */
+  --color-ink-950: #070708;
+  --color-ink-900: #0b0b0d;
+  --color-ink-850: #111114;
+  --color-ink-800: #16161a;
+  --color-ink-700: #1f1f25;
+  --color-ink-600: #2a2a32;
+  --color-ink-500: #3a3a48;
+  --color-ink-400: #55556a;
+  --color-ink-300: #8e8e9c;
+  --color-ink-200: #a8a8b5;
+  --color-ink-100: #f5f2ec;
 
-  --color-crimson-700: #9e1022;
-  --color-crimson-600: #c1121f;
+  --color-crimson-700: #8f1d2c;
+  --color-crimson-600: #c21c32;
   --color-crimson-500: #e0243c;
-  --color-crimson-400: #ef4458;
+  --color-crimson-400: #eb3f55;
   --color-crimson-300: #ff6b7d;
-  --color-crimson-200: #ff9aa5;
-  --color-crimson-100: #ffd0d5;
+  --color-crimson-200: #ff8a97;
+  --color-crimson-100: #ffc4cb;
 
-  --color-gold-600: #b8860b;
-  --color-gold-500: #f5b700;
-  --color-gold-400: #ffcc33;
-  --color-gold-300: #ffe08a;
+  --color-gold-600: #a8862c;
+  --color-gold-500: #d4af37;
+  --color-gold-400: #e6c75a;
+  --color-gold-300: #f3dd8f;
 
-  --font-sans: var(--font-plex), "Prompt", "Noto Sans Thai", ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-kanit), "Poppins", var(--font-plex), sans-serif;
+  --font-sans: var(--font-plex), "IBM Plex Sans Thai", "Noto Sans Thai", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-kanit), "Kanit", var(--font-plex), sans-serif;
 
-  --shadow-glow-red: 0 0 24px rgba(224, 36, 60, 0.35), 0 0 64px rgba(224, 36, 60, 0.12);
-  --shadow-glow-gold: 0 0 20px rgba(245, 183, 0, 0.28);
+  --shadow-glow-red: 0 0 24px rgba(229, 72, 77, 0.35), 0 0 64px rgba(229, 72, 77, 0.12);
+  --shadow-glow-gold: 0 0 20px rgba(212, 175, 55, 0.28);
   --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.55);
 
   --animate-pulse-red: pulseRed 2.4s ease-in-out infinite;
@@ -41,8 +41,8 @@
 }
 
 @keyframes pulseRed {
-  0%, 100% { box-shadow: 0 0 16px rgba(224, 36, 60, 0.45); }
-  50% { box-shadow: 0 0 34px rgba(224, 36, 60, 0.8); }
+  0%, 100% { box-shadow: 0 0 16px rgba(229, 72, 77, 0.45); }
+  50% { box-shadow: 0 0 34px rgba(229, 72, 77, 0.8); }
 }
 @keyframes shimmer {
   0% { background-position: -200% 0; }
@@ -62,14 +62,14 @@ html {
 }
 
 body {
-  background: radial-gradient(120% 60% at 50% -10%, #7a0f1c 0%, transparent 60%), linear-gradient(180deg, #3a0a0f 0%, #1a0507 45%, #0d0203 100%) fixed;
+  background: var(--color-ink-900);
   color: var(--color-ink-100);
   font-family: var(--font-sans);
   min-height: 100dvh;
   -webkit-tap-highlight-color: transparent;
 }
 
-::selection { background: rgba(224, 36, 60, 0.4); color: #fff; }
+::selection { background: rgba(229, 72, 77, 0.4); color: #fff; }
 
 /* ── Reusable primitives (อยู่ใน layer components ให้ utility override ได้) ── */
 @layer components {
@@ -78,19 +78,19 @@ body {
   border: 1px solid var(--color-ink-600);
 }
 .glass-hover { transition: border-color 0.2s, transform 0.2s; }
-.glass-hover:hover { border-color: rgba(245, 183, 0, 0.5); transform: translateY(-1px); }
+.glass-hover:hover { border-color: rgba(212, 175, 55, 0.5); transform: translateY(-1px); }
 .gold-line {
-  background: linear-gradient(90deg, transparent, rgba(245, 183, 0, 0.55), transparent);
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.55), transparent);
   height: 1px;
 }
 .text-gradient-gold {
-  background: linear-gradient(100deg, #ffe08a, #f5b700 45%, #b8860b);
+  background: linear-gradient(100deg, #f3dd8f, #d4af37 45%, #a8862c);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 .text-gradient-red {
-  background: linear-gradient(100deg, #ff9aa5, #e0243c 50%, #9e1022);
+  background: linear-gradient(100deg, #ff8a97, #e5484d 50%, #b3243a);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -108,7 +108,7 @@ body {
   color: var(--color-ink-100);
   transition: border-color 0.2s, background 0.2s;
 }
-.btn-ghost:hover { border-color: rgba(245, 183, 0, 0.6); background: rgba(245, 183, 0, 0.08); }
+.btn-ghost:hover { border-color: rgba(212, 175, 55, 0.6); background: rgba(212, 175, 55, 0.08); }
 .chip {
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.04);
@@ -118,7 +118,7 @@ body {
   color: var(--color-ink-200);
 }
 .chip-red { border-color: var(--color-ink-100); background: var(--color-ink-100); color: var(--color-ink-950); font-weight: 600; }
-.chip-gold { border-color: rgba(245, 183, 0, 0.5); background: rgba(245, 183, 0, 0.1); color: var(--color-gold-300); }
+.chip-gold { border-color: rgba(212, 175, 55, 0.5); background: rgba(212, 175, 55, 0.1); color: var(--color-gold-300); }
 .input-dark {
   width: 100%;
   min-width: 0; /* ให้ช่อง date/time หดได้ในแถว flex/grid ไม่ล้นขอบ */
@@ -130,7 +130,7 @@ body {
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-.input-dark:focus { border-color: var(--color-gold-500); box-shadow: 0 0 0 3px rgba(245, 183, 0, 0.15); }
+.input-dark:focus { border-color: var(--color-gold-500); box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15); }
 .input-dark::placeholder { color: var(--color-ink-400); }
 .section-title {
   font-family: var(--font-display);
@@ -155,7 +155,7 @@ body {
 .safe-bottom { padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
 
 /* การ์ดรูปเต็ม + ไล่เฉดดำใต้ข้อความ (photo-first card) */
-.photo-scrim { background: linear-gradient(180deg, rgba(26,5,7,0) 0%, rgba(26,5,7,.92) 70%); }
+.photo-scrim { background: linear-gradient(180deg, rgba(11,11,13,0) 0%, rgba(11,11,13,.92) 70%); }
 h1, h2, h3 { font-family: var(--font-display); }
 
 /* scrollbar */
@@ -197,13 +197,13 @@ h1, h2, h3 { font-family: var(--font-display); }
   border-radius: 50% 50% 50% 0;
   transform: rotate(-45deg);
   background: #16161c;
-  border: 3px solid #e0243c;
-  box-shadow: 0 0 16px rgba(224, 36, 60, 0.45);
+  border: 3px solid #e5484d;
+  box-shadow: 0 0 16px rgba(229, 72, 77, 0.45);
   overflow: hidden;
   transition: transform 0.2s;
 }
 .pin:hover { transform: rotate(-45deg) scale(1.12); }
-.pin-job { border-color: #f5b700; box-shadow: 0 0 16px rgba(245, 183, 0, 0.45); }
+.pin-job { border-color: #d4af37; box-shadow: 0 0 16px rgba(212, 175, 55, 0.45); }
 .pin img {
   position: absolute; inset: 0;
   width: 100%; height: 100%;
@@ -217,17 +217,17 @@ h1, h2, h3 { font-family: var(--font-display); }
   display: grid; place-items: center;
   font-size: 10px;
   background: #16161c;
-  border: 2px solid #e0243c;
+  border: 2px solid #e5484d;
   transform: rotate(45deg);
   z-index: 2;
 }
-.pin-job .pin-badge { border-color: #f5b700; }
+.pin-job .pin-badge { border-color: #d4af37; }
 .pin-price {
   margin-top: 5px;
   font-size: 10.5px; font-weight: 700;
-  color: #ffe08a;
+  color: #f3dd8f;
   background: rgba(10, 10, 14, 0.88);
-  border: 1px solid rgba(245, 183, 0, 0.55);
+  border: 1px solid rgba(212, 175, 55, 0.55);
   padding: 2px 7px;
   border-radius: 999px;
   white-space: nowrap;
@@ -253,7 +253,7 @@ h1, h2, h3 { font-family: var(--font-display); }
   content: "";
   position: absolute; inset: -9px;
   border-radius: 50%;
-  border: 2px solid rgba(245, 183, 0, 0.8);
+  border: 2px solid rgba(212, 175, 55, 0.8);
   animation: mePulse 1.8s ease-out infinite;
 }
 @keyframes mePulse {
@@ -273,9 +273,16 @@ h1, h2, h3 { font-family: var(--font-display); }
 .leaflet-popup-content { margin: 12px 14px !important; font-family: var(--font-sans) !important; }
 .leaflet-popup b { color: #fff; }
 
-/* ── v3 Spafy: ปุ่มแคปซูล + การ์ดไล่เฉดแดงเข้ม ── */
-@layer components {
-  .btn-crimson { border-radius: 9999px !important; box-shadow: 0 8px 24px rgba(224, 36, 60, 0.35); }
-  .btn-ghost { border-radius: 9999px !important; }
-  .glass { background: linear-gradient(160deg, rgba(110, 18, 30, 0.55), rgba(44, 10, 14, 0.85)); border-color: rgba(245, 183, 0, 0.18); }
+/* ── ตัดบรรทัดภาษาไทยให้สมดุล ── */
+p, li, label, dd { text-wrap: pretty; }
+h1, h2, h3 { text-wrap: balance; }
+
+/* ── จอใหญ่: แสดงแอปเป็นกรอบมือถือกลางจอ (ใช้งานแบบมือถือเป็นหลัก) ── */
+@media (min-width: 640px) {
+  body { background: radial-gradient(60% 50% at 50% 0%, #2a0d12 0%, transparent 70%), #050506; }
+  .app-frame, .phone-frame {
+    background: var(--color-ink-900);
+    box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.14), 0 30px 90px rgba(0, 0, 0, 0.75);
+  }
 }
+.phone-frame { width: 100%; max-width: 480px; margin: 0 auto; min-height: 100dvh; position: relative; overflow-x: hidden; }

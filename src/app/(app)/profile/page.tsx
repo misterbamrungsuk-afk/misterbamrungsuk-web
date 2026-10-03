@@ -86,7 +86,7 @@ export default function ProfilePage() {
           <Link href="/login" className="btn-ghost rounded-xl flex-1 py-3 text-sm text-center">{t.logout}</Link>
           <Link href="/profile/edit" className="btn-ghost rounded-xl flex-1 py-3 text-sm text-crimson-300 text-center">{t.deleteAccount}</Link>
         </div>
-        <p className="text-center text-[10px] text-ink-600">© 2026 MorD · {lang === "th" ? "ใช้งานฟรี (อาจมีค่าธรรมเนียมในอนาคต)" : "Free to use"}</p>
+        <p className="text-center text-[10px] text-ink-600">© 2026 Mister Bamrungsuk · {lang === "th" ? "ใช้งานฟรี (อาจมีค่าธรรมเนียมในอนาคต)" : "Free to use"}</p>
       </div>
       <span className="hidden">{String(kyc === "verified")}</span>
       <button className="hidden" onClick={() => setKyc("verified")} />

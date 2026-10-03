@@ -21,6 +21,6 @@ export const SPA_PACKAGES: SpaPackage[] = [
 ];
 
 export const HERO_SLIDES = [
-  { key: "first", th: "จองครั้งแรก ลด 10%", en: "10% off first booking", subTh: "ใส่โค้ด MORD10 ตอนชำระเงิน", subEn: "Use code MORD10 at checkout", badge: "10%", href: "/matching", photo: img("1515377905703-c4788e51af15") },
+  { key: "first", th: "จองครั้งแรก ลด 10%", en: "10% off first booking", subTh: "ใส่โค้ด MB10 ตอนชำระเงิน", subEn: "Use code MB10 at checkout", badge: "10%", href: "/matching", photo: img("1515377905703-c4788e51af15") },
   { key: "quick", th: "เรียกด่วน ภายใน 15 วินาที", en: "Quick call in 15 seconds", subTh: "จับคู่หมอใกล้คุณอัตโนมัติ", subEn: "Auto-match a therapist nearby", badge: "15s", href: "/matching", photo: img("1540555700478-4be289fbecef") },
 ];
