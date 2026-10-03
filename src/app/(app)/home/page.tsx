@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useI18n } from "@/i18n/provider";
 import { TopBar } from "@/components/shell";
 import PostCard from "@/components/post-card";
+import { HeroSlider } from "@/components/hero-slider";
 import { Sheet, Field } from "@/components/ui";
 import { CATEGORIES, PROVINCES } from "@/lib/categories";
 import type { Post } from "@/lib/types";
@@ -49,41 +50,15 @@ function HomeInner({ posts }: { posts: Post[] }) {
   }, [posts, premiumOpen, q, cat, province, ageMin, ageMax, rateMin, rateMax]);
 
   const activeFilters = [province, ageMin, ageMax, rateMin, rateMax].filter(Boolean).length;
-  // รูป hero: หมอคนแรกที่ยืนยันตัวตนแล้ว
-  const heroPhoto = (posts.find((p) => p.member.kycVerified) ?? posts[0])?.images[0] ?? "";
+  // หมอแนะนำ: ยืนยันตัวตนแล้ว เรียงตามคะแนน (ไม่รวมพรีเมียมถ้ายังไม่ปลดล็อก)
+  const featured = useMemo(() => posts.filter((p) => p.member.kycVerified && (premiumOpen || !p.premium)).sort((x, y) => (y.rating ?? 0) - (x.rating ?? 0)).slice(0, 5), [posts, premiumOpen]);
 
   return (
     <>
       <TopBar />
 
-      {/* ── Hero (แนว editorial: หัวข้อตัวโต + รูปหมอ) ── */}
-      <section className="px-4 pt-3">
-        <div className="relative overflow-hidden rounded-[28px] border border-ink-600 bg-ink-850">
-          <div className="relative h-[300px]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={heroPhoto} alt="" className="absolute inset-0 w-full h-full object-cover object-[50%_20%]" />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent from-25% via-ink-850/75 via-70% to-ink-850" />
-          </div>
-          <div className="relative -mt-24 px-5 pb-6">
-            <p className="flex items-center gap-2 text-[12px] text-ink-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-crimson-500" />
-              {lang === "th" ? "ผ่อนคลาย ถึงที่ของคุณ" : "Wellbeing, brought to you"}
-            </p>
-            <h1 className="font-display font-bold text-[36px] leading-[1.12] tracking-tight mt-3">
-              {lang === "th" ? <>ผ่อนคลายระดับ<br /><span className="bg-gradient-to-r from-[#b8860b] via-[#e0a400] to-[#9a6b00] bg-clip-text text-transparent">VVIP</span> ถึงที่คุณ</> : <>VVIP relaxation,<br /><span className="bg-gradient-to-r from-[#b8860b] via-[#e0a400] to-[#9a6b00] bg-clip-text text-transparent">at your door</span></>}
-            </h1>
-            <p className="text-[14px] text-ink-300 leading-relaxed mt-3 max-w-[34ch]">
-              {lang === "th" ? "พักผ่อนในพื้นที่ของคุณเอง เลือกหมอนวดชายที่ยืนยันตัวตนแล้ว ให้การนวดที่ใช่สำหรับคุณ" : "Unwind in your own space. Discover verified male therapists for a massage that feels right for you."}
-            </p>
-            <button onClick={() => document.getElementById("find")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-              className="mt-5 h-12 px-5 rounded-xl bg-crimson-500 text-white font-semibold text-[15px] inline-flex items-center gap-3 active:scale-[0.98] transition">
-              {lang === "th" ? "ค้นหาหมอนวด" : "Find your therapist"}
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="w-4 h-4"><path d="M12 5v14M6 13l6 6 6-6" /></svg>
-            </button>
-            <p className="text-[11px] text-ink-400 mt-3">{lang === "th" ? "พื้นที่ของคุณ จังหวะของคุณ" : "Your space. Your pace."}</p>
-          </div>
-        </div>
-      </section>
+      {/* ── สไลด์หมอแนะนำ ── */}
+      <HeroSlider posts={featured} lang={lang} />
 
       {/* ── รับสมัครหมอ (sale funnel /join) ── */}
       <section className="px-4 pt-4">
