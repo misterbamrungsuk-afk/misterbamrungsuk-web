@@ -138,7 +138,7 @@ function CheckoutInner({ id }: { id: string }) {
 
         <section className="glass rounded-2xl p-4 flex flex-col items-center gap-3">
           <h2 className="section-title self-start">{th ? "ชำระผ่านพร้อมเพย์" : "Pay with PromptPay"}</h2>
-          <div className="w-full max-w-[260px] rounded-2xl bg-white overflow-hidden text-[#3a1208]">
+          <div className="w-full max-w-[260px] rounded-2xl bg-white overflow-hidden text-[#1a1206]">
             <div className="bg-[#113566] text-white text-center py-2 text-[12px] font-semibold tracking-wide">THAI QR PAYMENT · พร้อมเพย์</div>
             <div className="p-3 flex flex-col items-center">
               <PromptPayQR amount={total} />

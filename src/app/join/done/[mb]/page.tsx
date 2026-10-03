@@ -31,7 +31,7 @@ export default async function DonePage({ params }: { params: Promise<{ mb: strin
         <p className="font-semibold">ขั้นตอนถัดไป</p>
         <ol className="mt-3 space-y-3 text-sm">
           {["แคปหน้าจอนี้เก็บไว้", `แอดไลน์ทีมงาน ${LINE_OA_ID}`, "แจ้งรหัส MB เพื่อรับคิวอบรม"].map((s, i) => (
-            <li key={s} className="flex items-center gap-3"><span className="w-7 h-7 rounded-full bg-gold-500 text-[#3a1208] grid place-items-center font-bold text-sm shrink-0">{i + 1}</span>{s}</li>
+            <li key={s} className="flex items-center gap-3"><span className="w-7 h-7 rounded-full bg-gold-500 text-[#1a1206] grid place-items-center font-bold text-sm shrink-0">{i + 1}</span>{s}</li>
           ))}
         </ol>
         <a href={lineAddUrl()} target="_blank" rel="noopener noreferrer"

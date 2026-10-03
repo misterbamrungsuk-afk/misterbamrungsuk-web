@@ -68,7 +68,7 @@ export default function LoginPage() {
           <p className="chip chip-gold self-start">{t.demoBadge} — ข้อมูลจำลอง ไม่ต้องตั้งค่า</p>
         )}
         <a href="/join" className="flex items-center gap-3 rounded-2xl border border-gold-500/50 bg-gold-500/5 px-4 py-3">
-          <span className="w-10 h-10 rounded-xl bg-gold-500 text-[#3a1208] grid place-items-center font-display font-bold shrink-0">MB</span>
+          <span className="w-10 h-10 rounded-xl bg-gold-500 text-[#1a1206] grid place-items-center font-display font-bold shrink-0">MB</span>
           <span className="flex-1 min-w-0">
             <span className="block text-sm font-semibold">สมัครเป็นหมอนวด / เพื่อนเที่ยวพรีเมียม</span>
             <span className="block text-xs text-ink-300">รับจำกัด 50 ท่าน · อบรม 2 วัน</span>

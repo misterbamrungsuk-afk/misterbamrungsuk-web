@@ -74,7 +74,7 @@ export default function BookSchedulePage({ params }: { params: Promise<{ id: str
               <button key={d.iso} onClick={() => { setDate(d.iso); setTime(""); }} aria-pressed={date === d.iso}
                 className={`h-[68px] rounded-2xl border flex flex-col items-center justify-center transition ${date === d.iso ? "bg-crimson-500 border-crimson-500 text-white" : "bg-ink-800 border-ink-600 text-ink-300"}`}>
                 <span className="text-xs">{d.dow}</span>
-                <span className={`font-display font-semibold text-xl ${date === d.iso ? "text-[#3a1208]" : "text-ink-100"}`}>{d.day}</span>
+                <span className={`font-display font-semibold text-xl ${date === d.iso ? "text-[#1a1206]" : "text-ink-100"}`}>{d.day}</span>
               </button>
             ))}
           </div>

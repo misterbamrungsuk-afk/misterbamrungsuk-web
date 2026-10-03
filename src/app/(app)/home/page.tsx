@@ -55,7 +55,7 @@ function HomeInner({ posts }: { posts: Post[] }) {
           <div className="relative h-[300px]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={heroPhoto} alt="" className="absolute inset-0 w-full h-full object-cover object-[50%_20%]" />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-ink-850/30 to-ink-850" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent from-25% via-ink-850/75 via-70% to-ink-850" />
           </div>
           <div className="relative -mt-24 px-5 pb-6">
             <p className="flex items-center gap-2 text-[12px] text-ink-200">
@@ -81,7 +81,7 @@ function HomeInner({ posts }: { posts: Post[] }) {
       {/* ── รับสมัครหมอ (sale funnel /join) ── */}
       <section className="px-4 pt-4">
         <Link href="/join" className="flex items-center gap-3 rounded-2xl border border-gold-500/40 bg-[linear-gradient(120deg,rgba(224,164,0,.12),rgba(224,36,60,.08))] px-4 py-3.5">
-          <span className="w-11 h-11 rounded-xl bg-gold-500 text-[#3a1208] grid place-items-center font-display font-bold shrink-0">MB</span>
+          <span className="w-11 h-11 rounded-xl bg-gold-500 text-[#1a1206] grid place-items-center font-display font-bold shrink-0">MB</span>
           <span className="flex-1 min-w-0">
             <span className="block text-[14px] font-semibold">{lang === "th" ? "เปิดรับสมัครหมอนวด & เพื่อนเที่ยว" : "Now recruiting therapists & companions"}</span>
             <span className="block text-xs text-ink-300">{lang === "th" ? "รับจำกัด 50 ท่าน · อบรม 2 วัน · รายได้ระดับพรีเมียม" : "50 seats · 2-day training · premium income"}</span>

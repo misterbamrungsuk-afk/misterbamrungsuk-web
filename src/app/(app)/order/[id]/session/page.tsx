@@ -75,7 +75,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
           <p className="text-sm">{th ? `ต่อเวลา 30 นาที เพิ่ม ${baht(extendCost)} จะส่งคำขอให้หมอยืนยันและเรียกเก็บผ่านระบบกลาง` : `Extend 30 min for ${baht(extendCost)}? Your therapist confirms; charged via escrow.`}</p>
           <div className="flex gap-2">
             <button onClick={() => setConfirmExtend(false)} className="flex-1 h-11 rounded-xl border border-ink-600">{th ? "ไม่ต่อ" : "Cancel"}</button>
-            <button onClick={() => { setExtra((e) => e + 30); setConfirmExtend(false); }} className="flex-1 h-11 rounded-xl bg-gold-500 text-[#3a1208] font-semibold">{th ? "ยืนยันต่อเวลา" : "Confirm"}</button>
+            <button onClick={() => { setExtra((e) => e + 30); setConfirmExtend(false); }} className="flex-1 h-11 rounded-xl bg-gold-500 text-[#1a1206] font-semibold">{th ? "ยืนยันต่อเวลา" : "Confirm"}</button>
           </div>
         </div>
       )}

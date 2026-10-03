@@ -69,7 +69,7 @@ export default function SearchPage() {
           </label>
           <button onClick={openSheet} aria-label={th ? "ฟิลเตอร์" : "Filters"} className="relative shrink-0 w-12 h-12 rounded-2xl btn-ghost grid place-items-center">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-5 h-5"><path d="M4 6h16M7 12h10M10 18h4" strokeLinecap="round" /></svg>
-            {activeCount > 0 && <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-gold-500 text-[#3a1208] text-[11px] font-bold grid place-items-center">{activeCount}</span>}
+            {activeCount > 0 && <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-gold-500 text-[#1a1206] text-[11px] font-bold grid place-items-center">{activeCount}</span>}
           </button>
         </div>
 

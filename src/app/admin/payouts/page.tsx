@@ -34,7 +34,7 @@ export default function AdminPayoutsPage() {
   return (
     <>
       <PageHead title="รับเงิน / โอนให้หมอ" sub="ยอดหลังหัก GP 20% · รายที่ติดข้อพิพาทถูกพักไว้"
-        right={<button onClick={exportCsv} className="h-11 px-4 rounded-xl bg-gold-500 text-[#3a1208] font-semibold">ส่งออกไฟล์โอน (CSV)</button>} />
+        right={<button onClick={exportCsv} className="h-11 px-4 rounded-xl bg-gold-500 text-[#1a1206] font-semibold">ส่งออกไฟล์โอน (CSV)</button>} />
       <div className="flex flex-col gap-2">
         {rows.map((r) => (
           <Card key={r.id} className="!p-3 flex flex-wrap items-center gap-3">

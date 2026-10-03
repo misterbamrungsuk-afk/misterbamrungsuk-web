@@ -1,18 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  /* ── Mister Bamrungsuk v4: Clean light · แดง × เหลือง × ทอง ── */
+  /* ── Mister Bamrungsuk v5: White · กฎ 60-30-10 ──
+     60% ขาว/เทากลาง (พื้น การ์ด) · 30% ตัวหนังสือเทาเข้ม · 10% แดง (CTA) + ทอง (ราคา/ป้ายพรีเมียม) */
   --color-ink-950: #ffffff;
-  --color-ink-900: #fffaf2;
-  --color-ink-850: #fff4e4;
+  --color-ink-900: #ffffff;
+  --color-ink-850: #fafafa;
   --color-ink-800: #ffffff;
-  --color-ink-700: #fbefdd;
-  --color-ink-600: #f0dcc0;
-  --color-ink-500: #e2c7a6;
-  --color-ink-400: #b08f78;
-  --color-ink-300: #7d5f52;
-  --color-ink-200: #5a3f37;
-  --color-ink-100: #2a0d10;
+  --color-ink-700: #f4f4f5;
+  --color-ink-600: #e7e7ea;
+  --color-ink-500: #d4d4d8;
+  --color-ink-400: #a1a1aa;
+  --color-ink-300: #6b6b74;
+  --color-ink-200: #45454d;
+  --color-ink-100: #18181b;
 
   --color-crimson-700: #9e1022;
   --color-crimson-600: #c1121f;
@@ -33,7 +34,7 @@
 
   --shadow-glow-red: 0 0 24px rgba(229, 72, 77, 0.35), 0 0 64px rgba(229, 72, 77, 0.12);
   --shadow-glow-gold: 0 0 20px rgba(245, 183, 0, 0.28);
-  --shadow-card: 0 6px 24px rgba(120, 40, 20, 0.08);
+  --shadow-card: 0 1px 2px rgba(16,16,24,.04), 0 8px 24px rgba(16,16,24,.06);
 
   --animate-pulse-red: pulseRed 2.4s ease-in-out infinite;
   --animate-shimmer: shimmer 2.8s linear infinite;
@@ -77,7 +78,7 @@ body {
 .glass {
   background: var(--color-ink-800);
   border: 1px solid var(--color-ink-600);
-  box-shadow: 0 2px 12px rgba(120, 40, 20, 0.05);
+  box-shadow: 0 1px 2px rgba(16,16,24,.04), 0 6px 20px rgba(16,16,24,.05);
 }
 .glass-hover { transition: border-color 0.2s, transform 0.2s; }
 .glass-hover:hover { border-color: rgba(245, 183, 0, 0.5); transform: translateY(-1px); }
@@ -98,15 +99,19 @@ body {
   color: transparent;
 }
 .btn-crimson {
-  background: var(--color-crimson-500);
+  background: linear-gradient(180deg, #e8293f, #c8142a);
   color: #fff;
-  transition: background 0.2s, transform 0.15s;
+  border-radius: 999px;
+  box-shadow: 0 6px 16px rgba(215, 25, 47, 0.28), inset 0 1px 0 rgba(255,255,255,.18);
+  transition: filter 0.2s, transform 0.15s, box-shadow 0.2s;
 }
-.btn-crimson:hover { background: var(--color-crimson-400); }
+.btn-crimson:hover { filter: brightness(1.06); }
 .btn-crimson:active { transform: scale(0.97); }
-.btn-crimson:disabled { opacity: 0.45; }
+.btn-crimson:disabled { opacity: 0.4; box-shadow: none; }
 .btn-ghost {
   border: 1px solid var(--color-ink-600);
+  background: #fff;
+  border-radius: 999px;
   color: var(--color-ink-100);
   transition: border-color 0.2s, background 0.2s;
 }
@@ -157,19 +162,19 @@ body {
 .safe-bottom { padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
 
 /* การ์ดรูปเต็ม + ไล่เฉดดำใต้ข้อความ (photo-first card) */
-.photo-scrim { background: linear-gradient(180deg, rgba(255,250,242,0) 0%, rgba(255,250,242,.94) 70%); }
+.photo-scrim { background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.95) 70%); }
 h1, h2, h3 { font-family: var(--font-display); }
 
 /* scrollbar */
 *::-webkit-scrollbar { width: 8px; height: 8px; }
-*::-webkit-scrollbar-thumb { background: #e2c7a6; border-radius: 8px; }
+*::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 8px; }
 *::-webkit-scrollbar-track { background: transparent; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* Leaflet dark */
 .leaflet-container {
-  background: #f4ece0;
+  background: #f4f4f5;
   border-radius: 16px;
   overflow: hidden; /* กันหมุด/ป้ายล้นออกนอกกรอบแผนที่ */
   font-family: var(--font-sans);
@@ -178,7 +183,7 @@ h1, h2, h3 { font-family: var(--font-display); }
 /* แผนที่ OSM โทนมืดให้เข้ากับธีม (หมุด/ป้ายไม่โดนฟิลเตอร์ เพราะอยู่คนละ pane) */
 .tiles-dark { filter: saturate(0.75); }
 .leaflet-top, .leaflet-bottom { z-index: 5 !important; }
-.leaflet-control-attribution { background: rgba(255,255,255,0.8) !important; color: #7d5f52 !important; font-size: 10px !important; }
+.leaflet-control-attribution { background: rgba(255,255,255,0.8) !important; color: #6b6b74 !important; font-size: 10px !important; }
 .leaflet-control-attribution a { color: #a8a8bd !important; }
 
 /* ── Map pins แบบแอปจริง: หยดน้ำ + รูปโปรไฟล์ข้างใน ── */
@@ -266,14 +271,14 @@ h1, h2, h3 { font-family: var(--font-display); }
 /* popup มืด */
 .leaflet-popup-content-wrapper {
   background: #fff !important;
-  color: #2a0d10 !important;
-  border: 1px solid #f0dcc0;
+  color: #18181b !important;
+  border: 1px solid #e7e7ea;
   border-radius: 14px !important;
-  box-shadow: 0 10px 30px rgba(120, 40, 20, 0.12) !important;
+  box-shadow: 0 10px 30px rgba(16,16,24,.12) !important;
 }
 .leaflet-popup-tip { background: #fff !important; }
 .leaflet-popup-content { margin: 12px 14px !important; font-family: var(--font-sans) !important; }
-.leaflet-popup b { color: #2a0d10; }
+.leaflet-popup b { color: #18181b; }
 
 /* ── ตัดบรรทัดภาษาไทยให้สมดุล ── */
 p, li, label, dd { text-wrap: pretty; }
@@ -281,10 +286,10 @@ h1, h2, h3 { text-wrap: balance; }
 
 /* ── จอใหญ่: แสดงแอปเป็นกรอบมือถือกลางจอ (ใช้งานแบบมือถือเป็นหลัก) ── */
 @media (min-width: 640px) {
-  body { background: radial-gradient(60% 50% at 50% 0%, #ffe8a8 0%, transparent 70%), #f6eadb; }
+  body { background: #f4f4f5; }
   .app-frame, .phone-frame {
     background: var(--color-ink-900);
-    box-shadow: 0 0 0 1px rgba(193, 18, 31, 0.08), 0 30px 90px rgba(120, 40, 20, 0.18);
+    box-shadow: 0 0 0 1px rgba(16,16,24,.06), 0 30px 80px rgba(16,16,24,.12);
   }
 }
 .phone-frame { width: 100%; max-width: 480px; margin: 0 auto; min-height: 100dvh; position: relative; overflow-x: hidden; }
@@ -296,5 +301,5 @@ html { scroll-behavior: smooth; }
 .phone-stage { min-height: 100dvh; }
 .phone { width: 100%; max-width: 480px; margin: 0 auto; min-height: 100dvh; background: var(--color-ink-900); overflow-x: hidden; }
 @media (min-width: 640px) {
-  .phone { box-shadow: 0 0 0 1px rgba(193, 18, 31, 0.08), 0 30px 90px rgba(120, 40, 20, 0.18); }
+  .phone { box-shadow: 0 0 0 1px rgba(16,16,24,.06), 0 30px 80px rgba(16,16,24,.12); }
 }

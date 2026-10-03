@@ -122,7 +122,7 @@ export default function SalePage() {
 
           <div className="relative z-10 mt-auto px-5 pb-8">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/85 backdrop-blur border border-gold-500/50 pl-1.5 pr-3.5 py-1.5">
-              <span className="w-6 h-6 rounded-full bg-gold-500 text-[#3a1208] grid place-items-center text-xs">⚡</span>
+              <span className="w-6 h-6 rounded-full bg-gold-500 text-[#1a1206] grid place-items-center text-xs">⚡</span>
               <span className="text-[12px] text-gold-200 leading-tight">รับจำกัด {QUOTA} ท่าน · ถึงสิ้น {closeDate}</span>
             </div>
 
@@ -183,23 +183,23 @@ export default function SalePage() {
                 const premium = k === "B";
                 return (
                   <button key={k} role="radio" aria-checked={on} onClick={() => pick(k)}
-                    className={`reveal relative text-left rounded-[28px] p-[1.5px] transition active:scale-[0.99] ${on ? "bg-gradient-to-br from-gold-300 via-gold-500 to-crimson-500" : premium ? "bg-gradient-to-br from-gold-500/60 to-white/5" : "bg-[#3a1208]/[.06]"}`}>
-                    <div className={`rounded-[26.5px] p-5 ${premium ? "bg-[linear-gradient(160deg,#fbefdd,#fff4e4_70%)]" : "bg-ink-850"}`}>
-                      {premium && <span className="absolute -top-3 right-5 rounded-full bg-gold-500 text-[#3a1208] text-[11px] font-bold px-3 py-1 shadow-lg">PREMIUM</span>}
+                    className={`reveal relative text-left rounded-[28px] p-[1.5px] transition active:scale-[0.99] ${on ? "bg-gradient-to-br from-gold-300 via-gold-500 to-crimson-500" : premium ? "bg-gradient-to-br from-gold-500/60 to-white/5" : "bg-ink-700"}`}>
+                    <div className={`rounded-[26.5px] p-5 ${premium ? "bg-[linear-gradient(160deg,#f4f4f5,#fafafa_70%)]" : "bg-ink-850"}`}>
+                      {premium && <span className="absolute -top-3 right-5 rounded-full bg-gold-500 text-[#1a1206] text-[11px] font-bold px-3 py-1 shadow-lg">PREMIUM</span>}
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-[11px] font-semibold tracking-[0.2em] text-gold-500">แพ็กเกจ {k}</p>
                           <p className="font-display text-xl font-semibold mt-1">{p.name}</p>
                         </div>
                         <span className={`mt-1 w-7 h-7 rounded-full border-2 grid place-items-center shrink-0 ${on ? "border-gold-400 bg-gold-500" : "border-ink-500"}`}>
-                          {on && <svg viewBox="0 0 24 24" fill="none" stroke="#fffaf2" strokeWidth="3" className="w-4 h-4"><path d="m5 12 5 5 9-10" /></svg>}
+                          {on && <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3" className="w-4 h-4"><path d="m5 12 5 5 9-10" /></svg>}
                         </span>
                       </div>
                       <p className="mt-4 flex items-baseline gap-1">
                         <span className="text-gold-400 text-lg">฿</span>
                         <span className="font-display text-[40px] leading-none font-bold text-gradient-gold">{baht(p.price)}</span>
                       </p>
-                      <div className="h-px bg-[#3a1208]/[.06] my-4" />
+                      <div className="h-px bg-ink-700 my-4" />
                       <ul className="space-y-2.5 text-[14px] text-ink-100">
                         {p.items.map((it) => (
                           <li key={it} className="flex gap-2.5 items-start">
@@ -207,7 +207,7 @@ export default function SalePage() {
                           </li>
                         ))}
                       </ul>
-                      <span className={`mt-5 h-12 grid place-items-center rounded-full font-semibold text-[15px] transition ${on ? "bg-gold-500 text-[#3a1208]" : "border border-white/15 text-ink-100"}`}>
+                      <span className={`mt-5 h-12 grid place-items-center rounded-full font-semibold text-[15px] transition ${on ? "bg-gold-500 text-[#1a1206]" : "border border-white/15 text-ink-100"}`}>
                         {on ? "✓ เลือกแพ็กเกจนี้แล้ว" : "เลือกแพ็กเกจนี้"}
                       </span>
                     </div>
@@ -227,7 +227,7 @@ export default function SalePage() {
                   <div key={x.q} className={`reveal rounded-2xl border transition-colors ${open ? "border-gold-500/50 bg-white/[0.05]" : "border-white/10 bg-white/[0.02]"}`}>
                     <button onClick={() => setFaq(open ? null : i)} aria-expanded={open} className="w-full min-h-14 px-4 flex items-center justify-between gap-3 text-left text-[15px] font-medium">
                       {x.q}
-                      <span className={`w-7 h-7 rounded-full grid place-items-center shrink-0 transition ${open ? "bg-gold-500 text-[#3a1208] rotate-45" : "bg-[#3a1208]/[.06] text-gold-400"}`}>+</span>
+                      <span className={`w-7 h-7 rounded-full grid place-items-center shrink-0 transition ${open ? "bg-gold-500 text-[#1a1206] rotate-45" : "bg-ink-700 text-gold-400"}`}>+</span>
                     </button>
                     <div className={`grid transition-all duration-300 ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
                       <p className="overflow-hidden px-4 text-[14px] text-ink-200 leading-relaxed"><span className="block pb-4">{x.a}</span></p>
@@ -336,10 +336,10 @@ export default function SalePage() {
 
         {/* ── แถบจองลอยด้านล่าง ── */}
         <div className={`fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-30 px-4 pb-[max(14px,env(safe-area-inset-bottom))] pt-3 transition-all duration-300 ${showBar && !closed ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"}`}>
-          <div className="flex items-center gap-3 rounded-full bg-ink-950/90 backdrop-blur-xl border border-gold-500/30 pl-5 pr-1.5 py-1.5 shadow-[0_10px_40px_rgba(0,0,0,.6)]">
+          <div className="flex items-center gap-3 rounded-full bg-white/95 backdrop-blur-xl border border-ink-600 pl-5 pr-1.5 py-1.5 shadow-[0_12px_32px_rgba(16,16,24,.14)]">
             <div className="flex-1 min-w-0">
               <p className="text-[11px] text-ink-300 truncate">{sel ? sel.name : `เหลือ ${left} ที่นั่ง`}</p>
-              <p className="font-display text-gold-300 font-semibold leading-tight">{sel ? `฿${baht(sel.price)}` : `เริ่ม ฿${baht(PACKAGES.A.price)}`}</p>
+              <p className="font-display text-ink-100 text-lg font-bold leading-tight">{sel ? `฿${baht(sel.price)}` : `เริ่ม ฿${baht(PACKAGES.A.price)}`}</p>
             </div>
             <button onClick={toForm} className="btn-crimson h-12 px-6 font-semibold text-[15px] shrink-0">สมัครเลย</button>
           </div>
@@ -364,7 +364,7 @@ function Steps({ at }: { at: 1 | 2 | 3 }) {
     <div className="flex gap-1.5 mt-4" aria-label={`ขั้นตอน ${at} จาก 3`}>
       {["ใบสมัคร", "ชำระเงิน", "รับรหัส MB"].map((s, i) => (
         <div key={s} className="flex-1">
-          <div className={`h-1.5 rounded-full ${i < at ? "bg-gradient-to-r from-gold-400 to-gold-600" : "bg-[#3a1208]/[.06]"}`} />
+          <div className={`h-1.5 rounded-full ${i < at ? "bg-gradient-to-r from-gold-400 to-gold-600" : "bg-ink-700"}`} />
           <p className={`text-[11px] mt-1.5 ${i + 1 === at ? "text-gold-300" : "text-ink-400"}`}>{s}</p>
         </div>
       ))}
@@ -377,7 +377,7 @@ function Seg({ options, value, onChange }: { options: readonly string[]; value: 
     <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}>
       {options.map((x) => (
         <button key={x} type="button" aria-pressed={value === x} onClick={() => onChange(x)}
-          className={`h-11 rounded-full border text-[13px] transition ${value === x ? "border-gold-500 bg-gold-500 text-[#3a1208] font-semibold" : "border-white/15"}`}>{x}</button>
+          className={`h-11 rounded-full border text-[13px] transition ${value === x ? "border-gold-500 bg-gold-500 text-[#1a1206] font-semibold" : "border-white/15"}`}>{x}</button>
       ))}
     </div>
   );
@@ -394,7 +394,7 @@ function Upload({ label, hint, value, err, onPick }: { label: string; hint: stri
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="w-8 h-8"><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
               <span className="text-[11px]">แตะเพื่อเลือก</span>
             </span>}
-        {value && <span className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full bg-gold-500 text-[#3a1208] grid place-items-center text-xs font-bold">✓</span>}
+        {value && <span className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full bg-gold-500 text-[#1a1206] grid place-items-center text-xs font-bold">✓</span>}
       </span>
       <span className="text-[13px] font-medium leading-tight">{label}</span>
       <span className="text-[11px] text-ink-400 leading-tight -mt-1">{hint}</span>

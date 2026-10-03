@@ -71,7 +71,7 @@ export default function ProviderReviewsPage() {
               <Stars value={r.stars} />
               <p className="text-sm mt-2">{r.text}</p>
               {r.reply ? (
-                <div className="mt-3 rounded-2xl bg-[#3a1208]/[.04] p-3 text-sm">
+                <div className="mt-3 rounded-2xl bg-ink-850 p-3 text-sm">
                   <p className="text-[11px] text-gold-400 mb-1">{th ? "คำตอบของคุณ" : "Your reply"}</p>
                   {r.reply}
                 </div>

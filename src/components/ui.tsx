@@ -14,7 +14,7 @@ export function LogoMark({ size = 28 }: { size?: number }) {
           <stop offset="1" stopColor="#a8862c" />
         </linearGradient>
       </defs>
-      <circle cx="20" cy="20" r="18.5" fill="#fffaf2" stroke={`url(#${id})`} strokeWidth="2" />
+      <circle cx="20" cy="20" r="18.5" fill="#ffffff" stroke={`url(#${id})`} strokeWidth="2" />
       <text x="20" y="25.5" textAnchor="middle" fontFamily="Kanit, sans-serif" fontWeight="700" fontSize="15" fill={`url(#${id})`} letterSpacing="-0.5">MB</text>
     </svg>
   );
