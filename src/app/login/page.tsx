@@ -67,6 +67,14 @@ export default function LoginPage() {
         {(isDemo || !hasSupabase) && (
           <p className="chip chip-gold self-start">{t.demoBadge} — ข้อมูลจำลอง ไม่ต้องตั้งค่า</p>
         )}
+        <a href="/join" className="flex items-center gap-3 rounded-2xl border border-gold-500/50 bg-gold-500/5 px-4 py-3">
+          <span className="w-10 h-10 rounded-xl bg-gold-500 text-ink-950 grid place-items-center font-display font-bold shrink-0">MB</span>
+          <span className="flex-1 min-w-0">
+            <span className="block text-sm font-semibold">สมัครเป็นหมอนวด / เพื่อนเที่ยวพรีเมียม</span>
+            <span className="block text-xs text-ink-300">รับจำกัด 50 ท่าน · อบรม 2 วัน</span>
+          </span>
+          <span className="text-gold-300" aria-hidden>→</span>
+        </a>
         <a href="/welcome" className="text-gold-300 text-sm underline underline-offset-4 self-start py-2">รู้จักเราก่อน / About us →</a>
         <p className="text-ink-400 text-xs">© 2026 Mister Bamrungsuk · สำหรับผู้มีอายุ 18 ปีขึ้นไป · นวดเพื่อสุขภาพเท่านั้น</p>
       </section>

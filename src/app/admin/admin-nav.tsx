@@ -9,6 +9,7 @@ import { ModeSwitch } from "@/components/mode-switch";
 
 export const ADMIN_TABS = [
   { href: "/admin", label: "รายได้ GP", exact: true },
+  { href: "/admin/applicants", label: "ผู้สมัคร (/join)" },
   { href: "/admin/kyc", label: "คิว KYC", badge: KYC_QUEUE.length },
   { href: "/admin/orders", label: "ตรวจงาน" },
   { href: "/admin/payouts", label: "โอนให้หมอ", badge: PAYOUTS.filter((p) => !p.hold).length },

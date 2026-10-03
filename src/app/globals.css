@@ -286,3 +286,13 @@ h1, h2, h3 { text-wrap: balance; }
   }
 }
 .phone-frame { width: 100%; max-width: 480px; margin: 0 auto; min-height: 100dvh; position: relative; overflow-x: hidden; }
+
+/* ── หน้ารับสมัคร /join: กรอบมือถือ + เผยทีละส่วน ── */
+html { scroll-behavior: smooth; }
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s cubic-bezier(.16,1,.3,1); }
+.reveal.in { opacity: 1; transform: none; }
+.phone-stage { min-height: 100dvh; }
+.phone { width: 100%; max-width: 480px; margin: 0 auto; min-height: 100dvh; background: var(--color-ink-900); overflow-x: hidden; }
+@media (min-width: 640px) {
+  .phone { box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.14), 0 30px 90px rgba(0, 0, 0, 0.75); }
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, use, useState } from "react";
+import { Suspense, use, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useI18n } from "@/i18n/provider";
@@ -8,6 +8,9 @@ import { TopBar } from "@/components/shell";
 import { baht } from "@/components/ui";
 import { DEMO_POSTS, DEMO_PROMOS } from "@/lib/demo-data";
 import { ADDRESSES, HERBAL_PRICE, packagePrice, promoDiscount, thaiDate } from "@/lib/booking";
+import { BANK } from "@/lib/join/config";
+import { promptPayPayload } from "@/lib/join/promptpay";
+import QRCode from "qrcode";
 
 // ขั้นที่ 2/3: คัดกรองสุขภาพ + โค้ดส่วนลด + สรุปยอด ก่อนจ่ายเข้าระบบกลาง
 const HEALTH = [
@@ -33,7 +36,7 @@ function CheckoutInner({ id }: { id: string }) {
   const [health, setHealth] = useState<Record<string, boolean>>({});
   const [avoid, setAvoid] = useState("");
   const [confirmed, setConfirmed] = useState(false);
-  const [method, setMethod] = useState("promptpay");
+  const [paid, setPaid] = useState(false);
   const [herbal, setHerbal] = useState(false);
   const [code, setCode] = useState("");
   const [applied, setApplied] = useState<string | null>(null);
@@ -52,11 +55,7 @@ function CheckoutInner({ id }: { id: string }) {
   }
 
   const base = packagePrice(post, pkg);
-  const METHODS = [
-    { id: "promptpay", th: "พร้อมเพย์ (QR)", en: "PromptPay (QR)", sub: th ? "สแกนจ่ายผ่านแอปธนาคาร" : "Scan with any bank app", mark: "PP", color: "#113566" },
-    { id: "card", th: "บัตรเครดิต / เดบิต", en: "Credit / debit card", sub: "Visa •••• 4242", mark: "VISA", color: "#1a1f71" },
-    { id: "truemoney", th: "TrueMoney Wallet", en: "TrueMoney Wallet", sub: th ? "ผูกเบอร์ 08x-xxx-5678" : "Linked 08x-xxx-5678", mark: "TM", color: "#f26522" },
-  ];
+
   const subtotal = base + (herbal ? HERBAL_PRICE : 0);
   const promo = DEMO_PROMOS.find((p) => p.code === applied);
   const discount = promoDiscount(promo, subtotal);
@@ -73,7 +72,7 @@ function CheckoutInner({ id }: { id: string }) {
   };
 
   const pay = () => {
-    const q = new URLSearchParams({ id: post.id, pkg: String(pkg), date, time, addr: addr.id, total: String(total), method });
+    const q = new URLSearchParams({ id: post.id, pkg: String(pkg), date, time, addr: addr.id, total: String(total), method: "promptpay" });
     router.push(`/book/success?${q}`);
   };
 
@@ -137,19 +136,21 @@ function CheckoutInner({ id }: { id: string }) {
           {applied && !codeErr && <p className="text-xs text-gold-300">✓ {th ? "ใช้โค้ด" : "Applied"} {applied} · −{baht(discount)}</p>}
         </section>
 
-        <section className="flex flex-col gap-2.5">
-          <h2 className="section-title">{th ? "วิธีชำระเงิน" : "Payment method"}</h2>
-          {METHODS.map((m) => (
-            <button key={m.id} onClick={() => setMethod(m.id)} aria-pressed={method === m.id}
-              className={`glass rounded-2xl p-3.5 flex items-center gap-3 text-left transition ${method === m.id ? "!border-gold-500" : ""}`}>
-              <span className="w-11 h-11 rounded-xl grid place-items-center text-[11px] font-bold text-white shrink-0" style={{ background: m.color }}>{m.mark}</span>
-              <span className="flex-1 min-w-0">
-                <span className="block text-sm font-medium">{th ? m.th : m.en}</span>
-                <span className="block text-xs text-ink-300 truncate">{m.sub}</span>
-              </span>
-              <span className={`w-5 h-5 rounded-full border-2 grid place-items-center shrink-0 ${method === m.id ? "border-gold-500" : "border-ink-500"}`}>{method === m.id && <span className="w-2.5 h-2.5 rounded-full bg-gold-500" />}</span>
-            </button>
-          ))}
+        <section className="glass rounded-2xl p-4 flex flex-col items-center gap-3">
+          <h2 className="section-title self-start">{th ? "ชำระผ่านพร้อมเพย์" : "Pay with PromptPay"}</h2>
+          <div className="w-full max-w-[260px] rounded-2xl bg-white overflow-hidden text-ink-950">
+            <div className="bg-[#113566] text-white text-center py-2 text-[12px] font-semibold tracking-wide">THAI QR PAYMENT · พร้อมเพย์</div>
+            <div className="p-3 flex flex-col items-center">
+              <PromptPayQR amount={total} />
+              <p className="text-[12px] mt-1.5 font-medium">{BANK.accountName}</p>
+              <p className="font-display text-xl font-bold">{baht(total)}</p>
+            </div>
+          </div>
+          <p className="text-xs text-ink-300 text-center leading-relaxed">{th ? "สแกนด้วยแอปธนาคารใดก็ได้ ยอดขึ้นให้อัตโนมัติ ตรวจชื่อผู้รับก่อนยืนยัน" : "Scan with any banking app — amount is pre-filled. Check the recipient name before confirming."}</p>
+          <label className="flex items-center gap-2.5 text-sm text-ink-200 self-start min-h-9">
+            <input type="checkbox" checked={paid} onChange={(e) => setPaid(e.target.checked)} className="w-5 h-5 accent-[#e0243c]" />
+            {th ? "ฉันโอนเงินเรียบร้อยแล้ว" : "I have completed the transfer"}
+          </label>
         </section>
 
         <section className="glass rounded-2xl p-4 flex flex-col gap-2 text-sm">
@@ -162,8 +163,8 @@ function CheckoutInner({ id }: { id: string }) {
       </div>
 
       <div className="fixed left-1/2 -translate-x-1/2 w-full max-w-[480px] z-30 px-4" style={{ bottom: "calc(16px + env(safe-area-inset-bottom))" }}>
-        <button onClick={pay} disabled={!confirmed} className="btn-crimson w-full h-14 rounded-2xl font-display font-semibold text-lg">
-          {confirmed ? `${th ? "ยืนยันและชำระ" : "Confirm & pay"} ${baht(total)}` : th ? "ยืนยันข้อมูลสุขภาพก่อน" : "Confirm health info first"}
+        <button onClick={pay} disabled={!confirmed || !paid} className="btn-crimson w-full h-14 rounded-2xl font-display font-semibold text-lg">
+          {!confirmed ? (th ? "ยืนยันข้อมูลสุขภาพก่อน" : "Confirm health info first") : !paid ? (th ? `สแกนจ่าย ${baht(total)} แล้วติ๊กยืนยัน` : `Pay ${baht(total)}, then tick confirm`) : (th ? "ยืนยันการจอง" : "Confirm booking")}
         </button>
       </div>
     </>
@@ -177,4 +178,15 @@ export default function CheckoutPage({ params }: { params: Promise<{ id: string 
       <CheckoutInner id={id} />
     </Suspense>
   );
+}
+
+/** QR พร้อมเพย์ฝังยอด — สร้างใหม่เมื่อยอดเปลี่ยน (ใส่โค้ดส่วนลด/เพิ่มประคบ) */
+function PromptPayQR({ amount }: { amount: number }) {
+  const [src, setSrc] = useState("");
+  useEffect(() => {
+    const payload = promptPayPayload(BANK.promptPayId, amount);
+    if (payload) QRCode.toDataURL(payload, { margin: 1, width: 440 }).then(setSrc).catch(() => setSrc(""));
+  }, [amount]);
+  // eslint-disable-next-line @next/next/no-img-element
+  return src ? <img src={src} alt={`QR พร้อมเพย์ ${amount} บาท`} className="w-full aspect-square" /> : <div className="w-full aspect-square grid place-items-center text-sm text-ink-400">…</div>;
 }

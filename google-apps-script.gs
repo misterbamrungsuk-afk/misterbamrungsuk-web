@@ -1,0 +1,46 @@
+/**
+ * Mister Bamrungsuk → Google Sheet
+ * รับแถวผู้สมัครจากเว็บแล้วเพิ่มลงแท็บ "applicants"
+ *
+ * วิธีติดตั้ง:
+ * 1. เปิด Google Sheet ที่จะใช้ → เมนู ส่วนขยาย (Extensions) → Apps Script
+ * 2. ลบโค้ดเดิม วางไฟล์นี้ทั้งหมด แล้วแก้ TOKEN ให้ตรงกับ GOOGLE_SHEETS_WEBHOOK_TOKEN ใน env และใส่ SPREADSHEET_ID
+ * 3. กด ทำให้ใช้งานได้ (Deploy) → การทำให้ใช้งานได้รายการใหม่ (New deployment)
+ *    - ประเภท: เว็บแอป (Web app)
+ *    - เรียกใช้ในฐานะ (Execute as): ฉัน (Me)
+ *    - ผู้มีสิทธิ์เข้าถึง (Who has access): ทุกคน (Anyone)
+ * 4. กดอนุญาตสิทธิ์ แล้วคัดลอก URL ของเว็บแอป (ลงท้ายด้วย /exec) ไปใส่ GOOGLE_SHEETS_WEBHOOK_URL
+ *
+ * ความปลอดภัย: URL นี้ใครก็เรียกได้ สคริปต์จึงรับเฉพาะคำขอที่มี TOKEN ถูกต้อง — อย่าเผยแพร่ TOKEN
+ */
+const TOKEN = 'ใส่ค่าเดียวกับ GOOGLE_SHEETS_WEBHOOK_TOKEN';
+const SHEET_NAME = 'applicants';
+// ID ของสเปรดชีต (ส่วนระหว่าง /d/ กับ /edit ใน URL ของชีต)
+const SPREADSHEET_ID = 'ใส่ ID ของชีต';
+
+function doPost(e) {
+  try {
+    const body = JSON.parse(e.postData.contents);
+    if (body.token !== TOKEN) return json({ ok: false, error: 'unauthorized' });
+
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(body.columns);
+      sheet.getRange(1, 1, 1, body.columns.length).setFontWeight('bold');
+      sheet.setFrozenRows(1);
+    }
+    // กันสูตรถูกฉีดเข้าชีต (ข้อความที่ขึ้นต้นด้วย = + - @)
+    const row = body.row.map(function (v) {
+      return typeof v === 'string' && /^[=+\-@]/.test(v) ? "'" + v : v;
+    });
+    sheet.appendRow(row);
+    return json({ ok: true });
+  } catch (err) {
+    return json({ ok: false, error: String(err) });
+  }
+}
+
+function json(o) {
+  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
+}

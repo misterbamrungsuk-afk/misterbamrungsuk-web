@@ -29,7 +29,7 @@ export default function WelcomePage() {
           <nav className="hidden md:flex gap-6 text-sm text-ink-300">
             <a href="#how" className="hover:text-gold-300">{th ? "วิธีใช้งาน" : "How it works"}</a>
             <a href="#safety" className="hover:text-gold-300">{th ? "ความปลอดภัย" : "Safety"}</a>
-            <Link href="/provider/apply" className="hover:text-gold-300">{th ? "สมัครเป็นหมอนวด" : "Become a therapist"}</Link>
+            <Link href="/join" className="hover:text-gold-300">{th ? "สมัครเป็นหมอนวด" : "Become a therapist"}</Link>
           </nav>
           <div className="flex items-center gap-2 shrink-0">
             <LangToggle className="hidden min-[400px]:inline-flex" />
@@ -112,7 +112,7 @@ export default function WelcomePage() {
             <p className="text-ink-400 text-sm mt-1">{th ? "รับงานใกล้คุณ รายได้โปร่งใส จ่ายตรงเวลา" : "Nearby jobs, transparent earnings, on-time payouts"}</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href="/provider/apply" className="btn-ghost rounded-full px-6 h-12 inline-flex items-center font-semibold">{th ? "สมัครเป็นหมอนวด" : "Apply now"}</Link>
+            <Link href="/join" className="btn-ghost rounded-full px-6 h-12 inline-flex items-center font-semibold">{th ? "สมัครเป็นหมอนวด" : "Apply now"}</Link>
             <Link href="/login" className="btn-crimson rounded-full px-6 h-12 inline-flex items-center font-semibold">{th ? "เข้าสู่ระบบ" : "Log in"}</Link>
           </div>
         </div>

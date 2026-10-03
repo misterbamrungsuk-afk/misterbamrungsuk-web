@@ -78,6 +78,18 @@ function HomeInner({ posts }: { posts: Post[] }) {
         </div>
       </section>
 
+      {/* ── รับสมัครหมอ (sale funnel /join) ── */}
+      <section className="px-4 pt-4">
+        <Link href="/join" className="flex items-center gap-3 rounded-2xl border border-gold-500/40 bg-[linear-gradient(120deg,rgba(212,175,55,.12),rgba(224,36,60,.08))] px-4 py-3.5">
+          <span className="w-11 h-11 rounded-xl bg-gold-500 text-ink-950 grid place-items-center font-display font-bold shrink-0">MB</span>
+          <span className="flex-1 min-w-0">
+            <span className="block text-[14px] font-semibold">{lang === "th" ? "เปิดรับสมัครหมอนวด & เพื่อนเที่ยว" : "Now recruiting therapists & companions"}</span>
+            <span className="block text-xs text-ink-300">{lang === "th" ? "รับจำกัด 50 ท่าน · อบรม 2 วัน · รายได้ระดับพรีเมียม" : "50 seats · 2-day training · premium income"}</span>
+          </span>
+          <span className="text-gold-300 text-lg" aria-hidden>→</span>
+        </Link>
+      </section>
+
       {/* ── หาความผ่อนคลายในแบบคุณ ── */}
       <section id="find" className="px-4 pt-8 scroll-mt-16">
         <h2 className="font-display font-bold text-[26px] leading-tight tracking-tight">{lang === "th" ? "หาความผ่อนคลายในแบบคุณ" : "Find your kind of calm"}</h2>

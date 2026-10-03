@@ -34,6 +34,9 @@ export async function middleware(request: NextRequest) {
     pathname === "/welcome" ||
     pathname === "/onboarding" ||
     pathname === "/sos" ||
+    // หน้ารับสมัครหมอ (sale funnel) เปิดสาธารณะ
+    pathname === "/join" ||
+    pathname.startsWith("/join/") ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/auth") ||
