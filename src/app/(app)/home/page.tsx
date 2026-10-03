@@ -69,8 +69,8 @@ function HomeInner({ posts }: { posts: Post[] }) {
               <span className="w-1.5 h-1.5 rounded-full bg-crimson-500" />
               {lang === "th" ? "ผ่อนคลาย ถึงที่ของคุณ" : "Wellbeing, brought to you"}
             </p>
-            <h1 className="font-display font-bold text-[40px] leading-[1.05] tracking-tight mt-3">
-              {lang === "th" ? <>ให้เวลา<br />กับตัวเอง<span className="text-crimson-500">.</span></> : <>Make room<br />for yourself<span className="text-crimson-500">.</span></>}
+            <h1 className="font-display font-bold text-[36px] leading-[1.12] tracking-tight mt-3">
+              {lang === "th" ? <>ผ่อนคลายระดับ<br /><span className="bg-gradient-to-r from-[#b8860b] via-[#e0a400] to-[#9a6b00] bg-clip-text text-transparent">VVIP</span> ถึงที่คุณ</> : <>VVIP relaxation,<br /><span className="bg-gradient-to-r from-[#b8860b] via-[#e0a400] to-[#9a6b00] bg-clip-text text-transparent">at your door</span></>}
             </h1>
             <p className="text-[14px] text-ink-300 leading-relaxed mt-3 max-w-[34ch]">
               {lang === "th" ? "พักผ่อนในพื้นที่ของคุณเอง เลือกหมอนวดชายที่ยืนยันตัวตนแล้ว ให้การนวดที่ใช่สำหรับคุณ" : "Unwind in your own space. Discover verified male therapists for a massage that feels right for you."}
