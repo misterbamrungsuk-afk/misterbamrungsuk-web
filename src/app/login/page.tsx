@@ -44,7 +44,7 @@ export default function LoginPage() {
       <section className="absolute inset-x-0 bottom-0 z-10 px-6 pb-9 flex flex-col gap-5 animate-rise">
         <div>
           <p className="text-[12px] font-semibold tracking-[0.2em] text-[#8f5e00] flex items-center gap-2"><span className="w-6 h-px bg-[#b8860b]" />VVIP MALE MASSAGE</p>
-          <h1 className="font-display text-[30px] leading-tight font-bold mt-1.5"><span className="whitespace-nowrap">ผ่อนคลายแบบมืออาชีพ</span><br /><span className="bg-gradient-to-r from-[#b8860b] via-[#e0a400] to-[#9a6b00] bg-clip-text text-transparent">ถึงที่ของคุณ</span><span className="text-crimson-500">.</span></h1>
+          <h1 className="font-display text-[30px] leading-tight font-bold mt-1.5"><span className="whitespace-nowrap">ผ่อนคลายแบบมืออาชีพ</span><br /><span className="bg-gradient-to-r from-[#b8860b] via-[#e0a400] to-[#9a6b00] bg-clip-text text-transparent">ถึงที่ของคุณ</span></h1>
           <p className="text-ink-200 text-[15px] mt-2.5 leading-relaxed">{t.brandSub}</p>
         </div>
 
