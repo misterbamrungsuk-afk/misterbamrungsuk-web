@@ -1,12 +1,24 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { ADMIN_COOKIE, canAccess, homeFor, verifySession } from "@/lib/admin-auth";
+import { GATE_COOKIE, gateExempt, gateToken } from "@/lib/site-gate";
 
 // Auth guard
 // - หน้าแอปทั่วไป: ต้องมี cookie hamoo_session (โหมดจริง: ตรวจ Supabase session; โหมดเดโม: ตั้งตอนกดเข้าสู่ระบบ)
 // - หลังบ้าน /admin/*: ต้องมี session แอดมินที่ลงลายเซ็นถูกต้อง + บทบาทมีสิทธิ์เข้าหน้านั้น
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // รหัสเข้าเว็บ (ตั้ง SITE_PASSWORD) — ล็อกทุกหน้า ยกเว้นหน้ารับสมัคร /join
+  const sitePw = process.env.SITE_PASSWORD;
+  if (sitePw && !gateExempt(pathname) && request.cookies.get(GATE_COOKIE)?.value !== (await gateToken(sitePw))) {
+    if (pathname.startsWith("/api")) return NextResponse.json({ ok: false, error: "locked" }, { status: 401 });
+    const url = request.nextUrl.clone();
+    url.pathname = "/gate";
+    url.search = "";
+    url.searchParams.set("next", pathname);
+    return NextResponse.redirect(url);
+  }
 
   if (pathname === "/admin" || pathname.startsWith("/admin/")) {
     const admin = await verifySession(request.cookies.get(ADMIN_COOKIE)?.value);
