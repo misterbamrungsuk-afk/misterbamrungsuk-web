@@ -3,6 +3,7 @@ import { IBM_Plex_Sans_Thai, Kanit } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/i18n/provider";
 import { PwaRegister } from "@/components/pwa-register";
+import { ScrollReveal } from "@/components/scroll-reveal";
 
 const plex = IBM_Plex_Sans_Thai({ subsets: ["thai", "latin"], weight: ["400", "500", "600", "700"], variable: "--font-plex" });
 const kanit = Kanit({ subsets: ["thai", "latin"], weight: ["500", "600", "700", "800"], variable: "--font-kanit" });
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <I18nProvider>{children}</I18nProvider>
         <PwaRegister />
+        <ScrollReveal />
       </body>
     </html>
   );

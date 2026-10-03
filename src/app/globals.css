@@ -303,3 +303,8 @@ html { scroll-behavior: smooth; }
 @media (min-width: 640px) {
   .phone { box-shadow: 0 0 0 1px rgba(16,16,24,.06), 0 30px 80px rgba(16,16,24,.12); }
 }
+
+/* ── เผยเนื้อหาตอนเลื่อนลง (components/scroll-reveal.tsx) ── */
+[data-rv] { opacity: 0; transform: translateY(22px); transition: opacity .6s ease, transform .7s cubic-bezier(.16,1,.3,1); }
+[data-rv].rv-in { opacity: 1; transform: none; }
+[data-rv].rv-now { transition: none; }
