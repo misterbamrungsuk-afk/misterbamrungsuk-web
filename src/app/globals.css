@@ -1,38 +1,39 @@
 @import "tailwindcss";
 
 @theme {
-  /* ── MorD v2: Black × Red × Gold (ตรงกับดีไซน์บนแคนวาส) ── */
-  --color-ink-950: #070708;
-  --color-ink-900: #0b0b0d;
-  --color-ink-850: #111114;
-  --color-ink-800: #16161a;
-  --color-ink-700: #1f1f25;
-  --color-ink-600: #2a2a32;
-  --color-ink-500: #3a3a48;
-  --color-ink-400: #55556a;
-  --color-ink-300: #8e8e9c;
-  --color-ink-200: #a8a8b5;
-  --color-ink-100: #f5f2ec;
+  /* ── Mister Bamrungsuk v4: Clean light · แดง × เหลือง × ทอง ── */
+  --color-ink-950: #ffffff;
+  --color-ink-900: #fffaf2;
+  --color-ink-850: #fff4e4;
+  --color-ink-800: #ffffff;
+  --color-ink-700: #fbefdd;
+  --color-ink-600: #f0dcc0;
+  --color-ink-500: #e2c7a6;
+  --color-ink-400: #b08f78;
+  --color-ink-300: #7d5f52;
+  --color-ink-200: #5a3f37;
+  --color-ink-100: #2a0d10;
 
-  --color-crimson-700: #8f1d2c;
-  --color-crimson-600: #c21c32;
-  --color-crimson-500: #e0243c;
-  --color-crimson-400: #eb3f55;
-  --color-crimson-300: #ff6b7d;
-  --color-crimson-200: #ff8a97;
-  --color-crimson-100: #ffc4cb;
+  --color-crimson-700: #9e1022;
+  --color-crimson-600: #c1121f;
+  --color-crimson-500: #d7192f;
+  --color-crimson-400: #e83148;
+  --color-crimson-300: #c1121f;
+  --color-crimson-200: #b0101e;
+  --color-crimson-100: #ffe1e4;
 
-  --color-gold-600: #a8862c;
-  --color-gold-500: #d4af37;
-  --color-gold-400: #e6c75a;
-  --color-gold-300: #f3dd8f;
+  --color-gold-600: #b97f00;
+  --color-gold-500: #f5b700;
+  --color-gold-400: #ffc72c;
+  --color-gold-300: #a86f00;
+  --color-gold-200: #8f5e00;
 
   --font-sans: var(--font-plex), "IBM Plex Sans Thai", "Noto Sans Thai", ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-kanit), "Kanit", var(--font-plex), sans-serif;
 
   --shadow-glow-red: 0 0 24px rgba(229, 72, 77, 0.35), 0 0 64px rgba(229, 72, 77, 0.12);
-  --shadow-glow-gold: 0 0 20px rgba(212, 175, 55, 0.28);
-  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.55);
+  --shadow-glow-gold: 0 0 20px rgba(245, 183, 0, 0.28);
+  --shadow-card: 0 6px 24px rgba(120, 40, 20, 0.08);
 
   --animate-pulse-red: pulseRed 2.4s ease-in-out infinite;
   --animate-shimmer: shimmer 2.8s linear infinite;
@@ -58,7 +59,7 @@
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
@@ -69,28 +70,29 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-::selection { background: rgba(229, 72, 77, 0.4); color: #fff; }
+::selection { background: rgba(245, 183, 0, 0.35); }
 
 /* ── Reusable primitives (อยู่ใน layer components ให้ utility override ได้) ── */
 @layer components {
 .glass {
   background: var(--color-ink-800);
   border: 1px solid var(--color-ink-600);
+  box-shadow: 0 2px 12px rgba(120, 40, 20, 0.05);
 }
 .glass-hover { transition: border-color 0.2s, transform 0.2s; }
-.glass-hover:hover { border-color: rgba(212, 175, 55, 0.5); transform: translateY(-1px); }
+.glass-hover:hover { border-color: rgba(245, 183, 0, 0.5); transform: translateY(-1px); }
 .gold-line {
-  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.55), transparent);
+  background: linear-gradient(90deg, transparent, rgba(245, 183, 0, 0.55), transparent);
   height: 1px;
 }
 .text-gradient-gold {
-  background: linear-gradient(100deg, #f3dd8f, #d4af37 45%, #a8862c);
+  background: linear-gradient(100deg, #f5b700, #d99a00 45%, #a86f00);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 .text-gradient-red {
-  background: linear-gradient(100deg, #ff8a97, #e5484d 50%, #b3243a);
+  background: linear-gradient(100deg, #e83148, #c1121f 50%, #9e1022);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -108,17 +110,17 @@ body {
   color: var(--color-ink-100);
   transition: border-color 0.2s, background 0.2s;
 }
-.btn-ghost:hover { border-color: rgba(212, 175, 55, 0.6); background: rgba(212, 175, 55, 0.08); }
+.btn-ghost:hover { border-color: rgba(245, 183, 0, 0.6); background: rgba(245, 183, 0, 0.08); }
 .chip {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-ink-600);
+  background: #fff;
   border-radius: 999px;
   font-size: 12px;
   padding: 4px 10px;
   color: var(--color-ink-200);
 }
-.chip-red { border-color: var(--color-ink-100); background: var(--color-ink-100); color: var(--color-ink-950); font-weight: 600; }
-.chip-gold { border-color: rgba(212, 175, 55, 0.5); background: rgba(212, 175, 55, 0.1); color: var(--color-gold-300); }
+.chip-red { border-color: var(--color-crimson-500); background: var(--color-crimson-500); color: #fff; font-weight: 600; }
+.chip-gold { border-color: rgba(245, 183, 0, 0.6); background: rgba(245, 183, 0, 0.14); color: var(--color-gold-200); }
 .input-dark {
   width: 100%;
   min-width: 0; /* ให้ช่อง date/time หดได้ในแถว flex/grid ไม่ล้นขอบ */
@@ -130,7 +132,7 @@ body {
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-.input-dark:focus { border-color: var(--color-gold-500); box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15); }
+.input-dark:focus { border-color: var(--color-gold-500); box-shadow: 0 0 0 3px rgba(245, 183, 0, 0.15); }
 .input-dark::placeholder { color: var(--color-ink-400); }
 .section-title {
   font-family: var(--font-display);
@@ -155,28 +157,28 @@ body {
 .safe-bottom { padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
 
 /* การ์ดรูปเต็ม + ไล่เฉดดำใต้ข้อความ (photo-first card) */
-.photo-scrim { background: linear-gradient(180deg, rgba(11,11,13,0) 0%, rgba(11,11,13,.92) 70%); }
+.photo-scrim { background: linear-gradient(180deg, rgba(255,250,242,0) 0%, rgba(255,250,242,.94) 70%); }
 h1, h2, h3 { font-family: var(--font-display); }
 
 /* scrollbar */
 *::-webkit-scrollbar { width: 8px; height: 8px; }
-*::-webkit-scrollbar-thumb { background: #2a2a34; border-radius: 8px; }
+*::-webkit-scrollbar-thumb { background: #e2c7a6; border-radius: 8px; }
 *::-webkit-scrollbar-track { background: transparent; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* Leaflet dark */
 .leaflet-container {
-  background: #0b0b0f;
+  background: #f4ece0;
   border-radius: 16px;
   overflow: hidden; /* กันหมุด/ป้ายล้นออกนอกกรอบแผนที่ */
   font-family: var(--font-sans);
 }
 .leaflet-pane { z-index: 0; } /* กันแผนที่ทับปุ่ม/popup ของหน้าเว็บ */
 /* แผนที่ OSM โทนมืดให้เข้ากับธีม (หมุด/ป้ายไม่โดนฟิลเตอร์ เพราะอยู่คนละ pane) */
-.tiles-dark { filter: invert(1) hue-rotate(180deg) brightness(0.8) contrast(0.92) saturate(0.35); }
+.tiles-dark { filter: saturate(0.75); }
 .leaflet-top, .leaflet-bottom { z-index: 5 !important; }
-.leaflet-control-attribution { background: rgba(0,0,0,0.5) !important; color: #7b7b93 !important; font-size: 10px !important; }
+.leaflet-control-attribution { background: rgba(255,255,255,0.8) !important; color: #7d5f52 !important; font-size: 10px !important; }
 .leaflet-control-attribution a { color: #a8a8bd !important; }
 
 /* ── Map pins แบบแอปจริง: หยดน้ำ + รูปโปรไฟล์ข้างใน ── */
@@ -196,14 +198,14 @@ h1, h2, h3 { font-family: var(--font-display); }
   width: 42px; height: 42px;
   border-radius: 50% 50% 50% 0;
   transform: rotate(-45deg);
-  background: #16161c;
-  border: 3px solid #e5484d;
+  background: #fff;
+  border: 3px solid #d7192f;
   box-shadow: 0 0 16px rgba(229, 72, 77, 0.45);
   overflow: hidden;
   transition: transform 0.2s;
 }
 .pin:hover { transform: rotate(-45deg) scale(1.12); }
-.pin-job { border-color: #d4af37; box-shadow: 0 0 16px rgba(212, 175, 55, 0.45); }
+.pin-job { border-color: #d4af37; box-shadow: 0 0 16px rgba(245, 183, 0, 0.45); }
 .pin img {
   position: absolute; inset: 0;
   width: 100%; height: 100%;
@@ -216,8 +218,8 @@ h1, h2, h3 { font-family: var(--font-display); }
   width: 17px; height: 17px; border-radius: 50%;
   display: grid; place-items: center;
   font-size: 10px;
-  background: #16161c;
-  border: 2px solid #e5484d;
+  background: #fff;
+  border: 2px solid #d7192f;
   transform: rotate(45deg);
   z-index: 2;
 }
@@ -225,9 +227,9 @@ h1, h2, h3 { font-family: var(--font-display); }
 .pin-price {
   margin-top: 5px;
   font-size: 10.5px; font-weight: 700;
-  color: #f3dd8f;
-  background: rgba(10, 10, 14, 0.88);
-  border: 1px solid rgba(212, 175, 55, 0.55);
+  color: #8f5e00;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(245, 183, 0, 0.55);
   padding: 2px 7px;
   border-radius: 999px;
   white-space: nowrap;
@@ -253,7 +255,7 @@ h1, h2, h3 { font-family: var(--font-display); }
   content: "";
   position: absolute; inset: -9px;
   border-radius: 50%;
-  border: 2px solid rgba(212, 175, 55, 0.8);
+  border: 2px solid rgba(245, 183, 0, 0.8);
   animation: mePulse 1.8s ease-out infinite;
 }
 @keyframes mePulse {
@@ -263,15 +265,15 @@ h1, h2, h3 { font-family: var(--font-display); }
 
 /* popup มืด */
 .leaflet-popup-content-wrapper {
-  background: rgba(16, 16, 20, 0.95) !important;
-  color: #d6d6e4 !important;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #fff !important;
+  color: #2a0d10 !important;
+  border: 1px solid #f0dcc0;
   border-radius: 14px !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6) !important;
+  box-shadow: 0 10px 30px rgba(120, 40, 20, 0.12) !important;
 }
-.leaflet-popup-tip { background: rgba(16, 16, 20, 0.95) !important; border: 1px solid rgba(255,255,255,.12); }
+.leaflet-popup-tip { background: #fff !important; }
 .leaflet-popup-content { margin: 12px 14px !important; font-family: var(--font-sans) !important; }
-.leaflet-popup b { color: #fff; }
+.leaflet-popup b { color: #2a0d10; }
 
 /* ── ตัดบรรทัดภาษาไทยให้สมดุล ── */
 p, li, label, dd { text-wrap: pretty; }
@@ -279,10 +281,10 @@ h1, h2, h3 { text-wrap: balance; }
 
 /* ── จอใหญ่: แสดงแอปเป็นกรอบมือถือกลางจอ (ใช้งานแบบมือถือเป็นหลัก) ── */
 @media (min-width: 640px) {
-  body { background: radial-gradient(60% 50% at 50% 0%, #2a0d12 0%, transparent 70%), #050506; }
+  body { background: radial-gradient(60% 50% at 50% 0%, #ffe8a8 0%, transparent 70%), #f6eadb; }
   .app-frame, .phone-frame {
     background: var(--color-ink-900);
-    box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.14), 0 30px 90px rgba(0, 0, 0, 0.75);
+    box-shadow: 0 0 0 1px rgba(193, 18, 31, 0.08), 0 30px 90px rgba(120, 40, 20, 0.18);
   }
 }
 .phone-frame { width: 100%; max-width: 480px; margin: 0 auto; min-height: 100dvh; position: relative; overflow-x: hidden; }
@@ -294,5 +296,5 @@ html { scroll-behavior: smooth; }
 .phone-stage { min-height: 100dvh; }
 .phone { width: 100%; max-width: 480px; margin: 0 auto; min-height: 100dvh; background: var(--color-ink-900); overflow-x: hidden; }
 @media (min-width: 640px) {
-  .phone { box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.14), 0 30px 90px rgba(0, 0, 0, 0.75); }
+  .phone { box-shadow: 0 0 0 1px rgba(193, 18, 31, 0.08), 0 30px 90px rgba(120, 40, 20, 0.18); }
 }

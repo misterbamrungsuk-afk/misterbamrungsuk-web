@@ -72,9 +72,9 @@ export default function BookSchedulePage({ params }: { params: Promise<{ id: str
           <div className="grid grid-cols-5 gap-2">
             {days.map((d) => (
               <button key={d.iso} onClick={() => { setDate(d.iso); setTime(""); }} aria-pressed={date === d.iso}
-                className={`h-[68px] rounded-2xl border flex flex-col items-center justify-center transition ${date === d.iso ? "bg-ink-100 border-ink-100 text-ink-950" : "bg-ink-800 border-ink-600 text-ink-300"}`}>
+                className={`h-[68px] rounded-2xl border flex flex-col items-center justify-center transition ${date === d.iso ? "bg-crimson-500 border-crimson-500 text-white" : "bg-ink-800 border-ink-600 text-ink-300"}`}>
                 <span className="text-xs">{d.dow}</span>
-                <span className={`font-display font-semibold text-xl ${date === d.iso ? "text-ink-950" : "text-ink-100"}`}>{d.day}</span>
+                <span className={`font-display font-semibold text-xl ${date === d.iso ? "text-[#3a1208]" : "text-ink-100"}`}>{d.day}</span>
               </button>
             ))}
           </div>
@@ -107,7 +107,7 @@ export default function BookSchedulePage({ params }: { params: Promise<{ id: str
           <div className="flex flex-col gap-2">
             {ADDRESSES.map((a) => (
               <label key={a.id} className={`flex items-center gap-3 rounded-2xl border p-3.5 cursor-pointer transition ${addr === a.id ? "border-gold-500 bg-gold-500/5" : "border-ink-600 bg-ink-800"}`}>
-                <input type="radio" name="addr" value={a.id} checked={addr === a.id} onChange={() => setAddr(a.id)} className="accent-[#d4af37] w-5 h-5" />
+                <input type="radio" name="addr" value={a.id} checked={addr === a.id} onChange={() => setAddr(a.id)} className="accent-[#e0a400] w-5 h-5" />
                 <span className="flex-1 min-w-0">
                   <span className="block font-medium">{th ? a.th : a.en}</span>
                   <span className="block text-xs text-ink-300 truncate">{a.detail}</span>

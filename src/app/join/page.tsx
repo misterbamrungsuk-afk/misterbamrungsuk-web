@@ -111,18 +111,18 @@ export default function SalePage() {
         <section className="relative h-[100dvh] min-h-[640px] flex flex-col overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={HERO_IMAGE} alt="" className="absolute inset-0 w-full h-[118%] object-cover object-[50%_72%]" style={{ transform: `translateY(${parallax}px)` }} />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-ink-900" />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/50 via-transparent to-ink-900" />
           <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-ink-900 via-ink-900/85 to-transparent" />
-          <div className="absolute -left-24 bottom-24 w-72 h-72 rounded-full bg-crimson-600/35 blur-3xl" />
+          <div className="absolute -left-24 bottom-24 w-72 h-72 rounded-full bg-gold-400/35 blur-3xl" />
 
           <header className="relative z-10 flex items-center justify-between px-5 pt-[max(14px,env(safe-area-inset-top))] h-16">
             <Logo size={28} />
-            <span className="text-[10px] font-semibold tracking-[0.25em] text-gold-400 border border-gold-500/40 rounded-full px-3 py-1.5 bg-black/30 backdrop-blur">PREMIUM</span>
+            <span className="text-[10px] font-semibold tracking-[0.25em] text-gold-400 border border-gold-500/40 rounded-full px-3 py-1.5 bg-white/80 backdrop-blur">PREMIUM</span>
           </header>
 
           <div className="relative z-10 mt-auto px-5 pb-8">
-            <div className="inline-flex items-center gap-2 rounded-full bg-black/45 backdrop-blur border border-gold-500/50 pl-1.5 pr-3.5 py-1.5">
-              <span className="w-6 h-6 rounded-full bg-gold-500 text-ink-950 grid place-items-center text-xs">⚡</span>
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/85 backdrop-blur border border-gold-500/50 pl-1.5 pr-3.5 py-1.5">
+              <span className="w-6 h-6 rounded-full bg-gold-500 text-[#3a1208] grid place-items-center text-xs">⚡</span>
               <span className="text-[12px] text-gold-200 leading-tight">รับจำกัด {QUOTA} ท่าน · ถึงสิ้น {closeDate}</span>
             </div>
 
@@ -157,7 +157,7 @@ export default function SalePage() {
           {/* ── 2 · Why choose us ── */}
           <section className="pt-8 pb-12">
             <SectionHead kicker="WHY US" title="ทำไมต้องร่วมงานกับเรา" />
-            <div className="mt-6 rounded-[28px] border border-gold-500/25 bg-[linear-gradient(165deg,rgba(212,175,55,.08),rgba(255,255,255,.01)_45%)] px-5">
+            <div className="mt-6 rounded-[28px] border border-gold-500/25 bg-[linear-gradient(165deg,rgba(224,164,0,.08),rgba(255,255,255,.01)_45%)] px-5">
               {WHY.map((w, i) => (
                 <div key={w.t} className={`reveal flex items-center gap-4 py-5 ${i ? "border-t border-white/[0.07]" : ""}`} style={{ transitionDelay: `${i * 70}ms` }}>
                   <span className="font-display text-[28px] font-bold leading-none text-gradient-gold w-10 shrink-0 tabular-nums">0{i + 1}</span>
@@ -183,23 +183,23 @@ export default function SalePage() {
                 const premium = k === "B";
                 return (
                   <button key={k} role="radio" aria-checked={on} onClick={() => pick(k)}
-                    className={`reveal relative text-left rounded-[28px] p-[1.5px] transition active:scale-[0.99] ${on ? "bg-gradient-to-br from-gold-300 via-gold-500 to-crimson-500" : premium ? "bg-gradient-to-br from-gold-500/60 to-white/5" : "bg-white/10"}`}>
-                    <div className={`rounded-[26.5px] p-5 ${premium ? "bg-[linear-gradient(160deg,#1f1f25,#111114_70%)]" : "bg-ink-850"}`}>
-                      {premium && <span className="absolute -top-3 right-5 rounded-full bg-gold-500 text-ink-950 text-[11px] font-bold px-3 py-1 shadow-lg">PREMIUM</span>}
+                    className={`reveal relative text-left rounded-[28px] p-[1.5px] transition active:scale-[0.99] ${on ? "bg-gradient-to-br from-gold-300 via-gold-500 to-crimson-500" : premium ? "bg-gradient-to-br from-gold-500/60 to-white/5" : "bg-[#3a1208]/[.06]"}`}>
+                    <div className={`rounded-[26.5px] p-5 ${premium ? "bg-[linear-gradient(160deg,#fbefdd,#fff4e4_70%)]" : "bg-ink-850"}`}>
+                      {premium && <span className="absolute -top-3 right-5 rounded-full bg-gold-500 text-[#3a1208] text-[11px] font-bold px-3 py-1 shadow-lg">PREMIUM</span>}
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-[11px] font-semibold tracking-[0.2em] text-gold-500">แพ็กเกจ {k}</p>
                           <p className="font-display text-xl font-semibold mt-1">{p.name}</p>
                         </div>
                         <span className={`mt-1 w-7 h-7 rounded-full border-2 grid place-items-center shrink-0 ${on ? "border-gold-400 bg-gold-500" : "border-ink-500"}`}>
-                          {on && <svg viewBox="0 0 24 24" fill="none" stroke="#0b0b0d" strokeWidth="3" className="w-4 h-4"><path d="m5 12 5 5 9-10" /></svg>}
+                          {on && <svg viewBox="0 0 24 24" fill="none" stroke="#fffaf2" strokeWidth="3" className="w-4 h-4"><path d="m5 12 5 5 9-10" /></svg>}
                         </span>
                       </div>
                       <p className="mt-4 flex items-baseline gap-1">
                         <span className="text-gold-400 text-lg">฿</span>
                         <span className="font-display text-[40px] leading-none font-bold text-gradient-gold">{baht(p.price)}</span>
                       </p>
-                      <div className="h-px bg-white/10 my-4" />
+                      <div className="h-px bg-[#3a1208]/[.06] my-4" />
                       <ul className="space-y-2.5 text-[14px] text-ink-100">
                         {p.items.map((it) => (
                           <li key={it} className="flex gap-2.5 items-start">
@@ -207,7 +207,7 @@ export default function SalePage() {
                           </li>
                         ))}
                       </ul>
-                      <span className={`mt-5 h-12 grid place-items-center rounded-full font-semibold text-[15px] transition ${on ? "bg-gold-500 text-ink-950" : "border border-white/15 text-ink-100"}`}>
+                      <span className={`mt-5 h-12 grid place-items-center rounded-full font-semibold text-[15px] transition ${on ? "bg-gold-500 text-[#3a1208]" : "border border-white/15 text-ink-100"}`}>
                         {on ? "✓ เลือกแพ็กเกจนี้แล้ว" : "เลือกแพ็กเกจนี้"}
                       </span>
                     </div>
@@ -227,7 +227,7 @@ export default function SalePage() {
                   <div key={x.q} className={`reveal rounded-2xl border transition-colors ${open ? "border-gold-500/50 bg-white/[0.05]" : "border-white/10 bg-white/[0.02]"}`}>
                     <button onClick={() => setFaq(open ? null : i)} aria-expanded={open} className="w-full min-h-14 px-4 flex items-center justify-between gap-3 text-left text-[15px] font-medium">
                       {x.q}
-                      <span className={`w-7 h-7 rounded-full grid place-items-center shrink-0 transition ${open ? "bg-gold-500 text-ink-950 rotate-45" : "bg-white/10 text-gold-400"}`}>+</span>
+                      <span className={`w-7 h-7 rounded-full grid place-items-center shrink-0 transition ${open ? "bg-gold-500 text-[#3a1208] rotate-45" : "bg-[#3a1208]/[.06] text-gold-400"}`}>+</span>
                     </button>
                     <div className={`grid transition-all duration-300 ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
                       <p className="overflow-hidden px-4 text-[14px] text-ink-200 leading-relaxed"><span className="block pb-4">{x.a}</span></p>
@@ -364,7 +364,7 @@ function Steps({ at }: { at: 1 | 2 | 3 }) {
     <div className="flex gap-1.5 mt-4" aria-label={`ขั้นตอน ${at} จาก 3`}>
       {["ใบสมัคร", "ชำระเงิน", "รับรหัส MB"].map((s, i) => (
         <div key={s} className="flex-1">
-          <div className={`h-1.5 rounded-full ${i < at ? "bg-gradient-to-r from-gold-400 to-gold-600" : "bg-white/10"}`} />
+          <div className={`h-1.5 rounded-full ${i < at ? "bg-gradient-to-r from-gold-400 to-gold-600" : "bg-[#3a1208]/[.06]"}`} />
           <p className={`text-[11px] mt-1.5 ${i + 1 === at ? "text-gold-300" : "text-ink-400"}`}>{s}</p>
         </div>
       ))}
@@ -377,7 +377,7 @@ function Seg({ options, value, onChange }: { options: readonly string[]; value: 
     <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}>
       {options.map((x) => (
         <button key={x} type="button" aria-pressed={value === x} onClick={() => onChange(x)}
-          className={`h-11 rounded-full border text-[13px] transition ${value === x ? "border-gold-500 bg-gold-500 text-ink-950 font-semibold" : "border-white/15"}`}>{x}</button>
+          className={`h-11 rounded-full border text-[13px] transition ${value === x ? "border-gold-500 bg-gold-500 text-[#3a1208] font-semibold" : "border-white/15"}`}>{x}</button>
       ))}
     </div>
   );
@@ -394,7 +394,7 @@ function Upload({ label, hint, value, err, onPick }: { label: string; hint: stri
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="w-8 h-8"><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
               <span className="text-[11px]">แตะเพื่อเลือก</span>
             </span>}
-        {value && <span className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full bg-gold-500 text-ink-950 grid place-items-center text-xs font-bold">✓</span>}
+        {value && <span className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full bg-gold-500 text-[#3a1208] grid place-items-center text-xs font-bold">✓</span>}
       </span>
       <span className="text-[13px] font-medium leading-tight">{label}</span>
       <span className="text-[11px] text-ink-400 leading-tight -mt-1">{hint}</span>
@@ -407,7 +407,7 @@ function Upload({ label, hint, value, err, onPick }: { label: string; hint: stri
 function Consent({ checked, onChange, required, children }: { checked: boolean; onChange: (v: boolean) => void; required?: boolean; children: React.ReactNode }) {
   return (
     <label className={`flex items-start gap-3 rounded-2xl border px-4 py-3.5 cursor-pointer transition ${checked ? "border-gold-500 bg-gold-500/10" : "border-white/15"}`}>
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="w-5 h-5 mt-0.5 accent-[#d4af37] shrink-0" />
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="w-5 h-5 mt-0.5 accent-[#e0a400] shrink-0" />
       <span className="text-[13.5px] leading-relaxed">
         {children}
         {required && <span className="text-crimson-300"> *</span>}

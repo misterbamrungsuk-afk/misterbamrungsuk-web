@@ -58,7 +58,7 @@ export default function AdminCsPage() {
             </div>
             <div className="flex gap-2">
               {sel.cat === "ข้อพิพาท" && <button onClick={() => flash("คืนเงินบางส่วน ฿267 แล้ว")} disabled={sel.status === "closed"} className="flex-1 h-11 rounded-xl border border-ink-600 text-sm disabled:opacity-40">คืนเงินบางส่วน</button>}
-              <button onClick={() => move("closed", "ปิดเรื่องแล้ว")} disabled={sel.status === "closed"} className="flex-1 h-11 rounded-xl bg-ink-100 text-ink-950 font-semibold text-sm disabled:opacity-40">ปิดเรื่อง</button>
+              <button onClick={() => move("closed", "ปิดเรื่องแล้ว")} disabled={sel.status === "closed"} className="flex-1 h-11 rounded-xl bg-crimson-500 text-white font-semibold text-sm disabled:opacity-40">ปิดเรื่อง</button>
             </div>
           </Card>
         )}

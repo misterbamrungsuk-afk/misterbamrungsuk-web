@@ -34,12 +34,12 @@ export default function AdminPayoutsPage() {
   return (
     <>
       <PageHead title="รับเงิน / โอนให้หมอ" sub="ยอดหลังหัก GP 20% · รายที่ติดข้อพิพาทถูกพักไว้"
-        right={<button onClick={exportCsv} className="h-11 px-4 rounded-xl bg-gold-500 text-ink-950 font-semibold">ส่งออกไฟล์โอน (CSV)</button>} />
+        right={<button onClick={exportCsv} className="h-11 px-4 rounded-xl bg-gold-500 text-[#3a1208] font-semibold">ส่งออกไฟล์โอน (CSV)</button>} />
       <div className="flex flex-col gap-2">
         {rows.map((r) => (
           <Card key={r.id} className="!p-3 flex flex-wrap items-center gap-3">
             <input type="checkbox" aria-label={`เลือก ${r.name}`} checked={r.picked} disabled={r.paid || r.hold}
-              onChange={(e) => setRows(rows.map((x) => (x.id === r.id ? { ...x, picked: e.target.checked } : x)))} className="w-5 h-5 accent-[#d4af37]" />
+              onChange={(e) => setRows(rows.map((x) => (x.id === r.id ? { ...x, picked: e.target.checked } : x)))} className="w-5 h-5 accent-[#e0a400]" />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={r.avatar} alt="" className="w-11 h-11 rounded-full object-cover" />
             <div className="flex-1 min-w-[140px]"><p className="font-medium">{r.name}</p><p className="text-xs text-ink-300">{r.account} · {r.jobs} งาน</p></div>
@@ -50,7 +50,7 @@ export default function AdminPayoutsPage() {
             <div className="w-full sm:w-auto flex justify-end">
               {r.hold ? <Pill tone="red">พักไว้ · ข้อพิพาท</Pill>
                 : r.paid ? <Pill tone="green">โอนแล้ว</Pill>
-                : <button onClick={() => payOne(r.id)} className="h-10 px-4 rounded-xl bg-ink-100 text-ink-950 font-semibold text-sm">ยืนยันโอน</button>}
+                : <button onClick={() => payOne(r.id)} className="h-10 px-4 rounded-xl bg-crimson-500 text-white font-semibold text-sm">ยืนยันโอน</button>}
             </div>
           </Card>
         ))}

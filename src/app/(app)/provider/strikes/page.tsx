@@ -55,7 +55,7 @@ export default function StrikesPage() {
               {photo ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={photo} alt="" className="w-14 h-14 rounded-xl object-cover" />
-              ) : <span className="w-14 h-14 rounded-xl grid place-items-center bg-white/5 text-2xl">📷</span>}
+              ) : <span className="w-14 h-14 rounded-xl grid place-items-center bg-[#3a1208]/[.04] text-2xl">📷</span>}
               <span className="text-sm text-ink-300">{photo ? (th ? "เปลี่ยนรูป" : "Change photo") : th ? "แนบหลักฐาน (ไม่บังคับ)" : "Attach evidence (optional)"}</span>
               <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) setPhoto(URL.createObjectURL(f)); }} />
             </label>

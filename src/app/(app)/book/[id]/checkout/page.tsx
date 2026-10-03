@@ -100,7 +100,7 @@ function CheckoutInner({ id }: { id: string }) {
               <div className="flex gap-1.5 shrink-0" role="group" aria-label={th ? h.th : h.en}>
                 {[true, false].map((v) => (
                   <button key={String(v)} onClick={() => setHealth({ ...health, [h.id]: v })} aria-pressed={health[h.id] === v}
-                    className={`h-9 px-3.5 rounded-xl border text-sm ${health[h.id] === v ? "bg-ink-100 border-ink-100 text-ink-950 font-semibold" : "border-ink-600"}`}>
+                    className={`h-9 px-3.5 rounded-xl border text-sm ${health[h.id] === v ? "bg-crimson-500 border-crimson-500 text-white font-semibold" : "border-ink-600"}`}>
                     {v ? (th ? "มี" : "Yes") : (th ? "ไม่มี" : "No")}
                   </button>
                 ))}
@@ -119,7 +119,7 @@ function CheckoutInner({ id }: { id: string }) {
           <h2 className="section-title">{th ? "อุปกรณ์เสริม" : "Add-ons"}</h2>
           <label className="flex items-center justify-between gap-3 text-sm">
             <span className="flex items-center gap-2.5">
-              <input type="checkbox" checked={herbal} onChange={(e) => setHerbal(e.target.checked)} className="w-5 h-5 accent-[#d4af37]" />
+              <input type="checkbox" checked={herbal} onChange={(e) => setHerbal(e.target.checked)} className="w-5 h-5 accent-[#e0a400]" />
               {th ? "ประคบสมุนไพร" : "Herbal compress"}
             </span>
             <span className="text-gold-300">+{baht(HERBAL_PRICE)}</span>
@@ -130,7 +130,7 @@ function CheckoutInner({ id }: { id: string }) {
           <h2 className="section-title">{th ? "โค้ดส่วนลด" : "Promo code"}</h2>
           <div className="flex gap-2">
             <input value={code} onChange={(e) => { setCode(e.target.value); setCodeErr(""); }} className="input-dark h-12 uppercase tracking-wider" placeholder={DEMO_PROMOS[0]?.code ?? "CODE"} aria-label={th ? "โค้ดส่วนลด" : "Promo code"} />
-            <button onClick={applyCode} disabled={!code.trim()} className="h-12 px-4 rounded-xl bg-ink-100 text-ink-950 font-semibold shrink-0 disabled:opacity-40">{th ? "ใช้โค้ด" : "Apply"}</button>
+            <button onClick={applyCode} disabled={!code.trim()} className="h-12 px-4 rounded-xl bg-crimson-500 text-white font-semibold shrink-0 disabled:opacity-40">{th ? "ใช้โค้ด" : "Apply"}</button>
           </div>
           {codeErr && <p className="text-xs text-crimson-200">{codeErr}</p>}
           {applied && !codeErr && <p className="text-xs text-gold-300">✓ {th ? "ใช้โค้ด" : "Applied"} {applied} · −{baht(discount)}</p>}
@@ -138,7 +138,7 @@ function CheckoutInner({ id }: { id: string }) {
 
         <section className="glass rounded-2xl p-4 flex flex-col items-center gap-3">
           <h2 className="section-title self-start">{th ? "ชำระผ่านพร้อมเพย์" : "Pay with PromptPay"}</h2>
-          <div className="w-full max-w-[260px] rounded-2xl bg-white overflow-hidden text-ink-950">
+          <div className="w-full max-w-[260px] rounded-2xl bg-white overflow-hidden text-[#3a1208]">
             <div className="bg-[#113566] text-white text-center py-2 text-[12px] font-semibold tracking-wide">THAI QR PAYMENT · พร้อมเพย์</div>
             <div className="p-3 flex flex-col items-center">
               <PromptPayQR amount={total} />

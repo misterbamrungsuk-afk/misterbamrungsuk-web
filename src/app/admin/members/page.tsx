@@ -59,7 +59,7 @@ export default function AdminMembersPage() {
             <div className="flex flex-col gap-2">
               <button onClick={() => update((m) => { const s = Math.min(LIMIT, m.strikes + 1); return { strikes: s, suspended: s >= LIMIT || m.suspended }; }, sel.strikes + 1 >= LIMIT ? "ครบ 3 strike · ระงับอัตโนมัติแล้ว" : "ให้ strike แล้ว")} disabled={sel.strikes >= LIMIT} className="h-11 rounded-xl border border-crimson-500 text-crimson-200 disabled:opacity-40">ให้ strike</button>
               <button onClick={() => update((m) => ({ strikes: Math.max(0, m.strikes - 1) }), "ล้าง strike ล่าสุดแล้ว")} disabled={sel.strikes === 0} className="h-11 rounded-xl border border-ink-600 disabled:opacity-40">ล้าง strike ล่าสุด</button>
-              <button onClick={() => update((m) => ({ suspended: !m.suspended }), sel.suspended ? "ปลดระงับบัญชีแล้ว" : "ระงับบัญชีแล้ว")} className={`h-11 rounded-xl font-semibold ${sel.suspended ? "bg-ink-100 text-ink-950" : "bg-crimson-500 text-white"}`}>{sel.suspended ? "ปลดระงับ" : "ระงับบัญชีทันที"}</button>
+              <button onClick={() => update((m) => ({ suspended: !m.suspended }), sel.suspended ? "ปลดระงับบัญชีแล้ว" : "ระงับบัญชีแล้ว")} className={`h-11 rounded-xl font-semibold ${sel.suspended ? "bg-crimson-500 text-white" : "bg-crimson-500 text-white"}`}>{sel.suspended ? "ปลดระงับ" : "ระงับบัญชีทันที"}</button>
             </div>
           </Card>
         )}

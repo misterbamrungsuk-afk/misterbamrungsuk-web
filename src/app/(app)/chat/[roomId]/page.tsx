@@ -214,7 +214,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
           ].map(([label, done], i, arr) => (
             <div key={i} className="flex items-start flex-1 last:flex-none">
               <div className="flex flex-col items-center shrink-0 w-12">
-                <span className={`w-2.5 h-2.5 rounded-full ${done ? "bg-gold-500 shadow-[0_0_10px_rgba(212,175,55,.6)]" : "bg-ink-600"}`} />
+                <span className={`w-2.5 h-2.5 rounded-full ${done ? "bg-gold-500 shadow-[0_0_10px_rgba(224,164,0,.6)]" : "bg-ink-600"}`} />
                 <span className={`text-[9px] mt-1 leading-tight text-center max-w-[48px] ${done ? "text-gold-400" : "text-ink-500"}`}>{label as string}</span>
               </div>
               {i < arr.length - 1 && <div className={`h-0.5 flex-1 -mx-4 mt-[4px] ${arr[i + 1][1] ? "bg-gold-500/60" : "bg-ink-600"}`} />}

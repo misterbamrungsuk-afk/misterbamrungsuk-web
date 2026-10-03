@@ -12,8 +12,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ size: st
 
   return new ImageResponse(
     (
-      <div style={{ width: size, height: size, background: "#0b0b0d", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ width: mark, height: mark, borderRadius: mark, border: `${Math.max(3, Math.round(mark * 0.05))}px solid #d4af37`, background: "#0b0b0d", display: "flex", alignItems: "center", justifyContent: "center", color: "#d4af37", fontSize: Math.round(mark * 0.4), fontWeight: 700, letterSpacing: -1 }}>MB</div>
+      <div style={{ width: size, height: size, background: "#fffaf2", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ width: mark, height: mark, borderRadius: mark, border: `${Math.max(3, Math.round(mark * 0.05))}px solid #e0a400`, background: "#fffaf2", display: "flex", alignItems: "center", justifyContent: "center", color: "#e0a400", fontSize: Math.round(mark * 0.4), fontWeight: 700, letterSpacing: -1 }}>MB</div>
       </div>
     ),
     { width: size, height: size, headers: { "Cache-Control": "public, max-age=86400" } },

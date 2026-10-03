@@ -112,7 +112,7 @@ export default function PayPage() {
       <section className="glass rounded-3xl p-5 mt-3">
         {method === "qr" ? (
           <div className="flex flex-col items-center">
-            <div className="w-full max-w-[280px] rounded-3xl bg-white overflow-hidden text-ink-950 shadow-[0_10px_40px_rgba(0,0,0,.4)]">
+            <div className="w-full max-w-[280px] rounded-3xl bg-white overflow-hidden text-[#3a1208] shadow-[0_10px_40px_rgba(0,0,0,.4)]">
               <div className="bg-[#113566] text-white text-center py-2.5 text-[13px] font-semibold tracking-wide">THAI QR PAYMENT · พร้อมเพย์</div>
               <div className="p-4 flex flex-col items-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}

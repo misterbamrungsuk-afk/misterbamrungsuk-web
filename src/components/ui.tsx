@@ -10,11 +10,11 @@ export function LogoMark({ size = 28 }: { size?: number }) {
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#f3dd8f" />
-          <stop offset=".55" stopColor="#d4af37" />
+          <stop offset=".55" stopColor="#e0a400" />
           <stop offset="1" stopColor="#a8862c" />
         </linearGradient>
       </defs>
-      <circle cx="20" cy="20" r="18.5" fill="#0b0b0d" stroke={`url(#${id})`} strokeWidth="2" />
+      <circle cx="20" cy="20" r="18.5" fill="#fffaf2" stroke={`url(#${id})`} strokeWidth="2" />
       <text x="20" y="25.5" textAnchor="middle" fontFamily="Kanit, sans-serif" fontWeight="700" fontSize="15" fill={`url(#${id})`} letterSpacing="-0.5">MB</text>
     </svg>
   );

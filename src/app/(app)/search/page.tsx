@@ -69,7 +69,7 @@ export default function SearchPage() {
           </label>
           <button onClick={openSheet} aria-label={th ? "ฟิลเตอร์" : "Filters"} className="relative shrink-0 w-12 h-12 rounded-2xl btn-ghost grid place-items-center">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-5 h-5"><path d="M4 6h16M7 12h10M10 18h4" strokeLinecap="round" /></svg>
-            {activeCount > 0 && <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-gold-500 text-ink-950 text-[11px] font-bold grid place-items-center">{activeCount}</span>}
+            {activeCount > 0 && <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-gold-500 text-[#3a1208] text-[11px] font-bold grid place-items-center">{activeCount}</span>}
           </button>
         </div>
 
@@ -114,9 +114,9 @@ export default function SearchPage() {
           ))}
         </div>
         <div className="flex justify-between mb-1"><p className="font-display font-medium">{th ? "ราคาต่อชั่วโมง" : "Price per hour"}</p><span className="text-sm text-gold-300">≤ {baht(draft.maxPrice)}</span></div>
-        <input type="range" min={300} max={1000} step={50} value={draft.maxPrice} onChange={(e) => setDraft({ ...draft, maxPrice: +e.target.value })} className="w-full accent-[#d4af37] h-9 mb-4" aria-label="price" />
+        <input type="range" min={300} max={1000} step={50} value={draft.maxPrice} onChange={(e) => setDraft({ ...draft, maxPrice: +e.target.value })} className="w-full accent-[#e0a400] h-9 mb-4" aria-label="price" />
         <div className="flex justify-between mb-1"><p className="font-display font-medium">{th ? "ระยะทาง" : "Distance"}</p><span className="text-sm text-gold-300">≤ {draft.maxKm} {th ? "กม." : "km"}</span></div>
-        <input type="range" min={1} max={20} value={draft.maxKm} onChange={(e) => setDraft({ ...draft, maxKm: +e.target.value })} className="w-full accent-[#d4af37] h-9 mb-4" aria-label="distance" />
+        <input type="range" min={1} max={20} value={draft.maxKm} onChange={(e) => setDraft({ ...draft, maxKm: +e.target.value })} className="w-full accent-[#e0a400] h-9 mb-4" aria-label="distance" />
         <p className="font-display font-medium mb-2">{th ? "คะแนนขั้นต่ำ" : "Minimum rating"}</p>
         <div className="grid grid-cols-4 gap-2 mb-6">
           {[0, 4, 4.5, 4.8].map((r) => (

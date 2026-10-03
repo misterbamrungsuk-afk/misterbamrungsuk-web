@@ -60,7 +60,7 @@ export default function NearbyMap({ points, me, height = 400 }: { points: MapPoi
           .addTo(map.current)
           .bindPopup(
             `<div style="min-width:150px">
-              <b style="font-size:13px">${isFriend ? "👤" : "💼"} ${p.label}${p.verified ? ' <span style="color:#d4af37">✓</span>' : ""}</b><br/>
+              <b style="font-size:13px">${isFriend ? "👤" : "💼"} ${p.label}${p.verified ? ' <span style="color:#e0a400">✓</span>' : ""}</b><br/>
               <span style="font-size:11px;color:#a8a8bd">${p.sub}</span>
             </div>`
           );
@@ -69,8 +69,8 @@ export default function NearbyMap({ points, me, height = 400 }: { points: MapPoi
       // ตำแหน่งผู้ใช้ + รัศมี
       if (me) {
         radius.current = L.circle([me.lat, me.lng], {
-          radius: 1200, color: "#d4af37", weight: 1.5, opacity: 0.5,
-          fillColor: "#d4af37", fillOpacity: 0.05, dashArray: "5 7",
+          radius: 1200, color: "#e0a400", weight: 1.5, opacity: 0.5,
+          fillColor: "#e0a400", fillOpacity: 0.05, dashArray: "5 7",
         }).addTo(map.current);
         meMarker.current = L.marker([me.lat, me.lng], {
           icon: L.divIcon({ className: "hamoo-pin", html: `<div class="pin-wrap"><div class="me-dot"></div></div>`, iconSize: [18, 18], iconAnchor: [9, 9] }),

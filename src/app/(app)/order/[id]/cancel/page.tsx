@@ -65,7 +65,7 @@ export default function CancelPage({ params }: { params: Promise<{ id: string }>
           <legend className="section-title mb-2">{th ? "เหตุผลที่ยกเลิก" : "Reason"}</legend>
           {REASONS[th ? "th" : "en"].map((r, i) => (
             <label key={r} className={`flex items-center gap-3 rounded-2xl border p-3.5 cursor-pointer ${reason === i ? "border-gold-500 bg-gold-500/5" : "border-ink-600 bg-ink-800"}`}>
-              <input type="radio" name="reason" checked={reason === i} onChange={() => setReason(i)} className="w-5 h-5 accent-[#d4af37]" />{r}
+              <input type="radio" name="reason" checked={reason === i} onChange={() => setReason(i)} className="w-5 h-5 accent-[#e0a400]" />{r}
             </label>
           ))}
         </fieldset>
@@ -80,7 +80,7 @@ export default function CancelPage({ params }: { params: Promise<{ id: string }>
         <button onClick={() => setDone(true)} disabled={reason === null} className="h-14 rounded-2xl border border-crimson-500 text-crimson-200 font-display font-semibold disabled:opacity-40">
           {reason === null ? (th ? "เลือกเหตุผลก่อน" : "Pick a reason") : th ? "ยืนยันยกเลิก" : "Confirm cancellation"}
         </button>
-        {post && <Link href={`/book/${post.id}`} className="h-12 rounded-2xl bg-ink-100 text-ink-950 font-semibold flex items-center justify-center">{th ? "เปลี่ยนเวลาแทน (ฟรี)" : "Reschedule instead (free)"}</Link>}
+        {post && <Link href={`/book/${post.id}`} className="h-12 rounded-2xl bg-crimson-500 text-white font-semibold flex items-center justify-center">{th ? "เปลี่ยนเวลาแทน (ฟรี)" : "Reschedule instead (free)"}</Link>}
       </div>
     </>
   );

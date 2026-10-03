@@ -12,7 +12,7 @@ export default function OfflinePage() {
       </div>
       <h1 className="text-2xl font-semibold">ไม่มีการเชื่อมต่อ</h1>
       <p className="text-ink-300 text-sm leading-relaxed">ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่ การจองและเงินในระบบกลางของคุณยังปลอดภัย</p>
-      <a href="/home" className="mt-2 h-12 px-7 rounded-2xl bg-ink-100 text-ink-950 font-semibold grid place-items-center">ลองใหม่</a>
+      <a href="/home" className="mt-2 h-12 px-7 rounded-2xl bg-crimson-500 text-white font-semibold grid place-items-center">ลองใหม่</a>
     </main>
   );
 }

@@ -35,7 +35,7 @@ export default function AdminReportsPage() {
               <div className="flex gap-2 mt-auto">
                 <button onClick={() => resolve(r.id, "ยกฟ้องแล้ว")} className="flex-1 h-11 rounded-xl border border-ink-600">ยกฟ้อง</button>
                 {r.severity === "mid"
-                  ? <button onClick={() => resolve(r.id, "ซ่อนโพสต์และแจ้งให้แก้ไขแล้ว")} className="flex-1 h-11 rounded-xl bg-gold-500 text-ink-950 font-semibold">ซ่อนโพสต์</button>
+                  ? <button onClick={() => resolve(r.id, "ซ่อนโพสต์และแจ้งให้แก้ไขแล้ว")} className="flex-1 h-11 rounded-xl bg-gold-500 text-[#3a1208] font-semibold">ซ่อนโพสต์</button>
                   : <button onClick={() => resolve(r.id, `ให้ strike ${r.target} แล้ว`)} className="flex-1 h-11 rounded-xl bg-crimson-500 text-white font-semibold">ให้ strike</button>}
               </div>
             </Card>

@@ -69,7 +69,7 @@ function HomeInner({ posts }: { posts: Post[] }) {
               {lang === "th" ? "พักผ่อนในพื้นที่ของคุณเอง เลือกหมอนวดชายที่ยืนยันตัวตนแล้ว ให้การนวดที่ใช่สำหรับคุณ" : "Unwind in your own space. Discover verified male therapists for a massage that feels right for you."}
             </p>
             <button onClick={() => document.getElementById("find")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-              className="mt-5 h-12 px-5 rounded-xl bg-ink-100 text-ink-950 font-semibold text-[15px] inline-flex items-center gap-3 active:scale-[0.98] transition">
+              className="mt-5 h-12 px-5 rounded-xl bg-crimson-500 text-white font-semibold text-[15px] inline-flex items-center gap-3 active:scale-[0.98] transition">
               {lang === "th" ? "ค้นหาหมอนวด" : "Find your therapist"}
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="w-4 h-4"><path d="M12 5v14M6 13l6 6 6-6" /></svg>
             </button>
@@ -80,8 +80,8 @@ function HomeInner({ posts }: { posts: Post[] }) {
 
       {/* ── รับสมัครหมอ (sale funnel /join) ── */}
       <section className="px-4 pt-4">
-        <Link href="/join" className="flex items-center gap-3 rounded-2xl border border-gold-500/40 bg-[linear-gradient(120deg,rgba(212,175,55,.12),rgba(224,36,60,.08))] px-4 py-3.5">
-          <span className="w-11 h-11 rounded-xl bg-gold-500 text-ink-950 grid place-items-center font-display font-bold shrink-0">MB</span>
+        <Link href="/join" className="flex items-center gap-3 rounded-2xl border border-gold-500/40 bg-[linear-gradient(120deg,rgba(224,164,0,.12),rgba(224,36,60,.08))] px-4 py-3.5">
+          <span className="w-11 h-11 rounded-xl bg-gold-500 text-[#3a1208] grid place-items-center font-display font-bold shrink-0">MB</span>
           <span className="flex-1 min-w-0">
             <span className="block text-[14px] font-semibold">{lang === "th" ? "เปิดรับสมัครหมอนวด & เพื่อนเที่ยว" : "Now recruiting therapists & companions"}</span>
             <span className="block text-xs text-ink-300">{lang === "th" ? "รับจำกัด 50 ท่าน · อบรม 2 วัน · รายได้ระดับพรีเมียม" : "50 seats · 2-day training · premium income"}</span>
@@ -104,10 +104,10 @@ function HomeInner({ posts }: { posts: Post[] }) {
 
         {/* หมวด: ปุ่มกล่อง */}
         <div className="flex gap-2 overflow-x-auto no-scrollbar py-4 -mx-4 px-4">
-          <button onClick={() => setCat("")} className={`shrink-0 h-11 px-5 rounded-xl border text-[14px] transition ${!cat ? "bg-ink-100 text-ink-950 border-ink-100 font-semibold" : "border-ink-600 text-ink-200"}`}>{t.allCategories}</button>
+          <button onClick={() => setCat("")} className={`shrink-0 h-11 px-5 rounded-xl border text-[14px] transition ${!cat ? "bg-crimson-500 text-white border-ink-100 font-semibold" : "border-ink-600 text-ink-200"}`}>{t.allCategories}</button>
           {CATEGORIES.filter((c) => c.slug !== "other").map((c) => (
             <button key={c.slug} onClick={() => setCat(cat === c.slug ? "" : c.slug)}
-              className={`shrink-0 h-11 px-5 rounded-xl border text-[14px] whitespace-nowrap transition ${cat === c.slug ? "bg-ink-100 text-ink-950 border-ink-100 font-semibold" : "border-ink-600 text-ink-200"}`}>
+              className={`shrink-0 h-11 px-5 rounded-xl border text-[14px] whitespace-nowrap transition ${cat === c.slug ? "bg-crimson-500 text-white border-ink-100 font-semibold" : "border-ink-600 text-ink-200"}`}>
               {lang === "th" ? c.th : c.en}
             </button>
           ))}

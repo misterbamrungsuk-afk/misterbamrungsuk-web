@@ -66,7 +66,7 @@ export default function AdminKycPage() {
                   <p className="font-display font-medium">เช็กลิสต์</p>
                   {CHECKS.map((c, i) => (
                     <label key={c} className="flex items-center gap-2.5 text-sm min-h-9">
-                      <input type="checkbox" checked={!!checks[i]} onChange={(e) => setChecks(checks.map((v, j) => (j === i ? e.target.checked : v)))} className="w-5 h-5 accent-[#d4af37]" />{c}
+                      <input type="checkbox" checked={!!checks[i]} onChange={(e) => setChecks(checks.map((v, j) => (j === i ? e.target.checked : v)))} className="w-5 h-5 accent-[#e0a400]" />{c}
                     </label>
                   ))}
                 </div>
@@ -81,7 +81,7 @@ export default function AdminKycPage() {
               <div className="flex flex-wrap gap-2 justify-end">
                 <button onClick={() => done(`ขอเอกสารเพิ่มจาก ${sel.name} แล้ว`)} className="btn-ghost h-11 px-4 rounded-xl">ขอเอกสารเพิ่ม</button>
                 <button onClick={() => done(`ปฏิเสธ ${sel.name}: ${reason}`)} disabled={!reason} className="h-11 px-4 rounded-xl border border-crimson-500 text-crimson-200 disabled:opacity-40">ปฏิเสธ</button>
-                <button onClick={() => done(`อนุมัติ ${sel.name} · มอบตรา ✓ แล้ว`)} disabled={!checks.every(Boolean)} className="h-11 px-5 rounded-xl bg-gold-500 text-ink-950 font-semibold disabled:opacity-40">อนุมัติ · มอบตรา ✓</button>
+                <button onClick={() => done(`อนุมัติ ${sel.name} · มอบตรา ✓ แล้ว`)} disabled={!checks.every(Boolean)} className="h-11 px-5 rounded-xl bg-gold-500 text-[#3a1208] font-semibold disabled:opacity-40">อนุมัติ · มอบตรา ✓</button>
               </div>
               {!checks.every(Boolean) && <p className="text-xs text-ink-300 text-right -mt-2">ติ๊กเช็กลิสต์ให้ครบก่อนอนุมัติ</p>}
             </Card>

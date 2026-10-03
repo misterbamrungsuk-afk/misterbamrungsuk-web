@@ -34,7 +34,7 @@ export default function LoginPage() {
     <main className="app-frame relative overflow-hidden bg-ink-950">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="https://images.unsplash.com/photo-1615269143162-592b3882fcbe?auto=format&fit=crop&w=900&q=70" alt="" className="absolute inset-x-0 top-0 h-[66dvh] w-full object-cover" />
-      <div className="absolute inset-x-0 top-0 h-[66dvh] bg-gradient-to-b from-ink-950/40 via-transparent to-ink-950" />
+      <div className="absolute inset-x-0 top-0 h-[66dvh] bg-gradient-to-b from-transparent via-ink-950/55 to-ink-950" />
 
       <div className="relative z-10 flex items-center justify-between px-6 pt-6">
         <Logo size={30} />
@@ -51,7 +51,7 @@ export default function LoginPage() {
         <button
           onClick={login}
           disabled={loading}
-          className="h-14 w-full rounded-2xl bg-ink-100 text-ink-950 font-semibold flex items-center justify-center gap-3 transition active:scale-[.98] disabled:opacity-60"
+          className="h-14 w-full rounded-2xl bg-crimson-500 text-white font-semibold flex items-center justify-center gap-3 transition active:scale-[.98] disabled:opacity-60"
         >
           {!loading && (
             <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C41.4 35.4 44 30.1 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
@@ -68,7 +68,7 @@ export default function LoginPage() {
           <p className="chip chip-gold self-start">{t.demoBadge} — ข้อมูลจำลอง ไม่ต้องตั้งค่า</p>
         )}
         <a href="/join" className="flex items-center gap-3 rounded-2xl border border-gold-500/50 bg-gold-500/5 px-4 py-3">
-          <span className="w-10 h-10 rounded-xl bg-gold-500 text-ink-950 grid place-items-center font-display font-bold shrink-0">MB</span>
+          <span className="w-10 h-10 rounded-xl bg-gold-500 text-[#3a1208] grid place-items-center font-display font-bold shrink-0">MB</span>
           <span className="flex-1 min-w-0">
             <span className="block text-sm font-semibold">สมัครเป็นหมอนวด / เพื่อนเที่ยวพรีเมียม</span>
             <span className="block text-xs text-ink-300">รับจำกัด 50 ท่าน · อบรม 2 วัน</span>
