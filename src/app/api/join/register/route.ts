@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
-import { CLOSE_AT, EXPERIENCE, PACKAGES, QUOTA, STRENGTHS, TITLES, type PackageKey } from "@/lib/join/config";
+import { CLOSE_AT, ageError, EXPERIENCE, PACKAGES, QUOTA, STRENGTHS, TITLES, type PackageKey } from "@/lib/join/config";
 import { countActive, createApplicant, updateApplicant, type DocKind } from "@/lib/join/store";
 import { appendToSheet } from "@/lib/join/sheets";
+import { applicantRegistered, sendAll } from "@/lib/email";
+import { ageFrom } from "@/lib/join/form";
 import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/join/legal";
 
 export const runtime = "nodejs";
@@ -62,8 +64,14 @@ export async function POST(req: Request) {
   if (s("consent_pdpa") !== "true") errors.push("consent_pdpa");
   if (method !== "qr" && method !== "transfer") errors.push("payment_method");
   // ฟิลด์ Sheet3 (เก็บตอนอบรม) — ถ้าส่งมาต้องอยู่ในรายการที่กำหนด
+  if (s("consent_criminal") !== "true") errors.push("consent_criminal");
   if (s("title") && !oneOf(TITLES, s("title"))) errors.push("title");
-  if (s("birthdate") && !isDate(s("birthdate"))) errors.push("birthdate");
+  // อายุตามแพ็กเกจ: ขั้นต่ำ 20, A ≤ 50, B ≤ 45 — วันเกิดบังคับ
+  if (!isDate(s("birthdate"))) errors.push("birthdate");
+  else if (pkg in PACKAGES) {
+    const ageErr = ageError(pkg, ageFrom(s("birthdate")));
+    if (ageErr) return NextResponse.json({ ok: false, error: ageErr, fields: ["birthdate"] }, { status: 400 });
+  }
   if (s("start_date") && !isDate(s("start_date"))) errors.push("start_date");
   if (s("bank_account") && !/^\d{10,12}$/.test(account)) errors.push("bank_account");
 
@@ -87,12 +95,16 @@ export async function POST(req: Request) {
         bank: s("bank"), bank_account: account, bank_account_name: s("bank_account_name"),
         experience: s("experience"), skills, intro: s("intro", 1000),
         consent_marketing: s("consent_marketing") === "true",
-        consent_version: `privacy-${PRIVACY_VERSION}/terms-${TERMS_VERSION}`, consented_at: new Date().toISOString(),
+        consent_criminal: true,
+        // ต่อท้าย "/criminal" ใน consent_version ด้วย — บันทึกความยินยอมได้แม้ยังไม่รัน migration 0002
+        consent_version: `privacy-${PRIVACY_VERSION}/terms-${TERMS_VERSION}/criminal`, consented_at: new Date().toISOString(),
         package: pkg, amount: PACKAGES[pkg].price, payment_method: method as "qr" | "transfer", ip,
       },
       files,
     );
     // sync ชีตแบบไม่ให้ล้มทั้งคำขอ — ถ้าไม่สำเร็จ แอดมินกด sync ซ้ำได้
+    // อีเมลแจ้งผู้สมัคร + แอดมิน (ไม่รอ ไม่ทำให้คำขอล้ม)
+    void sendAll(applicantRegistered({ mb_code: row.mb_code, first_name: row.first_name, last_name: row.last_name, email: row.email, tel: row.tel, package: PACKAGES[pkg].name ?? pkg, amount: row.amount }));
     if (await appendToSheet(row)) await updateApplicant(row.id, { sheet_synced: true });
     return NextResponse.json({ ok: true, mb_code: row.mb_code });
   } catch (e) {

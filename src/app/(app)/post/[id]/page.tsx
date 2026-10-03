@@ -8,6 +8,7 @@ import { Stars, VerifiedBadge, baht, Modal, Field, Sheet } from "@/components/ui
 import { catBySlug } from "@/lib/categories";
 import { DEMO_POSTS, DEMO_REVIEWS } from "@/lib/demo-data";
 import { isDemo } from "@/lib/data";
+import { isNewProvider, queueLabel } from "@/lib/membership";
 
 export default function PostDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -58,7 +59,12 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl font-semibold">{post.member.name}, {post.member.age}</h1>
                 {post.member.kycVerified && <VerifiedBadge label={t.verified} />}
+                {isNewProvider(post) && <span className="chip bg-crimson-500 text-white border-crimson-500">{lang === "th" ? "หน้าใหม่" : "New"}</span>}
+                {post.premium && <span className="chip chip-gold">♛ Premium</span>}
               </div>
+              <p className={`text-sm font-medium mt-1 flex items-center gap-1.5 ${(post.nextFreeMin ?? 0) <= 0 ? "text-emerald-600" : "text-gold-600"}`}>
+                <span className={`w-2 h-2 rounded-full ${(post.nextFreeMin ?? 0) <= 0 ? "bg-emerald-500" : "bg-gold-500"}`} />{queueLabel(post, lang === "th")}
+              </p>
               <p className="text-xs text-ink-300 mt-1">🕓 {post.workingHours} · 📍 {post.province}</p>
             </div>
             <div className="text-right shrink-0">

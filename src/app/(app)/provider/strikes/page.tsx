@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useI18n } from "@/i18n/provider";
 import { TopBar } from "@/components/shell";
 import { Toast } from "@/components/ui";
+import { BASE_SCORE, DEMO_STRIKE_EVENTS, STRIKE_DEDUCTION, STRIKE_EXPIRE_DAYS, STRIKE_LIMIT, evaluateStrikes } from "@/lib/strikes";
 
 export default function StrikesPage() {
   const { lang } = useI18n();
@@ -12,6 +13,8 @@ export default function StrikesPage() {
   const [photo, setPhoto] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const [toast, setToast] = useState("");
+  const ev = evaluateStrikes("คุณ", DEMO_STRIKE_EVENTS);
+  const fmt = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { timeZone: "Asia/Bangkok" });
 
   const submit = () => {
     setSent(true);
@@ -23,22 +26,28 @@ export default function StrikesPage() {
     <>
       <TopBar back="/provider" title={th ? "ใบเตือน" : "Strikes"} />
       <div className="px-4 py-4 space-y-4 pb-8">
-        <div className="glass rounded-3xl p-5 text-center">
-          <p className="font-display text-4xl font-bold"><span className="text-crimson-400">1</span><span className="text-ink-500">/3</span></p>
+        <div className={`glass rounded-3xl p-5 text-center ${ev.banned ? "border-crimson-500/60" : ""}`}>
+          <span className={`chip ${ev.status.kind === "ok" ? "" : ev.status.kind === "warned" ? "chip-gold" : "chip-red"}`}>
+            {th ? ev.status.label : ev.status.kind === "ok" ? "Good standing" : ev.status.kind === "warned" ? `Warned ${ev.count}/${STRIKE_LIMIT}` : "Suspended"}
+          </span>
+          <p className="font-display text-4xl font-bold mt-2"><span className="text-crimson-400">{ev.count}</span><span className="text-ink-500">/{STRIKE_LIMIT}</span></p>
           <div className="grid grid-cols-3 gap-2 mt-3">
-            {[0, 1, 2].map((i) => <div key={i} className={`h-2 rounded-full ${i < 1 ? "bg-crimson-500" : "bg-ink-700"}`} />)}
+            {Array.from({ length: STRIKE_LIMIT }, (_, i) => <div key={i} className={`h-2 rounded-full ${i < ev.count ? "bg-crimson-500" : "bg-ink-700"}`} />)}
           </div>
-          <p className="text-xs text-ink-400 mt-3">{th ? "ครบ 3 ครั้ง บัญชีจะถูกระงับ 30 วัน · ใบเตือนหมดอายุใน 90 วัน" : "3 strikes = 30-day suspension · strikes expire after 90 days"}</p>
+          <p className="text-sm mt-3">{th ? "คะแนนความประพฤติ" : "Conduct score"} <b className="text-gold-600">{ev.score}</b><span className="text-ink-500">/{BASE_SCORE}</span></p>
+          <p className="text-xs text-ink-400 mt-2">{th ? `รีวิว 1 ดาว หรือถูกรายงานไม่เหมาะสม = 1 strike (หัก ${STRIKE_DEDUCTION} คะแนน แจ้งแอดมินอัตโนมัติ) · ครบ ${STRIKE_LIMIT} ระงับบัญชี · หมดอายุใน ${STRIKE_EXPIRE_DAYS} วัน` : `1-star review or inappropriate report = 1 strike (−${STRIKE_DEDUCTION} pts, admin notified) · ${STRIKE_LIMIT} = suspension · expire after ${STRIKE_EXPIRE_DAYS} days`}</p>
         </div>
 
-        <div className="glass rounded-3xl p-4 border-crimson-500/30">
-          <div className="flex items-center justify-between gap-2">
-            <span className="chip chip-red">{th ? "มาสาย" : "Late arrival"}</span>
-            <span className="text-[11px] text-ink-400">22/09/2026</span>
+        {ev.strikes.map((s) => (
+          <div key={s.id} className="glass rounded-3xl p-4 border-crimson-500/30">
+            <div className="flex items-center justify-between gap-2">
+              <span className="chip chip-red">{s.reason}</span>
+              <span className="text-[11px] text-ink-400">{fmt(s.at)}</span>
+            </div>
+            <p className="text-sm mt-2">{DEMO_STRIKE_EVENTS.find((e) => e.id === s.id)?.note}{s.ref ? ` (${th ? "ออเดอร์" : "order"} ${s.ref})` : ""}</p>
+            <p className="text-xs text-ink-400 mt-1">{th ? "หมดอายุ" : "Expires"} {fmt(s.expiresAt)}</p>
           </div>
-          <p className="text-sm mt-2">{th ? "ถึงสถานที่ช้ากว่านัด 35 นาที (ออเดอร์ O-1182)" : "Arrived 35 min late (order O-1182)"}</p>
-          <p className="text-xs text-ink-400 mt-1">{th ? "หมดอายุ 21/12/2026" : "Expires 21/12/2026"}</p>
-        </div>
+        ))}
 
         {sent ? (
           <div className="glass rounded-3xl p-5 text-center">

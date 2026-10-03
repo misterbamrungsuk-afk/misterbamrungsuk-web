@@ -7,6 +7,7 @@ import { TopBar } from "@/components/shell";
 import { Sheet, baht } from "@/components/ui";
 import { EmptyState } from "@/components/empty-state";
 import { DEMO_POSTS } from "@/lib/demo-data";
+import { recommendedSort, isNewProvider, queueLabel } from "@/lib/membership";
 import { CATEGORIES, catBySlug } from "@/lib/categories";
 
 // จุดอ้างอิงผู้ใช้ (demo): อโศก
@@ -18,11 +19,11 @@ function km(lat?: number, lng?: number) {
   return 6371 * 2 * Math.asin(Math.sqrt(a));
 }
 
-type Sort = "near" | "rating" | "priceAsc" | "priceDesc";
+type Sort = "rec" | "near" | "rating" | "priceAsc" | "priceDesc";
 interface Filters { cats: string[]; maxPrice: number; minRating: number; maxKm: number }
 const DEFAULT: Filters = { cats: [], maxPrice: 1000, minRating: 0, maxKm: 20 };
 const SORTS: { k: Sort; th: string; en: string }[] = [
-  { k: "near", th: "ใกล้สุด", en: "Nearest" }, { k: "rating", th: "คะแนนสูง", en: "Top rated" },
+  { k: "rec", th: "แนะนำ", en: "Recommended" }, { k: "near", th: "ใกล้สุด", en: "Nearest" }, { k: "rating", th: "คะแนนสูง", en: "Top rated" },
   { k: "priceAsc", th: "ราคาต่ำ", en: "Price ↑" }, { k: "priceDesc", th: "ราคาสูง", en: "Price ↓" },
 ];
 
@@ -33,7 +34,7 @@ export default function SearchPage() {
   const [f, setF] = useState<Filters>(DEFAULT);
   const [draft, setDraft] = useState<Filters>(DEFAULT);
   const [open, setOpen] = useState(false);
-  const [sort, setSort] = useState<Sort>("near");
+  const [sort, setSort] = useState<Sort>("rec");
 
   const results = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -49,7 +50,7 @@ export default function SearchPage() {
         if ((p.rating ?? 0) < f.minRating) return false;
         return d <= f.maxKm;
       })
-      .sort((a, b) => sort === "near" ? a.d - b.d : sort === "rating" ? (b.p.rating ?? 0) - (a.p.rating ?? 0) : sort === "priceAsc" ? a.p.pricePerHour - b.p.pricePerHour : b.p.pricePerHour - a.p.pricePerHour);
+      .sort((a, b) => sort === "rec" ? recommendedSort(a.p, b.p) : sort === "near" ? a.d - b.d : sort === "rating" ? (b.p.rating ?? 0) - (a.p.rating ?? 0) : sort === "priceAsc" ? a.p.pricePerHour - b.p.pricePerHour : b.p.pricePerHour - a.p.pricePerHour);
   }, [q, f, sort]);
 
   const activeCount = f.cats.length + (f.maxPrice < DEFAULT.maxPrice ? 1 : 0) + (f.minRating ? 1 : 0) + (f.maxKm < DEFAULT.maxKm ? 1 : 0);
@@ -92,7 +93,8 @@ export default function SearchPage() {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={p.images[0]} alt="" className="w-[84px] h-[104px] rounded-2xl object-cover shrink-0" />
                   <div className="flex-1 min-w-0 flex flex-col gap-1">
-                    <p className="font-semibold truncate">{p.member.name}{p.member.age ? `, ${p.member.age}` : ""} {p.member.kycVerified && <span className="text-gold-600">✓</span>}</p>
+                    <p className="font-semibold truncate">{p.member.name}{p.member.age ? `, ${p.member.age}` : ""} {p.member.kycVerified && <span className="text-gold-600">✓</span>} {isNewProvider(p) && <span className="text-[10.5px] h-5 px-1.5 rounded-full bg-crimson-500 text-white font-semibold inline-flex items-center align-middle">{th ? "หน้าใหม่" : "New"}</span>}</p>
+                    <p className={`text-[11.5px] font-medium flex items-center gap-1 ${(p.nextFreeMin ?? 0) <= 0 ? "text-emerald-600" : "text-ink-300"}`}><span className={`w-1.5 h-1.5 rounded-full ${(p.nextFreeMin ?? 0) <= 0 ? "bg-emerald-500" : "bg-gold-500"}`} />{queueLabel(p, th)}</p>
                     <p className="text-xs text-ink-300 truncate"><span className="font-semibold text-ink-100"><span className="text-amber-500">★</span> {p.rating?.toFixed(1) ?? "–"}</span> · {d < 1 ? `${Math.round(d * 1000)} ${th ? "ม." : "m"}` : `${d.toFixed(1)} ${th ? "กม." : "km"}`} · {p.serviceArea}</p>
                     <div className="flex flex-wrap gap-1 mt-0.5">
                       {p.categories.slice(0, 2).map((c) => <span key={c} className="text-[11px] h-6 px-2 rounded-full border border-ink-600 text-ink-300 inline-flex items-center">{th ? catBySlug(c)?.th : catBySlug(c)?.en}</span>)}

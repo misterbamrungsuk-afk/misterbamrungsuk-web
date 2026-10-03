@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useI18n } from "@/i18n/provider";
@@ -20,6 +20,17 @@ function SuccessInner() {
   const total = Number(sp.get("total") ?? 0);
   const addr = ADDRESSES.find((a) => a.id === sp.get("addr")) ?? ADDRESSES[0];
   const code = "HM-24091"; // เดโม: โหมดจริงได้จากออเดอร์ที่สร้างบนเซิร์ฟเวอร์
+
+  // แจ้งอีเมลยืนยันการจอง (ครั้งเดียว ไม่บล็อกหน้า)
+  const notified = useRef(false);
+  useEffect(() => {
+    if (notified.current) return;
+    notified.current = true;
+    fetch("/api/notify/booking", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, providerName: post.member.name, date, time, minutes: pkg, total, place: addr.th }),
+    }).catch(() => {});
+  }, [code, post.member.name, date, time, pkg, total, addr.th]);
 
   // เพิ่มลงปฏิทิน: ไฟล์ .ics สร้างในเครื่อง ไม่ส่งข้อมูลออก
   const icsHref = (() => {

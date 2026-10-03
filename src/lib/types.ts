@@ -41,6 +41,12 @@ export interface Post {
   expiresAt: string;
   isHidden: boolean;
   createdAt: string;
+  /** วันที่หมอเข้าร่วมแพลตฟอร์ม (ISO) — ใช้ดันหมอหน้าใหม่ใน 30 วันแรก */
+  joinedAt?: string;
+  /** คิวว่างในอีกกี่นาที (0 = ว่างตอนนี้) — เดโมกำหนดตายตัว */
+  nextFreeMin?: number;
+  /** หมอกลุ่มพรีเมียม — เห็นได้เฉพาะสมาชิก/ผู้ได้รับของขวัญ */
+  premium?: boolean;
 }
 
 export interface Review {
@@ -154,7 +160,11 @@ export interface PromoCode {
   active: boolean;
   usedCount: number;
   quota: number;
+  /** ผู้รับภาระส่วนลด: A = แพลตฟอร์ม 100%, B = แพลตฟอร์ม 50% / ผู้ให้บริการ 50% */
+  costModel?: PromoCostModel;
 }
+
+export type PromoCostModel = "A" | "B";
 
 // ── ระบบกลาง (Escrow) ── วงจร: รับงาน → โอนเข้าระบบกลาง → ส่งงาน → รับเงิน
 export type EscrowState =

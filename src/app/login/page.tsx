@@ -7,10 +7,32 @@ import { Logo } from "@/components/ui";
 import { hasSupabase } from "@/lib/supabase";
 import { isDemo } from "@/lib/data";
 
+const inputCls = "h-12 w-full rounded-2xl border border-gold-500/45 bg-white px-4 text-[15px] outline-none focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20";
+
 export default function LoginPage() {
   const { t } = useI18n();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function emailLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      const res = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
+      const out = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (!out.ok) throw new Error(out.error || "เข้าสู่ระบบไม่สำเร็จ");
+      const next = new URLSearchParams(window.location.search).get("next") || "/home";
+      router.push(next.startsWith("/") && !next.startsWith("//") ? next : "/home");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "เข้าสู่ระบบไม่สำเร็จ");
+      setBusy(false);
+    }
+  }
 
   async function login() {
     if (isDemo || !hasSupabase) {
@@ -41,7 +63,7 @@ export default function LoginPage() {
         <LangToggle />
       </div>
 
-      <section className="absolute inset-x-0 bottom-0 z-10 px-6 pb-9 flex flex-col gap-5 animate-rise">
+      <section className="relative z-10 px-6 pb-9 pt-[34dvh] flex flex-col gap-5 animate-rise">
         <div>
           <p className="text-[12px] font-semibold tracking-[0.2em] text-[#8f5e00] flex items-center gap-2"><span className="w-6 h-px bg-[#b8860b]" />VVIP MALE MASSAGE</p>
           <h1 className="font-display text-[30px] leading-tight font-bold mt-1.5"><span className="whitespace-nowrap">ผ่อนคลายแบบมืออาชีพ</span><br /><span className="bg-gradient-to-r from-[#b8860b] via-[#e0a400] to-[#9a6b00] bg-clip-text text-transparent">ถึงที่ของคุณ</span></h1>
@@ -58,6 +80,18 @@ export default function LoginPage() {
           )}
           {loading ? "…" : t.loginWithGoogle}
         </button>
+
+        <div className="flex items-center gap-3 text-[12px] text-ink-400"><span className="flex-1 h-px bg-gold-500/35" />หรือ<span className="flex-1 h-px bg-gold-500/35" /></div>
+
+        <form onSubmit={emailLogin} className="flex flex-col gap-2.5">
+          <input type="email" required autoComplete="email" placeholder="อีเมล" value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} />
+          <input type="password" required autoComplete="current-password" placeholder="รหัสผ่าน" value={password} onChange={(e) => setPassword(e.target.value)} className={inputCls} />
+          {error && <p className="text-[12.5px] text-[#b3122a]" role="alert">{error}</p>}
+          <button type="submit" disabled={busy} className="h-12 w-full rounded-full font-semibold border border-gold-500/70 bg-[linear-gradient(180deg,#fffdf6,#fff)] text-[#3a2a06] shadow-[0_6px_18px_rgba(120,80,0,.08)] transition active:scale-[.98] disabled:opacity-60">
+            {busy ? "…" : "เข้าสู่ระบบด้วยอีเมล"}
+          </button>
+          <a href="/auth/register" className="text-[13px] text-ink-200 self-center">ยังไม่มีบัญชี? <span className="font-semibold text-[#8f5e00]">สมัครสมาชิก</span></a>
+        </form>
 
         <p className="flex items-center gap-2 text-[13px] text-ink-300">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-5 h-5 text-gold-600 shrink-0"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>

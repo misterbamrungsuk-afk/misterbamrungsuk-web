@@ -4,9 +4,11 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/i18n/provider";
 import { baht } from "@/components/ui";
-import { DEMO_INCOMING } from "@/lib/demo-data";
+import { DEMO_INCOMING, DEMO_ME } from "@/lib/demo-data";
+import { BelongingsChecklist, type BelongingsRecord } from "../../_components/belongings-checklist";
+import { UpsellCard } from "../../_components/upsell-card";
 
-type Phase = "waiting" | "running" | "done";
+type Phase = "waiting" | "running" | "check" | "done";
 
 // หน้างาน (on-site) — รอลูกค้าสูงสุด 15 นาที → เริ่มงาน → จบงาน → ขอเงินส่วนที่เหลือ
 export default function OnSiteJobPage({ params }: { params: Promise<{ id: string }> }) {
@@ -18,6 +20,7 @@ export default function OnSiteJobPage({ params }: { params: Promise<{ id: string
   const [waitSec, setWaitSec] = useState(15 * 60); // รอลูกค้า 15 นาที
   const [runSec, setRunSec] = useState(0);
   const [customerHere, setCustomerHere] = useState(false);
+  const [belongings, setBelongings] = useState<BelongingsRecord | null>(null);
 
   useEffect(() => {
     if (phase !== "waiting" || customerHere) return;
@@ -27,7 +30,7 @@ export default function OnSiteJobPage({ params }: { params: Promise<{ id: string
   }, [phase, waitSec, customerHere]);
 
   useEffect(() => {
-    if (phase !== "running") return;
+    if (phase !== "running" && phase !== "check") return;
     const iv = setInterval(() => setRunSec((s) => s + 1), 1000);
     return () => clearInterval(iv);
   }, [phase]);
@@ -88,17 +91,22 @@ export default function OnSiteJobPage({ params }: { params: Promise<{ id: string
             <p className="text-[10px] text-ink-500 mb-4">{lang === "th" ? "ตำแหน่งของคุณกำลังส่งให้ลูกค้าแบบสด (ติดตาม LIVE)" : "Your location is being shared live"}</p>
             <div className="flex gap-2">
               <Link href="/tracking/o1" className="btn-ghost rounded-xl flex-1 py-3 text-sm">📍 {t.tracking}</Link>
-              <button onClick={() => setPhase("done")} className="btn-crimson rounded-xl flex-1 py-3 text-sm font-bold">
+              <button onClick={() => setPhase("check")} className="btn-crimson rounded-xl flex-1 py-3 text-sm font-bold">
                 🏁 {lang === "th" ? "จบงาน" : "Finish"}
               </button>
             </div>
           </div>
         )}
 
+        {phase === "check" && (
+          <BelongingsChecklist jobId={id} th={lang === "th"} onCancel={() => setPhase("running")} onConfirm={(r) => { setBelongings(r); setPhase("done"); }} />
+        )}
+
         {phase === "done" && (
           <div className="glass rounded-2xl p-6 text-center animate-rise border-gold-500/40">
             <p className="text-5xl mb-3">🎉</p>
             <p className="font-semibold">{lang === "th" ? "จบงานเรียบร้อย!" : "Job completed!"}</p>
+            {belongings && <p className="text-[11px] text-ink-400 mt-1">🧾 {lang === "th" ? "ยืนยันทรัพย์สินลูกค้าครบ" : "Belongings confirmed"} · {new Date(belongings.confirmedAt).toLocaleTimeString(lang === "th" ? "th-TH" : "en-GB", { hour: "2-digit", minute: "2-digit" })}</p>}
             <p className="text-sm text-ink-300 mt-2">{lang === "th" ? "ส่งงานในระบบกลางเพื่อรับเงิน (หัก GP แล้วโอนเข้าบัญชีคุณ)" : "Deliver via escrow to receive your payout"}</p>
             <div className="flex gap-2 mt-4">
               <Link href="/provider" className="btn-ghost rounded-xl flex-1 py-3 text-sm">{lang === "th" ? "แดชบอร์ด" : "Dashboard"}</Link>
@@ -106,6 +114,8 @@ export default function OnSiteJobPage({ params }: { params: Promise<{ id: string
             </div>
           </div>
         )}
+
+        {(phase === "running" || phase === "done") && <UpsellCard providerId={DEMO_ME.id} th={lang === "th"} />}
       </div>
     </main>
   );

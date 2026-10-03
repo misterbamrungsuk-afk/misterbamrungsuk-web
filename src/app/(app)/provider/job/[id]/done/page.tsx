@@ -4,6 +4,8 @@ import { use, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/i18n/provider";
 import { Toast, baht } from "@/components/ui";
+import { DEMO_ME } from "@/lib/demo-data";
+import { UpsellCard } from "../../../_components/upsell-card";
 
 const TAGS = { th: ["สุภาพ", "ตรงเวลา", "สถานที่สะอาด", "สื่อสารดี", "ทิปใจดี"], en: ["Polite", "On time", "Clean place", "Clear communication", "Generous"] };
 
@@ -60,6 +62,8 @@ export default function JobDonePage({ params }: { params: Promise<{ id: string }
           {rated ? (th ? "ส่งแล้ว ✓" : "Sent ✓") : stars ? (th ? "ส่งคะแนน" : "Send rating") : th ? "เลือกดาวก่อน" : "Pick stars first"}
         </button>
       </section>
+
+      <UpsellCard providerId={DEMO_ME.id} th={th} />
 
       <div className="mt-auto grid grid-cols-2 gap-2">
         <Link href="/provider" className="btn-ghost h-12 rounded-full grid place-items-center text-sm">{th ? "กลับแดชบอร์ด" : "Dashboard"}</Link>

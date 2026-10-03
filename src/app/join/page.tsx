@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Logo } from "@/components/ui";
-import { BRAND, CLOSE_AT, EXPERIENCE, FAQ, HERO_IMAGE, PACKAGES, QUOTA, STRENGTHS, TERMS_SUMMARY, type PackageKey } from "@/lib/join/config";
-import { FORM_KEY, emptyForm, resizeImage, type FileField, type JoinForm } from "@/lib/join/form";
+import { AGE_LIMITS, BRAND, CLOSE_AT, PROVIDER_FEES, ageError, EXPERIENCE, FAQ, HERO_IMAGE, PACKAGES, QUOTA, STRENGTHS, TERMS_SUMMARY, type PackageKey } from "@/lib/join/config";
+import { FORM_KEY, ageFrom, emptyForm, resizeImage, type FileField, type JoinForm } from "@/lib/join/form";
 
 const WHY = [
   { t: "มาตรฐานสูง", d: "ศิลปะการบริการแบบ Butler", icon: "M12 3l2.6 5.6 6 .7-4.5 4 1.3 6L12 16.4 6.6 19.3l1.3-6-4.5-4 6-.7z" },
@@ -79,6 +79,9 @@ export default function SalePage() {
     if (!/^\d{5}$/.test(f.zipcode)) e.zipcode = "5 หลัก";
     if (!(+f.height >= 140 && +f.height <= 220)) e.height = "140–220";
     if (!(+f.weight >= 35 && +f.weight <= 200)) e.weight = "35–200";
+    if (!f.birthdate) e.birthdate = "กรอกวันเกิด";
+    else if (f.package) { const ae = ageError(f.package, ageFrom(f.birthdate)); if (ae) e.birthdate = ae; }
+    if (!f.consent_criminal) e.consent_criminal = "ต้องยินยอมให้ตรวจสอบประวัติอาชญากรรม";
     if (!f.experience) e.experience = "เลือกประสบการณ์";
     if (!f.photo) e.photo = "แนบรูปถ่าย";
     if (!f.id_card) e.id_card = "แนบบัตรประชาชน";
@@ -221,6 +224,13 @@ export default function SalePage() {
           <section className="pb-10">
             <SectionHead kicker="FAQ" title="คำถามที่พบบ่อย" />
             <div className="mt-5 space-y-2.5">
+              <div className="reveal rounded-2xl border border-gold-500/40 bg-gold-500/5 px-4 py-3.5 text-[13.5px] leading-relaxed">
+                <p className="font-medium">ค่าใช้จ่ายผู้ให้บริการ (ข้อมูลประกอบ)</p>
+                <ul className="mt-1.5 space-y-1 text-ink-200">
+                  {PROVIDER_FEES.map((x) => <li key={x.key} className="flex justify-between gap-3"><span>{x.name}</span><span className="font-display text-gold-300">฿{baht(x.amount)}</span></li>)}
+                </ul>
+                <p className="text-[12px] text-ink-400 mt-1.5">ชำระหลังผ่านการอบรม · ไม่รวมในค่าสมัครหน้านี้ · อายุ: A ไม่เกิน {AGE_LIMITS.A.max} ปี / B ไม่เกิน {AGE_LIMITS.B.max} ปี</p>
+              </div>
               {FAQ.map((x, i) => {
                 const open = faq === i;
                 return (
@@ -266,6 +276,7 @@ export default function SalePage() {
                   <Field label="ชื่อเล่น" err={errs.nickname}><input className="input-dark h-12" value={f.nickname} onChange={(e) => set("nickname", e.target.value)} /></Field>
                   <Field label="รหัสไปรษณีย์" err={errs.zipcode}><input className="input-dark h-12" inputMode="numeric" maxLength={5} autoComplete="postal-code" value={f.zipcode} onChange={(e) => set("zipcode", e.target.value.replace(/\D/g, ""))} /></Field>
                 </div>
+                <Field label={`วันเกิด (อายุ ${AGE_LIMITS.A.min}–${f.package ? AGE_LIMITS[f.package].max : AGE_LIMITS.A.max} ปี)`} err={errs.birthdate}><input className="input-dark h-12" type="date" autoComplete="bday" value={f.birthdate} onChange={(e) => set("birthdate", e.target.value)} /></Field>
                 <Field label="เบอร์โทร" err={errs.tel}><input className="input-dark h-12" type="tel" autoComplete="tel" inputMode="tel" placeholder="08x-xxx-xxxx" value={f.tel} onChange={(e) => set("tel", e.target.value)} /></Field>
                 <Field label="อีเมล" err={errs.email}><input className="input-dark h-12" type="email" autoComplete="email" inputMode="email" value={f.email} onChange={(e) => set("email", e.target.value)} /></Field>
                 <div className="grid grid-cols-2 gap-3">
@@ -310,13 +321,17 @@ export default function SalePage() {
                 <Consent checked={f.consent_pdpa} onChange={(v) => set("consent_pdpa", v)} required>
                   ข้าพเจ้ายินยอมให้เก็บ ใช้ และเปิดเผยข้อมูลส่วนบุคคล รวมถึงข้อมูลอ่อนไหวบนสำเนาบัตรประชาชน เพื่อพิจารณาการสมัครและยืนยันตัวตน ตาม <a href="/join/privacy" target="_blank" rel="noopener" className="text-gold-300 underline underline-offset-2">นโยบายความเป็นส่วนตัว</a>
                 </Consent>
+                <Consent checked={f.consent_criminal} onChange={(v) => set("consent_criminal", v)} required>
+                  ข้าพเจ้ายินยอมให้บริษัทตรวจสอบประวัติอาชญากรรม เพื่อความปลอดภัยของลูกค้าและผู้ให้บริการ
+                </Consent>
+                {errs.consent_criminal && <p data-err="1" className="text-[12px] text-crimson-300 -mt-1">{errs.consent_criminal}</p>}
                 <Consent checked={f.consent_marketing} onChange={(v) => set("consent_marketing", v)}>
                   ยินยอมรับข่าวสาร โปรโมชัน และรอบรับสมัครถัดไป (ไม่บังคับ ถอนได้ทุกเมื่อ)
                 </Consent>
               </Card>
 
-              <button onClick={next} disabled={!f.accept_terms || !f.consent_pdpa || closed} className="btn-crimson h-14 font-display font-semibold text-[17px]">
-                {closed ? "ปิดรับสมัครแล้ว" : f.accept_terms && f.consent_pdpa ? "ถัดไป · ชำระค่าสมัคร →" : "ติ๊กยอมรับ 2 ข้อที่จำเป็นก่อน"}
+              <button onClick={next} disabled={!f.accept_terms || !f.consent_pdpa || !f.consent_criminal || closed} className="btn-crimson h-14 font-display font-semibold text-[17px]">
+                {closed ? "ปิดรับสมัครแล้ว" : f.accept_terms && f.consent_pdpa && f.consent_criminal ? "ถัดไป · ชำระค่าสมัคร →" : "ติ๊กยอมรับ 3 ข้อที่จำเป็นก่อน"}
               </button>
             </div>
           </section>

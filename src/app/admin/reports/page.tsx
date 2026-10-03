@@ -4,6 +4,10 @@ import { useState } from "react";
 import { Toast } from "@/components/ui";
 import { REPORTS } from "@/lib/admin-data";
 import { Card, PageHead, Pill } from "../admin-nav";
+import { DEMO_STRIKE_EVENTS, evaluateStrikes } from "@/lib/strikes";
+
+// แจ้งเตือนอัตโนมัติจากระบบ strike (รีวิว 1 ดาว / รายงานไม่เหมาะสม → strike, ครบ 3 → แบน)
+const AUTO = evaluateStrikes("หมอ (เดโม)", DEMO_STRIKE_EVENTS).notices;
 
 const SEV = { high: { th: "สูง", tone: "red" }, mid: { th: "กลาง", tone: "gold" }, low: { th: "ต่ำ", tone: "muted" } } as const;
 
@@ -19,6 +23,12 @@ export default function AdminReportsPage() {
   return (
     <>
       <PageHead title="รีพอร์ท" sub={`${items.length} เรื่องรอพิจารณา`} />
+      {AUTO.length > 0 && (
+        <Card className="mb-3 flex flex-col gap-2">
+          <p className="text-sm font-semibold">แจ้งเตือนอัตโนมัติ · Strike</p>
+          {AUTO.map((n) => <p key={n.id} className="text-sm flex items-center gap-2"><Pill tone={n.level === "ban" ? "red" : "gold"}>{n.level === "ban" ? "แบนอัตโนมัติ" : "strike"}</Pill><span className="min-w-0">{n.text}</span></p>)}
+        </Card>
+      )}
       {items.length === 0 ? <Card className="text-center py-16 text-ink-300">ไม่มีรีพอร์ทค้าง</Card> : (
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
           {items.map((r) => (

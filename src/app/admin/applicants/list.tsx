@@ -3,7 +3,10 @@
 import { Fragment, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PACKAGES } from "@/lib/join/config";
-import type { Applicant, ApplicantStatus } from "@/lib/join/store";
+import type { Applicant, ApplicantStatus, CriminalCheck } from "@/lib/join/store";
+
+const CRIMINAL_LABEL: Record<CriminalCheck, string> = { pending: "รอตรวจ", passed: "ผ่าน", failed: "ไม่ผ่าน" };
+const criminalConsent = (r: Applicant) => r.consent_criminal ?? r.consent_version.includes("criminal");
 
 const LABEL: Record<ApplicantStatus, string> = { pending_slip: "รอตรวจสลิป", verified: "ยืนยันแล้ว", rejected: "ปฏิเสธ", refunded: "คืนเงินแล้ว" };
 const TONE: Record<ApplicantStatus, string> = {
@@ -46,6 +49,7 @@ export function ApplicantList({ initial }: { initial: Applicant[] }) {
           <button key={s || "all"} onClick={() => setFilter(s)} className={`chip h-9 px-3.5 text-sm ${filter === s ? "chip-red" : ""}`}>{s ? LABEL[s] : "ทั้งหมด"}</button>
         ))}
         <a href="/api/admin/applicants/export" className="btn-ghost h-9 px-4 text-sm inline-flex items-center sm:ml-auto">ส่งออก CSV</a>
+        <a href="/api/admin/backup" className="btn-ghost h-9 px-4 text-sm inline-flex items-center">ดาวน์โหลดสำรองข้อมูล</a>
       </div>
       {msg && <p role="status" className="mt-3 text-sm text-gold-300">{msg}</p>}
 
@@ -60,6 +64,7 @@ export function ApplicantList({ initial }: { initial: Applicant[] }) {
                 <span className="block font-medium truncate">{r.mb_code} · {r.nickname} ({name(r)})</span>
                 <span className="block text-xs text-ink-300 truncate">แพ็กเกจ {r.package} · ฿{r.amount.toLocaleString("th-TH")} · {thTime(r.created_at)}</span>
               </span>
+              <span className="shrink-0 hidden sm:inline-flex h-6 px-2.5 rounded-full border border-ink-600 text-[11px] text-ink-300 items-center">ประวัติ: {CRIMINAL_LABEL[r.criminal_check ?? "pending"]}</span>
               <span className={`shrink-0 h-6 px-2.5 rounded-full border text-[11px] font-semibold inline-flex items-center ${TONE[r.status]}`}>{LABEL[r.status]}</span>
             </button>
             {open === r.id && (
@@ -74,6 +79,8 @@ export function ApplicantList({ initial }: { initial: Applicant[] }) {
                     ["ชำระผ่าน", r.payment_method === "qr" ? "QR" : "โอนบัญชี"], ["แพ็กเกจ", PACKAGES[r.package].name],
                     ["สัญญา", r.contract_accepted_at ? `ยอมรับ ${thTime(r.contract_accepted_at)}` : "ยังไม่ยอมรับ"],
                     ["ความยินยอม PDPA", `${r.consent_version} · ${thTime(r.consented_at)}`], ["รับข่าวสาร", r.consent_marketing ? "ยินยอม" : "ไม่ยินยอม"],
+                    ["ยินยอมตรวจประวัติอาชญากรรม", criminalConsent(r) ? "ยินยอม" : "ไม่มีบันทึก (สมัครก่อนเพิ่มเงื่อนไข)"],
+                    ["ตรวจประวัติอาชญากรรม", CRIMINAL_LABEL[r.criminal_check ?? "pending"]],
                     ["Google Sheet", r.sheet_synced ? "sync แล้ว" : "ยังไม่ sync"],
                   ].map(([k, v]) => (
                     <Fragment key={k}><dt className="text-ink-300">{k}</dt><dd className="break-words min-w-0">{v}</dd></Fragment>

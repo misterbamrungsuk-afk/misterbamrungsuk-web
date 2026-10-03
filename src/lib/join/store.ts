@@ -6,6 +6,7 @@ import type { PackageKey } from "./config";
 // - มี SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY → Supabase (ตาราง applicants + bucket private "applicants")
 // - ไม่มี → โหมดเดโม เก็บในหน่วยความจำ (หายเมื่อรีสตาร์ท)
 
+export type CriminalCheck = "pending" | "passed" | "failed";
 export type ApplicantStatus = "pending_slip" | "verified" | "rejected" | "refunded";
 
 /** ไฟล์ที่ผู้สมัครแนบ (other_doc ไม่บังคับ) */
@@ -44,6 +45,8 @@ export interface ApplicantInput {
   consent_version: string;
   consented_at: string;
   consent_marketing: boolean;
+  /** ยินยอมตรวจประวัติอาชญากรรม (คอลัมน์จาก migration 0002 — ถ้ายังไม่รัน ดูจาก consent_version ที่ลงท้าย "/criminal") */
+  consent_criminal?: boolean;
   package: PackageKey;
   amount: number;
   payment_method: "qr" | "transfer";
@@ -58,6 +61,8 @@ export interface Applicant extends ApplicantInput {
   docs: Partial<Record<DocKind, string>>;
   contract_accepted_at: string | null;
   sheet_synced: boolean;
+  /** ผลตรวจประวัติอาชญากรรม (migration 0002; ไม่มีคอลัมน์ = ถือว่า pending) */
+  criminal_check?: CriminalCheck;
   created_at: string;
 }
 
@@ -115,7 +120,7 @@ export async function createApplicant(input: ApplicantInput, files: Partial<Reco
     const seq = demo.rows.filter((r) => r.mb_code.startsWith(prefix)).length + 1;
     const row: Applicant = {
       ...input, id, docs, mb_code: `${prefix}${String(seq).padStart(3, "0")}`,
-      status: "pending_slip", contract_accepted_at: null, sheet_synced: false, created_at: new Date().toISOString(),
+      status: "pending_slip", criminal_check: "pending", contract_accepted_at: null, sheet_synced: false, created_at: new Date().toISOString(),
     };
     demo.rows.push(row);
     return row;

@@ -38,6 +38,8 @@ export interface JoinForm {
   accept_terms: boolean;
   /** ยินยอมให้ประมวลผลข้อมูล รวมข้อมูลอ่อนไหวบนบัตรประชาชน (ม.19, 26) — บังคับ */
   consent_pdpa: boolean;
+  /** ยินยอมให้ตรวจสอบประวัติอาชญากรรม — บังคับ */
+  consent_criminal: boolean;
   /** ยินยอมรับข่าวสาร — ไม่บังคับ */
   consent_marketing: boolean;
 }
@@ -49,7 +51,7 @@ export const emptyForm: JoinForm = {
   package: "", title: "", first_name: "", last_name: "", nickname: "", birthdate: "", weight: "", height: "",
   nationality: "ไทย", ethnicity: "ไทย", religion: "", education: "", marital: "", start_date: "",
   tel: "", line_id: "", email: "", address: "", zipcode: "", bank: "", bank_account: "", bank_account_name: "",
-  experience: "", skills: [], intro: "", photo: "", id_card: "", bankbook: "", other_doc: "", accept_terms: false, consent_pdpa: false, consent_marketing: false,
+  experience: "", skills: [], intro: "", photo: "", id_card: "", bankbook: "", other_doc: "", accept_terms: false, consent_pdpa: false, consent_criminal: false, consent_marketing: false,
 };
 
 /** อายุเต็มปีจากวันเกิด */

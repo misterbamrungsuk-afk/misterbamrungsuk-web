@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, Suspense } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
 import { useI18n } from "@/i18n/provider";
 import { TopBar } from "@/components/shell";
@@ -10,6 +10,8 @@ import { CATEGORIES, PROVINCES } from "@/lib/categories";
 import type { Post } from "@/lib/types";
 import { isDemo } from "@/lib/data";
 import { DEMO_POSTS } from "@/lib/demo-data";
+import { isPremiumUnlocked, recommendedSort, MEMBERSHIP } from "@/lib/membership";
+import { baht } from "@/components/ui";
 
 
 function HomeInner({ posts }: { posts: Post[] }) {
@@ -22,9 +24,13 @@ function HomeInner({ posts }: { posts: Post[] }) {
   const [ageMax, setAgeMax] = useState("");
   const [rateMin, setRateMin] = useState("");
   const [rateMax, setRateMax] = useState("");
+  const [premiumOpen, setPremiumOpen] = useState(false);
+  useEffect(() => { setPremiumOpen(isPremiumUnlocked()); }, []);
+  const premiumPosts = useMemo(() => posts.filter((p) => p.premium).sort(recommendedSort), [posts]);
 
   const filtered = useMemo(() => {
-    let list = [...posts];
+    // หมอพรีเมียมแสดงในฟีดหลักเฉพาะเมื่อปลดล็อกแล้ว
+    let list = posts.filter((p) => premiumOpen || !p.premium);
     if (q.trim()) {
       const s = q.toLowerCase();
       list = list.filter((p) =>
@@ -38,8 +44,9 @@ function HomeInner({ posts }: { posts: Post[] }) {
     if (ageMax) list = list.filter((p) => (p.member.age ?? 999) <= +ageMax);
     if (rateMin) list = list.filter((p) => p.pricePerHour >= +rateMin);
     if (rateMax) list = list.filter((p) => p.pricePerHour <= +rateMax);
-    return list;
-  }, [posts, q, cat, province, ageMin, ageMax, rateMin, rateMax]);
+    // เรียงแบบ "แนะนำ": ดันหมอหน้าใหม่ (เข้าร่วม ≤30 วัน) ขึ้นก่อน
+    return list.sort(recommendedSort);
+  }, [posts, premiumOpen, q, cat, province, ageMin, ageMax, rateMin, rateMax]);
 
   const activeFilters = [province, ageMin, ageMax, rateMin, rateMax].filter(Boolean).length;
   // รูป hero: หมอคนแรกที่ยืนยันตัวตนแล้ว
@@ -89,6 +96,54 @@ function HomeInner({ posts }: { posts: Post[] }) {
           <span className="text-gold-300 text-lg" aria-hidden>→</span>
         </Link>
       </section>
+
+      {/* ── สมาชิก ── */}
+      <section className="px-4 pt-3">
+        <Link href="/membership" className="glass rounded-2xl flex items-center gap-3 px-4 py-3.5">
+          <span className="w-11 h-11 rounded-xl bg-crimson-500 text-white grid place-items-center text-lg shrink-0">♛</span>
+          <span className="flex-1 min-w-0">
+            <span className="block text-[14px] font-semibold">{lang === "th" ? "สมาชิก & แพ็กเกจ 5/10 ครั้ง" : "Membership & 5/10-session packs"}</span>
+            <span className="block text-xs text-ink-300">{lang === "th" ? `เริ่ม ${baht(MEMBERSHIP.monthlyFee)}/เดือน · ซื้อเป็นของขวัญได้` : `From ${baht(MEMBERSHIP.monthlyFee)}/mo · giftable`}</span>
+          </span>
+          <span className="text-ink-400 text-lg" aria-hidden>→</span>
+        </Link>
+      </section>
+
+      {/* ── หมอพรีเมียม (ล็อกจนกว่าจะเป็นสมาชิก/รับของขวัญ) ── */}
+      {premiumPosts.length > 0 && (
+        <section id="premium" className="px-4 pt-8 scroll-mt-16">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="font-display font-bold text-[22px] leading-tight tracking-tight flex items-center gap-2">
+              Premium <span className="chip chip-gold text-[11px]">♛ {lang === "th" ? "สมาชิกเท่านั้น" : "Members only"}</span>
+            </h2>
+            {!premiumOpen && <Link href="/membership" className="text-[13px] text-gold-600 min-h-9 inline-flex items-center">{lang === "th" ? "ปลดล็อก" : "Unlock"}</Link>}
+          </div>
+          {premiumOpen ? (
+            <div className="grid grid-cols-2 gap-2.5 mt-3">
+              {premiumPosts.map((p) => <PostCard key={p.id} post={p} />)}
+            </div>
+          ) : (
+            <div className="relative mt-3 rounded-[20px] overflow-hidden">
+              <div className="grid grid-cols-3 gap-2 blur-md pointer-events-none select-none" aria-hidden>
+                {premiumPosts.slice(0, 3).map((p) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={p.id} src={p.images[0] ?? p.member.avatar} alt="" className="w-full h-36 object-cover rounded-xl" />
+                ))}
+              </div>
+              <div className="absolute inset-0 grid place-items-center bg-ink-900/40 text-center px-4">
+                <div>
+                  <p className="text-2xl">🔒</p>
+                  <p className="text-sm font-semibold mt-1">{lang === "th" ? `หมอพรีเมียม ${premiumPosts.length} คน` : `${premiumPosts.length} Premium therapists`}</p>
+                  <div className="flex gap-2 justify-center mt-2">
+                    <Link href="/membership" className="btn-crimson rounded-xl h-10 px-4 grid place-items-center text-[13px] font-semibold">{lang === "th" ? "สมัครสมาชิก" : "Join"}</Link>
+                    <Link href="/membership/redeem" className="btn-ghost rounded-xl h-10 px-4 grid place-items-center text-[13px]">{lang === "th" ? "ใช้โค้ดของขวัญ" : "Redeem gift"}</Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* ── หาความผ่อนคลายในแบบคุณ ── */}
       <section id="find" className="px-4 pt-8 scroll-mt-16">

@@ -126,6 +126,19 @@ export const DEMO_POSTS: Post[] = [
   },
 ];
 
+// ── ข้อมูลเสริมเดโม: วันเข้าร่วม / คิวว่าง / พรีเมียม (กำหนดตายตัวเพื่อให้ผลลัพธ์คงที่) ──
+const POST_META: Record<string, Pick<Post, "joinedAt" | "nextFreeMin" | "premium">> = {
+  p1: { joinedAt: "2026-06-10", nextFreeMin: 0, premium: true },
+  p2: { joinedAt: "2026-07-02", nextFreeMin: 45 },
+  p3: { joinedAt: "2026-08-15", nextFreeMin: 0 },
+  p4: { joinedAt: "2026-05-20", nextFreeMin: 90, premium: true },
+  p5: { joinedAt: "2026-07-28", nextFreeMin: 20 },
+  p6: { joinedAt: "2026-09-22", nextFreeMin: 0 },
+  p7: { joinedAt: "2026-09-12", nextFreeMin: 120, premium: true },
+  p8: { joinedAt: "2026-09-28", nextFreeMin: 30 },
+};
+DEMO_POSTS.forEach((p) => Object.assign(p, POST_META[p.id] ?? {}));
+
 // ── รีวิวตัวอย่าง (โหมดสาธิต) — ตอนใช้งานจริง รีวิวจะเปิดให้เขียนได้เฉพาะเมื่อจบออเดอร์+จ่ายเงินครบเท่านั้น ──
 const rv = (id: string, name: string, gender: "male" | "female", photo: string, rating: number, content: string, date: string, postId: string): Review => ({
   id, postId,
@@ -279,9 +292,9 @@ export const DEMO_NOTIS: AppNotification[] = [
 ];
 
 export const DEMO_PROMOS: PromoCode[] = [
-  { code: "MB10", type: "percent", value: 10, active: true, usedCount: 25, quota: 100 },
-  { code: "WELCOME50", type: "fixed", value: 50, active: true, usedCount: 8, quota: 50 },
-  { code: "SUMMER", type: "percent", value: 15, active: false, usedCount: 60, quota: 60 },
+  { code: "MB10", type: "percent", value: 10, active: true, usedCount: 25, quota: 100, costModel: "A" },
+  { code: "WELCOME50", type: "fixed", value: 50, active: true, usedCount: 8, quota: 50, costModel: "B" },
+  { code: "SUMMER", type: "percent", value: 15, active: false, usedCount: 60, quota: 60, costModel: "A" },
 ];
 
 // ── ประวัติออเดอร์ของฉัน ──

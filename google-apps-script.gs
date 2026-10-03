@@ -22,6 +22,7 @@ function doPost(e) {
   try {
     const body = JSON.parse(e.postData.contents);
     if (body.token !== TOKEN) return json({ ok: false, error: 'unauthorized' });
+    if (body.action === 'backup') return saveBackup(body.filename, body.json);
 
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     const sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
@@ -39,6 +40,25 @@ function doPost(e) {
   } catch (err) {
     return json({ ok: false, error: String(err) });
   }
+}
+
+// สำรองข้อมูลรายวัน: เก็บไฟล์ JSON ในโฟลเดอร์ "MB Backups" ของ Drive (สร้างให้ถ้ายังไม่มี) เก็บไว้ 30 ไฟล์ล่าสุด
+// หมายเหตุ: ครั้งแรกต้องกดอนุญาตสิทธิ์ Google Drive ใหม่ แล้ว Deploy เวอร์ชันใหม่
+const BACKUP_FOLDER = 'MB Backups';
+const BACKUP_KEEP = 30;
+
+function saveBackup(filename, content) {
+  const name = String(filename || 'mb-backup.json').replace(/[^\w.\-]/g, '_');
+  const it = DriveApp.getFoldersByName(BACKUP_FOLDER);
+  const folder = it.hasNext() ? it.next() : DriveApp.createFolder(BACKUP_FOLDER);
+  folder.createFile(name, String(content || '{}'), MimeType.PLAIN_TEXT);
+
+  const files = [];
+  const all = folder.getFiles();
+  while (all.hasNext()) files.push(all.next());
+  files.sort(function (a, b) { return b.getDateCreated() - a.getDateCreated(); });
+  files.slice(BACKUP_KEEP).forEach(function (f) { f.setTrashed(true); });
+  return json({ ok: true, file: name });
 }
 
 function json(o) {

@@ -11,6 +11,7 @@ export async function gateToken(password: string) {
 export function gateExempt(p: string) {
   return (
     p === "/gate" || p === "/api/gate" ||
+    p.startsWith("/api/cron/") || // Vercel Cron (ป้องกันด้วย CRON_SECRET เอง)
     p === "/join" || p.startsWith("/join/") || p.startsWith("/api/join/") ||
     p.startsWith("/_next") || p === "/favicon.ico" || p === "/manifest.webmanifest" ||
     p === "/sw.js" || p.startsWith("/pwa-icon") || p.startsWith("/brand")

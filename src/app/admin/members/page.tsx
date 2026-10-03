@@ -3,9 +3,9 @@
 import { useMemo, useState } from "react";
 import { Toast } from "@/components/ui";
 import { MEMBERS } from "@/lib/admin-data";
+import { STRIKE_LIMIT as LIMIT, strikeStatus } from "@/lib/strikes";
 import { Card, PageHead, Pill } from "../admin-nav";
 
-const LIMIT = 3; // ครบ 3 strike ระงับอัตโนมัติ
 
 function Strikes({ n }: { n: number }) {
   return <span className="inline-flex gap-1" aria-label={`strike ${n}/${LIMIT}`}>{[0, 1, 2].map((i) => <i key={i} className={`w-4 h-1.5 rounded-full ${i < n ? "bg-crimson-500" : "bg-ink-600"}`} />)}</span>;
@@ -39,7 +39,7 @@ export default function AdminMembersPage() {
                 <span className="block font-medium truncate">{m.name} {m.kyc && <span className="text-gold-600 text-xs">✓</span>}</span>
                 <span className="block text-xs text-ink-300">{m.role === "therapist" ? "หมอนวด" : "ลูกค้า"} · {m.jobs} งาน · ★ {m.rating}</span>
               </span>
-              <span className="flex flex-col items-end gap-1 shrink-0"><Strikes n={m.strikes} />{m.suspended ? <Pill tone="red">ระงับ</Pill> : m.strikes === 2 ? <Pill tone="gold">เฝ้าระวัง</Pill> : <Pill>ปกติ</Pill>}</span>
+              <span className="flex flex-col items-end gap-1 shrink-0"><Strikes n={m.strikes} />{m.suspended ? <Pill tone="red">{m.strikes >= LIMIT ? "แบนอัตโนมัติ" : "ระงับ"}</Pill> : m.strikes > 0 ? <Pill tone="gold">{strikeStatus(m.strikes).label}</Pill> : <Pill>ปกติ</Pill>}</span>
             </button>
           ))}
         </Card>
@@ -54,7 +54,8 @@ export default function AdminMembersPage() {
             </div>
             <div className={`rounded-xl p-3 border ${sel.strikes >= 2 ? "border-crimson-500 bg-crimson-500/5" : "border-ink-600"}`}>
               <div className="flex justify-between text-sm"><span>Strike {sel.strikes} / {LIMIT}</span><Strikes n={sel.strikes} /></div>
-              {sel.strikes === 2 && <p className="text-xs text-crimson-200 mt-1">อีก 1 ครั้ง = ระงับอัตโนมัติ</p>}
+              {sel.strikes === LIMIT - 1 && <p className="text-xs text-crimson-200 mt-1">อีก 1 ครั้ง = ระงับอัตโนมัติ</p>}
+              {sel.strikes >= LIMIT && <p className="text-xs text-crimson-200 mt-1">⚠ ระบบแบนอัตโนมัติ (ครบ {LIMIT} strike จากรีวิว 1 ดาว/รายงานไม่เหมาะสม)</p>}
             </div>
             <div className="flex flex-col gap-2">
               <button onClick={() => update((m) => { const s = Math.min(LIMIT, m.strikes + 1); return { strikes: s, suspended: s >= LIMIT || m.suspended }; }, sel.strikes + 1 >= LIMIT ? "ครบ 3 strike · ระงับอัตโนมัติแล้ว" : "ให้ strike แล้ว")} disabled={sel.strikes >= LIMIT} className="h-11 rounded-xl border border-crimson-500 text-crimson-200 disabled:opacity-40">ให้ strike</button>

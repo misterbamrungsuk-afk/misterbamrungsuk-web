@@ -17,6 +17,8 @@ export default function ProfilePage() {
 
   const menu = [
     { href: "/profile/edit", icon: "✏️", label: t.profileInfo },
+    { href: "/membership", icon: "♛", label: lang === "th" ? "สมาชิก & แพ็กเกจ" : "Membership & packs" },
+    { href: "/membership/redeem", icon: "🎁", label: lang === "th" ? "รับของขวัญ" : "Redeem gift" },
     { href: "/orders", icon: "🧾", label: lang === "th" ? "ประวัติการจ้างงาน" : "My orders" },
     { href: "/search", icon: "🔍", label: lang === "th" ? "ค้นหาหมอนวด" : "Search therapists" },
     { href: "/profile/addresses", icon: "📍", label: lang === "th" ? "ที่อยู่ที่บันทึก" : "Saved addresses" },
@@ -83,7 +85,7 @@ export default function ProfilePage() {
         </div>
 
         <div className="flex gap-2 mt-4 mb-4">
-          <Link href="/login" className="btn-ghost rounded-xl flex-1 py-3 text-sm text-center">{t.logout}</Link>
+          <button type="button" onClick={async () => { try { await fetch("/api/auth/logout", { method: "POST" }); } catch { /* ออฟไลน์ */ } document.cookie = "hamoo_session=; path=/; max-age=0"; window.location.href = "/login"; }} className="btn-ghost rounded-xl flex-1 py-3 text-sm text-center">{t.logout}</button>
           <Link href="/profile/edit" className="btn-ghost rounded-xl flex-1 py-3 text-sm text-crimson-300 text-center">{t.deleteAccount}</Link>
         </div>
         <p className="text-center text-[10px] text-ink-600">© 2026 Mister Bamrungsuk · {lang === "th" ? "ใช้งานฟรี (อาจมีค่าธรรมเนียมในอนาคต)" : "Free to use"}</p>

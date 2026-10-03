@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useI18n } from "@/i18n/provider";
 import { TopBar } from "@/components/shell";
-import { baht } from "@/components/ui";
+import { baht, Modal } from "@/components/ui";
 import { DEMO_POSTS, DEMO_PROMOS } from "@/lib/demo-data";
 import { ADDRESSES, HERBAL_PRICE, packagePrice, promoDiscount, thaiDate } from "@/lib/booking";
 import { BANK } from "@/lib/join/config";
@@ -35,7 +35,8 @@ function CheckoutInner({ id }: { id: string }) {
 
   const [health, setHealth] = useState<Record<string, boolean>>({});
   const [avoid, setAvoid] = useState("");
-  const [confirmed, setConfirmed] = useState(false);
+  const [consentOpen, setConsentOpen] = useState(false);
+  const [consent, setConsent] = useState(false);
   const [paid, setPaid] = useState(false);
   const [herbal, setHerbal] = useState(false);
   const [code, setCode] = useState("");
@@ -109,10 +110,6 @@ function CheckoutInner({ id }: { id: string }) {
           ))}
           {hasCondition && <p className="text-xs text-crimson-200">{th ? "หมอจะปรับแรงและท่านวดให้เหมาะสม หากไม่แน่ใจควรปรึกษาแพทย์ก่อน" : "Your therapist will adapt. If unsure, consult a doctor first."}</p>}
           <input value={avoid} onChange={(e) => setAvoid(e.target.value)} className="input-dark h-11" placeholder={th ? "จุดที่ห้ามนวด เช่น เข่าซ้าย" : "Areas to avoid, e.g. left knee"} aria-label={th ? "จุดที่ห้ามนวด" : "Areas to avoid"} />
-          <label className="flex items-center gap-2.5 text-sm text-ink-200">
-            <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} className="w-5 h-5 accent-[#e0243c]" />
-            {th ? "ยืนยันว่าข้อมูลสุขภาพถูกต้อง" : "I confirm this health info is correct"}
-          </label>
         </section>
 
         <section className="glass rounded-2xl p-4 flex flex-col gap-3">
@@ -163,10 +160,23 @@ function CheckoutInner({ id }: { id: string }) {
       </div>
 
       <div className="fixed left-1/2 -translate-x-1/2 w-full max-w-[480px] z-30 px-4" style={{ bottom: "calc(16px + env(safe-area-inset-bottom))" }}>
-        <button onClick={pay} disabled={!confirmed || !paid} className="btn-crimson w-full h-14 rounded-2xl font-display font-semibold text-lg">
-          {!confirmed ? (th ? "ยืนยันข้อมูลสุขภาพก่อน" : "Confirm health info first") : !paid ? (th ? `สแกนจ่าย ${baht(total)} แล้วติ๊กยืนยัน` : `Pay ${baht(total)}, then tick confirm`) : (th ? "ยืนยันการจอง" : "Confirm booking")}
+        <button onClick={() => { setConsent(false); setConsentOpen(true); }} disabled={!paid} className="btn-crimson w-full h-14 rounded-2xl font-display font-semibold text-lg">
+          {!paid ? (th ? `สแกนจ่าย ${baht(total)} แล้วติ๊กยืนยัน` : `Pay ${baht(total)}, then tick confirm`) : (th ? "ยืนยันการจอง" : "Confirm booking")}
         </button>
       </div>
+
+      {/* ยินยอมด้านสุขภาพ — ถามทุกครั้งก่อนยืนยันการจอง */}
+      <Modal open={consentOpen} onClose={() => setConsentOpen(false)} title={th ? "ยืนยันด้านสุขภาพ" : "Health consent"}>
+        <p className="text-sm text-ink-300 leading-relaxed">{th ? "เพื่อความปลอดภัยของคุณ กรุณายืนยันก่อนจองทุกครั้ง หากมีข้อสงสัยควรปรึกษาแพทย์ก่อนรับบริการ" : "For your safety, please confirm before every booking. If unsure, consult a doctor first."}</p>
+        <label className="flex items-start gap-2.5 text-sm text-ink-100 mt-4 min-h-9">
+          <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="w-5 h-5 mt-0.5 shrink-0 accent-[#e0243c]" />
+          {th ? "ข้าพเจ้ายืนยันว่า ไม่ได้ตั้งครรภ์ / ไม่มีโรคต้องห้ามสำหรับการนวด และข้อมูลสุขภาพที่ให้ไว้ถูกต้อง" : "I confirm I am not pregnant / have no contraindicated conditions, and my health info is correct."}
+        </label>
+        <div className="flex gap-2 mt-5">
+          <button onClick={() => setConsentOpen(false)} className="btn-ghost rounded-xl flex-1 h-12 text-sm">{th ? "ยกเลิก" : "Cancel"}</button>
+          <button onClick={pay} disabled={!consent} className="btn-crimson rounded-xl flex-1 h-12 text-sm font-semibold">{th ? "ยืนยันการจอง" : "Confirm booking"}</button>
+        </div>
+      </Modal>
     </>
   );
 }
