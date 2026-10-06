@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>สมัครสำเร็จ</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+.h{font-family:Kanit;font-weight:600}
+.card{padding:14px;border-radius:16px;background:#181212;border:1px solid #33272a}
+.in{height:48px;border-radius:12px;border:1px solid #33272a;background:#21191a;color:#f6efe4;padding:0 14px;font-size:14px;box-sizing:border-box;width:100%;display:flex;align-items:center}
+.cta{height:52px;border-radius:14px;border:1px solid rgba(212,175,55,.45);background:linear-gradient(180deg,#c21d33,#8f1424);color:#fff;font-size:15px;font-weight:600;width:100%;font-family:Kanit}
+.ghost{height:48px;border-radius:14px;border:1px solid #33272a;background:#181212;color:#e3c35c;font-size:14px;font-weight:600;width:100%}
+.lbl{font-size:12px;color:#ab9d94;margin:0 0 6px}
+.mut{color:#ab9d94}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; position: relative; overflow: hidden">
+  <div style="height: 844px; overflow-y: auto; box-sizing: border-box; padding-bottom: 24px">
+    <div style="padding: 28px 18px 0; display: flex; flex-direction: column; gap: 16px">
+      <div style="text-align: center"><div style="font-size: 11px; letter-spacing: 2.5px; color: #d4af37">ยินดีต้อนรับ Part-Time ใหม่</div><h1 class="h" style="margin: 4px 0 0; font-size: 26px; color: #d4af37">ชำระเงินสำเร็จ</h1><p class="mut" style="margin: 4px 0 0; font-size: 13px">ยินดีต้อนรับสู่ Mister Bamrungsuk คุณต้น</p></div>
+      <div style="border-radius: 22px; padding: 22px; border: 1px solid rgba(212,175,55,.55); background: linear-gradient(150deg,#3a2614,#181212 55%,#2a0f15); display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 12px; color: #e3c35c">รหัส Part-Time ของคุณ</span><span style="font-size: 11px; padding: 3px 10px; border-radius: 99px; border: 1px solid #d4af37; color: #d4af37">แพ็กเกจ B</span></div>
+        <div class="h" style="font-size: 36px; letter-spacing: 3px; color: #f6efe4">MB-2610014</div>
+        <div style="font-size: 12px" class="mut">เก็บรหัสนี้ไว้ ใช้เช็กชื่อตอนอบรมและยืนยันตัวตนกับทีมงาน</div>
+        <button onClick="{{copy}}" style="min-height: 44px; border-radius: 12px; border: 1px solid #33272a; background: rgba(14,10,10,.5); color: {{copyFg}}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V4H4v12h4"></path></svg>{{copyLabel}}</button>
+      </div>
+      <button onClick="{{joinLine}}" style="min-height: 52px; border-radius: 14px; border: 0; background: #06c755; color: #fff; font-family: Kanit; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 10px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4C7 4 3 7.2 3 11c0 3.4 3 6.2 7.2 6.9L10 21l3.6-3.1C18 17.4 21 14.5 21 11c0-3.8-4-7-9-7z"></path></svg>{{lineLabel}}</button>
+      <div class="card" style="display: flex; flex-direction: column; gap: 10px">
+        <div class="h" style="font-size: 15px; color: #d4af37">รุ่นอบรมของคุณ · รุ่น 1</div>
+        <sc-for list="{{info}}" as="i" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; font-size: 13px"><span class="mut">{{i.n}}</span><span>{{i.v}}</span></div></sc-for>
+        <a href="TrainingCohort.dc.html" class="ghost" style="display: grid; place-items: center; text-decoration: none">ดูตารางอบรม</a>
+      </div>
+      <div style="font-size: 12px; text-align: center" class="mut">แพ็กเกจ B: การันตี ฿15,000 + อบรม ฿6,000 = ฿21,000 · ค่าการันตีคืนเต็มจำนวนเมื่อครบ 1 ปี หากไม่ทำผิดกฎบริษัท/กฎหมาย และไม่ปฏิเสธลูกค้า</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { copied: false, line: false }; }
+  renderVals() {
+    const s = this.state;
+    return {
+      copy: () => this.setState({ copied: true }), copyLabel: s.copied ? 'คัดลอกแล้ว' : 'คัดลอกรหัส', copyFg: s.copied ? '#7fd6a3' : '#e3c35c',
+      joinLine: () => this.setState({ line: true }), lineLabel: s.line ? 'เปิด LINE แล้ว · กลุ่ม MB รุ่น 1' : 'เข้ากลุ่ม LINE รุ่นอบรม',
+      info: [['วันอบรม', '15–16 พ.ย. 2569 (2 วัน)'], ['สถานที่', 'MB Studio ทองหล่อ ซ.10'], ['จำนวนรอบ', '5 รอบ · เช็กชื่อทุกรอบ'], ['เปิดให้บริการ', '30 พ.ย. 2569']].map(([n, v]) => ({ n, v }))
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>สมาชิกและแพ็กเกจ</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; position: relative; overflow: hidden; display: flex; flex-direction: column">
+  <div style="display: flex; align-items: center; gap: 12px; padding: 14px 18px 6px"><a href="Main.dc.html" aria-label="ย้อนกลับ" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid #33272a; display: grid; place-items: center; color: #f6efe4; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"></path></svg></a><div style="font-family: Kanit; font-weight: 600; font-size: 18px">สมาชิก &amp; แพ็กเกจ</div></div>
+  <div style="flex: 1; overflow-y: auto; padding: 8px 18px 200px; display: flex; flex-direction: column; gap: 14px">
+    <div style="padding: 18px; border-radius: 20px; background: linear-gradient(135deg, #2b1f12 0%, #181212 60%); border: 1px solid rgba(212,175,55,.5); position: relative; overflow: hidden">
+      <div style="font-size: 10.5px; letter-spacing: 3px; color: #d4af37; font-weight: 600">สมาชิก MB</div>
+      <div style="font-family: Kanit; font-weight: 700; font-size: 22px; margin-top: 6px">{{cardTitle}}</div>
+      <div style="font-size: 12.5px; color: #ab9d94; margin-top: 4px">{{cardSub}}</div>
+      <div style="position: absolute; right: -20px; top: -20px; width: 120px; height: 120px; border-radius: 50%; border: 1px solid rgba(212,175,55,.25)"></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <sc-for list="{{plans}}" as="p" hint-placeholder-count="3">
+        <button onClick="{{p.pick}}" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px; border-radius: 16px; border: 1.5px solid {{p.border}}; background: {{p.bg}}; color: #f6efe4; text-align: left">
+          <span style="display: flex; align-items: center; gap: 12px"><span style="width: 18px; height: 18px; border-radius: 50%; border: 2px solid {{p.ring}}; background: {{p.dot}}"></span><span><span style="display: block; font-weight: 600; font-size: 14.5px">{{p.label}}</span><span style="display: block; font-size: 11.5px; color: #ab9d94">{{p.note}}</span></span></span>
+          <span style="font-family: Kanit; font-weight: 700; font-size: 18px; color: #e3c35c">{{p.price}}</span>
+        </button>
+      </sc-for>
+    </div>
+    <div style="font-size: 11.5px; color: #7d6d6a">ค่าแรกเข้า ฿990 จ่ายครั้งเดียว · ราคาอาจปรับก่อนเปิดตัว</div>
+    <button onClick="{{toggleGift}}" style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; border: 1px solid #33272a; background: #181212; color: #f6efe4; font-size: 14px; text-align: left"><span style="width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid #d4af37; background: {{giftBg}}; color: #1a1206; display: grid; place-items: center; font-weight: 700; font-size: 12px">{{giftMark}}</span>ซื้อเป็นของขวัญให้เพื่อน <span style="color: #7d6d6a; font-size: 12px">(ผู้รับได้นัดเพื่อนพรีเมียม)</span></button>
+    <sc-if value="{{gift}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 16px; border: 1px solid rgba(212,175,55,.4); background: #181212">
+        <label style="display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: #ab9d94">ชื่อผู้รับ<button type="button" onClick="{{gname.tap}}" aria-label="ชื่อผู้รับ · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;height: 44px; border-radius: 12px; border: 1px solid #33272a; background: #130e0e; padding: 0 12px; font-size: 14px; color:{{gname.color}}">{{gname.text}}</button></label>
+        <label style="display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: #ab9d94">อีเมลหรือเบอร์ผู้รับ<button type="button" onClick="{{gto.tap}}" aria-label="อีเมลหรือเบอร์ · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;height: 44px; border-radius: 12px; border: 1px solid #33272a; background: #130e0e; padding: 0 12px; font-size: 14px; color:{{gto.color}}">{{gto.text}}</button></label>
+        <label style="display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: #ab9d94">ข้อความ<button type="button" onClick="{{gmsg.tap}}" aria-label="ข้อความถึงผู้รับ · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;height: 44px; border-radius: 12px; border: 1px solid #33272a; background: #130e0e; padding: 0 12px; font-size: 14px; color:{{gmsg.color}}">{{gmsg.text}}</button></label>
+      </div>
+    </sc-if>
+    <sc-if value="{{bought}}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 14px; border-radius: 16px; border: 1px solid rgba(74,222,128,.5); background: rgba(74,222,128,.08); font-size: 13px; line-height: 1.6"><span style="color: #bbf7d0; font-weight: 600">{{boughtTitle}}</span><br><span style="color: #d3c7bc">{{boughtSub}}</span></div>
+    </sc-if>
+  </div>
+  <div style="position: absolute; left: 0; right: 0; bottom: 76px; padding: 12px 18px 12px; background: rgba(14,10,10,.97); border-top: 1px solid #33272a; display: flex; align-items: center; justify-content: space-between">
+    <div><div style="font-size: 11px; color: #ab9d94">แพ็กเกจ + ค่าแรกเข้า · จ่ายผ่าน QR</div><div style="font-family: Kanit; font-weight: 700; font-size: 22px; color: #e3c35c">{{total}}</div></div>
+    <button onClick="{{buy}}" style="height: 52px; padding: 0 24px; border-radius: 999px; border: 1px solid rgba(212,175,55,.45); background: linear-gradient(180deg, #c21d33, #8f1424); color: #fff; font-weight: 600">{{buyLabel}}</button>
+  </div>
+  <a href="N06-SOS.dc.html" aria-label="SOS ฉุกเฉิน" style="position: absolute; right: 16px; bottom: 176px; z-index: 39; height: 40px; padding: 0 14px 0 8px; border-radius: 999px; background: #181212; border: 1px solid rgba(201,40,61,.6); color: #ef8a97; font-weight: 700; font-size: 13px; text-decoration: none; display: flex; align-items: center; gap: 6px; box-shadow: 0 8px 24px rgba(0,0,0,.5)"><span style="width: 24px; height: 24px; border-radius: 50%; background: #b0182c; display: grid; place-items: center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3z"></path></svg></span>SOS</a>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; border-top: 1px solid #33272a; background: rgba(14,10,10,.97); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; text-align: center; font-size: 10.5px; color: #7d6d6a; z-index: 40">
+    <a href="Main.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>หน้าแรก</a>
+    <a href="S05-Map.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>ใกล้ฉัน</a>
+    <div><a href="S06-QuickCall.dc.html" aria-label="เรียกด่วน" style="width: 50px; height: 50px; margin: 0 auto; border-radius: 16px; background: linear-gradient(180deg, #c21d33, #8f1424); display: grid; place-items: center; color: #fff"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7z"></path></svg></a></div>
+    <a href="S07-Chats.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a8 8 0 0 1-12 7l-5 1 1-4a8 8 0 1 1 16-4z"></path></svg>แชท</a>
+    <a href="S13-Account.dc.html" style="color: #d4af37; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px" aria-current="page"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg>บัญชี</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { plan: 'p10', gift: false, bought: false }; }
+  _baseVals() {
+    const s = this.state; const gold = '#d4af37';
+    const P = { monthly: ['สมาชิกรายเดือน', 'ต่ออายุทุกเดือน · เข้าถึงเพื่อนพรีเมียม', 390], p5: ['แพ็กเกจ 5 ครั้ง', 'ใช้ได้ 12 เดือน · ครั้งละ ฿900', 4500], p10: ['แพ็กเกจ 10 ครั้ง', 'ใช้ได้ 12 เดือน · ครั้งละ ฿850', 8500] };
+    const cur = P[s.plan];
+    const total = cur[2] + 990;
+    return {
+      cardTitle: s.bought && !s.gift ? cur[0] + ' · ใช้งานอยู่' : 'ยังไม่ได้เป็นสมาชิก',
+      cardSub: s.bought && !s.gift ? (s.plan === 'monthly' ? 'ต่ออายุอัตโนมัติ 6 พ.ย. 2569' : 'เหลือ ' + (s.plan === 'p5' ? 5 : 10) + ' ครั้ง · หมดอายุ 6 ต.ค. 2570') : 'สมัครแล้วนัดเพื่อนพรีเมียมได้ พร้อมราคาพิเศษ',
+      plans: Object.keys(P).map((k) => { const on = s.plan === k; return { label: P[k][0], note: P[k][1], price: '฿' + P[k][2].toLocaleString('en-US'), border: on ? gold : '#33272a', bg: on ? 'rgba(212,175,55,.08)' : '#181212', ring: on ? gold : '#4a3a3d', dot: on ? gold : 'transparent', pick: () => this.setState({ plan: k, bought: false }) }; }),
+      gift: s.gift, toggleGift: () => this.setState({ gift: !s.gift, bought: false }), giftBg: s.gift ? gold : 'transparent', giftMark: s.gift ? '✓' : '',
+      total: '฿' + total.toLocaleString('en-US'),
+      buyLabel: s.gift ? 'ส่งของขวัญ' : 'สมัครเลย',
+      buy: () => this.setState({ bought: true }), bought: s.bought,
+      boughtTitle: s.gift ? 'ส่งของขวัญแล้ว · โค้ด GIFT-7KQ2MB' : 'เปิดใช้งานสมาชิกแล้ว',
+      boughtSub: s.gift ? 'ผู้รับใช้โค้ดได้ที่ สมาชิก › รับของขวัญ' : 'เพื่อนพรีเมียมรอคุณอยู่ที่หน้าแรกแล้ว'
+    };
+  }
+
+  _fields() { return {"gname":{"v":["คุณแพรว","คุณมิ้นท์",""],"ph":"ชื่อผู้รับ","on":"#f6efe4","mask":false},"gto":{"v":["praew@email.com","081-234-5678",""],"ph":"อีเมลหรือเบอร์","on":"#f6efe4","mask":false},"gmsg":{"v":["สุขสันต์วันเกิดนะ พักผ่อนบ้าง","ขอบคุณที่อยู่ข้างกันเสมอ",""],"ph":"ข้อความถึงผู้รับ","on":"#f6efe4","mask":false}}; }
+  fv(k) { const F = this._fields()[k]; const fx = (this.state && this.state.fx) || {}; const v = F.v[(fx[k] || 0) % F.v.length]; return v.indexOf('HOLE:') === 0 ? String((this._hole || {})[v.slice(5)] || '') : v; }
+  renderVals() {
+    const r = this._baseVals(); this._hole = r; const fx = (this.state && this.state.fx) || {}; const F = this._fields();
+    Object.keys(F).forEach((k) => {
+      const v = this.fv(k), c = F[k];
+      const o = { text: v ? (c.mask ? '\u2022'.repeat(v.length) : v) : c.ph, color: v ? c.on : '#7d6d6a', tap: () => this.setState({ fx: Object.assign({}, fx, { [k]: ((fx[k] || 0) + 1) % c.v.length }) }) };
+      for (let i = 0; i < 6; i++) o['d' + i] = v[i] || '\u2013';
+      r[k] = o;
+    });
+    return r;
+  }
+}
+</script>
+</body>
+</html>

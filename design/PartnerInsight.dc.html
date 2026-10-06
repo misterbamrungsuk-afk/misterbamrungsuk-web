@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>รายงานพาร์ทเนอร์</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+.h{font-family:Kanit;font-weight:600}
+.card{padding:14px;border-radius:16px;background:#181212;border:1px solid #33272a}
+.in{height:48px;border-radius:12px;border:1px solid #33272a;background:#21191a;color:#f6efe4;padding:0 14px;font-size:14px;box-sizing:border-box;width:100%;display:flex;align-items:center}
+.cta{height:52px;border-radius:14px;border:1px solid rgba(212,175,55,.45);background:linear-gradient(180deg,#c21d33,#8f1424);color:#fff;font-size:15px;font-weight:600;width:100%;font-family:Kanit}
+.ghost{height:48px;border-radius:14px;border:1px solid #33272a;background:#181212;color:#e3c35c;font-size:14px;font-weight:600;width:100%}
+.lbl{font-size:12px;color:#ab9d94;margin:0 0 6px}
+.mut{color:#ab9d94}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; position: relative; overflow: hidden">
+  <div style="height: 768px; overflow-y: auto; box-sizing: border-box; padding-bottom: 24px">
+<div style="padding: 12px 14px 0; display: flex; align-items: center; gap: 8px">
+      <a href="PartnerHome.dc.html" aria-label="ย้อนกลับ" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid #33272a; background: #181212; color: #e3c35c; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"></path></svg></a>
+      <div class="h" style="font-size: 17px; color: #d4af37">รายงานประจำเดือน</div>
+    </div>
+    <div style="padding: 12px 18px 0; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; justify-content: space-between" class="card">
+        <button onClick="{{prev}}" aria-label="เดือนก่อน" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #33272a; background: #21191a; color: #e3c35c; display: grid; place-items: center; opacity: {{prevOp}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 5-7 7 7 7"></path></svg></button>
+        <span class="h" style="font-size: 17px; color: #e3c35c">{{month}}</span>
+        <button onClick="{{next}}" aria-label="เดือนถัดไป" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #33272a; background: #21191a; color: #e3c35c; display: grid; place-items: center; opacity: {{nextOp}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 5 7 7-7 7"></path></svg></button>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px">
+        <sc-for list="{{kpis}}" as="k" hint-placeholder-count="3"><button onClick="{{k.pick}}" style="padding: 12px 10px; border-radius: 14px; background: #181212; border: 1px solid {{k.bd}}; color: #f6efe4; text-align: left; min-height: 44px"><div style="font-size: 11.5px; color: #ab9d94">{{k.label}}</div><div class="h" style="font-size: 20px; color: #d4af37">{{k.value}}</div><div style="font-size: 11px; color: {{k.dc}}">{{k.delta}}</div></button></sc-for>
+      </div>
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px"><span>{{metricLabel}} รายสัปดาห์</span><span class="mut">สูงสุด {{maxLabel}}</span></div>
+        <svg width="100%" height="170" viewBox="0 0 320 170" role="img" aria-label="กราฟแท่งรายสัปดาห์">
+          <line x1="0" y1="140" x2="320" y2="140" stroke="#33272a"></line>
+          <line x1="0" y1="80" x2="320" y2="80" stroke="#21191a" stroke-dasharray="3 4"></line>
+          <line x1="0" y1="20" x2="320" y2="20" stroke="#21191a" stroke-dasharray="3 4"></line>
+          <sc-for list="{{bars}}" as="b" hint-placeholder-count="4"><rect x="{{b.x}}" y="{{b.y}}" width="44" height="{{b.h}}" rx="6" fill="#d4af37"></rect><text x="{{b.tx}}" y="{{b.ly}}" text-anchor="middle" font-size="11" fill="#e3c35c" font-family="Kanit">{{b.v}}</text><text x="{{b.tx}}" y="160" text-anchor="middle" font-size="11" fill="#ab9d94">{{b.w}}</text></sc-for>
+        </svg>
+      </div>
+      <div class="card" style="display: flex; flex-direction: column; gap: 8px; font-size: 13px">
+        <div class="h" style="font-size: 15px; color: #d4af37">สรุป</div>
+        <sc-for list="{{notes}}" as="n" hint-placeholder-count="5"><div style="display: flex; justify-content: space-between"><span class="mut">{{n.n}}</span><span>{{n.v}}</span></div></sc-for>
+      </div>
+      <a href="PartnerReviews.dc.html" class="card" style="text-decoration: none; color: #f6efe4; display: flex; align-items: center; justify-content: space-between; min-height: 44px"><span style="font-size: 14px; font-weight: 600">รีวิวลูกค้า · ★ 4.8</span><span style="font-size: 12.5px; color: #e3c35c">ดูทั้งหมด ›</span></a>
+    </div>
+  </div>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; border-top: 1px solid #33272a; background: rgba(14,10,10,.97); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; text-align: center; font-size: 10.5px; color: #7d6d6a">
+    <a href="PartnerHome.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>หน้าหลัก</a>
+    <a href="PartnerBookings.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16"></path></svg>การจอง</a>
+    <a href="PartnerListing.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h16l-1-5H5z"></path><path d="M5 9v11h14V9"></path><path d="M10 20v-6h4v6"></path></svg>หน้าร้าน</a>
+    <a href="PartnerInsight.dc.html" aria-current="page" style="color: #d4af37; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>รายงาน</a>
+    <a href="PartnerPackage.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7v10l8 4 8-4V7z"></path><path d="M4 7l8 4 8-4M12 11v10"></path></svg>แพ็กเกจ</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { m: 2, metric: 0 }; }
+  renderVals() {
+    const s = this.state;
+    const M = ['สิงหาคม 2569', 'กันยายน 2569', 'ตุลาคม 2569'];
+    const D = [
+      [[820, 1104, 960, 1290], [96, 132, 118, 150], [24, 31, 28, 35]],
+      [[1120, 1380, 1250, 1460], [140, 171, 150, 188], [30, 38, 33, 41]],
+      [[1310, 1520, 1480, 1620], [168, 190, 182, 205], [34, 40, 37, 45]]
+    ][s.m];
+    const L = ['ยอดเข้าชม', 'คลิกจอง', 'การจอง'];
+    const tot = D.map((a) => a.reduce((x, y) => x + y, 0));
+    const prev = s.m > 0 ? [[820, 1104, 960, 1290], [96, 132, 118, 150], [24, 31, 28, 35], [1120, 1380, 1250, 1460], [140, 171, 150, 188], [30, 38, 33, 41]].slice((s.m - 1) * 3, s.m * 3).map((a) => a.reduce((x, y) => x + y, 0)) : null;
+    const arr = D[s.metric]; const max = Math.max(...arr);
+    return {
+      month: M[s.m], prev: () => this.setState({ m: Math.max(0, s.m - 1) }), next: () => this.setState({ m: Math.min(2, s.m + 1) }),
+      prevOp: s.m === 0 ? '.35' : '1', nextOp: s.m === 2 ? '.35' : '1',
+      kpis: L.map((label, i) => ({ label, value: tot[i].toLocaleString('en-US'), delta: prev ? ('+' + Math.round((tot[i] / prev[i] - 1) * 100) + '%') : 'เดือนแรก', dc: prev ? '#7fd6a3' : '#ab9d94', bd: s.metric === i ? '#d4af37' : '#33272a', pick: () => this.setState({ metric: i }) })),
+      metricLabel: L[s.metric], maxLabel: max.toLocaleString('en-US'),
+      bars: arr.map((v, i) => { const h = Math.round(v / max * 110); return { x: 20 + i * 80, y: 140 - h, h, tx: 42 + i * 80, ly: 134 - h, v: v.toLocaleString('en-US'), w: 'สัปดาห์ ' + (i + 1) }; }),
+      notes: [['อัตราคลิก/เข้าชม', (tot[1] / tot[0] * 100).toFixed(1) + '%'], ['อัตราจอง/คลิก', (tot[2] / tot[1] * 100).toFixed(1) + '%'], ['ยอดขายบริการ (ราคาฐานสปา)', '฿' + (tot[2] * 950).toLocaleString('en-US')], ['แพลตฟอร์มหักต่อการจอง', '[รอกำหนด]%'], ['คลิปโปรโมท IG & FB มาดามกอ', '1 คลิป / แพ็กเกจ']].map(([n, v]) => ({ n, v }))
+    };
+  }
+}
+</script>
+</body>
+</html>

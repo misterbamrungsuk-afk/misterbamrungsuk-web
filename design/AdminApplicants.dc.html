@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>แอดมิน ผู้สมัคร</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 1280px; height: 820px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; display: flex; overflow: hidden">
+  <nav aria-label="เมนูแอดมิน" style="width: 232px; flex: 0 0 232px; border-right: 1px solid #33272a; padding: 18px 14px; display: flex; flex-direction: column; gap: 2px; font-size: 13px; box-sizing: border-box; font-family: 'IBM Plex Sans Thai', sans-serif; background: #0e0a0a">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px"><div style="width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid #d4af37; display: grid; place-items: center; font-family: Kanit; font-weight: 700; font-size: 12px; color: #d4af37">MB</div><div style="line-height: 1.1"><div style="font-family: Kanit; font-weight: 600; color: #f6efe4">Bamrungsuk</div><div style="font-size: 11px; color: #7d6d6a">Admin · super</div></div></div>
+    <a href="AdminDashboard.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ภาพรวม / รายได้</a>
+    <a href="AdminBookings.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">การจอง / งาน</a>
+    <a href="B2-Orders.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ตรวจงาน</a>
+    <a href="AdminApplicants.dc.html" aria-current="page" style="padding: 6px 12px; border-radius: 10px; background: rgba(176,24,44,.2); border: 1px solid rgba(201,40,61,.55); color: #f6efe4; text-decoration: none">ผู้สมัคร</a>
+    <a href="B1-KYC.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">คิว KYC</a>
+    <a href="AdminCohorts.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">รุ่นอบรม / เช็กชื่อ</a>
+    <a href="AdminParttimers.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">Part-Time ที่ใช้งาน</a>
+    <a href="B3-Payouts.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">โอนให้ Part-Time</a>
+    <a href="AdminPartners.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">พาร์ทเนอร์สปา</a>
+    <a href="AdminSpaPricing.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ราคาสปาพาร์ทเนอร์</a>
+    <a href="AdminPricing.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ตั้งค่าราคา</a>
+    <a href="B6-Members.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">สมาชิก · ใบเตือน</a>
+    <a href="B4-Reports.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">รายงาน</a>
+    <a href="B5-CS.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">เรื่องร้องเรียน</a>
+    <a href="B7-Promos.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">โปรโมชัน</a>
+    <a href="B8-Audit.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">บันทึกระบบ · SOS</a>
+    <div style="height: 1px; background: #33272a; margin: 6px 0"></div>
+    <a href="E2-AdminSettings.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ตั้งค่าระบบ</a>
+    <a href="E1-AdminLogin.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">แอดมินและสิทธิ์</a>
+    <a href="Main.dc.html" style="margin-top: auto; padding: 6px 12px; color: #e3c35c; text-decoration: none">← สารบัญทุกหน้า</a>
+  </nav>
+  <main style="flex: 1; padding: 22px 24px; display: flex; gap: 16px; min-width: 0">
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end">
+        <div><div style="font-size: 11px; letter-spacing: 2.5px; color: #d4af37; font-weight: 600">APPLICANTS · PAID</div><h1 style="margin: 2px 0 0; font-family: Kanit; font-weight: 700; font-size: 24px">ผู้สมัครที่ชำระแล้ว</h1></div>
+        <button style="height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid #33272a; background: transparent; color: #d3c7bc">ส่งออกไฟล์ Excel / CSV</button>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+        <div style="padding: 14px; border-radius: 16px; border: 1px solid #33272a; background: #181212"><div style="font-size: 12px; color: #ab9d94">ชำระแล้ว / โควตา</div><div style="font-family: Kanit; font-weight: 700; font-size: 26px; color: #e3c35c">12 <span style="font-size: 14px; color: #ab9d94">/ 50</span></div></div>
+        <div style="padding: 14px; border-radius: 16px; border: 1px solid #33272a; background: #181212"><div style="font-size: 12px; color: #ab9d94">แยกแพ็กเกจ</div><div style="font-family: Kanit; font-weight: 700; font-size: 26px">A 8 · B 4</div></div>
+        <div style="padding: 14px; border-radius: 16px; border: 1px solid rgba(212,175,55,.45); background: #181212"><div style="font-size: 12px; color: #ab9d94">ยังไม่เข้ากลุ่ม LINE</div><div style="font-family: Kanit; font-weight: 700; font-size: 26px; color: #eed58a">{{notLine}}</div></div>
+        <div style="padding: 14px; border-radius: 16px; border: 1px solid rgba(201,40,61,.5); background: rgba(176,24,44,.1)"><div style="font-size: 12px; color: #ab9d94">ยอดรวม (A 8×฿13,000 + B 4×฿21,000)</div><div style="font-family: Kanit; font-weight: 700; font-size: 26px">฿188,000</div></div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px">
+        <sc-for list="{{cohorts}}" as="c" hint-placeholder-count="4">
+          <button onClick="{{c.pick}}" style="padding: 12px; border-radius: 14px; border: 1.5px solid {{c.border}}; background: #181212; color: #f6efe4; text-align: left; display: flex; flex-direction: column; gap: 6px">
+            <span style="display: flex; justify-content: space-between; font-size: 13px"><span style="font-weight: 600">{{c.name}}</span><span style="color: #ab9d94">{{c.count}}</span></span>
+            <span style="font-size: 11.5px; color: #ab9d94">{{c.date}}</span>
+            <span style="height: 6px; border-radius: 3px; background: #33272a; display: block"><span style="display: block; height: 6px; border-radius: 3px; background: #d4af37; width: {{c.pct}}"></span></span>
+          </button>
+        </sc-for>
+      </div>
+      <div style="border-radius: 16px; border: 1px solid #33272a; overflow: hidden; font-size: 13px">
+        <div style="display: grid; grid-template-columns: 110px minmax(0, 1.4fr) 100px 90px 120px 100px; padding: 10px 14px; background: #130e0e; color: #7d6d6a; font-size: 12px"><span>รหัส MB</span><span>ชื่อ</span><span>แพ็กเกจ</span><span>รุ่น</span><span>กลุ่ม LINE</span><span>ตรวจประวัติ</span></div>
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+          <button onClick="{{r.pick}}" style="width: 100%; display: grid; grid-template-columns: 110px minmax(0, 1.4fr) 100px 90px 120px 100px; padding: 11px 14px; border: none; border-top: 1px solid #33272a; background: {{r.bg}}; color: #f6efe4; text-align: left; font-size: 13px; align-items: center">
+            <span style="color: #e3c35c">{{r.mb}}</span><span>{{r.name}}</span><span style="color: #d3c7bc">{{r.pkg}}</span><span style="color: #d3c7bc">{{r.cohort}}</span><span style="color: {{r.lineColor}}">{{r.lineLabel}}</span><span style="color: {{r.checkColor}}">{{r.check}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+    <aside style="width: 300px; padding: 18px; border-radius: 18px; border: 1px solid rgba(212,175,55,.45); background: #181212; display: flex; flex-direction: column; gap: 10px; font-size: 13px; box-sizing: border-box">
+      <div style="display: flex; gap: 12px; align-items: center"><img src="{{sel.img}}" alt="" style="width: 56px; height: 56px; border-radius: 14px; object-fit: cover"><div><div style="font-family: Kanit; font-weight: 600; font-size: 17px">{{sel.name}}</div><div style="color: #e3c35c; font-size: 12px">{{sel.mb}} · {{sel.pkg}}</div></div></div>
+      <div style="display: flex; justify-content: space-between"><span style="color: #ab9d94">อายุ · ส่วนสูง</span><span>{{sel.age}}</span></div>
+      <div style="display: flex; justify-content: space-between"><span style="color: #ab9d94">กิจกรรม</span><span style="text-align: right">{{sel.acts}}</span></div>
+      <div style="display: flex; justify-content: space-between"><span style="color: #ab9d94">เวลาว่าง</span><span>{{sel.avail}}</span></div>
+      <div style="display: flex; justify-content: space-between"><span style="color: #ab9d94">ยอดชำระ</span><span>{{sel.paid}}</span></div>
+      <div style="height: 1px; background: #33272a"></div>
+      <div style="color: #ab9d94; font-size: 12px">จัดรุ่นอบรม</div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px"><sc-for list="{{assign}}" as="a" hint-placeholder-count="3"><button onClick="{{a.pick}}" style="height: 38px; border-radius: 10px; border: 1px solid {{a.border}}; background: {{a.bg}}; color: {{a.fg}}; font-size: 12.5px; font-weight: 600">{{a.label}}</button></sc-for></div>
+      <button onClick="{{toggleLine}}" style="display: flex; justify-content: space-between; align-items: center; height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid #33272a; background: #130e0e; color: #f6efe4; font-size: 13px">เข้ากลุ่ม LINE แล้ว<span style="width: 42px; height: 24px; border-radius: 999px; background: {{lineTrack}}; position: relative"><span style="position: absolute; top: 3px; left: {{lineKnob}}; width: 18px; height: 18px; border-radius: 50%; background: #fff"></span></span></button>
+      <button style="margin-top: auto; height: 46px; border-radius: 999px; border: none; background: #06c755; color: #fff; font-weight: 600">คัดลอกลิงก์กลุ่ม LINE</button>
+      <button style="height: 44px; border-radius: 999px; border: 1px solid #33272a; background: transparent; color: #d3c7bc">ดูสลิปและเอกสาร</button>
+    </aside>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":820}}'>
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    this.state = { filter: 'all', sel: 0, rows: [
+      { mb: 'MB-2610001', name: 'ธนภัทร ใจดี', pkg: 'B · ฿15,000 + ฿6,000', cohort: 'รุ่น 1', line: true, check: 'ผ่าน', img: '/_blob/f34ad19eab9288d994c2271a15964ceb', age: '29 ปี · 178 ซม.', acts: 'กิน & เที่ยว · คาเฟ่', avail: 'บ่าย–ดึก · 5 วัน', paid: '฿21,000' },
+      { mb: 'MB-2610003', name: 'ศุภชัย มณีรัตน์', pkg: 'A · ฿10,000 + ฿3,000', cohort: 'รุ่น 1', line: false, check: 'รอตรวจ', img: '/_blob/82a15fdc40050c0a074e7e4b5b66e794', age: '33 ปี · 181 ซม.', acts: 'ช่างภาพ · คาเฟ่', avail: 'เย็น · 4 วัน', paid: '฿13,000' },
+      { mb: 'MB-2610004', name: 'ภูมิพัฒน์ วงศ์ทอง', pkg: 'A · ฿10,000 + ฿3,000', cohort: 'รุ่น 1', line: true, check: 'ผ่าน', img: '/_blob/8725f65bf80d613b2a9537700bf2f9bb', age: '31 ปี · 176 ซม.', acts: 'ออกกำลัง · กิน & เที่ยว', avail: 'เช้า–บ่าย · 6 วัน', paid: '฿13,000' },
+      { mb: 'MB-2610005', name: 'กิตติ ศรีสุข', pkg: 'B · ฿15,000 + ฿6,000', cohort: 'รุ่น 2', line: false, check: 'รอตรวจ', img: '/_blob/ec33c74147cab066783e7acae85c8875', age: '26 ปี · 175 ซม.', acts: 'ดูหนัง · นั่งชิล', avail: 'ดึก · 3 วัน', paid: '฿21,000' },
+      { mb: 'MB-2610006', name: 'ปัณณวัฒน์ แก้วกล้า', pkg: 'A · ฿10,000 + ฿3,000', cohort: 'รุ่น 1', line: true, check: 'ผ่าน', img: '/_blob/d26354f23535577e2504751c4197ea79', age: '28 ปี · 180 ซม.', acts: 'กิน & เที่ยว · วิดีโอคอล', avail: 'บ่าย · 5 วัน', paid: '฿13,000' },
+      { mb: 'MB-2610008', name: 'อนาวิล ตั้งใจ', pkg: 'A · ฿10,000 + ฿3,000', cohort: 'รุ่น 2', line: false, check: 'รอตรวจ', img: '/_blob/551eb82924983c941f1fe44ede9bceca', age: '30 ปี · 177 ซม.', acts: 'คาเฟ่ · ดูหนัง', avail: 'เย็น–ดึก · 4 วัน', paid: '฿13,000' }
+    ] };
+  }
+  renderVals() {
+    const s = this.state; const gold = '#d4af37';
+    const C = [['all', 'ทั้งหมด', 'ผู้สมัครทุกรุ่น', 50], ['รุ่น 1', 'รุ่น 1', 'อบรมแล้ว 15–16 พ.ย. 2569', 25], ['รุ่น 2', 'รุ่น 2', '21–22 ก.พ. 2570', 25], ['—', 'ยังไม่จัดรุ่น', 'รอมอบหมาย', 50]];
+    const visible = s.rows.map((r, i) => ({ r, i })).filter(({ r }) => s.filter === 'all' || r.cohort === s.filter);
+    const setRow = (i, patch) => { const rows = s.rows.slice(); rows[i] = { ...rows[i], ...patch }; this.setState({ rows }); };
+    const sel = s.rows[s.sel];
+    return {
+      notLine: s.rows.filter((r) => !r.line).length,
+      cohorts: C.map(([id, name, date, cap]) => { const n = id === 'all' ? s.rows.length : s.rows.filter((r) => r.cohort === id).length; return { name, date, count: n + '/' + cap, pct: Math.round((n / cap) * 100) + '%', border: s.filter === id ? gold : '#33272a', pick: () => this.setState({ filter: id }) }; }),
+      rows: visible.map(({ r, i }) => ({ ...r, bg: i === s.sel ? 'rgba(212,175,55,.08)' : 'transparent', lineLabel: r.line ? '✓ เข้ากลุ่มแล้ว' : 'ยังไม่เข้า', lineColor: r.line ? '#4ade80' : '#eed58a', checkColor: r.check === 'ผ่าน' ? '#4ade80' : '#ab9d94', pick: () => this.setState({ sel: i }) })),
+      sel,
+      assign: ['รุ่น 1', 'รุ่น 2', 'รุ่น 3'].map((c) => ({ label: c, bg: sel.cohort === c ? gold : 'transparent', fg: sel.cohort === c ? '#1a1206' : '#d3c7bc', border: sel.cohort === c ? gold : '#33272a', pick: () => setRow(s.sel, { cohort: c }) })),
+      toggleLine: () => setRow(s.sel, { line: !sel.line }), lineTrack: sel.line ? '#06c755' : '#33272a', lineKnob: sel.line ? '21px' : '3px'
+    };
+  }
+}
+</script>
+</body>
+</html>

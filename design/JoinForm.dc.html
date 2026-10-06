@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>ใบสมัคร Part-Time</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+button:disabled{cursor:not-allowed}
+input,select{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; position: relative; overflow: hidden; display: flex; flex-direction: column">
+  <div style="display: flex; align-items: center; gap: 12px; padding: 14px 18px 8px">
+    <button onClick="{{back}}" aria-label="ย้อนกลับ" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid #33272a; background: transparent; color: #f6efe4; display: grid; place-items: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"></path></svg></button>
+    <div><div style="font-size: 10.5px; letter-spacing: 2.5px; color: #d4af37; font-weight: 600">{{stepLabel}}</div><div style="font-family: Kanit; font-weight: 600; font-size: 18px">{{stepTitle}}</div></div>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding: 0 18px">
+    <sc-for list="{{bars}}" as="b" hint-placeholder-count="4"><span style="height: 4px; border-radius: 2px; background: {{b.c}}"></span></sc-for>
+  </div>
+  <div style="flex: 1; overflow-y: auto; padding: 16px 18px 110px; display: flex; flex-direction: column; gap: 12px">
+    <sc-if value="{{s1}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+          <label style="display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: #ab9d94">ชื่อ<button type="button" onClick="{{first.tap}}" aria-label="ชื่อจริง · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;height: 46px; border-radius: 12px; border: 1px solid #33272a; background: #181212; padding: 0 12px; font-size: 14px; color:{{first.color}}">{{first.text}}</button></label>
+          <label style="display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: #ab9d94">นามสกุล<button type="button" onClick="{{last.tap}}" aria-label="นามสกุล · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;height: 46px; border-radius: 12px; border: 1px solid #33272a; background: #181212; padding: 0 12px; font-size: 14px; color:{{last.color}}">{{last.text}}</button></label>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+          <label style="display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: #ab9d94">ชื่อเล่น<button type="button" onClick="{{nick.tap}}" aria-label="ชื่อเล่น · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;height: 46px; border-radius: 12px; border: 1px solid #33272a; background: #181212; padding: 0 12px; font-size: 14px; color:{{nick.color}}">{{nick.text}}</button></label>
+          <label style="display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: #ab9d94">วันเกิด ({{ageLabel}})<button type="button" onClick="{{dob.tap}}" aria-label="วว/ดด/ปปปป · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;height: 46px; border-radius: 12px; border: 1px solid #33272a; background: #181212; padding: 0 12px; font-size: 14px; color:{{dob.color}}">{{dob.text}}</button></label>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+          <label style="display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: #ab9d94">ส่วนสูง (ซม.)<button type="button" onClick="{{h.tap}}" aria-label="h · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;height: 46px; border-radius: 12px; border: 1px solid #33272a; background: #181212; padding: 0 12px; font-size: 14px; color:{{h.color}}">{{h.text}}</button></label>
+          <label style="display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: #ab9d94">น้ำหนัก (กก.)<button type="button" onClick="{{w.tap}}" aria-label="w · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;height: 46px; border-radius: 12px; border: 1px solid #33272a; background: #181212; padding: 0 12px; font-size: 14px; color:{{w.color}}">{{w.text}}</button></label>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: #ab9d94"><span>เบอร์โทร (ยืนยันด้วย OTP)</span>
+          <div style="display: flex; gap: 8px"><button type="button" onClick="{{tel.tap}}" aria-label="เบอร์โทร · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;flex: 1; min-width: 0; height: 46px; border-radius: 12px; border: 1px solid #33272a; background: #181212; padding: 0 12px; font-size: 14px; color:{{tel.color}}">{{tel.text}}</button><button onClick="{{sendOtp}}" disabled="{{otpSendOff}}" style="height: 46px; padding: 0 14px; border-radius: 12px; border: 1px solid {{otpBtnBorder}}; background: transparent; color: {{otpBtnFg}}; font-size: 13px; font-weight: 600; opacity: {{otpBtnOp}}">{{otpBtnLabel}}</button></div><sc-if value="{{telHint}}" hint-placeholder-val="{{ true }}"><span style="font-size:11px;color:#7d6d6a">แตะช่องเบอร์เพื่อกรอกตัวอย่าง แล้วกดส่งรหัส</span></sc-if>
+          <sc-if value="{{otpEntry}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 14px; border: 1px solid #33272a; background: #181212">
+              <div style="font-size: 12px; color: #d3c7bc">กรอกรหัส 6 หลักที่ส่งไปยัง 08x-xxx-4521</div>
+              <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px"><sc-for list="{{otpCells}}" as="c" hint-placeholder-count="6"><span style="height: 42px; border-radius: 10px; border: 1px solid {{c.border}}; display: grid; place-items: center; font-family: Kanit; font-size: 18px; color: #f6efe4">{{c.d}}</span></sc-for></div>
+              <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px"><sc-for list="{{keys}}" as="k" hint-placeholder-count="10"><button onClick="{{k.press}}" style="height: 36px; border-radius: 10px; border: none; background: #21191a; color: #f6efe4; font-size: 15px">{{k.label}}</button></sc-for></div>
+              <div style="display: flex; gap: 8px"><button onClick="{{otpDel}}" style="flex: 1; height: 38px; border-radius: 10px; border: 1px solid #33272a; background: transparent; color: #ab9d94; font-size: 12.5px">ลบ</button><button onClick="{{otpSample}}" style="flex: 2; height: 38px; border-radius: 10px; border: 1px solid #33272a; background: transparent; color: #e3c35c; font-size: 12.5px">กรอกรหัสตัวอย่าง</button><button onClick="{{otpConfirm}}" disabled="{{otpNotFull}}" style="flex: 2; height: 38px; border-radius: 10px; border: none; background: #d4af37; color: #1a1206; font-weight: 600; font-size: 12.5px; opacity: {{otpConfirmOp}}">ยืนยันรหัส</button></div>
+            </div>
+          </sc-if>
+          <sc-if value="{{otpVerified}}" hint-placeholder-val="{{ false }}"><div style="color: #4ade80; font-size: 12.5px; font-weight: 600">ยืนยันแล้ว ✓ เบอร์นี้ผ่านการตรวจสอบ OTP</div></sc-if>
+        </div>
+        <label style="display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: #ab9d94">LINE ID<button type="button" onClick="{{line.tap}}" aria-label="LINE ID · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;height: 46px; border-radius: 12px; border: 1px solid #33272a; background: #181212; padding: 0 12px; font-size: 14px; color:{{line.color}}">{{line.text}}</button></label>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+          <div style="height: 86px; border-radius: 14px; border: 1px dashed #4a3a3d; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 11px; color: #ab9d94; text-align: center">+<br>รูปหน้าตรง</div>
+          <div style="height: 86px; border-radius: 14px; border: 1px dashed #4a3a3d; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 11px; color: #ab9d94; text-align: center">+<br>รูปเต็มตัว</div>
+          <div style="height: 86px; border-radius: 14px; border: 1px dashed #4a3a3d; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 11px; color: #ab9d94; text-align: center">+<br>บัตรประชาชน</div>
+        </div>
+      </div>
+    </sc-if>
+    <sc-if value="{{s2}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <div style="font-family: Kanit; font-weight: 600; font-size: 15px; color: #e3c35c">แพ็กเกจที่สมัคร</div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px">
+          <sc-for list="{{pkgs}}" as="p" hint-placeholder-count="2"><button onClick="{{p.pick}}" style="min-height: 44px; padding: 6px 10px; border-radius: 12px; border: 1px solid {{p.border}}; background: {{p.bg}}; color: {{p.fg}}; font-size: 12.5px; font-weight: 600; text-align: left">{{p.label}}</button></sc-for>
+        </div>
+        <div style="font-family: Kanit; font-weight: 600; font-size: 15px; color: #e3c35c">กิจกรรมที่รับได้</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px">
+          <sc-for list="{{acts}}" as="a" hint-placeholder-count="7"><button onClick="{{a.toggle}}" style="height: 36px; padding: 0 13px; border-radius: 999px; border: 1px solid {{a.border}}; background: {{a.bg}}; color: {{a.fg}}; font-size: 12.5px; font-weight: 600">{{a.label}}</button></sc-for>
+        </div>
+        <div style="padding: 12px; border-radius: 14px; border: 1px solid #33272a; background: #181212; font-size: 13px; display: flex; justify-content: space-between; align-items: center">ใบรับรองการนวด (สำหรับแพ็กเกจ B)<span style="display: flex; gap: 6px"><button onClick="{{certYes}}" style="height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid {{yesBorder}}; background: transparent; color: {{yesFg}}">มี</button><button onClick="{{certNo}}" style="height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid {{noBorder}}; background: transparent; color: {{noFg}}">ไม่มี</button></span></div>
+        <div style="font-family: Kanit; font-weight: 600; font-size: 15px; color: #e3c35c">ช่วงเวลาที่รับลูกค้าได้</div>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+          <sc-for list="{{slots}}" as="t" hint-placeholder-count="4"><button onClick="{{t.toggle}}" style="height: 40px; border-radius: 12px; border: 1px solid {{t.border}}; background: transparent; color: {{t.fg}}; font-size: 12.5px">{{t.label}}</button></sc-for>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; font-size: 12px; color: #ab9d94">
+          <div>กี่วันต่อสัปดาห์<div style="display: flex; align-items: center; justify-content: space-between; height: 44px; margin-top: 5px; border-radius: 12px; border: 1px solid #33272a; background: #181212; padding: 0 6px"><button onClick="{{dDown}}" aria-label="ลดจำนวนวัน" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #21191a; color: #f6efe4">−</button><span style="color: #f6efe4; font-size: 14px">{{days}} วัน</span><button onClick="{{dUp}}" aria-label="เพิ่มจำนวนวัน" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #21191a; color: #f6efe4">+</button></div></div>
+          <div>กี่ชม.ต่อวัน <span style="color: #7d6d6a">({{hoursRange}})</span><div style="display: flex; align-items: center; justify-content: space-between; height: 44px; margin-top: 5px; border-radius: 12px; border: 1px solid #33272a; background: #181212; padding: 0 6px"><button onClick="{{hDown}}" aria-label="ลดชั่วโมง" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #21191a; color: #f6efe4">−</button><span style="color: #f6efe4; font-size: 14px">{{hours}} ชม.</span><button onClick="{{hUp}}" aria-label="เพิ่มชั่วโมง" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: #21191a; color: #f6efe4">+</button></div></div>
+        </div>
+        <sc-for list="{{acks}}" as="k" hint-placeholder-count="3">
+          <button onClick="{{k.toggle}}" style="display: flex; gap: 10px; align-items: flex-start; background: none; border: none; color: #d3c7bc; font-size: 12.5px; line-height: 1.55; text-align: left; padding: 2px 0"><span style="flex: 0 0 20px; height: 20px; border-radius: 6px; border: 1.5px solid #d4af37; background: {{k.bg}}; color: #1a1206; display: grid; place-items: center; font-weight: 700; font-size: 12px">{{k.mark}}</span>{{k.text}}</button>
+        </sc-for>
+      </div>
+    </sc-if>
+    <sc-if value="{{s3}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 12px; align-items: center">
+        <div style="align-self: stretch; padding: 14px; border-radius: 16px; border: 1px solid #33272a; background: #181212; font-size: 13.5px; display: flex; flex-direction: column; gap: 6px; font-variant-numeric: tabular-nums">
+          <div style="display: flex; justify-content: space-between"><span style="color: #ab9d94">{{pkgName}} · ค่าการันตีแบรนด์ (คืนเมื่อครบ 1 ปี)</span><span>{{pkgGuarantee}}</span></div>
+          <div style="display: flex; justify-content: space-between"><span style="color: #ab9d94">{{pkgTrainLabel}}</span><span>{{pkgTraining}}</span></div>
+          <div style="height: 1px; background: #33272a"></div>
+          <div style="display: flex; justify-content: space-between; align-items: center"><span style="font-weight: 600">ยอดชำระ</span><span style="font-family: Kanit; font-weight: 700; font-size: 22px; color: #e3c35c">{{pkgTotal}}</span></div>
+          <sc-if value="{{isA}}" hint-placeholder-val="{{ false }}"><div style="font-size: 11.5px; color: #ab9d94">รวม: คอร์สบุคลิกภาพ มารยาท การดูแลลูกค้า Premium · ฟรีค่าสมาชิก 6 เดือนแรก (หลังจากนั้น ฿3,500 / 6 เดือน)</div></sc-if>
+          <sc-if value="{{isB}}" hint-placeholder-val="{{ true }}"><div style="font-size: 11.5px; color: #ab9d94">รวม: ยูนิฟอร์ม + น้ำมันนวด 1 ชุด · ฟรีค่าสมาชิก 6 เดือนแรก (หลังจากนั้น ฿5,000 / 6 เดือน)</div></sc-if>
+        </div>
+        <div style="width: 200px; border-radius: 18px; background: #ffffff; color: #1a1206; overflow: hidden; text-align: center">
+          <div style="background: #113566; color: #fff; font-size: 10.5px; font-weight: 600; padding: 7px 0">Thai QR · พร้อมเพย์</div>
+          <div style="margin: 12px auto 4px; width: 132px; height: 132px; background: conic-gradient(#1a1206 0 25%, #fff 0 50%, #1a1206 0 75%, #fff 0) 0 0/22px 22px"></div>
+          <div style="font-family: Kanit; font-weight: 700; font-size: 18px; padding-bottom: 10px">{{pkgQr}}</div>
+        </div>
+        <button onClick="{{attach}}" style="align-self: stretch; height: 64px; border-radius: 14px; border: 1px dashed {{slipBorder}}; background: transparent; color: {{slipFg}}; font-size: 13.5px">{{slipLabel}}</button>
+      </div>
+    </sc-if>
+    <sc-if value="{{s4}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding-top: 30px">
+        <div style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid #d4af37; display: grid; place-items: center; color: #e3c35c"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 5 5 9-10"></path></svg></div>
+        <div style="font-size: 13px; color: #ab9d94">รหัสผู้สมัครของคุณ</div>
+        <div style="font-family: Kanit; font-weight: 700; font-size: 34px; letter-spacing: 2px; color: #e3c35c">MB-2610014</div>
+        <p style="margin: 0; font-size: 13.5px; color: #d3c7bc; line-height: 1.65">ทีมงานกำลังตรวจสลิป แอด LINE OA ไว้ได้เลย เราจะส่งลิงก์กลุ่มรุ่นอบรมและยืนยันรหัส MB ให้ทาง LINE</p>
+        <div style="align-self: stretch; height: 52px; border-radius: 999px; background: #06c755; color: #fff; font-weight: 600; display: flex; align-items: center; justify-content: center">แอด LINE @madame_gor</div>
+      </div>
+    </sc-if>
+  </div>
+  <sc-if value="{{showCta}}" hint-placeholder-val="{{ true }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 18px 18px; background: rgba(14,10,10,.97); border-top: 1px solid #33272a">
+      <button onClick="{{next}}" disabled="{{blocked}}" style="width: 100%; height: 54px; border-radius: 999px; border: 1px solid rgba(212,175,55,.45); background: linear-gradient(180deg, #c21d33, #8f1424); color: #fff; font-weight: 600; font-size: 15px; opacity: {{ctaOpacity}}">{{ctaLabel}}</button>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { step: 1, pkg: 'B', acts: ['กิน & เที่ยว', 'คาเฟ่'], cert: true, slots: ['บ่าย', 'เย็น'], days: 5, hours: 6, acks: [false, false, false], slip: false, otpSent: false, otp: '', verified: false }; }
+  _baseVals() {
+    const s = this.state; const gold = '#d4af37';
+    const tog = (arr, v) => arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
+    const ACK = [s.pkg === 'A' ? 'รับทราบว่างานแต่ละครั้งใช้เวลา 3–8 ชม. (แพ็กเกจ A)' : 'รับทราบว่างานแต่ละครั้งใช้เวลา 3–5 ชม. (แพ็กเกจ B)', 'ไม่ปฏิเสธการรับลูกค้า (เงื่อนไขคืนค่าการันตี)', 'ยินยอมให้ตรวจประวัติอาชญากรรม และยอมรับนโยบายความเป็นส่วนตัว (PDPA)'];
+    const ok2 = s.acts.length > 0 && s.slots.length > 0 && s.acks.every(Boolean);
+    const blocked = (s.step === 1 && !s.verified) || (s.step === 2 && !ok2) || (s.step === 3 && !s.slip);
+    const titles = { 1: ['ขั้นที่ 1 / 3', 'ข้อมูลส่วนตัว'], 2: ['ขั้นที่ 2 / 3', 'กิจกรรมและเวลา'], 3: ['ขั้นที่ 3 / 3', 'ชำระค่าสมัคร'], 4: ['เสร็จสิ้น', 'ส่งใบสมัครแล้ว'] };
+    const P = s.pkg === 'A' ? { name: 'แพ็กเกจ A', g: '฿10,000', t: '฿3,000', total: '฿13,000', qr: '฿13,000.00', train: 'ค่าอบรม บุคลิกภาพ + มารยาทการดูแลลูกค้า' } : { name: 'แพ็กเกจ B', g: '฿15,000', t: '฿6,000', total: '฿21,000', qr: '฿21,000.00', train: 'ค่าอบรม บุคลิกภาพ + มาตรฐานการนวด' };
+    const full = s.otp.length === 6; const tel = this.fv('tel');
+    return {
+      pkgName: P.name, pkgGuarantee: P.g, pkgTraining: P.t, pkgTrainLabel: P.train, pkgTotal: P.total, pkgQr: P.qr,
+      otpEntry: s.otpSent && !s.verified, otpVerified: s.verified, otpNotFull: !full, otpConfirmOp: full ? 1 : 0.45,
+      otpBtnLabel: s.verified ? 'ยืนยันแล้ว ✓' : s.otpSent ? 'ส่งอีกครั้ง' : 'ส่งรหัส', otpBtnBorder: s.verified ? '#4ade80' : gold, otpBtnFg: s.verified ? '#4ade80' : '#eed58a',
+      sendOtp: () => { if (tel) this.setState({ otpSent: true, otp: '' }); }, otpSendOff: s.verified || !tel, otpBtnOp: tel || s.verified ? 1 : 0.45, telHint: !tel,
+      otpCells: [0, 1, 2, 3, 4, 5].map((i) => ({ d: s.otp[i] || '', border: i === s.otp.length ? gold : '#33272a' })),
+      keys: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'].map((d) => ({ label: d, press: () => { if (s.otp.length < 6) this.setState({ otp: s.otp + d }); } })),
+      otpDel: () => this.setState({ otp: s.otp.slice(0, -1) }), otpSample: () => this.setState({ otp: '482915' }),
+      otpConfirm: () => { if (s.otp.length === 6) this.setState({ verified: true }); },
+      stepLabel: titles[s.step][0], stepTitle: titles[s.step][1],
+      bars: [1, 2, 3, 4].map((n) => ({ c: n <= s.step ? gold : '#33272a' })),
+      s1: s.step === 1, s2: s.step === 2, s3: s.step === 3, s4: s.step === 4, showCta: s.step < 4,
+      back: () => this.setState({ step: Math.max(1, s.step - 1) }),
+      acts: ['กิน & เที่ยว', 'ช่างภาพ', 'ออกกำลัง', 'คาเฟ่', 'วิดีโอคอล', 'ดูหนัง', 'นั่งชิล'].map((a) => { const on = s.acts.includes(a); return { label: (on ? '✓ ' : '') + a, bg: on ? gold : 'transparent', fg: on ? '#1a1206' : '#d3c7bc', border: on ? gold : '#33272a', toggle: () => this.setState({ acts: tog(s.acts, a) }) }; }),
+      pkgs: [['A', 'A · ความสามารถพิเศษ'], ['B', 'B · มีความสามารถในการนวด']].map(([id, label]) => { const on = s.pkg === id; return { label, border: on ? gold : '#33272a', bg: on ? 'rgba(212,175,55,.1)' : 'transparent', fg: on ? '#eed58a' : '#ab9d94', pick: () => this.setState({ pkg: id, hours: Math.min(s.hours, id === 'A' ? 8 : 5), acks: [false, s.acks[1], s.acks[2]] }) }; }),
+      certYes: () => this.setState({ cert: true }), certNo: () => this.setState({ cert: false }),
+      yesBorder: s.cert ? gold : '#33272a', yesFg: s.cert ? '#eed58a' : '#ab9d94', noBorder: !s.cert ? gold : '#33272a', noFg: !s.cert ? '#eed58a' : '#ab9d94',
+      slots: ['เช้า', 'บ่าย', 'เย็น', 'ดึก'].map((t) => { const on = s.slots.includes(t); return { label: t, border: on ? gold : '#33272a', fg: on ? '#eed58a' : '#ab9d94', toggle: () => this.setState({ slots: tog(s.slots, t) }) }; }),
+      days: s.days, hours: Math.min(s.hours, s.pkg === 'A' ? 8 : 5), isA: s.pkg === 'A', isB: s.pkg === 'B', ageLabel: s.pkg === 'A' ? 'อายุ 20–50' : 'อายุ 20–45', hoursRange: s.pkg === 'A' ? 'งานละ 3–8 ชม.' : 'งานละ 3–5 ชม.',
+      dDown: () => this.setState({ days: Math.max(1, s.days - 1) }), dUp: () => this.setState({ days: Math.min(7, s.days + 1) }),
+      hDown: () => this.setState({ hours: Math.max(3, Math.min(s.hours, s.pkg === 'A' ? 8 : 5) - 1) }), hUp: () => this.setState({ hours: Math.min(s.pkg === 'A' ? 8 : 5, s.hours + 1) }),
+      acks: ACK.map((text, i) => ({ text, bg: s.acks[i] ? gold : 'transparent', mark: s.acks[i] ? '✓' : '', toggle: () => { const a = s.acks.slice(); a[i] = !a[i]; this.setState({ acks: a }); } })),
+      attach: () => this.setState({ slip: true }), slipLabel: s.slip ? '✓ แนบสลิปแล้ว · slip_' + (s.pkg === 'A' ? '13000' : '21000') + '.jpg' : '+ แนบสลิปโอนเงิน', slipBorder: s.slip ? '#4ade80' : '#4a3a3d', slipFg: s.slip ? '#bbf7d0' : '#ab9d94',
+      next: () => this.setState({ step: s.step + 1 }), blocked, ctaOpacity: blocked ? 0.45 : 1,
+      ctaLabel: s.step === 1 && !s.verified ? 'ยืนยันเบอร์โทรด้วย OTP ก่อน' : s.step === 3 ? 'ยืนยันการชำระเงิน' : s.step === 2 && !ok2 ? 'กรอกให้ครบก่อนไปต่อ' : 'ถัดไป'
+    };
+  }
+
+  _fields() { return {"first":{"v":["พงศกร","ศุภชัย",""],"ph":"ชื่อจริง","on":"#f6efe4","mask":false},"last":{"v":["รุ่งเรือง","ทองดี",""],"ph":"นามสกุล","on":"#f6efe4","mask":false},"nick":{"v":["ต้น","ภูมิ",""],"ph":"ชื่อเล่น","on":"#f6efe4","mask":false},"dob":{"v":["14/03/2540","02/11/2538",""],"ph":"วว/ดด/ปปปป","on":"#f6efe4","mask":false},"h":{"v":["178","182","172"],"ph":"","on":"#f6efe4","mask":false},"w":{"v":["72","78","68"],"ph":"","on":"#f6efe4","mask":false},"tel":{"v":["","081-234-4521","089-555-0172"],"ph":"08x-xxx-xxxx","on":"#f6efe4","mask":false},"line":{"v":["ton.mb","phum.tdee",""],"ph":"LINE ID","on":"#f6efe4","mask":false}}; }
+  fv(k) { const F = this._fields()[k]; const fx = (this.state && this.state.fx) || {}; const v = F.v[(fx[k] || 0) % F.v.length]; return v.indexOf('HOLE:') === 0 ? String((this._hole || {})[v.slice(5)] || '') : v; }
+  renderVals() {
+    const r = this._baseVals(); this._hole = r; const fx = (this.state && this.state.fx) || {}; const F = this._fields();
+    Object.keys(F).forEach((k) => {
+      const v = this.fv(k), c = F[k];
+      const o = { text: v ? (c.mask ? '\u2022'.repeat(v.length) : v) : c.ph, color: v ? c.on : '#7d6d6a', tap: () => this.setState({ fx: Object.assign({}, fx, { [k]: ((fx[k] || 0) + 1) % c.v.length }) }) };
+      for (let i = 0; i < 6; i++) o['d' + i] = v[i] || '\u2013';
+      r[k] = o;
+    });
+    return r;
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>เงินพักกับเรา</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0a0a;--s1:#181212;--s2:#21191a;--ln:#33272a;--red:#b0182c;--red-dk:#8f1424;--gold:#D4AF37;--gold-l:#e3c35c;--tx:#f6efe4;--mut:#ab9d94}
+body{margin:0;font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--tx)}
+*{box-sizing:border-box}
+h1{font-family:'Kanit',sans-serif;margin:0}
+button{font-family:inherit}
+a{color:var(--tx);text-decoration:none}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.card{background:var(--s1);border:1px solid var(--ln);border-radius:20px;padding:16px}
+.sec{font-family:'Kanit';font-size:17px;font-weight:600}
+.st{display:flex;gap:12px;align-items:center;font-size:14px}
+.dot{width:24px;height:24px;border-radius:24px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+.ln{font-size:14px;display:flex;justify-content:space-between;padding:6px 0}
+</style>
+</helmet>
+<div style="width:390px;height:900px;position:relative;overflow:hidden;background:var(--bg)">
+  <div style="display:flex;align-items:center;gap:10px;padding:16px">
+    <a href="C1-BookSuccess.dc.html" aria-label="ย้อนกลับ" style="width:42px;height:42px;border-radius:42px;border:1px solid var(--ln);display:flex;align-items:center;justify-content:center"><svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></a>
+    <h1 style="font-size:19px;font-weight:600">เงินของคุณอยู่ตรงไหน</h1>
+    <span style="margin-left:auto;font-size:12px;color:var(--mut)">#MB-24091</span>
+  </div>
+  <div style="padding:0 16px;display:flex;flex-direction:column;gap:8px">
+    <div style="border:1px solid var(--gold);border-radius:24px;padding:20px;background:rgba(212,175,55,.05);display:flex;flex-direction:column;gap:14px">
+      <div style="font-size:12px;color:var(--gold);font-weight:600;letter-spacing:1.5px">เงินของคุณอยู่ตรงไหน</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mut)">
+        <span style="flex:1;text-align:center">คุณ</span><span style="flex:1;height:1px;background:var(--gold)"></span>
+        <span style="flex:1.6;text-align:center;border:1px solid var(--gold);border-radius:14px;padding:10px 4px;color:var(--gold-l);font-family:'Kanit';font-size:14px">พักไว้กับเรา</span>
+        <span style="flex:1;height:1px;background:var(--ln)"></span><span style="flex:1;text-align:center">เพื่อน</span>
+      </div>
+      <div style="font-family:'Kanit';font-weight:600;font-size:34px">฿2,160 <span style="font-size:14px;font-weight:400;color:var(--gold-l)">พักไว้</span></div>
+      <div style="font-size:13px;color:var(--mut);line-height:1.55">เพื่อนจะได้รับเงินเมื่อคุณกดปล่อยหลังจบนัด หากไม่ได้กดใน 24 ชม. เราจะปล่อยเงินให้อัตโนมัติ</div>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;gap:12px">
+      <div class="sec">สถานะ</div>
+      <div class="st"><span class="dot" style="background:var(--tx);color:var(--bg)">✓</span>ชำระแล้ว (เต็มจำนวน)<span style="margin-left:auto;font-size:12px;color:var(--mut)">18:05</span></div>
+      <div class="st" style="color:var(--gold-l)"><span class="dot" style="background:var(--gold);color:var(--bg)">2</span>พักเงินไว้กับเรา<span style="margin-left:auto;font-size:12px">ตอนนี้</span></div>
+      <div class="st" style="color:var(--mut)"><span class="dot" style="border:1px solid var(--ln)">3</span>ปล่อยเงินให้เพื่อนหลังจบนัด</div>
+      <div style="font-size:12px;color:var(--mut);line-height:1.55">ไม่ต้องชำระเพิ่ม หน้านี้แสดงสถานะเงินเท่านั้น หากยกเลิกตามเงื่อนไข เงินจะคืนเข้าช่องทางเดิม</div>
+    </div>
+    <div class="card">
+      <div class="sec" style="margin-bottom:6px">สรุปยอด</div>
+      <div class="ln"><span style="color:var(--mut)">นัดกับต้น · 3 ชม.</span><span>฿2,400</span></div>
+      <div class="ln"><span style="color:var(--gold-l)">โค้ด MB10 (−10%)</span><span style="color:var(--gold-l)">−฿240</span></div>
+      <div class="ln" style="border-top:1px solid var(--ln);margin-top:6px;padding-top:12px"><b>รวม</b><b style="font-family:'Kanit';font-size:22px;font-weight:600">฿2,160</b></div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <a href="N05-Dispute.dc.html" style="height:54px;padding:0 18px;border-radius:16px;border:1px solid var(--ln);background:transparent;color:var(--tx);font-weight:600;display:flex;align-items:center;justify-content:center;text-decoration:none">เปิดข้อพิพาท</a>
+      <a href="S12-Orders.dc.html" style="flex-grow:1;height:54px;border-radius:16px;border:1px solid var(--gold);color:var(--gold-l);font-family:'Kanit';font-weight:600;font-size:16px;display:flex;align-items:center;justify-content:center;text-decoration:none">ดูการจองของฉัน</a>
+    </div>
+    <div style="font-size:12px;color:var(--mut);text-align:center">เราจะแจ้งเตือนเมื่อสถานะเงินเปลี่ยน</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

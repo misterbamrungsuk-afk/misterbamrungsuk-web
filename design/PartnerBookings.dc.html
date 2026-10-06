@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>Partner Bookings</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; position: relative; overflow: hidden">
+  <div style="height: 768px; overflow-y: auto; box-sizing: border-box; padding-bottom: 24px">
+    <div style="padding: 16px 18px 0">
+      <div style="font-size: 12px; color: #ab9d94">Siam Serenity Spa</div>
+      <h1 style="margin: 2px 0 4px; font-family: Kanit; font-weight: 700; font-size: 24px; color: #d4af37">การจองของลูกค้า</h1>
+      <div style="font-size: 12.5px; color: #7d6d6a; line-height: 1.6">การจองบริการสปาของคุณที่ลูกค้าซื้อผ่านแพลตฟอร์ม Mister Bamrungsuk · ราคาขายบนแพลตฟอร์ม [รอกำหนด]</div>
+    </div>
+    <div style="padding: 14px 18px 0; display: flex; gap: 6px; overflow-x: auto">
+      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="4"><button onClick="{{t.pick}}" style="flex: none; height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid {{t.border}}; background: {{t.bg}}; color: {{t.fg}}; font-size: 13px; font-weight: 600">{{t.label}} · {{t.count}}</button></sc-for>
+    </div>
+    <div style="padding: 14px 18px 0; display: flex; flex-direction: column; gap: 8px">
+      <sc-for list="{{rows}}" as="b" hint-placeholder-count="3">
+        <button onClick="{{b.open}}" style="display: flex; gap: 12px; align-items: center; padding: 12px; border-radius: 16px; background: #181212; border: 1px solid #33272a; color: #f6efe4; text-align: left; min-height: 64px">
+          <img src="{{b.img}}" alt="" style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover">
+          <span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">{{b.pt}}</span><span style="font-size: 12px; color: #ab9d94">ลูกค้า {{b.cust}} · {{b.block}} · {{b.room}}</span><span style="font-size: 11px; color: #7d6d6a">{{b.date}} {{b.time}}</span></span>
+          <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px"><span style="font-family: Kanit; font-weight: 600; color: #e3c35c">{{b.price}}</span><span style="font-size: 10.5px; padding: 3px 8px; border-radius: 999px; border: 1px solid {{b.stColor}}; color: {{b.stColor}}">{{b.status}}</span></span>
+        </button>
+      </sc-for>
+      <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}"><div style="padding: 40px 0; text-align: center; color: #7d6d6a; font-size: 13px">ไม่มีรายการในหมวดนี้</div></sc-if>
+    </div>
+  </div>
+  <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: rgba(0,0,0,.6); z-index: 5">
+      <button onClick="{{close}}" aria-label="ปิด" style="position: absolute; inset: 0; background: transparent; border: 0"></button>
+      <div style="position: absolute; left: 0; right: 0; bottom: 0; background: #181212; border-top: 1px solid #33272a; border-radius: 24px 24px 0 0; padding: 10px 18px 24px; display: flex; flex-direction: column; gap: 14px">
+        <div style="width: 40px; height: 4px; border-radius: 9px; background: #33272a; margin: 0 auto"></div>
+        <div style="display: flex; gap: 12px; align-items: center">
+          <img src="{{sel.img}}" alt="" style="width: 56px; height: 56px; border-radius: 14px; object-fit: cover">
+          <div style="flex: 1"><div style="font-family: Kanit; font-weight: 600; font-size: 18px">{{sel.pt}}</div><div style="font-size: 12px; color: #ab9d94">ลูกค้า {{sel.cust}} · {{sel.block}}</div></div>
+          <span style="font-size: 11px; padding: 4px 10px; border-radius: 999px; border: 1px solid {{sel.stColor}}; color: {{sel.stColor}}">{{sel.status}}</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12.5px">
+          <div style="padding: 10px; border-radius: 12px; background: #130e0e"><div style="color: #7d6d6a">วัน-เวลา</div><div>{{sel.date}} · {{sel.time}}</div></div>
+          <div style="padding: 10px; border-radius: 12px; background: #130e0e"><div style="color: #7d6d6a">ช่องทางจอง</div><div>{{sel.addon}}</div></div>
+        </div>
+        <div>
+          <div style="font-size: 12.5px; color: #ab9d94; margin-bottom: 8px">จัดห้องบริการ</div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap">
+            <sc-for list="{{rooms}}" as="r" hint-placeholder-count="4"><button onClick="{{r.pick}}" style="height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid {{r.border}}; background: {{r.bg}}; color: {{r.fg}}; font-size: 13px">{{r.label}}</button></sc-for>
+          </div>
+        </div>
+        <div style="padding: 12px; border-radius: 12px; background: #130e0e; border: 1px dashed #33272a; font-size: 12.5px; display: flex; flex-direction: column; gap: 4px">
+          <div style="display: flex; justify-content: space-between"><span style="color: #ab9d94">ราคาฐานของสปา (ราคาขายบนแพลตฟอร์ม [รอกำหนด])</span><span>{{sel.price}}</span></div>
+          <div style="display: flex; justify-content: space-between"><span style="color: #ab9d94">หักแพลตฟอร์ม [รอกำหนด]%</span><span style="color: #7d6d6a">[รอกำหนด]</span></div>
+          <div style="display: flex; justify-content: space-between; font-weight: 600"><span>พาร์ทเนอร์ได้รับ</span><span style="color: #e3c35c">คำนวณเมื่อกำหนด %</span></div>
+        </div>
+        <sc-if value="{{canAct}}" hint-placeholder-val="{{ true }}">
+          <div style="display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px">
+            <button onClick="{{full}}" style="height: 52px; border-radius: 999px; border: 1px solid #33272a; background: transparent; color: #f6efe4; font-size: 14px">แจ้งห้องเต็ม</button>
+            <button onClick="{{confirm}}" style="height: 52px; border-radius: 999px; border: 1px solid rgba(212,175,55,.45); background: linear-gradient(180deg, #c21d33, #8f1424); color: #fff; font-weight: 600; font-size: 15px">ยืนยัน · {{roomName}}</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{cannotAct}}" hint-placeholder-val="{{ false }}"><button onClick="{{close}}" style="height: 52px; border-radius: 999px; border: 1px solid #33272a; background: transparent; color: #f6efe4; font-size: 14px">ปิด</button></sc-if>
+      </div>
+    </div>
+  </sc-if>
+  <div style="display: none">
+  </div>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; border-top: 1px solid #33272a; background: rgba(14,10,10,.97); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; text-align: center; font-size: 10.5px; color: #7d6d6a">
+    <a href="PartnerHome.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>หน้าหลัก</a>
+    <a href="PartnerBookings.dc.html" aria-current="page" style="color: #d4af37; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16"></path></svg>การจอง</a>
+    <a href="PartnerListing.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h16l-1-5H5z"></path><path d="M5 9v11h14V9"></path><path d="M10 20v-6h4v6"></path></svg>หน้าร้าน</a>
+    <a href="PartnerInsight.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>รายงาน</a>
+    <a href="PartnerPackage.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7v10l8 4 8-4V7z"></path><path d="M4 7l8 4 8-4M12 11v10"></path></svg>แพ็กเกจ</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    const I = ['/_blob/551eb82924983c941f1fe44ede9bceca', '/_blob/82a15fdc40050c0a074e7e4b5b66e794', '/_blob/8725f65bf80d613b2a9537700bf2f9bb'];
+    this.state = { tab: 'pending', open: null, room: 'Lotus', list: [
+      { id: 1, pt: 'นวดน้ำมันอโรมา', cust: 'ก.ส.', block: '90 นาที', date: 'วันนี้', time: '14:00', room: '-', price: '฿900', addon: 'จองผ่านแพลตฟอร์ม', st: 'pending', img: I[0] },
+      { id: 2, pt: 'สปาแพ็กเกจ ขัดผิว + อโรมา', cust: 'ม.ร.', block: '120 นาที', date: 'พรุ่งนี้', time: '16:30', room: '-', price: '฿1,800', addon: 'จองผ่านแพลตฟอร์ม', st: 'pending', img: I[1] },
+      { id: 3, pt: 'นวดไทยแผนโบราณ', cust: 'พ.ท.', block: '90 นาที', date: 'วันนี้', time: '19:00', room: 'Orchid', price: '฿600', addon: 'จองผ่านแพลตฟอร์ม', st: 'today', img: I[2] },
+      { id: 4, pt: 'นวดฝ่าเท้า', cust: 'ศ.จ.', block: '60 นาที', date: '2 ต.ค.', time: '13:00', room: 'Jasmine', price: '฿400', addon: 'จองผ่านแพลตฟอร์ม', st: 'done', img: I[0] },
+      { id: 5, pt: 'นวดน้ำมันอโรมา', cust: 'อ.น.', block: '90 นาที', date: '1 ต.ค.', time: '18:00', room: '-', price: '฿900', addon: 'จองผ่านแพลตฟอร์ม', st: 'cancel', img: I[1] }
+    ] };
+  }
+  renderVals() {
+    const s = this.state; const gold = '#d4af37';
+    const T = [['pending', 'รอยืนยัน', '#e3c35c'], ['today', 'วันนี้', '#7fd6a3'], ['done', 'เสร็จแล้ว', '#ab9d94'], ['cancel', 'ยกเลิก', '#e2707f']];
+    const meta = (st) => T.find((t) => t[0] === st);
+    const dec = (b) => ({ ...b, status: meta(b.st)[1], stColor: meta(b.st)[2], open: () => this.setState({ open: b.id, room: b.room !== '-' ? b.room : 'Lotus' }) });
+    const rows = s.list.filter((b) => b.st === s.tab).map(dec);
+    const selRaw = s.list.find((b) => b.id === s.open);
+    const sel = selRaw ? dec(selRaw) : dec(s.list[0]);
+    const setSt = (st, room) => this.setState({ list: s.list.map((b) => b.id === s.open ? { ...b, st, room } : b), open: null });
+    return {
+      tabs: T.map(([id, label]) => ({ label, count: s.list.filter((b) => b.st === id).length, bg: s.tab === id ? gold : '#181212', fg: s.tab === id ? '#1a1206' : '#d3c7bc', border: s.tab === id ? gold : '#33272a', pick: () => this.setState({ tab: id }) })),
+      rows, empty: rows.length === 0,
+      sheetOpen: !!selRaw, sel,
+      rooms: ['Lotus', 'Jasmine', 'Orchid', 'VIP Suite'].map((r) => ({ label: r, bg: s.room === r ? 'rgba(212,175,55,.12)' : 'transparent', fg: s.room === r ? '#e3c35c' : '#d3c7bc', border: s.room === r ? gold : '#33272a', pick: () => this.setState({ room: r }) })),
+      roomName: s.room,
+      canAct: !!selRaw && selRaw.st === 'pending', cannotAct: !!selRaw && selRaw.st !== 'pending',
+      confirm: () => setSt('today', s.room), full: () => setSt('cancel', '-'),
+      close: () => this.setState({ open: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>งานเข้า</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0a0a;--s1:#181212;--s2:#21191a;--ln:#33272a;--red:#b0182c;--gold:#D4AF37;--gold-l:#e3c35c;--tx:#f6efe4;--mut:#ab9d94}
+body{margin:0;font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--tx)}
+*{box-sizing:border-box}
+h1{font-family:'Kanit',sans-serif;margin:0}
+button{font-family:inherit}
+a{color:var(--tx);text-decoration:none}
+.r{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--ln);font-size:14px}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;overflow:hidden;background:var(--bg)">
+  <div style="text-align:center;padding-top:30px">
+    <span style="height:30px;padding:0 14px;border-radius:999px;border:1px solid var(--red);color:#FF8A97;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:7px;background:var(--red)"></span>งานด่วน · ส่งถึง Part-Time ที่อยู่ใกล้</span>
+    <h1 style="font-size:26px;font-weight:600;margin-top:14px">มีงานใหม่ใกล้คุณ</h1>
+  </div>
+  <div style="position:relative;width:220px;height:220px;margin:26px auto 0">
+    <svg viewBox="0 0 200 200" style="position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)"><circle cx="100" cy="100" r="90" stroke="#33272a" stroke-width="8" fill="none"/><circle cx="100" cy="100" r="90" stroke="#b0182c" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="565" stroke-dashoffset="226"/></svg>
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-family:'Kanit';font-weight:700;font-size:80px;line-height:1">9</div><div style="font-size:13px;color:var(--mut)">วินาทีที่เหลือ</div></div>
+  </div>
+  <section style="position:absolute;left:0;right:0;bottom:0;background:var(--s1);border-top:1px solid var(--ln);border-radius:28px 28px 0 0;padding:20px 20px 26px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:6px">
+      <div><div style="font-size:13px;color:var(--mut)">ค่าบริการ</div><div style="font-family:'Kanit';font-weight:700;font-size:36px">฿2,900</div></div>
+      <div style="text-align:right;font-size:13px;color:var(--mut)">คุณได้รับ<br><b style="font-family:'Kanit';font-weight:600;font-size:20px;color:var(--gold-l)">฿2,465</b> หลังหักค่าธรรมเนียม 15%</div>
+    </div>
+    <div class="r"><span style="color:var(--mut)">กิจกรรม</span><span>กิน &amp; เที่ยว · 3 ชม.</span></div>
+    <div class="r"><span style="color:var(--mut)">ระยะทาง</span><span>2.4 กม. · ~10 นาที</span></div>
+    <div class="r"><span style="color:var(--mut)">สถานที่</span><span>ร้านอาหารพาร์ทเนอร์ · ทองหล่อ</span></div>
+    <div class="r" style="border:0"><span style="color:var(--mut)">ลูกค้า</span><span>ยืนยันตัวตนแล้ว · <span style="color:var(--gold)">★ 4.8</span></span></div>
+    <div style="font-size:12px;color:var(--mut);line-height:1.5;margin-top:8px">รับแล้วต้องไปตามนัด ถ้าคุณไม่มา ลูกค้าได้คืน 100% และคุณได้ใบเตือน 1 ครั้ง + หักคะแนน · ถ้าลูกค้าไม่มา (คุณรอครบ 15 นาที) คุณยังได้ ฿2,465 · แอดมินตัดสินหลังตรวจหลักฐานทั้ง 2 ฝ่าย</div>
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button style="height:58px;padding:0 24px;border-radius:16px;border:1px solid var(--ln);background:transparent;color:var(--tx);font-weight:500;font-size:16px">ข้าม</button>
+      <a href="Job.dc.html" style="flex-grow:1;height:58px;border-radius:16px;background:var(--red);color:#fff;font-family:'Kanit';font-weight:700;font-size:20px;display:flex;align-items:center;justify-content:center">รับงาน</a>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

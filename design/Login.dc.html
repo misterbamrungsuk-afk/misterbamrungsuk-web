@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>เข้าสู่ระบบ</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; position: relative; overflow: hidden">
+  <img src="/_blob/1df502b56f18db1a68454e9faaa2385c" alt="" style="position: absolute; inset: 0 0 auto 0; width: 100%; height: 470px; object-fit: cover">
+  <div style="position: absolute; inset: 0 0 auto 0; height: 470px; background: linear-gradient(180deg, rgba(14,10,10,.15) 0%, rgba(14,10,10,.35) 45%, #0e0a0a 100%)"></div>
+  <div style="position: relative; display: flex; justify-content: space-between; align-items: center; padding: 16px 20px">
+    <div style="display: flex; align-items: center; gap: 10px"><div style="width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid #d4af37; display: grid; place-items: center; font-family: Kanit; font-weight: 700; font-size: 12px; color: #d4af37; background: rgba(0,0,0,.4)">MB</div><div style="font-family: Kanit; font-weight: 600; font-size: 16px">Bamrungsuk</div></div>
+    <button style="height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(246,239,228,.3); background: rgba(0,0,0,.4); color: #f6efe4; font-size: 12px; font-weight: 600">ไทย / EN</button>
+  </div>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 0 20px 26px; display: flex; flex-direction: column; gap: 14px">
+    <div style="font-size: 11px; letter-spacing: 3px; color: #e3c35c; font-weight: 600; display: flex; align-items: center; gap: 8px"><span style="width: 22px; height: 1px; background: #d4af37"></span>VVIP COMPANION</div>
+    <h1 style="margin: 0; font-family: Kanit; font-weight: 700; font-size: 32px; line-height: 1.15; text-wrap: balance">เพื่อนกิน เพื่อนเที่ยว<br>ระดับพรีเมียม<br><span style="color: #e3c35c">ในแบบของคุณ</span></h1>
+    <p style="margin: 0; font-size: 14px; color: #ab9d94; line-height: 1.6">เพื่อนทุกคนผ่านการยืนยันตัวตน จ่ายปลอดภัย เงินพักไว้กับเราจนจบนัด</p>
+    <button style="height: 54px; border-radius: 999px; border: 1px solid rgba(212,175,55,.5); background: linear-gradient(180deg, #c21d33, #8f1424); color: #fff; font-weight: 600; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 10px"><span style="width: 30px; height: 30px; border-radius: 50%; background: #fff; color: #1a1206; display: grid; place-items: center; font-weight: 700; font-family: Kanit">G</span>เข้าสู่ระบบด้วย Google</button>
+    <div style="display: flex; align-items: center; gap: 10px; color: #7d6d6a; font-size: 12px"><span style="flex: 1; height: 1px; background: #33272a"></span>หรือ<span style="flex: 1; height: 1px; background: #33272a"></span></div>
+    <sc-if value="{{showForm}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <label style="display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: #ab9d94">อีเมล<button type="button" onClick="{{email.tap}}" aria-label="you@email.com · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;height: 48px; border-radius: 14px; border: 1px solid #33272a; background: #181212; padding: 0 14px; font-size: 14px; color:{{email.color}}">{{email.text}}</button><span style="font-size:11px;color:#7d6d6a;font-weight:400">แตะเพื่อกรอกตัวอย่าง</span></label>
+        <label style="display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: #ab9d94">รหัสผ่าน<button type="button" onClick="{{pw.tap}}" aria-label="อย่างน้อย 8 ตัวอักษร · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;height: 48px; border-radius: 14px; border: 1px solid #33272a; background: #181212; padding: 0 14px; font-size: 14px; color:{{pw.color}}">{{pw.text}}</button></label>
+        <a href="ResetPassword.dc.html" style="align-self: flex-end; font-size: 13px; text-decoration: none; min-height: 32px; display: flex; align-items: center">ลืมรหัสผ่าน?</a>
+        <a href="Main.dc.html" aria-disabled="{{loginOff}}" style="opacity: {{loginOp}}; pointer-events: {{loginPe}}; height: 50px; border-radius: 999px; border: 1px solid #d4af37; color: #eed58a; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center">เข้าสู่ระบบ</a>
+      </div>
+    </sc-if>
+    <sc-if value="{{showToggle}}" hint-placeholder-val="{{ true }}">
+      <button onClick="{{openForm}}" style="height: 50px; border-radius: 999px; border: 1px solid #33272a; background: transparent; color: #f6efe4; font-weight: 600">เข้าสู่ระบบด้วยอีเมล</button>
+    </sc-if>
+    <a href="Join.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 18px; border: 1px solid rgba(212,175,55,.4); background: #181212; text-decoration: none; color: inherit">
+      <span style="width: 40px; height: 40px; border-radius: 12px; background: #d4af37; color: #1a1206; display: grid; place-items: center; font-family: Kanit; font-weight: 700">MB</span>
+      <span style="flex: 1"><span style="display: block; font-weight: 600; font-size: 14px">สมัครเป็น Part-Time</span><span style="display: block; font-size: 12px; color: #ab9d94">เปิดรับ 20 ต.ค. – 10 พ.ย. · จำกัด 50 ท่าน</span></span>
+      <span style="color: #e3c35c" aria-hidden="true">→</span>
+    </a>
+    <div style="font-size: 11px; color: #7d6d6a; text-align: center">สำหรับผู้มีอายุ 18 ปีขึ้นไป · ไม่มีบริการทางเพศ</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { form: false }; }
+  _baseVals() {
+    const ok = !!this.fv('email') && !!this.fv('pw');
+    return { loginOff: String(!ok), loginOp: ok ? 1 : 0.45, loginPe: ok ? 'auto' : 'none', showForm: this.state.form, showToggle: !this.state.form, openForm: () => this.setState({ form: true }) };
+  }
+
+  _fields() { return {"email":{"v":["","you@email.com","mind.s@gmail.com"],"ph":"you@email.com","on":"#f6efe4","mask":false},"pw":{"v":["","Mb2569!secure"],"ph":"อย่างน้อย 8 ตัวอักษร","on":"#f6efe4","mask":true}}; }
+  fv(k) { const F = this._fields()[k]; const fx = (this.state && this.state.fx) || {}; const v = F.v[(fx[k] || 0) % F.v.length]; return v.indexOf('HOLE:') === 0 ? String((this._hole || {})[v.slice(5)] || '') : v; }
+  renderVals() {
+    const r = this._baseVals(); this._hole = r; const fx = (this.state && this.state.fx) || {}; const F = this._fields();
+    Object.keys(F).forEach((k) => {
+      const v = this.fv(k), c = F[k];
+      const o = { text: v ? (c.mask ? '\u2022'.repeat(v.length) : v) : c.ph, color: v ? c.on : '#7d6d6a', tap: () => this.setState({ fx: Object.assign({}, fx, { [k]: ((fx[k] || 0) + 1) % c.v.length }) }) };
+      for (let i = 0; i < 6; i++) o['d' + i] = v[i] || '\u2013';
+      r[k] = o;
+    });
+    return r;
+  }
+}
+</script>
+</body>
+</html>

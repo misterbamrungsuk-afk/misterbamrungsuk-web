@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>การแจ้งเตือน</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+.h{font-family:Kanit;font-weight:600}
+.card{padding:14px;border-radius:16px;background:#181212;border:1px solid #33272a}
+.in{height:48px;border-radius:12px;border:1px solid #33272a;background:#21191a;color:#f6efe4;padding:0 14px;font-size:14px;box-sizing:border-box;width:100%;display:flex;align-items:center}
+.cta{height:52px;border-radius:14px;border:1px solid rgba(212,175,55,.45);background:linear-gradient(180deg,#c21d33,#8f1424);color:#fff;font-size:15px;font-weight:600;width:100%;font-family:Kanit}
+.ghost{height:48px;border-radius:14px;border:1px solid #33272a;background:#181212;color:#e3c35c;font-size:14px;font-weight:600;width:100%}
+.lbl{font-size:12px;color:#ab9d94;margin:0 0 6px}
+.mut{color:#ab9d94}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; position: relative; overflow: hidden">
+  <div style="height: 844px; overflow-y: auto; box-sizing: border-box; padding-bottom: 24px">
+    <div style="padding: 12px 18px 0; display: flex; flex-direction: column; gap: 14px">
+      <sc-if value="{{offline}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; gap: 10px; align-items: center; padding: 10px 14px; border-radius: 12px; background: rgba(194,29,51,.15); border: 1px solid rgba(194,29,51,.55); font-size: 13px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef6b7b" stroke-width="1.8"><path d="M2 8a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0"></path><path d="M3 3l18 18"></path></svg><span style="flex: 1">ออฟไลน์อยู่ · ข้อมูลอาจไม่อัปเดต</span><button onClick="{{retry}}" style="min-height: 44px; border: 0; background: transparent; color: #e3c35c; font-size: 13px">ลองใหม่</button></div>
+      </sc-if>
+      <div style="display: flex; justify-content: space-between; align-items: center"><a href="Main.dc.html" style="font-size: 13px; min-height: 44px; display: flex; align-items: center">ข้าม</a>
+        <button onClick="{{toggleOffline}}" style="min-height: 44px; display: flex; gap: 8px; align-items: center; border: 1px solid #33272a; border-radius: 999px; background: #181212; color: #ab9d94; padding: 0 12px; font-size: 12px">จำลองออฟไลน์<span style="width: 36px; height: 20px; border-radius: 99px; background: {{offTrack}}; position: relative; display: inline-block"><span style="position: absolute; top: 2px; left: {{offKnob}}; width: 16px; height: 16px; border-radius: 50%; background: #f6efe4"></span></span></button>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; padding-top: 24px">
+        <div style="width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle,#2a1d12,#0e0a0a 70%); border: 1px solid rgba(212,175,55,.45); display: grid; place-items: center; color: #d4af37"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"></path><path d="M10 20a2 2 0 0 0 4 0"></path></svg></div>
+        <h1 class="h" style="margin: 0; font-size: 24px; color: #d4af37">{{title}}</h1>
+        <p class="mut" style="margin: 0; font-size: 14px; line-height: 1.6">{{desc}}</p>
+      </div>
+      <div class="card" style="display: flex; flex-direction: column; gap: 4px">
+        <sc-for list="{{prefs}}" as="p" hint-placeholder-count="4">
+          <button onClick="{{p.toggle}}" style="display: flex; align-items: center; gap: 12px; min-height: 52px; border: 0; background: transparent; color: #f6efe4; text-align: left; padding: 0"><span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 14px">{{p.label}}</span><span style="font-size: 11.5px; color: #ab9d94">{{p.sub}}</span></span><span style="width: 44px; height: 26px; border-radius: 99px; background: {{p.track}}; position: relative"><span style="position: absolute; top: 3px; left: {{p.knob}}; width: 20px; height: 20px; border-radius: 50%; background: #f6efe4"></span></span></button>
+        </sc-for>
+      </div>
+      <sc-if value="{{asking}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 8px"><button class="cta" onClick="{{allow}}">เปิดการแจ้งเตือน</button><button class="ghost" onClick="{{deny}}">ไว้ทีหลัง</button></div>
+      </sc-if>
+      <sc-if value="{{answered}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 8px"><a href="Main.dc.html" class="cta" style="display: grid; place-items: center; text-decoration: none">ไปหน้าหลัก</a><button class="ghost" onClick="{{reask}}">เปลี่ยนการตั้งค่า</button></div>
+      </sc-if>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { perm: 'ask', off: false, pr: [true, true, true, false] }; }
+  renderVals() {
+    const s = this.state;
+    const T = { ask: ['ไม่พลาดทุกนัดสำคัญ', 'รู้ทันทีเมื่อเพื่อนยืนยันนัด กำลังออกเดินทาง หรือส่งข้อความหาคุณ'], allow: ['เปิดการแจ้งเตือนแล้ว', 'เราจะแจ้งเฉพาะเรื่องที่คุณเลือกไว้ด้านล่าง'], deny: ['ปิดการแจ้งเตือนไว้', 'คุณเปิดได้ภายหลังที่ บัญชี > การแจ้งเตือน แต่อาจพลาดความคืบหน้าของนัดไปบ้าง'] };
+    const P = [['สถานะนัด', 'ยืนยันนัด / กำลังเดินทาง / ถึงแล้ว'], ['ข้อความแชท', 'จากเพื่อนและทีมงาน'], ['ความปลอดภัย', 'SOS และเรื่องสำคัญที่ต้องรู้'], ['โปรโมชัน', 'สิทธิพิเศษสมาชิก VIP']];
+    return {
+      offline: s.off, toggleOffline: () => this.setState({ off: !s.off }), retry: () => this.setState({ off: false }),
+      offTrack: s.off ? '#c21d33' : '#33272a', offKnob: s.off ? '18px' : '2px',
+      title: T[s.perm][0], desc: T[s.perm][1],
+      prefs: P.map(([label, sub], i) => ({ label, sub, track: s.pr[i] && s.perm !== 'deny' ? '#d4af37' : '#33272a', knob: s.pr[i] && s.perm !== 'deny' ? '21px' : '3px', toggle: () => { const pr = s.pr.slice(); pr[i] = !pr[i]; this.setState({ pr }); } })),
+      asking: s.perm === 'ask', answered: s.perm !== 'ask',
+      allow: () => this.setState({ perm: 'allow' }), deny: () => this.setState({ perm: 'deny' }), reask: () => this.setState({ perm: 'ask' })
+    };
+  }
+}
+</script>
+</body>
+</html>

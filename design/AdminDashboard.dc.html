@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>แอดมิน ภาพรวม</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 1280px; height: 820px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; display: flex; overflow: hidden">
+  <nav aria-label="เมนูแอดมิน" style="width: 232px; flex: 0 0 232px; border-right: 1px solid #33272a; padding: 18px 14px; display: flex; flex-direction: column; gap: 2px; font-size: 13px; box-sizing: border-box; font-family: 'IBM Plex Sans Thai', sans-serif; background: #0e0a0a">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px"><div style="width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid #d4af37; display: grid; place-items: center; font-family: Kanit; font-weight: 700; font-size: 12px; color: #d4af37">MB</div><div style="line-height: 1.1"><div style="font-family: Kanit; font-weight: 600; color: #f6efe4">Bamrungsuk</div><div style="font-size: 11px; color: #7d6d6a">Admin · super</div></div></div>
+    <a href="AdminDashboard.dc.html" aria-current="page" style="padding: 6px 12px; border-radius: 10px; background: rgba(176,24,44,.2); border: 1px solid rgba(201,40,61,.55); color: #f6efe4; text-decoration: none">ภาพรวม / รายได้</a>
+    <a href="AdminBookings.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">การจอง / งาน</a>
+    <a href="B2-Orders.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ตรวจงาน</a>
+    <a href="AdminApplicants.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ผู้สมัคร</a>
+    <a href="B1-KYC.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">คิว KYC</a>
+    <a href="AdminCohorts.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">รุ่นอบรม / เช็กชื่อ</a>
+    <a href="AdminParttimers.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">Part-Time ที่ใช้งาน</a>
+    <a href="B3-Payouts.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">โอนให้ Part-Time</a>
+    <a href="AdminPartners.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">พาร์ทเนอร์สปา</a>
+    <a href="AdminSpaPricing.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ราคาสปาพาร์ทเนอร์</a>
+    <a href="AdminPricing.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ตั้งค่าราคา</a>
+    <a href="B6-Members.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">สมาชิก · ใบเตือน</a>
+    <a href="B4-Reports.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">รายงาน</a>
+    <a href="B5-CS.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">เรื่องร้องเรียน</a>
+    <a href="B7-Promos.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">โปรโมชัน</a>
+    <a href="B8-Audit.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">บันทึกระบบ · SOS</a>
+    <div style="height: 1px; background: #33272a; margin: 6px 0"></div>
+    <a href="E2-AdminSettings.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ตั้งค่าระบบ</a>
+    <a href="E1-AdminLogin.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">แอดมินและสิทธิ์</a>
+    <a href="Main.dc.html" style="margin-top: auto; padding: 6px 12px; color: #e3c35c; text-decoration: none">← สารบัญทุกหน้า</a>
+  </nav>
+  <main style="flex: 1; padding: 24px 28px; display: flex; flex-direction: column; gap: 18px; min-width: 0">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end">
+      <div><div style="font-size: 11px; letter-spacing: 2.5px; color: #d4af37; font-weight: 600">OVERVIEW</div><h1 style="margin: 2px 0 0; font-family: Kanit; font-weight: 700; font-size: 26px">ภาพรวมวันนี้</h1></div>
+      <div style="display: flex; gap: 6px; padding: 4px; border-radius: 999px; border: 1px solid #33272a">
+        <sc-for list="{{ranges}}" as="r" hint-placeholder-count="3"><button onClick="{{r.pick}}" style="height: 34px; padding: 0 14px; border-radius: 999px; border: none; background: {{r.bg}}; color: {{r.fg}}; font-size: 12.5px; font-weight: 600">{{r.label}}</button></sc-for>
+      </div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px">
+      <sc-for list="{{kpis}}" as="k" hint-placeholder-count="4">
+        <div style="padding: 16px; border-radius: 18px; border: 1px solid #33272a; background: #181212"><div style="font-size: 12px; color: #ab9d94">{{k.label}}</div><div style="font-family: Kanit; font-weight: 700; font-size: 28px; color: {{k.color}}; font-variant-numeric: tabular-nums">{{k.value}}</div><div style="font-size: 11.5px; color: {{k.deltaColor}}">{{k.delta}}</div></div>
+      </sc-for>
+    </div>
+    <div style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 14px; flex: 1; min-height: 0">
+      <div style="padding: 18px; border-radius: 18px; border: 1px solid #33272a; background: #181212; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; justify-content: space-between"><div style="font-family: Kanit; font-weight: 600; font-size: 16px">รายได้แยกตามแหล่ง</div><div style="font-size: 12px; color: #ab9d94">{{rangeLabel}}</div></div>
+        <sc-for list="{{rev}}" as="r" hint-placeholder-count="4">
+          <div style="display: grid; grid-template-columns: 170px minmax(0, 1fr) 100px; gap: 12px; align-items: center; font-size: 13px"><span style="color: #d3c7bc">{{r.label}}</span><div style="height: 14px; border-radius: 4px; background: #21191a"><div style="height: 14px; border-radius: 4px; background: {{r.color}}; width: {{r.w}}"></div></div><span style="text-align: right; font-variant-numeric: tabular-nums">{{r.amt}}</span></div>
+        </sc-for>
+        <div style="margin-top: auto; padding-top: 12px; border-top: 1px solid #33272a; display: flex; justify-content: space-between; font-size: 13px"><span style="color: #ab9d94">รวม</span><span style="font-family: Kanit; font-weight: 700; font-size: 20px; color: #e3c35c">{{revTotal}}</span></div>
+      </div>
+      <div style="padding: 18px; border-radius: 18px; border: 1px solid #33272a; background: #181212; display: flex; flex-direction: column; gap: 10px">
+        <div style="font-family: Kanit; font-weight: 600; font-size: 16px">ต้องจัดการ</div>
+        <sc-for list="{{alerts}}" as="a" hint-placeholder-count="4">
+          <a href="{{a.href}}" style="display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 12px; background: #130e0e; border: 1px solid #33272a; color: #f6efe4; text-decoration: none; font-size: 13px"><span style="width: 8px; height: 8px; border-radius: 50%; background: {{a.c}}; flex: 0 0 8px"></span><span style="flex: 1">{{a.text}}</span><span style="color: #7d6d6a; font-size: 11.5px">{{a.time}}</span></a>
+        </sc-for>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":820}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { range: 'today' }; }
+  renderVals() {
+    const s = this.state; const m = { today: 1, week: 6.4, month: 27 };
+    const k = m[s.range];
+    const fmt = (n) => '฿' + Math.round(n).toLocaleString('en-US');
+    const R = [['ค่าธรรมเนียมการจอง (15%)', 6420, '#d4af37'], ['สมาชิก / แพ็กเกจ', 8500, '#c9283d'], ['ค่าสมัคร Part-Time (แพ็กเกจ B ฿21,000)', 21000, '#e3c35c'], ['พาร์ทเนอร์สปา', 2000, '#8f1424']];
+    const max = Math.max(...R.map((r) => r[1]));
+    const total = R.reduce((a, r) => a + r[1], 0) * k;
+    return {
+      ranges: [['today', 'วันนี้'], ['week', '7 วัน'], ['month', 'เดือนนี้']].map(([id, label]) => ({ label, bg: s.range === id ? '#b0182c' : 'transparent', fg: s.range === id ? '#fff' : '#ab9d94', pick: () => this.setState({ range: id }) })),
+      rangeLabel: { today: 'วันนี้', week: '7 วันล่าสุด', month: 'กุมภาพันธ์ 2570' }[s.range],
+      kpis: [
+        { label: 'การจอง', value: String(Math.round(14 * k)), delta: '+18% จากช่วงก่อน', color: '#f6efe4', deltaColor: '#4ade80' },
+        { label: 'Part-Time ออนไลน์', value: '12', delta: 'จาก 38 คนที่เปิดบัญชี', color: '#f6efe4', deltaColor: '#ab9d94' },
+        { label: 'ผู้สมัครรุ่น 2 ที่ชำระแล้ว', value: '12 / 50', delta: 'รอตรวจสลิป 3', color: '#e3c35c', deltaColor: '#eed58a' },
+        { label: 'รายได้', value: fmt(total), delta: 'ยังไม่รวมเงินที่พักไว้', color: '#e3c35c', deltaColor: '#ab9d94' }
+      ],
+      rev: R.map(([label, v, color]) => ({ label, color, w: Math.round((v / max) * 100) + '%', amt: fmt(v * k) })), revTotal: fmt(total),
+      alerts: [
+        { text: 'SOS จาก Part-Time บายด์ · MB-1042 คอนโด เอกมัย', time: '2 นาที', c: '#ef4444', href: 'AdminBookings.dc.html' },
+        { text: 'สลิปรอตรวจ 3 รายการ (MB-2610009–11)', time: '15 นาที', c: '#d4af37', href: 'AdminApplicants.dc.html' },
+        { text: 'รีวิว 1 ดาว · ภูมิ · รอตรวจก่อนออกใบเตือน', time: '1 ชม.', c: '#c9283d', href: 'AdminBookings.dc.html' },
+        { text: 'พาร์ทเนอร์ใกล้หมดอายุ · Riverside Hotel Spa (แพ็กเกจ 3 เดือน เหลือ 21 วัน)', time: 'วันนี้', c: '#eed58a', href: 'AdminPartners.dc.html' },
+        { text: 'แจ้งไม่มาตามนัด MB-1043 · รอตรวจหลักฐาน 2 ฝ่าย (เงินพักไว้)', time: '3 ชม.', c: '#c9283d', href: 'AdminBookings.dc.html' },
+        { text: 'ลูกค้าแจ้งปัญหา · ยกเลิกหน้างาน MB-1037', time: 'เมื่อวาน', c: '#ab9d94', href: 'AdminBookings.dc.html' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

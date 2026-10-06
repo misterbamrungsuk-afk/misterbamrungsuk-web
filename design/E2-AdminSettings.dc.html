@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>แอดมิน ตั้งค่าระบบ</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0a0a;--s1:#181212;--s2:#21191a;--ln:#33272a;--red:#b0182c;--gold:#D4AF37;--gold-l:#e3c35c;--tx:#f6efe4;--mut:#ab9d94}
+body{margin:0;font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--tx)}
+*{box-sizing:border-box}
+h1{font-family:'Kanit',sans-serif;margin:0}
+button,input{font-family:inherit}
+a{color:var(--tx);text-decoration:none}
+.nv{display:flex;align-items:center;gap:10px;height:40px;padding:0 12px;border-radius:12px;color:var(--mut);font-size:14px}
+.nv.on{background:var(--s2);color:var(--tx);box-shadow:inset 2px 0 0 var(--red)}
+.card{background:var(--s1);border:1px solid var(--ln);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.ct{font-family:'Kanit';font-weight:500;font-size:17px}
+.sr{display:flex;align-items:center;gap:12px;font-size:14px;padding:8px 0;border-bottom:1px solid var(--ln)}
+.sr:last-child{border:0}
+.vi{width:110px;height:40px;border-radius:10px;border:1px solid var(--ln);background:var(--s2);color:var(--gold-l);text-align:center;font-family:'Kanit';font-size:16px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--ln);font-size:13px}
+</style>
+</helmet>
+<div style="width:1440px;height:900px;display:flex;background:var(--bg)">
+  <nav aria-label="เมนูแอดมิน" style="width: 232px; flex: 0 0 232px; border-right: 1px solid #33272a; padding: 18px 14px; display: flex; flex-direction: column; gap: 2px; font-size: 13px; box-sizing: border-box; font-family: 'IBM Plex Sans Thai', sans-serif; background: #0e0a0a">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px"><div style="width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid #d4af37; display: grid; place-items: center; font-family: Kanit; font-weight: 700; font-size: 12px; color: #d4af37">MB</div><div style="line-height: 1.1"><div style="font-family: Kanit; font-weight: 600; color: #f6efe4">Bamrungsuk</div><div style="font-size: 11px; color: #7d6d6a">Admin · super</div></div></div>
+    <a href="AdminDashboard.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ภาพรวม / รายได้</a>
+    <a href="AdminBookings.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">การจอง / งาน</a>
+    <a href="B2-Orders.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ตรวจงาน</a>
+    <a href="AdminApplicants.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ผู้สมัคร</a>
+    <a href="B1-KYC.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">คิว KYC</a>
+    <a href="AdminCohorts.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">รุ่นอบรม / เช็กชื่อ</a>
+    <a href="AdminParttimers.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">Part-Time ที่ใช้งาน</a>
+    <a href="B3-Payouts.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">โอนให้ Part-Time</a>
+    <a href="AdminPartners.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">พาร์ทเนอร์สปา</a>
+    <a href="AdminSpaPricing.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ราคาสปาพาร์ทเนอร์</a>
+    <a href="AdminPricing.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ตั้งค่าราคา</a>
+    <a href="B6-Members.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">สมาชิก · ใบเตือน</a>
+    <a href="B4-Reports.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">รายงาน</a>
+    <a href="B5-CS.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">เรื่องร้องเรียน</a>
+    <a href="B7-Promos.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">โปรโมชัน</a>
+    <a href="B8-Audit.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">บันทึกระบบ · SOS</a>
+    <div style="height: 1px; background: #33272a; margin: 6px 0"></div>
+    <a href="E2-AdminSettings.dc.html" aria-current="page" style="padding: 6px 12px; border-radius: 10px; background: rgba(176,24,44,.2); border: 1px solid rgba(201,40,61,.55); color: #f6efe4; text-decoration: none">ตั้งค่าระบบ</a>
+    <a href="E1-AdminLogin.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">แอดมินและสิทธิ์</a>
+    <a href="Main.dc.html" style="margin-top: auto; padding: 6px 12px; color: #e3c35c; text-decoration: none">← สารบัญทุกหน้า</a>
+  </nav>
+  <main style="flex-grow:1;padding:24px 28px;display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:center"><h1 style="font-size:26px;font-weight:600">ตั้งค่าระบบ</h1><span style="margin-left:14px;font-size:12px;color:var(--mut)">แก้ล่าสุด 28 ม.ค. 2570 โดย Super admin</span><button style="margin-left:auto;height:44px;padding:0 20px;border-radius:12px;border:0;background:var(--red);color:#fff;font-weight:600">บันทึกการเปลี่ยนแปลง</button></div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px">
+      <div class="card"><div class="ct">การเงิน</div>
+        <div class="sr"><span style="flex-grow:1">ค่าคอมมิชชันแพลตฟอร์ม</span><button type="button" class="vi" onClick="{{gp.tap}}" aria-label="GP · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;color:{{gp.color}}">{{gp.text}}</button></div>
+        <div class="sr"><span style="flex-grow:1">ปล่อยเงินอัตโนมัติหลัง</span><button type="button" class="vi" onClick="{{rel.tap}}" aria-label="ปล่อยเงิน · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;color:{{rel.color}}">{{rel.text}}</button></div>
+        <div class="sr"><span style="flex-grow:1">ยกเลิกฟรีก่อนนัด</span><button type="button" class="vi" onClick="{{freeC.tap}}" aria-label="ยกเลิกฟรี · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;color:{{freeC.color}}">{{freeC.text}}</button></div>
+      </div>
+      <div class="card"><div class="ct">กติกาและความปลอดภัย</div>
+        <div class="sr"><span style="flex-grow:1">จำนวนใบเตือนก่อนระงับอัตโนมัติ</span><button type="button" class="vi" onClick="{{strike.tap}}" aria-label="strike · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;color:{{strike.color}}">{{strike.text}}</button></div>
+        <div class="sr"><span style="flex-grow:1">ใบเตือนหมดอายุหลัง</span><button type="button" class="vi" onClick="{{strikeExp.tap}}" aria-label="หมดอายุ · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;color:{{strikeExp.color}}">{{strikeExp.text}}</button></div>
+        <div class="sr"><span style="flex-grow:1">Part-Time รอลูกค้าที่จุดนัดสูงสุด (ก่อนนับว่าลูกค้าไม่มา)</span><button type="button" class="vi" onClick="{{wait.tap}}" aria-label="รอลูกค้า · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;color:{{wait.color}}">{{wait.text}}</button></div>
+        <div class="sr"><span style="flex-grow:1">ลูกค้าไม่มา: เก็บลูกค้าเต็มจำนวน · Part-Time ได้รับ</span><button type="button" class="vi" onClick="{{noShowC.tap}}" aria-label="ลูกค้าไม่มา · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;color:{{noShowC.color}}">{{noShowC.text}}</button></div>
+        <div class="sr"><span style="flex-grow:1">Part-Time ไม่มา: คืนเงินลูกค้า</span><button type="button" class="vi" onClick="{{noShowP.tap}}" aria-label="Part-Time ไม่มา คืนเงิน · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;color:{{noShowP.color}}">{{noShowP.text}}</button></div>
+        <div class="sr"><span style="flex-grow:1">Part-Time ไม่มา: ใบเตือน + หักคะแนน</span><button type="button" class="vi" onClick="{{noShowStrike.tap}}" aria-label="Part-Time ไม่มา ใบเตือน · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;color:{{noShowStrike.color}}">{{noShowStrike.text}}</button></div>
+        <div class="sr"><span style="flex-grow:1">ต้องมีหลักฐานจากทั้ง 2 ฝ่าย (GPS + รูป + ประวัติโทร/แชท) แอดมินตรวจก่อนตัดสิน · เงินพักไว้จนตัดสิน</span><button type="button" class="vi" onClick="{{evidence.tap}}" aria-label="ต้องมีหลักฐานทั้ง 2 ฝ่าย · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;color:{{evidence.color}}">{{evidence.text}}</button></div>
+        <div class="sr"><span style="flex-grow:1">เวลาที่แอดมินต้องตัดสินกรณีไม่มาตามนัด</span><button type="button" class="vi" onClick="{{sla.tap}}" aria-label="SLA ตัดสิน · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;color:{{sla.color}}">{{sla.text}}</button></div>
+        <div class="sr"><span style="flex-grow:1">เวลากดรับงานด่วน</span><button type="button" class="vi" onClick="{{accept.tap}}" aria-label="รับงาน · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;color:{{accept.color}}">{{accept.text}}</button></div>
+      </div>
+      <div class="card"><div class="ct">โพสต์และค้นหา</div>
+        <div class="sr"><span style="flex-grow:1">โพสต์หมดอายุหลัง</span><button type="button" class="vi" onClick="{{postExp.tap}}" aria-label="โพสต์หมดอายุ · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;color:{{postExp.color}}">{{postExp.text}}</button></div>
+        <div class="sr"><span style="flex-grow:1">รัศมีงานด่วนเริ่มต้น</span><button type="button" class="vi" onClick="{{radius.tap}}" aria-label="รัศมี · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;color:{{radius.color}}">{{radius.text}}</button></div>
+        <div class="sr"><span style="flex-grow:1">รูปต่อโพสต์สูงสุด</span><button type="button" class="vi" onClick="{{pics.tap}}" aria-label="รูป · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;color:{{pics.color}}">{{pics.text}}</button></div>
+      </div>
+      <div class="card"><div class="ct">หมวดกิจกรรม</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px"><span class="chip">กิน &amp; เที่ยว ×</span><span class="chip">ช่างภาพ ×</span><span class="chip">ออกกำลัง ×</span><span class="chip">คาเฟ่ ×</span><span class="chip">วิดีโอคอล ×</span><span class="chip">ดูหนัง ×</span><span class="chip">นั่งชิล ×</span><span class="chip" style="border-color:var(--gold);color:var(--gold-l)">+ เพิ่มกิจกรรม</span></div>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+_baseVals() { return {}; }
+
+  _fields() { return {"gp":{"v":["15%","18%","12%"],"ph":"","on":"var(--gold-l)","mask":false},"rel":{"v":["24 ชม.","48 ชม.","12 ชม."],"ph":"","on":"var(--gold-l)","mask":false},"freeC":{"v":["3 ชม.","6 ชม.","24 ชม."],"ph":"","on":"var(--gold-l)","mask":false},"strike":{"v":["3","5","2"],"ph":"","on":"var(--gold-l)","mask":false},"strikeExp":{"v":["90 วัน","180 วัน","60 วัน"],"ph":"","on":"var(--gold-l)","mask":false},"wait":{"v":["15 นาที","20 นาที","10 นาที"],"ph":"","on":"var(--gold-l)","mask":false},"noShowC":{"v":["85%","90%","80%"],"ph":"","on":"var(--gold-l)","mask":false},"noShowP":{"v":["100%","50%"],"ph":"","on":"var(--gold-l)","mask":false},"noShowStrike":{"v":["1 ครั้ง","2 ครั้ง"],"ph":"","on":"var(--gold-l)","mask":false},"evidence":{"v":["เปิด","ปิด"],"ph":"","on":"var(--gold-l)","mask":false},"sla":{"v":["24 ชม.","48 ชม.","12 ชม."],"ph":"","on":"var(--gold-l)","mask":false},"accept":{"v":["15 วิ","30 วิ","10 วิ"],"ph":"","on":"var(--gold-l)","mask":false},"postExp":{"v":["30 วัน","60 วัน","14 วัน"],"ph":"","on":"var(--gold-l)","mask":false},"radius":{"v":["5 กม.","10 กม.","3 กม."],"ph":"","on":"var(--gold-l)","mask":false},"pics":{"v":["6","10","4"],"ph":"","on":"var(--gold-l)","mask":false}}; }
+  fv(k) { const F = this._fields()[k]; const fx = (this.state && this.state.fx) || {}; const v = F.v[(fx[k] || 0) % F.v.length]; return v.indexOf('HOLE:') === 0 ? String((this._hole || {})[v.slice(5)] || '') : v; }
+  renderVals() {
+    const r = this._baseVals(); this._hole = r; const fx = (this.state && this.state.fx) || {}; const F = this._fields();
+    Object.keys(F).forEach((k) => {
+      const v = this.fv(k), c = F[k];
+      const o = { text: v ? (c.mask ? '\u2022'.repeat(v.length) : v) : c.ph, color: v ? c.on : '#7d6d6a', tap: () => this.setState({ fx: Object.assign({}, fx, { [k]: ((fx[k] || 0) + 1) % c.v.length }) }) };
+      for (let i = 0; i < 6; i++) o['d' + i] = v[i] || '\u2013';
+      r[k] = o;
+    });
+    return r;
+  }
+}
+</script>
+</body>
+</html>

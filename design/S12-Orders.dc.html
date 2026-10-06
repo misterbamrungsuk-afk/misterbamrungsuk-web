@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>นัดของฉัน</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0a0a;--s1:#181212;--s2:#21191a;--ln:#33272a;--red:#b0182c;--gold:#D4AF37;--gold-l:#e3c35c;--tx:#f6efe4;--mut:#ab9d94}
+body{margin:0;font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--tx)}
+*{box-sizing:border-box}
+h1{font-family:'Kanit',sans-serif;margin:0}
+button,textarea{font-family:inherit}
+a{color:var(--tx);text-decoration:none}
+.tab{height:36px;padding:0 16px;border-radius:999px;font-size:13px;display:flex;align-items:center;border:1px solid var(--ln)}
+.card{background:var(--s1);border:1px solid var(--ln);border-radius:20px;padding:14px}
+.tl{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;text-align:center;font-size:11px;color:var(--mut)}
+.td{width:24px;height:24px;border-radius:24px;margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+.th{width:56px;height:56px;border-radius:14px;object-fit:cover;flex-shrink:0}
+.star{border:0;background:none;padding:0;cursor:pointer}
+.tab{font-family:inherit;cursor:pointer}
+.tg{height:30px;padding:0 12px;border-radius:999px;border:1px solid var(--ln);font-size:12px;font-family:inherit;cursor:pointer}
+.rb{flex:1;height:36px;border-radius:12px;border:1px solid var(--ln);background:transparent;font-size:12px;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;overflow:hidden;background:var(--bg)">
+  <div style="padding:18px 16px 12px;display:flex;flex-direction:column;gap:14px">
+    <h1 style="font-size:28px;font-weight:600">นัดของฉัน</h1>
+    <div style="display:flex;gap:8px"><sc-for list="{{tabs}}" as="t" hint-placeholder-count="3"><button class="tab" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="background:{{t.bg}};color:{{t.fg}};border-color:{{t.border}}">{{t.label}}</button></sc-for></div>
+  </div>
+  <div style="height:700px;overflow-y:auto;padding:0 16px 110px;display:flex;flex-direction:column;gap:12px">
+    <sc-if value="{{showUp}}" hint-placeholder-val="{{ true }}">
+    <a href="S10-Tracking.dc.html" class="card" style="display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;gap:12px;align-items:center"><img class="th" src="/_blob/ec33c74147cab066783e7acae85c8875" alt=""><div style="flex-grow:1"><b style="font-family:'Kanit';font-weight:500;font-size:16px">ต้น · คาเฟ่ &amp; ดูหนัง 3 ชม.</b><div style="font-size:13px;color:var(--mut)">วันนี้ 19:00 · #MB-24091</div></div><b style="font-family:'Kanit';font-weight:600;font-size:18px;color:var(--gold-l)">฿2,160</b></div>
+      <div class="tl">
+        <div><span class="td" style="background:var(--tx);color:var(--bg)">✓</span>จองแล้ว</div>
+        <div><span class="td" style="background:var(--tx);color:var(--bg)">✓</span>ชำระแล้ว</div>
+        <div style="color:var(--tx)"><span class="td" style="background:var(--red);color:#fff">3</span>ต้นกำลังมา</div>
+        <div><span class="td" style="border:1px solid var(--ln)">4</span>ระหว่างนัด</div>
+        <div><span class="td" style="border:1px solid var(--ln)">5</span>เสร็จสิ้น</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:12px;background:var(--s2);font-size:14px"><span><span style="display:inline-block;width:7px;height:7px;border-radius:7px;background:var(--red);margin-right:6px"></span>ดูตำแหน่งต้นสด ๆ · ถึงใน 12 นาที</span><span style="color:var(--gold)">ดู</span></div>
+    </a>
+    <div style="display:flex;gap:10px"><a href="C4-Cancel.dc.html" style="flex:1;height:46px;border-radius:14px;border:1px solid var(--ln);display:flex;align-items:center;justify-content:center;font-size:14px">ยกเลิก / เปลี่ยนเวลา</a><a href="N05-Dispute.dc.html" style="flex:1;height:46px;border-radius:14px;border:1px solid var(--ln);display:flex;align-items:center;justify-content:center;font-size:14px">มีปัญหา? แจ้งเรา</a></div>
+    <div style="font-size:12px;color:var(--mut);line-height:1.6">ยกเลิกก่อนนัดมากกว่า 3 ชม. คืนเต็ม · น้อยกว่า 3 ชม. คืน 50%</div>
+    </sc-if>
+    <sc-if value="{{showDone}}" hint-placeholder-val="{{ false }}">
+    <div class="card" style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;gap:12px;align-items:center"><img class="th" src="/_blob/d26354f23535577e2504751c4197ea79" alt=""><div style="flex-grow:1"><b style="font-family:'Kanit';font-weight:500;font-size:16px">กอล์ฟ · ออกกำลัง 3 ชม.</b><div style="font-size:13px;color:var(--mut)">เมื่อวาน · ชำระครบแล้ว</div></div><span style="height:24px;padding:0 9px;border-radius:999px;border:1px solid #2FBF71;color:#5EDB98;font-size:11px;display:flex;align-items:center">เสร็จสิ้น</span></div>
+      <sc-if value="{{notSent}}" hint-placeholder-val="{{ true }}">
+      <div style="border-top:1px solid var(--ln);padding-top:12px;display:flex;flex-direction:column;gap:10px">
+        <b style="font-family:'Kanit';font-weight:500">เมื่อวานกับกอล์ฟเป็นอย่างไรบ้าง</b>
+        <div style="display:flex;gap:6px"><sc-for list="{{stars}}" as="st" hint-placeholder-count="5"><button class="star" onClick="{{st.pick}}" aria-label="{{st.label}}" style="color:{{st.color}}"><svg viewBox="0 0 24 24" style="width:34px;height:34px"><path d="m12 2.5 2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z" fill="currentColor"/></svg></button></sc-for></div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{tags}}" as="t" hint-placeholder-count="4"><button class="tg" onClick="{{t.toggle}}" aria-pressed="{{t.on}}" style="border-color:{{t.border}};background:{{t.bg}};color:{{t.fg}}">{{t.label}}</button></sc-for></div>
+        <div style="display:flex;gap:6px" role="radiogroup" aria-label="นัดซ้ำไหม"><sc-for list="{{again}}" as="r" hint-placeholder-count="3"><button class="rb" role="radio" aria-checked="{{r.on}}" onClick="{{r.pick}}" style="border-color:{{r.border}};color:{{r.fg}}"><span style="width:14px;height:14px;border-radius:14px;border:{{r.ring}}"></span>{{r.label}}</button></sc-for></div>
+        <button type="button" onClick="{{review.tap}}" aria-label="เขียนรีวิว · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:flex-start;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:pre-wrap;height:76px;border-radius:14px;border:1px solid var(--ln);padding:10px 12px;font-size:14px;resize:none;background:var(--s2); color:{{review.color}}">{{review.text}}</button><span style="font-size:11px;color:#7d6d6a;font-weight:400">แตะเพื่อกรอกตัวอย่าง</span>
+        <button onClick="{{send}}" style="height:50px;border-radius:14px;border:0;background:var(--red);color:#fff;font-family:'Kanit';font-weight:600;font-size:16px">ส่งรีวิว {{ratingLabel}}</button>
+      </div>
+      </sc-if>
+      <sc-if value="{{sent}}" hint-placeholder-val="{{ false }}"><div style="border-top:1px solid var(--ln);padding-top:12px;font-size:14px;color:#5EDB98">ขอบคุณสำหรับรีวิว {{ratingLabel}} · <button class="star" onClick="{{edit}}" style="color:var(--gold);font-size:14px;font-family:inherit">แก้ไข</button></div></sc-if>
+    </div>
+    <div class="card" style="display:flex;gap:12px;align-items:center"><img class="th" src="/_blob/551eb82924983c941f1fe44ede9bceca" alt=""><div style="flex-grow:1"><b style="font-family:'Kanit';font-weight:500;font-size:16px">ภูมิ · กิน &amp; เที่ยว 3 ชม.</b><div style="font-size:13px;color:var(--mut)">21 ก.ย. · รีวิวแล้ว 5 ดาว</div></div><a href="Booking.dc.html" style="font-size:13px;color:var(--gold)">จองอีก</a></div>
+    </sc-if>
+    <sc-if value="{{showCancel}}" hint-placeholder-val="{{ false }}">
+    <div class="card" style="display:flex;gap:12px;align-items:center;opacity:.8"><img class="th" src="/_blob/82a15fdc40050c0a074e7e4b5b66e794" alt="" style="filter:grayscale(.6)"><div style="flex-grow:1"><b style="font-family:'Kanit';font-weight:500;font-size:16px">นนท์ · ดูหนัง 3 ชม.</b><div style="font-size:13px;color:var(--mut)">15 ก.ย. · ยกเลิกก่อน 3 ชม. · คืนเต็ม ฿1,950</div></div><span style="height:24px;padding:0 9px;border-radius:999px;border:1px solid var(--ln);color:var(--mut);font-size:11px;display:flex;align-items:center">ยกเลิก</span></div>
+    <div class="card" style="display:flex;gap:12px;align-items:center;opacity:.8"><img class="th" src="/_blob/f34ad19eab9288d994c2271a15964ceb" alt="" style="filter:grayscale(.6)"><div style="flex-grow:1"><b style="font-family:'Kanit';font-weight:500;font-size:16px">เบนซ์ · ช่างภาพ 3 ชม.</b><div style="font-size:13px;color:var(--mut)">2 ก.ย. · ยกเลิกช้ากว่า 3 ชม. · คืน 50% ฿1,125</div></div><span style="height:24px;padding:0 9px;border-radius:999px;border:1px solid var(--ln);color:var(--mut);font-size:11px;display:flex;align-items:center">ยกเลิก</span></div>
+    </sc-if>
+    <div class="card" style="display:flex;align-items:center;gap:12px;border-color:rgba(212,175,55,.4)">
+      <span style="font-family:'Kanit';font-weight:700;font-size:20px;color:var(--gold)">%</span>
+      <div style="flex-grow:1"><b style="font-weight:500">โค้ดส่วนลด 2 ใบ</b><div style="font-size:12px;color:var(--mut)">MB100 · ลด ฿100</div></div>
+      <span style="color:var(--gold);font-size:13px">ดู</span>
+    </div>
+  </div>
+  <a href="N06-SOS.dc.html" aria-label="SOS ฉุกเฉิน" style="position: absolute; right: 16px; bottom: 90px; z-index: 39; height: 40px; padding: 0 14px 0 8px; border-radius: 999px; background: #181212; border: 1px solid rgba(201,40,61,.6); color: #ef8a97; font-weight: 700; font-size: 13px; text-decoration: none; display: flex; align-items: center; gap: 6px; box-shadow: 0 8px 24px rgba(0,0,0,.5)"><span style="width: 24px; height: 24px; border-radius: 50%; background: #b0182c; display: grid; place-items: center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3z"></path></svg></span>SOS</a>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; border-top: 1px solid #33272a; background: rgba(14,10,10,.97); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; text-align: center; font-size: 10.5px; color: #7d6d6a; z-index: 40">
+    <a href="Main.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>หน้าแรก</a>
+    <a href="S05-Map.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>ใกล้ฉัน</a>
+    <div><a href="S06-QuickCall.dc.html" aria-label="เรียกด่วน" style="width: 50px; height: 50px; margin: 0 auto; border-radius: 16px; background: linear-gradient(180deg, #c21d33, #8f1424); display: grid; place-items: center; color: #fff"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7z"></path></svg></a></div>
+    <a href="S07-Chats.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a8 8 0 0 1-12 7l-5 1 1-4a8 8 0 1 1 16-4z"></path></svg>แชท</a>
+    <a href="S13-Account.dc.html" style="color: #d4af37; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px" aria-current="page"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg>บัญชี</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { tab: 'up', rating: 4, tags: ['ตรงเวลา'], again: 'yes', sent: false }; }
+  _baseVals() {
+    const s = this.state;
+    const TAGS = ['ตรงเวลา', 'คุยสนุก', 'สุภาพ', 'ดูแลดี'];
+    return {
+      tabs: [['up', 'กำลังจะถึง'], ['done', 'เสร็จแล้ว'], ['cancel', 'ยกเลิก']].map(([id, label]) => { const on = s.tab === id; return { label, on: String(on), bg: on ? 'var(--tx)' : 'transparent', fg: on ? 'var(--bg)' : 'var(--tx)', border: on ? 'var(--tx)' : 'var(--ln)', pick: () => this.setState({ tab: id }) }; }),
+      showUp: s.tab === 'up', showDone: s.tab === 'done', showCancel: s.tab === 'cancel',
+      stars: [1, 2, 3, 4, 5].map((n) => ({ label: n + ' ดาว', color: n <= s.rating ? 'var(--gold)' : 'var(--ln)', pick: () => this.setState({ rating: n }) })),
+      ratingLabel: s.rating + ' ดาว',
+      tags: TAGS.map((t) => { const on = s.tags.includes(t); return { label: t, on: String(on), border: on ? 'var(--tx)' : 'var(--ln)', bg: on ? 'var(--tx)' : 'transparent', fg: on ? 'var(--bg)' : 'var(--tx)', toggle: () => this.setState({ tags: on ? s.tags.filter((x) => x !== t) : [...s.tags, t] }) }; }),
+      again: [['yes', 'นัดอีกแน่นอน'], ['maybe', 'อาจจะ'], ['no', 'ไม่นัดซ้ำ']].map(([id, label]) => { const on = s.again === id; return { label, on: String(on), border: on ? 'var(--gold)' : 'var(--ln)', fg: on ? 'var(--gold-l)' : 'var(--tx)', ring: on ? '4px solid var(--gold)' : '1px solid var(--ln)', pick: () => this.setState({ again: id }) }; }),
+      sent: s.sent, notSent: !s.sent,
+      send: () => this.setState({ sent: true }), edit: () => this.setState({ sent: false })
+    };
+  }
+
+  _fields() { return {"review":{"v":["","ตรงเวลา คุยสนุก ดูแลดีมากค่ะ","แนะนำร้านอร่อย ถ่ายรูปสวยค่ะ"],"ph":"เล่าสั้น ๆ ให้คนอื่นได้รู้","on":"var(--tx)","mask":false}}; }
+  fv(k) { const F = this._fields()[k]; const fx = (this.state && this.state.fx) || {}; const v = F.v[(fx[k] || 0) % F.v.length]; return v.indexOf('HOLE:') === 0 ? String((this._hole || {})[v.slice(5)] || '') : v; }
+  renderVals() {
+    const r = this._baseVals(); this._hole = r; const fx = (this.state && this.state.fx) || {}; const F = this._fields();
+    Object.keys(F).forEach((k) => {
+      const v = this.fv(k), c = F[k];
+      const o = { text: v ? (c.mask ? '\u2022'.repeat(v.length) : v) : c.ph, color: v ? c.on : '#7d6d6a', tap: () => this.setState({ fx: Object.assign({}, fx, { [k]: ((fx[k] || 0) + 1) % c.v.length }) }) };
+      for (let i = 0; i < 6; i++) o['d' + i] = v[i] || '\u2013';
+      r[k] = o;
+    });
+    return r;
+  }
+}
+</script>
+</body>
+</html>

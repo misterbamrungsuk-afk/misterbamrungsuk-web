@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>สมัครสมาชิก</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+.h{font-family:Kanit;font-weight:600}
+.card{padding:14px;border-radius:16px;background:#181212;border:1px solid #33272a}
+.in{height:48px;border-radius:12px;border:1px solid #33272a;background:#21191a;color:#f6efe4;padding:0 14px;font-size:14px;box-sizing:border-box;width:100%;display:flex;align-items:center}
+.cta{height:52px;border-radius:14px;border:1px solid rgba(212,175,55,.45);background:linear-gradient(180deg,#c21d33,#8f1424);color:#fff;font-size:15px;font-weight:600;width:100%;font-family:Kanit}
+.ghost{height:48px;border-radius:14px;border:1px solid #33272a;background:#181212;color:#e3c35c;font-size:14px;font-weight:600;width:100%}
+.lbl{font-size:12px;color:#ab9d94;margin:0 0 6px}
+.mut{color:#ab9d94}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; position: relative; overflow: hidden">
+  <div style="height: 844px; overflow-y: auto; box-sizing: border-box; padding-bottom: 24px">
+<div style="padding: 12px 14px 0; display: flex; align-items: center; gap: 8px">
+      <a href="Login.dc.html" aria-label="ย้อนกลับ" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid #33272a; background: #181212; color: #e3c35c; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"></path></svg></a>
+      <div class="h" style="font-size: 17px; color: #d4af37">สมัครสมาชิก</div>
+    </div>
+    <div style="padding: 14px 18px 0; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px">
+        <sc-for list="{{steps}}" as="st" hint-placeholder-count="3">
+          <div style="display: flex; flex-direction: column; gap: 6px"><div style="height: 4px; border-radius: 99px; background: {{st.bar}}"></div><span style="font-size: 11px; color: {{st.fg}}">{{st.label}}</span></div>
+        </sc-for>
+      </div>
+      <sc-if value="{{isForm}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <div><h1 class="h" style="margin: 0; font-size: 24px; color: #d4af37">สร้างบัญชีลูกค้า</h1><p class="mut" style="margin: 4px 0 0; font-size: 13px">เริ่มต้นนัดเพื่อนพรีเมียมกับ Mister Bamrungsuk</p></div>
+          <div><p class="lbl">ชื่อที่แสดง</p><div class="in">คุณกฤษดา ส.</div></div>
+          <div><p class="lbl">อีเมล</p><div class="in">krit.s@gmail.com</div></div>
+          <div><p class="lbl">รหัสผ่าน</p><div class="in" style="justify-content: space-between"><span>{{pwText}}</span><button onClick="{{togglePw}}" aria-label="แสดงรหัสผ่าน" style="width: 44px; height: 44px; margin-right: -10px; border: 0; background: transparent; color: #ab9d94; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div><p style="margin: 6px 0 0; font-size: 11px; color: #7fd6a3">รหัสผ่านแข็งแรงดี · 10 ตัวอักษร มีตัวเลข</p></div>
+          <button onClick="{{toggleAgree}}" style="display: flex; gap: 10px; align-items: center; min-height: 44px; border: 0; background: transparent; color: #f6efe4; font-size: 13px; text-align: left; padding: 0"><span style="width: 22px; height: 22px; border-radius: 6px; border: 1.5px solid #d4af37; background: {{agreeBg}}; display: grid; place-items: center; flex: 0 0 22px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a1206" stroke-width="3"><path d="m5 12 5 5 9-10"></path></svg></span>ฉันอายุ 18 ปีขึ้นไป และยอมรับเงื่อนไขการใช้งานกับนโยบายความเป็นส่วนตัว</button>
+          <button class="cta" onClick="{{toOtp}}" style="opacity: {{ctaOp}}">ส่งรหัส OTP</button>
+          <button onClick="{{toForgot}}" style="min-height: 44px; border: 0; background: transparent; color: #e3c35c; font-size: 13px">ลืมรหัสผ่าน?</button>
+          <div style="text-align: center; font-size: 13px" class="mut">มีบัญชีแล้ว? <a href="Login.dc.html">เข้าสู่ระบบ</a></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{isOtp}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <div><h1 class="h" style="margin: 0; font-size: 24px; color: #d4af37">ยืนยันรหัส OTP</h1><p class="mut" style="margin: 4px 0 0; font-size: 13px">ส่งรหัส 6 หลักไปที่ krit.s@gmail.com แล้ว · Ref: QX7P</p></div>
+          <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px">
+            <sc-for list="{{otpBoxes}}" as="b" hint-placeholder-count="6"><div style="height: 54px; border-radius: 12px; background: #21191a; border: 1px solid {{b.bd}}; display: grid; place-items: center; font-family: Kanit; font-size: 22px; color: #e3c35c">{{b.d}}</div></sc-for>
+          </div>
+          <div style="font-size: 12px; text-align: center" class="mut">ส่งรหัสใหม่ได้ใน 00:48</div>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px">
+            <sc-for list="{{keys}}" as="k" hint-placeholder-count="12"><button onClick="{{k.tap}}" style="height: 52px; border-radius: 12px; border: 1px solid #33272a; background: #181212; color: #f6efe4; font-family: Kanit; font-size: 20px">{{k.label}}</button></sc-for>
+          </div>
+          <button class="cta" onClick="{{verify}}" style="opacity: {{verifyOp}}">ยืนยัน</button>
+        </div>
+      </sc-if>
+      <sc-if value="{{isDone}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 14px; align-items: center; text-align: center; padding-top: 30px">
+          <div style="width: 88px; height: 88px; border-radius: 50%; border: 2px solid #d4af37; display: grid; place-items: center; color: #d4af37"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 5 5 9-10"></path></svg></div>
+          <h1 class="h" style="margin: 0; font-size: 24px; color: #d4af37">สมัครสำเร็จ</h1>
+          <p class="mut" style="margin: 0; font-size: 14px">ยินดีต้อนรับค่ะ คุณกฤษดา บัญชีพร้อมแล้ว อัปเกรดสมาชิกเพื่อนัดเพื่อนระดับ VIP ได้เลย</p>
+          <a href="Main.dc.html" class="cta" style="display: grid; place-items: center; text-decoration: none">เริ่มใช้งาน</a>
+          <a href="Membership.dc.html" class="ghost" style="display: grid; place-items: center; text-decoration: none">ดูแพ็กเกจสมาชิก</a>
+        </div>
+      </sc-if>
+      <sc-if value="{{isForgot}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <div><h1 class="h" style="margin: 0; font-size: 24px; color: #d4af37">ลืมรหัสผ่าน</h1><p class="mut" style="margin: 4px 0 0; font-size: 13px">บอกอีเมลที่ใช้สมัคร แล้วเราจะส่งลิงก์ตั้งรหัสใหม่ไปให้</p></div>
+          <div><p class="lbl">อีเมล</p><div class="in">krit.s@gmail.com</div></div>
+          <sc-if value="{{forgotSent}}" hint-placeholder-val="{{ false }}"><div class="card" style="border-color: rgba(60,170,110,.5); color: #7fd6a3; font-size: 13px">ส่งลิงก์ไปแล้ว ลองเช็กอีเมลดูนะคะ (ลิงก์ใช้ได้ 30 นาที)<br><a href="ResetPassword.dc.html" style="display: inline-block; margin-top: 6px; font-weight: 600">เปิดลิงก์ในอีเมล → ตั้งรหัสผ่านใหม่</a></div></sc-if>
+          <button class="cta" onClick="{{sendReset}}">{{resetLabel}}</button>
+          <button class="ghost" onClick="{{toForm}}">กลับไปหน้าสมัคร</button>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { step: 'form', showPw: false, agree: true, otp: '', sent: false }; }
+  renderVals() {
+    const s = this.state; const idx = { form: 0, forgot: 0, otp: 1, done: 2 }[s.step];
+    const keys = ['1','2','3','4','5','6','7','8','9','ล้าง','0','ลบ'];
+    return {
+      steps: ['บัญชี', 'ยืนยัน OTP', 'เสร็จสิ้น'].map((label, i) => ({ label, bar: i <= idx ? '#d4af37' : '#33272a', fg: i <= idx ? '#e3c35c' : '#7d6d6a' })),
+      isForm: s.step === 'form', isOtp: s.step === 'otp', isDone: s.step === 'done', isForgot: s.step === 'forgot',
+      pwText: s.showPw ? 'Bamrung2026' : '••••••••••',
+      togglePw: () => this.setState({ showPw: !s.showPw }),
+      agreeBg: s.agree ? '#d4af37' : 'transparent', toggleAgree: () => this.setState({ agree: !s.agree }),
+      ctaOp: s.agree ? '1' : '.45', toOtp: () => { if (s.agree) this.setState({ step: 'otp', otp: '' }); },
+      toForgot: () => this.setState({ step: 'forgot', sent: false }), toForm: () => this.setState({ step: 'form' }),
+      otpBoxes: [0,1,2,3,4,5].map((i) => ({ d: s.otp[i] || '', bd: i === s.otp.length ? '#d4af37' : '#33272a' })),
+      keys: keys.map((label) => ({ label, tap: () => {
+        if (label === 'ล้าง') this.setState({ otp: '' });
+        else if (label === 'ลบ') this.setState({ otp: s.otp.slice(0, -1) });
+        else if (s.otp.length < 6) this.setState({ otp: s.otp + label });
+      } })),
+      verifyOp: s.otp.length === 6 ? '1' : '.45', verify: () => { if (s.otp.length === 6) this.setState({ step: 'done' }); },
+      forgotSent: s.sent, resetLabel: s.sent ? 'ส่งลิงก์อีกครั้ง' : 'ส่งลิงก์รีเซ็ต', sendReset: () => this.setState({ sent: true })
+    };
+  }
+}
+</script>
+</body>
+</html>

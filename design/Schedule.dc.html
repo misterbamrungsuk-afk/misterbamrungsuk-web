@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>ตารางงาน</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+button:disabled{cursor:not-allowed}
+textarea{font-family:inherit}
+button:focus-visible,a:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; position: relative; overflow: hidden; display: flex; flex-direction: column">
+  <div style="flex: 1; overflow-y: auto; padding: 14px 18px 96px; display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; justify-content: space-between; align-items: center"><div style="font-family: Kanit; font-weight: 600; font-size: 20px">ตารางงานของฉัน</div><span style="padding: 5px 10px; border-radius: 999px; border: 1px solid rgba(74,222,128,.7); color: #bbf7d0; font-size: 11px">● ออนไลน์</span></div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; text-align: center">
+      <div style="padding: 10px 0; border-radius: 14px; background: rgba(176,24,44,.16); border: 1px solid rgba(201,40,61,.55)"><div style="font-family: Kanit; font-weight: 700; font-size: 20px">{{pending}}</div><div style="font-size: 10.5px; color: #d3c7bc">รอตอบรับ</div></div>
+      <div style="padding: 10px 0; border-radius: 14px; border: 1px solid #33272a"><div style="font-family: Kanit; font-weight: 700; font-size: 20px; color: #e3c35c">{{accepted}}</div><div style="font-size: 10.5px; color: #ab9d94">รับแล้ววันนี้</div></div>
+      <div style="padding: 10px 0; border-radius: 14px; border: 1px solid #33272a"><div style="font-family: Kanit; font-weight: 700; font-size: 20px">9</div><div style="font-size: 10.5px; color: #ab9d94">งานเดือนนี้</div></div>
+    </div>
+    <div style="padding: 12px; border-radius: 16px; border: 1px solid #33272a; background: #181212">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px"><span style="font-family: Kanit; font-weight: 600; font-size: 14px">กุมภาพันธ์ 2570</span><span style="font-size: 11px; color: #ab9d94"><span style="color: #d4af37">●</span> มีนัด <span style="color: #c9283d">●</span> วันนี้</span></div>
+      <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; text-align: center; font-size: 11.5px">
+        <sc-for list="{{days}}" as="d" hint-placeholder-count="30"><button onClick="{{d.pick}}" style="height: 32px; border-radius: 8px; border: 1px solid {{d.border}}; background: {{d.bg}}; color: {{d.fg}}; font-size: 11.5px">{{d.n}}</button></sc-for>
+      </div>
+    </div>
+    <div style="font-family: Kanit; font-weight: 600; font-size: 16px">นัดวันที่ {{selDay}} ก.พ.</div>
+    <sc-for list="{{jobs}}" as="j" hint-placeholder-count="2">
+      <div style="padding: 14px; border-radius: 18px; border: 1px solid {{j.border}}; background: #181212; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px">
+        <div style="display: flex; justify-content: space-between; align-items: center"><div style="font-family: Kanit; font-weight: 700; font-size: 18px">{{j.time}}</div><span style="padding: 3px 9px; border-radius: 999px; background: {{j.pillBg}}; color: {{j.pillFg}}; font-size: 11px">{{j.status}}</span></div>
+        <div style="font-size: 13.5px">{{j.service}}</div>
+        <div style="color: #ab9d94">{{j.meta}}</div>
+        <div style="padding: 8px 10px; border-radius: 10px; background: #130e0e; color: #d3c7bc">{{j.note}}</div>
+        <div style="display: flex; justify-content: space-between"><span style="color: #ab9d94">รายได้ของคุณ (หัก 15%)</span><span style="font-family: Kanit; font-weight: 700; color: #e3c35c">{{j.earn}}</span></div>
+        <div style="font-size: 11px; color: #7d6d6a">ถ้าลูกค้าไม่มา (คุณรอครบ 15 นาที) คุณยังได้ยอดนี้ · ถ้าคุณไม่มา ลูกค้าได้เงินคืนเต็ม และคุณได้ใบเตือน 1 ครั้ง + หักคะแนน · แอดมินตัดสินหลังตรวจหลักฐานทั้ง 2 ฝ่าย</div>
+        <sc-if value="{{j.isPending}}" hint-placeholder-val="{{ true }}">
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+            <button onClick="{{j.decline}}" style="height: 44px; border-radius: 999px; border: 1px solid #33272a; background: transparent; color: #d3c7bc">ปฏิเสธงาน</button>
+            <button onClick="{{j.accept}}" style="height: 44px; border-radius: 999px; border: 1px solid rgba(212,175,55,.45); background: linear-gradient(180deg, #c21d33, #8f1424); color: #fff; font-weight: 600">รับงาน</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{j.isAccepted}}" hint-placeholder-val="{{ false }}">
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+            <button style="height: 42px; border-radius: 999px; border: 1px solid #33272a; background: transparent; color: #f6efe4">แชท</button>
+            <button style="height: 42px; border-radius: 999px; border: 1px solid #33272a; background: transparent; color: #f6efe4">โทร</button>
+            <a href="Job.dc.html" style="height: 42px; border-radius: 999px; background: #d4af37; color: #1a1206; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center">นำทาง</a>
+          </div>
+        </sc-if>
+      </div>
+    </sc-for>
+  </div>
+  <sc-if value="{{showModal}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: rgba(5,3,3,.75); display: flex; align-items: flex-end">
+      <div role="dialog" aria-label="เหตุผลที่ปฏิเสธ" style="width: 100%; border-radius: 24px 24px 0 0; background: #181212; border-top: 1px solid rgba(212,175,55,.45); padding: 20px 18px 22px; display: flex; flex-direction: column; gap: 8px">
+        <div style="font-family: Kanit; font-weight: 600; font-size: 18px">เหตุผลที่ปฏิเสธ</div>
+        <sc-for list="{{reasons}}" as="r" hint-placeholder-count="5"><button onClick="{{r.pick}}" style="display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 14px; border-radius: 14px; border: 1px solid {{r.border}}; background: #130e0e; color: #f6efe4; font-size: 13.5px; text-align: left"><span style="width: 16px; height: 16px; border-radius: 50%; border: 2px solid {{r.ring}}; background: {{r.dot}}"></span>{{r.label}}</button></sc-for>
+        <div style="font-size: 11.5px; color: #7d6d6a">ถ้าปฏิเสธบ่อย อาจกระทบสิทธิ์รับค่าการันตีคืน</div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 4px">
+          <button onClick="{{closeModal}}" style="height: 48px; border-radius: 999px; border: 1px solid #33272a; background: transparent; color: #d3c7bc">ยกเลิก</button>
+          <button onClick="{{confirmDecline}}" disabled="{{noReason}}" style="height: 48px; border-radius: 999px; border: 1px solid rgba(212,175,55,.45); background: linear-gradient(180deg, #c21d33, #8f1424); color: #fff; font-weight: 600; opacity: {{reasonOpacity}}">ยืนยันปฏิเสธ</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; border-top: 1px solid #33272a; background: rgba(14,10,10,.97); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; text-align: center; font-size: 10.5px; color: #7d6d6a">
+    <a href="Provider.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>หน้าหลัก</a>
+    <a href="Schedule.dc.html" aria-current="page" style="color: #d4af37; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16"></path></svg>ตาราง</a>
+    <a href="P16-Jobboard.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path></svg>งาน</a>
+    <a href="M08-Earnings.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2.5"></circle></svg>รายได้</a>
+    <a href="P19-Settings.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg>ตั้งค่า</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { day: 12, status: { a: 'pending', b: 'accepted' }, modal: null, reason: null }; }
+  renderVals() {
+    const s = this.state; const gold = '#d4af37';
+    const busy = [5, 8, 12, 15, 20, 22, 27];
+    const J = [
+      { id: 'a', time: '19:00 – 22:00', service: 'นัด 3 ชม. · กิน & เที่ยว', meta: 'คุณแพรว (TH) · The Lofts Ekkamai · 3.4 กม. · ~15 นาที', note: '“เจอกันที่ล็อบบี้นะคะ แจ้งชื่อกับ รปภ. ได้เลย”', earn: '฿2,040' },
+      { id: 'b', time: '14:00 – 17:00', service: 'นัด 3 ชม. · คาเฟ่ + ช่างภาพ', meta: 'Ms. Sarah (EN) · Siam Serenity Spa · 1.8 กม.', note: '“อยากได้รูปสวย ๆ ที่คาเฟ่ย่านอารีย์”', earn: '฿2,040' }
+    ];
+    const st = s.status;
+    const pill = { pending: ['งานใหม่ · รอตอบรับ', 'rgba(176,24,44,.25)', '#ef8a97', 'rgba(212,175,55,.45)'], accepted: ['รับแล้ว', 'rgba(74,222,128,.15)', '#bbf7d0', '#33272a'], declined: ['ปฏิเสธแล้ว', '#21191a', '#7d6d6a', '#33272a'] };
+    const R = ['ติดงานอื่นในช่วงเวลานี้', 'ระยะทางไกลเกินไป', 'ไม่สะดวกเวลานี้', 'ไม่ถนัดกิจกรรมนี้', 'อื่น ๆ'];
+    return {
+      pending: Object.values(st).filter((x) => x === 'pending').length, accepted: Object.values(st).filter((x) => x === 'accepted').length,
+      days: Array.from({ length: 28 }, (_, i) => { const n = i + 1; const sel = n === s.day; const b = busy.includes(n); return { n, bg: sel ? '#b0182c' : b ? 'rgba(212,175,55,.14)' : 'transparent', fg: sel ? '#fff' : b ? '#eed58a' : '#ab9d94', border: n === 12 && !sel ? '#c9283d' : 'transparent', pick: () => this.setState({ day: n }) }; }),
+      selDay: s.day,
+      jobs: J.map((j) => { const p = pill[st[j.id]]; return { ...j, status: p[0], pillBg: p[1], pillFg: p[2], border: p[3], isPending: st[j.id] === 'pending', isAccepted: st[j.id] === 'accepted', accept: () => this.setState({ status: { ...st, [j.id]: 'accepted' } }), decline: () => this.setState({ modal: j.id, reason: null }) }; }),
+      showModal: !!s.modal, closeModal: () => this.setState({ modal: null }),
+      reasons: R.map((label, i) => ({ label, border: s.reason === i ? gold : '#33272a', ring: s.reason === i ? gold : '#4a3a3d', dot: s.reason === i ? gold : 'transparent', pick: () => this.setState({ reason: i }) })),
+      noReason: s.reason === null, reasonOpacity: s.reason === null ? 0.45 : 1,
+      confirmDecline: () => this.setState({ status: { ...st, [s.modal]: 'declined' }, modal: null })
+    };
+  }
+}
+</script>
+</body>
+</html>

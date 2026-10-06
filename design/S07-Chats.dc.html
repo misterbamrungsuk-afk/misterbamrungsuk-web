@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>รายการแชท</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0a0a;--s1:#181212;--s2:#21191a;--ln:#33272a;--red:#b0182c;--red-dk:#8f1424;--gold:#D4AF37;--gold-l:#e3c35c;--tx:#f6efe4;--mut:#ab9d94}
+body{margin:0;font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--tx)}
+*{box-sizing:border-box}
+h1{font-family:'Kanit',sans-serif;margin:0}
+button,input{font-family:inherit}
+a{color:var(--tx);text-decoration:none}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.cr{display:flex;gap:12px;align-items:center;padding:12px 16px}
+.av{width:56px;height:56px;border-radius:56px;object-fit:cover;flex-shrink:0}
+.nm{font-family:'Kanit';font-weight:500;font-size:16px}
+.ms{font-size:14px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tm{font-size:12px;color:var(--mut)}
+.tab{font-family:inherit;cursor:pointer;height:36px;padding:0 16px;border-radius:999px;font-size:13px;font-weight:500;display:flex;align-items:center;border:1px solid var(--ln)}
+.navi{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--mut)}
+.navi.on{color:var(--tx)}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;overflow:hidden;background:var(--bg)">
+  <div style="padding:18px 16px 8px;display:flex;flex-direction:column;gap:14px">
+    <h1 style="font-size:28px;font-weight:600">ข้อความ</h1>
+    <label style="height:46px;border-radius:14px;background:var(--s1);border:1px solid var(--ln);display:flex;align-items:center;gap:8px;padding:0 14px;color:var(--mut)"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><button type="button" onClick="{{q.tap}}" aria-label="ค้นหาแชท · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;border:0;outline:0;flex-grow:1;font-size:14px;background:transparent; color:{{q.color}}">{{q.text}}</button></label>
+    <div style="display:flex;gap:8px"><sc-for list="{{tabs}}" as="t" hint-placeholder-count="3"><button class="tab" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="background:{{t.bg}};color:{{t.fg}};border-color:{{t.border}}">{{t.label}}</button></sc-for></div>
+  </div>
+  <div style="height:674px;overflow-y:auto;padding-bottom:96px">
+    <sc-for list="{{chats}}" as="c" hint-placeholder-count="5">
+      <a class="cr" href="S08-ChatRoom.dc.html" style="background:{{c.rowBg}};opacity:{{c.op}}">
+        <div style="position:relative"><img class="av" src="{{c.img}}" alt="" style="filter:{{c.filter}}"><sc-if value="{{c.online}}" hint-placeholder-val="{{ false }}"><span style="position:absolute;right:1px;bottom:1px;width:13px;height:13px;border-radius:13px;background:#2FBF71;border:2px solid var(--s1)"></span></sc-if></div>
+        <div style="flex-grow:1;min-width:0"><div style="display:flex;justify-content:space-between"><span class="nm">{{c.name}}</span><span class="tm" style="color:{{c.timeFg}}">{{c.time}}</span></div><div style="display:flex;justify-content:space-between;gap:8px"><span class="ms" style="color:{{c.msgFg}}">{{c.msg}}</span><sc-if value="{{c.hasUnread}}" hint-placeholder-val="{{ false }}"><span style="min-width:20px;height:20px;border-radius:20px;background:var(--red);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">{{c.unread}}</span></sc-if></div><sc-if value="{{c.hasAppt}}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;color:var(--gold-l)">● {{c.appt}}</span></sc-if></div>
+      </a>
+    </sc-for>
+    <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}"><div style="padding:48px 24px;text-align:center;color:var(--mut);font-size:14px">ไม่มีแชทในหมวดนี้</div></sc-if>
+  </div>
+  <a href="N06-SOS.dc.html" aria-label="SOS ฉุกเฉิน" style="position: absolute; right: 16px; bottom: 90px; z-index: 39; height: 40px; padding: 0 14px 0 8px; border-radius: 999px; background: #181212; border: 1px solid rgba(201,40,61,.6); color: #ef8a97; font-weight: 700; font-size: 13px; text-decoration: none; display: flex; align-items: center; gap: 6px; box-shadow: 0 8px 24px rgba(0,0,0,.5)"><span style="width: 24px; height: 24px; border-radius: 50%; background: #b0182c; display: grid; place-items: center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3z"></path></svg></span>SOS</a>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; border-top: 1px solid #33272a; background: rgba(14,10,10,.97); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; text-align: center; font-size: 10.5px; color: #7d6d6a; z-index: 40">
+    <a href="Main.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>หน้าแรก</a>
+    <a href="S05-Map.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>ใกล้ฉัน</a>
+    <div><a href="S06-QuickCall.dc.html" aria-label="เรียกด่วน" style="width: 50px; height: 50px; margin: 0 auto; border-radius: 16px; background: linear-gradient(180deg, #c21d33, #8f1424); display: grid; place-items: center; color: #fff"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7z"></path></svg></a></div>
+    <a href="S07-Chats.dc.html" style="color: #d4af37; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px" aria-current="page"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a8 8 0 0 1-12 7l-5 1 1-4a8 8 0 1 1 16-4z"></path></svg>แชท</a>
+    <a href="S13-Account.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg>บัญชี</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { tab: 'all' }; }
+  _baseVals() {
+    const s = this.state;
+    const C = [
+      { name: 'ต้น', img: '/_blob/ec33c74147cab066783e7acae85c8875', time: '10:24', msg: 'รับนัดแล้วนะครับ เจอกัน 1 ทุ่มครับ', unread: 2, online: true, appt: 'นัดวันนี้ 19:00' },
+      { name: 'กอล์ฟ', img: '/_blob/d26354f23535577e2504751c4197ea79', time: 'เมื่อวาน', msg: 'คุณ: ขอบคุณมากนะคะ สนุกมากเลย · อ่านแล้ว', unread: 0, online: false, appt: '' },
+      { name: 'ภูมิ', img: '/_blob/551eb82924983c941f1fe44ede9bceca', time: 'จ.', msg: 'ข้อความอัตโนมัติ: สวัสดีครับ อยากนัดวันไหน ทำอะไรดี บอกได้เลยครับ', unread: 1, online: false, appt: '' },
+      { name: 'นนท์', img: '/_blob/82a15fdc40050c0a074e7e4b5b66e794', time: '12 ก.ย.', msg: 'ส่งรูปให้คุณ', unread: 0, online: false, appt: 'นัด ส. 10 ต.ค. 14:00' },
+      { name: 'เจมส์', img: '/_blob/551eb82924983c941f1fe44ede9bceca', time: '8 ก.ย.', msg: 'แล้วเจอกันครับ', unread: 0, online: false, appt: '' },
+      { name: 'ผู้ใช้ที่บล็อกไว้', img: '/_blob/82a15fdc40050c0a074e7e4b5b66e794', time: 'บล็อก', msg: 'แตะเพื่อเลิกบล็อก', unread: 0, online: false, appt: '', blocked: true }
+    ];
+    const unreadCount = C.filter((c) => c.unread > 0).length;
+    const keep = { all: () => true, unread: (c) => c.unread > 0, appt: (c) => !!c.appt };
+    const list = C.filter(keep[s.tab]);
+    return {
+      tabs: [['all', 'ทั้งหมด'], ['unread', 'ยังไม่อ่าน ' + unreadCount], ['appt', 'มีนัด']].map(([id, label]) => { const on = s.tab === id; return { label, on: String(on), bg: on ? 'var(--tx)' : 'transparent', fg: on ? 'var(--bg)' : 'var(--tx)', border: on ? 'var(--tx)' : 'var(--ln)', pick: () => this.setState({ tab: id }) }; }),
+      chats: list.map((c) => ({ ...c, hasUnread: c.unread > 0, hasAppt: !!c.appt, rowBg: c.unread > 0 ? 'var(--s1)' : 'transparent', op: c.blocked ? '.45' : '1', filter: c.blocked ? 'grayscale(1)' : 'none', timeFg: c.unread > 0 ? 'var(--gold)' : 'var(--mut)', msgFg: c.unread > 0 ? 'var(--tx)' : 'var(--mut)' })),
+      empty: list.length === 0
+    };
+  }
+
+  _fields() { return {"q":{"v":["","ต้น","กอล์ฟ"],"ph":"ค้นหาแชท","on":"var(--tx)","mask":false}}; }
+  fv(k) { const F = this._fields()[k]; const fx = (this.state && this.state.fx) || {}; const v = F.v[(fx[k] || 0) % F.v.length]; return v.indexOf('HOLE:') === 0 ? String((this._hole || {})[v.slice(5)] || '') : v; }
+  renderVals() {
+    const r = this._baseVals(); this._hole = r; const fx = (this.state && this.state.fx) || {}; const F = this._fields();
+    Object.keys(F).forEach((k) => {
+      const v = this.fv(k), c = F[k];
+      const o = { text: v ? (c.mask ? '\u2022'.repeat(v.length) : v) : c.ph, color: v ? c.on : '#7d6d6a', tap: () => this.setState({ fx: Object.assign({}, fx, { [k]: ((fx[k] || 0) + 1) % c.v.length }) }) };
+      for (let i = 0; i < 6; i++) o['d' + i] = v[i] || '\u2013';
+      r[k] = o;
+    });
+    return r;
+  }
+}
+</script>
+</body>
+</html>

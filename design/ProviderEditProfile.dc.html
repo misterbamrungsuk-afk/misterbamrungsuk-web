@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>แก้ไขโปรไฟล์</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+.h{font-family:Kanit;font-weight:600}
+.card{padding:14px;border-radius:16px;background:#181212;border:1px solid #33272a}
+.in{height:48px;border-radius:12px;border:1px solid #33272a;background:#21191a;color:#f6efe4;padding:0 14px;font-size:14px;box-sizing:border-box;width:100%;display:flex;align-items:center}
+.cta{height:52px;border-radius:14px;border:1px solid rgba(212,175,55,.45);background:linear-gradient(180deg,#c21d33,#8f1424);color:#fff;font-size:15px;font-weight:600;width:100%;font-family:Kanit}
+.ghost{height:48px;border-radius:14px;border:1px solid #33272a;background:#181212;color:#e3c35c;font-size:14px;font-weight:600;width:100%}
+.lbl{font-size:12px;color:#ab9d94;margin:0 0 6px}
+.mut{color:#ab9d94}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; position: relative; overflow: hidden">
+  <div style="height: 844px; overflow-y: auto; box-sizing: border-box; padding-bottom: 24px">
+<div style="padding: 12px 14px 0; display: flex; align-items: center; gap: 8px">
+      <a href="Job.dc.html" aria-label="ย้อนกลับ" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid #33272a; background: #181212; color: #e3c35c; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"></path></svg></a>
+      <div class="h" style="font-size: 17px; color: #d4af37">แก้ไขโปรไฟล์สาธารณะ</div>
+    </div>
+    <div style="padding: 12px 18px 0; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 999px; background: #181212; border: 1px solid #33272a">
+        <sc-for list="{{tabs}}" as="t" hint-placeholder-count="2"><button onClick="{{t.pick}}" style="height: 44px; border-radius: 999px; border: 0; background: {{t.bg}}; color: {{t.fg}}; font-size: 13px; font-weight: 600">{{t.label}}</button></sc-for>
+      </div>
+      <sc-if value="{{isEdit}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 16px">
+          <div><p class="lbl">รูปโปรไฟล์ (แตะเพื่อตั้งเป็นรูปหลัก · {{photoCount}})</p>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px">
+              <sc-for list="{{photos}}" as="ph" hint-placeholder-count="5"><button onClick="{{ph.pick}}" style="position: relative; padding: 0; height: 120px; border-radius: 12px; overflow: hidden; border: 2px solid {{ph.bd}}; background: #181212"><img src="{{ph.src}}" alt="" style="width: 100%; height: 100%; object-fit: cover; display: block"><span style="position: absolute; left: 6px; bottom: 6px; font-size: 10px; padding: 2px 8px; border-radius: 99px; background: #d4af37; color: #1a1206; opacity: {{ph.tagOp}}">รูปหลัก</span></button></sc-for>
+              <button onClick="{{addPhoto}}" style="height: 120px; border-radius: 12px; border: 1.5px dashed #33272a; background: #181212; color: #ab9d94; display: grid; place-items: center; font-size: 12px"><span style="display: flex; flex-direction: column; align-items: center; gap: 4px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"></path></svg>เพิ่มรูป</span></button>
+            </div>
+          </div>
+          <div><p class="lbl">กิจกรรมที่รับ · {{actCount}}</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px">
+              <sc-for list="{{actOn}}" as="a" hint-placeholder-count="4"><button onClick="{{a.remove}}" aria-label="{{a.aria}}" style="min-height: 40px; padding: 0 10px 0 14px; border-radius: 999px; border: 1px solid #d4af37; background: rgba(212,175,55,.12); color: #e3c35c; font-size: 13px; display: flex; align-items: center; gap: 6px">{{a.label}}<span style="font-size: 16px; line-height: 1">×</span></button></sc-for>
+            </div>
+            <div class="in" style="gap: 8px; border-color: #d4af37; display: flex; align-items: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ab9d94" stroke-width="1.8"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg><span style="flex: 1; color: {{qColor}}">{{qText}}</span></div>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; font-size: 11.5px"><span style="color: #ab9d94">ลองพิมพ์:</span><sc-for list="{{qPresets}}" as="k" hint-placeholder-count="6"><button onClick="{{k.pick}}" style="height: 30px; padding: 0 10px; border-radius: 99px; border: 1px solid {{k.bd}}; background: transparent; color: {{k.fg}}; font-size: 11.5px">{{k.label}}</button></sc-for></div>
+            <div style="margin-top: 8px; border-radius: 12px; border: 1px solid #33272a; background: #181212; overflow: hidden; display: flex; flex-direction: column">
+              <sc-for list="{{sugg}}" as="g" hint-placeholder-count="4"><button onClick="{{g.add}}" style="min-height: 44px; padding: 0 14px; border: 0; border-bottom: 1px solid #21191a; background: transparent; color: #f6efe4; font-size: 13.5px; display: flex; justify-content: space-between; align-items: center; text-align: left">{{g.label}}<span style="color: #e3c35c; font-size: 12px">+ เลือก</span></button></sc-for>
+              <sc-if value="{{noSugg}}" hint-placeholder-val="{{ false }}"><div style="padding: 10px 14px; font-size: 12px; color: #ab9d94">ไม่พบในรายการแนะนำ</div></sc-if>
+              <sc-if value="{{showCustom}}" hint-placeholder-val="{{ true }}"><button onClick="{{addCustom}}" style="min-height: 44px; padding: 0 14px; border: 0; background: rgba(212,175,55,.08); color: #e3c35c; font-size: 13.5px; font-weight: 600; text-align: left">{{customLabel}}</button></sc-if>
+            </div>
+          </div>
+          <div><p class="lbl">สถานที่ที่รับนัด · {{placeCount}}</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              <sc-for list="{{places}}" as="pl" hint-placeholder-count="7"><button onClick="{{pl.toggle}}" aria-pressed="{{pl.on}}" style="min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid {{pl.bd}}; background: {{pl.bg}}; color: {{pl.fg}}; font-size: 13px">{{pl.label}}</button></sc-for>
+            </div>
+            <p class="lbl" style="margin-top: 12px">สปา / สถานที่พาร์ทเนอร์</p>
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <sc-for list="{{pspas}}" as="sp" hint-placeholder-count="3"><button onClick="{{sp.toggle}}" style="min-height: 48px; padding: 0 12px; border-radius: 12px; border: 1px solid {{sp.bd}}; background: #181212; color: #f6efe4; display: flex; align-items: center; gap: 10px; text-align: left"><span style="width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid #d4af37; background: {{sp.box}}; color: #1a1206; display: grid; place-items: center; font-size: 12px; font-weight: 700">{{sp.mark}}</span><span style="flex: 1; font-size: 13.5px">{{sp.name}}</span><span style="font-size: 12px; color: #ab9d94">{{sp.area}}</span></button></sc-for>
+            </div>
+          </div>
+          <div class="card" style="display: flex; flex-direction: column; gap: 12px">
+            <div style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 14px">ราคา 3 ชม.</span><div style="display: flex; align-items: center; gap: 6px"><button onClick="{{dec3}}" aria-label="ลด" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #33272a; background: #21191a; color: #e3c35c; font-size: 20px">−</button><span class="h" style="min-width: 78px; text-align: center; font-size: 17px; color: #e3c35c">{{p3}}</span><button onClick="{{inc3}}" aria-label="เพิ่ม" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #33272a; background: #21191a; color: #e3c35c; font-size: 20px">+</button></div></div>
+            <div style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 14px">ราคา 5 ชม.</span><div style="display: flex; align-items: center; gap: 6px"><button onClick="{{dec5}}" aria-label="ลด" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #33272a; background: #21191a; color: #e3c35c; font-size: 20px">−</button><span class="h" style="min-width: 78px; text-align: center; font-size: 17px; color: #e3c35c">{{p5}}</span><button onClick="{{inc5}}" aria-label="เพิ่ม" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #33272a; background: #21191a; color: #e3c35c; font-size: 20px">+</button></div></div>
+            <div class="mut" style="font-size: 11.5px">ตั้งราคาเองได้ · หักค่าธรรมเนียม 15% คุณได้รับ 85% ของยอดที่ลูกค้าจ่าย</div>
+          </div>
+          <div class="card" style="display: flex; flex-direction: column; gap: 10px"><span style="font-size: 14px">สกิลพิเศษ (เลือกได้หลายข้อ)</span><div style="display: flex; flex-wrap: wrap; gap: 8px"><sc-for list="{{skillOpts}}" as="k" hint-placeholder-count="8"><button onClick="{{k.toggle}}" aria-pressed="{{k.on}}" style="min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid {{k.border}}; background: {{k.bg}}; color: {{k.fg}}; font-size: 13px">{{k.label}}</button></sc-for></div><span class="mut" style="font-size: 11.5px">แสดงเป็นแท็กบนโปรไฟล์ · ไม่มีค่าบริการเพิ่ม · นวดผ่อนคลายต้องแนบใบรับรอง</span></div>
+          <button class="cta" onClick="{{save}}">{{saveLabel}}</button>
+        </div>
+      </sc-if>
+      <sc-if value="{{isPreview}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div class="mut" style="font-size: 12px">ลูกค้าจะเห็นการ์ดของคุณแบบนี้</div>
+          <div style="border-radius: 18px; overflow: hidden; background: #181212; border: 1px solid rgba(212,175,55,.45)">
+            <img src="{{mainSrc}}" alt="" style="width: 100%; height: 340px; object-fit: cover; display: block">
+            <div style="padding: 14px; display: flex; flex-direction: column; gap: 8px">
+              <div style="display: flex; justify-content: space-between; align-items: baseline"><span class="h" style="font-size: 20px">ต้น · 29 ปี</span><span style="font-size: 12px; color: #e3c35c">4.9 · 128 รีวิว</span></div>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{actOn}}" as="a" hint-placeholder-count="3"><span style="font-size: 11px; padding: 4px 10px; border-radius: 99px; border: 1px solid #33272a; color: #d3c7bc">{{a.label}}</span></sc-for></div>
+              <div style="display: flex; justify-content: space-between; font-size: 13px; padding-top: 8px; border-top: 1px solid #33272a"><span>3 ชม. <b style="color: #e3c35c">{{p3}}</b></span><span>5 ชม. <b style="color: #e3c35c">{{p5}}</b></span></div>
+              <div class="mut" style="font-size: 12px">{{skillLine}}</div>
+            </div>
+          </div>
+          <a href="Provider.dc.html" class="ghost" style="display: grid; place-items: center; text-decoration: none">เปิดหน้าโปรไฟล์เต็ม</a>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+const SKILL_OPTS = [['massage', 'นวดผ่อนคลาย (แนบใบรับรอง)'], ['photo', 'ถ่ายรูปเก่ง'], ['eng', 'พูดอังกฤษได้'], ['drive', 'ขับรถพาเที่ยว'], ['fit', 'เต้น / ฟิตเนสโค้ช'], ['cook', 'ทำอาหาร'], ['music', 'เล่นดนตรี / ร้องเพลง'], ['guide', 'ไกด์ท้องถิ่น']];
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { tab: 'edit', main: 0, n: 5, picked: ['กิน & เที่ยว', 'ช่างภาพ', 'คาเฟ่', 'นั่งชิล'], q: 'ดู', places: ['ห้างสรรพสินค้า', 'คาเฟ่ / ร้านอาหาร', 'สปา'], pspa: [0], p3: 2400, p5: 3800, skills: ['massage', 'photo', 'eng'], saved: false }; }
+  renderVals() {
+    const s = this.state; const IMG = ['/_blob/551eb82924983c941f1fe44ede9bceca', '/_blob/82a15fdc40050c0a074e7e4b5b66e794', '/_blob/8725f65bf80d613b2a9537700bf2f9bb', '/_blob/f34ad19eab9288d994c2271a15964ceb', '/_blob/ec33c74147cab066783e7acae85c8875', '/_blob/d26354f23535577e2504751c4197ea79'];
+    const fmt = (n) => '฿' + n.toLocaleString('en-US');
+    const set = (o) => this.setState(Object.assign({ saved: false }, o));
+    const SUG = ['กิน & เที่ยว', 'ช่างภาพ', 'ออกกำลัง', 'คาเฟ่', 'วิดีโอคอล', 'ดูหนัง', 'นั่งชิล', 'ช้อปปิ้ง', 'ตีกอล์ฟ', 'คาราโอเกะ', 'ดินเนอร์', 'เที่ยวต่างจังหวัด', 'คอนเสิร์ต', 'ฟิตเนส', 'ว่ายน้ำ', 'เดินเล่นสวน'];
+    const QP = ['', 'ดู', 'ตี', 'คอน', 'เที่ยว', 'โยคะ'];
+    const PLACES = ['นอกสถานที่', 'กลางแจ้ง', 'ห้างสรรพสินค้า', 'คาเฟ่ / ร้านอาหาร', 'คอนโด', 'โรงแรม', 'สปา'];
+    const PSPA = [['Siam Serenity Spa', 'สุขุมวิท 31'], ['Lanna Retreat', 'เชียงใหม่'], ['Baan Suan Spa', 'อารีย์']];
+    const q = s.q; const picked = s.picked;
+    const actVals = {
+      actCount: 'เลือกแล้ว ' + picked.length,
+      actOn: picked.map((label) => ({ label, aria: 'ลบ ' + label, remove: () => set({ picked: picked.filter((x) => x !== label) }) })),
+      qText: q || 'พิมพ์กิจกรรม เช่น ดูหนัง, ตีกอล์ฟ…', qColor: q ? '#f6efe4' : '#7d6d6a',
+      qPresets: QP.map((v) => ({ label: v || 'ล้าง', bd: s.q === v ? '#d4af37' : '#33272a', fg: s.q === v ? '#e3c35c' : '#ab9d94', pick: () => this.setState({ q: v }) })),
+      sugg: SUG.filter((x) => !picked.includes(x) && (!q || x.includes(q))).slice(0, 6).map((label) => ({ label, add: () => set({ picked: [...picked, label], q: '' }) })),
+      noSugg: !!q && !SUG.some((x) => !picked.includes(x) && x.includes(q)),
+      showCustom: !!q && !SUG.includes(q) && !picked.includes(q),
+      customLabel: '+ เพิ่ม “' + q + '”', addCustom: () => set({ picked: [...picked, q], q: '' }),
+      placeCount: 'เลือกแล้ว ' + s.places.length,
+      places: PLACES.map((label) => { const on = s.places.includes(label); return { label, on: String(on), bd: on ? '#d4af37' : '#33272a', bg: on ? 'rgba(212,175,55,.12)' : '#181212', fg: on ? '#e3c35c' : '#ab9d94', toggle: () => set({ places: on ? s.places.filter((x) => x !== label) : [...s.places, label] }) }; }),
+      pspas: PSPA.map(([name, area], i) => { const on = s.pspa.includes(i); return { name, area, mark: on ? '✓' : '', box: on ? '#d4af37' : 'transparent', bd: on ? '#d4af37' : '#33272a', toggle: () => set({ pspa: on ? s.pspa.filter((x) => x !== i) : [...s.pspa, i] }) }; })
+    };
+    return Object.assign(actVals, {
+      tabs: [['edit', 'แก้ไข'], ['preview', 'ดูตัวอย่างการ์ด']].map(([id, label]) => ({ label, bg: s.tab === id ? '#d4af37' : 'transparent', fg: s.tab === id ? '#1a1206' : '#ab9d94', pick: () => this.setState({ tab: id }) })),
+      isEdit: s.tab === 'edit', isPreview: s.tab === 'preview',
+      photoCount: s.n + '/6 รูป',
+      photos: IMG.slice(0, s.n).map((src, i) => ({ src, bd: i === s.main ? '#d4af37' : '#33272a', tagOp: i === s.main ? '1' : '0', pick: () => set({ main: i }) })),
+      addPhoto: () => set({ n: s.n < 6 ? s.n + 1 : 3 }),
+      p3: fmt(s.p3), p5: fmt(s.p5),
+      dec3: () => set({ p3: Math.max(2000, s.p3 - 100) }), inc3: () => set({ p3: s.p3 + 100 }),
+      dec5: () => set({ p5: Math.max(3000, s.p5 - 100) }), inc5: () => set({ p5: s.p5 + 100 }),
+      skillOpts: SKILL_OPTS.map(([id, label]) => { const on = s.skills.includes(id); return { label, on: String(on), border: on ? '#d4af37' : '#33272a', bg: on ? 'rgba(212,175,55,.12)' : 'transparent', fg: on ? '#eed58a' : '#ab9d94', toggle: () => set({ skills: on ? s.skills.filter((x) => x !== id) : s.skills.concat(id) }) }; }),
+      skillLine: s.skills.length ? 'สกิลพิเศษ: ' + SKILL_OPTS.filter(([id]) => s.skills.includes(id)).map(([, l]) => l.replace(' (แนบใบรับรอง)', '')).join(' · ') : 'ยังไม่ได้เลือกสกิลพิเศษ',
+      mainSrc: IMG[s.main], save: () => this.setState({ saved: true }), saveLabel: s.saved ? 'บันทึกแล้ว · ทีมงานจะตรวจรูปให้' : 'บันทึกการเปลี่ยนแปลง'
+    });
+  }
+}
+</script>
+</body>
+</html>

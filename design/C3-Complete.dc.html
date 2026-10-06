@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>จบนัด ให้คะแนน</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0a0a;--s1:#181212;--s2:#21191a;--ln:#33272a;--red:#b0182c;--gold:#D4AF37;--gold-l:#e3c35c;--tx:#f6efe4;--mut:#ab9d94}
+body{margin:0;font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--tx)}
+*{box-sizing:border-box}
+h1{font-family:'Kanit',sans-serif;margin:0}
+button{font-family:inherit}
+a{color:var(--tx);text-decoration:none}
+.st{border:0;background:none;padding:0}
+.tp{background:none;color:var(--tx);cursor:pointer;flex:1;height:46px;border-radius:12px;border:1px solid var(--ln);display:flex;align-items:center;justify-content:center;font-family:'Kanit';font-size:15px}
+.tp.on{border-color:var(--gold);color:var(--gold-l);background:rgba(212,175,55,.08)}
+.tg{font-family:inherit;cursor:pointer;height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--ln);font-size:12px;display:flex;align-items:center}
+.tg.on{border-color:var(--tx);background:var(--tx);color:var(--bg)}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;overflow:hidden;background:var(--bg)">
+  <div style="display:flex;flex-direction:column;align-items:center;padding:30px 20px 0;text-align:center">
+    <img src="/_blob/ec33c74147cab066783e7acae85c8875" alt="" style="width:84px;height:84px;border-radius:84px;object-fit:cover;border:2px solid var(--gold)">
+    <h1 style="font-size:24px;font-weight:600;margin-top:12px">จบนัดกับต้นแล้ว</h1>
+    <div style="font-size:13px;color:var(--mut)">3 ชม. · 19:00–22:00</div>
+  </div>
+  <div style="margin:18px 16px 0;display:flex;flex-direction:column;align-items:center;gap:8px">
+    <div style="font-size:14px">วันนี้กับต้นเป็นอย่างไรบ้าง</div>
+    <div style="display:flex;gap:8px"><sc-for list="{{stars}}" as="st" hint-placeholder-count="5"><button class="st" onClick="{{st.pick}}" aria-label="{{st.label}}" style="color:{{st.color}}"><svg viewBox="0 0 24 24" style="width:38px;height:38px"><path d="m12 2.5 2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z" fill="currentColor"/></svg></button></sc-for></div>
+    <div style="font-size:12px;color:var(--gold-l)">{{rateLabel}}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:4px"><sc-for list="{{tags}}" as="t" hint-placeholder-count="5"><button class="tg" onClick="{{t.toggle}}" aria-pressed="{{t.on}}" style="border-color:{{t.border}};background:{{t.bg}};color:{{t.fg}}">{{t.label}}</button></sc-for></div>
+  </div>
+  <div style="margin:20px 16px 0">
+    <div style="font-size:14px;margin-bottom:8px">ให้ทิปต้น <span style="color:var(--mut);font-size:12px">· ต้นได้รับเต็มจำนวน</span></div>
+    <div style="display:flex;gap:8px"><sc-for list="{{tips}}" as="t" hint-placeholder-count="4"><button class="tp" role="radio" aria-checked="{{t.on}}" onClick="{{t.pick}}" style="border-color:{{t.border}};color:{{t.fg}};background:{{t.bg}}">{{t.label}}</button></sc-for></div>
+  </div>
+  <div style="margin:18px 16px 0;padding:14px;border-radius:16px;border:1px solid var(--gold);background:rgba(212,175,55,.05);display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px">ยอดที่พักไว้กับเรา</span><span style="text-align:right"><b style="font-family:'Kanit';font-weight:600;font-size:22px;color:var(--gold-l)">{{total}}</b><span style="display:block;font-size:11px;color:var(--mut)">{{totalNote}}</span></span></div>
+  <div style="position:absolute;left:16px;right:16px;bottom:24px;display:flex;flex-direction:column;gap:10px">
+    <a href="S12-Orders.dc.html" style="height:56px;border-radius:16px;border:0;background:var(--red);color:#fff;font-family:'Kanit';font-weight:600;font-size:17px;display:flex;align-items:center;justify-content:center;text-decoration:none">ยืนยันจบนัด และโอนให้ต้น</a>
+    <div style="display:flex;justify-content:space-between;font-size:13px"><a href="N05-Dispute.dc.html" style="color:var(--mut)">มีปัญหา? แจ้งเราได้</a><a href="Booking.dc.html" style="color:var(--gold)">จองต้นอีกครั้ง</a></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { rating: 4, tags: ['ตรงเวลา', 'คุยสนุก', 'ดูแลดี'], tip: 200 }; }
+  renderVals() {
+    const s = this.state;
+    const TAGS = ['ตรงเวลา', 'คุยสนุก', 'สุภาพ', 'ดูแลดี', 'ถ่ายรูปสวย'];
+    const LBL = ['', 'ไม่ประทับใจ', 'พอใช้', 'โอเค', 'ดีมาก', 'ประทับใจสุด ๆ'];
+    return {
+      stars: [1, 2, 3, 4, 5].map((n) => ({ label: n + ' ดาว', color: n <= s.rating ? 'var(--gold)' : 'var(--ln)', pick: () => this.setState({ rating: n }) })),
+      rateLabel: s.rating + ' ดาว · ' + LBL[s.rating],
+      tags: TAGS.map((t) => { const on = s.tags.includes(t); return { label: t, on: String(on), border: on ? 'var(--tx)' : 'var(--ln)', bg: on ? 'var(--tx)' : 'transparent', fg: on ? 'var(--bg)' : 'var(--tx)', toggle: () => this.setState({ tags: on ? s.tags.filter((x) => x !== t) : [...s.tags, t] }) }; }),
+      tips: [0, 100, 200, 300].map((v) => { const on = s.tip === v; return { label: v === 0 ? 'ไม่ให้' : '฿' + v, on: String(on), border: on ? 'var(--gold)' : 'var(--ln)', fg: on ? 'var(--gold-l)' : 'var(--tx)', bg: on ? 'rgba(212,175,55,.08)' : 'transparent', pick: () => this.setState({ tip: v }) }; }),
+      total: '฿' + (2160 + s.tip).toLocaleString('en-US'),
+      totalNote: s.tip ? 'รวมทิป ฿' + s.tip : 'ไม่รวมทิป'
+    };
+  }
+}
+</script>
+</body>
+</html>

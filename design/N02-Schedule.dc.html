@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>เลือกวันเวลาและที่อยู่</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0a0a;--s1:#181212;--s2:#21191a;--ln:#33272a;--red:#b0182c;--gold:#D4AF37;--gold-l:#e3c35c;--tx:#f6efe4;--mut:#ab9d94}
+body{margin:0;font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--tx)}
+*{box-sizing:border-box}
+h1{font-family:'Kanit',sans-serif;margin:0}
+button{font-family:inherit}
+a{color:var(--tx);text-decoration:none}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.sec{font-family:'Kanit';font-size:16px;font-weight:500}
+.d{flex:1;height:72px;border-radius:16px;border:1px solid var(--ln);background:var(--s1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;color:var(--mut)}
+.d b{font-family:'Kanit';font-size:20px;font-weight:600;color:var(--tx)}
+.d.on{background:var(--tx);border-color:var(--tx);color:var(--bg)}
+.d.on b{color:var(--bg)}
+.t{height:44px;border-radius:12px;border:1px solid var(--ln);background:var(--s1);font-size:14px;display:flex;align-items:center;justify-content:center}
+.t.on{border-color:var(--red);background:rgba(224,36,60,.12);color:#FF8A97}
+.t.off{opacity:.35;text-decoration:line-through}
+.ad{display:flex;gap:12px;align-items:center;padding:14px;border-radius:16px;border:1px solid var(--ln);background:var(--s1)}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;overflow:hidden;background:var(--bg)">
+  <div style="display:flex;align-items:center;gap:10px;padding:16px">
+    <a href="Booking.dc.html" aria-label="ย้อนกลับ" style="width:42px;height:42px;border-radius:42px;border:1px solid var(--ln);display:flex;align-items:center;justify-content:center"><svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></a>
+    <h1 style="font-size:19px;font-weight:600">เลือกวันเวลาและสถานที่</h1>
+    <img src="/_blob/ec33c74147cab066783e7acae85c8875" alt="ต้น" style="margin-left:auto;width:38px;height:38px;border-radius:38px;object-fit:cover;border:1px solid var(--gold)">
+  </div>
+  <div style="padding:0 16px;display:flex;flex-direction:column;gap:20px">
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="sec">วันที่</span><span style="font-size:13px;color:var(--gold)">กุมภาพันธ์ 2570</span></div>
+      <div style="display:flex;gap:8px;margin-top:10px;overflow-x:auto;padding-bottom:4px">
+        <sc-for list="{{days}}" as="d" hint-placeholder-count="14"><button onClick="{{d.pick}}" aria-pressed="{{d.on}}" style="flex:0 0 56px;height:72px;border-radius:16px;border:1px solid {{d.border}};background:{{d.bg}};color:{{d.fg}};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px"><span>{{d.wd}}</span><b style="font-family:'Kanit';font-size:20px;font-weight:600">{{d.dt}}</b></button></sc-for>
+      </div>
+    </div>
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center"><span class="sec">เวลาที่ต้นว่าง</span><span style="display:flex;gap:4px;padding:3px;border-radius:12px;border:1px solid var(--ln);background:var(--s1)"><sc-for list="{{durs}}" as="u" hint-placeholder-count="2"><button onClick="{{u.pick}}" style="height:30px;padding:0 12px;border-radius:9px;border:none;background:{{u.bg}};color:{{u.fg}};font-size:12.5px;font-weight:600">{{u.label}}</button></sc-for></span></div>
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px">
+        <sc-for list="{{slots}}" as="t" hint-placeholder-count="12"><button onClick="{{t.pick}}" disabled="{{t.full}}" style="height:44px;border-radius:12px;border:1px solid {{t.border}};background:{{t.bg}};color:{{t.fg}};font-size:13.5px;opacity:{{t.op}};text-decoration:{{t.deco}};display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1">{{t.time}}<span style="font-size:10px">{{t.note}}</span></button></sc-for>
+      </div>
+    </div>
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="sec">สถานที่</span><a href="C6-Addresses.dc.html" style="font-size:13px;color:var(--gold)">+ เพิ่มที่อยู่</a></div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+        <div class="ad" style="border-color:var(--gold)"><svg class="ic" viewBox="0 0 24 24" style="color:var(--gold)"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></svg><div style="flex-grow:1"><b style="font-weight:500">คอนโด</b><div style="font-size:12px;color:var(--mut)">The Lofts Asoke · ชั้น 12 ห้อง 1205</div></div><span style="width:20px;height:20px;border-radius:20px;border:6px solid var(--gold)"></span></div>
+        <div class="ad"><svg class="ic" viewBox="0 0 24 24" style="color:var(--mut)"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h3"/></svg><div style="flex-grow:1"><b style="font-weight:500">โรงแรม / ที่อื่น</b><div style="font-size:12px;color:var(--mut)">ปักหมุดบนแผนที่</div></div><span style="width:20px;height:20px;border-radius:20px;border:1px solid var(--ln)"></span></div>
+      </div>
+    </div>
+    <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;color:var(--mut)">ฝากบอกต้น</span><button type="button" onClick="{{note.tap}}" aria-label="เช่น มีที่จอดรถใต้ตึก อยากลองร้านญี่ปุ่น · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;height:48px;border-radius:14px;border:1px solid var(--ln);background:var(--s1);padding:0 14px;font-size:14px;font-family:inherit; color:{{note.color}}">{{note.text}}</button><span style="font-size:11px;color:#7d6d6a;font-weight:400">แตะเพื่อกรอกตัวอย่าง</span></label>
+  </div>
+  <div style="position:absolute;left:0;right:0;bottom:0;border-top:1px solid var(--ln);background:var(--bg);padding:14px 16px 24px;display:flex;align-items:center;gap:12px">
+    <div style="flex-grow:1;min-width:0"><div style="font-size:12px;color:{{sumColor}}">{{summary}}</div><div style="font-family:'Kanit';font-weight:600;font-size:20px;color:var(--gold-l)">{{price}}</div></div>
+    <sc-if value="{{ready}}" hint-placeholder-val="{{ false }}"><a href="Checkout.dc.html" style="width:160px;height:54px;border-radius:16px;background:var(--red);color:#fff;font-family:'Kanit';font-weight:600;font-size:16px;display:flex;align-items:center;justify-content:center">ไปชำระเงิน</a></sc-if>
+    <sc-if value="{{notReady}}" hint-placeholder-val="{{ true }}"><button disabled style="width:160px;height:54px;border-radius:16px;border:none;background:var(--red);color:#fff;font-family:'Kanit';font-weight:600;font-size:16px;opacity:.4;cursor:not-allowed">ไปชำระเงิน</button></sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+constructor(p) { super(p); this.state = { day: 1, slot: null, dur: 3 }; }
+_baseVals() {
+  const st = this.state;
+  const WD = ['พฤ.', 'ศ.', 'ส.', 'อา.', 'จ.', 'อ.', 'พ.'];
+  const pad = (h) => String(h % 24).padStart(2, '0') + ':00';
+  const isFull = (h, d) => (h + d) % 5 === 0;
+  const days = Array.from({ length: 14 }, (_, i) => { const on = st.day === i; return { wd: WD[i % 7], dt: String(11 + i), on: on ? 'true' : 'false', border: on ? 'var(--tx)' : 'var(--ln)', bg: on ? 'var(--tx)' : 'var(--s1)', fg: on ? 'var(--bg)' : 'var(--mut)', pick: () => this.setState({ day: i, slot: st.slot !== null && isFull(st.slot, i) ? null : st.slot }) }; });
+  const slots = Array.from({ length: 12 }, (_, k) => { const h = 10 + k; const full = isFull(h, st.day); const on = st.slot === h; return { time: pad(h), note: full ? 'เต็ม' : '', full, border: on ? 'var(--red)' : 'var(--ln)', bg: on ? 'rgba(224,36,60,.12)' : 'var(--s1)', fg: on ? '#FF8A97' : 'var(--tx)', op: full ? 0.35 : 1, deco: full ? 'line-through' : 'none', pick: () => { if (!full) this.setState({ slot: h }); } }; });
+  const durs = [3, 5].map((d) => { const on = st.dur === d; return { label: d + ' ชม.', bg: on ? 'var(--gold)' : 'transparent', fg: on ? 'var(--bg)' : 'var(--mut)', pick: () => this.setState({ dur: d }) }; });
+  const ready = st.slot !== null;
+  const dayLabel = WD[st.day % 7] + ' ' + (11 + st.day) + ' ก.พ.';
+  return {
+    days, slots, durs, ready, notReady: !ready,
+    summary: ready ? dayLabel + ' · ' + pad(st.slot) + '–' + pad(st.slot + st.dur) + ' (' + st.dur + ' ชม.)' : dayLabel + ' · เลือกเวลาก่อน',
+    sumColor: ready ? 'var(--mut)' : '#FF8A97',
+    price: st.dur === 3 ? '฿2,400' : '฿3,800',
+  };
+}
+
+  _fields() { return {"note":{"v":["","มีที่จอดรถใต้ตึก","อยากลองร้านญี่ปุ่นแถวอโศก"],"ph":"เช่น มีที่จอดรถใต้ตึก อยากลองร้านญี่ปุ่น","on":"var(--tx)","mask":false}}; }
+  fv(k) { const F = this._fields()[k]; const fx = (this.state && this.state.fx) || {}; const v = F.v[(fx[k] || 0) % F.v.length]; return v.indexOf('HOLE:') === 0 ? String((this._hole || {})[v.slice(5)] || '') : v; }
+  renderVals() {
+    const r = this._baseVals(); this._hole = r; const fx = (this.state && this.state.fx) || {}; const F = this._fields();
+    Object.keys(F).forEach((k) => {
+      const v = this.fv(k), c = F[k];
+      const o = { text: v ? (c.mask ? '\u2022'.repeat(v.length) : v) : c.ph, color: v ? c.on : '#7d6d6a', tap: () => this.setState({ fx: Object.assign({}, fx, { [k]: ((fx[k] || 0) + 1) % c.v.length }) }) };
+      for (let i = 0; i < 6; i++) o['d' + i] = v[i] || '\u2013';
+      r[k] = o;
+    });
+    return r;
+  }
+}
+</script>
+</body>
+</html>

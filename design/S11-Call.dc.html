@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>โทรซ่อนเบอร์</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0a0a;--s1:#181212;--s2:#21191a;--ln:#33272a;--red:#b0182c;--gold:#D4AF37;--gold-l:#e3c35c;--tx:#f6efe4;--mut:#ab9d94}
+body{margin:0;font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--tx)}
+*{box-sizing:border-box}
+button{font-family:inherit}
+a{color:var(--tx);text-decoration:none}
+.ic{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.cb{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:13px;color:var(--mut)}
+.cc{width:66px;height:66px;border-radius:66px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;display:flex;align-items:center;justify-content:center}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;overflow:hidden;background:var(--bg)">
+  <img src="/_blob/ec33c74147cab066783e7acae85c8875" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(24px) brightness(.35);transform:scale(1.2)">
+  <div style="position:relative;display:flex;justify-content:center;padding-top:26px"><span style="height:32px;padding:0 14px;border-radius:999px;border:1px solid rgba(212,175,55,.5);color:var(--gold-l);font-size:12px;font-weight:500;display:flex;align-items:center">โทรผ่านแอป · เบอร์คุณเป็นความลับ</span></div>
+  <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:80px">
+    <img src="/_blob/ec33c74147cab066783e7acae85c8875" alt="ต้น" style="width:140px;height:140px;border-radius:140px;object-fit:cover;border:2px solid var(--gold)">
+    <div style="font-family:'Kanit';font-weight:600;font-size:32px">ต้น</div>
+    <div style="font-size:14px;color:var(--mut)">การจอง #MB-24091</div>
+    <div style="font-family:'Kanit';font-size:20px;color:var(--gold-l)">02:37</div>
+  </div>
+  <div style="position:absolute;left:0;right:0;bottom:60px;display:flex;flex-direction:column;gap:36px;align-items:center">
+    <div style="display:flex;gap:34px">
+      <div class="cb"><button class="cc" aria-label="ปิดไมค์"><svg class="ic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M3 3l18 18"/></svg></button>ปิดไมค์</div>
+      <div class="cb"><button class="cc" aria-label="ลำโพง" style="background:#fff;color:#0e0a0a"><svg class="ic" viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9a4 4 0 0 1 0 6"/></svg></button>ลำโพง</div>
+      <div class="cb"><a href="S08-ChatRoom.dc.html" class="cc" aria-label="แชท"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></a>แชท</div>
+    </div>
+    <button aria-label="วางสาย" style="width:76px;height:76px;border-radius:76px;border:0;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center"><svg class="ic" viewBox="0 0 24 24" style="transform:rotate(135deg)"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2z"/></svg></button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>SOS ฉุกเฉิน</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0a0a;--s1:#181212;--s2:#21191a;--ln:#33272a;--red:#b0182c;--gold:#D4AF37;--gold-l:#e3c35c;--tx:#f6efe4;--mut:#ab9d94}
+body{margin:0;font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--tx)}
+*{box-sizing:border-box}
+h1{font-family:'Kanit',sans-serif;margin:0}
+button{font-family:inherit}
+a{color:var(--tx);text-decoration:none}
+.ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.it{display:flex;gap:12px;align-items:center;font-size:14px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.1)}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;overflow:hidden;background:#3A0911">
+  <div style="text-align:center;padding-top:40px">
+    <div style="font-size:12px;letter-spacing:2px;color:#FFB3BD;font-weight:600">ฉุกเฉิน</div>
+    <h1 style="font-size:28px;font-weight:600;margin-top:6px">กำลังส่ง SOS</h1>
+    <div style="font-size:14px;color:#FFD0D6;margin-top:4px">กดยกเลิกได้ก่อนเวลาหมด</div>
+  </div>
+  <div style="position:relative;width:230px;height:230px;margin:34px auto 0">
+    <div style="position:absolute;inset:0;border-radius:230px;background:rgba(224,36,60,.18)"></div>
+    <div style="position:absolute;inset:28px;border-radius:230px;background:rgba(224,36,60,.3)"></div>
+    <div style="position:absolute;inset:56px;border-radius:230px;background:var(--red);display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-family:'Kanit';font-weight:700;font-size:64px;line-height:1">3</div><div style="font-size:12px">วินาที</div></div>
+  </div>
+  <div style="margin:30px 20px 0;padding:6px 16px;border-radius:18px;background:rgba(11,11,13,.45)">
+    <div class="it"><svg class="ic" viewBox="0 0 24 24" style="color:#FFB3BD"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span style="flex-grow:1">ส่งตำแหน่งปัจจุบันให้แอดมิน</span><span style="color:#5EDB98;font-size:12px">พร้อม</span></div>
+    <div class="it"><svg class="ic" viewBox="0 0 24 24" style="color:#FFB3BD"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span style="flex-grow:1">แจ้งพี่ดาว (ผู้ติดต่อฉุกเฉิน)</span><span style="color:#5EDB98;font-size:12px">พร้อม</span></div>
+    <div class="it" style="border:0"><svg class="ic" viewBox="0 0 24 24" style="color:#FFB3BD"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h5"/></svg><span style="flex-grow:1">ส่งข้อมูลนัด #MB-24091 ไปด้วย</span><span style="color:#5EDB98;font-size:12px">พร้อม</span></div>
+  </div>
+  <div style="position:absolute;left:20px;right:20px;bottom:28px;display:flex;flex-direction:column;gap:10px">
+    <a href="tel:191" style="height:56px;border-radius:16px;background:#fff;color:#8f1424;font-family:'Kanit';font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center;gap:8px"><svg class="ic" viewBox="0 0 24 24"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2z"/></svg>โทร 191 ตำรวจ</a>
+    <a href="S13-Account.dc.html" style="height:52px;border-radius:16px;border:1px solid rgba(255,255,255,.35);color:#fff;font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:center">ยกเลิก SOS</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

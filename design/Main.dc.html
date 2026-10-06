@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>หน้าแรกผู้ใช้</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; display: flex; flex-direction: column; overflow: hidden; position: relative">
+  <div style="flex: 1; overflow-y: auto; padding-bottom: 96px">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px 8px">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <div style="width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid #d4af37; display: grid; place-items: center; font-family: Kanit; font-weight: 700; font-size: 13px; color: #d4af37">MB</div>
+        <div style="line-height: 1.05"><div style="font-size: 9px; letter-spacing: 2.5px; color: #d4af37; font-weight: 600">MISTER</div><div style="font-family: Kanit; font-weight: 600; font-size: 16px">Bamrungsuk</div></div>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center">
+        <button aria-label="การแจ้งเตือน" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid #33272a; background: #181212; color: #d3c7bc; display: grid; place-items: center; position: relative"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10 21h4"></path></svg><span style="position: absolute; top: 9px; right: 10px; width: 8px; height: 8px; border-radius: 50%; background: #c9283d"></span></button>
+        <button style="height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid #33272a; background: transparent; color: #ab9d94; font-size: 12px; font-weight: 600">ไทย / EN</button>
+      </div>
+    </div>
+    <div style="padding: 10px 18px 0">
+      <div style="font-size: 13px; color: #ab9d94">สวัสดีค่ะ คุณมาย</div>
+      <h1 style="margin: 2px 0 0; font-family: Kanit; font-weight: 700; font-size: 28px; line-height: 1.15; text-wrap: balance">วันนี้อยากไปไหน<br>กับ<span style="color: #e3c35c">ใคร?</span></h1>
+    </div>
+    <div style="margin: 14px 18px 0; padding: 4px; border-radius: 16px; border: 1px solid #33272a; background: #130e0e; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px">
+      <button onClick="{{tabNear}}" style="height: 40px; border-radius: 12px; border: none; font-weight: 600; font-size: 13.5px; background: {{nearBg}}; color: {{nearFg}}">ใกล้คุณ</button>
+      <button onClick="{{tabPrem}}" style="height: 40px; border-radius: 12px; border: none; font-weight: 600; font-size: 13.5px; background: {{premBg}}; color: {{premFg}}">พรีเมียม</button>
+    </div>
+    <sc-if value="{{showPremium}}" hint-placeholder-val="{{ false }}">
+      <div style="margin: 14px 18px 0; padding: 22px 18px; border-radius: 20px; border: 1px solid rgba(212,175,55,.45); background: linear-gradient(160deg, #241a12, #130e0e); text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="1.6"><rect x="4" y="10" width="16" height="11" rx="2.5"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+        <div style="font-family: Kanit; font-weight: 600; font-size: 18px">เพื่อนระดับพรีเมียม</div>
+        <div style="font-size: 13px; color: #ab9d94; line-height: 1.6">สำหรับสมาชิก หรือผู้ได้รับแพ็กเกจเป็นของขวัญ</div>
+        <a href="Membership.dc.html" style="height: 46px; padding: 0 22px; border-radius: 999px; background: linear-gradient(180deg, #c21d33, #8f1424); border: 1px solid rgba(212,175,55,.45); color: #fff; font-weight: 600; text-decoration: none; display: flex; align-items: center">ดูแพ็กเกจสมาชิก</a>
+      </div>
+    </sc-if>
+    <sc-if value="{{showNear}}" hint-placeholder-val="{{ true }}">
+      <div>
+        <div style="margin: 14px 18px 0; display: flex; gap: 10px"><div style="flex: 1; min-width: 0; height: 48px; border-radius: 14px; border: 1px solid #33272a; background: #181212; display: flex; align-items: center; gap: 10px; padding: 0 14px; color: #7d6d6a; font-size: 14px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>ค้นหาชื่อ ย่าน หรือกิจกรรม</div><a href="S03-Filter.dc.html" aria-label="ตัวกรอง" style="flex: 0 0 48px; width: 48px; height: 48px; border-radius: 14px; border: 1px solid #33272a; background: #181212; color: #e3c35c; display: grid; place-items: center; position: relative; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"></path><circle cx="16" cy="6" r="2"></circle><circle cx="10" cy="12" r="2"></circle><circle cx="18" cy="18" r="2"></circle></svg><sc-if value="{{hasFilters}}" hint-placeholder-val="{{ true }}"><span style="position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #b0182c; color: #fff; font-size: 10.5px; font-weight: 700; display: grid; place-items: center; border: 1.5px solid #0e0a0a">{{filterCount}}</span></sc-if></a></div>
+        <div style="display: flex; gap: 8px; padding: 14px 18px 0; overflow-x: auto">
+          <sc-for list="{{acts}}" as="a" hint-placeholder-count="5">
+            <button onClick="{{a.toggle}}" aria-pressed="{{a.on}}" style="flex: 0 0 70px; height: 72px; border-radius: 16px; border: 1px solid {{a.border}}; background: {{a.bg}}; color: {{a.fg}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; font-size: 10.5px">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="{{a.icon}}"></path></svg>{{a.label}}
+            </button>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 8px; padding: 12px 18px 0; overflow-x: auto">
+          <sc-for list="{{sorts}}" as="s" hint-placeholder-count="4">
+            <button onClick="{{s.pick}}" style="flex: 0 0 auto; height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid {{s.border}}; background: {{s.bg}}; color: {{s.fg}}; font-size: 12.5px; font-weight: 600">{{s.label}}</button>
+          </sc-for>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 18px 18px 10px"><div style="font-family: Kanit; font-weight: 600; font-size: 19px">ใกล้คุณ</div><div style="font-size: 12px; color: #ab9d94"><span style="color: #4ade80">●</span> พบ {{count}} คน</div></div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0 18px">
+          <sc-for list="{{people}}" as="p" hint-placeholder-count="4">
+            <a href="Profile.dc.html" style="text-decoration: none; color: inherit; border-radius: 18px; overflow: hidden; border: 1px solid #33272a; background: #181212; display: block">
+              <div style="height: 176px; position: relative">
+                <img src="{{p.img}}" alt="{{p.name}}" style="width: 100%; height: 100%; object-fit: cover; display: block">
+                <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(8,6,6,.85))"></div>
+                <div style="position: absolute; top: 8px; left: 8px; height: 22px; padding: 0 8px; border-radius: 999px; background: rgba(8,6,6,.7); border: 1px solid {{p.badgeBorder}}; color: {{p.badgeFg}}; font-size: 10.5px; display: flex; align-items: center; gap: 4px">{{p.badge}}</div>
+                <div style="position: absolute; left: 10px; bottom: 8px; font-size: 11px; color: #f6efe4">{{p.dist}}</div>
+              </div>
+              <div style="padding: 9px 10px 11px">
+                <div style="display: flex; justify-content: space-between; align-items: center"><div style="font-family: Kanit; font-weight: 600; font-size: 15px">{{p.name}}</div><div style="font-size: 11.5px; color: #e3c35c">★ {{p.rating}}</div></div>
+                <div style="font-size: 11px; color: #ab9d94; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{p.skills}}</div>
+                <div style="font-family: Kanit; font-weight: 600; color: #e3c35c; margin-top: 6px; font-size: 15px">{{p.price}} <span style="font-family: 'IBM Plex Sans Thai'; font-weight: 400; font-size: 10.5px; color: #7d6d6a">/ 3 ชม.</span></div>
+              </div>
+            </a>
+          </sc-for>
+        </div>
+        <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
+          <div style="margin: 0 18px; padding: 24px; border-radius: 16px; border: 1px dashed #4a3a3d; text-align: center; color: #ab9d94; font-size: 13px">ยังไม่เจอเพื่อนที่ตรงใจ ลองเลือกกิจกรรมให้น้อยลงดูนะคะ</div>
+        </sc-if>
+      </div>
+    </sc-if>
+  </div>
+  <a href="N06-SOS.dc.html" aria-label="SOS ฉุกเฉิน" style="position: absolute; right: 16px; bottom: 90px; z-index: 39; height: 40px; padding: 0 14px 0 8px; border-radius: 999px; background: #181212; border: 1px solid rgba(201,40,61,.6); color: #ef8a97; font-weight: 700; font-size: 13px; text-decoration: none; display: flex; align-items: center; gap: 6px; box-shadow: 0 8px 24px rgba(0,0,0,.5)"><span style="width: 24px; height: 24px; border-radius: 50%; background: #b0182c; display: grid; place-items: center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3z"></path></svg></span>SOS</a>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; border-top: 1px solid #33272a; background: rgba(14,10,10,.97); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; text-align: center; font-size: 10.5px; color: #7d6d6a; z-index: 40">
+    <a href="Main.dc.html" style="color: #d4af37; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px" aria-current="page"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>หน้าแรก</a>
+    <a href="S05-Map.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>ใกล้ฉัน</a>
+    <div><a href="S06-QuickCall.dc.html" aria-label="เรียกด่วน" style="width: 50px; height: 50px; margin: 0 auto; border-radius: 16px; background: linear-gradient(180deg, #c21d33, #8f1424); display: grid; place-items: center; color: #fff"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7z"></path></svg></a></div>
+    <a href="S07-Chats.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a8 8 0 0 1-12 7l-5 1 1-4a8 8 0 1 1 16-4z"></path></svg>แชท</a>
+    <a href="S13-Account.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg>บัญชี</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { tab: 'near', acts: [], sort: 'near', filterCount: 2 }; }
+  renderVals() {
+    const s = this.state;
+    const ACTS = [
+      { id: 'eat', label: 'กิน & เที่ยว', icon: 'M7 3v8M5 3v4a2 2 0 0 0 4 0V3M7 11v10M17 3c-2 0-3 2-3 5s1 4 3 4v9' },
+      { id: 'photo', label: 'ช่างภาพ', icon: 'M4 8h3l2-3h6l2 3h3v11H4zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z' },
+      { id: 'gym', label: 'ออกกำลัง', icon: 'M3 9v6M6 7v10M18 7v10M21 9v6M6 12h12' },
+      { id: 'cafe', label: 'คาเฟ่', icon: 'M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5zM16 10h2a2 2 0 0 1 0 4h-2M8 3v3M12 3v3' },
+      { id: 'video', label: 'วิดีโอคอล', icon: 'M3 7h12v10H3zM15 10l6-3v10l-6-3' },
+      { id: 'movie', label: 'ดูหนัง', icon: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 8.5v.01M8.5 12v.01M15.5 12v.01M12 15.5v.01' },
+      { id: 'chill', label: 'นั่งชิล', icon: 'M6 4h12v6a6 6 0 0 1-12 0zM9 20h6M12 16v4' }
+    ];
+    const P = [
+      { name: 'ต้น, 29', img: '/_blob/551eb82924983c941f1fe44ede9bceca', rating: '5.0', km: 1.2, acts: ['eat', 'movie', 'cafe'], massage: true, p3: 2400, free: 0, isNew: false },
+      { name: 'กอล์ฟ, 33', img: '/_blob/82a15fdc40050c0a074e7e4b5b66e794', rating: '4.9', km: 2.1, acts: ['cafe', 'photo', 'chill'], massage: false, p3: 2100, free: 20, isNew: true },
+      { name: 'ภูมิ, 31', img: '/_blob/8725f65bf80d613b2a9537700bf2f9bb', rating: '4.8', km: 3.4, acts: ['gym', 'eat', 'video'], massage: true, p3: 2700, free: 0, isNew: false },
+      { name: 'นนท์, 27', img: '/_blob/f34ad19eab9288d994c2271a15964ceb', rating: '4.8', km: 0.8, acts: ['movie', 'chill', 'eat'], massage: false, p3: 1950, free: 45, isNew: true },
+      { name: 'เบนซ์, 26', img: '/_blob/ec33c74147cab066783e7acae85c8875', rating: '5.0', km: 4.0, acts: ['photo', 'cafe', 'video'], massage: true, p3: 2250, free: 0, isNew: false },
+      { name: 'ปั้น, 28', img: '/_blob/d26354f23535577e2504751c4197ea79', rating: '4.9', km: 5.6, acts: ['eat', 'gym', 'chill'], massage: true, p3: 2550, free: 30, isNew: false }
+    ];
+    const labelOf = (id) => (ACTS.find((a) => a.id === id) || {}).label;
+    let list = P.filter((p) => s.acts.every((a) => p.acts.includes(a)));
+    const by = { near: (a, b) => a.km - b.km, rate: (a, b) => b.rating - a.rating, now: (a, b) => a.free - b.free, new: (a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0) };
+    list = list.slice().sort(by[s.sort]);
+    const gold = '#d4af37';
+    return {
+      showNear: s.tab === 'near', showPremium: s.tab === 'prem',
+      nearBg: s.tab === 'near' ? '#b0182c' : 'transparent', nearFg: s.tab === 'near' ? '#fff' : '#ab9d94',
+      premBg: s.tab === 'prem' ? '#b0182c' : 'transparent', premFg: s.tab === 'prem' ? '#fff' : '#ab9d94',
+      tabNear: () => this.setState({ tab: 'near' }), tabPrem: () => this.setState({ tab: 'prem' }),
+      acts: ACTS.map((a) => { const on = s.acts.includes(a.id); return { ...a, on: String(on), bg: on ? 'rgba(212,175,55,.14)' : '#181212', border: on ? gold : '#33272a', fg: on ? '#eed58a' : '#d3c7bc', toggle: () => this.setState({ acts: on ? s.acts.filter((x) => x !== a.id) : [...s.acts, a.id] }) }; }),
+      filterCount: String(s.filterCount), hasFilters: s.filterCount > 0,
+      sorts: [['near', 'ใกล้ที่สุด'], ['rate', 'คะแนนสูงสุด'], ['now', 'ว่างตอนนี้'], ['new', 'หน้าใหม่']].map(([id, label]) => { const on = s.sort === id; return { label, bg: on ? '#b0182c' : 'transparent', border: on ? '#b0182c' : '#33272a', fg: on ? '#fff' : '#d3c7bc', pick: () => this.setState({ sort: id }) }; }),
+      count: list.length, empty: list.length === 0,
+      people: list.map((p) => ({ ...p, price: '฿' + p.p3.toLocaleString('en-US'), dist: p.km + ' กม.', skills: p.acts.map(labelOf).join(' · ') + (p.massage ? ' · นวดผ่อนคลาย' : ''), badge: p.isNew ? 'หน้าใหม่' : p.free === 0 ? '● ว่างตอนนี้' : 'ว่างใน ' + p.free + ' นาที', badgeBorder: p.isNew ? 'rgba(201,40,61,.8)' : 'rgba(212,175,55,.6)', badgeFg: p.isNew ? '#ef8a97' : '#eed58a' }))
+    };
+  }
+}
+</script>
+</body>
+</html>

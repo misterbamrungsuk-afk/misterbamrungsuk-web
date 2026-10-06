@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>ตั้งเวลาทำงาน</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0a0a;--s1:#181212;--s2:#21191a;--ln:#33272a;--red:#b0182c;--gold:#D4AF37;--gold-l:#e3c35c;--tx:#f6efe4;--mut:#ab9d94}
+body{margin:0;font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--tx)}
+*{box-sizing:border-box}
+h1{font-family:'Kanit',sans-serif;margin:0}
+button{font-family:inherit}
+a{color:var(--tx);text-decoration:none}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.dr{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--ln);font-size:14px}
+.tg{width:44px;height:26px;border-radius:26px;position:relative;display:inline-block;flex-shrink:0}
+.tg span{position:absolute;top:3px;width:20px;height:20px;border-radius:20px;background:#fff}
+.tm{height:32px;padding:0 10px;border-radius:10px;background:var(--s2);font-size:13px;display:flex;align-items:center}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;overflow:hidden;background:var(--bg)">
+  <div style="display:flex;align-items:center;gap:10px;padding:16px">
+    <a href="Provider.dc.html" aria-label="ย้อนกลับ" style="width:42px;height:42px;border-radius:42px;border:1px solid var(--ln);display:flex;align-items:center;justify-content:center"><svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></a>
+    <h1 style="font-size:19px;font-weight:600">เวลาทำงาน</h1>
+  </div>
+  <div style="padding:0 16px;display:flex;flex-direction:column;gap:14px">
+    <div style="background:var(--s1);border:1px solid var(--ln);border-radius:20px;overflow:hidden">
+      <div class="dr"><span style="width:52px">จันทร์</span><span class="tg" style="background:var(--red)"><span style="right:3px"></span></span><span style="margin-left:auto;display:flex;gap:6px"><span class="tm">17:00</span><span class="tm">23:00</span></span></div>
+      <div class="dr"><span style="width:52px">อังคาร</span><span class="tg" style="background:var(--red)"><span style="right:3px"></span></span><span style="margin-left:auto;display:flex;gap:6px"><span class="tm">17:00</span><span class="tm">23:00</span></span></div>
+      <div class="dr" style="color:var(--mut)"><span style="width:52px">พุธ</span><span class="tg" style="background:var(--ln)"><span style="left:3px;background:var(--mut)"></span></span><span style="margin-left:auto;font-size:13px">หยุด</span></div>
+      <div class="dr"><span style="width:52px">พฤหัส</span><span class="tg" style="background:var(--red)"><span style="right:3px"></span></span><span style="margin-left:auto;display:flex;gap:6px"><span class="tm">17:00</span><span class="tm">23:00</span></span></div>
+      <div class="dr"><span style="width:52px">ศุกร์</span><span class="tg" style="background:var(--red)"><span style="right:3px"></span></span><span style="margin-left:auto;display:flex;gap:6px"><span class="tm">18:00</span><span class="tm">01:00</span></span></div>
+      <div class="dr"><span style="width:52px">เสาร์</span><span class="tg" style="background:var(--red)"><span style="right:3px"></span></span><span style="margin-left:auto;display:flex;gap:6px"><span class="tm">12:00</span><span class="tm">23:00</span></span></div>
+      <div class="dr" style="border:0"><span style="width:52px">อาทิตย์</span><span class="tg" style="background:var(--red)"><span style="right:3px"></span></span><span style="margin-left:auto;display:flex;gap:6px"><span class="tm">12:00</span><span class="tm">20:00</span></span></div>
+    </div>
+    <div style="background:var(--s1);border:1px solid var(--ln);border-radius:20px;padding:16px">
+      <div style="display:flex;justify-content:space-between"><span style="font-family:'Kanit';font-weight:500">รัศมีรับงาน</span><b style="font-family:'Kanit';font-weight:500;color:var(--gold-l)">8 กม.</b></div>
+      <div style="position:relative;height:4px;border-radius:4px;background:var(--ln);margin:18px 10px 8px"><div style="width:40%;height:100%;border-radius:4px;background:var(--gold)"></div><span style="position:absolute;left:calc(40% - 12px);top:-10px;width:24px;height:24px;border-radius:24px;background:var(--tx);border:4px solid var(--gold)"></span></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mut)"><span>2 กม.</span><span>20 กม.</span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;background:var(--s1);border:1px solid var(--ln);border-radius:16px;padding:14px;font-size:14px"><span style="flex-grow:1">พักงานชั่วคราว<div style="font-size:12px;color:var(--mut)">หยุดรับงานด่วน และซ่อนคุณจากแผนที่ไว้ก่อน</div></span><span class="tg" style="background:var(--ln)"><span style="left:3px;background:var(--mut)"></span></span></div>
+  </div>
+  <button style="position:absolute;left:16px;right:16px;bottom:24px;height:56px;border-radius:16px;border:0;background:var(--red);color:#fff;font-family:'Kanit';font-weight:600;font-size:17px">บันทึก</button>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

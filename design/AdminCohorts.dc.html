@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>แอดมิน รุ่นอบรม</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+.h{font-family:Kanit;font-weight:600}
+.card{padding:14px;border-radius:16px;background:#181212;border:1px solid #33272a}
+.in{height:48px;border-radius:12px;border:1px solid #33272a;background:#21191a;color:#f6efe4;padding:0 14px;font-size:14px;box-sizing:border-box;width:100%;display:flex;align-items:center}
+.cta{height:52px;border-radius:14px;border:1px solid rgba(212,175,55,.45);background:linear-gradient(180deg,#c21d33,#8f1424);color:#fff;font-size:15px;font-weight:600;width:100%;font-family:Kanit}
+.ghost{height:48px;border-radius:14px;border:1px solid #33272a;background:#181212;color:#e3c35c;font-size:14px;font-weight:600;width:100%}
+.lbl{font-size:12px;color:#ab9d94;margin:0 0 6px}
+.mut{color:#ab9d94}
+</style>
+</helmet>
+<div style="width: 1280px; height: 820px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; display: flex; overflow: hidden">
+  <nav aria-label="เมนูแอดมิน" style="width: 232px; flex: 0 0 232px; border-right: 1px solid #33272a; padding: 18px 14px; display: flex; flex-direction: column; gap: 2px; font-size: 13px; box-sizing: border-box; font-family: 'IBM Plex Sans Thai', sans-serif; background: #0e0a0a">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px"><div style="width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid #d4af37; display: grid; place-items: center; font-family: Kanit; font-weight: 700; font-size: 12px; color: #d4af37">MB</div><div style="line-height: 1.1"><div style="font-family: Kanit; font-weight: 600; color: #f6efe4">Bamrungsuk</div><div style="font-size: 11px; color: #7d6d6a">Admin · super</div></div></div>
+    <a href="AdminDashboard.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ภาพรวม / รายได้</a>
+    <a href="AdminBookings.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">การจอง / งาน</a>
+    <a href="B2-Orders.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ตรวจงาน</a>
+    <a href="AdminApplicants.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ผู้สมัคร</a>
+    <a href="B1-KYC.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">คิว KYC</a>
+    <a href="AdminCohorts.dc.html" aria-current="page" style="padding: 6px 12px; border-radius: 10px; background: rgba(176,24,44,.2); border: 1px solid rgba(201,40,61,.55); color: #f6efe4; text-decoration: none">รุ่นอบรม / เช็กชื่อ</a>
+    <a href="AdminParttimers.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">Part-Time ที่ใช้งาน</a>
+    <a href="B3-Payouts.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">โอนให้ Part-Time</a>
+    <a href="AdminPartners.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">พาร์ทเนอร์สปา</a>
+    <a href="AdminSpaPricing.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ราคาสปาพาร์ทเนอร์</a>
+    <a href="AdminPricing.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ตั้งค่าราคา</a>
+    <a href="B6-Members.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">สมาชิก · ใบเตือน</a>
+    <a href="B4-Reports.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">รายงาน</a>
+    <a href="B5-CS.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">เรื่องร้องเรียน</a>
+    <a href="B7-Promos.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">โปรโมชัน</a>
+    <a href="B8-Audit.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">บันทึกระบบ · SOS</a>
+    <div style="height: 1px; background: #33272a; margin: 6px 0"></div>
+    <a href="E2-AdminSettings.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ตั้งค่าระบบ</a>
+    <a href="E1-AdminLogin.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">แอดมินและสิทธิ์</a>
+    <a href="Main.dc.html" style="margin-top: auto; padding: 6px 12px; color: #e3c35c; text-decoration: none">← สารบัญทุกหน้า</a>
+  </nav>
+  <main style="flex: 1; padding: 24px 28px; display: flex; flex-direction: column; gap: 18px; min-width: 0; overflow-y: auto">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end">
+      <div><div style="font-size: 11px; letter-spacing: 2.5px; color: #d4af37; font-weight: 600">COHORTS</div><h1 style="margin: 2px 0 0; font-family: Kanit; font-weight: 700; font-size: 26px">รุ่นอบรม Part-Time</h1></div>
+      <button onClick="{{toggleCreate}}" style="min-height: 44px; padding: 0 16px; border-radius: 12px; font-size: 13px; font-weight: 600; border: 1px solid rgba(212,175,55,.45); background: linear-gradient(180deg,#c21d33,#8f1424); color: #fff">{{createLabel}}</button>
+    </div>
+    <sc-if value="{{creating}}" hint-placeholder-val="{{ false }}">
+      <div class="card" style="display: grid; grid-template-columns: repeat(4, minmax(0,1fr)) auto; gap: 12px; align-items: end">
+        <div><p class="lbl">ชื่อรุ่น</p><div class="in">รุ่น 3</div></div>
+        <div><p class="lbl">วันเริ่ม</p><div class="in">รอประกาศ</div></div>
+        <div><p class="lbl">สถานที่</p><div class="in">MB Studio ทองหล่อ</div></div>
+        <div><p class="lbl">จำนวนรอบ / ที่นั่ง</p><div class="in">5 รอบ · 50 ที่</div></div>
+        <button onClick="{{create}}" style="min-height: 44px; padding: 0 16px; border-radius: 12px; font-size: 13px; font-weight: 600; border: 1px solid rgba(212,175,55,.45); background: linear-gradient(180deg,#c21d33,#8f1424); color: #fff; height: 48px">บันทึกรุ่น</button>
+      </div>
+    </sc-if>
+    <div style="display: grid; grid-template-columns: 340px minmax(0,1fr); gap: 16px; min-height: 0; flex: 1">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <sc-for list="{{cohorts}}" as="c" hint-placeholder-count="4">
+          <button onClick="{{c.pick}}" style="text-align: left; padding: 14px; border-radius: 16px; background: {{c.bg}}; border: 1px solid {{c.bd}}; color: #f6efe4; display: flex; flex-direction: column; gap: 6px; min-height: 44px">
+            <div style="display: flex; justify-content: space-between; width: 100%"><span style="font-family: Kanit; font-weight: 600; font-size: 16px">{{c.name}}</span><span style="font-size: 11px; padding: 3px 10px; border-radius: 99px; border: 1px solid {{c.sc}}; color: {{c.sc}}">{{c.status}}</span></div>
+            <span style="font-size: 12px; color: #ab9d94">{{c.meta}}</span>
+            <div style="height: 6px; border-radius: 99px; background: #21191a; width: 100%"><div style="height: 6px; border-radius: 99px; background: #d4af37; width: {{c.fill}}"></div></div>
+            <span style="font-size: 11.5px; color: #e3c35c">{{c.seats}}</span>
+          </button>
+        </sc-for>
+      </div>
+      <div class="card" style="display: flex; flex-direction: column; gap: 12px; min-width: 0">
+        <div style="display: flex; justify-content: space-between; align-items: center"><div><div style="font-family: Kanit; font-weight: 600; font-size: 18px">เช็กชื่อ · {{selName}}</div><div style="font-size: 12px; color: #ab9d94">แตะช่องเพื่อสลับ มา / ขาด · {{attSummary}}</div></div><button onClick="{{markAll}}" style="min-height: 44px; padding: 0 16px; border-radius: 12px; font-size: 13px; font-weight: 600; border: 1px solid #33272a; background: #181212; color: #e3c35c">เช็กชื่อทั้งหมดรอบล่าสุด</button></div>
+        <div style="display: grid; grid-template-columns: 1.6fr 1fr repeat(5, 64px) 90px; gap: 6px; font-size: 12px; color: #ab9d94; padding: 0 4px"><span>ชื่อ</span><span>รหัส</span><span>รอบ 1</span><span>รอบ 2</span><span>รอบ 3</span><span>รอบ 4</span><span>รอบ 5</span><span>รวม</span></div>
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+          <div style="display: grid; grid-template-columns: 1.6fr 1fr repeat(5, 64px) 90px; gap: 6px; align-items: center; padding: 4px; border-top: 1px solid #33272a; font-size: 13px">
+            <span>{{r.name}}</span><span style="color: #ab9d94; font-family: Kanit">{{r.code}}</span>
+            <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="5"><button onClick="{{x.tap}}" aria-label="{{x.aria}}" style="height: 44px; border-radius: 10px; border: 1px solid {{x.bd}}; background: {{x.bg}}; color: {{x.fg}}; font-size: 12px">{{x.t}}</button></sc-for>
+            <span style="color: {{r.tc}}; font-family: Kanit">{{r.total}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":820}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { sel: 0, creating: false, extra: false, att: {} }; }
+  renderVals() {
+    const s = this.state;
+    const C = [['รุ่น 1', '15–16 พ.ย. 2569 · MB Studio ทองหล่อ · เริ่มงานวันเปิดตัว 30 พ.ย. 2569', 'อบรมเสร็จแล้ว', '#7fd6a3', 12, 50], ['รุ่น 2', '21–22 ก.พ. 2570 · MB Studio ทองหล่อ', 'เปิดรับสมัคร', '#d4af37', 2, 50]];
+    if (s.extra) C.push(['รุ่น 3', 'วันอบรมรอประกาศ', 'ร่าง', '#e3c35c', 0, 50]);
+    const N = [['พงศกร ร. (ต้น)', 'MB-2610014'], ['ภูมิพัฒน์ ว. (ภูมิ)', 'MB-2610004'], ['ณัฐพล ก. (เบนซ์)', 'MB-2610007'], ['ธีรวัฒน์ ม. (บอส)', 'MB-2610009'], ['ศุภกิจ ส. (กอล์ฟ)', 'MB-2610011'], ['ปัณณวัฒน์ ก. (ปั้น)', 'MB-2610006']];
+    const base = [[1,1,1,0,0],[1,1,1,0,0],[1,0,1,0,0],[1,1,1,0,0],[1,1,0,0,0],[1,1,1,0,0]];
+    const key = (r, c) => s.sel + '-' + r + '-' + c;
+    const val = (r, c) => { const k = key(r, c); return k in s.att ? s.att[k] : (s.sel === 0 ? 1 : 0); };
+    let present = 0;
+    const rows = N.map(([name, code], r) => {
+      const cells = [0,1,2,3,4].map((c) => { const v = val(r, c); present += v; return { t: v ? 'มา' : 'ขาด', aria: name + ' รอบ ' + (c + 1), bg: v ? 'rgba(60,170,110,.14)' : '#21191a', bd: v ? 'rgba(60,170,110,.5)' : '#33272a', fg: v ? '#7fd6a3' : '#7d6d6a', tap: () => { const att = Object.assign({}, s.att); att[key(r, c)] = v ? 0 : 1; this.setState({ att }); } }; });
+      const tot = cells.filter((x) => x.t === 'มา').length;
+      return { name, code, cells, total: tot + ' / 5', tc: tot === 5 ? '#7fd6a3' : '#e3c35c' };
+    });
+    return {
+      creating: s.creating, createLabel: s.creating ? 'ปิด' : 'สร้างรุ่นใหม่',
+      toggleCreate: () => this.setState({ creating: !s.creating }), create: () => this.setState({ extra: true, creating: false, sel: 2 }),
+      cohorts: C.map(([name, meta, status, sc, n, cap], i) => ({ name, meta, status, sc, seats: n + ' / ' + cap + ' ที่นั่ง', fill: Math.round(n / cap * 100) + '%', bg: s.sel === i ? 'rgba(176,24,44,.16)' : '#181212', bd: s.sel === i ? 'rgba(201,40,61,.55)' : '#33272a', pick: () => this.setState({ sel: i }) })),
+      selName: C[s.sel][0], attSummary: 'เข้าร่วม ' + present + ' จาก 30 ช่อง',
+      rows,
+      markAll: () => { const att = Object.assign({}, s.att); N.forEach((_, r) => { att[key(r, 3)] = 1; }); this.setState({ att }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

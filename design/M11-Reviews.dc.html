@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>รีวิวทั้งหมด</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0a0a;--s1:#181212;--s2:#21191a;--ln:#33272a;--red:#b0182c;--gold:#D4AF37;--gold-l:#e3c35c;--tx:#f6efe4;--mut:#ab9d94}
+body{margin:0;font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--tx)}
+*{box-sizing:border-box}
+h1{font-family:'Kanit',sans-serif;margin:0}
+a{color:var(--tx);text-decoration:none}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.br{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mut)}
+.bt{flex-grow:1;height:5px;border-radius:5px;background:var(--ln);overflow:hidden}
+.bt span{display:block;height:100%;background:var(--gold)}
+.chip{height:34px;padding:0 14px;border-radius:999px;border:1px solid var(--ln);font-size:13px;display:flex;align-items:center;white-space:nowrap}
+.rv{padding:14px 0;border-bottom:1px solid var(--ln);display:flex;flex-direction:column;gap:6px}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;overflow:hidden;background:var(--bg)">
+  <div style="display:flex;align-items:center;gap:10px;padding:16px">
+    <a href="Profile.dc.html" aria-label="ย้อนกลับ" style="width:42px;height:42px;border-radius:42px;border:1px solid var(--ln);display:flex;align-items:center;justify-content:center"><svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></a>
+    <h1 style="font-size:19px;font-weight:600">รีวิวของต้น</h1>
+  </div>
+  <div style="padding:0 16px;display:flex;gap:18px;align-items:center">
+    <div style="text-align:center"><div style="font-family:'Kanit';font-weight:700;font-size:48px;line-height:1">4.9</div><div style="color:var(--gold);font-size:14px">★★★★★</div><div style="font-size:12px;color:var(--mut)">128 รีวิว</div></div>
+    <div style="flex-grow:1;display:flex;flex-direction:column;gap:5px">
+      <div class="br">5<div class="bt"><span style="width:88%"></span></div></div>
+      <div class="br">4<div class="bt"><span style="width:9%"></span></div></div>
+      <div class="br">3<div class="bt"><span style="width:2%"></span></div></div>
+      <div class="br">2<div class="bt"><span style="width:1%"></span></div></div>
+      <div class="br">1<div class="bt"><span style="width:0%"></span></div></div>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;padding:18px 16px 4px;overflow:hidden"><span class="chip" style="background:var(--tx);color:var(--bg);border-color:var(--tx)">ทั้งหมด</span><span class="chip">มีรูป</span><span class="chip">★ 5</span><span class="chip">★ 4</span><span class="chip">ล่าสุด</span></div>
+  <div style="padding:0 16px">
+    <div class="rv">
+      <div style="display:flex;justify-content:space-between"><b style="font-weight:500">คุณ ก.</b><span style="font-size:12px;color:var(--mut)">2 วันก่อน</span></div>
+      <div style="color:var(--gold);font-size:13px">★★★★★ <span style="color:var(--mut)">· ดินเนอร์ 3 ชม.</span></div>
+      <div style="font-size:14px;line-height:1.55;color:var(--tx)">มาตรงเวลา คุยสนุก สุภาพมาก เลือกร้านเก่งด้วย ดินเนอร์คืนนี้ผ่อนคลายสุด ๆ ค่ะ</div>
+      <div style="display:flex;gap:6px"><div style="width:64px;height:64px;border-radius:10px;background:var(--s2);border:1px solid var(--ln)"></div><div style="width:64px;height:64px;border-radius:10px;background:var(--s2);border:1px solid var(--ln)"></div></div>
+      <div style="margin-top:4px;padding:10px 12px;border-radius:12px;background:var(--s1);font-size:13px;color:var(--mut)"><b style="color:var(--gold-l);font-weight:500">คำตอบของคุณ</b> · ขอบคุณมากครับ ดีใจที่คุณ ก. ชอบร้านนี้ ไว้เจอกันใหม่นะครับ</div>
+    </div>
+    <div class="rv">
+      <div style="display:flex;justify-content:space-between"><b style="font-weight:500">คุณ ป.</b><span style="font-size:12px;color:var(--mut)">1 สัปดาห์ก่อน</span></div>
+      <div style="color:var(--gold);font-size:13px">★★★★☆ <span style="color:var(--mut)">· คาเฟ่ + ช่างภาพ 3 ชม.</span></div>
+      <div style="font-size:14px;line-height:1.55">ถ่ายรูปสวย มุมดีทุกช็อต คุยเพลินค่ะ ติดนิดเดียวที่ร้านแรกคนเยอะไปหน่อย</div>
+    </div>
+    <div class="rv" style="border:0">
+      <div style="display:flex;justify-content:space-between"><b style="font-weight:500">คุณ ส.</b><span style="font-size:12px;color:var(--mut)">2 สัปดาห์ก่อน</span></div>
+      <div style="color:var(--gold);font-size:13px">★★★★★ <span style="color:var(--mut)">· ดูหนัง + นั่งชิล 5 ชม.</span></div>
+      <div style="font-size:14px;line-height:1.55">ใส่ใจรายละเอียด ดูแลดีตลอดทั้งเย็น มารยาทดีมาก ไว้จองอีกแน่นอนค่ะ</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>บัญชีของฉัน</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0a0a;--s1:#181212;--s2:#21191a;--ln:#33272a;--red:#b0182c;--gold:#D4AF37;--gold-l:#e3c35c;--tx:#f6efe4;--mut:#ab9d94}
+body{margin:0;font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--tx)}
+*{box-sizing:border-box}
+button{font-family:inherit}
+a{color:var(--tx);text-decoration:none}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.mi{display:flex;align-items:center;gap:14px;padding:15px 16px;font-size:15px;border-bottom:1px solid var(--ln)}
+.fv{width:62px;height:62px;border-radius:62px;object-fit:cover;border:2px solid var(--bg);box-shadow:0 0 0 1px var(--gold)}
+.navi{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--mut)}
+.navi.on{color:var(--tx)}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;overflow:hidden;background:var(--bg)">
+  <div style="padding:22px 16px 0;display:flex;align-items:center;gap:14px">
+    <div style="width:64px;height:64px;border-radius:64px;border:1px solid var(--gold);color:var(--gold-l);font-family:'Kanit';font-weight:600;font-size:26px;display:flex;align-items:center;justify-content:center">ม</div>
+    <div style="flex-grow:1"><div style="font-family:'Kanit';font-weight:600;font-size:20px">มายด์</div><div style="font-size:13px;color:var(--mut)">สมาชิกตั้งแต่ ก.ย. 2569</div></div>
+    <div style="display:flex;flex-direction:column;gap:6px"><a href="N07-ProviderApply.dc.html" style="height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--gold);color:var(--gold-l);font-size:12px;display:flex;align-items:center">สมัครเป็นเพื่อน</a></div>
+  </div>
+  <div style="margin:18px 16px 0;background:var(--s1);border:1px solid var(--ln);border-radius:20px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));text-align:center;padding:14px 0">
+    <div><div style="font-family:'Kanit';font-weight:600;font-size:22px">12</div><div style="font-size:12px;color:var(--mut)">การจอง</div></div>
+    <div style="border-left:1px solid var(--ln);border-right:1px solid var(--ln)"><div style="font-family:'Kanit';font-weight:600;font-size:22px">5</div><div style="font-size:12px;color:var(--mut)">เพื่อนที่ถูกใจ</div></div>
+    <div><div style="font-family:'Kanit';font-weight:600;font-size:22px;color:var(--gold-l)">2</div><div style="font-size:12px;color:var(--mut)">โค้ดส่วนลด</div></div>
+  </div>
+  <div style="padding:20px 16px 0">
+    <div style="display:flex;justify-content:space-between"><b style="font-family:'Kanit';font-weight:500;font-size:17px">เพื่อนที่ถูกใจ</b><a href="Favorites.dc.html" style="font-size:13px;color:var(--gold)">ทั้งหมด</a></div>
+    <div style="display:flex;gap:12px;margin-top:12px">
+      <img class="fv" src="/_blob/ec33c74147cab066783e7acae85c8875" alt="ต้น"><img class="fv" src="/_blob/d26354f23535577e2504751c4197ea79" alt="กอล์ฟ"><img class="fv" src="/_blob/551eb82924983c941f1fe44ede9bceca" alt="ภูมิ"><img class="fv" src="/_blob/82a15fdc40050c0a074e7e4b5b66e794" alt="นนท์"><img class="fv" src="/_blob/551eb82924983c941f1fe44ede9bceca" alt="เจมส์">
+    </div>
+  </div>
+  <div style="margin:18px 16px 0;background:var(--s1);border:1px solid var(--ln);border-radius:20px;overflow:hidden">
+    <a class="mi" href="C5-EditProfile.dc.html"><svg class="ic" viewBox="0 0 24 24" style="color:var(--gold)"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span style="flex-grow:1">แก้ไขโปรไฟล์ · ผู้ติดต่อฉุกเฉิน</span><svg class="ic" viewBox="0 0 24 24" style="color:var(--mut)"><path d="m9 18 6-6-6-6"/></svg></a>
+    <a class="mi" href="C6-Addresses.dc.html"><svg class="ic" viewBox="0 0 24 24" style="color:var(--gold)"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/></svg><span style="flex-grow:1">ที่อยู่ที่บันทึก</span><svg class="ic" viewBox="0 0 24 24" style="color:var(--mut)"><path d="m9 18 6-6-6-6"/></svg></a>
+    <a class="mi" href="M13-Legal.dc.html"><svg class="ic" viewBox="0 0 24 24" style="color:var(--gold)"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.7-2.5 2-2.5 4M12 17h0"/></svg><span style="flex-grow:1">ช่วยเหลือและนโยบาย</span><svg class="ic" viewBox="0 0 24 24" style="color:var(--mut)"><path d="m9 18 6-6-6-6"/></svg></a>
+    <a class="mi" href="S12-Orders.dc.html"><svg class="ic" viewBox="0 0 24 24" style="color:var(--gold)"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span style="flex-grow:1">นัดของฉัน</span><svg class="ic" viewBox="0 0 24 24" style="color:var(--mut)"><path d="m9 18 6-6-6-6"/></svg></a>
+    <a class="mi" href="N04-Notifications.dc.html"><svg class="ic" viewBox="0 0 24 24" style="color:var(--gold)"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span style="flex-grow:1">การแจ้งเตือน</span><span style="min-width:20px;height:20px;border-radius:20px;background:var(--red);font-size:11px;display:flex;align-items:center;justify-content:center">3</span></a>
+    <a class="mi" href="C7-Language.dc.html" style="border:0"><svg class="ic" viewBox="0 0 24 24" style="color:var(--gold)"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span style="flex-grow:1">ภาษา</span><span style="font-size:14px;color:var(--mut)">ไทย</span></a>
+  </div>
+  <a href="N06-SOS.dc.html" style="position:absolute;left:16px;right:16px;bottom:118px;height:56px;border-radius:16px;border:1px solid var(--red);background:rgba(224,36,60,.1);color:#FF8A97;display:flex;align-items:center;justify-content:center;gap:10px;font-family:'Kanit';font-weight:600;font-size:16px;text-decoration:none"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h0"/></svg>SOS ฉุกเฉิน · แอดมินรับเรื่องทันที</a>
+  <div style="position:absolute;left:16px;right:16px;bottom:84px;padding-top:8px;border-top:1px dashed var(--ln);text-align:center;font-size:11px;color:#7d6d6a">สำหรับทีมงาน · <a href="E1-AdminLogin.dc.html" style="color:#7d6d6a;text-decoration:underline">หลังบ้านแอดมิน</a></div>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; border-top: 1px solid #33272a; background: rgba(14,10,10,.97); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; text-align: center; font-size: 10.5px; color: #7d6d6a; z-index: 40">
+    <a href="Main.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>หน้าแรก</a>
+    <a href="S05-Map.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>ใกล้ฉัน</a>
+    <div><a href="S06-QuickCall.dc.html" aria-label="เรียกด่วน" style="width: 50px; height: 50px; margin: 0 auto; border-radius: 16px; background: linear-gradient(180deg, #c21d33, #8f1424); display: grid; place-items: center; color: #fff"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7z"></path></svg></a></div>
+    <a href="S07-Chats.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a8 8 0 0 1-12 7l-5 1 1-4a8 8 0 1 1 16-4z"></path></svg>แชท</a>
+    <a href="S13-Account.dc.html" style="color: #d4af37; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px" aria-current="page"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg>บัญชี</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

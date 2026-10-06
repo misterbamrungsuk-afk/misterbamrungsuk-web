@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>ยกเลิกการจอง</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0a0a;--s1:#181212;--s2:#21191a;--ln:#33272a;--red:#b0182c;--gold:#D4AF37;--gold-l:#e3c35c;--tx:#f6efe4;--mut:#ab9d94}
+body{margin:0;font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--tx)}
+*{box-sizing:border-box}
+h1{font-family:'Kanit',sans-serif;margin:0}
+button{font-family:inherit}
+a{color:var(--tx);text-decoration:none}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.rs{width:100%;text-align:left;color:var(--tx);font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;border:1px solid var(--ln);background:var(--s1);font-size:14px}
+.rd{width:20px;height:20px;border-radius:20px;border:1px solid var(--ln);flex-shrink:0}
+.tl{position:relative;height:6px;border-radius:6px;background:var(--ln);margin-top:10px}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;overflow:hidden;background:var(--bg)">
+  <div style="display:flex;align-items:center;gap:10px;padding:16px">
+    <a href="S12-Orders.dc.html" aria-label="ย้อนกลับ" style="width:42px;height:42px;border-radius:42px;border:1px solid var(--ln);display:flex;align-items:center;justify-content:center"><svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></a>
+    <h1 style="font-size:19px;font-weight:600">ยกเลิกการจอง</h1>
+  </div>
+  <div style="padding:0 16px;display:flex;flex-direction:column;gap:14px">
+    <div style="background:var(--s1);border:1px solid var(--ln);border-radius:20px;padding:16px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--mut)"><span>นัด พฤ. 1 ต.ค. 19:00</span><span>{{leftLabel}}</span></div>
+      <div style="display:flex;gap:6px;margin-top:10px"><sc-for list="{{scen}}" as="c" hint-placeholder-count="2"><button onClick="{{c.pick}}" style="flex:1;height:32px;border-radius:999px;border:1px solid {{c.border}};background:{{c.bg}};color:{{c.fg}};font-size:12px;font-family:inherit">{{c.label}}</button></sc-for></div>
+      <div class="tl"><div style="position:absolute;left:0;width:60%;height:100%;border-radius:6px;background:var(--gold)"></div><div style="position:absolute;left:60%;right:0;height:100%;border-radius:6px;background:var(--red);opacity:.6"></div><span style="position:absolute;left:{{knob}};top:-6px;width:18px;height:18px;border-radius:18px;background:var(--tx);border:3px solid var(--gold)"></span></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mut);margin-top:8px"><span>ก่อนนัดมากกว่า 3 ชม. · คืนเต็ม</span><span>น้อยกว่า 3 ชม. · คืน 50%</span></div>
+    </div>
+    <div style="font-family:'Kanit';font-weight:500;font-size:16px">เหตุผลที่ยกเลิก</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <sc-for list="{{reasons}}" as="r" hint-placeholder-count="4"><button class="rs" role="radio" aria-checked="{{r.on}}" onClick="{{r.pick}}" style="border-color:{{r.border}}"><span class="rd" style="border:{{r.ring}}"></span>{{r.label}}</button></sc-for>
+      <sc-if value="{{isOther}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{other.tap}}" aria-label="เหตุผลอื่น · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:flex-start;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:pre-wrap;height:64px;border-radius:14px;border:1px solid var(--ln);padding:10px 12px;font-size:14px;resize:none;background:var(--s2);font-family:inherit; color:{{other.color}}">{{other.text}}</button><span style="font-size:11px;color:#7d6d6a;font-weight:400">แตะเพื่อกรอกตัวอย่าง</span></sc-if>
+    </div>
+    <div style="background:var(--s1);border:1px solid var(--ln);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:8px;font-size:14px">
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--mut)">ยอดที่ชำระ</span><span>฿2,160</span></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--mut)">ค่ายกเลิก</span><span>{{fee}}</span></div>
+      <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--ln)"><b style="font-weight:500">ยอดคืนให้คุณ</b><b style="font-family:'Kanit';font-weight:600;font-size:20px;color:var(--gold-l)">{{refund}}</b></div>
+      <div style="font-size:12px;color:var(--mut)">เงินเข้าพร้อมเพย์เดิมภายใน 1–3 วันทำการ</div>
+      <div style="font-size:12px;color:var(--gold-l)">ถ้าเพื่อนไม่มาตามนัด คุณได้เงินคืนเต็ม 100% หลังทีมงานตรวจหลักฐานทั้ง 2 ฝ่าย (ภายใน 24 ชม.)</div>
+    </div>
+  </div>
+  <div style="position:absolute;left:16px;right:16px;bottom:24px;display:flex;flex-direction:column;gap:10px">
+    <a href="S12-Orders.dc.html" style="height:54px;border-radius:16px;border:1px solid var(--red);background:transparent;color:#FF8A97;font-family:'Kanit';font-weight:600;font-size:16px;display:flex;align-items:center;justify-content:center;text-decoration:none">ยืนยันยกเลิกนัด</a>
+    <a href="N02-Schedule.dc.html" style="height:50px;border-radius:16px;background:var(--tx);color:var(--bg);font-weight:600;display:flex;align-items:center;justify-content:center">เลื่อนนัดแทน (ฟรี)</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { reason: 0, late: false }; }
+  _baseVals() {
+    const s = this.state;
+    const R = ['ติดธุระ เวลานี้ไม่สะดวก', 'จองผิดวันหรือเวลา', 'เพื่อนขอยกเลิก', 'อื่นๆ'];
+    const paid = 2160;
+    const fee = s.reason === 2 || !s.late ? 0 : paid / 2;
+    const fmt = (n) => '฿' + n.toLocaleString('en-US');
+    return {
+      leftLabel: s.late ? 'อีก 2 ชม. 10 นาที' : 'อีก 5 ชม. 20 นาที',
+      knob: s.late ? '72%' : '36%',
+      scen: [[false, 'มากกว่า 3 ชม.'], [true, 'น้อยกว่า 3 ชม.']].map(([v, label]) => { const on = s.late === v; return { label, border: on ? 'var(--gold)' : 'var(--ln)', bg: on ? 'rgba(212,175,55,.1)' : 'transparent', fg: on ? 'var(--gold-l)' : 'var(--mut)', pick: () => this.setState({ late: v }) }; }),
+      reasons: R.map((label, i) => { const on = s.reason === i; return { label, on: String(on), border: on ? 'var(--gold)' : 'var(--ln)', ring: on ? '6px solid var(--gold)' : '1px solid var(--ln)', pick: () => this.setState({ reason: i }) }; }),
+      isOther: s.reason === 3,
+      fee: fmt(fee),
+      refund: fmt(paid - fee)
+    };
+  }
+
+  _fields() { return {"other":{"v":["","ป่วยกะทันหัน ขอเลื่อนเป็นสัปดาห์หน้าค่ะ","มีประชุมด่วนที่ออฟฟิศ"],"ph":"บอกเหตุผลสั้น ๆ","on":"var(--tx)","mask":false}}; }
+  fv(k) { const F = this._fields()[k]; const fx = (this.state && this.state.fx) || {}; const v = F.v[(fx[k] || 0) % F.v.length]; return v.indexOf('HOLE:') === 0 ? String((this._hole || {})[v.slice(5)] || '') : v; }
+  renderVals() {
+    const r = this._baseVals(); this._hole = r; const fx = (this.state && this.state.fx) || {}; const F = this._fields();
+    Object.keys(F).forEach((k) => {
+      const v = this.fv(k), c = F[k];
+      const o = { text: v ? (c.mask ? '\u2022'.repeat(v.length) : v) : c.ph, color: v ? c.on : '#7d6d6a', tap: () => this.setState({ fx: Object.assign({}, fx, { [k]: ((fx[k] || 0) + 1) % c.v.length }) }) };
+      for (let i = 0; i < 6; i++) o['d' + i] = v[i] || '\u2013';
+      r[k] = o;
+    });
+    return r;
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>แผนที่ใกล้ฉัน</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0e0a0a}
+*{box-sizing:border-box}
+a{color:#e3c35c;text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+.ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.glass{background:rgba(20,14,14,.92);border:1px solid #33272a;backdrop-filter:blur(8px)}
+.hs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}.hs::-webkit-scrollbar{display:none}
+@keyframes pulse{0%{transform:scale(.4);opacity:.8}100%{transform:scale(2.4);opacity:0}}
+.pulse{position:absolute;inset:0;border-radius:50%;background:rgba(227,195,92,.35);animation:pulse 2s ease-out infinite}
+.navi{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;color:#ab9d94;min-height:44px;justify-content:center}
+.maplbl{font-family:'IBM Plex Sans Thai',sans-serif}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;overflow:hidden;background:#100c0c;color:#f6efe4;font-family:'IBM Plex Sans Thai',sans-serif">
+
+  <svg width="390" height="844" viewBox="0 0 390 844" style="position:absolute;inset:0;display:block" aria-label="แผนที่ย่านสุขุมวิท">
+    <defs>
+      <pattern id="blk" width="26" height="22" patternUnits="userSpaceOnUse"><rect x="2" y="2" width="21" height="17" rx="2" fill="#1a1414"></rect><rect x="5" y="5" width="8" height="6" rx="1" fill="#1e1717"></rect></pattern>
+      <pattern id="blk2" width="34" height="28" patternUnits="userSpaceOnUse" patternTransform="rotate(8)"><rect x="2" y="2" width="29" height="23" rx="3" fill="#1b1414"></rect></pattern>
+    </defs>
+    <rect width="390" height="844" fill="#120d0d"></rect>
+    <rect width="390" height="844" fill="url(#blk)"></rect>
+    <path d="M0 560 L200 600 L200 844 L0 844Z" fill="url(#blk2)"></path>
+    <path d="M-10 610 C40 640 70 700 50 760 C35 800 60 830 90 860" fill="none" stroke="#14232b" stroke-width="34" stroke-linecap="round"></path>
+    <path d="M-10 610 C40 640 70 700 50 760 C35 800 60 830 90 860" fill="none" stroke="#1a2e38" stroke-width="22" stroke-linecap="round"></path>
+    <text x="30" y="690" fill="#4a6b7a" font-size="9" transform="rotate(68 30 690)" class="maplbl" letter-spacing="1.5">แม่น้ำเจ้าพระยา</text>
+    <path d="M196 448 L268 440 L276 520 L204 528Z" fill="#17241a" stroke="#1f3123"></path>
+    <text x="210" y="488" fill="#55755a" font-size="8.5" class="maplbl">สวนเบญจกิติ</text>
+    <path d="M30 120 L96 112 L104 168 L40 176Z" fill="#17241a" stroke="#1f3123"></path>
+    <text x="40" y="148" fill="#55755a" font-size="8.5" class="maplbl">สวนเบญจสิริ</text>
+    <circle cx="350" cy="700" r="26" fill="#17241a" stroke="#1f3123"></circle>
+    <g stroke="#241b1c" stroke-width="3" fill="none">
+      <path d="M60 0 L80 844M120 0 L138 600M250 0 L262 844M345 0 L360 844M0 200 L390 230M0 470 L390 500M0 700 L390 730M0 90 L390 110M110 600 L130 844"></path>
+    </g>
+    <g stroke="#2c2122" stroke-width="5" fill="none" stroke-linecap="round">
+      <path d="M182 0 L206 844"></path><path d="M300 0 L318 844"></path>
+    </g>
+    <g fill="none" stroke-linecap="round">
+      <path d="M-10 330 C120 350 260 380 400 405" stroke="#3a2c25" stroke-width="11"></path>
+      <path d="M-10 330 C120 350 260 380 400 405" stroke="#4a3a2c" stroke-width="7"></path>
+      <path d="M-10 560 C120 585 260 600 400 640" stroke="#3a2c25" stroke-width="10"></path>
+      <path d="M-10 560 C120 585 260 600 400 640" stroke="#463628" stroke-width="6"></path>
+    </g>
+    <path d="M-10 318 C120 338 260 368 400 393" fill="none" stroke="#8a7020" stroke-width="2.5" stroke-dasharray="7 4"></path>
+    <g fill="#120d0d" stroke="#d4af37" stroke-width="2">
+      <circle cx="40" cy="325" r="4.5"></circle><circle cx="120" cy="337" r="4.5"></circle><circle cx="188" cy="348" r="4.5"></circle><circle cx="298" cy="373" r="4.5"></circle><circle cx="366" cy="387" r="4.5"></circle>
+    </g>
+    <g fill="#c9b27a" font-size="8.5" class="maplbl">
+      <text x="22" y="313">BTS นานา</text><text x="96" y="325">พร้อมพงษ์</text><text x="194" y="341">BTS อโศก</text><text x="278" y="362">ทองหล่อ</text><text x="342" y="377">เอกมัย</text>
+    </g>
+    <g fill="#8d7c6d" font-size="9.5" font-weight="600" class="maplbl">
+      <text x="40" y="360" transform="rotate(8 40 360)">ถ.สุขุมวิท</text>
+      <text x="230" y="612" transform="rotate(9 230 612)">ถ.พระราม 4</text>
+      <text x="196" y="236" transform="rotate(88 196 236)">ถ.อโศกมนตรี</text>
+      <text x="312" y="232" transform="rotate(88 312 232)">ซ.ทองหล่อ</text>
+    </g>
+    <g fill="#5e5049" font-size="13" font-weight="600" letter-spacing="3" class="maplbl">
+      <text x="210" y="300">อโศก</text><text x="314" y="440">ทองหล่อ</text><text x="326" y="540" font-size="11">เอกมัย</text><text x="80" y="660">สีลม</text>
+    </g>
+  </svg>
+
+  <div style="position:absolute;left:{{rcx}}px;top:{{rcy}}px;width:{{rd}}px;height:{{rd}}px;border-radius:50%;border:1.5px dashed rgba(212,175,55,.55);background:rgba(212,175,55,.05);transition:all .35s;pointer-events:none"></div>
+
+  <sc-for list="{{venuePins}}" as="v" hint-placeholder-count="2">
+    <button onClick="{{v.pick}}" aria-label="{{v.name}}" style="position:absolute;left:{{v.x}}px;top:{{v.y}}px;width:44px;height:52px;padding:0;border:0;background:transparent;transform:translate(-50%,-100%) scale({{v.scale}});transform-origin:50% 100%;transition:transform .2s;z-index:{{v.z}}">
+      <span style="display:flex;width:34px;height:34px;margin:0 auto;border-radius:10px 10px 10px 2px;transform:rotate(-45deg);background:#21191a;border:2px solid {{v.ring}};align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.6)"><svg class="ic" viewBox="0 0 24 24" style="transform:rotate(45deg);color:#e3c35c;width:17px;height:17px"><path d="{{v.icon}}"></path></svg></span>
+    </button>
+  </sc-for>
+
+  <sc-for list="{{ptPins}}" as="p" hint-placeholder-count="4">
+    <button onClick="{{p.pick}}" aria-label="{{p.name}}" style="position:absolute;left:{{p.x}}px;top:{{p.y}}px;padding:0;border:0;background:transparent;display:flex;flex-direction:column;align-items:center;transform:translate(-50%,-50%) scale({{p.scale}});transition:transform .2s;z-index:{{p.z}}">
+      <span style="width:50px;height:50px;border-radius:50%;padding:2px;background:{{p.ring}};box-shadow:0 4px 14px rgba(0,0,0,.6)"><img src="{{p.img}}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;border:2px solid #120d0d;filter:{{p.filter}}"></span>
+      <span style="margin-top:-7px;height:20px;padding:0 7px;border-radius:999px;background:{{p.tagBg}};color:{{p.tagFg}};font-size:10.5px;font-weight:600;display:flex;align-items:center;font-family:Kanit">{{p.tag}}</span>
+    </button>
+  </sc-for>
+
+  <div style="position:absolute;left:{{meX}}px;top:{{meY}}px;width:22px;height:22px;transform:translate(-50%,-50%);pointer-events:none;z-index:5"><span class="pulse"></span><span style="position:absolute;inset:3px;border-radius:50%;background:#e3c35c;border:3px solid #0e0a0a;box-shadow:0 0 0 2px #e3c35c"></span></div>
+
+  <div style="position:absolute;top:12px;left:12px;right:12px;display:flex;flex-direction:column;gap:8px;z-index:20">
+    <div style="display:flex;gap:8px">
+      <a href="Main.dc.html" aria-label="ย้อนกลับ" class="glass" style="width:48px;height:48px;border-radius:16px;display:grid;place-items:center;color:#f6efe4"><svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></svg></a>
+      <label class="glass" style="flex:1;height:48px;border-radius:16px;display:flex;align-items:center;gap:8px;padding:0 14px;color:#ab9d94">
+        <svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+        <button type="button" onClick="{{q.tap}}" aria-label="ค้นหาย่าน เช่น อโศก, ทองหล่อ · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;border:0;outline:0;flex:1;min-width:0;font-size:14px;background:transparent;font-family:inherit; color:{{q.color}}">{{q.text}}</button>
+      </label>
+    </div>
+    <div class="hs">
+      <sc-for list="{{acts}}" as="a" hint-placeholder-count="7">
+        <button onClick="{{a.toggle}}" aria-pressed="{{a.on}}" style="flex-shrink:0;height:36px;padding:0 12px;border-radius:999px;border:1px solid {{a.border}};background:{{a.bg}};color:{{a.fg}};font-size:12.5px;display:flex;align-items:center;gap:6px"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="{{a.icon}}"></path></svg>{{a.label}}</button>
+      </sc-for>
+      <a href="S03-Filter.dc.html" aria-label="ตัวกรอง" style="flex-shrink:0;height:36px;padding:0 12px;border-radius:999px;border:1px solid #5a4d4f;background:rgba(20,14,14,.92);color:#eed58a;font-size:12.5px;display:flex;align-items:center;gap:6px;text-decoration:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"></path><circle cx="16" cy="6" r="2"></circle><circle cx="10" cy="12" r="2"></circle><circle cx="18" cy="18" r="2"></circle></svg>ตัวกรอง</a>
+    </div>
+    <div style="display:flex;justify-content:space-between;gap:8px">
+      <div class="glass" style="display:flex;border-radius:14px;padding:3px">
+        <sc-for list="{{layers}}" as="l" hint-placeholder-count="3">
+          <button onClick="{{l.pick}}" style="min-height:38px;padding:0 10px;border:0;border-radius:11px;background:{{l.bg}};color:{{l.fg}};font-size:12px">{{l.label}}</button>
+        </sc-for>
+      </div>
+      <div class="glass" style="display:flex;border-radius:14px;padding:3px">
+        <sc-for list="{{radii}}" as="r" hint-placeholder-count="3">
+          <button onClick="{{r.pick}}" aria-label="รัศมี {{r.label}}" style="min-width:44px;min-height:38px;border:0;border-radius:11px;background:{{r.bg}};color:{{r.fg}};font-size:12px;font-family:Kanit">{{r.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:center">
+      <button onClick="{{searchHere}}" style="height:38px;padding:0 16px;border-radius:999px;border:1px solid rgba(212,175,55,.6);background:rgba(20,14,14,.92);color:#eed58a;font-size:12.5px;display:flex;align-items:center;gap:6px;box-shadow:0 6px 20px rgba(0,0,0,.5)"><svg class="ic" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M21 12a9 9 0 1 1-3-6.7M21 3v6h-6"></path></svg>{{searchLabel}}</button>
+    </div>
+  </div>
+
+  <div style="position:absolute;right:12px;top:470px;display:flex;flex-direction:column;gap:8px;z-index:20;opacity:{{ctlOp}};transition:opacity .25s">
+    <button onClick="{{recenter}}" aria-label="กลับไปตำแหน่งของฉัน" class="glass" style="width:46px;height:46px;border-radius:14px;color:#e3c35c;display:grid;place-items:center"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path></svg></button>
+    <button onClick="{{cycleLayer}}" aria-label="สลับเลเยอร์" class="glass" style="width:46px;height:46px;border-radius:14px;color:#f6efe4;display:grid;place-items:center"><svg class="ic" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5zM3 13l9 5 9-5"></path></svg></button>
+  </div>
+  <div class="glass" style="position:absolute;left:12px;top:212px;border-radius:12px;padding:6px 10px;font-size:11px;color:#ab9d94;z-index:20"><span style="color:#e3c35c;font-family:Kanit;font-size:13px">{{countPt}}</span> เพื่อน · <span style="color:#e3c35c;font-family:Kanit;font-size:13px">{{countV}}</span> พาร์ทเนอร์ · รัศมี {{radiusLabel}}</div>
+
+  <div style="position:absolute;left:12px;right:12px;bottom:204px;transform:translateY({{sheetY}});opacity:{{sheetOp}};transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .25s;z-index:30;pointer-events:{{sheetPE}}">
+    <div style="position:relative;background:#181212;border:1px solid #33272a;border-radius:22px;padding:12px;box-shadow:0 -10px 40px rgba(0,0,0,.6)">
+      <button onClick="{{closeSheet}}" aria-label="ปิด" style="position:absolute;top:4px;right:4px;width:44px;height:44px;border:0;background:transparent;color:#ab9d94;display:grid;place-items:center"><svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+      <sc-if value="{{isPt}}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;gap:12px">
+          <img src="{{sel.img}}" alt="{{sel.name}}" style="width:86px;height:104px;border-radius:14px;object-fit:cover;border:2px solid {{sel.ringSolid}}">
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;padding-right:30px">
+            <div style="display:flex;align-items:center;gap:8px"><b style="font-family:Kanit;font-weight:600;font-size:18px">{{sel.name}}</b><span style="font-size:12px;color:#e3c35c">★ {{sel.rating}}</span></div>
+            <div style="font-size:12px;color:#ab9d94">{{sel.km}} กม. · ถึงใน ~{{sel.eta}} นาที · <span style="color:{{sel.statusColor}}">{{sel.status}}</span></div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap">
+              <sc-for list="{{sel.tags}}" as="t" hint-placeholder-count="3"><span style="height:22px;padding:0 8px;border-radius:999px;border:1px solid #33272a;font-size:11px;color:#d3c7bc;display:flex;align-items:center">{{t}}</span></sc-for>
+            </div>
+            <div style="font-family:Kanit;font-weight:600;color:#e3c35c;font-size:16px">฿{{sel.p3}} <span style="font-size:11px;color:#ab9d94;font-family:'IBM Plex Sans Thai';font-weight:400">/ 3 ชม.</span></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <a href="Profile.dc.html" style="flex:1;height:46px;border-radius:14px;border:1px solid rgba(212,175,55,.6);color:#eed58a;display:flex;align-items:center;justify-content:center;font-size:14px">ดูโปรไฟล์</a>
+          <a href="Booking.dc.html" style="flex:1.3;height:46px;border-radius:14px;background:linear-gradient(135deg,#c21d33,#8f1424);color:#fff;display:flex;align-items:center;justify-content:center;font-family:Kanit;font-weight:600;font-size:15px">จอง</a>
+        </div>
+      </sc-if>
+      <sc-if value="{{isVenue}}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;gap:12px">
+          <img src="/_blob/3955daa362c2a71ec8e36d56b540838e" alt="{{vsel.name}}" style="width:86px;height:96px;border-radius:14px;object-fit:cover;border:2px solid #d4af37">
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;padding-right:30px">
+            <span style="align-self:flex-start;height:20px;padding:0 8px;border-radius:999px;background:rgba(212,175,55,.14);color:#eed58a;font-size:10.5px;display:flex;align-items:center">สถานที่พาร์ทเนอร์ · {{vsel.kind}}</span>
+            <b style="font-family:Kanit;font-weight:600;font-size:17px">{{vsel.name}}</b>
+            <div style="font-size:12px;color:#ab9d94">{{vsel.km}} กม. · ★ {{vsel.rating}} · ห้องว่าง {{vsel.rooms}} ห้อง</div>
+            <div style="font-size:12px;color:#d3c7bc">{{vsel.note}}</div>
+          </div>
+        </div>
+        <a href="Booking.dc.html" style="margin-top:10px;height:46px;border-radius:14px;background:linear-gradient(135deg,#c21d33,#8f1424);color:#fff;display:flex;align-items:center;justify-content:center;font-family:Kanit;font-weight:600;font-size:15px">นัดหมายที่สถานที่นี้</a>
+      </sc-if>
+    </div>
+  </div>
+
+  <div style="position:absolute;left:0;right:0;bottom:92px;z-index:25">
+    <div class="hs" style="padding:0 12px">
+      <sc-for list="{{cards}}" as="c" hint-placeholder-count="4">
+        <button onClick="{{c.pick}}" style="flex-shrink:0;width:208px;height:100px;padding:8px;border-radius:18px;background:#181212;border:1.5px solid {{c.border}};display:flex;gap:10px;align-items:center;color:#f6efe4;text-align:left">
+          <img src="{{c.img}}" alt="" style="width:62px;height:82px;border-radius:12px;object-fit:cover;filter:{{c.filter}}">
+          <span style="display:flex;flex-direction:column;gap:2px;min-width:0">
+            <b style="font-family:Kanit;font-weight:600;font-size:15px">{{c.name}}</b>
+            <span style="font-size:11px;color:#ab9d94">★ {{c.rating}} · {{c.km}} กม.</span>
+            <span style="font-size:11px;color:{{c.statusColor}}">{{c.status}}</span>
+            <span style="font-family:Kanit;font-weight:600;color:#e3c35c;font-size:13px">฿{{c.p3}}/3 ชม.</span>
+          </span>
+        </button>
+      </sc-for>
+      <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
+        <div style="flex-shrink:0;width:366px;height:100px;border-radius:18px;background:#181212;border:1px dashed #33272a;display:flex;align-items:center;justify-content:center;font-size:13px;color:#ab9d94;padding:0 16px;text-align:center">{{emptyText}}</div>
+      </sc-if>
+    </div>
+  </div>
+
+  <a href="N06-SOS.dc.html" aria-label="SOS ฉุกเฉิน" style="position: absolute; right: 16px; bottom: 212px; z-index: 26; height: 40px; padding: 0 14px 0 8px; border-radius: 999px; background: #181212; border: 1px solid rgba(201,40,61,.6); color: #ef8a97; font-weight: 700; font-size: 13px; text-decoration: none; display: flex; align-items: center; gap: 6px; box-shadow: 0 8px 24px rgba(0,0,0,.5)"><span style="width: 24px; height: 24px; border-radius: 50%; background: #b0182c; display: grid; place-items: center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3z"></path></svg></span>SOS</a>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; border-top: 1px solid #33272a; background: rgba(14,10,10,.97); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; text-align: center; font-size: 10.5px; color: #7d6d6a; z-index: 40">
+    <a href="Main.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>หน้าแรก</a>
+    <a href="S05-Map.dc.html" style="color: #d4af37; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px" aria-current="page"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>ใกล้ฉัน</a>
+    <div><a href="S06-QuickCall.dc.html" aria-label="เรียกด่วน" style="width: 50px; height: 50px; margin: 0 auto; border-radius: 16px; background: linear-gradient(180deg, #c21d33, #8f1424); display: grid; place-items: center; color: #fff"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7z"></path></svg></a></div>
+    <a href="S07-Chats.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a8 8 0 0 1-12 7l-5 1 1-4a8 8 0 1 1 16-4z"></path></svg>แชท</a>
+    <a href="S13-Account.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg>บัญชี</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { acts: [], radius: 3, layer: 'all', sel: 'p0', searched: false }; }
+  _baseVals() {
+    const s = this.state;
+    const ME = { x: 195, y: 420 }, PX = 55;
+    const ACTS = [
+      { id: 'eat', label: 'กิน & เที่ยว', icon: 'M7 3v8M5 3v4a2 2 0 0 0 4 0V3M7 11v10M17 3c-2 0-3 2-3 5s1 4 3 4v9' },
+      { id: 'photo', label: 'ช่างภาพ', icon: 'M4 8h3l2-3h6l2 3h3v11H4zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z' },
+      { id: 'gym', label: 'ออกกำลัง', icon: 'M3 9v6M6 7v10M18 7v10M21 9v6M6 12h12' },
+      { id: 'cafe', label: 'คาเฟ่', icon: 'M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5zM16 10h2a2 2 0 0 1 0 4h-2M8 3v3M12 3v3' },
+      { id: 'video', label: 'วิดีโอคอล', icon: 'M3 7h12v10H3zM15 10l6-3v10l-6-3' },
+      { id: 'movie', label: 'ดูหนัง', icon: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 8.5v.01M8.5 12v.01M15.5 12v.01M12 15.5v.01' },
+      { id: 'chill', label: 'นั่งชิล', icon: 'M6 4h12v6a6 6 0 0 1-12 0zM9 20h6M12 16v4' }
+    ];
+    const labelOf = (id) => (ACTS.find((a) => a.id === id) || {}).label;
+    const P = [
+      { id: 'p0', name: 'ต้น', age: 29, img: '/_blob/551eb82924983c941f1fe44ede9bceca', rating: '5.0', x: 236, y: 382, acts: ['eat', 'movie', 'cafe'], massage: true, p3: 2400, free: true },
+      { id: 'p1', name: 'นนท์', age: 27, img: '/_blob/f34ad19eab9288d994c2271a15964ceb', rating: '4.8', x: 148, y: 452, acts: ['movie', 'chill', 'eat'], massage: false, p3: 1950, free: true },
+      { id: 'p2', name: 'กอล์ฟ', age: 33, img: '/_blob/82a15fdc40050c0a074e7e4b5b66e794', rating: '4.9', x: 92, y: 300, acts: ['cafe', 'photo', 'chill'], massage: false, p3: 2100, free: false },
+      { id: 'p3', name: 'เบนซ์', age: 26, img: '/_blob/ec33c74147cab066783e7acae85c8875', rating: '5.0', x: 72, y: 548, acts: ['photo', 'cafe', 'video'], massage: true, p3: 2250, free: true },
+      { id: 'p4', name: 'ภูมิ', age: 31, img: '/_blob/8725f65bf80d613b2a9537700bf2f9bb', rating: '4.8', x: 316, y: 262, acts: ['gym', 'eat', 'video'], massage: true, p3: 2700, free: false },
+      { id: 'p5', name: 'ปั้น', age: 28, img: '/_blob/d26354f23535577e2504751c4197ea79', rating: '4.9', x: 330, y: 560, acts: ['eat', 'gym', 'chill'], massage: true, p3: 2550, free: true }
+    ];
+    const SPA = 'M12 21c-5 0-8-3-8-7 3 0 6 1 8 4 2-3 5-4 8-4 0 4-3 7-8 7zM12 18c-2-3-2-7 0-11 2 4 2 8 0 11z';
+    const HOTEL = 'M3 20V6h10v14M13 10h8v10M6 9h1M9 9h1M6 13h1M9 13h1M16 13h2M16 16h2M2 20h20';
+    const V = [
+      { id: 'v0', name: 'Lanna Spa ทองหล่อ', kind: 'สปา', x: 118, y: 392, rooms: 3, rating: '4.9', icon: SPA, note: 'ห้องส่วนตัว · ที่จอดรถ · เปิด 10:00–24:00' },
+      { id: 'v1', name: 'The Sukh Hotel', kind: 'โรงแรม', x: 286, y: 468, rooms: 5, rating: '4.8', icon: HOTEL, note: 'เลานจ์ชั้น 28 · เช็กอินแบบเป็นส่วนตัว' },
+      { id: 'v2', name: 'Baan Wellness อโศก', kind: 'สปา', x: 156, y: 214, rooms: 2, rating: '4.7', icon: SPA, note: 'ห้องอบไอน้ำ · ใกล้ BTS อโศก' }
+    ];
+    const km = (o) => Math.round((Math.hypot(o.x - ME.x, o.y - ME.y) / PX) * 10) / 10;
+    const gold = '#d4af37', cta = 'linear-gradient(135deg,#c21d33,#8f1424)';
+    const showPt = s.layer !== 'venue', showV = s.layer !== 'pt';
+    const pts = P.map((p) => ({ ...p, km: km(p) })).filter((p) => p.km <= s.radius && s.acts.every((a) => p.acts.includes(a))).sort((a, b) => a.km - b.km);
+    const vs = V.map((v) => ({ ...v, km: km(v) })).filter((v) => v.km <= s.radius);
+    const visPt = showPt ? pts : [], visV = showV ? vs : [];
+    const selPt = visPt.find((p) => p.id === s.sel), selV = visV.find((v) => v.id === s.sel);
+    const open = !!(selPt || selV);
+    const pick = (id) => () => this.setState({ sel: s.sel === id ? null : id });
+    const rd = s.radius * PX * 2;
+    const ptView = (p) => ({ ...p, name: p.name + ', ' + p.age, eta: Math.max(5, Math.round(p.km * 6 + 4)), status: p.free ? 'ว่างตอนนี้' : 'ติดนัด · ว่าง 19:30', statusColor: p.free ? '#86d39b' : '#ab9d94', ringSolid: p.free ? gold : '#5a4d4f', tags: p.acts.map(labelOf), p3: p.p3.toLocaleString() });
+    return {
+      meX: ME.x, meY: ME.y, rd, rcx: ME.x - rd / 2, rcy: ME.y - rd / 2, radiusLabel: s.radius + ' กม.',
+      acts: ACTS.map((a) => { const on = s.acts.includes(a.id); return { ...a, on: String(on), bg: on ? 'rgba(212,175,55,.22)' : 'rgba(20,14,14,.92)', border: on ? gold : '#33272a', fg: on ? '#eed58a' : '#d3c7bc', toggle: () => this.setState({ acts: on ? s.acts.filter((x) => x !== a.id) : [...s.acts, a.id] }) }; }),
+      layers: [['all', 'ทั้งหมด'], ['pt', 'เพื่อน'], ['venue', 'พาร์ทเนอร์']].map(([id, label]) => ({ label, bg: s.layer === id ? cta : 'transparent', fg: s.layer === id ? '#fff' : '#ab9d94', pick: () => this.setState({ layer: id }) })),
+      cycleLayer: () => this.setState({ layer: { all: 'pt', pt: 'venue', venue: 'all' }[s.layer] }),
+      radii: [1, 3, 5].map((r) => ({ label: r + ' กม.', bg: s.radius === r ? 'rgba(212,175,55,.2)' : 'transparent', fg: s.radius === r ? '#eed58a' : '#ab9d94', pick: () => this.setState({ radius: r, searched: false }) })),
+      searchHere: () => this.setState({ searched: true }), searchLabel: s.searched ? 'อัปเดตผลบริเวณนี้แล้ว' : 'ค้นหาบริเวณนี้',
+      recenter: () => this.setState({ sel: null, radius: 3, searched: false }),
+      countPt: visPt.length, countV: visV.length, ctlOp: open ? 0 : 1,
+      ptPins: visPt.map((p) => { const on = p.id === s.sel; return { name: p.name, img: p.img, x: p.x, y: p.y, pick: pick(p.id), scale: on ? 1.3 : 1, z: on ? 15 : 10, ring: p.free ? 'linear-gradient(135deg,#f1d77a,#b8901f)' : '#5a4d4f', filter: p.free ? 'none' : 'grayscale(.85) brightness(.75)', tag: '฿' + p.p3.toLocaleString(), tagBg: on ? cta : (p.free ? gold : '#3a2f31'), tagFg: on || !p.free ? '#f6efe4' : '#0e0a0a' }; }),
+      venuePins: visV.map((v) => { const on = v.id === s.sel; return { name: v.name, icon: v.icon, x: v.x, y: v.y, pick: pick(v.id), scale: on ? 1.25 : 1, z: on ? 15 : 8, ring: on ? '#e3c35c' : '#8a7020' }; }),
+      isPt: !!selPt, isVenue: !!selV,
+      sel: selPt ? ptView(selPt) : { img: '', name: '', rating: '', km: '', eta: '', status: '', statusColor: '', ringSolid: '', tags: [], p3: '' },
+      vsel: selV || { name: '', kind: '', km: '', rating: '', rooms: '', note: '' },
+      sheetY: open ? '0' : '130%', sheetOp: open ? 1 : 0, sheetPE: open ? 'auto' : 'none',
+      closeSheet: () => this.setState({ sel: null }),
+      cards: visPt.map((p) => { const v = ptView(p); return { ...v, name: p.name, pick: () => this.setState({ sel: p.id }), border: p.id === s.sel ? gold : '#33272a', filter: p.free ? 'none' : 'grayscale(.7)' }; }),
+      empty: visPt.length === 0,
+      emptyText: showPt ? 'แถวนี้ยังไม่มีเพื่อนว่าง ลองขยายเป็น 5 กม. หรือลดตัวกรองดูนะคะ' : 'แสดงเฉพาะสถานที่พาร์ทเนอร์ แตะหมุดเพื่อดูรายละเอียด'
+    };
+  }
+
+  _fields() { return {"q":{"v":["","อโศก","ทองหล่อ"],"ph":"ค้นหาย่าน เช่น อโศก, ทองหล่อ","on":"#f6efe4","mask":false}}; }
+  fv(k) { const F = this._fields()[k]; const fx = (this.state && this.state.fx) || {}; const v = F.v[(fx[k] || 0) % F.v.length]; return v.indexOf('HOLE:') === 0 ? String((this._hole || {})[v.slice(5)] || '') : v; }
+  renderVals() {
+    const r = this._baseVals(); this._hole = r; const fx = (this.state && this.state.fx) || {}; const F = this._fields();
+    Object.keys(F).forEach((k) => {
+      const v = this.fv(k), c = F[k];
+      const o = { text: v ? (c.mask ? '\u2022'.repeat(v.length) : v) : c.ph, color: v ? c.on : '#7d6d6a', tap: () => this.setState({ fx: Object.assign({}, fx, { [k]: ((fx[k] || 0) + 1) % c.v.length }) }) };
+      for (let i = 0; i < 6; i++) o['d' + i] = v[i] || '\u2013';
+      r[k] = o;
+    });
+    return r;
+  }
+}
+</script>
+</body>
+</html>

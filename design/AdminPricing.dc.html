@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>แอดมิน ตั้งค่าราคา</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+.h{font-family:Kanit;font-weight:600}
+.card{padding:14px;border-radius:16px;background:#181212;border:1px solid #33272a}
+.in{height:48px;border-radius:12px;border:1px solid #33272a;background:#21191a;color:#f6efe4;padding:0 14px;font-size:14px;box-sizing:border-box;width:100%;display:flex;align-items:center}
+.cta{height:52px;border-radius:14px;border:1px solid rgba(212,175,55,.45);background:linear-gradient(180deg,#c21d33,#8f1424);color:#fff;font-size:15px;font-weight:600;width:100%;font-family:Kanit}
+.ghost{height:48px;border-radius:14px;border:1px solid #33272a;background:#181212;color:#e3c35c;font-size:14px;font-weight:600;width:100%}
+.lbl{font-size:12px;color:#ab9d94;margin:0 0 6px}
+.mut{color:#ab9d94}
+</style>
+</helmet>
+<div style="width: 1280px; height: 820px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; display: flex; overflow: hidden">
+  <nav aria-label="เมนูแอดมิน" style="width: 232px; flex: 0 0 232px; border-right: 1px solid #33272a; padding: 18px 14px; display: flex; flex-direction: column; gap: 2px; font-size: 13px; box-sizing: border-box; font-family: 'IBM Plex Sans Thai', sans-serif; background: #0e0a0a">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px"><div style="width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid #d4af37; display: grid; place-items: center; font-family: Kanit; font-weight: 700; font-size: 12px; color: #d4af37">MB</div><div style="line-height: 1.1"><div style="font-family: Kanit; font-weight: 600; color: #f6efe4">Bamrungsuk</div><div style="font-size: 11px; color: #7d6d6a">Admin · super</div></div></div>
+    <a href="AdminDashboard.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ภาพรวม / รายได้</a>
+    <a href="AdminBookings.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">การจอง / งาน</a>
+    <a href="B2-Orders.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ตรวจงาน</a>
+    <a href="AdminApplicants.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ผู้สมัคร</a>
+    <a href="B1-KYC.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">คิว KYC</a>
+    <a href="AdminCohorts.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">รุ่นอบรม / เช็กชื่อ</a>
+    <a href="AdminParttimers.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">Part-Time ที่ใช้งาน</a>
+    <a href="B3-Payouts.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">โอนให้ Part-Time</a>
+    <a href="AdminPartners.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">พาร์ทเนอร์สปา</a>
+    <a href="AdminSpaPricing.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ราคาสปาพาร์ทเนอร์</a>
+    <a href="AdminPricing.dc.html" aria-current="page" style="padding: 6px 12px; border-radius: 10px; background: rgba(176,24,44,.2); border: 1px solid rgba(201,40,61,.55); color: #f6efe4; text-decoration: none">ตั้งค่าราคา</a>
+    <a href="B6-Members.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">สมาชิก · ใบเตือน</a>
+    <a href="B4-Reports.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">รายงาน</a>
+    <a href="B5-CS.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">เรื่องร้องเรียน</a>
+    <a href="B7-Promos.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">โปรโมชัน</a>
+    <a href="B8-Audit.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">บันทึกระบบ · SOS</a>
+    <div style="height: 1px; background: #33272a; margin: 6px 0"></div>
+    <a href="E2-AdminSettings.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ตั้งค่าระบบ</a>
+    <a href="E1-AdminLogin.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">แอดมินและสิทธิ์</a>
+    <a href="Main.dc.html" style="margin-top: auto; padding: 6px 12px; color: #e3c35c; text-decoration: none">← สารบัญทุกหน้า</a>
+  </nav>
+  <main style="flex: 1; padding: 24px 28px; display: flex; flex-direction: column; gap: 18px; min-width: 0; overflow-y: auto">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end">
+      <div><div style="font-size: 11px; letter-spacing: 2.5px; color: #d4af37; font-weight: 600">PRICING</div><h1 style="margin: 2px 0 0; font-family: Kanit; font-weight: 700; font-size: 26px">ตั้งค่าราคา</h1><div style="font-size: 12px; color: {{statusColor}}">{{statusText}}</div></div>
+      <div style="display: flex; gap: 8px"><button onClick="{{revert}}" style="min-height: 44px; padding: 0 16px; border-radius: 12px; font-size: 13px; font-weight: 600; border: 1px solid #33272a; background: #181212; color: #e3c35c; opacity: {{revertOp}}">ย้อนกลับค่าเดิม</button><button onClick="{{save}}" style="min-height: 44px; padding: 0 16px; border-radius: 12px; font-size: 13px; font-weight: 600; border: 1px solid rgba(212,175,55,.45); background: linear-gradient(180deg,#c21d33,#8f1424); color: #fff; opacity: {{saveOp}}">{{saveLabel}}</button></div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px">
+      <div class="card" style="display: flex; flex-direction: column; gap: 2px">
+        <div style="font-family: Kanit; font-weight: 600; font-size: 16px; color: #d4af37">บล็อกเวลานัดหมาย (ทุกกิจกรรม)</div><div style="font-size: 12px; color: #ab9d94; margin-bottom: 6px">ราคาแนะนำต่อบล็อก 3 ชม. / 5 ชม. ใช้กับทั้ง 7 กิจกรรม · Part-Time ตั้งราคาเองได้ภายในช่วงนี้</div>
+        <sc-for list="{{blocks}}" as="i" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px solid #33272a"><span style="font-size: 13.5px">{{i.label}}</span><div style="display: flex; align-items: center; gap: 6px"><button onClick="{{i.dec}}" aria-label="ลด" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #33272a; background: #21191a; color: #e3c35c; font-size: 18px">−</button><span style="min-width: 110px; text-align: center; font-family: Kanit; font-size: 16px; color: {{i.c}}">{{i.v}}</span><button onClick="{{i.inc}}" aria-label="เพิ่ม" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #33272a; background: #21191a; color: #e3c35c; font-size: 18px">+</button></div></div></sc-for>
+      </div>
+      <div class="card" style="display: flex; flex-direction: column; gap: 2px">
+        <div style="font-family: Kanit; font-weight: 600; font-size: 16px; color: #d4af37">ค่าธรรมเนียม</div><div style="font-size: 12px; color: #ab9d94; margin-bottom: 6px">เปอร์เซ็นต์ที่หักจากยอดจอง และค่าสมาชิก Part-Time</div>
+        <sc-for list="{{fees}}" as="i" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px solid #33272a"><span style="font-size: 13.5px">{{i.label}}</span><div style="display: flex; align-items: center; gap: 6px"><button onClick="{{i.dec}}" aria-label="ลด" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #33272a; background: #21191a; color: #e3c35c; font-size: 18px">−</button><span style="min-width: 110px; text-align: center; font-family: Kanit; font-size: 16px; color: {{i.c}}">{{i.v}}</span><button onClick="{{i.inc}}" aria-label="เพิ่ม" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #33272a; background: #21191a; color: #e3c35c; font-size: 18px">+</button></div></div></sc-for>
+      </div>
+      <div class="card" style="display: flex; flex-direction: column; gap: 2px">
+        <div style="font-family: Kanit; font-weight: 600; font-size: 16px; color: #d4af37">แพ็กเกจสมาชิกลูกค้า</div><div style="font-size: 12px; color: #ab9d94; margin-bottom: 6px">ราคาต่อเดือน</div>
+        <sc-for list="{{members}}" as="i" hint-placeholder-count="3"><div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px solid #33272a"><span style="font-size: 13.5px">{{i.label}}</span><div style="display: flex; align-items: center; gap: 6px"><button onClick="{{i.dec}}" aria-label="ลด" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #33272a; background: #21191a; color: #e3c35c; font-size: 18px">−</button><span style="min-width: 110px; text-align: center; font-family: Kanit; font-size: 16px; color: {{i.c}}">{{i.v}}</span><button onClick="{{i.inc}}" aria-label="เพิ่ม" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #33272a; background: #21191a; color: #e3c35c; font-size: 18px">+</button></div></div></sc-for>
+      </div>
+      <div class="card" style="display: flex; flex-direction: column; gap: 2px">
+        <div style="font-family: Kanit; font-weight: 600; font-size: 16px; color: #d4af37">แพ็กเกจพาร์ทเนอร์</div><div style="font-size: 12px; color: #ab9d94; margin-bottom: 6px">พาร์ทเนอร์ฝั่งสปาทั่วประเทศ · มีเฉพาะ 3 / 6 เดือน · % ที่หักและราคาขายต่อบริการ [รอกำหนด]</div>
+        <sc-for list="{{partners}}" as="i" hint-placeholder-count="4"><div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px solid #33272a"><span style="font-size: 13.5px">{{i.label}}</span><div style="display: flex; align-items: center; gap: 6px"><button onClick="{{i.dec}}" aria-label="ลด" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #33272a; background: #21191a; color: #e3c35c; font-size: 18px">−</button><span style="min-width: 110px; text-align: center; font-family: Kanit; font-size: 16px; color: {{i.c}}">{{i.v}}</span><button onClick="{{i.inc}}" aria-label="เพิ่ม" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #33272a; background: #21191a; color: #e3c35c; font-size: 18px">+</button></div></div></sc-for>
+      </div>
+    </div>
+    <div class="card" style="font-size: 12.5px; color: #ab9d94; display: flex; justify-content: space-between"><span>ตัวอย่าง: นัด 3 ชม. · คาเฟ่ + ดูหนัง ราคาแนะนำ {{exPrice}} → ค่าธรรมเนียมแพลตฟอร์ม {{exFee}} · Part-Time ได้รับ {{exNet}}</span><span>แก้ไขล่าสุด: แอดมิน เอ็ม · 8 ก.พ. 2570 18:20</span></div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":820}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { v: null, saved: null, status: 'clean' }; }
+  renderVals() {
+    const s = this.state;
+    const D0 = { b3min: 1800, b3max: 4500, b5min: 3000, b5max: 7500, fee: 15, partner: null, vip: null, gold: 1990, black: null, p3: 45000, p6: 60000, spaCut: null, sign: null, promo: null, memA: 3500, memB: 5000 };
+    const v = s.v || D0; const saved = s.saved || D0;
+    const dirty = JSON.stringify(v) !== JSON.stringify(saved);
+    const fmt = (n) => n === null ? '[รอกำหนด]' : '฿' + n.toLocaleString('en-US');
+    const pct = (n) => n === null ? '[รอกำหนด]' : n + '%';
+    const mk = (key, label, step, show) => ({ label, v: show(v[key]), c: v[key] === null ? '#ab9d94' : v[key] !== saved[key] ? '#7fd6a3' : '#e3c35c',
+      dec: () => { const o = Object.assign({}, v); o[key] = o[key] === null ? null : Math.max(0, o[key] - step); this.setState({ v: o, status: 'dirty' }); },
+      inc: () => { const o = Object.assign({}, v); o[key] = o[key] === null ? step * 10 : o[key] + step; this.setState({ v: o, status: 'dirty' }); } });
+    const ex = Math.round((v.b3min + v.b3max) / 2 / 100) * 100; const fee = Math.round(ex * v.fee / 100);
+    return {
+      blocks: [mk('b3min', '3 ชม. · ทุกกิจกรรม · ต่ำสุด', 100, fmt), mk('b3max', '3 ชม. · ทุกกิจกรรม · สูงสุด', 100, fmt), mk('b5min', '5 ชม. · ทุกกิจกรรม · ต่ำสุด', 100, fmt), mk('b5max', '5 ชม. · ทุกกิจกรรม · สูงสุด', 100, fmt)],
+      fees: [mk('fee', 'ค่าคอมมิชชันแพลตฟอร์ม', 1, pct), mk('memA', 'ค่าสมาชิก Part-Time แพ็กเกจ A ต่อ 6 เดือน (ฟรี 6 เดือนแรก)', 100, fmt), mk('memB', 'ค่าสมาชิก Part-Time แพ็กเกจ B ต่อ 6 เดือน (ฟรี 6 เดือนแรก)', 100, fmt), mk('promo', 'ค่าโปรโมท/รีวิวรายเดือน (Part-Time)', 100, fmt)],
+      members: [mk('gold', 'Gold', 100, fmt), mk('vip', 'VIP', 100, fmt), mk('black', 'Black Card', 100, fmt)],
+      partners: [mk('p3', 'แพ็กเกจ 3 เดือน', 1000, fmt), mk('p6', 'แพ็กเกจ 6 เดือน', 1000, fmt), mk('spaCut', 'แพลตฟอร์มหักต่อการจองบริการสปา', 1, pct), mk('sign', 'ค่าป้ายแบรนด์ (สปาชำระ)', 500, fmt)],
+      exPrice: fmt(ex), exFee: fmt(fee), exNet: fmt(ex - fee),
+      statusText: s.status === 'saving' ? 'กำลังบันทึก...' : s.status === 'saved' ? 'บันทึกแล้ว · มีผลกับการจองใหม่ทันที' : dirty ? 'มีการเปลี่ยนแปลงที่ยังไม่บันทึก (สีเขียว)' : 'ค่าปัจจุบัน · [รอกำหนด] = ยังไม่ตัดสินใจ',
+      statusColor: s.status === 'saved' ? '#7fd6a3' : dirty ? '#e3c35c' : '#ab9d94',
+      saveOp: dirty ? '1' : '.45', revertOp: dirty ? '1' : '.45', saveLabel: s.status === 'saving' ? 'กำลังบันทึก...' : 'บันทึกการตั้งค่า',
+      save: () => { if (!dirty) return; this.setState({ status: 'saving' }); setTimeout(() => this.setState({ saved: Object.assign({}, v), status: 'saved' }), 800); },
+      revert: () => this.setState({ v: Object.assign({}, saved), status: 'clean' })
+    };
+  }
+}
+</script>
+</body>
+</html>

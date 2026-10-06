@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>โปรไฟล์เพื่อน</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; position: relative; overflow: hidden; display: flex; flex-direction: column">
+  <div style="flex: 1; overflow-y: auto; padding-bottom: 100px">
+    <div style="height: 380px; position: relative">
+      <img src="{{photo}}" alt="ต้น" style="width: 100%; height: 100%; object-fit: cover; display: block">
+      <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(14,10,10,.35) 0%, rgba(14,10,10,0) 30%, rgba(14,10,10,0) 60%, #0e0a0a 100%)"></div>
+      <a href="Main.dc.html" aria-label="ย้อนกลับ" style="position: absolute; top: 14px; left: 14px; width: 44px; height: 44px; border-radius: 50%; background: rgba(8,6,6,.6); border: 1px solid rgba(246,239,228,.2); color: #f6efe4; display: grid; place-items: center; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"></path></svg></a>
+      <button onClick="{{toggleFav}}" aria-label="บันทึกเป็นคนโปรด" style="position: absolute; top: 14px; right: 14px; width: 44px; height: 44px; border-radius: 50%; background: rgba(8,6,6,.6); border: 1px solid rgba(246,239,228,.2); color: {{favColor}}; display: grid; place-items: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="{{favFill}}" stroke="currentColor" stroke-width="2"><path d="M12 20s-7-4.4-9-9a4.8 4.8 0 0 1 9-3 4.8 4.8 0 0 1 9 3c-2 4.6-9 9-9 9z"></path></svg></button>
+      <div style="position: absolute; left: 18px; bottom: 16px; display: flex; gap: 8px">
+        <sc-for list="{{thumbs}}" as="t" hint-placeholder-count="3">
+          <button onClick="{{t.pick}}" aria-label="ดูรูปที่ {{t.n}}" style="width: 52px; height: 52px; border-radius: 12px; padding: 0; overflow: hidden; border: 2px solid {{t.border}}; background: #181212"><img src="{{t.src}}" alt="" style="width: 100%; height: 100%; object-fit: cover; display: block"></button>
+        </sc-for>
+      </div>
+      <div style="position: absolute; right: 18px; bottom: 24px; height: 26px; padding: 0 10px; border-radius: 999px; background: rgba(8,6,6,.7); border: 1px solid rgba(74,222,128,.7); color: #bbf7d0; font-size: 11.5px; display: flex; align-items: center; gap: 5px">● ออนไลน์ · ว่างตอนนี้</div>
+    </div>
+    <div style="padding: 6px 18px 0; display: flex; flex-direction: column; gap: 16px">
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><h1 style="margin: 0; font-family: Kanit; font-weight: 700; font-size: 30px">ต้น</h1><span style="height: 26px; padding: 0 10px; border-radius: 999px; border: 1px solid rgba(212,175,55,.6); color: #eed58a; font-size: 11.5px; display: flex; align-items: center">✓ ยืนยันตัวตน + ตรวจประวัติ</span></div>
+        <div style="font-size: 13px; color: #ab9d94; margin-top: 4px">29 ปี · 178 ซม. · ห่าง 1.2 กม. · ทองหล่อ กรุงเทพฯ</div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid #33272a; border-bottom: 1px solid #33272a; text-align: center; padding: 12px 0">
+        <div><div style="font-family: Kanit; font-weight: 600; font-size: 18px; color: #e3c35c">5.0</div><div style="font-size: 10.5px; color: #ab9d94">58 รีวิว</div></div>
+        <div style="border-left: 1px solid #33272a"><div style="font-family: Kanit; font-weight: 600; font-size: 18px">128</div><div style="font-size: 10.5px; color: #ab9d94">นัดสำเร็จ</div></div>
+        <div style="border-left: 1px solid #33272a"><div style="font-family: Kanit; font-weight: 600; font-size: 18px">3 ปี</div><div style="font-size: 10.5px; color: #ab9d94">ประสบการณ์</div></div>
+        <div style="border-left: 1px solid #33272a"><div style="font-family: Kanit; font-weight: 600; font-size: 18px">98%</div><div style="font-size: 10.5px; color: #ab9d94">ตอบกลับ</div></div>
+      </div>
+      <div>
+        <h2 style="margin: 0 0 6px; font-family: Kanit; font-weight: 600; font-size: 17px">เกี่ยวกับต้น</h2>
+        <p style="margin: 0; font-size: 13.5px; line-height: 1.7; color: #d3c7bc">ชอบพาไปลองร้านใหม่ ๆ คุยสนุก ฟังเก่ง ถ่ายรูปสวย พูดอังกฤษได้ และมีสกิลนวดผ่อนคลาย (มีใบรับรอง)</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; font-size: 12px">
+          <span style="padding: 5px 11px; border-radius: 999px; border: 1px solid #33272a; color: #d3c7bc">กิน &amp; เที่ยว</span><span style="padding: 5px 11px; border-radius: 999px; border: 1px solid #33272a; color: #d3c7bc">ดูหนัง</span><span style="padding: 5px 11px; border-radius: 999px; border: 1px solid #33272a; color: #d3c7bc">คาเฟ่</span><span style="padding: 5px 11px; border-radius: 999px; border: 1px solid rgba(212,175,55,.6); color: #eed58a">นวดผ่อนคลาย</span><span style="padding: 5px 11px; border-radius: 999px; border: 1px solid #33272a; color: #d3c7bc">TH · EN</span>
+        </div>
+      </div>
+      <div>
+        <h2 style="margin: 0 0 8px; font-family: Kanit; font-weight: 600; font-size: 17px">เลือกบริการ</h2>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <sc-for list="{{services}}" as="s" hint-placeholder-count="2">
+            <button onClick="{{s.pick}}" style="display: flex; justify-content: space-between; align-items: center; padding: 14px; border-radius: 16px; border: 1.5px solid {{s.border}}; background: {{s.bg}}; color: #f6efe4; text-align: left"><span><span style="display: block; font-weight: 600; font-size: 14px">{{s.label}}</span><span style="display: block; font-size: 11.5px; color: #ab9d94">{{s.note}}</span></span><span style="font-family: Kanit; font-weight: 700; font-size: 18px; color: #e3c35c">{{s.price}}</span></button>
+          </sc-for>
+        </div>
+      </div>
+      <div>
+        <h2 style="margin: 0 0 8px; font-family: Kanit; font-weight: 600; font-size: 17px">รีวิว</h2>
+        <div style="display: flex; gap: 16px; align-items: center">
+          <div style="text-align: center"><div style="font-family: Kanit; font-weight: 700; font-size: 40px; color: #e3c35c; line-height: 1">5.0</div><div style="font-size: 11px; color: #ab9d94; margin-top: 4px">58 รีวิว</div></div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 5px">
+            <sc-for list="{{bars}}" as="b" hint-placeholder-count="5"><div style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: #ab9d94"><span style="width: 10px">{{b.n}}</span><div style="flex: 1; height: 6px; border-radius: 3px; background: #33272a"><div style="height: 6px; border-radius: 3px; background: #d4af37; width: {{b.w}}"></div></div></div></sc-for>
+          </div>
+        </div>
+        <div style="margin-top: 12px; padding: 12px; border-radius: 14px; background: #181212; border: 1px solid #33272a; font-size: 13px; line-height: 1.6; color: #d3c7bc"><div style="color: #e3c35c; font-size: 12px">★★★★★ · คุณ N. · 3 วันที่แล้ว</div>มาตรงเวลา สุภาพมาก พาไปร้านอร่อย คุยเพลิน ถ่ายรูปให้สวยมาก</div>
+      </div>
+    </div>
+  </div>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 18px 18px; background: rgba(14,10,10,.97); border-top: 1px solid #33272a; display: flex; align-items: center; justify-content: space-between; gap: 12px">
+    <div><div style="font-size: 11px; color: #ab9d94">{{summary}}</div><div style="font-family: Kanit; font-weight: 700; font-size: 22px; color: #e3c35c">{{total}}</div></div>
+    <a href="Booking.dc.html" style="height: 52px; padding: 0 28px; border-radius: 999px; background: linear-gradient(180deg, #c21d33, #8f1424); border: 1px solid rgba(212,175,55,.45); color: #fff; font-weight: 600; text-decoration: none; display: flex; align-items: center">จองเลย</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { img: 0, svc: 3, fav: false }; }
+  renderVals() {
+    const s = this.state;
+    const imgs = ['/_blob/551eb82924983c941f1fe44ede9bceca', '/_blob/ec33c74147cab066783e7acae85c8875', '/_blob/d26354f23535577e2504751c4197ea79'];
+    const price = { 3: 2400, 5: 3800 };
+    const total = price[s.svc];
+    return {
+      photo: imgs[s.img],
+      thumbs: imgs.map((src, i) => ({ src, n: i + 1, border: i === s.img ? '#d4af37' : 'rgba(246,239,228,.25)', pick: () => this.setState({ img: i }) })),
+      toggleFav: () => this.setState({ fav: !s.fav }), favColor: s.fav ? '#ef8a97' : '#f6efe4', favFill: s.fav ? '#c9283d' : 'none',
+      services: [3, 5].map((h) => ({ label: 'นัด ' + h + ' ชม.', note: h === 3 ? 'กิน เที่ยว คาเฟ่ ดูหนัง' : 'เหมาครึ่งวัน เปลี่ยนกิจกรรมได้', price: '฿' + price[h].toLocaleString('en-US'), border: s.svc === h ? '#d4af37' : '#33272a', bg: s.svc === h ? 'rgba(212,175,55,.08)' : '#181212', pick: () => this.setState({ svc: h }) })),
+      bars: [[5, '100%'], [4, '0%'], [3, '0%'], [2, '0%'], [1, '0%']].map(([n, w]) => ({ n, w })),
+      summary: s.svc + ' ชม.', total: '฿' + total.toLocaleString('en-US')
+    };
+  }
+}
+</script>
+</body>
+</html>

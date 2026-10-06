@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>ติดตามเพื่อน</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0a0a;--s1:#181212;--s2:#21191a;--ln:#33272a;--red:#b0182c;--red-dk:#8f1424;--gold:#D4AF37;--gold-l:#e3c35c;--tx:#f6efe4;--mut:#ab9d94}
+body{margin:0;font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--tx)}
+*{box-sizing:border-box}
+button{font-family:inherit}
+a{color:var(--tx);text-decoration:none}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.ab{flex:1;height:50px;border-radius:14px;border:1px solid var(--ln);background:transparent;color:var(--tx);font-weight:500;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;overflow:hidden;background:#111">
+  <svg viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%;display:block" aria-label="แผนที่">
+    <defs>
+      <pattern id="blkS1" width="26" height="22" patternUnits="userSpaceOnUse"><rect x="2" y="2" width="21" height="17" rx="2" fill="#1a1414"></rect><rect x="5" y="5" width="8" height="6" rx="1" fill="#1e1717"></rect></pattern>
+      <pattern id="blk2S1" width="34" height="28" patternUnits="userSpaceOnUse" patternTransform="rotate(8)"><rect x="2" y="2" width="29" height="23" rx="3" fill="#1b1414"></rect></pattern>
+    </defs>
+    <rect width="390" height="844" fill="#120d0d"></rect>
+    <rect width="390" height="844" fill="url(#blkS1)"></rect>
+    <path d="M0 560 L200 600 L200 844 L0 844Z" fill="url(#blk2S1)"></path>
+    <path d="M-10 610 C40 640 70 700 50 760 C35 800 60 830 90 860" fill="none" stroke="#14232b" stroke-width="34" stroke-linecap="round"></path>
+    <path d="M-10 610 C40 640 70 700 50 760 C35 800 60 830 90 860" fill="none" stroke="#1a2e38" stroke-width="22" stroke-linecap="round"></path>
+    <text x="30" y="690" fill="#4a6b7a" font-size="9" transform="rotate(68 30 690)" font-family="IBM Plex Sans Thai, sans-serif" letter-spacing="1.5">แม่น้ำเจ้าพระยา</text>
+    <path d="M196 448 L268 440 L276 520 L204 528Z" fill="#17241a" stroke="#1f3123"></path>
+    <text x="210" y="488" fill="#55755a" font-size="8.5" font-family="IBM Plex Sans Thai, sans-serif">สวนเบญจกิติ</text>
+    <path d="M30 120 L96 112 L104 168 L40 176Z" fill="#17241a" stroke="#1f3123"></path>
+    <text x="40" y="148" fill="#55755a" font-size="8.5" font-family="IBM Plex Sans Thai, sans-serif">สวนเบญจสิริ</text>
+    <circle cx="350" cy="700" r="26" fill="#17241a" stroke="#1f3123"></circle>
+    <g stroke="#241b1c" stroke-width="3" fill="none">
+      <path d="M60 0 L80 844M120 0 L138 600M250 0 L262 844M345 0 L360 844M0 200 L390 230M0 470 L390 500M0 700 L390 730M0 90 L390 110M110 600 L130 844"></path>
+    </g>
+    <g stroke="#2c2122" stroke-width="5" fill="none" stroke-linecap="round">
+      <path d="M182 0 L206 844"></path><path d="M300 0 L318 844"></path>
+    </g>
+    <g fill="none" stroke-linecap="round">
+      <path d="M-10 330 C120 350 260 380 400 405" stroke="#3a2c25" stroke-width="11"></path>
+      <path d="M-10 330 C120 350 260 380 400 405" stroke="#4a3a2c" stroke-width="7"></path>
+      <path d="M-10 560 C120 585 260 600 400 640" stroke="#3a2c25" stroke-width="10"></path>
+      <path d="M-10 560 C120 585 260 600 400 640" stroke="#463628" stroke-width="6"></path>
+    </g>
+    <path d="M-10 318 C120 338 260 368 400 393" fill="none" stroke="#8a7020" stroke-width="2.5" stroke-dasharray="7 4"></path>
+    <g fill="#120d0d" stroke="#d4af37" stroke-width="2">
+      <circle cx="40" cy="325" r="4.5"></circle><circle cx="120" cy="337" r="4.5"></circle><circle cx="188" cy="348" r="4.5"></circle><circle cx="298" cy="373" r="4.5"></circle><circle cx="366" cy="387" r="4.5"></circle>
+    </g>
+    <g fill="#c9b27a" font-size="8.5" font-family="IBM Plex Sans Thai, sans-serif">
+      <text x="22" y="313">BTS นานา</text><text x="96" y="325">พร้อมพงษ์</text><text x="194" y="341">BTS อโศก</text><text x="278" y="362">ทองหล่อ</text><text x="342" y="377">เอกมัย</text>
+    </g>
+    <g fill="#8d7c6d" font-size="9.5" font-weight="600" font-family="IBM Plex Sans Thai, sans-serif">
+      <text x="40" y="360" transform="rotate(8 40 360)">ถ.สุขุมวิท</text>
+      <text x="230" y="612" transform="rotate(9 230 612)">ถ.พระราม 4</text>
+      <text x="196" y="236" transform="rotate(88 196 236)">ถ.อโศกมนตรี</text>
+      <text x="312" y="232" transform="rotate(88 312 232)">ซ.ทองหล่อ</text>
+    </g>
+    <g fill="#5e5049" font-size="13" font-weight="600" letter-spacing="3" font-family="IBM Plex Sans Thai, sans-serif">
+      <text x="210" y="300">อโศก</text><text x="314" y="440">ทองหล่อ</text><text x="326" y="540" font-size="11">เอกมัย</text><text x="80" y="660">สีลม</text>
+    </g>
+    </svg>
+  <svg viewBox="0 0 390 844" style="position:absolute;inset:0;width:100%;height:100%"><polyline points="129,418 128,354 148,357 168,361 188,365 208,369 228,373 248,376 268,380 288,384 308,388 308,388 304,177" stroke="#b0182c" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="1 10"/><polyline points="129,418 128,354 148,357 168,361 188,365 208,369 228,373 248,376 268,380 288,384 308,388 308,388 304,177" stroke="#d4af37" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-dasharray="6 6" opacity=".8"/></svg>
+  <div style="position:absolute;top:16px;left:16px;right:16px;display:flex;gap:10px;align-items:center">
+    <a href="S12-Orders.dc.html" aria-label="ย้อนกลับ" style="width:44px;height:44px;border-radius:44px;background:var(--s1);border:1px solid var(--ln);display:flex;align-items:center;justify-content:center"><svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></a>
+    <div style="flex-grow:1;height:44px;border-radius:999px;background:var(--s1);border:1px solid var(--ln);display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:500"><span style="width:8px;height:8px;border-radius:8px;background:var(--red)"></span>ต้นกำลังเดินทางมาหาคุณ</div>
+    <button aria-label="SOS ฉุกเฉิน" style="width:44px;height:44px;border-radius:44px;border:0;background:var(--red);color:#fff;font-family:'Kanit';font-weight:700;font-size:12px">SOS</button>
+  </div>
+  <img src="/_blob/ec33c74147cab066783e7acae85c8875" alt="ต้น" style="position:absolute;left:112px;top:398px;width:40px;height:40px;border-radius:40px;object-fit:cover;border:3px solid var(--red)">
+  <div style="position:absolute;left:286px;top:140px;display:flex;flex-direction:column;align-items:center"><span style="height:26px;padding:0 10px;border-radius:999px;background:var(--tx);color:var(--bg);font-size:12px;font-weight:600;display:flex;align-items:center">คุณ</span><span style="width:14px;height:14px;border-radius:14px;background:var(--gold);border:3px solid var(--bg);margin-top:4px"></span></div>
+  <section style="position:absolute;left:0;right:0;bottom:0;background:var(--s1);border-top:1px solid var(--ln);border-radius:28px 28px 0 0;padding:20px 18px 26px;display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between">
+      <div><div style="font-size:13px;color:var(--mut)">อีกประมาณ</div><div style="font-family:'Kanit';font-weight:700;font-size:42px;line-height:1">12 <span style="font-size:20px;font-weight:500">นาที</span></div></div>
+      <div style="text-align:right;font-size:13px;color:var(--mut)">3.2 กม.<br>ถึงราว 18:52</div>
+    </div>
+    <div style="height:4px;border-radius:4px;background:var(--ln)"><div style="width:62%;height:100%;border-radius:4px;background:var(--red)"></div></div>
+    <div style="display:flex;gap:12px;align-items:center">
+      <img src="/_blob/ec33c74147cab066783e7acae85c8875" alt="" style="width:56px;height:56px;border-radius:56px;object-fit:cover">
+      <div style="flex-grow:1"><b style="font-family:'Kanit';font-weight:500;font-size:17px">ต้น</b> <span style="font-size:12px;color:var(--gold)">★ 5.0</span><div style="font-size:13px;color:var(--mut)">คาเฟ่ &amp; ดูหนัง 3 ชม. · Honda City สีขาว · 1กข 2345</div></div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <a href="S08-ChatRoom.dc.html" class="ab">แชท</a>
+      <a href="S11-Call.dc.html" class="ab">โทร</a>
+      <a href="C2-InSession.dc.html" class="ab" style="border-color:var(--gold);color:var(--gold-l)">ต้นมาถึงแล้ว</a>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

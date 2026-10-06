@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>รีวิวพาร์ทเนอร์</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+.h{font-family:Kanit;font-weight:600}
+.card{padding:14px;border-radius:16px;background:#181212;border:1px solid #33272a}
+.in{height:48px;border-radius:12px;border:1px solid #33272a;background:#21191a;color:#f6efe4;padding:0 14px;font-size:14px;box-sizing:border-box;width:100%;display:flex;align-items:center}
+.cta{height:52px;border-radius:14px;border:1px solid rgba(212,175,55,.45);background:linear-gradient(180deg,#c21d33,#8f1424);color:#fff;font-size:15px;font-weight:600;width:100%;font-family:Kanit}
+.ghost{height:48px;border-radius:14px;border:1px solid #33272a;background:#181212;color:#e3c35c;font-size:14px;font-weight:600;width:100%}
+.lbl{font-size:12px;color:#ab9d94;margin:0 0 6px}
+.mut{color:#ab9d94}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; position: relative; overflow: hidden">
+  <div style="height: 768px; overflow-y: auto; box-sizing: border-box; padding-bottom: 24px">
+<div style="padding: 12px 14px 0; display: flex; align-items: center; gap: 8px">
+      <a href="PartnerHome.dc.html" aria-label="ย้อนกลับ" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid #33272a; background: #181212; color: #e3c35c; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"></path></svg></a>
+      <div class="h" style="font-size: 17px; color: #d4af37">รีวิวจากลูกค้า</div>
+    </div>
+    <div style="padding: 12px 18px 0; display: flex; flex-direction: column; gap: 14px">
+      <div class="card" style="display: flex; gap: 16px; align-items: center">
+        <div style="text-align: center; flex: 0 0 90px"><div class="h" style="font-size: 40px; color: #d4af37; line-height: 1">4.8</div><div style="color: #d4af37; font-size: 13px; letter-spacing: 2px">★★★★★</div><div class="mut" style="font-size: 11px">128 รีวิว</div></div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 5px">
+          <sc-for list="{{dist}}" as="d" hint-placeholder-count="5"><button onClick="{{d.pick}}" style="display: grid; grid-template-columns: 22px 1fr 30px; gap: 8px; align-items: center; font-size: 12px; border: 0; background: transparent; color: {{d.fg}}; padding: 0; min-height: 22px"><span>{{d.star}}★</span><span style="height: 8px; border-radius: 99px; background: #21191a; overflow: hidden"><span style="display: block; height: 100%; width: {{d.w}}; background: #d4af37"></span></span><span style="text-align: right">{{d.n}}</span></button></sc-for>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center"><span class="mut" style="font-size: 13px">{{filterLabel}}</span><button onClick="{{clear}}" style="min-height: 44px; border: 0; background: transparent; color: #e3c35c; font-size: 12px">ดูทั้งหมด</button></div>
+      <sc-for list="{{reviews}}" as="r" hint-placeholder-count="3">
+        <div class="card" style="display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; justify-content: space-between"><span style="font-size: 14px; font-weight: 600">{{r.name}}</span><span style="color: #d4af37; font-size: 12px">{{r.stars}}</span></div>
+          <div class="mut" style="font-size: 11.5px">{{r.meta}}</div>
+          <div style="font-size: 13.5px; line-height: 1.55">{{r.text}}</div>
+          <sc-if value="{{r.hasReply}}" hint-placeholder-val="{{ false }}"><div style="padding: 10px; border-radius: 12px; background: #21191a; border-left: 3px solid #d4af37; font-size: 12.5px"><b style="color: #e3c35c">ตอบกลับจากร้าน:</b> {{r.reply}}</div></sc-if>
+          <sc-if value="{{r.editing}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <div class="in" style="height: auto; min-height: 64px; padding: 10px 14px; font-size: 13px; line-height: 1.5">{{r.draft}}</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{r.tpls}}" as="t" hint-placeholder-count="3"><button onClick="{{t.pick}}" style="min-height: 44px; padding: 0 12px; border-radius: 999px; border: 1px solid #33272a; background: #181212; color: #ab9d94; font-size: 12px">{{t.label}}</button></sc-for></div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px"><button class="ghost" onClick="{{r.cancel}}">ยกเลิก</button><button class="cta" onClick="{{r.send}}" style="height: 48px">ส่งคำตอบ</button></div>
+            </div>
+          </sc-if>
+          <sc-if value="{{r.canReply}}" hint-placeholder-val="{{ true }}"><button onClick="{{r.open}}" style="align-self: flex-start; min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid #33272a; background: #21191a; color: #e3c35c; font-size: 13px">ตอบกลับ</button></sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; border-top: 1px solid #33272a; background: rgba(14,10,10,.97); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; text-align: center; font-size: 10.5px; color: #7d6d6a">
+    <a href="PartnerHome.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>หน้าหลัก</a>
+    <a href="PartnerBookings.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16"></path></svg>การจอง</a>
+    <a href="PartnerListing.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h16l-1-5H5z"></path><path d="M5 9v11h14V9"></path><path d="M10 20v-6h4v6"></path></svg>หน้าร้าน</a>
+    <a href="PartnerInsight.dc.html" aria-current="page" style="color: #d4af37; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>รายงาน</a>
+    <a href="PartnerPackage.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7v10l8 4 8-4V7z"></path><path d="M4 7l8 4 8-4M12 11v10"></path></svg>แพ็กเกจ</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { star: 0, open: -1, draft: '', replies: { 1: 'ขอบคุณมากค่ะ ยินดีต้อนรับกลับมาเสมอ' } }; }
+  renderVals() {
+    const s = this.state;
+    const R = [['คุณธนพร ก.', 5, 'นวดน้ำมันอโรมา 90 นาที · ห้อง Lotus · 3 ต.ค.', 'ห้องสะอาด บรรยากาศหรู เป็นส่วนตัว ฝีมือนวดได้มาตรฐาน พนักงานต้อนรับสุภาพ กลับมาอีกแน่นอนค่ะ'], ['คุณอรอุมา ม.', 5, 'สปาแพ็กเกจ ขัดผิว + อโรมา · ห้อง Jasmine · 1 ต.ค.', 'จองผ่านแอปง่าย ตรงเวลา ผ่อนคลายมาก ที่จอดรถก็สะดวก'], ['คุณภาวิณี ส.', 3, 'นวดไทยแผนโบราณ 90 นาที · ห้อง Orchid · 28 ก.ย.', 'โดยรวมดีค่ะ แต่ต้องรอห้องเกินเวลาที่จองไปราว 20 นาที'], ['คุณวรรณา ช.', 4, 'นวดฝ่าเท้า 60 นาที · ห้อง Lotus · 25 ก.ย.', 'บริการดี ห้องหอม ติดแค่เพลงดังไปนิดค่ะ']];
+    const T = ['ขอบคุณสำหรับรีวิวค่ะ', 'ขออภัยในความล่าช้า เราปรับการจัดคิวห้องแล้วค่ะ', 'มอบส่วนลด 10% ครั้งหน้าค่ะ'];
+    const dist = [[5, 108], [4, 16], [3, 3], [2, 1], [1, 0]];
+    return {
+      dist: dist.map(([star, n]) => ({ star, n, w: Math.round(n / 108 * 100) + '%', fg: s.star === star ? '#e3c35c' : '#ab9d94', pick: () => this.setState({ star }) })),
+      filterLabel: s.star ? 'กรองเฉพาะ ' + s.star + ' ดาว' : 'รีวิวล่าสุด', clear: () => this.setState({ star: 0 }),
+      reviews: R.map((r, i) => ({ r, i })).filter(({ r }) => !s.star || r[1] === s.star).map(({ r, i }) => {
+        const reply = s.replies[i]; const editing = s.open === i;
+        return { name: r[0], stars: '★'.repeat(r[1]) + '☆'.repeat(5 - r[1]), meta: r[2], text: r[3], hasReply: !!reply && !editing, reply: reply || '',
+          editing, canReply: !reply && !editing, draft: s.draft || 'เลือกข้อความด้านล่าง หรือพิมพ์คำตอบเอง',
+          tpls: T.map((label) => ({ label, pick: () => this.setState({ draft: label }) })),
+          open: () => this.setState({ open: i, draft: '' }), cancel: () => this.setState({ open: -1 }),
+          send: () => { if (s.draft) { const replies = Object.assign({}, s.replies); replies[i] = s.draft; this.setState({ replies, open: -1, draft: '' }); } } };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>Partner Package</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; position: relative; overflow: hidden">
+  <div style="height: 768px; overflow-y: auto; box-sizing: border-box; padding-bottom: 24px">
+    <div style="padding: 16px 18px 0">
+      <h1 style="margin: 0; font-family: Kanit; font-weight: 700; font-size: 24px; color: #d4af37">แพ็กเกจของฉัน</h1>
+    </div>
+    <div style="padding: 14px 18px 0; display: flex; flex-direction: column; gap: 18px">
+      <div style="padding: 16px; border-radius: 20px; background: linear-gradient(160deg, #2a1f14, #181212 60%); border: 1px solid rgba(212,175,55,.5)">
+        <div style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 11px; letter-spacing: 2.5px; color: #d4af37">แพ็กเกจปัจจุบัน</span><span style="font-size: 11px; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(60,170,110,.5); color: #7fd6a3">QC ผ่านแล้ว · 25 พ.ค.</span></div>
+        <div style="font-family: Kanit; font-weight: 700; font-size: 26px; margin-top: 6px">6 เดือน</div>
+        <div style="font-size: 12.5px; color: #ab9d94">29 ส.ค. 2569 – 24 ก.พ. 2570 · ฿60,000</div>
+        <div style="display: flex; justify-content: space-between; font-size: 13px; margin-top: 12px"><span>เหลือ</span><span style="color: #e3c35c; font-family: Kanit; font-weight: 600">142 / 180 วัน</span></div>
+        <div style="height: 8px; border-radius: 99px; background: #21191a; margin-top: 6px; overflow: hidden"><div style="width: 79%; height: 100%; background: linear-gradient(90deg, #d4af37, #e3c35c)"></div></div>
+        <div style="font-size: 11.5px; color: #7d6d6a; margin-top: 8px">แพลตฟอร์มหัก [รอกำหนด]% ต่อการจอง · ราคาขายต่อบริการ [รอกำหนด] · ค่าป้ายแบรนด์ชำระแล้ว</div>
+      </div>
+      <div>
+        <h2 style="margin: 0 0 10px; font-family: Kanit; font-weight: 600; font-size: 18px; color: #d4af37">ต่ออายุ / อัปเกรด</h2>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <sc-for list="{{plans}}" as="p" hint-placeholder-count="2">
+            <button onClick="{{p.pick}}" style="min-height: 60px; padding: 12px 14px; border-radius: 16px; border: 1.5px solid {{p.border}}; background: {{p.bg}}; color: #f6efe4; text-align: left; display: flex; justify-content: space-between; align-items: center">
+              <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-family: Kanit; font-weight: 600; font-size: 16px">{{p.name}}</span><span style="font-size: 11.5px; color: #ab9d94">คลิปโปรโมท 1 คลิป IG &amp; FB มาดามกอ · สุ่ม QC · โปรโมตบนแพลตฟอร์ม</span></span>
+              <span style="font-family: Kanit; font-weight: 700; font-size: 18px; color: #e3c35c">{{p.price}}</span>
+            </button>
+          </sc-for>
+        </div>
+        <button onClick="{{renew}}" style="width: 100%; margin-top: 10px; height: 52px; border-radius: 999px; border: 1px solid rgba(212,175,55,.45); background: linear-gradient(180deg, #c21d33, #8f1424); color: #fff; font-weight: 600; font-size: 15px">{{renewLabel}}</button>
+        <sc-if value="{{requested}}" hint-placeholder-val="{{ false }}"><div style="margin-top: 8px; font-size: 12.5px; color: #7fd6a3; text-align: center">ส่งคำขอแล้ว ทีมงานจะติดต่อกลับภายใน 24 ชม.</div></sc-if>
+      </div>
+      <div>
+        <h2 style="margin: 0 0 10px; font-family: Kanit; font-weight: 600; font-size: 18px; color: #d4af37">สถานะคลิปโปรโมท</h2>
+        <div style="padding: 14px; border-radius: 16px; background: #181212; border: 1px solid #33272a">
+          <sc-for list="{{clip}}" as="c" hint-placeholder-count="3">
+            <div style="display: flex; gap: 12px; align-items: flex-start; padding-bottom: 12px">
+              <span style="width: 26px; height: 26px; border-radius: 50%; flex: none; border: 1.5px solid {{c.color}}; background: {{c.fill}}; color: #1a1206; display: grid; place-items: center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5 9-10"></path></svg></span>
+              <span style="display: flex; flex-direction: column"><span style="font-size: 14px; color: {{c.text}}">{{c.label}}</span><span style="font-size: 11.5px; color: #7d6d6a">{{c.note}}</span></span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div>
+        <h2 style="margin: 0 0 10px; font-family: Kanit; font-weight: 600; font-size: 18px; color: #d4af37">ใบแจ้งหนี้</h2>
+        <div style="border-radius: 16px; background: #181212; border: 1px solid #33272a; padding: 0 14px">
+          <sc-for list="{{invoices}}" as="v" hint-placeholder-count="2">
+            <div style="display: flex; justify-content: space-between; align-items: center; min-height: 56px; border-bottom: 1px solid #21191a">
+              <span style="display: flex; flex-direction: column"><span style="font-size: 13.5px">{{v.no}}</span><span style="font-size: 11.5px; color: #7d6d6a">{{v.date}} · {{v.item}}</span></span>
+              <span style="display: flex; flex-direction: column; align-items: flex-end"><span style="font-family: Kanit; font-weight: 600; color: #e3c35c">{{v.amount}}</span><span style="font-size: 11px; color: #7fd6a3">ชำระแล้ว</span></span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <a href="tel:020000000" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; height: 52px; border-radius: 999px; border: 1px solid #33272a; color: #e3c35c; font-size: 14px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5c0 8 7 15 15 15l1-4-4-2-2 2c-2-1-4-3-5-5l2-2-2-4z"></path></svg>ติดต่อทีมงาน</a>
+    </div>
+  </div>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; border-top: 1px solid #33272a; background: rgba(14,10,10,.97); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; text-align: center; font-size: 10.5px; color: #7d6d6a">
+    <a href="PartnerHome.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>หน้าหลัก</a>
+    <a href="PartnerBookings.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16"></path></svg>การจอง</a>
+    <a href="PartnerListing.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h16l-1-5H5z"></path><path d="M5 9v11h14V9"></path><path d="M10 20v-6h4v6"></path></svg>หน้าร้าน</a>
+    <a href="PartnerInsight.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>รายงาน</a>
+    <a href="PartnerPackage.dc.html" aria-current="page" style="color: #d4af37; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7v10l8 4 8-4V7z"></path><path d="M4 7l8 4 8-4M12 11v10"></path></svg>แพ็กเกจ</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { plan: '6m', requested: false }; }
+  renderVals() {
+    const s = this.state; const gold = '#d4af37';
+    const P = [['3m', '3 เดือน', '฿45,000'], ['6m', '6 เดือน', '฿60,000']];
+    const cur = P.find((x) => x[0] === s.plan);
+    const C = [['ถ่ายแล้ว', '20 ก.ย. 2569 · ถ่ายที่สปา', 'done'], ['ตัดต่อ', 'กำลังตัดต่อ · คาดเสร็จ 10 ต.ค.', 'now'], ['ลง IG/FB มาดามกอ', 'รอคิวโพสต์', 'todo']];
+    return {
+      plans: P.map(([id, name, price]) => ({ name, price, border: s.plan === id ? gold : '#33272a', bg: s.plan === id ? 'rgba(212,175,55,.08)' : '#181212', pick: () => this.setState({ plan: id, requested: false }) })),
+      renewLabel: 'ต่ออายุ ' + cur[1] + ' · ' + cur[2],
+      renew: () => this.setState({ requested: true }), requested: s.requested,
+      clip: C.map(([label, note, st]) => ({ label, note, color: st === 'todo' ? '#33272a' : gold, fill: st === 'done' ? gold : 'transparent', text: st === 'todo' ? '#7d6d6a' : '#f6efe4' })),
+      invoices: [['INV-2569-0829', '29 ส.ค. 2569', 'แพ็กเกจ 6 เดือน', '฿60,000'], ['INV-2569-0529', '29 พ.ค. 2569', 'แพ็กเกจ 3 เดือน', '฿45,000']].map(([no, date, item, amount]) => ({ no, date, item, amount }))
+    };
+  }
+}
+</script>
+</body>
+</html>

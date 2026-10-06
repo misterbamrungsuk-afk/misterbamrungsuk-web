@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>แอดมิน การจอง</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 1280px; height: 820px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; display: flex; overflow: hidden">
+  <nav aria-label="เมนูแอดมิน" style="width: 232px; flex: 0 0 232px; border-right: 1px solid #33272a; padding: 18px 14px; display: flex; flex-direction: column; gap: 2px; font-size: 13px; box-sizing: border-box; font-family: 'IBM Plex Sans Thai', sans-serif; background: #0e0a0a">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px"><div style="width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid #d4af37; display: grid; place-items: center; font-family: Kanit; font-weight: 700; font-size: 12px; color: #d4af37">MB</div><div style="line-height: 1.1"><div style="font-family: Kanit; font-weight: 600; color: #f6efe4">Bamrungsuk</div><div style="font-size: 11px; color: #7d6d6a">Admin · super</div></div></div>
+    <a href="AdminDashboard.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ภาพรวม / รายได้</a>
+    <a href="AdminBookings.dc.html" aria-current="page" style="padding: 6px 12px; border-radius: 10px; background: rgba(176,24,44,.2); border: 1px solid rgba(201,40,61,.55); color: #f6efe4; text-decoration: none">การจอง / งาน</a>
+    <a href="B2-Orders.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ตรวจงาน</a>
+    <a href="AdminApplicants.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ผู้สมัคร</a>
+    <a href="B1-KYC.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">คิว KYC</a>
+    <a href="AdminCohorts.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">รุ่นอบรม / เช็กชื่อ</a>
+    <a href="AdminParttimers.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">Part-Time ที่ใช้งาน</a>
+    <a href="B3-Payouts.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">โอนให้ Part-Time</a>
+    <a href="AdminPartners.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">พาร์ทเนอร์สปา</a>
+    <a href="AdminSpaPricing.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ราคาสปาพาร์ทเนอร์</a>
+    <a href="AdminPricing.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ตั้งค่าราคา</a>
+    <a href="B6-Members.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">สมาชิก · ใบเตือน</a>
+    <a href="B4-Reports.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">รายงาน</a>
+    <a href="B5-CS.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">เรื่องร้องเรียน</a>
+    <a href="B7-Promos.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">โปรโมชัน</a>
+    <a href="B8-Audit.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">บันทึกระบบ · SOS</a>
+    <div style="height: 1px; background: #33272a; margin: 6px 0"></div>
+    <a href="E2-AdminSettings.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ตั้งค่าระบบ</a>
+    <a href="E1-AdminLogin.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">แอดมินและสิทธิ์</a>
+    <a href="Main.dc.html" style="margin-top: auto; padding: 6px 12px; color: #e3c35c; text-decoration: none">← สารบัญทุกหน้า</a>
+  </nav>
+  <main style="flex: 1; padding: 22px 24px; display: flex; gap: 16px; min-width: 0">
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0">
+      <div><div style="font-size: 11px; letter-spacing: 2.5px; color: #d4af37; font-weight: 600">BOOKINGS</div><h1 style="margin: 2px 0 0; font-family: Kanit; font-weight: 700; font-size: 24px">การจองวันนี้</h1></div>
+      <div style="display: flex; gap: 8px">
+        <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5"><button onClick="{{t.pick}}" style="height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid {{t.border}}; background: {{t.bg}}; color: {{t.fg}}; font-size: 12.5px; font-weight: 600">{{t.label}} · {{t.n}}</button></sc-for>
+      </div>
+      <div style="border-radius: 16px; border: 1px solid #33272a; overflow: hidden; font-size: 13px">
+        <div style="display: grid; grid-template-columns: 90px minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1.3fr) 90px 120px; padding: 10px 14px; background: #130e0e; color: #7d6d6a; font-size: 12px"><span>รหัส</span><span>ลูกค้า</span><span>Part-Time</span><span>บริการ · สถานที่</span><span>ยอด</span><span>สถานะ</span></div>
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+          <button onClick="{{r.pick}}" style="width: 100%; display: grid; grid-template-columns: 90px minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1.3fr) 90px 120px; padding: 12px 14px; border: none; border-top: 1px solid #33272a; background: {{r.bg}}; color: #f6efe4; text-align: left; font-size: 13px; align-items: center">
+            <span style="color: #e3c35c">{{r.id}}</span><span>{{r.cust}}</span><span>{{r.pt}}</span><span style="color: #d3c7bc">{{r.svc}}</span><span style="font-variant-numeric: tabular-nums">{{r.amt}}</span><span><span style="padding: 3px 9px; border-radius: 999px; background: {{r.pillBg}}; color: {{r.pillFg}}; font-size: 11.5px">{{r.status}}</span></span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+    <aside style="width: {{asideW}}; padding: 18px; border-radius: 18px; border: 1px solid rgba(212,175,55,.45); background: #181212; display: flex; flex-direction: column; gap: 10px; font-size: 13px; box-sizing: border-box">
+      <div style="display: flex; justify-content: space-between; align-items: center"><div style="font-family: Kanit; font-weight: 700; font-size: 20px; color: #e3c35c">{{sel.id}}</div><span style="padding: 3px 9px; border-radius: 999px; background: {{sel.pillBg}}; color: {{sel.pillFg}}; font-size: 11.5px">{{sel.status}}</span></div>
+      <div style="display: flex; justify-content: space-between"><span style="color: #ab9d94">ลูกค้า</span><span>{{sel.cust}}</span></div>
+      <div style="display: flex; justify-content: space-between"><span style="color: #ab9d94">Part-Time</span><span>{{sel.pt}}</span></div>
+      <div style="display: flex; justify-content: space-between; gap: 10px"><span style="color: #ab9d94">บริการ</span><span style="text-align: right">{{sel.svc}}</span></div>
+      <div style="height: 1px; background: #33272a"></div>
+      <div style="color: #ab9d94; font-size: 12px">ไทม์ไลน์</div>
+      <sc-for list="{{sel.tl}}" as="t" hint-placeholder-count="4"><div style="display: flex; justify-content: space-between; font-size: 12.5px"><span><span style="color: #d4af37">✓</span> {{t.a}}</span><span style="color: #7d6d6a">{{t.b}}</span></div></sc-for>
+      <sc-if value="{{isNs}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div style="height: 1px; background: #33272a"></div>
+          <div style="color: #ab9d94; font-size: 12px">หลักฐานแจ้งไม่มาตามนัด · เทียบ 2 ฝ่าย</div>
+          <div style="display: grid; grid-template-columns: 74px minmax(0, 1fr) minmax(0, 1fr); gap: 6px 8px; font-size: 12px; align-items: start">
+            <span></span><span style="font-weight: 600; color: #eed58a">ลูกค้า · {{sel.cust}}</span><span style="font-weight: 600; color: #eed58a">Part-Time · {{sel.pt}}</span>
+            <sc-for list="{{ev}}" as="e" hint-placeholder-count="3"><span style="color: #7d6d6a">{{e.k}}</span><span style="color: #d3c7bc">{{e.c}}</span><span style="color: #d3c7bc">{{e.p}}</span></sc-for>
+          </div>
+          <div style="font-size: 11.5px; color: #7d6d6a">เงิน {{sel.amt}} พักไว้กับเราจนกว่าแอดมินจะตัดสิน · ตัดสินภายใน 24 ชม.</div>
+          <sc-if value="{{nsOpen}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <button onClick="{{rulCust}}" style="min-height: 40px; padding: 6px 12px; border-radius: 12px; border: 1px solid rgba(212,175,55,.45); background: transparent; color: #eed58a; font-size: 12.5px; font-weight: 600">ตัดสิน: ลูกค้าไม่มา (โอน 85% ให้ Part-Time)</button>
+              <button onClick="{{rulPt}}" style="min-height: 40px; padding: 6px 12px; border-radius: 12px; border: 1px solid rgba(201,40,61,.55); background: rgba(176,24,44,.15); color: #fecaca; font-size: 12.5px; font-weight: 600">ตัดสิน: Part-Time ไม่มา (คืน 100% + ใบเตือน)</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{nsDone}}" hint-placeholder-val="{{ false }}"><div style="padding: 10px 12px; border-radius: 12px; border: 1px solid #33272a; background: #130e0e; font-size: 12.5px; color: #d3c7bc">{{nsResult}}</div></sc-if>
+        </div>
+      </sc-if>
+      <div style="height: 1px; background: #33272a"></div>
+      <div style="display: flex; justify-content: space-between"><span style="color: #ab9d94">ลูกค้าจ่าย</span><span>{{sel.amt}}</span></div>
+      <div style="display: flex; justify-content: space-between"><span style="color: #ab9d94">ค่าธรรมเนียม 15%</span><span>{{sel.fee}}</span></div>
+      <div style="display: flex; justify-content: space-between"><span style="color: #ab9d94">โอนให้ Part-Time (พรุ่งนี้)</span><span style="color: #e3c35c">{{sel.net}}</span></div>
+      <div style="margin-top: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+        <button style="height: 44px; border-radius: 999px; border: 1px solid #33272a; background: transparent; color: #d3c7bc">ติดต่อลูกค้า</button>
+        <button style="height: 44px; border-radius: 999px; border: 1px solid rgba(212,175,55,.45); background: linear-gradient(180deg, #c21d33, #8f1424); color: #fff; font-weight: 600">คืนเงิน / ข้อพิพาท</button>
+      </div>
+    </aside>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":820}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { tab: 'all', sel: 0, ruling: null }; }
+  renderVals() {
+    const s = this.state; const gold = '#d4af37';
+    const ST = { run: ['กำลังให้บริการ', 'rgba(212,175,55,.18)', '#eed58a'], way: ['กำลังเดินทาง', 'rgba(96,165,250,.15)', '#bfdbfe'], done: ['เสร็จสิ้น', 'rgba(74,222,128,.15)', '#bbf7d0'], sos: ['SOS', 'rgba(239,68,68,.2)', '#fecaca'], cancel: ['ยกเลิกหน้างาน', '#21191a', '#ab9d94'], noshow: ['แจ้งไม่มาตามนัด', 'rgba(251,146,60,.18)', '#fed7aa'], nsCust: ['ลูกค้าไม่มา · โอน 85%', 'rgba(74,222,128,.15)', '#bbf7d0'], nsPt: ['คืน 100% + ใบเตือน', 'rgba(239,68,68,.2)', '#fecaca'] };
+    const B = [
+      { id: 'MB-1043', cust: 'คุณเจน', pt: 'ไนซ์', svc: '3 ชม. · คาเฟ่ + ดูหนัง · The Lofts Ekkamai', amt: 2900, st: s.ruling === 'cust' ? 'nsCust' : s.ruling === 'pt' ? 'nsPt' : 'noshow' },
+      { id: 'MB-1042', cust: 'คุณแพรว', pt: 'บายด์', svc: '3 ชม. · คาเฟ่ & ดูหนัง · คอนโด เอกมัย', amt: 2160, st: 'sos' },
+      { id: 'MB-1041', cust: 'Ms. Sarah', pt: 'ต้น', svc: '3 ชม. · นั่งชิล · สปาพาร์ทเนอร์ Siam Serenity', amt: 3000, st: 'run' },
+      { id: 'MB-1040', cust: 'คุณมิว', pt: 'กอล์ฟ', svc: '5 ชม. · ทริปกิน & เที่ยว · โรงแรม สีลม', amt: 3800, st: 'way' },
+      { id: 'MB-1039', cust: 'คุณนุ่น', pt: 'เบนซ์', svc: '3 ชม. · ช่างภาพ · บ้าน บางนา', amt: 2250, st: 'done' },
+      { id: 'MB-1038', cust: 'Ms. Yuki', pt: 'ปั้น', svc: '5 ชม. · ทริปกิน & เที่ยว · สกิลนวดผ่อนคลาย · โรงแรม สุขุมวิท', amt: 3050, st: 'done' },
+      { id: 'MB-1037', cust: 'คุณฝน', pt: 'ภูมิ', svc: '3 ชม. · คาเฟ่ + ดูหนัง · อารีย์', amt: 2700, st: 'cancel' }
+    ];
+    const fmt = (n) => '฿' + n.toLocaleString('en-US');
+    const T = [['all', 'ทั้งหมด'], ['active', 'กำลังดำเนินการ'], ['done', 'เสร็จสิ้น'], ['sos', 'SOS'], ['cancel', 'ยกเลิก'], ['noshow', 'ไม่มาตามนัด']];
+    const match = (b, t) => t === 'all' || (t === 'active' ? ['run', 'way'].includes(b.st) : t === 'noshow' ? ['noshow', 'nsCust', 'nsPt'].includes(b.st) : b.st === t);
+    const vis = B.map((b, i) => ({ b, i })).filter(({ b }) => match(b, s.tab));
+    const deco = (b) => ({ ...b, status: ST[b.st][0], pillBg: ST[b.st][1], pillFg: ST[b.st][2], amt: fmt(b.amt), fee: fmt(Math.round(b.amt * 0.15)), net: fmt(Math.round(b.amt * 0.85)) });
+    const sel = deco(B[s.sel]);
+    const ns = ['noshow', 'nsCust', 'nsPt'].includes(B[s.sel].st);
+    if (ns) {
+      sel.net = s.ruling === 'pt' ? '฿0 (คืนลูกค้า 100%)' : s.ruling === 'cust' ? sel.net : 'พักไว้ · รอตัดสิน';
+    }
+    sel.tl = ns ? [{ a: 'ลูกค้าชำระเงิน (QR)', b: '18:20' }, { a: 'Part-Time GPS เช็กอินจุดนัด', b: '19:02' }, { a: 'Part-Time แจ้งลูกค้าไม่มา', b: '19:18' }, { a: 'ลูกค้าแจ้ง Part-Time ไม่มา', b: '19:25' }] : [{ a: 'ลูกค้าชำระเงิน (QR)', b: '18:41' }, { a: 'Part-Time รับงาน', b: '18:43' }, { a: 'ถึงที่หมาย', b: '19:02' }, { a: 'เริ่มนัดหมาย', b: '19:05' }];
+    return {
+      tabs: T.map(([id, label]) => ({ label, n: B.filter((b) => match(b, id)).length, bg: s.tab === id ? '#b0182c' : 'transparent', fg: s.tab === id ? '#fff' : '#d3c7bc', border: s.tab === id ? '#b0182c' : '#33272a', pick: () => this.setState({ tab: id }) })),
+      rows: vis.map(({ b, i }) => ({ ...deco(b), bg: i === s.sel ? 'rgba(212,175,55,.08)' : 'transparent', pick: () => this.setState({ sel: i }) })),
+      sel,
+      isNs: ns, nsOpen: ns && !s.ruling, nsDone: ns && !!s.ruling, asideW: ns ? '400px' : '300px',
+      ev: [
+        { k: 'GPS', c: '19:00–19:20 · หน้าล็อบบี้ The Lofts (ห่างจุดนัด 40 ม.)', p: 'เช็กอิน 19:02 · จุดนัด ห้อง 1205 ✓' },
+        { k: 'รูปถ่าย', c: 'ไม่ได้แนบ (ไม่บังคับ)', p: 'หน้าห้อง 1205 · 19:15 · พิกัดตรง ✓' },
+        { k: 'โทร / แชท', c: 'โทร 2 ครั้ง · แชท 3 ข้อความ', p: 'โทร 3 ครั้ง · แชท 2 ข้อความ' }
+      ],
+      nsResult: s.ruling === 'cust' ? 'ตัดสินแล้ว: ลูกค้าไม่มา · เก็บเต็มจำนวน โอน ' + fmt(Math.round(B[s.sel].amt * 0.85)) + ' (85%) ให้ Part-Time' : 'ตัดสินแล้ว: Part-Time ไม่มา · คืนลูกค้า 100% · ใบเตือน 1 ครั้ง + หักคะแนน',
+      rulCust: () => this.setState({ ruling: 'cust' }),
+      rulPt: () => this.setState({ ruling: 'pt' })
+    };
+  }
+}
+</script>
+</body>
+</html>

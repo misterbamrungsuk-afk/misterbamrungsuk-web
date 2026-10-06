@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>Partner Home</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; position: relative; overflow: hidden">
+  <div style="height: 768px; overflow-y: auto; box-sizing: border-box; padding-bottom: 24px">
+    <div style="padding: 16px 18px 0; display: flex; justify-content: space-between; align-items: center">
+      <div style="font-family: Kanit; font-weight: 600; font-size: 15px"><span style="color: #d4af37">MB</span> Partner</div>
+      <button aria-label="การแจ้งเตือน" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid #33272a; background: #181212; color: #e3c35c; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"></path><path d="M10 20a2 2 0 0 0 4 0"></path></svg></button>
+    </div>
+    <div style="padding: 10px 18px 0">
+      <div style="font-size: 13px; color: #ab9d94">สวัสดีตอนเช้า</div>
+      <h1 style="margin: 2px 0 8px; font-family: Kanit; font-weight: 700; font-size: 26px; color: #d4af37">Siam Serenity Spa</h1>
+      <span style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: rgba(60,170,110,.12); border: 1px solid rgba(60,170,110,.5); color: #7fd6a3; font-size: 12px"><span style="width: 7px; height: 7px; border-radius: 50%; background: #4cc283"></span>เปิดแสดงอยู่</span>
+    </div>
+    <div style="padding: 18px 18px 0; display: flex; flex-direction: column; gap: 18px">
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: 999px; background: #181212; border: 1px solid #33272a">
+        <sc-for list="{{ranges}}" as="r" hint-placeholder-count="3"><button onClick="{{r.pick}}" style="height: 44px; border-radius: 999px; border: 0; background: {{r.bg}}; color: {{r.fg}}; font-size: 13px; font-weight: 600">{{r.label}}</button></sc-for>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+        <sc-for list="{{kpis}}" as="k" hint-placeholder-count="4">
+          <div style="padding: 14px; border-radius: 16px; background: #181212; border: 1px solid #33272a">
+            <div style="font-size: 12px; color: #ab9d94">{{k.label}}</div>
+            <div style="font-family: Kanit; font-weight: 700; font-size: 24px; color: #d4af37; margin-top: 4px">{{k.value}}</div>
+            <div style="font-size: 11px; color: #7fd6a3">{{k.delta}}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="padding: 14px; border-radius: 16px; background: #181212; border: 1px solid #33272a">
+        <div style="display: flex; justify-content: space-between; font-size: 13px"><span>แพ็กเกจ 6 เดือน · เหลือ</span><span style="color: #e3c35c; font-family: Kanit; font-weight: 600">142 / 180 วัน</span></div>
+        <div style="height: 8px; border-radius: 99px; background: #21191a; margin-top: 10px; overflow: hidden"><div style="width: 79%; height: 100%; background: linear-gradient(90deg, #d4af37, #e3c35c)"></div></div>
+        <a href="PartnerPackage.dc.html" style="display: inline-block; margin-top: 8px; font-size: 12px">ดูรายละเอียดแพ็กเกจ</a>
+      </div>
+      <a href="PartnerReviews.dc.html" style="text-decoration: none; color: #f6efe4; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px; border-radius: 16px; background: #181212; border: 1px solid #33272a; min-height: 44px"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">รีวิวลูกค้า</span><span style="font-size: 12px; color: #ab9d94">★ 4.8 · ใหม่ 2 รีวิววันนี้</span></span><span style="font-size: 12.5px; color: #e3c35c">ดูทั้งหมด ›</span></a>
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px"><h2 style="margin: 0; font-family: Kanit; font-weight: 600; font-size: 18px; color: #d4af37">การจองที่กำลังจะมาถึง</h2><a href="PartnerBookings.dc.html" style="font-size: 12px">ดูทั้งหมด</a></div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <sc-for list="{{upcoming}}" as="u" hint-placeholder-count="3">
+            <a href="PartnerBookings.dc.html" style="text-decoration: none; color: #f6efe4; display: flex; gap: 12px; align-items: center; padding: 10px; border-radius: 14px; background: #181212; border: 1px solid #33272a; min-height: 44px">
+              <img src="{{u.img}}" alt="" style="width: 44px; height: 44px; border-radius: 12px; object-fit: cover">
+              <span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">{{u.pt}}</span><span style="font-size: 12px; color: #ab9d94">ลูกค้า {{u.cust}} · {{u.block}}</span></span>
+              <span style="text-align: right; display: flex; flex-direction: column; gap: 2px"><span style="font-family: Kanit; font-weight: 600; color: #e3c35c">{{u.time}}</span><span style="font-size: 11px; color: #7d6d6a">{{u.room}}</span></span>
+            </a>
+          </sc-for>
+        </div>
+      </div>
+      <div>
+        <h2 style="margin: 0 0 10px; font-family: Kanit; font-weight: 600; font-size: 18px; color: #d4af37">ทางลัด</h2>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px">
+          <a href="PartnerBookings.dc.html" style="text-decoration: none; color: #f6efe4; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px; border-radius: 14px; background: #181212; border: 1px solid #33272a; font-size: 11px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e3c35c" stroke-width="1.7"><path d="m5 12 5 5 9-10"></path></svg>ยืนยันจอง</a>
+          <a href="PartnerListing.dc.html" style="text-decoration: none; color: #f6efe4; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px; border-radius: 14px; background: #181212; border: 1px solid #33272a; font-size: 11px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e3c35c" stroke-width="1.7"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg>แก้หน้าร้าน</a>
+          <a href="PartnerListing.dc.html" style="text-decoration: none; color: #f6efe4; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px; border-radius: 14px; background: #181212; border: 1px solid #33272a; font-size: 11px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e3c35c" stroke-width="1.7"><circle cx="12" cy="12" r="8"></circle><path d="M12 8v4l3 2"></path></svg>เวลาเปิด</a>
+          <a href="PartnerPackage.dc.html" style="text-decoration: none; color: #f6efe4; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px; border-radius: 14px; background: #181212; border: 1px solid #33272a; font-size: 11px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e3c35c" stroke-width="1.7"><path d="M4 6h16v12H4z"></path><path d="M4 10h16"></path></svg>ใบแจ้งหนี้</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; border-top: 1px solid #33272a; background: rgba(14,10,10,.97); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; text-align: center; font-size: 10.5px; color: #7d6d6a">
+    <a href="PartnerHome.dc.html" aria-current="page" style="color: #d4af37; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>หน้าหลัก</a>
+    <a href="PartnerBookings.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16"></path></svg>การจอง</a>
+    <a href="PartnerListing.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h16l-1-5H5z"></path><path d="M5 9v11h14V9"></path><path d="M10 20v-6h4v6"></path></svg>หน้าร้าน</a>
+    <a href="PartnerInsight.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>รายงาน</a>
+    <a href="PartnerPackage.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7v10l8 4 8-4V7z"></path><path d="M4 7l8 4 8-4M12 11v10"></path></svg>แพ็กเกจ</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { range: 'today' }; }
+  renderVals() {
+    const s = this.state; const gold = '#d4af37';
+    const R = [['today', 'วันนี้'], ['7d', '7 วัน'], ['month', 'เดือนนี้']];
+    const D = {
+      today: [['การจองเข้ามา', '6', '+2 จากเมื่อวาน'], ['ยอดจอง', '฿5,400', '+12%'], ['ยอดดูหน้าสปา', '214', '+8%'], ['คะแนนรีวิว', '4.8', 'ใหม่ 2 รีวิว']],
+      '7d': [['การจองเข้ามา', '38', '+15%'], ['ยอดจอง', '฿36,100', '+9%'], ['ยอดดูหน้าสปา', '1,482', '+21%'], ['คะแนนรีวิว', '4.8', 'ใหม่ 11 รีวิว']],
+      month: [['การจองเข้ามา', '146', '+18%'], ['ยอดจอง', '฿138,700', '+11%'], ['ยอดดูหน้าสปา', '5,930', '+24%'], ['คะแนนรีวิว', '4.8', 'ทั้งหมด 128 รีวิว']]
+    };
+    const imgs = ['/_blob/551eb82924983c941f1fe44ede9bceca', '/_blob/82a15fdc40050c0a074e7e4b5b66e794', '/_blob/8725f65bf80d613b2a9537700bf2f9bb'];
+    return {
+      ranges: R.map(([id, label]) => ({ label, bg: s.range === id ? gold : 'transparent', fg: s.range === id ? '#1a1206' : '#ab9d94', pick: () => this.setState({ range: id }) })),
+      kpis: D[s.range].map(([label, value, delta]) => ({ label, value, delta })),
+      upcoming: [['นวดน้ำมันอโรมา', 'ก.ส.', '90 นาที', '14:00', 'ห้อง Lotus'], ['สปาแพ็กเกจ ขัดผิว + อโรมา', 'ม.ร.', '120 นาที', '16:30', 'ห้อง Jasmine'], ['นวดไทยแผนโบราณ', 'พ.ท.', '90 นาที', '19:00', 'ห้อง Orchid']].map(([pt, cust, block, time, room], i) => ({ pt, cust, block, time, room, img: imgs[i] }))
+    };
+  }
+}
+</script>
+</body>
+</html>

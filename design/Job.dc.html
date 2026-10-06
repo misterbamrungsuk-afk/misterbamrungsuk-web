@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>หน้างาน</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+button:disabled{cursor:not-allowed}
+button:focus-visible,a:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; position: relative; overflow: hidden; display: flex; flex-direction: column">
+  <div style="display: flex; align-items: center; gap: 12px; padding: 14px 18px 8px"><a href="Schedule.dc.html" aria-label="ย้อนกลับ" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid #33272a; display: grid; place-items: center; color: #f6efe4; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"></path></svg></a><div style="flex: 1; font-family: Kanit; font-weight: 600; font-size: 18px">หน้างาน</div><span style="padding: 4px 10px; border-radius: 999px; background: {{pillBg}}; color: {{pillFg}}; font-size: 11px">{{pill}}</span></div>
+  <div style="flex: 1; overflow-y: auto; padding: 8px 18px 110px; display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; gap: 12px; align-items: center; padding: 12px; border-radius: 16px; border: 1px solid #33272a; background: #181212">
+      <div style="width: 46px; height: 46px; border-radius: 50%; background: #33272a; display: grid; place-items: center; font-family: Kanit; font-weight: 600; color: #eed58a">พ</div>
+      <div style="flex: 1"><div style="font-weight: 600">คุณแพรว</div><div style="font-size: 12px; color: #ab9d94">The Lofts Ekkamai · ห้อง 1205 · 3 ชม. · กิน & เที่ยว</div></div>
+      <button aria-label="แชทกับลูกค้า" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid #33272a; background: transparent; color: #f6efe4; display: grid; place-items: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a8 8 0 0 1-12 7l-5 1 1-4a8 8 0 1 1 16-4z"></path></svg></button>
+    </div>
+    <sc-if value="{{pArrive}}" hint-placeholder-val="{{ true }}">
+      <div style="padding: 20px; border-radius: 20px; border: 1px solid rgba(201,40,61,.5); background: rgba(176,24,44,.08); text-align: center; display: flex; flex-direction: column; gap: 8px">
+        <div style="font-size: 12.5px; color: #ab9d94">รอลูกค้า (สูงสุด 15 นาที)</div>
+        <div style="font-family: Kanit; font-weight: 700; font-size: 48px; color: #e3c35c; font-variant-numeric: tabular-nums">12:40</div>
+        <div style="font-size: 11.5px; color: #7d6d6a">ถ้าติดต่อลูกค้าไม่ได้ครบ 15 นาที กด "ลูกค้าไม่มา" แล้วส่งหลักฐาน แอดมินจะตรวจหลักฐานทั้ง 2 ฝ่ายก่อน ถ้าอนุมัติคุณได้รับ ฿2,040 (85% หลังหักค่าธรรมเนียม 15%) · ระหว่างนี้เงินพักไว้กับเราจนแอดมินตัดสิน</div>
+      </div>
+    </sc-if>
+    <sc-if value="{{nsOpen}}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 16px; border-radius: 20px; border: 1px solid rgba(212,175,55,.45); background: #181212; display: flex; flex-direction: column; gap: 10px">
+        <div style="font-family: Kanit; font-weight: 600; font-size: 16px">แจ้งลูกค้าไม่มา · หลักฐานของคุณ</div>
+        <div style="font-size: 12px; color: #ab9d94">แอดมินจะเทียบหลักฐานของคุณกับของลูกค้าก่อนตัดสิน ทำให้ครบทุกข้อแล้วจึงส่งได้</div>
+        <sc-for list="{{evid}}" as="e" hint-placeholder-count="4"><button onClick="{{e.tap}}" style="display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 12px; border-radius: 12px; border: 1px solid {{e.border}}; background: #130e0e; color: #f6efe4; font-size: 13.5px; text-align: left"><span style="width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid #d4af37; background: {{e.bg}}; color: #1a1206; display: grid; place-items: center; font-weight: 700; font-size: 12px; flex-shrink: 0">{{e.mark}}</span><span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span>{{e.label}}</span><span style="font-size: 11.5px; color: {{e.subC}}">{{e.sub}}</span></span></button></sc-for>
+        <sc-if value="{{nsSent}}" hint-placeholder-val="{{ false }}"><div style="padding: 12px; border-radius: 12px; border: 1px solid rgba(74,222,128,.45); background: rgba(74,222,128,.07); font-size: 13px; color: #bbf7d0; line-height: 1.55">ส่งหลักฐานแล้ว · รอแอดมินตรวจภายใน 24 ชม. · ถ้าอนุมัติคุณได้รับ ฿2,040 (85%)</div></sc-if>
+        <sc-if value="{{nsNotSent}}" hint-placeholder-val="{{ true }}"><button onClick="{{nsSubmit}}" disabled="{{nsBlocked}}" style="height: 50px; border-radius: 999px; border: 1px solid rgba(212,175,55,.45); background: linear-gradient(180deg, #c21d33, #8f1424); color: #fff; font-weight: 600; font-size: 14.5px; opacity: {{nsOpacity}}">{{nsLabel}}</button></sc-if>
+      </div>
+    </sc-if>
+    <sc-if value="{{pRun}}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 20px; border-radius: 20px; border: 1px solid rgba(212,175,55,.45); background: #181212; text-align: center; display: flex; flex-direction: column; gap: 8px">
+        <div style="font-size: 12.5px; color: #ab9d94">เวลานัดจริง</div>
+        <div style="font-family: Kanit; font-weight: 700; font-size: 48px; color: #e3c35c; font-variant-numeric: tabular-nums">01:24:08</div>
+        <div style="height: 6px; border-radius: 3px; background: #33272a"><div style="width: 47%; height: 6px; border-radius: 3px; background: #d4af37"></div></div>
+        <div style="font-size: 11.5px; color: #7d6d6a">เหลือ 1 ชม. 36 นาที จาก 3 ชม.</div>
+      </div>
+    </sc-if>
+    <sc-if value="{{pCheck}}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 16px; border-radius: 20px; border: 1px solid rgba(212,175,55,.45); background: #181212; display: flex; flex-direction: column; gap: 10px">
+        <div style="font-family: Kanit; font-weight: 600; font-size: 16px">ตรวจทรัพย์สินลูกค้าก่อนกลับ</div>
+        <div style="font-size: 12px; color: #ab9d94">เช็กกับลูกค้าว่าของอยู่ครบทุกชิ้น เพื่อปกป้องตัวคุณเอง</div>
+        <sc-for list="{{items}}" as="i" hint-placeholder-count="5"><button onClick="{{i.toggle}}" style="display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 12px; border-radius: 12px; border: 1px solid {{i.border}}; background: #130e0e; color: #f6efe4; font-size: 13.5px; text-align: left"><span style="width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid #d4af37; background: {{i.bg}}; color: #1a1206; display: grid; place-items: center; font-weight: 700; font-size: 12px">{{i.mark}}</span>{{i.label}}</button></sc-for>
+      </div>
+    </sc-if>
+    <sc-if value="{{pDone}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <div style="padding: 18px; border-radius: 20px; border: 1px solid rgba(74,222,128,.45); background: rgba(74,222,128,.07); text-align: center"><div style="font-family: Kanit; font-weight: 700; font-size: 20px; color: #bbf7d0">จบนัดเรียบร้อย</div><div style="font-size: 12.5px; color: #d3c7bc; margin-top: 4px">บันทึกเวลา 3:02 ชม. · ตรวจทรัพย์สินแล้ว 22:04 น. · รายได้ ฿2,040 เข้ากระเป๋าภายใน 24 ชม.</div></div>
+        <div style="padding: 16px; border-radius: 20px; border: 1px solid rgba(212,175,55,.45); background: linear-gradient(135deg, #2b1f12, #181212)">
+          <div style="font-size: 10.5px; letter-spacing: 2.5px; color: #d4af37; font-weight: 600">แนะนำแพ็กเกจให้ลูกค้า</div>
+          <div style="font-family: Kanit; font-weight: 600; font-size: 16px; margin-top: 4px">แพ็กเกจ 10 ครั้ง · ใช้ได้ 12 เดือน</div>
+          <div style="font-size: 12px; color: #ab9d94; margin: 4px 0 10px">ให้ลูกค้าสแกนลิงก์ของคุณ แล้วรับค่าแนะนำ (ทีมงานจะประกาศอัตราเร็ว ๆ นี้)</div>
+          <div style="display: flex; gap: 8px"><span style="flex: 1; height: 44px; border-radius: 12px; border: 1px solid #33272a; display: flex; align-items: center; padding: 0 12px; font-size: 12px; color: #d3c7bc">mb.com/m?ref=MB-2610014</span><button style="height: 44px; padding: 0 14px; border-radius: 12px; border: none; background: #d4af37; color: #1a1206; font-weight: 600">คัดลอก</button></div>
+        </div>
+        <div style="padding: 14px; border-radius: 16px; border: 1px solid #33272a; background: #181212"><div style="font-weight: 600; font-size: 14px; margin-bottom: 6px">ให้คะแนนลูกค้าและสถานที่</div><div style="display: flex; gap: 6px"><sc-for list="{{stars}}" as="st" hint-placeholder-count="5"><button onClick="{{st.pick}}" aria-label="{{st.n}} ดาว" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #33272a; background: transparent; color: {{st.c}}; font-size: 22px">★</button></sc-for></div></div>
+      </div>
+    </sc-if>
+  </div>
+  <sc-if value="{{showCta}}" hint-placeholder-val="{{ true }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 18px 18px; background: rgba(14,10,10,.97); border-top: 1px solid #33272a; display: flex; gap: 8px">
+      <sc-if value="{{pArrive}}" hint-placeholder-val="{{ true }}"><button onClick="{{nsToggle}}" style="height: 54px; padding: 0 16px; border-radius: 999px; border: 1px solid #33272a; background: transparent; color: #ab9d94">{{nsBtn}}</button></sc-if>
+      <button onClick="{{next}}" disabled="{{blocked}}" style="flex: 1; height: 54px; border-radius: 999px; border: 1px solid rgba(212,175,55,.45); background: linear-gradient(180deg, #c21d33, #8f1424); color: #fff; font-weight: 600; font-size: 15px; opacity: {{ctaOpacity}}">{{ctaLabel}}</button>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { phase: 0, items: [false, false, false, false, false], star: 5, ns: false, nsWait: false, nsPhoto: false, nsSent: false }; }
+  renderVals() {
+    const s = this.state; const gold = '#d4af37';
+    const L = ['มือถือ', 'สร้อย / สร้อยข้อมือ', 'นาฬิกา', 'แหวน', 'กระเป๋าเงิน'];
+    const all = s.items.every(Boolean);
+    const P = [['ถึงที่หมาย', 'rgba(176,24,44,.25)', '#ef8a97', 'เจอลูกค้าแล้ว · เริ่มนัด'], ['อยู่ระหว่างนัด', 'rgba(212,175,55,.18)', '#eed58a', 'หยุดเวลา · จบนัด'], ['ตรวจทรัพย์สิน', 'rgba(212,175,55,.18)', '#eed58a', all ? 'ยืนยันและจบนัด' : 'ติ๊กให้ครบทุกข้อก่อนนะ'], ['เสร็จสิ้น', 'rgba(74,222,128,.15)', '#bbf7d0', '']][s.phase];
+    return {
+      pill: P[0], pillBg: P[1], pillFg: P[2], ctaLabel: P[3],
+      pArrive: s.phase === 0, pRun: s.phase === 1, pCheck: s.phase === 2, pDone: s.phase === 3, showCta: s.phase < 3,
+      items: L.map((label, i) => ({ label, bg: s.items[i] ? gold : 'transparent', mark: s.items[i] ? '✓' : '', border: s.items[i] ? 'rgba(212,175,55,.5)' : '#33272a', toggle: () => { const a = s.items.slice(); a[i] = !a[i]; this.setState({ items: a }); } })),
+      blocked: s.phase === 2 && !all, ctaOpacity: s.phase === 2 && !all ? 0.45 : 1,
+      next: () => this.setState({ phase: s.phase + 1 }),
+      nsOpen: s.phase === 0 && s.ns, nsSent: s.nsSent, nsNotSent: !s.nsSent,
+      nsBtn: s.ns ? 'ปิด' : 'ลูกค้าไม่มา',
+      nsToggle: () => this.setState({ ns: !s.ns }),
+      evid: [
+        { done: true, label: 'GPS เช็กอินที่จุดนัด', sub: 'The Lofts Ekkamai · 19:02 น.', tap: () => {} },
+        { done: s.nsWait, label: 'รอครบ 15 นาที', sub: s.nsWait ? 'ครบ 15:00 นาที · 19:17 น.' : 'เหลืออีก 2:20 นาที (แตะเพื่อจำลองว่าครบแล้ว)', tap: () => this.setState({ nsWait: true }) },
+        { done: s.nsPhoto, label: 'ถ่ายรูปสถานที่', sub: s.nsPhoto ? 'แนบแล้ว · รูปมีเวลาและพิกัด 19:15 น.' : 'แตะเพื่อถ่ายรูปและแนบ', tap: () => this.setState({ nsPhoto: true }) },
+        { done: true, label: 'ประวัติโทร/แชทในแอป (บันทึกอัตโนมัติ)', sub: 'โทร 3 ครั้ง · แชท 2 ข้อความ', tap: () => {} }
+      ].map((e) => ({ ...e, bg: e.done ? gold : 'transparent', mark: e.done ? '✓' : '', border: e.done ? 'rgba(212,175,55,.5)' : '#33272a', subC: e.done ? '#d3c7bc' : '#7d6d6a' })),
+      nsBlocked: !(s.nsWait && s.nsPhoto), nsOpacity: s.nsWait && s.nsPhoto ? 1 : 0.45,
+      nsLabel: s.nsWait && s.nsPhoto ? 'ส่งหลักฐานให้แอดมิน' : 'ทำให้ครบทุกข้อก่อนนะ',
+      nsSubmit: () => { if (s.nsWait && s.nsPhoto) this.setState({ nsSent: true }); },
+      stars: [1, 2, 3, 4, 5].map((n) => ({ n, c: n <= s.star ? '#e3c35c' : '#4a3a3d', pick: () => this.setState({ star: n }) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

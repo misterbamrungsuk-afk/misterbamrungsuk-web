@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>แอดมิน พาร์ทเนอร์</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 1280px; height: 820px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; display: flex; overflow: hidden">
+  <nav aria-label="เมนูแอดมิน" style="width: 232px; flex: 0 0 232px; border-right: 1px solid #33272a; padding: 18px 14px; display: flex; flex-direction: column; gap: 2px; font-size: 13px; box-sizing: border-box; font-family: 'IBM Plex Sans Thai', sans-serif; background: #0e0a0a">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px"><div style="width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid #d4af37; display: grid; place-items: center; font-family: Kanit; font-weight: 700; font-size: 12px; color: #d4af37">MB</div><div style="line-height: 1.1"><div style="font-family: Kanit; font-weight: 600; color: #f6efe4">Bamrungsuk</div><div style="font-size: 11px; color: #7d6d6a">Admin · super</div></div></div>
+    <a href="AdminDashboard.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ภาพรวม / รายได้</a>
+    <a href="AdminBookings.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">การจอง / งาน</a>
+    <a href="B2-Orders.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ตรวจงาน</a>
+    <a href="AdminApplicants.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ผู้สมัคร</a>
+    <a href="B1-KYC.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">คิว KYC</a>
+    <a href="AdminCohorts.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">รุ่นอบรม / เช็กชื่อ</a>
+    <a href="AdminParttimers.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">Part-Time ที่ใช้งาน</a>
+    <a href="B3-Payouts.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">โอนให้ Part-Time</a>
+    <a href="AdminPartners.dc.html" aria-current="page" style="padding: 6px 12px; border-radius: 10px; background: rgba(176,24,44,.2); border: 1px solid rgba(201,40,61,.55); color: #f6efe4; text-decoration: none">พาร์ทเนอร์สปา</a>
+    <a href="AdminSpaPricing.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ราคาสปาพาร์ทเนอร์</a>
+    <a href="AdminPricing.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ตั้งค่าราคา</a>
+    <a href="B6-Members.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">สมาชิก · ใบเตือน</a>
+    <a href="B4-Reports.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">รายงาน</a>
+    <a href="B5-CS.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">เรื่องร้องเรียน</a>
+    <a href="B7-Promos.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">โปรโมชัน</a>
+    <a href="B8-Audit.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">บันทึกระบบ · SOS</a>
+    <div style="height: 1px; background: #33272a; margin: 6px 0"></div>
+    <a href="E2-AdminSettings.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ตั้งค่าระบบ</a>
+    <a href="E1-AdminLogin.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">แอดมินและสิทธิ์</a>
+    <a href="Main.dc.html" style="margin-top: auto; padding: 6px 12px; color: #e3c35c; text-decoration: none">← สารบัญทุกหน้า</a>
+  </nav>
+  <main style="flex: 1; padding: 22px 24px; display: flex; gap: 16px; min-width: 0">
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end"><div><div style="font-size: 11px; letter-spacing: 2.5px; color: #d4af37; font-weight: 600">PARTNERS</div><h1 style="margin: 2px 0 0; font-family: Kanit; font-weight: 700; font-size: 24px">พาร์ทเนอร์ฝั่งสปา · ทั่วประเทศ</h1></div><button style="height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid #33272a; background: transparent; color: #d3c7bc">ส่งออก CSV</button></div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+        <div style="padding: 14px; border-radius: 16px; border: 1px solid #33272a; background: #181212"><div style="font-size: 12px; color: #ab9d94">พาร์ทเนอร์ทั้งหมด</div><div style="font-family: Kanit; font-weight: 700; font-size: 26px; color: #e3c35c">{{total}}</div></div>
+        <div style="padding: 14px; border-radius: 16px; border: 1px solid #33272a; background: #181212"><div style="font-size: 12px; color: #ab9d94">กำลังโปรโมท</div><div style="font-family: Kanit; font-weight: 700; font-size: 26px; color: #4ade80">{{active}}</div></div>
+        <div style="padding: 14px; border-radius: 16px; border: 1px solid rgba(212,175,55,.45); background: #181212"><div style="font-size: 12px; color: #ab9d94">ใกล้หมดอายุ ≤30 วัน</div><div style="font-family: Kanit; font-weight: 700; font-size: 26px; color: #eed58a">{{soon}}</div></div>
+        <div style="padding: 14px; border-radius: 16px; border: 1px solid rgba(201,40,61,.5); background: rgba(176,24,44,.1)"><div style="font-size: 12px; color: #ab9d94">รายได้รวม</div><div style="font-family: Kanit; font-weight: 700; font-size: 26px">{{revenue}}</div></div>
+      </div>
+      <div style="display: flex; gap: 8px">
+        <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5"><button onClick="{{t.pick}}" style="height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid {{t.border}}; background: {{t.bg}}; color: {{t.fg}}; font-size: 12.5px; font-weight: 600">{{t.label}}</button></sc-for>
+      </div>
+      <div style="border-radius: 16px; border: 1px solid #33272a; overflow: hidden; font-size: 13px">
+        <div style="display: grid; grid-template-columns: minmax(0, 1.5fr) 90px 120px minmax(0, 1.4fr) 80px; padding: 10px 14px; background: #130e0e; color: #7d6d6a; font-size: 12px"><span>ธุรกิจ</span><span>แพ็กเกจ</span><span>สถานะ</span><span>ระยะเวลาแพ็กเกจคงเหลือ</span><span>QC</span></div>
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+          <button onClick="{{r.pick}}" style="width: 100%; display: grid; grid-template-columns: minmax(0, 1.5fr) 90px 120px minmax(0, 1.4fr) 80px; padding: 12px 14px; border: none; border-top: 1px solid #33272a; background: {{r.bg}}; color: #f6efe4; text-align: left; font-size: 13px; align-items: center">
+            <span><span style="display: block">{{r.name}}</span><span style="display: block; font-size: 11.5px; color: #7d6d6a">{{r.type}} · {{r.area}}</span></span>
+            <span style="color: #d3c7bc">{{r.pkgLabel}}</span>
+            <span><span style="padding: 3px 9px; border-radius: 999px; background: {{r.pillBg}}; color: {{r.pillFg}}; font-size: 11.5px">{{r.statusLabel}}</span></span>
+            <span><span style="display: block; font-size: 11.5px; color: #ab9d94; margin-bottom: 4px">{{r.leftLabel}}</span><span style="display: block; height: 6px; border-radius: 3px; background: #33272a"><span style="display: block; height: 6px; border-radius: 3px; background: {{r.barColor}}; width: {{r.pct}}"></span></span></span>
+            <span style="color: {{r.qcColor}}">{{r.qc}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+    <aside style="width: 300px; padding: 18px; border-radius: 18px; border: 1px solid rgba(212,175,55,.45); background: #181212; display: flex; flex-direction: column; gap: 10px; font-size: 13px; box-sizing: border-box">
+      <img src="/_blob/3955daa362c2a71ec8e36d56b540838e" alt="" style="width: 100%; height: 120px; border-radius: 14px; object-fit: cover">
+      <div style="font-family: Kanit; font-weight: 600; font-size: 18px">{{sel.name}}</div>
+      <div style="color: #ab9d94">{{sel.type}} · {{sel.area}} · {{sel.pkgLabel}}</div>
+      <div style="font-family: Kanit; font-weight: 700; font-size: 30px; color: #e3c35c">{{sel.leftLabel}}</div>
+      <div style="display: flex; justify-content: space-between"><span style="color: #ab9d94">ชำระแล้ว</span><span>{{sel.paidLabel}}</span></div>
+      <div style="display: flex; justify-content: space-between"><span style="color: #ab9d94">คลิปโปรโมท</span><span>{{sel.clip}}</span></div>
+      <div style="display: flex; justify-content: space-between"><span style="color: #ab9d94">ค่าป้ายแบรนด์</span><span>{{sel.sign}}</span></div>
+      <div style="display: flex; justify-content: space-between"><span style="color: #ab9d94">หักต่อการจอง</span><span>[รอกำหนด]%</span></div>
+      <div style="display: flex; justify-content: space-between"><span style="color: #ab9d94">ราคาขายต่อบริการ</span><span>[รอกำหนด]</span></div>
+      <div style="color: #ab9d94; font-size: 12px; margin-top: 4px">เปลี่ยนสถานะ</div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px">
+        <sc-for list="{{statusBtns}}" as="b" hint-placeholder-count="4"><button onClick="{{b.pick}}" style="height: 38px; border-radius: 10px; border: 1px solid {{b.border}}; background: {{b.bg}}; color: {{b.fg}}; font-size: 12.5px; font-weight: 600">{{b.label}}</button></sc-for>
+      </div>
+      <button style="margin-top: auto; height: 46px; border-radius: 999px; border: 1px solid rgba(212,175,55,.45); background: linear-gradient(180deg, #c21d33, #8f1424); color: #fff; font-weight: 600">ต่อสัญญา / ออกใบแจ้งหนี้</button>
+    </aside>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":820}}'>
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    this.state = { tab: 'all', sel: 0, rows: [
+      { name: 'Siam Serenity Spa', type: 'เดย์สปา', area: 'กรุงเทพฯ · สุขุมวิท 31', sign: 'ชำระแล้ว', pkg: '6m', status: 'active', left: 142, qc: 'ผ่าน', paid: 60000, clip: '1/1 คลิป' },
+      { name: 'Riverside Hotel Spa', type: 'สปาในโรงแรม', area: 'เชียงใหม่ · ริมปิง', sign: 'ชำระแล้ว', pkg: '3m', status: 'active', left: 21, qc: 'ผ่าน', paid: 45000, clip: '1/1 คลิป' },
+      { name: 'Lanna Retreat Spa', type: 'สปาเพื่อสุขภาพ', area: 'เชียงราย · เมือง', sign: 'ชำระแล้ว', pkg: '6m', status: 'active', left: 164, qc: 'ผ่าน', paid: 60000, clip: 'รอถ่าย' },
+      { name: 'Andaman Breeze Spa', type: 'เดย์สปา', area: 'ภูเก็ต · ป่าตอง', sign: 'รอชำระ', pkg: '3m', status: 'qc', left: 0, qc: 'รอตรวจ', paid: 0, clip: '—' },
+      { name: 'Orchid Thai Massage', type: 'ร้านนวดเพื่อสุขภาพ', area: 'ขอนแก่น · เมือง', sign: 'รอชำระ', pkg: '6m', status: 'new', left: 0, qc: '—', paid: 0, clip: '—' }
+    ] };
+  }
+  renderVals() {
+    const s = this.state; const gold = '#d4af37';
+    const ST = { new: ['ใหม่', '#21191a', '#d3c7bc'], qc: ['รอ QC / ทำสัญญา', 'rgba(212,175,55,.18)', '#eed58a'], active: ['กำลังโปรโมท', 'rgba(74,222,128,.15)', '#bbf7d0'], expired: ['หมดอายุ', 'rgba(239,68,68,.15)', '#fecaca'] };
+    const PK = { '3m': ['3 เดือน', 90], '6m': ['6 เดือน', 180] };
+    const fmt = (n) => '฿' + n.toLocaleString('en-US');
+    const deco = (r) => ({ ...r, pkgLabel: PK[r.pkg][0], statusLabel: ST[r.status][0], pillBg: ST[r.status][1], pillFg: ST[r.status][2], leftLabel: r.status === 'active' ? 'เหลือ ' + r.left + ' วัน' : 'ยังไม่เริ่ม', pct: r.status === 'active' ? Math.round((r.left / PK[r.pkg][1]) * 100) + '%' : '0%', barColor: r.left <= 30 ? '#c9283d' : gold, qcColor: r.qc === 'ผ่าน' ? '#4ade80' : '#ab9d94', paidLabel: r.paid ? fmt(r.paid) : 'ยังไม่ชำระ' });
+    const vis = s.rows.map((r, i) => ({ r, i })).filter(({ r }) => s.tab === 'all' || r.status === s.tab);
+    const setStatus = (st) => { const rows = s.rows.slice(); rows[s.sel] = { ...rows[s.sel], status: st, left: st === 'active' && !rows[s.sel].left ? PK[rows[s.sel].pkg][1] : rows[s.sel].left }; this.setState({ rows }); };
+    const sel = deco(s.rows[s.sel]);
+    return {
+      total: s.rows.length, active: s.rows.filter((r) => r.status === 'active').length, soon: s.rows.filter((r) => r.status === 'active' && r.left <= 30).length, revenue: fmt(s.rows.reduce((a, r) => a + r.paid, 0)),
+      tabs: [['all', 'ทั้งหมด'], ['new', 'ใหม่'], ['qc', 'รอ QC'], ['active', 'กำลังโปรโมท'], ['expired', 'หมดอายุ']].map(([id, label]) => ({ label, bg: s.tab === id ? '#b0182c' : 'transparent', fg: s.tab === id ? '#fff' : '#d3c7bc', border: s.tab === id ? '#b0182c' : '#33272a', pick: () => this.setState({ tab: id }) })),
+      rows: vis.map(({ r, i }) => ({ ...deco(r), bg: i === s.sel ? 'rgba(212,175,55,.08)' : 'transparent', pick: () => this.setState({ sel: i }) })),
+      sel,
+      statusBtns: Object.keys(ST).map((k) => ({ label: ST[k][0], bg: sel.status === k ? gold : 'transparent', fg: sel.status === k ? '#1a1206' : '#d3c7bc', border: sel.status === k ? gold : '#33272a', pick: () => setStatus(k) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

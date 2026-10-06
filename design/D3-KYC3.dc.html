@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>บัญชีรับเงิน</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0a0a;--s1:#181212;--s2:#21191a;--ln:#33272a;--red:#b0182c;--gold:#D4AF37;--gold-l:#e3c35c;--tx:#f6efe4;--mut:#ab9d94}
+body{margin:0;font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--tx)}
+*{box-sizing:border-box}
+h1{font-family:'Kanit',sans-serif;margin:0}
+button,input,select{font-family:inherit}
+a{color:var(--tx);text-decoration:none}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.sp{flex:1;height:4px;border-radius:4px;background:var(--tx)}
+.seg{flex:1;height:44px;border-radius:12px;border:1px solid var(--ln);display:flex;align-items:center;justify-content:center;font-size:14px}
+.seg.on{border-color:var(--gold);color:var(--gold-l);background:rgba(212,175,55,.08)}
+.fl{display:flex;flex-direction:column;gap:6px}
+.lb{font-size:13px;color:var(--mut)}
+.in{height:48px;border-radius:14px;border:1px solid var(--ln);background:var(--s1);padding:0 14px;font-size:15px;color:var(--tx);width:100%}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;overflow:hidden;background:var(--bg)">
+  <div style="display:flex;align-items:center;gap:10px;padding:16px">
+    <a href="D2-KYC2.dc.html" aria-label="ย้อนกลับ" style="width:42px;height:42px;border-radius:42px;border:1px solid var(--ln);display:flex;align-items:center;justify-content:center"><svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></a>
+    <h1 style="font-size:19px;font-weight:600">บัญชีรับเงิน</h1>
+  </div>
+  <div style="padding:0 16px;display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;gap:6px;align-items:center"><span class="sp"></span><span class="sp"></span><span class="sp" style="background:var(--red)"></span><span style="font-size:12px;color:var(--mut);margin-left:6px">3/3</span></div>
+    <div style="display:flex;gap:8px"><span class="seg on">บัญชีธนาคาร</span><span class="seg">พร้อมเพย์</span></div>
+    <label class="fl"><span class="lb">ธนาคาร</span><select class="in"><option>กสิกรไทย</option></select></label>
+    <label class="fl"><span class="lb">เลขบัญชี</span><button type="button" class="in" onClick="{{acct.tap}}" aria-label="acct · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;color:{{acct.color}}">{{acct.text}}</button></label>
+    <label class="fl"><span class="lb">ชื่อบัญชี (ต้องตรงกับบัตรประชาชน)</span><button type="button" class="in" onClick="{{acctName.tap}}" aria-label="acctName · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;color:{{acctName.color}}">{{acctName.text}}</button></label>
+    <div style="display:flex;gap:10px;padding:14px;border-radius:14px;border:1px solid rgba(212,175,55,.45);font-size:13px;line-height:1.5"><svg class="ic" viewBox="0 0 24 24" style="color:var(--gold)"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/></svg>รายได้เข้ากระเป๋าหลังจบนัด ถอนเข้าบัญชีนี้ได้ทุกเมื่อ (ขั้นต่ำ ฿300)</div>
+  </div>
+  <div style="position:absolute;left:16px;right:16px;bottom:24px;display:flex;flex-direction:column;gap:10px">
+    <a href="D5-KYCRejected.dc.html" style="height:56px;border-radius:16px;border:0;background:var(--red);color:#fff;font-family:'Kanit';font-weight:600;font-size:17px;display:flex;align-items:center;justify-content:center;text-decoration:none">ส่งใบสมัคร</a>
+    <div style="font-size:12px;color:var(--mut);text-align:center">แอดมินตรวจภายใน 24 ชม. แล้วแจ้งผลทางแอปและ LINE</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+_baseVals() { return {}; }
+
+  _fields() { return {"acct":{"v":["xxx-x-x1234-x","123-4-56789-0"],"ph":"","on":"var(--tx)","mask":false},"acctName":{"v":["[ชื่อ-นามสกุลตามบัตร]","นายพงศกร รุ่งเรือง"],"ph":"","on":"var(--tx)","mask":false}}; }
+  fv(k) { const F = this._fields()[k]; const fx = (this.state && this.state.fx) || {}; const v = F.v[(fx[k] || 0) % F.v.length]; return v.indexOf('HOLE:') === 0 ? String((this._hole || {})[v.slice(5)] || '') : v; }
+  renderVals() {
+    const r = this._baseVals(); this._hole = r; const fx = (this.state && this.state.fx) || {}; const F = this._fields();
+    Object.keys(F).forEach((k) => {
+      const v = this.fv(k), c = F[k];
+      const o = { text: v ? (c.mask ? '\u2022'.repeat(v.length) : v) : c.ph, color: v ? c.on : '#7d6d6a', tap: () => this.setState({ fx: Object.assign({}, fx, { [k]: ((fx[k] || 0) + 1) % c.v.length }) }) };
+      for (let i = 0; i < 6; i++) o['d' + i] = v[i] || '\u2013';
+      r[k] = o;
+    });
+    return r;
+  }
+}
+</script>
+</body>
+</html>

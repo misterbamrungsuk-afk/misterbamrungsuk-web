@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>ระหว่างให้บริการ</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0a0a;--s1:#181212;--s2:#21191a;--ln:#33272a;--red:#b0182c;--gold:#D4AF37;--gold-l:#e3c35c;--tx:#f6efe4;--mut:#ab9d94}
+body{margin:0;font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--tx)}
+*{box-sizing:border-box}
+h1{font-family:'Kanit',sans-serif;margin:0}
+button{font-family:inherit}
+a{color:var(--tx);text-decoration:none}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.qa{flex:1;height:64px;border-radius:16px;border:1px solid var(--ln);background:var(--s1);color:var(--tx);font-size:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;overflow:hidden;background:var(--bg)">
+  <div style="display:flex;align-items:center;gap:10px;padding:16px">
+    <img src="/_blob/ec33c74147cab066783e7acae85c8875" alt="" style="width:42px;height:42px;border-radius:42px;object-fit:cover;border:1px solid var(--gold)">
+    <div style="flex-grow:1"><b style="font-family:'Kanit';font-weight:500">กำลังใช้เวลากับต้น</b><div style="font-size:12px;color:var(--mut)">คาเฟ่ &amp; ดูหนัง · 3 ชม.</div></div>
+    <a href="N06-SOS.dc.html" aria-label="SOS" style="width:44px;height:44px;border-radius:44px;background:var(--red);color:#fff;font-family:'Kanit';font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center">SOS</a>
+  </div>
+  <div style="position:relative;width:270px;height:270px;margin:26px auto 0">
+    <svg viewBox="0 0 200 200" style="position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)"><circle cx="100" cy="100" r="90" stroke="#33272a" stroke-width="6" fill="none"/><circle cx="100" cy="100" r="90" stroke="#D4AF37" stroke-width="6" fill="none" stroke-linecap="round" stroke-dasharray="565" stroke-dashoffset="108"/></svg>
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:13px;color:var(--mut)">เหลืออีก</div><div style="font-family:'Kanit';font-weight:600;font-size:60px;line-height:1.1">48:00</div><div style="font-size:13px;color:var(--gold-l)">ผ่านไป 2 ชม. 12 นาที</div></div>
+  </div>
+  <div style="display:flex;gap:8px;margin:28px 16px 0">
+    <button class="qa"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>ต่อเวลา 1 ชม.</button>
+    <a href="S08-ChatRoom.dc.html" class="qa"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>แชท</a>
+    <button class="qa"><svg class="ic" viewBox="0 0 24 24"><path d="M4 12h16M12 4v16"/><circle cx="12" cy="12" r="9"/></svg>แจ้งแอดมิน</button>
+  </div>
+  <div style="margin:14px 16px 0;padding:14px;border-radius:16px;border:1px solid rgba(212,175,55,.45);font-size:13px;display:flex;gap:10px;align-items:center"><svg class="ic" viewBox="0 0 24 24" style="color:var(--gold)"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span>เงินยังพักไว้กับเรา จะโอนให้ต้นเมื่อคุณยืนยันว่าจบนัด</span></div>
+  <a href="C3-Complete.dc.html" style="position:absolute;left:16px;right:16px;bottom:64px;height:52px;border-radius:16px;background:var(--red);color:#fff;font-family:'Kanit';font-weight:600;font-size:16px;display:flex;align-items:center;justify-content:center">จบนัดหมาย</a>
+  <div style="position:absolute;left:16px;right:16px;bottom:24px;font-size:12px;color:var(--mut);text-align:center">แอดมินเห็นตำแหน่งคุณตลอดนัด เพื่อความอุ่นใจ</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

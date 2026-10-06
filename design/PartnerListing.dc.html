@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>Partner Listing</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; position: relative; overflow: hidden">
+  <div style="height: 768px; overflow-y: auto; box-sizing: border-box; padding-bottom: 24px">
+    <div style="padding: 16px 18px 0; display: flex; justify-content: space-between; align-items: center">
+      <h1 style="margin: 0; font-family: Kanit; font-weight: 700; font-size: 24px; color: #d4af37">หน้าร้านของฉัน</h1>
+      <button onClick="{{togglePreview}}" style="height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid {{prevBorder}}; background: {{prevBg}}; color: #e3c35c; font-size: 12.5px; display: flex; align-items: center; gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>ดูตัวอย่างหน้าร้าน</button>
+    </div>
+    <sc-if value="{{preview}}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 14px 18px 0">
+        <div style="font-size: 12px; color: #7d6d6a; margin-bottom: 8px">ลูกค้าจะเห็นการ์ดนี้ในหมวดสปาพาร์ทเนอร์บนแพลตฟอร์ม</div>
+        <div style="border-radius: 20px; overflow: hidden; background: #181212; border: 1px solid #d4af37">
+          <div style="height: 150px; position: relative"><img src="/_blob/3955daa362c2a71ec8e36d56b540838e" alt="" style="width: 100%; height: 100%; object-fit: cover"><span style="position: absolute; top: 10px; left: 10px; padding: 4px 10px; border-radius: 999px; background: rgba(0,0,0,.55); border: 1px solid rgba(212,175,55,.6); color: #e3c35c; font-size: 10.5px">พาร์ทเนอร์แนะนำ</span></div>
+          <div style="padding: 12px 14px; display: flex; flex-direction: column; gap: 4px">
+            <div style="display: flex; justify-content: space-between"><span style="font-family: Kanit; font-weight: 600; font-size: 17px">Siam Serenity Spa</span><span style="color: #e3c35c; font-size: 13px">4.9</span></div>
+            <div style="font-size: 12px; color: #ab9d94">{{typeLabel}} · สุขุมวิท 31 · {{rooms}} ห้อง</div>
+            <div style="font-size: 12px; color: #7d6d6a">{{amenText}}</div>
+            <div style="font-size: 12px; color: #e3c35c">{{svcCount}} บริการ · ราคาบนแพลตฟอร์ม [รอกำหนด]</div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+    <div style="padding: 14px 18px 0; display: flex; flex-direction: column; gap: 18px">
+      <div>
+        <div style="height: 170px; border-radius: 18px; overflow: hidden; position: relative"><img src="/_blob/d91fc4787a72d36a29da66ad8ae0d19c" alt="" style="width: 100%; height: 100%; object-fit: cover"><button style="position: absolute; right: 10px; bottom: 10px; height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(212,175,55,.6); background: rgba(0,0,0,.55); color: #e3c35c; font-size: 12px">เปลี่ยนภาพปก</button></div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 6px">
+          <img src="/_blob/7bd5d21dab7de016e48f2351218e16b1" alt="" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; object-position: left">
+          <img src="/_blob/3955daa362c2a71ec8e36d56b540838e" alt="" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; object-position: right">
+          <img src="/_blob/d91fc4787a72d36a29da66ad8ae0d19c" alt="" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; object-position: center top">
+          <button aria-label="เพิ่มรูป" style="aspect-ratio: 1; border-radius: 10px; border: 1px dashed #33272a; background: #130e0e; color: #ab9d94; display: grid; place-items: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"></path></svg></button>
+        </div>
+      </div>
+      <div>
+        <div style="font-size: 13px; color: #ab9d94; margin-bottom: 8px">ประเภทธุรกิจ</div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap"><sc-for list="{{types}}" as="t" hint-placeholder-count="4"><button onClick="{{t.pick}}" style="height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid {{t.border}}; background: {{t.bg}}; color: {{t.fg}}; font-size: 13px">{{t.label}}</button></sc-for></div>
+      </div>
+      <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #ab9d94">คำอธิบายร้าน
+        <button type="button" onClick="{{desc.tap}}" aria-label="คำอธิบายร้าน · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:flex-start;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:pre-wrap;border-radius: 12px; border: 1px solid #33272a; background: #130e0e; padding: 10px 12px; font-size: 13.5px; line-height: 1.6; resize: none; color:{{desc.color}}">{{desc.text}}</button><span style="font-size:11px;color:#7d6d6a;font-weight:400">แตะเพื่อกรอกตัวอย่าง</span></label>
+      <div>
+        <div style="font-size: 13px; color: #ab9d94; margin-bottom: 4px">บริการและราคาขายบนแพลตฟอร์ม (mark up)</div>
+        <div style="font-size: 11.5px; color: #7d6d6a; margin-bottom: 8px; line-height: 1.55">ราคาฐานของสปา → ราคาขายบนแพลตฟอร์ม ทีมงานช่วย mark up ให้ · แพลตฟอร์มหักต่อการจอง [รอกำหนด]%</div>
+        <div style="border-radius: 16px; background: #181212; border: 1px solid #33272a; padding: 0 12px">
+          <sc-for list="{{services}}" as="v" hint-placeholder-count="4">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 56px; border-bottom: 1px solid #21191a">
+              <span style="display: flex; flex-direction: column; min-width: 0"><span style="font-size: 13.5px">{{v.name}}</span><span style="font-size: 11.5px; color: #7d6d6a">{{v.dur}}</span></span>
+              <span style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; white-space: nowrap"><span style="color: #ab9d94">{{v.base}}</span><span style="color: #7d6d6a">→</span><span style="font-family: Kanit; font-weight: 600; color: #e3c35c">{{v.sell}}</span></span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div>
+        <div style="font-size: 13px; color: #ab9d94; margin-bottom: 6px">เวลาเปิด-ปิด</div>
+        <div style="border-radius: 16px; background: #181212; border: 1px solid #33272a; padding: 0 12px">
+          <sc-for list="{{days}}" as="d" hint-placeholder-count="7">
+            <div style="display: flex; align-items: center; justify-content: space-between; min-height: 48px; border-bottom: 1px solid #21191a">
+              <span style="font-size: 13.5px; width: 70px">{{d.label}}</span><span style="flex: 1; font-size: 12.5px; color: {{d.hoursColor}}">{{d.hours}}</span>
+              <button onClick="{{d.toggle}}" aria-label="เปิด/ปิด" style="width: 52px; height: 44px; border: 0; background: transparent; display: grid; place-items: center"><span style="width: 44px; height: 24px; border-radius: 99px; background: {{d.track}}; position: relative; display: block"><span style="position: absolute; top: 3px; left: {{d.knob}}; width: 18px; height: 18px; border-radius: 50%; background: #f6efe4"></span></span></button>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 16px; background: #181212; border: 1px solid #33272a">
+        <span style="font-size: 14px">จำนวนห้องที่เปิดรับจอง</span>
+        <span style="display: flex; align-items: center; gap: 10px">
+          <button onClick="{{dec}}" aria-label="ลด" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid #33272a; background: #130e0e; color: #e3c35c; font-size: 20px">−</button>
+          <span style="font-family: Kanit; font-weight: 700; font-size: 22px; color: #d4af37; min-width: 28px; text-align: center">{{rooms}}</span>
+          <button onClick="{{inc}}" aria-label="เพิ่ม" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid #33272a; background: #130e0e; color: #e3c35c; font-size: 20px">+</button>
+        </span>
+      </div>
+      <div>
+        <div style="font-size: 13px; color: #ab9d94; margin-bottom: 8px">สิ่งอำนวยความสะดวก</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px"><sc-for list="{{amen}}" as="a" hint-placeholder-count="6"><button onClick="{{a.toggle}}" style="min-height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid {{a.border}}; background: {{a.bg}}; color: {{a.fg}}; font-size: 13px; text-align: left">{{a.mark}} {{a.label}}</button></sc-for></div>
+      </div>
+      <button onClick="{{save}}" style="height: 52px; border-radius: 999px; border: 1px solid rgba(212,175,55,.45); background: {{saveBg}}; color: #fff; font-weight: 600; font-size: 15px">{{saveLabel}}</button>
+    </div>
+  </div>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; border-top: 1px solid #33272a; background: rgba(14,10,10,.97); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; text-align: center; font-size: 10.5px; color: #7d6d6a">
+    <a href="PartnerHome.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>หน้าหลัก</a>
+    <a href="PartnerBookings.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16"></path></svg>การจอง</a>
+    <a href="PartnerListing.dc.html" aria-current="page" style="color: #d4af37; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h16l-1-5H5z"></path><path d="M5 9v11h14V9"></path><path d="M10 20v-6h4v6"></path></svg>หน้าร้าน</a>
+    <a href="PartnerInsight.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>รายงาน</a>
+    <a href="PartnerPackage.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 7v10l8 4 8-4V7z"></path><path d="M4 7l8 4 8-4M12 11v10"></path></svg>แพ็กเกจ</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    this.state = { preview: false, type: 'เดย์สปา', rooms: 6, saved: false,
+      open: [true, true, true, true, true, true, false],
+      amen: { 'ห้องอาบน้ำส่วนตัว': true, 'ที่จอดรถ': true, 'ห้องสวีท VIP': false, 'ซาวน่า': true, 'ชา/ของว่าง': true, 'Wi-Fi': false } };
+  }
+  _baseVals() {
+    const s = this.state; const gold = '#d4af37';
+    const dirty = (o) => this.setState({ ...o, saved: false });
+    const amenOn = Object.keys(s.amen).filter((k) => s.amen[k]);
+    return {
+      preview: s.preview, togglePreview: () => this.setState({ preview: !s.preview }),
+      prevBg: s.preview ? 'rgba(212,175,55,.12)' : 'transparent', prevBorder: s.preview ? gold : '#33272a',
+      typeLabel: s.type, rooms: s.rooms, amenText: amenOn.join(' · '),
+      types: ['เดย์สปา', 'สปาในโรงแรม', 'สปาเพื่อสุขภาพ', 'ร้านนวดเพื่อสุขภาพ'].map((t) => ({ label: t, bg: s.type === t ? gold : 'transparent', fg: s.type === t ? '#1a1206' : '#d3c7bc', border: s.type === t ? gold : '#33272a', pick: () => dirty({ type: t }) })),
+      services: [['นวดไทยแผนโบราณ', '90 นาที', 600], ['นวดน้ำมันอโรมา', '90 นาที', 900], ['นวดฝ่าเท้า', '60 นาที', 400], ['สปาแพ็กเกจ ขัดผิว + อโรมา', '120 นาที', 1800]].map(([name, dur, base]) => ({ name, dur, base: '฿' + base.toLocaleString('en-US'), sell: '[รอกำหนด]' })),
+      svcCount: 4,
+      days: ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสฯ', 'ศุกร์', 'เสาร์', 'อาทิตย์'].map((label, i) => ({ label, hours: s.open[i] ? '10:00 – 23:00' : 'ปิด', hoursColor: s.open[i] ? '#f6efe4' : '#7d6d6a', track: s.open[i] ? gold : '#33272a', knob: s.open[i] ? '23px' : '3px', toggle: () => dirty({ open: s.open.map((v, j) => j === i ? !v : v) }) })),
+      inc: () => dirty({ rooms: Math.min(30, s.rooms + 1) }), dec: () => dirty({ rooms: Math.max(1, s.rooms - 1) }),
+      amen: Object.keys(s.amen).map((k) => ({ label: k, mark: s.amen[k] ? '✓' : '+', bg: s.amen[k] ? 'rgba(212,175,55,.1)' : '#130e0e', fg: s.amen[k] ? '#e3c35c' : '#ab9d94', border: s.amen[k] ? gold : '#33272a', toggle: () => dirty({ amen: { ...s.amen, [k]: !s.amen[k] } }) })),
+      save: () => this.setState({ saved: true }),
+      saveLabel: s.saved ? 'บันทึกแล้ว' : 'บันทึกหน้าร้าน',
+      saveBg: s.saved ? '#21191a' : 'linear-gradient(180deg, #c21d33, #8f1424)'
+    };
+  }
+
+  _fields() { return {"desc":{"v":["สปาใจกลางสุขุมวิท ห้องเงียบสงบเป็นส่วนตัว นวดไทยและอโรมาโดยทีมที่ผ่านมาตรฐาน Bamrungsuk","สปาบรรยากาศล้านนา ห้องส่วนตัว อโรมาและนวดไทยโดยทีมมาตรฐาน Bamrungsuk",""],"ph":"คำอธิบายร้าน","on":"#f6efe4","mask":false}}; }
+  fv(k) { const F = this._fields()[k]; const fx = (this.state && this.state.fx) || {}; const v = F.v[(fx[k] || 0) % F.v.length]; return v.indexOf('HOLE:') === 0 ? String((this._hole || {})[v.slice(5)] || '') : v; }
+  renderVals() {
+    const r = this._baseVals(); this._hole = r; const fx = (this.state && this.state.fx) || {}; const F = this._fields();
+    Object.keys(F).forEach((k) => {
+      const v = this.fv(k), c = F[k];
+      const o = { text: v ? (c.mask ? '\u2022'.repeat(v.length) : v) : c.ph, color: v ? c.on : '#7d6d6a', tap: () => this.setState({ fx: Object.assign({}, fx, { [k]: ((fx[k] || 0) + 1) % c.v.length }) }) };
+      for (let i = 0; i < 6; i++) o['d' + i] = v[i] || '\u2013';
+      r[k] = o;
+    });
+    return r;
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>ตารางอบรม</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+.h{font-family:Kanit;font-weight:600}
+.card{padding:14px;border-radius:16px;background:#181212;border:1px solid #33272a}
+.in{height:48px;border-radius:12px;border:1px solid #33272a;background:#21191a;color:#f6efe4;padding:0 14px;font-size:14px;box-sizing:border-box;width:100%;display:flex;align-items:center}
+.cta{height:52px;border-radius:14px;border:1px solid rgba(212,175,55,.45);background:linear-gradient(180deg,#c21d33,#8f1424);color:#fff;font-size:15px;font-weight:600;width:100%;font-family:Kanit}
+.ghost{height:48px;border-radius:14px;border:1px solid #33272a;background:#181212;color:#e3c35c;font-size:14px;font-weight:600;width:100%}
+.lbl{font-size:12px;color:#ab9d94;margin:0 0 6px}
+.mut{color:#ab9d94}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; position: relative; overflow: hidden">
+  <div style="height: 844px; overflow-y: auto; box-sizing: border-box; padding-bottom: 24px">
+<div style="padding: 12px 14px 0; display: flex; align-items: center; gap: 8px">
+      <a href="JoinDone.dc.html" aria-label="ย้อนกลับ" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid #33272a; background: #181212; color: #e3c35c; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"></path></svg></a>
+      <div class="h" style="font-size: 17px; color: #d4af37">ตารางอบรม รุ่น 1 · 15–16 พ.ย. 2569</div>
+    </div>
+    <div style="padding: 12px 18px 0; display: flex; flex-direction: column; gap: 14px">
+      <div class="card"><div style="display: flex; justify-content: space-between; font-size: 13px"><span>เข้าร่วมแล้ว</span><span class="h" style="color: #e3c35c">{{doneLabel}}</span></div><div style="height: 8px; border-radius: 99px; background: #21191a; margin-top: 10px; overflow: hidden"><div style="width: {{pct}}; height: 100%; background: linear-gradient(90deg,#d4af37,#e3c35c)"></div></div><div class="mut" style="font-size: 11.5px; margin-top: 6px">เข้าครบ 4 รอบหลักก็เริ่มรับงานได้ · รอบมาตรฐานการนวดสำหรับแพ็กเกจ B · MB-2610014</div></div>
+      <sc-for list="{{sessions}}" as="x" hint-placeholder-count="5">
+        <div class="card" style="display: flex; gap: 12px; align-items: center; border-color: {{x.bd}}">
+          <div style="width: 52px; text-align: center; flex: 0 0 52px"><div class="h" style="font-size: 20px; color: #e3c35c">{{x.day}}</div><div class="mut" style="font-size: 11px">{{x.mon}}</div></div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600">{{x.title}}</span><span class="mut" style="font-size: 12px">{{x.meta}}</span></div>
+          <button onClick="{{x.tap}}" style="min-width: 88px; min-height: 44px; border-radius: 12px; border: 1px solid {{x.btnBd}}; background: {{x.btnBg}}; color: {{x.btnFg}}; font-size: 12.5px; font-weight: 600">{{x.btn}}</button>
+        </div>
+      </sc-for>
+      <div class="mut" style="font-size: 12px; text-align: center">เช็กชื่อที่สถานที่อบรมได้ตั้งแต่ 30 นาทีก่อนเริ่ม</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { done: [true, false, false, false, false] }; }
+  renderVals() {
+    const s = this.state; const n = s.done.filter(Boolean).length; const next = s.done.indexOf(false);
+    const S = [['15', 'พ.ย.', 'ปฐมนิเทศ & มารยาทบริการ', '09:00–12:00 · MB Studio ทองหล่อ'], ['15', 'พ.ย.', 'บุคลิกภาพ & การดูแลลูกค้า Premium', '13:00–17:00 · MB Studio ทองหล่อ'], ['16', 'พ.ย.', 'ความปลอดภัย & SOS', '09:00–11:00 · MB Studio ทองหล่อ'], ['16', 'พ.ย.', 'มาตรฐานการนวด (แพ็กเกจ B)', '11:00–14:00 · MB Studio ทองหล่อ'], ['16', 'พ.ย.', 'ทดสอบ & ถ่ายรูปโปรไฟล์', '14:30–17:00 · MB Studio ทองหล่อ']];
+    return {
+      doneLabel: n + ' / 5 รอบ', pct: (n / 5 * 100) + '%',
+      sessions: S.map(([day, mon, title, meta], i) => {
+        const d = s.done[i]; const open = i === next;
+        return { day, mon, title, meta, bd: open ? 'rgba(212,175,55,.6)' : '#33272a',
+          btn: d ? 'เช็กชื่อแล้ว' : open ? 'เช็กชื่อ' : 'ยังไม่เปิด',
+          btnBg: d ? 'rgba(60,170,110,.12)' : open ? 'linear-gradient(180deg,#c21d33,#8f1424)' : '#21191a',
+          btnBd: d ? 'rgba(60,170,110,.5)' : open ? 'rgba(212,175,55,.45)' : '#33272a',
+          btnFg: d ? '#7fd6a3' : open ? '#fff' : '#7d6d6a',
+          tap: () => { if (open || d) { const done = s.done.slice(); done[i] = !d; this.setState({ done }); } } };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

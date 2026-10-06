@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>ตัวกรอง</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0a0a;--s1:#181212;--s2:#21191a;--ln:#33272a;--red:#b0182c;--red-dk:#8f1424;--gold:#D4AF37;--gold-l:#e3c35c;--tx:#f6efe4;--mut:#ab9d94}
+body{margin:0;font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--tx)}
+*{box-sizing:border-box}
+h1{font-family:'Kanit',sans-serif;margin:0}
+button,select{font-family:inherit}
+a{color:var(--gold);text-decoration:none}a:hover{color:var(--gold-l)}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.chip{color:var(--tx);cursor:pointer;display:inline-flex;align-items:center;height:38px;padding:0 14px;border-radius:999px;background:var(--s2);border:1px solid var(--ln);font-size:13px;font-weight:500}
+.chip.on{background:rgba(212,175,55,.12);border-color:var(--gold);color:var(--gold-l)}
+.lbl{font-family:'Kanit';font-size:16px;font-weight:500}
+.trk{position:relative;height:4px;border-radius:4px;background:var(--ln);margin:16px 10px}
+.knob{position:absolute;top:-10px;width:24px;height:24px;border-radius:24px;background:var(--tx);border:4px solid var(--gold)}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;overflow:hidden;background:#050506">
+  <section style="position:absolute;left:0;right:0;bottom:0;top:60px;background:var(--s1);border-radius:28px 28px 0 0;border-top:1px solid var(--ln);padding:10px 20px 0;display:flex;flex-direction:column;gap:18px;overflow-y:auto">
+    <div style="width:40px;height:4px;border-radius:4px;background:var(--ln);align-self:center"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h1 style="font-size:22px;font-weight:600">ตัวกรอง</h1>
+      <a href="Main.dc.html" aria-label="ปิด" style="width:40px;height:40px;border-radius:40px;background:var(--s2);display:flex;align-items:center;justify-content:center;color:var(--tx)"><svg class="ic" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></a>
+    </div>
+    <div><div class="lbl">กิจกรรม</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"><sc-for list="{{acts}}" as="c" hint-placeholder-count="7"><button onClick="{{c.toggle}}" aria-pressed="{{c.on}}" class="{{c.cls}}">{{c.label}}</button></sc-for></div></div>
+    <div><div class="lbl">สกิลพิเศษ</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"><sc-for list="{{skills}}" as="c" hint-placeholder-count="8"><button onClick="{{c.toggle}}" aria-pressed="{{c.on}}" class="{{c.cls}}">{{c.label}}</button></sc-for></div><div style="font-size:12px;color:var(--mut);margin-top:8px">นวดผ่อนคลาย: แสดงเฉพาะเพื่อนที่มีใบรับรอง</div></div>
+    <div><div class="lbl">สถานที่นัด</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"><sc-for list="{{places}}" as="c" hint-placeholder-count="7"><button onClick="{{c.toggle}}" aria-pressed="{{c.on}}" class="{{c.cls}}">{{c.label}}</button></sc-for></div></div>
+    <div><div style="display:flex;justify-content:space-between"><span class="lbl">ราคาต่อ 3 ชม.</span><b style="color:var(--gold-l);font-family:'Kanit';font-weight:500">฿1,800 – ฿3,000</b></div><div class="trk"><div style="position:absolute;left:20%;right:30%;top:0;bottom:0;background:var(--gold)"></div><span class="knob" style="left:calc(20% - 12px)"></span><span class="knob" style="left:calc(70% - 12px)"></span></div></div>
+    <div><div style="display:flex;justify-content:space-between"><span class="lbl">อายุ</span><b style="color:var(--gold-l);font-family:'Kanit';font-weight:500">25 – 40 ปี</b></div><div class="trk"><div style="position:absolute;left:15%;right:35%;top:0;bottom:0;background:var(--gold)"></div><span class="knob" style="left:calc(15% - 12px)"></span><span class="knob" style="left:calc(65% - 12px)"></span></div></div>
+    <label style="display:flex;flex-direction:column;gap:8px"><span class="lbl">จังหวัด</span><select style="height:50px;border-radius:14px;border:1px solid var(--ln);background:var(--s2);padding:0 14px;font-size:15px;color:var(--tx)"><option>กรุงเทพมหานคร</option></select></label>
+    <div><div class="lbl">อื่น ๆ</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"><span class="chip on">ยืนยันตัวตนแล้ว</span><span class="chip">ว่างวันนี้</span><span class="chip">★ 4.5+</span></div></div>
+    <div style="margin-top:auto;display:flex;gap:10px;padding:16px 0 26px;border-top:1px solid var(--ln)">
+      <button onClick="{{clear}}" style="height:54px;padding:0 22px;border-radius:16px;border:1px solid var(--ln);background:transparent;color:var(--tx);font-weight:600;font-size:15px">ล้างทั้งหมด</button>
+      <a href="Main.dc.html" style="flex-grow:1;height:54px;border-radius:16px;background:var(--red);color:#fff;font-family:'Kanit';font-weight:600;font-size:16px;display:flex;align-items:center;justify-content:center">แสดงผล {{n}} คน</a>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+constructor(p) { super(p); this.state = { acts: ['eat', 'photo'], skills: [], places: [] }; }
+renderVals() {
+  const s = this.state;
+  const ACTS = [['eat', 'กิน & เที่ยว'], ['photo', 'ช่างภาพ'], ['gym', 'ออกกำลัง'], ['cafe', 'คาเฟ่'], ['video', 'วิดีโอคอล'], ['movie', 'ดูหนัง'], ['chill', 'นั่งชิล']];
+  const SKILLS = [['massage', 'นวดผ่อนคลาย'], ['photo', 'ถ่ายรูปเก่ง'], ['eng', 'พูดอังกฤษได้'], ['drive', 'ขับรถพาเที่ยว'], ['fit', 'เต้น / ฟิตเนสโค้ช'], ['cook', 'ทำอาหาร'], ['music', 'เล่นดนตรี / ร้องเพลง'], ['guide', 'ไกด์ท้องถิ่น']];
+  const PLACES = [['out', 'นอกสถานที่'], ['outdoor', 'กลางแจ้ง'], ['mall', 'ห้าง'], ['cafe', 'คาเฟ่ / ร้านอาหาร'], ['condo', 'คอนโด'], ['hotel', 'โรงแรม'], ['spa', 'สปา']];
+  const chips = (defs, key) => defs.map(([id, label]) => { const on = s[key].includes(id); return { label, on: String(on), cls: on ? 'chip on' : 'chip', toggle: () => this.setState({ [key]: on ? s[key].filter((x) => x !== id) : [...s[key], id] }) }; });
+  const n = Math.max(1, Math.round(120 * Math.pow(0.8, s.acts.length) * Math.pow(0.6, s.skills.length) * Math.pow(0.85, s.places.length)));
+  return { acts: chips(ACTS, 'acts'), skills: chips(SKILLS, 'skills'), places: chips(PLACES, 'places'), n: String(n), clear: () => this.setState({ acts: [], skills: [], places: [] }) };
+}
+}
+</script>
+</body>
+</html>

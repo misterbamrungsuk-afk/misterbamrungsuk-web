@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>รายได้และถอนเงิน</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0a0a;--s1:#181212;--s2:#21191a;--ln:#33272a;--red:#b0182c;--gold:#D4AF37;--gold-l:#e3c35c;--tx:#f6efe4;--mut:#ab9d94}
+body{margin:0;font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--tx)}
+*{box-sizing:border-box}
+h1{font-family:'Kanit',sans-serif;margin:0}
+button{font-family:inherit}
+a{color:var(--tx);text-decoration:none}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.seg{flex:1;height:36px;border-radius:10px;font-size:13px;display:flex;align-items:center;justify-content:center;color:var(--mut)}
+.seg.on{background:var(--s2);color:var(--tx)}
+.tx{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--ln);font-size:14px}
+</style>
+</helmet>
+<div style="width:390px;height:920px;position:relative;overflow:hidden;background:var(--bg)">
+  <div style="display:flex;align-items:center;gap:10px;padding:16px">
+    <a href="Provider.dc.html" aria-label="ย้อนกลับ" style="width:42px;height:42px;border-radius:42px;border:1px solid var(--ln);display:flex;align-items:center;justify-content:center"><svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></a>
+    <h1 style="font-size:19px;font-weight:600">รายได้</h1>
+  </div>
+  <div style="padding:0 16px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;gap:4px;padding:4px;border-radius:14px;background:var(--s1);border:1px solid var(--ln)"><span class="seg">วัน</span><span class="seg">สัปดาห์</span><span class="seg on">เดือน</span></div>
+    <div style="border:1px solid var(--gold);border-radius:22px;padding:18px;background:rgba(212,175,55,.05)">
+      <div style="font-size:13px;color:var(--mut)">ยอดถอนได้</div>
+      <div style="font-family:'Kanit';font-weight:700;font-size:38px;color:var(--gold-l)">฿6,480</div>
+      <div style="display:flex;gap:18px;font-size:12px;color:var(--mut);margin-top:4px"><span>รอปล่อยเงิน ฿1,836</span><span>ถอนแล้ว ฿12,160</span></div>
+      <button style="width:100%;height:50px;margin-top:14px;border-radius:14px;border:0;background:var(--red);color:#fff;font-family:'Kanit';font-weight:600;font-size:16px">ถอนเข้า กสิกรไทย ••1234</button>
+    </div>
+    <div style="background:var(--s1);border:1px solid var(--ln);border-radius:20px;padding:16px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--mut)"><span>รายได้สุทธิ ก.พ.</span><span style="color:var(--tx)">฿19,805</span></div>
+      <div style="display:flex;align-items:flex-end;gap:10px;height:110px;margin-top:12px">
+        <div style="flex:1;height:45%;border-radius:6px 6px 0 0;background:var(--s2)"></div>
+        <div style="flex:1;height:60%;border-radius:6px 6px 0 0;background:var(--s2)"></div>
+        <div style="flex:1;height:52%;border-radius:6px 6px 0 0;background:var(--s2)"></div>
+        <div style="flex:1;height:88%;border-radius:6px 6px 0 0;background:var(--gold)"></div>
+      </div>
+      <div style="display:flex;gap:10px;font-size:11px;color:var(--mut);margin-top:6px;text-align:center"><span style="flex:1">ส.1</span><span style="flex:1">ส.2</span><span style="flex:1">ส.3</span><span style="flex:1;color:var(--gold-l)">ส.4</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:12px;padding-top:10px;border-top:1px solid var(--ln)"><span style="color:var(--mut)">ยอดรวม ฿23,300 − ค่าธรรมเนียม 15%</span><span>−฿3,495</span></div>
+    </div>
+    <div>
+      <div style="font-family:'Kanit';font-weight:500;font-size:16px;margin-bottom:4px">ประวัติ</div>
+      <div class="tx"><span style="width:36px;height:36px;border-radius:10px;background:rgba(212,175,55,.12);color:var(--gold);display:flex;align-items:center;justify-content:center">+</span><div style="flex-grow:1">งาน #MB-24091<div style="font-size:12px;color:var(--mut)">วันนี้ · หักค่าธรรมเนียม ฿324</div></div><b style="font-family:'Kanit';font-weight:500;color:var(--gold-l)">+฿1,836</b></div>
+      <div class="tx"><span style="width:36px;height:36px;border-radius:10px;background:var(--s2);color:var(--mut);display:flex;align-items:center;justify-content:center">↑</span><div style="flex-grow:1">ถอนเงิน<div style="font-size:12px;color:var(--mut)">25 ก.พ. · โอนสำเร็จ</div></div><b style="font-family:'Kanit';font-weight:500">−฿5,000</b></div>
+    </div>
+  </div>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; border-top: 1px solid #33272a; background: rgba(14,10,10,.97); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; text-align: center; font-size: 10.5px; color: #7d6d6a">
+    <a href="Provider.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>หน้าหลัก</a>
+    <a href="Schedule.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16"></path></svg>ตาราง</a>
+    <a href="P16-Jobboard.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path></svg>งาน</a>
+    <a href="M08-Earnings.dc.html" aria-current="page" style="color: #d4af37; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2.5"></circle></svg>รายได้</a>
+    <a href="P19-Settings.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg>ตั้งค่า</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

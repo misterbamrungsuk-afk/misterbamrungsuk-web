@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>แอดมิน Audit log</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0a0a;--s1:#181212;--s2:#21191a;--ln:#33272a;--red:#b0182c;--gold:#D4AF37;--gold-l:#e3c35c;--tx:#f6efe4;--mut:#ab9d94}
+body{margin:0;font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--tx)}
+*{box-sizing:border-box}
+h1{font-family:'Kanit',sans-serif;margin:0}
+button{font-family:inherit}
+a{color:var(--tx);text-decoration:none}
+.nv{display:flex;align-items:center;gap:10px;height:40px;padding:0 12px;border-radius:12px;color:var(--mut);font-size:14px}
+.nv.on{background:var(--s2);color:var(--tx);box-shadow:inset 2px 0 0 var(--red)}
+.nb{margin-left:auto;min-width:22px;height:20px;padding:0 6px;border-radius:20px;background:var(--red);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center}
+.lg{display:flex;gap:14px;padding:11px 14px;border-bottom:1px solid var(--ln);font-size:13px;align-items:center}
+.tm{width:64px;color:var(--mut);font-family:'Kanit';flex-shrink:0}
+.ty{width:96px;flex-shrink:0}
+.pl{display:inline-flex;height:22px;padding:0 8px;border-radius:999px;font-size:11px;align-items:center;border:1px solid var(--ln);color:var(--mut)}
+</style>
+</helmet>
+<div style="width:1440px;height:900px;display:flex;background:var(--bg)">
+  <nav aria-label="เมนูแอดมิน" style="width: 232px; flex: 0 0 232px; border-right: 1px solid #33272a; padding: 18px 14px; display: flex; flex-direction: column; gap: 2px; font-size: 13px; box-sizing: border-box; font-family: 'IBM Plex Sans Thai', sans-serif; background: #0e0a0a">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px"><div style="width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid #d4af37; display: grid; place-items: center; font-family: Kanit; font-weight: 700; font-size: 12px; color: #d4af37">MB</div><div style="line-height: 1.1"><div style="font-family: Kanit; font-weight: 600; color: #f6efe4">Bamrungsuk</div><div style="font-size: 11px; color: #7d6d6a">Admin · super</div></div></div>
+    <a href="AdminDashboard.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ภาพรวม / รายได้</a>
+    <a href="AdminBookings.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">การจอง / งาน</a>
+    <a href="B2-Orders.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ตรวจงาน</a>
+    <a href="AdminApplicants.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ผู้สมัคร</a>
+    <a href="B1-KYC.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">คิว KYC</a>
+    <a href="AdminCohorts.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">รุ่นอบรม / เช็กชื่อ</a>
+    <a href="AdminParttimers.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">Part-Time ที่ใช้งาน</a>
+    <a href="B3-Payouts.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">โอนให้ Part-Time</a>
+    <a href="AdminPartners.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">พาร์ทเนอร์สปา</a>
+    <a href="AdminSpaPricing.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ราคาสปาพาร์ทเนอร์</a>
+    <a href="AdminPricing.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ตั้งค่าราคา</a>
+    <a href="B6-Members.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">สมาชิก · ใบเตือน</a>
+    <a href="B4-Reports.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">รายงาน</a>
+    <a href="B5-CS.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">เรื่องร้องเรียน</a>
+    <a href="B7-Promos.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">โปรโมชัน</a>
+    <a href="B8-Audit.dc.html" aria-current="page" style="padding: 6px 12px; border-radius: 10px; background: rgba(176,24,44,.2); border: 1px solid rgba(201,40,61,.55); color: #f6efe4; text-decoration: none">บันทึกระบบ · SOS</a>
+    <div style="height: 1px; background: #33272a; margin: 6px 0"></div>
+    <a href="E2-AdminSettings.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">ตั้งค่าระบบ</a>
+    <a href="E1-AdminLogin.dc.html" style="padding: 6px 12px; border-radius: 10px; color: #ab9d94; text-decoration: none">แอดมินและสิทธิ์</a>
+    <a href="Main.dc.html" style="margin-top: auto; padding: 6px 12px; color: #e3c35c; text-decoration: none">← สารบัญทุกหน้า</a>
+  </nav>
+  <main style="flex-grow:1;padding:24px 28px;display:flex;gap:16px">
+    <div style="flex-grow:1;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:center;gap:10px"><h1 style="font-size:26px;font-weight:600">Audit log</h1><span style="height:26px;padding:0 10px;border-radius:999px;border:1px solid var(--red);color:#FF8A97;font-size:12px;display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:7px;background:var(--red)"></span>real-time</span></div>
+      <div style="background:var(--s1);border:1px solid var(--ln);border-radius:18px;overflow:hidden">
+        <div class="lg" style="background:rgba(224,36,60,.08)"><span class="tm">14:21</span><span class="ty"><span class="pl" style="border-color:var(--red);color:#FF8A97">SOS</span></span><span style="flex-grow:1">ลูกค้ากด SOS ระหว่างนัดหมาย · #MB-24077 · อโศก</span><span style="color:var(--mut)">ระบบ</span></div>
+        <div class="lg"><span class="tm">14:10</span><span class="ty"><span class="pl" style="border-color:var(--red);color:#FF8A97">ใบเตือน</span></span><span style="flex-grow:1">ออกใบเตือน Part-Time เจมส์ จากรายงาน #MB-24079 · 1/3 → 2/3</span><span style="color:var(--mut)">แอดมิน A</span></div>
+        <div class="lg"><span class="tm">14:02</span><span class="ty"><span class="pl">ออเดอร์</span></span><span style="flex-grow:1">ปิดนัดหมาย #MB-24060</span><span style="color:var(--mut)">แอดมิน A</span></div>
+        <div class="lg"><span class="tm">13:55</span><span class="ty"><span class="pl" style="border-color:var(--gold);color:var(--gold-l)">การเงิน</span></span><span style="flex-grow:1">ยืนยันโอน ฿1,836 ให้ ต้น (85% ของ ฿2,160)</span><span style="color:var(--mut)">แอดมิน B</span></div>
+        <div class="lg"><span class="tm">13:48</span><span class="ty"><span class="pl">สมาชิก</span></span><span style="flex-grow:1">ระงับอัตโนมัติ ลูกค้า ท. (ครบใบเตือน 3 ใบ)</span><span style="color:var(--mut)">ระบบ</span></div>
+        <div class="lg"><span class="tm">13:30</span><span class="ty"><span class="pl">KYC</span></span><span style="flex-grow:1">อนุมัติ KYC กอล์ฟ · มอบตรายืนยันตัวตน</span><span style="color:var(--mut)">แอดมิน A</span></div>
+        <div class="lg"><span class="tm">13:12</span><span class="ty"><span class="pl" style="border-color:var(--gold);color:var(--gold-l)">การเงิน</span></span><span style="flex-grow:1">ปล่อยเงินอัตโนมัติ #MB-24031 (ครบ 24 ชม.)</span><span style="color:var(--mut)">ระบบ</span></div>
+        <div class="lg"><span class="tm">12:40</span><span class="ty"><span class="pl">โปรโมชัน</span></span><span style="flex-grow:1">สร้างโค้ด CAFEDATE15</span><span style="color:var(--mut)">แอดมิน B</span></div>
+        <div class="lg"><span class="tm">12:05</span><span class="ty"><span class="pl">CS</span></span><span style="flex-grow:1">คืนเงินบางส่วน ฿267 · #MB-24012</span><span style="color:var(--mut)">แอดมิน A</span></div>
+        <div class="lg" style="border:0"><span class="tm">18 ม.ค.</span><span class="ty"><span class="pl" style="border-color:var(--red);color:#FF8A97">ใบเตือน</span></span><span style="flex-grow:1">ออกใบเตือน Part-Time เจมส์ · ยกเลิกนัดหลังรับงาน · 0/3 → 1/3</span><span style="color:var(--mut)">แอดมิน B</span></div>
+      </div>
+    </div>
+    <div style="width:380px;border:1px solid var(--red);border-radius:18px;overflow:hidden;background:var(--s1);display:flex;flex-direction:column">
+      <div style="position:relative;height:260px;overflow:hidden">
+        <svg viewBox="5 230 380 260" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%;display:block" aria-label="แผนที่">
+    <defs>
+      <pattern id="blkB8" width="26" height="22" patternUnits="userSpaceOnUse"><rect x="2" y="2" width="21" height="17" rx="2" fill="#1a1414"></rect><rect x="5" y="5" width="8" height="6" rx="1" fill="#1e1717"></rect></pattern>
+      <pattern id="blk2B8" width="34" height="28" patternUnits="userSpaceOnUse" patternTransform="rotate(8)"><rect x="2" y="2" width="29" height="23" rx="3" fill="#1b1414"></rect></pattern>
+    </defs>
+    <rect width="390" height="844" fill="#120d0d"></rect>
+    <rect width="390" height="844" fill="url(#blkB8)"></rect>
+    <path d="M0 560 L200 600 L200 844 L0 844Z" fill="url(#blk2B8)"></path>
+    <path d="M-10 610 C40 640 70 700 50 760 C35 800 60 830 90 860" fill="none" stroke="#14232b" stroke-width="34" stroke-linecap="round"></path>
+    <path d="M-10 610 C40 640 70 700 50 760 C35 800 60 830 90 860" fill="none" stroke="#1a2e38" stroke-width="22" stroke-linecap="round"></path>
+    <text x="30" y="690" fill="#4a6b7a" font-size="9" transform="rotate(68 30 690)" font-family="IBM Plex Sans Thai, sans-serif" letter-spacing="1.5">แม่น้ำเจ้าพระยา</text>
+    <path d="M196 448 L268 440 L276 520 L204 528Z" fill="#17241a" stroke="#1f3123"></path>
+    <text x="210" y="488" fill="#55755a" font-size="8.5" font-family="IBM Plex Sans Thai, sans-serif">สวนเบญจกิติ</text>
+    <path d="M30 120 L96 112 L104 168 L40 176Z" fill="#17241a" stroke="#1f3123"></path>
+    <text x="40" y="148" fill="#55755a" font-size="8.5" font-family="IBM Plex Sans Thai, sans-serif">สวนเบญจสิริ</text>
+    <circle cx="350" cy="700" r="26" fill="#17241a" stroke="#1f3123"></circle>
+    <g stroke="#241b1c" stroke-width="3" fill="none">
+      <path d="M60 0 L80 844M120 0 L138 600M250 0 L262 844M345 0 L360 844M0 200 L390 230M0 470 L390 500M0 700 L390 730M0 90 L390 110M110 600 L130 844"></path>
+    </g>
+    <g stroke="#2c2122" stroke-width="5" fill="none" stroke-linecap="round">
+      <path d="M182 0 L206 844"></path><path d="M300 0 L318 844"></path>
+    </g>
+    <g fill="none" stroke-linecap="round">
+      <path d="M-10 330 C120 350 260 380 400 405" stroke="#3a2c25" stroke-width="11"></path>
+      <path d="M-10 330 C120 350 260 380 400 405" stroke="#4a3a2c" stroke-width="7"></path>
+      <path d="M-10 560 C120 585 260 600 400 640" stroke="#3a2c25" stroke-width="10"></path>
+      <path d="M-10 560 C120 585 260 600 400 640" stroke="#463628" stroke-width="6"></path>
+    </g>
+    <path d="M-10 318 C120 338 260 368 400 393" fill="none" stroke="#8a7020" stroke-width="2.5" stroke-dasharray="7 4"></path>
+    <g fill="#120d0d" stroke="#d4af37" stroke-width="2">
+      <circle cx="40" cy="325" r="4.5"></circle><circle cx="120" cy="337" r="4.5"></circle><circle cx="188" cy="348" r="4.5"></circle><circle cx="298" cy="373" r="4.5"></circle><circle cx="366" cy="387" r="4.5"></circle>
+    </g>
+    <g fill="#c9b27a" font-size="8.5" font-family="IBM Plex Sans Thai, sans-serif">
+      <text x="22" y="313">BTS นานา</text><text x="96" y="325">พร้อมพงษ์</text><text x="194" y="341">BTS อโศก</text><text x="278" y="362">ทองหล่อ</text><text x="342" y="377">เอกมัย</text>
+    </g>
+    <g fill="#8d7c6d" font-size="9.5" font-weight="600" font-family="IBM Plex Sans Thai, sans-serif">
+      <text x="40" y="360" transform="rotate(8 40 360)">ถ.สุขุมวิท</text>
+      <text x="230" y="612" transform="rotate(9 230 612)">ถ.พระราม 4</text>
+      <text x="196" y="236" transform="rotate(88 196 236)">ถ.อโศกมนตรี</text>
+      <text x="312" y="232" transform="rotate(88 312 232)">ซ.ทองหล่อ</text>
+    </g>
+    <g fill="#5e5049" font-size="13" font-weight="600" letter-spacing="3" font-family="IBM Plex Sans Thai, sans-serif">
+      <text x="210" y="300">อโศก</text><text x="314" y="440">ทองหล่อ</text><text x="326" y="540" font-size="11">เอกมัย</text><text x="80" y="660">สีลม</text>
+    </g>
+    </svg>
+        <span style="position:absolute;left:50%;top:50%;width:20px;height:20px;margin:-10px;border-radius:20px;background:var(--red);box-shadow:0 0 0 12px rgba(224,36,60,.25)"></span>
+      </div>
+      <div style="padding:16px;display:flex;flex-direction:column;gap:10px;flex-grow:1">
+        <div style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:8px;background:var(--red)"></span><b style="font-family:'Kanit';font-weight:500;font-size:18px">SOS · #MB-24077</b><span style="margin-left:auto;font-size:12px;color:var(--mut)">2:14 นาที</span></div>
+        <div style="font-size:13px;color:var(--mut);line-height:1.6">ลูกค้า ร. · อยู่ระหว่างนัดหมายกับ Part-Time เจมส์<br>ตำแหน่งสด · แจ้งผู้ติดต่อฉุกเฉินแล้ว</div>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;background:var(--s2)"><img src="/_blob/551eb82924983c941f1fe44ede9bceca" alt="" style="width:36px;height:36px;border-radius:36px;object-fit:cover"><span style="font-size:13px;flex-grow:1">Part-Time เจมส์ · ใบเตือน 2/3</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:auto">
+          <button style="height:44px;border-radius:12px;border:0;background:var(--red);color:#fff;font-weight:600">รับเรื่อง + โทรหาลูกค้า</button>
+          <div style="display:flex;gap:8px"><button style="flex:1;height:40px;border-radius:12px;border:1px solid var(--ln);background:transparent;color:var(--tx)">แจ้ง 191</button><button style="flex:1;height:40px;border-radius:12px;border:1px solid var(--ln);background:transparent;color:var(--tx)">ระงับ Part-Time ชั่วคราว</button></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

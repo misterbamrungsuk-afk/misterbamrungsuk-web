@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>เพื่อนที่ถูกใจ</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e3c35c}a:hover{color:#eed58a}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #d4af37;outline-offset:2px}
+.h{font-family:Kanit;font-weight:600}
+.card{padding:14px;border-radius:16px;background:#181212;border:1px solid #33272a}
+.in{height:48px;border-radius:12px;border:1px solid #33272a;background:#21191a;color:#f6efe4;padding:0 14px;font-size:14px;box-sizing:border-box;width:100%;display:flex;align-items:center}
+.cta{height:52px;border-radius:14px;border:1px solid rgba(212,175,55,.45);background:linear-gradient(180deg,#c21d33,#8f1424);color:#fff;font-size:15px;font-weight:600;width:100%;font-family:Kanit}
+.ghost{height:48px;border-radius:14px;border:1px solid #33272a;background:#181212;color:#e3c35c;font-size:14px;font-weight:600;width:100%}
+.lbl{font-size:12px;color:#ab9d94;margin:0 0 6px}
+.mut{color:#ab9d94}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #0e0a0a; color: #f6efe4; font-family: 'IBM Plex Sans Thai', sans-serif; position: relative; overflow: hidden">
+  <div style="height: 844px; overflow-y: auto; box-sizing: border-box; padding-bottom: 110px">
+<div style="padding: 12px 14px 0; display: flex; align-items: center; gap: 8px">
+      <a href="Main.dc.html" aria-label="ย้อนกลับ" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid #33272a; background: #181212; color: #e3c35c; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"></path></svg></a>
+      <div class="h" style="font-size: 17px; color: #d4af37">เพื่อนที่ถูกใจ</div>
+    </div>
+    <div style="padding: 12px 18px 0; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; justify-content: space-between; align-items: center"><span class="mut" style="font-size: 13px">{{countLabel}}</span><button onClick="{{reset}}" style="min-height: 44px; border: 0; background: transparent; color: #e3c35c; font-size: 12px">แสดงตัวอย่างอีกครั้ง</button></div>
+      <sc-if value="{{hasAny}}" hint-placeholder-val="{{ true }}">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+          <sc-for list="{{cards}}" as="c" hint-placeholder-count="6">
+            <div style="position: relative; border-radius: 16px; overflow: hidden; background: #181212; border: 1px solid #33272a">
+              <a href="Profile.dc.html" style="display: block; text-decoration: none; color: #f6efe4"><img src="{{c.img}}" alt="" style="width: 100%; height: 190px; object-fit: cover; display: block"><div style="padding: 10px"><div class="h" style="font-size: 15px">{{c.name}}</div><div class="mut" style="font-size: 11.5px">{{c.meta}}</div><div style="font-family: Kanit; color: #e3c35c; font-size: 13px; margin-top: 4px">{{c.price}}</div></div></a>
+              <button onClick="{{c.remove}}" aria-label="เลิกถูกใจ" style="position: absolute; top: 6px; right: 6px; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(212,175,55,.45); background: rgba(14,10,10,.7); color: #c21d33; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="#c21d33" stroke="#e3c35c" stroke-width="1.4"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></button>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; padding: 60px 20px">
+          <div style="width: 84px; height: 84px; border-radius: 50%; border: 1px dashed #d4af37; display: grid; place-items: center; color: #d4af37"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></div>
+          <div class="h" style="font-size: 18px; color: #d4af37">ยังไม่มีเพื่อนที่ถูกใจ</div>
+          <p class="mut" style="margin: 0; font-size: 13px">แตะหัวใจบนโปรไฟล์เพื่อน เก็บไว้นัดครั้งหน้าได้ง่าย ๆ</p>
+          <a href="Main.dc.html" class="cta" style="display: grid; place-items: center; text-decoration: none">หาเพื่อนใหม่</a>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+  <a href="N06-SOS.dc.html" aria-label="SOS ฉุกเฉิน" style="position: absolute; right: 16px; bottom: 90px; z-index: 39; height: 40px; padding: 0 14px 0 8px; border-radius: 999px; background: #181212; border: 1px solid rgba(201,40,61,.6); color: #ef8a97; font-weight: 700; font-size: 13px; text-decoration: none; display: flex; align-items: center; gap: 6px; box-shadow: 0 8px 24px rgba(0,0,0,.5)"><span style="width: 24px; height: 24px; border-radius: 50%; background: #b0182c; display: grid; place-items: center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3z"></path></svg></span>SOS</a>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; border-top: 1px solid #33272a; background: rgba(14,10,10,.97); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; text-align: center; font-size: 10.5px; color: #7d6d6a; z-index: 40">
+    <a href="Main.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>หน้าแรก</a>
+    <a href="S05-Map.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>ใกล้ฉัน</a>
+    <div><a href="S06-QuickCall.dc.html" aria-label="เรียกด่วน" style="width: 50px; height: 50px; margin: 0 auto; border-radius: 16px; background: linear-gradient(180deg, #c21d33, #8f1424); display: grid; place-items: center; color: #fff"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7z"></path></svg></a></div>
+    <a href="S07-Chats.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a8 8 0 0 1-12 7l-5 1 1-4a8 8 0 1 1 16-4z"></path></svg>แชท</a>
+    <a href="S13-Account.dc.html" style="color: #d4af37; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px" aria-current="page"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg>บัญชี</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { ids: [0, 1, 2, 3, 4, 5] }; }
+  renderVals() {
+    const s = this.state;
+    const IMG = ['/_blob/551eb82924983c941f1fe44ede9bceca', '/_blob/82a15fdc40050c0a074e7e4b5b66e794', '/_blob/8725f65bf80d613b2a9537700bf2f9bb', '/_blob/f34ad19eab9288d994c2271a15964ceb', '/_blob/ec33c74147cab066783e7acae85c8875', '/_blob/d26354f23535577e2504751c4197ea79'];
+    const P = [['ต้น', '29 ปี · ทองหล่อ · ★ 5.0'], ['กอล์ฟ', '33 ปี · อารีย์ · ★ 4.9'], ['ภูมิ', '31 ปี · สาทร · ★ 4.8'], ['นนท์', '27 ปี · เอกมัย · ★ 4.8'], ['เบนซ์', '26 ปี · พระราม 9 · ★ 5.0'], ['ปั้น', '28 ปี · สีลม · ★ 4.9']];
+    const pr = ['฿2,400 / 3 ชม.', '฿2,100 / 3 ชม.', '฿2,700 / 3 ชม.', '฿1,950 / 3 ชม.', '฿2,250 / 3 ชม.', '฿2,550 / 3 ชม.'];
+    return {
+      hasAny: s.ids.length > 0, empty: s.ids.length === 0,
+      countLabel: s.ids.length + ' คนที่บันทึกไว้',
+      reset: () => this.setState({ ids: [0, 1, 2, 3, 4, 5] }),
+      cards: s.ids.map((i) => ({ img: IMG[i], name: P[i][0], meta: P[i][1], price: pr[i], remove: () => this.setState({ ids: s.ids.filter((x) => x !== i) }) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

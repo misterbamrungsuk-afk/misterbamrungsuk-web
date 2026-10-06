@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>ห้องแชท</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0a0a;--s1:#181212;--s2:#21191a;--ln:#33272a;--red:#b0182c;--red-dk:#8f1424;--gold:#D4AF37;--gold-l:#e3c35c;--tx:#f6efe4;--mut:#ab9d94}
+body{margin:0;font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--tx)}
+*{box-sizing:border-box}
+button,input{font-family:inherit}
+a{color:var(--tx);text-decoration:none}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.hb{width:40px;height:40px;border-radius:40px;border:1px solid var(--ln);background:transparent;color:var(--tx);display:flex;align-items:center;justify-content:center}
+.me{align-self:flex-end;max-width:76%;background:var(--red);color:#fff;border-radius:20px 20px 6px 20px;padding:10px 14px;font-size:15px;line-height:1.45}
+.th{align-self:flex-start;max-width:76%;background:var(--s2);border-radius:20px 20px 20px 6px;padding:10px 14px;font-size:15px;line-height:1.45}
+.mt{font-size:11px;color:var(--mut)}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;overflow:hidden;background:var(--bg);display:flex;flex-direction:column">
+  <header style="padding:14px 12px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--ln)">
+    <a href="S07-Chats.dc.html" class="hb" aria-label="ย้อนกลับ"><svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></a>
+    <img src="/_blob/ec33c74147cab066783e7acae85c8875" alt="" style="width:42px;height:42px;border-radius:42px;object-fit:cover">
+    <div style="flex-grow:1"><div style="font-family:'Kanit';font-weight:500;font-size:16px">ต้น <span style="color:var(--gold);font-size:12px">✓</span></div><div style="font-size:12px;color:#2FBF71">ออนไลน์</div></div>
+    <a href="S11-Call.dc.html" class="hb" aria-label="โทรซ่อนเบอร์"><svg class="ic" viewBox="0 0 24 24"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2z"/></svg></a>
+    <button class="hb" aria-label="ตัวเลือก บล็อก รีพอร์ท"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
+  </header>
+  <a href="S09-Escrow.dc.html" style="margin:10px 12px 0;padding:10px 12px;border-radius:14px;border:1px solid rgba(212,175,55,.4);background:rgba(212,175,55,.06);display:flex;align-items:center;gap:10px">
+    <svg class="ic" viewBox="0 0 24 24" style="color:var(--gold)"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+    <div style="flex-grow:1;font-size:13px"><b style="color:var(--gold-l)">ชำระแล้ว ฿2,160 · เงินพักไว้กับเราจนจบนัด</b><br><span style="color:var(--mut)">คาเฟ่ &amp; ดูหนัง 3 ชม. · วันนี้ 19:00</span></div>
+    <svg class="ic" viewBox="0 0 24 24" style="color:var(--mut)"><path d="m9 18 6-6-6-6"/></svg>
+  </a>
+  <div style="flex-grow:1;padding:14px 12px;display:flex;flex-direction:column;gap:8px">
+    <div style="align-self:center;font-size:12px;color:var(--mut)">วันนี้</div>
+    <div class="th">ข้อความอัตโนมัติ: สวัสดีครับ อยากนัดวันไหน กี่โมง ที่ไหน และอยากทำอะไร บอกได้เลยครับ</div>
+    <div class="me">คืนนี้ 1 ทุ่ม ไปคาเฟ่แล้วต่อหนังแถวอโศก 3 ชม. นะคะ</div>
+    <div class="mt" style="align-self:flex-end">18:02 · อ่านแล้ว</div>
+    <div class="th">ได้เลยครับ ชำระในแอปได้เลยนะครับ เงินจะพักไว้กับเราจนจบนัด</div>
+    <div style="align-self:flex-start;width:240px;background:var(--s1);border:1px solid var(--gold);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:6px">
+      <div style="font-size:12px;font-weight:600;color:var(--gold)">คำขอชำระเงิน</div>
+      <div style="font-family:'Kanit';font-weight:600;font-size:28px">฿2,160</div>
+      <div style="font-size:12px;color:var(--mut)">ยอดเต็ม · พักไว้กับเราจนจบนัด</div>
+      <span style="height:38px;border-radius:12px;background:rgba(47,191,113,.12);color:#5EDB98;font-weight:600;font-size:13px;display:flex;align-items:center;justify-content:center">ชำระแล้ว</span>
+    </div>
+    <div class="th">ได้รับแล้วครับ แล้วเจอกัน 1 ทุ่มนะครับ</div>
+  </div>
+  <div style="border-top:1px solid var(--ln);padding:10px 12px 22px;display:flex;gap:8px;align-items:center">
+    <button aria-label="ส่งรูป" style="width:44px;height:44px;border-radius:44px;border:1px solid var(--ln);background:transparent;color:var(--tx);display:flex;align-items:center;justify-content:center"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 17-5-5-9 8"/></svg></button>
+    <label style="flex-grow:1;height:46px;border-radius:999px;background:var(--s1);border:1px solid var(--ln);display:flex;align-items:center;padding:0 16px"><button type="button" onClick="{{msg.tap}}" aria-label="พิมพ์ข้อความ · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;border:0;outline:0;background:transparent;flex-grow:1;font-size:15px; color:{{msg.color}}">{{msg.text}}</button></label>
+    <button aria-label="ส่ง" onClick="{{send}}" disabled="{{sendOff}}" style="opacity:{{sendOp}};width:46px;height:46px;border-radius:46px;border:0;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center"><svg class="ic" viewBox="0 0 24 24"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+_baseVals() { const ok = !!this.fv('msg'); return { sendOff: !ok, sendOp: ok ? 1 : 0.45, send: () => { if (ok) this.setState({ fx: {} }); } }; }
+
+  _fields() { return {"msg":{"v":["","ถึงล็อบบี้แล้วนะครับ","ขอบคุณสำหรับวันนี้ครับ"],"ph":"พิมพ์ข้อความ","on":"var(--tx)","mask":false}}; }
+  fv(k) { const F = this._fields()[k]; const fx = (this.state && this.state.fx) || {}; const v = F.v[(fx[k] || 0) % F.v.length]; return v.indexOf('HOLE:') === 0 ? String((this._hole || {})[v.slice(5)] || '') : v; }
+  renderVals() {
+    const r = this._baseVals(); this._hole = r; const fx = (this.state && this.state.fx) || {}; const F = this._fields();
+    Object.keys(F).forEach((k) => {
+      const v = this.fv(k), c = F[k];
+      const o = { text: v ? (c.mask ? '\u2022'.repeat(v.length) : v) : c.ph, color: v ? c.on : '#7d6d6a', tap: () => this.setState({ fx: Object.assign({}, fx, { [k]: ((fx[k] || 0) + 1) % c.v.length }) }) };
+      for (let i = 0; i < 6; i++) o['d' + i] = v[i] || '\u2013';
+      r[k] = o;
+    });
+    return r;
+  }
+}
+</script>
+</body>
+</html>

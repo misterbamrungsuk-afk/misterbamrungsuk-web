@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>ยืนยันตัวตน</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0a0a;--s1:#181212;--s2:#21191a;--ln:#33272a;--red:#b0182c;--gold:#D4AF37;--gold-l:#e3c35c;--tx:#f6efe4;--mut:#ab9d94}
+body{margin:0;font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--tx)}
+*{box-sizing:border-box}
+h1{font-family:'Kanit',sans-serif;margin:0}
+button{font-family:inherit}
+a{color:var(--tx);text-decoration:none}
+.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.sp{flex:1;height:4px;border-radius:4px;background:var(--ln)}
+.up{border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.tip{display:flex;gap:8px;font-size:13px;color:var(--mut)}
+</style>
+</helmet>
+<div style="width:390px;height:844px;position:relative;overflow:hidden;background:var(--bg)">
+  <div style="display:flex;align-items:center;gap:10px;padding:16px">
+    <a href="N07-ProviderApply.dc.html" aria-label="ย้อนกลับ" style="width:42px;height:42px;border-radius:42px;border:1px solid var(--ln);display:flex;align-items:center;justify-content:center"><svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></a>
+    <h1 style="font-size:19px;font-weight:600">ยืนยันตัวตน</h1>
+  </div>
+  <div style="padding:0 16px;display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;gap:6px;align-items:center"><span class="sp" style="background:var(--tx)"></span><span class="sp" style="background:var(--red)"></span><span class="sp"></span><span style="font-size:12px;color:var(--mut);margin-left:6px">2/3</span></div>
+    <div class="up" style="border:1px solid var(--gold);background:rgba(212,175,55,.05)">
+      <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-weight:500">1. หน้าบัตรประชาชน</b><span style="font-size:12px;color:var(--gold-l)">✓ อัปโหลดแล้ว</span></div>
+      <div style="height:120px;border-radius:12px;background:var(--s2);display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:12px">[ภาพบัตร · เลขบัตรถูกปิดบางส่วน]</div>
+    </div>
+    <div class="up" style="border:1px dashed var(--ln)">
+      <b style="font-weight:500">2. เซลฟี่ถือบัตรคู่หน้า</b>
+      <div style="height:150px;border-radius:12px;background:var(--s2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--mut)"><svg class="ic" viewBox="0 0 24 24" style="width:34px;height:34px"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span style="font-size:13px">แตะเพื่อถ่ายรูป</span></div>
+    </div>
+    <div class="tip"><span style="color:var(--gold)">•</span>ให้เห็นหน้าและบัตรชัด ๆ ถอดแว่นดำและหมวกก่อนนะ</div>
+    <div class="tip"><span style="color:var(--gold)">•</span>ข้อมูลของคุณถูกเข้ารหัส และใช้ยืนยันตัวตนเท่านั้น (PDPA)</div>
+  </div>
+  <a href="D3-KYC3.dc.html" style="position:absolute;left:16px;right:16px;bottom:24px;height:56px;border-radius:16px;background:var(--red);color:#fff;font-family:'Kanit';font-weight:600;font-size:17px;display:flex;align-items:center;justify-content:center">ถัดไป · บัญชีรับเงิน</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
