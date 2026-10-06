@@ -10,7 +10,7 @@ export default function WelcomePage() {
   const th = lang === "th";
   const steps = [
     { n: "01", t: th ? "เลือกเพื่อนตามกิจกรรม" : "Pick by activity", d: th ? "ดูโปรไฟล์ รีวิว และสกิลพิเศษ" : "Browse profiles, reviews and skills" },
-    { n: "02", t: th ? "จองและชำระผ่านระบบกลาง" : "Book & pay via escrow", d: th ? "เงินถูกกันไว้จนงานเสร็จ" : "Funds held until the job is done" },
+    { n: "02", t: th ? "จองแล้วจ่ายในแอป" : "Book & pay via escrow", d: th ? "เงินพักไว้กับเราจนจบนัด" : "Funds held until the job is done" },
     { n: "03", t: th ? "เจอกันตามนัด" : "Meet up", d: th ? "ติดตามสด LIVE พร้อมปุ่ม SOS" : "Live tracking with SOS button" },
   ];
   const trust = [

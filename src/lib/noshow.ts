@@ -8,7 +8,19 @@ import { NOSHOW_POINTS, PAYOUT_PERCENT, type ClaimStatus, type Evidence, type No
 // - มี SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY → ตาราง noshow_claims + bucket private "noshow" (supabase/0002_noshow.sql)
 // - ไม่มี → โหมดเดโม เก็บในหน่วยความจำ (หายเมื่อรีสตาร์ท)
 
-export const noshowDemo = !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY;
+const envDemo = !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY;
+// ยังไม่ได้รัน migration (ตารางไม่มี) → ใช้หน่วยความจำแทนจนกว่าจะรัน
+const gm = globalThis as unknown as { __mbNoShowMissing?: boolean };
+export const noshowDemo = () => envDemo || !!gm.__mbNoShowMissing;
+function checkMissing(err: { code?: string; message?: string } | null) {
+  if (!err) return false;
+  if (err.code === "PGRST205" || err.code === "42P01" || /could not find the table|does not exist/i.test(err.message ?? "")) {
+    if (!gm.__mbNoShowMissing) console.warn("[noshow] noshow_claims table missing — run supabase/0002_noshow.sql; using in-memory store");
+    gm.__mbNoShowMissing = true;
+    return true;
+  }
+  return false;
+}
 
 let sb: SupabaseClient | null = null;
 const db = () => (sb ??= createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } }));
@@ -36,14 +48,15 @@ export async function savePhoto(key: string, side: "provider" | "customer", file
   if (!ext || file.size > 8 * 1024 * 1024) return null;
   const path = `${key.replace(/[^0-9a-zA-Z-]/g, "") || "x"}/${side}-${Date.now()}.${ext}`;
   const data = Buffer.from(await file.arrayBuffer());
-  if (noshowDemo) { demo.files.set(path, { type: file.type, data }); return path; }
+  if (noshowDemo()) { demo.files.set(path, { type: file.type, data }); return path; }
   const { error } = await db().storage.from("noshow").upload(path, data, { contentType: file.type, upsert: false });
-  if (error) { console.error("noshow upload", error.message); return null; }
+  if (error) { console.warn("noshow upload (bucket missing? run 0002_noshow.sql) — keeping in memory:", error.message); demo.files.set(path, { type: file.type, data }); }
   return path;
 }
 
 export async function readPhoto(path: string) {
-  if (noshowDemo) return demo.files.get(path) ?? null;
+  const local = demo.files.get(path);
+  if (local || noshowDemo()) return local ?? null;
   const { data, error } = await db().storage.from("noshow").download(path);
   if (error || !data) return null;
   return { type: data.type, data: Buffer.from(await data.arrayBuffer()) };
@@ -57,15 +70,18 @@ export function chatAttempts(roomId: string, senderId: string): number | null {
 }
 
 export async function listClaims(): Promise<NoShowClaim[]> {
-  if (noshowDemo) return [...demo.rows].sort((a, b) => b.created_at.localeCompare(a.created_at));
+  if (noshowDemo()) return [...demo.rows].sort((a, b) => b.created_at.localeCompare(a.created_at));
   const { data, error } = await db().from("noshow_claims").select("*").order("created_at", { ascending: false });
+  if (checkMissing(error)) return listClaims();
   if (error) throw new Error(error.message);
   return data as NoShowClaim[];
 }
 
 async function byBooking(bookingId: string): Promise<NoShowClaim | null> {
-  if (noshowDemo) return demo.rows.find((r) => r.booking_id === bookingId) ?? null;
-  const { data } = await db().from("noshow_claims").select("*").eq("booking_id", bookingId).maybeSingle();
+  if (noshowDemo()) return demo.rows.find((r) => r.booking_id === bookingId) ?? null;
+  const { data, error } = await db().from("noshow_claims").select("*").eq("booking_id", bookingId).maybeSingle();
+  if (checkMissing(error)) return byBooking(bookingId);
+  if (error) throw new Error(error.message);
   return (data as NoShowClaim | null) ?? null;
 }
 
@@ -78,8 +94,14 @@ export async function submitEvidence(input: {
   const existing = await byBooking(input.bookingId);
   if (existing) {
     if (existing.status !== "pending") return existing; // ตัดสินแล้ว ไม่รับหลักฐานเพิ่ม
-    if (noshowDemo) { existing[field] = input.evidence; return existing; }
-    const { data, error } = await db().from("noshow_claims").update({ [field]: input.evidence }).eq("id", existing.id).select("*").single();
+    // เติมข้อมูลนัดที่ฝ่ายแรกอาจไม่มี
+    const meta: Partial<NoShowClaim> = {};
+    if (!Number(existing.amount) && input.amount) meta.amount = input.amount;
+    if (!existing.customer_name && input.customerName) meta.customer_name = input.customerName;
+    if (!existing.provider_name && input.providerName) meta.provider_name = input.providerName;
+    if (!existing.provider_id && input.providerId) meta.provider_id = input.providerId;
+    if (noshowDemo()) { Object.assign(existing, meta, { [field]: input.evidence }); return existing; }
+    const { data, error } = await db().from("noshow_claims").update({ ...meta, [field]: input.evidence }).eq("id", existing.id).select("*").single();
     if (error) throw new Error(error.message);
     return data as NoShowClaim;
   }
@@ -91,7 +113,7 @@ export async function submitEvidence(input: {
     decided_by: null, decided_at: null, created_at: new Date().toISOString(),
   };
   row[field] = input.evidence;
-  if (noshowDemo) { demo.rows.push(row); return row; }
+  if (noshowDemo()) { demo.rows.push(row); return row; }
   const { data, error } = await db().from("noshow_claims").insert(row).select("*").single();
   if (error) throw new Error(error.message);
   return data as NoShowClaim;
@@ -108,7 +130,7 @@ export async function decideClaim(id: string, decision: Exclude<ClaimStatus, "pe
     refund_amount: providerFault ? Number(c.amount) : 0,
     strike_added: providerFault, points_deducted: providerFault ? NOSHOW_POINTS : 0,
   };
-  if (noshowDemo) {
+  if (noshowDemo()) {
     Object.assign(c, patch);
     if (providerFault) demo.strikes.push({ providerId: c.provider_id, ref: c.booking_id, at: patch.decided_at! });
   } else {

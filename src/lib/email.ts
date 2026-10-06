@@ -56,7 +56,7 @@ const bookingRows = (b: BookingMail): [string, unknown][] => [
 
 export function bookingConfirmed(b: BookingMail): Mail[] {
   const out: Mail[] = [];
-  if (b.customerEmail) out.push({ to: b.customerEmail, subject: `ยืนยันการจอง · ${b.code}`, html: layout("จองสำเร็จ", bookingRows(b), "เงินถูกกันในระบบกลางจนกว่างานจะเสร็จ") });
+  if (b.customerEmail) out.push({ to: b.customerEmail, subject: `ยืนยันการจอง · ${b.code}`, html: layout("จองสำเร็จ", bookingRows(b), "เงินพักไว้กับเราจนจบนัด") });
   if (b.providerEmail) out.push({ to: b.providerEmail, subject: `มีงานใหม่ · ${b.code}`, html: layout("คุณมีนัดใหม่", [...bookingRows(b), ["ลูกค้า", b.customerName || "-"]]) });
   return out;
 }

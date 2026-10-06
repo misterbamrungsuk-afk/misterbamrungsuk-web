@@ -51,23 +51,38 @@ type Row = { id: string; phone: string; ip: string; code_hash: string; attempts:
 const g = globalThis as unknown as { __mbOtp?: Row[] };
 const mem = (g.__mbOtp ??= []);
 const SB = () => process.env.SUPABASE_URL;
+// ยังไม่ได้รัน supabase/0002_noshow.sql (ตาราง otp_codes ไม่มี → 404) → ใช้หน่วยความจำแทน
+const gm = globalThis as unknown as { __mbOtpMissing?: boolean };
+const useDb = () => customersEnabled() && !gm.__mbOtpMissing;
+function missing(status: number) {
+  if (status !== 404) return false;
+  if (!gm.__mbOtpMissing) console.warn("[otp] otp_codes table missing — run supabase/0002_noshow.sql; using in-memory store");
+  gm.__mbOtpMissing = true;
+  return true;
+}
 
 async function recent(col: "phone" | "ip", value: string, sinceMs: number): Promise<Row[]> {
   const since = new Date(Date.now() - sinceMs).toISOString();
-  if (!customersEnabled()) return mem.filter((r) => r[col] === value && r.created_at >= since).sort((a, b) => b.created_at.localeCompare(a.created_at));
-  const res = await fetch(`${SB()}/rest/v1/otp_codes?${col}=eq.${encodeURIComponent(value)}&created_at=gte.${encodeURIComponent(since)}&order=created_at.desc&select=*`, { headers: sbHeaders(), cache: "no-store" });
-  if (!res.ok) throw new Error(`otp select ${res.status}`);
-  return (await res.json()) as Row[];
+  if (useDb()) {
+    const res = await fetch(`${SB()}/rest/v1/otp_codes?${col}=eq.${encodeURIComponent(value)}&created_at=gte.${encodeURIComponent(since)}&order=created_at.desc&select=*`, { headers: sbHeaders(), cache: "no-store" });
+    if (res.ok) return (await res.json()) as Row[];
+    if (!missing(res.status)) throw new Error(`otp select ${res.status}`);
+  }
+  return mem.filter((r) => r[col] === value && r.created_at >= since).sort((a, b) => b.created_at.localeCompare(a.created_at));
 }
 
 async function insert(row: Omit<Row, "id">) {
-  if (!customersEnabled()) { mem.push({ ...row, id: String(Date.now()) + randomInt(1000) }); if (mem.length > 5000) mem.splice(0, 1000); return; }
-  const res = await fetch(`${SB()}/rest/v1/otp_codes`, { method: "POST", headers: sbHeaders(), body: JSON.stringify(row) });
-  if (!res.ok) throw new Error(`otp insert ${res.status}`);
+  if (useDb()) {
+    const res = await fetch(`${SB()}/rest/v1/otp_codes`, { method: "POST", headers: sbHeaders(), body: JSON.stringify(row) });
+    if (res.ok) return;
+    if (!missing(res.status)) throw new Error(`otp insert ${res.status}`);
+  }
+  mem.push({ ...row, id: String(Date.now()) + randomInt(1000) });
+  if (mem.length > 5000) mem.splice(0, 1000);
 }
 
 async function patch(id: string, p: Partial<Row>) {
-  if (!customersEnabled()) { const r = mem.find((x) => x.id === id); if (r) Object.assign(r, p); return; }
+  if (!useDb()) { const r = mem.find((x) => x.id === id); if (r) Object.assign(r, p); return; }
   await fetch(`${SB()}/rest/v1/otp_codes?id=eq.${encodeURIComponent(id)}`, { method: "PATCH", headers: sbHeaders(), body: JSON.stringify(p) });
 }
 
@@ -109,8 +124,9 @@ export async function verifyOtp(phone: string, code: string): Promise<{ ok: true
   const want = Buffer.from(last.code_hash, "hex");
   const got = Buffer.from(hashCode(phone, code.replace(/\D/g, "")), "hex");
   if (want.length !== got.length || !timingSafeEqual(want, got)) {
+    const left = OTP_MAX_ATTEMPTS - last.attempts - 1;
     await patch(last.id, { attempts: last.attempts + 1 });
-    return { ok: false, error: `รหัสไม่ถูกต้อง (เหลือ ${OTP_MAX_ATTEMPTS - last.attempts - 1} ครั้ง)` };
+    return { ok: false, error: left > 0 ? `รหัสไม่ถูกต้อง (เหลือ ${left} ครั้ง)` : "ใส่รหัสผิดเกิน 5 ครั้ง กรุณาขอรหัสใหม่" };
   }
   await patch(last.id, { verified_at: new Date().toISOString() });
   return { ok: true };

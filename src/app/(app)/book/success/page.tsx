@@ -60,7 +60,7 @@ function SuccessInner() {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-12 h-12"><path d="m5 12 5 5 9-10" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </div>
       <h1 className="text-[28px] font-semibold mt-3">{th ? "จองสำเร็จ" : "Booked!"}</h1>
-      <p className="text-sm text-ink-300 max-w-[300px]">{th ? `เงิน ${baht(total)} ถูกกันในระบบกลางแล้ว ${post.member.name} ยืนยันนัดของคุณ` : `${baht(total)} is held in escrow. ${post.member.name} confirmed your booking.`}</p>
+      <p className="text-sm text-ink-300 max-w-[300px]">{th ? `ชำระ ${baht(total)} แล้ว เงินพักไว้กับเราจนจบนัด ${post.member.name} ยืนยันนัดของคุณแล้ว` : `${baht(total)} is held in escrow. ${post.member.name} confirmed your booking.`}</p>
 
       <section className="glass rounded-2xl w-full mt-5 px-4 py-2 text-left text-sm">
         <div className="flex items-center gap-3 py-3 border-b border-ink-600">
@@ -83,7 +83,7 @@ function SuccessInner() {
 
       <div className="w-full flex flex-col gap-2 mt-4">
         <Link href="/chat/room1" className="btn-crimson h-14 rounded-2xl font-display font-semibold text-lg flex items-center justify-center">{th ? "แชทกับเพื่อน" : "Chat with your companion"}</Link>
-        <Link href="/escrow/o1" className="h-12 rounded-2xl border border-gold-500 text-gold-300 flex items-center justify-center">{th ? "ดูเงินในระบบกลาง" : "View escrow"}</Link>
+        <Link href="/escrow/o1" className="h-12 rounded-2xl border border-gold-500 text-gold-300 flex items-center justify-center">{th ? "ดูสถานะเงินที่พักไว้" : "View escrow"}</Link>
         <Link href="/orders" className="h-12 rounded-2xl border border-ink-600 flex items-center justify-center">{th ? "ออเดอร์ของฉัน" : "My orders"}</Link>
       </div>
     </main>

@@ -12,7 +12,7 @@ type Role = "hirer" | "provider";
 const STEPS: { state: EscrowState; th: string; en: string; icon: string }[] = [
   { state: "accepted", th: "รับงาน", en: "Job accepted", icon: "🤝" },
   { state: "awaiting_check", th: "ตรวจสลิป", en: "Checking slip", icon: "🔎" },
-  { state: "funded", th: "เงินเข้าระบบกลาง", en: "Escrow funded", icon: "🔒" },
+  { state: "funded", th: "ชำระแล้ว เงินพักไว้กับเรา", en: "Escrow funded", icon: "🔒" },
   { state: "in_progress", th: "กำลังทำงาน", en: "In progress", icon: "🔧" },
   { state: "delivered", th: "ส่งงานแล้ว", en: "Delivered", icon: "📦" },
   { state: "released", th: "จ่ายเงินแล้ว", en: "Released", icon: "💸" },
@@ -70,14 +70,14 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
   // ตำแหน่งเงินตอนนี้
   const moneyAt =
     step < 2 ? { icon: "👤", label: th ? "อยู่กับลูกค้า (ยังไม่โอน)" : "With hirer (not paid)", tone: "text-ink-300" }
-    : step < 5 ? { icon: "🔒", label: th ? "ระบบกลางกันเงินไว้" : "HELD IN ESCROW", tone: "text-gold-600" }
+    : step < 5 ? { icon: "🔒", label: th ? "เงินพักไว้กับเราจนจบนัด" : "HELD IN ESCROW", tone: "text-gold-600" }
     : { icon: "💸", label: th ? "โอนให้เพื่อนแล้ว" : "Released to your companion", tone: "text-emerald-400" };
 
   return (
     <main className="app-frame safe-bottom pb-8">
       <header className="sticky top-0 z-30 bg-ink-950/90 backdrop-blur-xl border-b border-ink-600 px-4 h-14 flex items-center gap-3">
         <Link href="/orders" className="w-10 h-10 -ml-2 rounded-full border border-ink-600 grid place-items-center text-ink-100 text-xl leading-none" aria-label="back">‹</Link>
-        <h1 className="font-semibold flex-1">🏦 {th ? "ระบบกลาง (Escrow)" : "Escrow center"}</h1>
+        <h1 className="font-semibold flex-1">🏦 {th ? "เงินพักไว้กับเรา" : "Escrow center"}</h1>
         {/* สลับมุมมองบทบาท (เดโม) */}
         <div className="glass rounded-full p-0.5 flex">
           {(["hirer", "provider"] as Role[]).map((r) => (
@@ -136,7 +136,7 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
             <div className="glass rounded-2xl p-5 text-center border-crimson-500/50">
               <p className="text-3xl">⚖️</p>
               <p className="font-semibold mt-2">{th ? "อยู่ระหว่างตรวจสอบข้อพิพาท" : "Under dispute review"}</p>
-              <p className="text-xs text-ink-400 mt-1">{th ? "เงินยังถูกกันไว้ในระบบกลางจนกว่าแอดมินจะตัดสิน (โดยปกติภายใน 24 ชม.)" : "Money stays in escrow until admin decides (usually <24h)"}</p>
+              <p className="text-xs text-ink-400 mt-1">{th ? "เงินยังพักไว้กับเรา ยังไม่จ่ายใครจนกว่าแอดมินจะตัดสิน (ปกติภายใน 24 ชม.)" : "Money stays in escrow until admin decides (usually <24h)"}</p>
               <Link href="/admin" className="chip chip-red mt-3 inline-block">🛡️ Admin</Link>
             </div>
           ) : (
@@ -153,12 +153,12 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
                     <p className="text-[9px] text-black/70 text-center mt-1.5">PromptPay Mister Bamrungsuk Escrow (demo) · {baht(order.amount)}</p>
                   </div>
                   <button onClick={() => act("fund")} disabled={busy} className="btn-crimson rounded-xl py-3.5 font-bold">
-                    📎 {th ? `แนบสลิปโอน ${baht(order.amount)} เข้าระบบกลาง` : `Attach slip — pay ${baht(order.amount)} into escrow`}
+                    📎 {th ? `แนบสลิปโอน ${baht(order.amount)}` : `Attach slip — pay ${baht(order.amount)} into escrow`}
                   </button>
                 </>
               )}
               {role === "hirer" && order.state === "awaiting_check" && (
-                <p className="text-center text-sm text-gold-600 py-3">🔎 {th ? "ระบบกลางกำลังตรวจสลิป…" : "Verifying your payment…"}</p>
+                <p className="text-center text-sm text-gold-600 py-3">🔎 {th ? "กำลังตรวจสลิปให้…" : "Verifying your payment…"}</p>
               )}
               {role === "hirer" && order.state === "delivered" && (
                 <>
@@ -174,7 +174,7 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
 
               {/* ฝั่ง Part-Time */}
               {role === "provider" && order.state === "accepted" && (
-                <p className="text-center text-xs text-ink-400 py-3">⏳ {th ? "รอลูกค้าโอนเข้าระบบกลาง — ยังไม่ต้องเริ่มงาน" : "Waiting for hirer to fund escrow — don't start yet"}</p>
+                <p className="text-center text-xs text-ink-400 py-3">⏳ {th ? "รอลูกค้าชำระเงิน — ยังไม่ต้องเริ่มงาน" : "Waiting for hirer to fund escrow — don't start yet"}</p>
               )}
               {role === "provider" && order.state === "funded" && (
                 <button onClick={() => act("start")} disabled={busy} className="btn-crimson rounded-xl py-3.5 font-bold">
@@ -205,7 +205,7 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
           <button
             onClick={() => act("dispute")}
             className="w-full text-xs text-ink-400 hover:text-crimson-300 underline underline-offset-4"
-          >⚖️ {th ? "มีปัญหา — เปิดข้อพิพาทให้แอดมินตัดสิน (เงินค้างในระบบกลาง)" : "Open a dispute (money stays in escrow)"}</button>
+          >⚖️ {th ? "มีปัญหา — แจ้งแอดมินตัดสิน (เงินพักไว้กับเราระหว่างนี้)" : "Open a dispute (money stays in escrow)"}</button>
         )}
 
         <div className="flex gap-2">
@@ -215,7 +215,7 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
 
         <p className="text-[10px] text-ink-500 text-center leading-relaxed">
           {th
-            ? "🏦 ระบบกลาง Mister Bamrungsuk กันเงินไว้ให้ทั้งสองฝ่าย — ลูกค้ามั่นใจว่าเงินถึงมือเพื่อนเมื่อจบนัด เพื่อนมั่นใจว่าเงินมีจริงก่อนเริ่มนัด (โหมดจริง: เชื่อม Omise PromptPay + webhook ตรวจสอบอัตโนมัติ)"
+            ? "🏦 เงินพักไว้กับเราจนจบนัด — เพื่อนได้รับเงินเมื่อนัดจบเรียบร้อย ถ้ามีปัญหา เรายังไม่จ่ายจนกว่าจะตรวจสอบเสร็จ"
             : "Mister Bamrungsuk escrow protects both sides — money reaches your companion only after the meet-up, and they start knowing funds are secured"}
         </p>
       </div>

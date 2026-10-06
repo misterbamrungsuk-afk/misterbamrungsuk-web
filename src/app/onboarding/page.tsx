@@ -14,7 +14,7 @@ export default function OnboardingPage() {
   const startX = useRef<number | null>(null);
   const slides = [
     { icon: "🍽️", t: th ? "เพื่อนกิน เพื่อนเที่ยว" : "Dining & outing companions", d: th ? "เพื่อนทุกคนยืนยันตัวตนแล้ว" : "Every companion is ID-verified" },
-    { icon: "🔒", t: th ? "จ่ายผ่านระบบกลาง" : "Secure escrow", d: th ? "เงินของคุณถูกกันไว้จนกว่างานจะเสร็จ" : "Your money is held until the job is done" },
+    { icon: "🔒", t: th ? "จ่ายในแอป อุ่นใจ" : "Secure escrow", d: th ? "เงินพักไว้กับเราจนจบนัด ถ้ามีปัญหาเราดูแลให้" : "Your money is held until the job is done" },
     { icon: "📍", t: th ? "ติดตามสดและปุ่ม SOS" : "Live tracking & SOS", d: th ? "รู้ตำแหน่งเพื่อน และขอความช่วยเหลือได้ทันที" : "See where your companion is and get help instantly" },
   ];
   const last = i === slides.length - 1;
