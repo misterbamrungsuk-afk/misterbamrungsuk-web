@@ -40,7 +40,7 @@ export const PATH_RE = /^([0-9a-f-]{36})\/(slips|listing)\/[0-9a-f-]{36}\.(jpg|p
 
 // ── หน้าร้าน ──
 export const emptyListing = (pid: string): Listing => ({
-  partner_id: pid, cover: null, gallery: [], type: null, description: null, hours: DEFAULT_HOURS, rooms: 1, amenities: [], area: null, published: false, updated_at: new Date().toISOString(),
+  partner_id: pid, cover: null, gallery: [], type: null, description: null, hours: DEFAULT_HOURS, rooms: 1, amenities: [], services: [], area: null, published: false, updated_at: new Date().toISOString(),
 });
 
 export async function getListing(pid: string): Promise<Listing> {

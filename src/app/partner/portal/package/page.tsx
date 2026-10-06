@@ -27,7 +27,7 @@ export default async function PartnerPackagePage() {
         <div className="flex justify-between text-[11px] tracking-[.18em] text-gold-400"><span>CURRENT PLAN</span><span className="tracking-normal">QC {QC_LABEL[p.qc]}</span></div>
         {left != null && total ? (
           <>
-            <p className="font-display text-3xl font-semibold mt-2">{PARTNER_PACKAGES[p.package].label}</p>
+            <p className="font-display text-3xl font-semibold mt-2">{(PARTNER_PACKAGES[p.package]?.label ?? p.package)}</p>
             <p className="text-sm text-ink-300">{d(p.starts_at)} – {d(p.ends_at)}</p>
             <div className="h-1.5 rounded-full bg-ink-700 mt-3 overflow-hidden"><div className={`h-full ${left <= 30 ? "bg-crimson-500" : "bg-gold-500"}`} style={{ width: `${Math.max(0, Math.min(100, (left / total) * 100))}%` }} /></div>
             <p className={`text-xs mt-1 ${left <= 30 ? "text-crimson-300" : "text-ink-300"}`}>{left > 0 ? `เหลือ ${left} / ${total} วัน` : "หมดอายุแล้ว"}</p>

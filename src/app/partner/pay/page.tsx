@@ -13,7 +13,7 @@ export default async function PartnerPay({ searchParams }: { searchParams: Promi
   const { t, pkg } = await searchParams;
   const pid = verifyApplyToken(t);
   const p = pid ? await getPartner(pid).catch(() => null) : null;
-  const initial = (PACKAGE_KEYS.includes(pkg as PartnerPackageKey) ? pkg : p?.package ?? "6m") as PartnerPackageKey;
+  const initial = ([pkg, p?.package].find((x) => PACKAGE_KEYS.includes(x as PartnerPackageKey)) ?? "6m") as PartnerPackageKey;
   return (
     <div className="phone-stage"><main className="phone px-5 pb-12">
       <header className="flex items-center gap-3 h-16">

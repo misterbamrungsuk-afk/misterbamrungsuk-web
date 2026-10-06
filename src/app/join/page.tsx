@@ -170,9 +170,8 @@ export default function SalePage() {
               <span className="absolute -right-6 -top-8 font-display text-[120px] leading-none text-gold-500/10 select-none" aria-hidden>“</span>
               <p className="text-[11px] font-semibold tracking-[0.25em] text-gold-400">INVITATION · MADAME GOR</p>
               <p className="font-display text-[20px] font-semibold mt-2 leading-snug text-gold-200">{INVITE.lead}</p>
-              <p className="text-[14px] text-ink-200 mt-3 leading-relaxed">{INVITE.body}</p>
               <div className="flex flex-wrap gap-2 mt-4">
-                {INVITE.traits.map((t) => <span key={t} className="h-8 px-3 rounded-full border border-gold-500/40 bg-gold-500/10 text-[13px] text-gold-200 inline-flex items-center gap-1.5"><span aria-hidden>✅</span>{t}</span>)}
+                {INVITE.traits.map((t) => <span key={t} className="h-8 px-3 rounded-full border border-gold-500/40 bg-gold-500/10 text-[13px] text-gold-200 inline-flex items-center gap-1.5"><span aria-hidden>✓</span>{t}</span>)}
               </div>
               <p className="text-[14px] text-ink-100 mt-4 font-medium">{INVITE.close}</p>
             </div>
@@ -406,10 +405,10 @@ export default function SalePage() {
                 </Consent>
                 {errs.consent_criminal && <p data-err="1" className="text-[12px] text-crimson-300 -mt-1">{errs.consent_criminal}</p>}
                 <Consent checked={!!f.ack_hours} onChange={(v) => set("ack_hours", v)} required>
-                  ข้าพเจ้ารับทราบว่าการให้บริการอยู่ที่ {f.package ? `${PACKAGES[f.package].hours} ชม.` : "3–8 ชม. (A) / 3–5 ชม. (B)"} ต่องาน แล้วแต่ package
+                  รับทราบว่าการให้บริการอยู่ที่ {f.package ? PACKAGES[f.package].hours : "3–8 (A) / 3–5 (B)"} ชม. แล้วแต่ package
                 </Consent>
                 <Consent checked={!!f.ack_no_refuse} onChange={(v) => set("ack_no_refuse", v)} required>
-                  ข้าพเจ้ายอมรับเงื่อนไขไม่ปฏิเสธการรับลูกค้า และเงื่อนไขการคืนค่าการันตีแบรนด์ (คืนเมื่อครบ 1 ปี หากไม่ทำผิดกฎบริษัท/กฎหมาย)
+                  ไม่ปฏิเสธการรับลูกค้า (เงื่อนไขคืนค่าการันตีเมื่อครบ 1 ปี)
                 </Consent>
                 {(errs.ack_hours || errs.ack_no_refuse) && <p data-err="1" className="text-[12px] text-crimson-300 -mt-1">ต้องติ๊กรับทราบเงื่อนไขทั้งสองข้อ</p>}
                 <Consent checked={f.consent_marketing} onChange={(v) => set("consent_marketing", v)}>

@@ -8,10 +8,10 @@ import { PartnerPayBox } from "../../pay-box";
 
 export function RenewBox({ current }: { current: PartnerPackageKey }) {
   const router = useRouter();
-  const [pkg, setPkg] = useState<PartnerPackageKey>(current);
+  const [pkg, setPkg] = useState<PartnerPackageKey>(PACKAGE_KEYS.includes(current) ? current : "6m");
   const [paying, setPaying] = useState(false);
   const [invoice, setInvoice] = useState("");
-  const price = PARTNER_PACKAGES[pkg].price;
+  const price = PARTNER_PACKAGES[pkg]?.price ?? null;
 
   if (invoice) return <p className="mt-3 text-sm rounded-2xl border border-gold-500/40 px-4 py-3">ส่งสลิปแล้ว ({invoice}) — ทีมงานจะตรวจภายใน 24 ชม.</p>;
 

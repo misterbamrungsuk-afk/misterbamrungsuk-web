@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { dataUrlToFile, resizeImage } from "@/lib/join/form";
-import { PARTNER_TYPES } from "@/lib/partner/config";
-import { AMENITIES, DAYS, DEFAULT_HOURS, fileUrl, type DayHours, type Listing } from "@/lib/partner/portal-types";
+import { PARTNER_TYPES, baht } from "@/lib/partner/config";
+import { AMENITIES, DAYS, DEFAULT_HOURS, fileUrl, type DayHours, type Listing, type ServiceItem } from "@/lib/partner/portal-types";
 
 async function upload(file: File): Promise<string> {
   if (!file.type.startsWith("image/")) throw new Error("รับเฉพาะไฟล์รูปภาพ");
@@ -52,6 +52,9 @@ export function ListingClient({ initial, name, canPublish }: { initial: Listing;
     setL(out.row);
     setMsg(out.publishBlocked ? "บันทึกแล้ว · เปิดแสดงได้หลังทีมงานอนุมัติบัญชี" : "บันทึกแล้ว ✓");
   };
+
+  const services: ServiceItem[] = l.services ?? [];
+  const setSvc = (i: number, patch: Partial<ServiceItem>) => set("services", services.map((x, j) => (j === i ? { ...x, ...patch } : x)));
 
   const openDays = l.hours.filter((h) => h.open);
   const lab = "block text-sm text-ink-300 mb-1.5";
@@ -136,6 +139,31 @@ export function ListingClient({ initial, name, canPublish }: { initial: Listing;
             <button type="button" aria-label="ลดห้อง" onClick={() => set("rooms", Math.max(0, l.rooms - 1))} className="w-10 h-10 rounded-full border border-ink-600 text-xl">−</button>
             <span className="font-display text-2xl w-8 text-center">{l.rooms}</span>
             <button type="button" aria-label="เพิ่มห้อง" onClick={() => set("rooms", Math.min(200, l.rooms + 1))} className="w-10 h-10 rounded-full border border-ink-600 text-xl">+</button>
+          </div>
+        </div>
+
+        <div>
+          <span className={lab}>รายการบริการ · ราคาสปา → ราคาบนแพลตฟอร์ม</span>
+          <p className="text-xs text-ink-400 mb-2">กรอกชื่อบริการ เวลา และราคาฐานของสปา · ราคาขายบนแพลตฟอร์ม (mark up) ทีมงานเป็นผู้กำหนด — ตอนนี้ [รอกำหนด]</p>
+          <div className="space-y-2">
+            {services.map((x, i) => (
+              <div key={i} className="rounded-2xl border border-ink-600 p-3 space-y-2">
+                <div className="flex gap-2">
+                  <input className="input-dark flex-1 min-w-0" placeholder="ชื่อบริการ เช่น นวดไทย" value={x.name} onChange={(e) => setSvc(i, { name: e.target.value })} aria-label="ชื่อบริการ" />
+                  <button type="button" aria-label="ลบบริการ" onClick={() => set("services", services.filter((_, j) => j !== i))} className="w-10 shrink-0 rounded-full border border-ink-600">✕</button>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <input className="input-dark w-20" inputMode="numeric" value={x.minutes || ""} placeholder="นาที" onChange={(e) => setSvc(i, { minutes: +e.target.value.replace(/D/g, "") || 0 })} aria-label="เวลา (นาที)" />
+                  <span className="text-ink-400">นาที · ฿</span>
+                  <input className="input-dark w-24" inputMode="numeric" value={x.base_price || ""} placeholder="ราคาสปา" onChange={(e) => setSvc(i, { base_price: +e.target.value.replace(/D/g, "") || 0 })} aria-label="ราคาฐานของสปา" />
+                  <span className="text-ink-400">→</span>
+                  <span className="text-gold-300 whitespace-nowrap">{x.platform_price != null ? `฿${baht(x.platform_price)}` : "[รอกำหนด]"}</span>
+                </div>
+              </div>
+            ))}
+            {services.length < 30 && (
+              <button type="button" onClick={() => set("services", [...services, { name: "", minutes: 60, base_price: 0, platform_price: null }])} className="btn-ghost min-h-10 rounded-full px-4 text-sm">+ เพิ่มบริการ</button>
+            )}
           </div>
         </div>
 

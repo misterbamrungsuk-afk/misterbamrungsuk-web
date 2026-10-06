@@ -4,33 +4,27 @@ import { useState } from "react";
 import { Logo } from "@/components/ui";
 import { BRAND, LINE_OA_ID, lineAddUrl } from "@/lib/join/config";
 import {
-  BOOKING_COMMISSION, PACKAGE_INCLUDES, PACKAGE_KEYS, PARTNER_FAQ, PARTNER_PACKAGES, PARTNER_STATS, PARTNER_TYPES, baht,
+  BOOKING_COMMISSION, PACKAGE_INCLUDES, PARTNER_CONDITIONS, SELL_PRICE_NOTE, SHARE_PER_PART, PACKAGE_KEYS, PARTNER_FAQ, PARTNER_PACKAGES, PARTNER_STATS, PARTNER_TYPES, baht,
   type PartnerPackageKey,
 } from "@/lib/partner/config";
 
 const SEEKING = [
-  { t: "SPA", th: "สปา & นวดเพื่อสุขภาพ", d: "ห้องส่วนตัว มาตรฐานการนวดระดับพรีเมียม" },
-  { t: "HOTEL", th: "โรงแรม & รีสอร์ต", d: "แพ็กเกจพักผ่อนสำหรับลูกค้าผู้หญิงและต่างชาติ" },
-  { t: "DINING", th: "ร้านอาหาร & ไฟน์ไดนิ่ง", d: "ประสบการณ์มื้อพิเศษ บรรยากาศเป็นส่วนตัว" },
-  { t: "WELLNESS", th: "เวลเนส & บิวตี้", d: "คลินิก ฟิตเนส โยคะ และการดูแลตัวเอง" },
+  { t: "STANDARD", th: "มาตรฐานเดียวกับบำรุงสุข", d: "มาตรฐานการนวดของสปาต้องตรงกับมาตรฐาน Mister Bamrungsuk" },
+  { t: "QC", th: "ทีมงานทำ QC", d: "สุ่มตรวจคุณภาพบริการ ความสะอาด และความเป็นส่วนตัว" },
+  { t: "BOOKING", th: "เรารับ booking ให้", d: `หัก ${BOOKING_COMMISSION}% ต่อรายการ · ส่วนแบ่งต่อส่วน ${SHARE_PER_PART}%` },
+  { t: "MARK UP", th: "ช่วยวางราคาขาย", d: `mark up ราคาเพื่อขายผ่านแพลตฟอร์ม · ราคาขายต่อบริการ ${SELL_PRICE_NOTE}` },
 ];
 
 const PLACEMENTS = [
-  { n: "01", t: "หน้าแรก", d: "แบนเนอร์และการ์ดแนะนำ ที่ลูกค้าเห็นทันทีเมื่อเข้าเว็บไซต์" },
-  { n: "02", t: "หน้าค้นหา", d: "แสดงในผลค้นหาเมื่อลูกค้าค้นบริการในพื้นที่ของคุณ" },
-  { n: "03", t: "หน้าเลือกสถานที่", d: "อยู่ในหมวด “สปาพาร์ทเนอร์” ตอนลูกค้าเลือกสถานที่รับบริการ" },
-  { n: "04", t: "แคมเปญร่วม", d: "โปรโมชันและคอนเทนต์ร่วมกับมาดามกอ ผ่านช่องทางโซเชียล" },
+  { n: "01", t: "คลิปโปรโมท", d: "1 คลิปต่อแพ็กเกจ ลง IG & FB ของมาดามกอ" },
+  { n: "02", t: "สุ่ม QC", d: "ทีมงานสุ่มตรวจมาตรฐาน ให้ลูกค้ามั่นใจในบริการ" },
+  { n: "03", t: "โปรโมทผ่านแพลตฟอร์ม", d: "แสดงในหมวด “สปาพาร์ทเนอร์” ตอนลูกค้าเลือกสถานที่รับบริการ" },
+  { n: "04", t: "ป้ายแบรนด์", d: "สปาชำระค่าป้ายแบรนด์ Mister Bamrungsuk เพื่อแสดงหน้าร้าน" },
 ];
 
 const STEPS = ["ส่งข้อมูลสมัคร", "ตรวจสอบมาตรฐาน QC", "ทำสัญญาและชำระค่าแพ็กเกจ", "ถ่ายคลิป / จัดทำโปรไฟล์", "เปิดแสดงบนแพลตฟอร์ม"];
 
-const REQUIREMENTS = [
-  "มาตรฐานการนวดแบบเดียวกับบำรุงสุข",
-  "ใบอนุญาตประกอบกิจการถูกต้อง",
-  "ห้องส่วนตัว สะอาด ปลอดภัย",
-  "ยินยอมให้ทีมงานสุ่มตรวจ QC",
-  "ไม่มีบริการทางเพศทุกรูปแบบ",
-];
+const REQUIREMENTS = [...PARTNER_CONDITIONS, "ใบอนุญาตประกอบกิจการถูกต้อง · ไม่มีบริการทางเพศทุกรูปแบบ"];
 
 type Form = {
   business_name: string; type: string; province: string; contact_name: string; tel: string; email: string;
@@ -95,13 +89,13 @@ export function PartnerSalePage() {
         <div className="relative max-w-6xl mx-auto px-4 py-16 lg:py-24">
           <p className="text-xs font-semibold tracking-[0.3em] text-gold-500">PARTNER PROGRAM</p>
           <h1 className="mt-3 text-3xl lg:text-5xl font-semibold leading-tight max-w-3xl">
-            ให้แบรนด์ของคุณอยู่ตรงหน้า<span className="text-gold-500">ลูกค้าระดับพรีเมียม</span>
+            Partner ฝั่งสปา <span className="text-gold-500">ทั่วประเทศ</span>
           </h1>
           <p className="mt-4 text-ink-300 max-w-2xl leading-relaxed">
-            เปิดพื้นที่ให้สปา โรงแรม ร้านอาหาร และพาร์ทเนอร์ด้านเวลเนส ลงประกาศบนเว็บไซต์ เข้าถึงฐานลูกค้าผู้หญิงกลุ่มพรีเมียมโดยตรง
+            ร่วมเป็นสปาพาร์ทเนอร์ของ Mister Bamrungsuk — มาตรฐานการนวดเดียวกับบำรุงสุข เรารับ booking ช่วยวางราคาขาย และโปรโมทให้ผ่านแพลตฟอร์มและช่องทางของมาดามกอ
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
-            <a href="#packages" className="btn-crimson h-12 px-6 rounded-full inline-flex items-center font-semibold">ดูแพ็กเกจพื้นที่โฆษณา</a>
+            <a href="#packages" className="btn-crimson h-12 px-6 rounded-full inline-flex items-center font-semibold">ดูแพ็กเกจพาร์ทเนอร์</a>
             <a href="#apply" className="btn-ghost h-12 px-6 rounded-full inline-flex items-center">ส่งข้อมูลสมัคร</a>
           </div>
           <div className="mt-10 grid grid-cols-3 gap-3 max-w-xl">
@@ -117,8 +111,8 @@ export function PartnerSalePage() {
 
       {/* Seeking */}
       <section className="max-w-6xl mx-auto px-4 py-12">
-        <h2 className="section-title text-2xl font-semibold">เรากำลังมองหาพาร์ทเนอร์</h2>
-        <p className="text-ink-300 text-sm mt-1">SPA • HOTEL • DINING • WELLNESS</p>
+        <h2 className="section-title text-2xl font-semibold">เงื่อนไขพาร์ทเนอร์ฝั่งสปา</h2>
+        <p className="text-ink-300 text-sm mt-1">สปาทั่วประเทศ · ส่วนแบ่ง % ต่อส่วน และราคาขายต่อบริการ [รอกำหนด]</p>
         <div className="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-3">
           {SEEKING.map((s) => (
             <div key={s.t} className="rounded-2xl border border-ink-600 bg-ink-800 p-5 hover:border-gold-500/60 transition">
@@ -132,7 +126,7 @@ export function PartnerSalePage() {
 
       {/* Placements */}
       <section className="max-w-6xl mx-auto px-4 py-12">
-        <h2 className="section-title text-2xl font-semibold">แบรนด์ของคุณจะปรากฏที่ไหน</h2>
+        <h2 className="section-title text-2xl font-semibold">สิทธิประโยชน์ทุกแพ็กเกจ</h2>
         <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {PLACEMENTS.map((p) => (
             <div key={p.n} className="glass rounded-2xl p-5">
@@ -146,8 +140,8 @@ export function PartnerSalePage() {
 
       {/* Packages */}
       <section id="packages" className="max-w-6xl mx-auto px-4 py-12 scroll-mt-16">
-        <h2 className="section-title text-2xl font-semibold">แพ็กเกจพื้นที่โปรโมท</h2>
-        <div className="mt-6 grid lg:grid-cols-3 gap-4">
+        <h2 className="section-title text-2xl font-semibold">แพ็กเกจพาร์ทเนอร์</h2>
+        <div className="mt-6 grid sm:grid-cols-2 gap-4 max-w-4xl">
           {PACKAGE_KEYS.map((k) => {
             const p = PARTNER_PACKAGES[k];
             const hot = !!p.badge;
@@ -171,7 +165,7 @@ export function PartnerSalePage() {
           })}
         </div>
         <p className="mt-4 text-xs text-ink-300">
-          * แพลตฟอร์มรับ booking แทน หัก {BOOKING_COMMISSION}% ต่อรายการ และช่วย mark up ราคาขายให้เหมาะกับกลุ่มลูกค้าพรีเมียม
+          * แพลตฟอร์มรับ booking แทน หัก {BOOKING_COMMISSION}% ต่อรายการ (ส่วนแบ่งต่อส่วน {SHARE_PER_PART}%) · ช่วย mark up ราคาขายผ่านแพลตฟอร์ม (ราคาขายต่อบริการ {SELL_PRICE_NOTE}) · สปาชำระค่าป้ายแบรนด์
         </p>
       </section>
 
@@ -189,7 +183,7 @@ export function PartnerSalePage() {
           </ol>
         </div>
         <div>
-          <h2 className="section-title text-2xl font-semibold">คุณสมบัติพาร์ทเนอร์</h2>
+          <h2 className="section-title text-2xl font-semibold">เงื่อนไข & คุณสมบัติ</h2>
           <ul className="mt-6 glass rounded-2xl p-5 space-y-3">
             {REQUIREMENTS.map((r) => (
               <li key={r} className="flex gap-3"><span className="text-gold-500">◆</span><span>{r}</span></li>

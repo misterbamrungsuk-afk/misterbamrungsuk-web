@@ -20,6 +20,9 @@ export const BOOKING_LABEL: Record<BookingStatus, string> = { pending: "รอ�
 export const DAYS = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
 export const AMENITIES = ["ห้องอาบน้ำส่วนตัว", "ที่จอดรถ", "ห้องพักรอ", "อ่างจากุซซี่", "ซาวน่า", "Wi-Fi", "เครื่องดื่มต้อนรับ", "รองรับภาษาอังกฤษ"];
 
+/** บริการของสปา: ราคาฐานของสปา → ราคาขายบนแพลตฟอร์ม (platform_price กำหนดโดยทีมงาน; null = [รอกำหนด]) */
+export type ServiceItem = { name: string; minutes: number; base_price: number; platform_price: number | null };
+
 export type DayHours = { day: number; open: boolean; from: string; to: string };
 export const DEFAULT_HOURS: DayHours[] = DAYS.map((_, day) => ({ day, open: true, from: "10:00", to: "22:00" }));
 
@@ -32,6 +35,8 @@ export interface Listing {
   hours: DayHours[];
   rooms: number;
   amenities: string[];
+  /** รายการบริการ (คอลัมน์จาก supabase/partner/0003_services.sql) */
+  services?: ServiceItem[];
   area: string | null;
   published: boolean;
   updated_at: string;

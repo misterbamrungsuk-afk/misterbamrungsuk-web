@@ -51,7 +51,7 @@ export const demo: Partner[] = (g.__mbPartnerDemo ??= []);
 /** วันสิ้นสุด = วันเริ่ม + จำนวนเดือนของแพ็กเกจ (YYYY-MM-DD) */
 export function endDateFor(start: string, pkg: PartnerPackageKey): string {
   const d = new Date(`${start}T00:00:00Z`);
-  d.setUTCMonth(d.getUTCMonth() + PARTNER_PACKAGES[pkg].months);
+  d.setUTCMonth(d.getUTCMonth() + (PARTNER_PACKAGES[pkg]?.months ?? 0));
   return d.toISOString().slice(0, 10);
 }
 

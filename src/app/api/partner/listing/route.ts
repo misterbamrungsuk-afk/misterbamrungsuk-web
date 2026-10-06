@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { currentPartner } from "@/lib/partner/auth";
 import { PARTNER_TYPES } from "@/lib/partner/config";
-import { PATH_RE, saveListing } from "@/lib/partner/portal";
-import { AMENITIES, type DayHours } from "@/lib/partner/portal-types";
+import { PATH_RE, getListing, saveListing } from "@/lib/partner/portal";
+import { AMENITIES, type DayHours, type ServiceItem } from "@/lib/partner/portal-types";
 
 export const runtime = "nodejs";
 const bad = (error: string, status = 400) => NextResponse.json({ ok: false, error }, { status });
@@ -34,12 +34,25 @@ export async function PUT(req: Request) {
   const rooms = Math.round(Number(b.rooms));
   if (!(rooms >= 0 && rooms <= 200)) return bad("จำนวนห้องไม่ถูกต้อง");
   const amenities = Array.isArray(b.amenities) ? b.amenities.map(String).filter((a) => AMENITIES.includes(a)) : [];
+  // บริการ: พาร์ทเนอร์กำหนดชื่อ/เวลา/ราคาฐานเอง — ราคาแพลตฟอร์มคงค่าเดิม (ทีมงานเป็นผู้กำหนด)
+  const prev = new Map(((await getListing(p.id).catch(() => null))?.services ?? []).map((x) => [x.name, x]));
+  const services: ServiceItem[] = [];
+  if (Array.isArray(b.services)) {
+    for (const x of b.services.slice(0, 30) as Record<string, unknown>[]) {
+      const name = String(x?.name ?? "").trim().slice(0, 80);
+      const minutes = Math.round(Number(x?.minutes));
+      const base_price = Math.round(Number(x?.base_price));
+      if (!name) continue;
+      if (!(minutes >= 0 && minutes <= 600) || !(base_price >= 0 && base_price <= 1_000_000)) return bad(`ข้อมูลบริการ "${name}" ไม่ถูกต้อง`);
+      services.push({ name, minutes, base_price, platform_price: prev.get(name)?.platform_price ?? null });
+    }
+  }
   // เปิดแสดงได้เมื่อบัญชีอนุมัติแล้วเท่านั้น
   const canPublish = p.account_status === "approved" || p.account_status === "active";
   try {
     const row = await saveListing({
       partner_id: p.id, cover, gallery, type: type || null, description: String(b.description ?? "").trim().slice(0, 2000) || null,
-      hours, rooms, amenities, area: String(b.area ?? "").trim().slice(0, 120) || null, published: canPublish && b.published === true,
+      hours, rooms, amenities, services, area: String(b.area ?? "").trim().slice(0, 120) || null, published: canPublish && b.published === true,
       updated_at: new Date().toISOString(),
     });
     return NextResponse.json({ ok: true, row, publishBlocked: b.published === true && !canPublish });
