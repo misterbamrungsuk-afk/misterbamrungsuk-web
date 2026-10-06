@@ -5,6 +5,7 @@ import { appendToSheet } from "@/lib/join/sheets";
 import { applicantRegistered, sendAll } from "@/lib/email";
 import { ageFrom } from "@/lib/join/form";
 import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/join/legal";
+import { TURNSTILE_ERROR, verifyTurnstile } from "@/lib/turnstile";
 
 export const runtime = "nodejs";
 
@@ -41,6 +42,7 @@ export async function POST(req: Request) {
     return bad("ข้อมูลไม่ถูกต้อง");
   }
   const s = (k: string, max = 200) => String(form.get(k) ?? "").trim().slice(0, max);
+  if (!(await verifyTurnstile(s("turnstile", 2048), ip))) return bad(TURNSTILE_ERROR, 403);
 
   const pkg = s("package") as PackageKey;
   const height = Number(s("height"));

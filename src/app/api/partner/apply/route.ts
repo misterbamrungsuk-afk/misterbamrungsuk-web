@@ -3,6 +3,7 @@ import { PACKAGE_KEYS, PARTNER_TYPES, type PartnerPackageKey } from "@/lib/partn
 import { createPartner } from "@/lib/partner/store";
 import { notifyAdmin, syncPartnerSheet } from "@/lib/partner/notify";
 import { signApplyToken } from "@/lib/partner/auth";
+import { TURNSTILE_ERROR, verifyTurnstile } from "@/lib/turnstile";
 
 export const runtime = "nodejs";
 
@@ -25,6 +26,7 @@ export async function POST(req: Request) {
   const b = (await req.json().catch(() => null)) as Record<string, unknown> | null;
   if (!b) return bad("ข้อมูลไม่ถูกต้อง");
   if (str(b.website, 100)) return NextResponse.json({ ok: true }); // honeypot กันบอท
+  if (!(await verifyTurnstile(b.turnstile, ip))) return bad(TURNSTILE_ERROR, 403);
 
   const input = {
     business_name: str(b.business_name, 120), type: str(b.type, 30), province: str(b.province, 80),

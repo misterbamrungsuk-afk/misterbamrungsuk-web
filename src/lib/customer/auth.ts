@@ -33,6 +33,14 @@ export async function insertCustomer(email: string, name: string, password: stri
   return ((await res.json()) as Customer[])[0];
 }
 
+/** บันทึกเบอร์ที่ยืนยัน OTP แล้ว (คอลัมน์จาก supabase/0002_noshow.sql) */
+export async function setCustomerPhone(id: string, phone: string) {
+  const res = await fetch(`${SB_URL()}/rest/v1/customers?id=eq.${encodeURIComponent(id)}`, {
+    method: "PATCH", headers: sbHeaders(), body: JSON.stringify({ phone, phone_verified_at: new Date().toISOString() }),
+  });
+  if (!res.ok) throw new Error(`customers phone ${res.status}`);
+}
+
 /** ดึงทั้งตาราง (สำหรับสำรองข้อมูล) — รวม password_hash เพื่อกู้คืนได้ */
 export async function dumpTable(table: string): Promise<unknown[]> {
   const res = await fetch(`${SB_URL()}/rest/v1/${table}?select=*`, { headers: sbHeaders(), cache: "no-store" });

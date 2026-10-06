@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Logo } from "@/components/ui";
+import { Turnstile } from "@/components/turnstile";
 import { BRAND, LINE_OA_ID, lineAddUrl } from "@/lib/join/config";
 import {
   BOOKING_COMMISSION, PACKAGE_INCLUDES, PARTNER_CONDITIONS, SELL_PRICE_NOTE, SHARE_PER_PART, PACKAGE_KEYS, PARTNER_FAQ, PARTNER_PACKAGES, PARTNER_STATS, PARTNER_TYPES, baht,
@@ -44,6 +45,8 @@ export function PartnerSalePage() {
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [token, setToken] = useState("");
+  const [ts, setTs] = useState("");
+  const [tsKey, setTsKey] = useState(0);
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setF((s) => ({ ...s, [k]: v }));
 
   const pick = (k: PartnerPackageKey) => {
@@ -57,9 +60,9 @@ export function PartnerSalePage() {
     if (!f.consent) return setErr("กรุณายินยอมการเก็บข้อมูลส่วนบุคคล (PDPA)");
     setBusy(true);
     try {
-      const res = await fetch("/api/partner/apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(f) });
+      const res = await fetch("/api/partner/apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...f, turnstile: ts }) });
       const out = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; token?: string };
-      if (!res.ok || !out.ok) setErr(out.error || "ส่งไม่สำเร็จ กรุณาลองใหม่");
+      if (!res.ok || !out.ok) { setErr(out.error || "ส่งไม่สำเร็จ กรุณาลองใหม่"); setTs(""); setTsKey((k) => k + 1); }
       else {
         setToken(out.token ?? "");
         setDone(true);
@@ -290,6 +293,7 @@ export function PartnerSalePage() {
                   <span>ยินยอมให้ {BRAND.name} เก็บและใช้ข้อมูลข้างต้นเพื่อติดต่อกลับและพิจารณาการเป็นพาร์ทเนอร์ ตาม พ.ร.บ.คุ้มครองข้อมูลส่วนบุคคล (PDPA)</span>
                 </label>
               </div>
+              <Turnstile key={tsKey} onToken={setTs} className="mt-4" />
               {err && <p role="alert" className="mt-4 rounded-xl border border-crimson-500 bg-crimson-500/10 px-4 py-2 text-sm">{err}</p>}
               <button type="submit" disabled={busy} className="mt-6 w-full btn-crimson h-12 rounded-full font-semibold disabled:opacity-60">
                 {busy ? "กำลังส่ง…" : "ส่งข้อมูลสมัคร"}

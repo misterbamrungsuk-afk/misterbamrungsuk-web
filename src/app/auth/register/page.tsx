@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LangToggle } from "@/i18n/provider";
 import { Logo } from "@/components/ui";
+import { OtpStep } from "@/components/otp-step";
 
 const inputCls = "h-12 w-full rounded-2xl border border-gold-500/45 bg-white px-4 text-[15px] outline-none focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20";
 
@@ -12,6 +13,8 @@ export default function RegisterPage() {
   const router = useRouter();
   const [f, setF] = useState({ name: "", email: "", password: "", confirm: "" });
   const [accept, setAccept] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [phoneOk, setPhoneOk] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
@@ -21,12 +24,13 @@ export default function RegisterPage() {
     setError("");
     if (f.password.length < 8) return setError("รหัสผ่านอย่างน้อย 8 ตัวอักษร");
     if (f.password !== f.confirm) return setError("ยืนยันรหัสผ่านไม่ตรงกัน");
+    if (!phoneOk) return setError("กรุณายืนยันเบอร์มือถือด้วยรหัส OTP");
     if (!accept) return setError("กรุณายอมรับเงื่อนไขการใช้งาน");
     setBusy(true);
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: f.name, email: f.email, password: f.password, accept_terms: true }),
+        body: JSON.stringify({ name: f.name, phone, email: f.email, password: f.password, accept_terms: true }),
       });
       const out = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
       if (!out.ok) throw new Error(out.error || "สมัครไม่สำเร็จ");
@@ -56,12 +60,13 @@ export default function RegisterPage() {
 
         <form onSubmit={submit} className="flex flex-col gap-2.5">
           <input required autoComplete="name" placeholder="ชื่อ" value={f.name} onChange={set("name")} className={inputCls} />
+          <OtpStep phone={phone} onPhone={setPhone} verified={phoneOk} onVerified={() => setPhoneOk(true)} inputCls={inputCls} />
           <input type="email" required autoComplete="email" placeholder="อีเมล" value={f.email} onChange={set("email")} className={inputCls} />
           <input type="password" required minLength={8} autoComplete="new-password" placeholder="รหัสผ่าน (อย่างน้อย 8 ตัว)" value={f.password} onChange={set("password")} className={inputCls} />
           <input type="password" required minLength={8} autoComplete="new-password" placeholder="ยืนยันรหัสผ่าน" value={f.confirm} onChange={set("confirm")} className={inputCls} />
           <label className="flex items-start gap-2 text-[13px] text-ink-200 py-1">
             <input type="checkbox" checked={accept} onChange={(e) => setAccept(e.target.checked)} className="mt-0.5 accent-[#b8860b]" />
-            <span>ฉันอายุ 18 ปีขึ้นไป และยอมรับเงื่อนไขการใช้งานและนโยบายความเป็นส่วนตัว</span>
+            <span>ฉันอายุ 18 ปีขึ้นไป และยอมรับ<a href="/page/terms" className="underline text-[#8f5e00]">เงื่อนไขการใช้งานและนโยบายความเป็นส่วนตัว</a></span>
           </label>
           {error && <p className="text-[12.5px] text-[#b3122a]" role="alert">{error}</p>}
           <button type="submit" disabled={busy} className="h-14 w-full rounded-full text-white font-semibold bg-[linear-gradient(180deg,#c8142a,#8f0d1d)] border border-gold-500/70 shadow-[0_10px_24px_rgba(143,13,29,.32),inset_0_1px_0_rgba(255,220,140,.35)] transition active:scale-[.98] disabled:opacity-60">

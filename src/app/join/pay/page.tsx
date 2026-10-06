@@ -8,6 +8,7 @@ import { BANK, PACKAGES, feeBreakdown } from "@/lib/join/config";
 import { FILE_FIELDS, FORM_KEY, dataUrlToFile, resizeImage, type JoinForm } from "@/lib/join/form";
 import { promptPayPayload } from "@/lib/join/promptpay";
 import QRCode from "qrcode";
+import { Turnstile } from "@/components/turnstile";
 
 export default function PayPage() {
   const router = useRouter();
@@ -20,6 +21,8 @@ export default function PayPage() {
   const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [ts, setTs] = useState("");
+  const [tsKey, setTsKey] = useState(0);
 
   useEffect(() => {
     try {
@@ -71,6 +74,7 @@ export default function PayPage() {
       fd.append("consent_pdpa", String(consent_pdpa));
       fd.append("consent_marketing", String(consent_marketing));
       fd.append("payment_method", method);
+      fd.append("turnstile", ts);
       const files = { photo, id_card, bankbook, other_doc, cert_doc };
       for (const k of FILE_FIELDS) if (files[k]) fd.append(k, await dataUrlToFile(files[k], `${k}.jpg`));
       fd.append("slip", await dataUrlToFile(slip, "slip.jpg"));
@@ -82,6 +86,7 @@ export default function PayPage() {
     } catch (e) {
       setErr((e as Error).message);
       setBusy(false);
+      setTs(""); setTsKey((k) => k + 1);
     }
   };
 
@@ -158,6 +163,7 @@ export default function PayPage() {
 
       {err && <p role="alert" className="text-sm text-crimson-300 mt-4">{err}</p>}
 
+      <Turnstile key={tsKey} onToken={setTs} className="mt-5 flex justify-center" />
       <button onClick={submit} disabled={busy} className="btn-crimson w-full h-14 mt-6 font-display font-semibold text-lg">
         {busy ? "กำลังส่งข้อมูล…" : "ยืนยันการชำระเงิน"}
       </button>
