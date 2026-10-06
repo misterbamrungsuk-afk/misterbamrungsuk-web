@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Toast } from "@/components/ui";
 import { site } from "@/lib/site";
 import { CATEGORIES } from "@/lib/categories";
+import { NOSHOW_RULES_TH } from "@/lib/noshow-rules";
 import { Card, PageHead } from "../admin-nav";
 
 // ค่าระบบ — โหมดเดโมเก็บใน state; โหมดจริงบันทึกลงตาราง settings + บันทึก Audit log
@@ -15,6 +16,7 @@ const FIELDS = [
   { group: "กติกาและความปลอดภัย", key: "strikeExpire", label: "Strike หมดอายุหลัง (วัน)", value: 90 },
   { group: "กติกาและความปลอดภัย", key: "wait", label: "รอลูกค้าสูงสุด (นาที)", value: 15 },
   { group: "กติกาและความปลอดภัย", key: "accept", label: "เวลากดรับงานด่วน (วินาที)", value: site.matchAcceptSeconds },
+  { group: "กติกาและความปลอดภัย", key: "noshowDecide", label: "ตัดสินคำร้องผิดนัดภายใน (ชม.)", value: 24 },
   { group: "โพสต์และค้นหา", key: "postExpire", label: "โพสต์หมดอายุหลัง (วัน)", value: site.postExpiryDays },
   { group: "โพสต์และค้นหา", key: "radius", label: "รัศมีงานด่วนเริ่มต้น (กม.)", value: 5 },
 ] as const;
@@ -45,6 +47,12 @@ export default function AdminSettingsPage() {
             ))}
           </Card>
         ))}
+        <Card className="flex flex-col gap-2 md:col-span-2">
+          <h2 className="font-display font-medium text-lg">กติกาผิดนัด (No-show)</h2>
+          {NOSHOW_RULES_TH.map(([h, b]) => (
+            <p key={h} className="text-sm"><b className="text-gold-300">{h}:</b> <span className="text-ink-200">{b}</span></p>
+          ))}
+        </Card>
         <Card className="flex flex-col gap-3">
           <h2 className="font-display font-medium text-lg">หมวดบริการ</h2>
           <div className="flex flex-wrap gap-2">

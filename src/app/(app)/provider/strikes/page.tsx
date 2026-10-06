@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useI18n } from "@/i18n/provider";
 import { TopBar } from "@/components/shell";
 import { Toast } from "@/components/ui";
+import { NOSHOW_RULES_TH } from "@/lib/noshow-rules";
 import { BASE_SCORE, DEMO_STRIKE_EVENTS, STRIKE_DEDUCTION, STRIKE_EXPIRE_DAYS, STRIKE_LIMIT, evaluateStrikes } from "@/lib/strikes";
 
 export default function StrikesPage() {
@@ -36,6 +37,13 @@ export default function StrikesPage() {
           </div>
           <p className="text-sm mt-3">{th ? "คะแนนความประพฤติ" : "Conduct score"} <b className="text-gold-400">{ev.score}</b><span className="text-ink-500">/{BASE_SCORE}</span></p>
           <p className="text-xs text-ink-400 mt-2">{th ? `รีวิว 1 ดาว หรือถูกรายงานไม่เหมาะสม = 1 strike (หัก ${STRIKE_DEDUCTION} คะแนน แจ้งแอดมินอัตโนมัติ) · ครบ ${STRIKE_LIMIT} ระงับบัญชี · หมดอายุใน ${STRIKE_EXPIRE_DAYS} วัน` : `1-star review or inappropriate report = 1 strike (−${STRIKE_DEDUCTION} pts, admin notified) · ${STRIKE_LIMIT} = suspension · expire after ${STRIKE_EXPIRE_DAYS} days`}</p>
+        </div>
+
+        <div className="glass rounded-3xl p-4 space-y-2">
+          <p className="font-semibold text-sm">{th ? "กติกาผิดนัด (No-show)" : "No-show rules"}</p>
+          {NOSHOW_RULES_TH.map(([h, b]) => (
+            <div key={h} className="text-xs"><b className="text-gold-300">{h}</b><p className="text-ink-300 mt-0.5 leading-relaxed">{b}</p></div>
+          ))}
         </div>
 
         {ev.strikes.map((s) => (

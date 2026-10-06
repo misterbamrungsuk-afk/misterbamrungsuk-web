@@ -2,6 +2,7 @@
 
 import { useI18n } from "@/i18n/provider";
 import { TopBar } from "@/components/shell";
+import { NOSHOW_DECISION_HOURS, NOSHOW_RULES_TH, PAYOUT_PERCENT } from "@/lib/noshow-rules";
 
 export default function TermsPage() {
   const { t, lang } = useI18n();
@@ -11,12 +12,14 @@ export default function TermsPage() {
     ["3. ข้อห้าม", "ห้ามเสนอบริการทางเพศหรือผิดกฎหมายทุกประเภท ห้ามใช้รูปภาพที่สร้างด้วย AI แอบอ้างเป็นบุคคลอื่น ห้ามรีวิวโดยไม่มีการว่าจ้างจริง ห้ามสแปมหรือสร้างบัญชีจำนวนมาก"],
     ["4. ความปลอดภัย", "นัดพบในสถานที่สาธารณะ ชำระเงินผ่านระบบในแอปเท่านั้น (ชำระเต็มจำนวนตอนจอง เงินพักไว้กับเราจนจบนัด) แจ้งคนใกล้ตัวก่อนพบปะ และรีพอร์ทพฤติกรรมผิดปกติได้ทันที"],
     ["5. การระงับบัญชี", "ผู้ละเมิดข้อกำหนดจะได้รับ strike ครบ 3 ครั้งระบบระงับบัญชีอัตโนมัติ ผู้ใช้สามารถลบบัญชีได้เองตลอดเวลา"],
+    ["6. การผิดนัด (No-show)", NOSHOW_RULES_TH.map(([h, b]) => `• ${h}: ${b}`).join("\n")],
   ] as [string, string][] : [
     ["1. About", "Mister Bamrungsuk is a marketplace connecting users with verified companions for dining, outings and activities (no sexual services). Hiring is a direct contract between users; the platform provides in-app escrow for safety."],
     ["2. Eligibility", "18+ only. Sign in with Google, verify identity (KYC) before posting. Free to use; fees may apply in the future with notice."],
     ["3. Prohibited", "No sexual or illegal services, AI-generated impersonation photos, reviews without real hires, spam, or mass account creation."],
     ["4. Safety", "Meet in public places, pay only via in-app escrow (pay in full when booking; we hold it until the meet-up ends), tell someone you trust, report anything suspicious."],
     ["5. Enforcement", "3-strike policy leads to automatic suspension. You may delete your account at any time."],
+    ["6. No-shows", `Both sides must submit evidence (GPS, photo, call/chat attempts); admin decides within ${NOSHOW_DECISION_HOURS}h while the money is held. Customer no-show: the companion receives ${PAYOUT_PERCENT}%. Companion no-show: 100% refund, plus a strike and point deduction for the companion.`],
   ] as [string, string][];
 
   return (
@@ -26,7 +29,7 @@ export default function TermsPage() {
         {sections.map(([h, b]) => (
           <section key={h} className="glass rounded-2xl p-4">
             <h2 className="font-semibold text-gold-300 mb-1.5">{h}</h2>
-            <p className="text-sm text-ink-200 leading-relaxed">{b}</p>
+            <p className="text-sm text-ink-200 leading-relaxed whitespace-pre-line">{b}</p>
           </section>
         ))}
       </div>

@@ -7,8 +7,10 @@ import { baht } from "@/components/ui";
 import { DEMO_INCOMING, DEMO_ME } from "@/lib/demo-data";
 import { BelongingsChecklist, type BelongingsRecord } from "../../_components/belongings-checklist";
 import { UpsellCard } from "../../_components/upsell-card";
+import { NoShowEvidence } from "@/components/noshow-evidence";
+import { NOSHOW_DECISION_HOURS, PAYOUT_PERCENT } from "@/lib/noshow-rules";
 
-type Phase = "waiting" | "running" | "check" | "done";
+type Phase = "waiting" | "running" | "check" | "done" | "noshow" | "claimed";
 
 // หน้างาน (on-site) — รอลูกค้าสูงสุด 15 นาที → เริ่มงาน → จบงาน → ขอเงินส่วนที่เหลือ
 export default function OnSiteJobPage({ params }: { params: Promise<{ id: string }> }) {
@@ -44,7 +46,7 @@ export default function OnSiteJobPage({ params }: { params: Promise<{ id: string
         <Link href="/provider" className="w-10 h-10 -ml-2 rounded-full border border-ink-600 grid place-items-center text-ink-100 text-xl leading-none" aria-label="back">‹</Link>
         <h1 className="font-semibold flex-1">🧰 {lang === "th" ? "หน้างาน" : "On-site job"}</h1>
         <span className={`chip ${phase === "running" ? "chip-red animate-pulse" : phase === "done" ? "chip-gold" : ""}`}>
-          {phase === "waiting" ? (lang === "th" ? "รอลูกค้า" : "Waiting") : phase === "running" ? (lang === "th" ? "กำลังทำงาน" : "Working") : (lang === "th" ? "จบงาน" : "Done")}
+          {phase === "waiting" || phase === "noshow" ? (lang === "th" ? "รอลูกค้า" : "Waiting") : phase === "claimed" ? (lang === "th" ? "รอแอดมินตรวจ" : "In review") : phase === "running" ? (lang === "th" ? "กำลังทำงาน" : "Working") : (lang === "th" ? "จบงาน" : "Done")}
         </span>
       </header>
 
@@ -69,17 +71,34 @@ export default function OnSiteJobPage({ params }: { params: Promise<{ id: string
           <div className="glass rounded-2xl p-6 text-center animate-rise border-crimson-500/30">
             <p className="text-xs text-ink-400 uppercase tracking-widest">{lang === "th" ? "รอลูกค้ามาถึง (สูงสุด 15 นาที)" : "Waiting for customer (max 15 min)"}</p>
             <p className={`text-5xl font-black my-4 ${waitSec <= 300 ? "text-crimson-400" : "text-gold-400"}`}>{mmss(waitSec)}</p>
-            {waitSec <= 0 ? (
-              <div>
-                <p className="text-sm text-crimson-300 mb-4">{lang === "th" ? "หมดเวลารอ — ส่งหลักฐานให้แอดมินตรวจ ถ้าลูกค้าผิดนัดจริง คุณได้รับ 85% ของยอด" : "Timed out — evidence sent for review; if confirmed, you receive 85%"}</p>
-                <Link href="/provider" className="btn-ghost rounded-xl px-6 py-2.5 text-sm inline-block">{lang === "th" ? "กลับแดชบอร์ด" : "Back"}</Link>
-              </div>
-            ) : (
+            <div className="flex flex-col gap-2">
               <button onClick={() => { setCustomerHere(true); setPhase("running"); }} className="btn-crimson rounded-xl px-8 py-3 font-bold">
                 ✅ {lang === "th" ? "ลูกค้ามาถึงแล้ว — เริ่มงาน" : "Customer arrived — start"}
               </button>
-            )}
+              <button onClick={() => setPhase("noshow")} disabled={waitSec > 0} className="btn-ghost rounded-xl px-8 py-3 text-sm disabled:opacity-40">
+                🚫 {lang === "th" ? "ลูกค้าไม่มา" : "Customer no-show"}{waitSec > 0 && <span className="block text-[10px] text-ink-400">{lang === "th" ? `กดได้เมื่อรอครบ 15 นาที (อีก ${mmss(waitSec)})` : `Available after 15 min (${mmss(waitSec)})`}</span>}
+              </button>
+            </div>
             <p className="text-[10px] text-ink-500 mt-4">{lang === "th" ? "รอครบ 15 นาที + เช็กอิน GPS + ถ่ายรูปที่จุดนัด แอดมินตรวจหลักฐานทั้งสองฝ่ายก่อนตัดสิน" : "Wait 15 min, GPS check-in and photo at the spot; admin reviews both sides"}</p>
+          </div>
+        )}
+
+        {phase === "noshow" && (
+          <div className="glass rounded-2xl p-5 animate-rise border-crimson-500/30">
+            <p className="font-semibold">🚫 {lang === "th" ? "แจ้งลูกค้าไม่มา — หลักฐาน" : "Customer no-show — evidence"}</p>
+            <p className="text-xs text-ink-400 mt-1 mb-3">{lang === "th" ? `แอดมินตรวจหลักฐานทั้งสองฝ่ายภายใน ${NOSHOW_DECISION_HOURS} ชม. ถ้าอนุมัติ คุณได้รับ ${PAYOUT_PERCENT}%` : `Admin reviews both sides within ${NOSHOW_DECISION_HOURS}h. If approved you receive ${PAYOUT_PERCENT}%`}</p>
+            <NoShowEvidence side="provider" bookingId={job.id} amount={job.budget} customerName={job.hirer.name} providerName={DEMO_ME.name} providerId={DEMO_ME.id}
+              roomId="room1" senderId={DEMO_ME.id} th={lang === "th"} onCancel={() => setPhase("waiting")} onDone={() => setPhase("claimed")} />
+          </div>
+        )}
+
+        {phase === "claimed" && (
+          <div className="glass rounded-2xl p-6 text-center animate-rise border-gold-500/40">
+            <span className="chip chip-gold">{lang === "th" ? "รอแอดมินตรวจ" : "Awaiting admin review"}</span>
+            <p className="font-semibold mt-3">{lang === "th" ? "ส่งหลักฐานแล้ว" : "Evidence sent"}</p>
+            <p className="text-sm text-gold-300 mt-1">{lang === "th" ? `ถ้าอนุมัติ คุณได้รับ ${PAYOUT_PERCENT}%` : `If approved you receive ${PAYOUT_PERCENT}%`} ({baht(Math.round(job.budget * PAYOUT_PERCENT / 100))})</p>
+            <p className="text-xs text-ink-400 mt-2">{lang === "th" ? `เงินพักไว้กับเราจนแอดมินตัดสิน (ภายใน ${NOSHOW_DECISION_HOURS} ชม.)` : `Money is held until admin decides (within ${NOSHOW_DECISION_HOURS}h)`}</p>
+            <Link href="/provider" className="btn-ghost rounded-xl px-6 py-2.5 text-sm inline-block mt-4">{lang === "th" ? "กลับแดชบอร์ด" : "Back"}</Link>
           </div>
         )}
 
@@ -107,7 +126,7 @@ export default function OnSiteJobPage({ params }: { params: Promise<{ id: string
             <p className="text-5xl mb-3">🎉</p>
             <p className="font-semibold">{lang === "th" ? "จบงานเรียบร้อย!" : "Job completed!"}</p>
             {belongings && <p className="text-[11px] text-ink-400 mt-1">🧾 {lang === "th" ? "ยืนยันทรัพย์สินลูกค้าครบ" : "Belongings confirmed"} · {new Date(belongings.confirmedAt).toLocaleTimeString(lang === "th" ? "th-TH" : "en-GB", { hour: "2-digit", minute: "2-digit" })}</p>}
-            <p className="text-sm text-ink-300 mt-2">{lang === "th" ? "ส่งงานในระบบกลางเพื่อรับเงิน (หัก GP แล้วโอนเข้าบัญชีคุณ)" : "Deliver via escrow to receive your payout"}</p>
+            <p className="text-sm text-ink-300 mt-2">{lang === "th" ? "ส่งงานเพื่อรับเงิน (หักค่าธรรมเนียม 15% แล้วโอนเข้าบัญชีคุณ)" : "Deliver via escrow to receive your payout"}</p>
             <div className="flex gap-2 mt-4">
               <Link href="/provider" className="btn-ghost rounded-xl flex-1 py-3 text-sm">{lang === "th" ? "แดชบอร์ด" : "Dashboard"}</Link>
               <Link href={`/provider/job/${id}/done`} className="btn-crimson rounded-xl flex-1 py-3 text-sm font-bold">📦 {lang === "th" ? "ส่งงาน รับเงิน" : "Deliver & get paid"}</Link>

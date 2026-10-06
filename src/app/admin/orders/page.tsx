@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Toast, baht } from "@/components/ui";
 import { ADMIN_ORDERS, STATUS_LABEL, type OrderStatus } from "@/lib/admin-data";
 import { Card, PageHead, Pill } from "../admin-nav";
+import { NoShowClaims } from "./noshow-claims";
 
 const FILTERS: [string, OrderStatus | ""][] = [["ทั้งหมด", ""], ["เงินถูกกัน", "held"], ["ระหว่างนัด", "in_progress"], ["รอปล่อยเงิน", "awaiting_release"], ["ข้อพิพาท", "disputed"]];
 
@@ -15,6 +16,7 @@ export default function AdminOrdersPage() {
   const [q, setQ] = useState("");
   const [selId, setSelId] = useState(ADMIN_ORDERS[0].id);
   const [toast, setToast] = useState("");
+  const [noShow, setNoShow] = useState(false);
 
   const list = useMemo(() => orders.filter((o) => (!filter || o.status === filter) && (!q || (o.id + o.customer + o.partTime).toLowerCase().includes(q.toLowerCase()))), [orders, filter, q]);
   const sel = orders.find((o) => o.id === selId);
@@ -30,9 +32,11 @@ export default function AdminOrdersPage() {
       <PageHead title="ตรวจงาน" sub="ออเดอร์ทั้งหมดพร้อม GP" right={<input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ค้นหา #ออเดอร์ / ชื่อ" aria-label="ค้นหาออเดอร์" className="input-dark h-11 w-64 max-w-full" />} />
       <div className="flex gap-2 overflow-x-auto no-scrollbar mb-3">
         {FILTERS.map(([l, v]) => (
-          <button key={l} onClick={() => setFilter(v)} className={`chip whitespace-nowrap h-9 px-3.5 ${filter === v ? "chip-red" : ""}`}>{l}</button>
+          <button key={l} onClick={() => { setFilter(v); setNoShow(false); }} className={`chip whitespace-nowrap h-9 px-3.5 ${!noShow && filter === v ? "chip-red" : ""}`}>{l}</button>
         ))}
+        <button onClick={() => setNoShow(true)} className={`chip whitespace-nowrap h-9 px-3.5 ${noShow ? "chip-red" : ""}`}>คำร้องผิดนัด</button>
       </div>
+      {noShow ? <NoShowClaims onToast={(m) => { setToast(m); setTimeout(() => setToast(""), 2200); }} /> : (
       <div className="grid lg:grid-cols-[1fr_340px] gap-3">
         <Card className="!p-2 flex flex-col gap-1">
           {list.length === 0 && <p className="text-center text-ink-300 py-10">ไม่พบออเดอร์</p>}
@@ -65,11 +69,11 @@ export default function AdminOrdersPage() {
             </div>
             <p className="font-display font-medium">ไทม์ไลน์เงิน</p>
             <ol className="text-sm flex flex-col gap-2 border-l border-ink-600 pl-4">
-              <li>สร้างออเดอร์ · ลูกค้าโอนเข้าระบบกลาง</li>
+              <li>สร้างออเดอร์ · ลูกค้าชำระเต็มจำนวน (เงินพักไว้กับเรา)</li>
               <li>ตรวจสลิปผ่าน · เงินถูกกัน</li>
               <li className={sel.status === "released" ? "" : "text-ink-300"}>{sel.status === "cancelled" ? "ยกเลิก · คืนเงินลูกค้า" : "ปล่อยเงินให้ผู้ให้บริการ (หรืออัตโนมัติใน 24 ชม.)"}</li>
             </ol>
-            <Link href="/escrow/o1" className="text-sm text-gold-600 min-h-9 inline-flex items-center">ดูหน้าระบบกลางเงินของออเดอร์ →</Link>
+            <Link href="/escrow/o1" className="text-sm text-gold-600 min-h-9 inline-flex items-center">ดูหน้าเงินพักของออเดอร์ →</Link>
             <div className="flex gap-2">
               <button onClick={() => setStatus("cancelled", `ยกเลิก ${sel.id} และคืนเงินลูกค้าแล้ว`)} disabled={!open} className="flex-1 h-11 rounded-xl border border-crimson-500 text-crimson-200 disabled:opacity-40">ยกเลิก + คืนเงิน</button>
               <button onClick={() => setStatus("released", `ปิดงาน ${sel.id} · ปล่อยเงินให้ผู้ให้บริการแล้ว`)} disabled={!open} className="flex-1 h-11 rounded-xl bg-crimson-500 text-white font-semibold disabled:opacity-40">ปิดงาน</button>
@@ -77,6 +81,7 @@ export default function AdminOrdersPage() {
           </Card>
         )}
       </div>
+      )}
       <Toast show={!!toast}>{toast}</Toast>
     </>
   );
