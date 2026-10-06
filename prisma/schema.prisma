@@ -103,9 +103,11 @@ model Post {
   memberId     String
   province     String
   serviceArea  String?
-  pricePerHour Int
-  minHours     Int      @default(1)
-  deposit      Int      @default(0)
+  activities   String[] @default([]) // slug กิจกรรม หรือข้อความที่พิมพ์เอง
+  skills       String[] @default([]) // slug สกิลพิเศษ (massage = นวดผ่อนคลาย ต้องมีใบรับรอง)
+  places       String[] @default([]) // slug สถานที่นัด
+  price3h      Int      @default(0)  // ราคาบล็อก 3 ชม.
+  price5h      Int      @default(0)  // ราคาบล็อก 5 ชม.
   workingHours String? // "12:00-23:00"
   languages    String[] @default(["ไทย"])
   acceptGender String   @default("any") // any | male | female
@@ -224,10 +226,8 @@ model ChatRoom {
   lastMessage String?
   lastAt    DateTime @default(now())
 
-  depositCreatedAt    DateTime?
-  depositConfirmedAt  DateTime?
-  finalCreatedAt      DateTime?
-  finalConfirmedAt    DateTime?
+  paymentCreatedAt    DateTime? // ลูกค้าจ่ายเต็มจำนวนครั้งเดียว (ไม่มีมัดจำ)
+  paymentConfirmedAt  DateTime?
 
   messages   ChatMessage[]
   payments   PaymentTransaction[]
@@ -262,8 +262,7 @@ model ChatMessage {
 }
 
 enum PaymentType {
-  deposit
-  final
+  full
 }
 
 enum PaymentStatus {
@@ -343,7 +342,7 @@ model Block {
 
 enum OrderStatus {
   negotiated
-  deposit_paid
+  paid
   in_progress
   completed
   reviewed
@@ -359,7 +358,6 @@ model Order {
   matchRequestId String?    @unique
   status        OrderStatus @default(negotiated)
   totalAmount   Int         @default(0)
-  depositAmount Int         @default(0)
   discount      Int         @default(0)
   promoCode     String?
   commission    Int         @default(0) // GP ค่าธรรมเนียม (บาท)

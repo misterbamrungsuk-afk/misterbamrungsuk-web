@@ -11,13 +11,14 @@ import { Toggle } from "./_components/toggle";
 const P = {
   name: "น้องมายด์",
   code: "MB-2611007",
-  pkg: "B · เพื่อนกินเที่ยว + นวด",
+  pkg: "B · เพื่อนกินเที่ยว — มีความสามารถในการนวด",
   photo: "https://images.unsplash.com/photo-1610088441520-4352457e7095?auto=format&fit=crop&w=400&q=70",
-  done: 9,
+  month: 4,
+  jobs: 9,
   rating: 4.9,
   strikes: 0,
-  deposit: 15000,
-  target: 15,
+  guarantee: 15000,
+  target: 12,
   areas: ["สยาม", "สุขุมวิท", "ทองหล่อ", "อารีย์", "สาทร"],
   bank: { name: "กสิกรไทย", no: "xxx-x-x4978-x", holder: "มายด์ ส." },
   tel: "08x-xxx-1234",
@@ -28,20 +29,20 @@ const TIMELINE = [
   { t: "สมัครและชำระค่าสมัคร", done: true },
   { t: "ผ่านตรวจประวัติอาชญากรรม", done: true },
   { t: "ผ่านการอบรม 2 วัน", done: true },
-  { t: "ชำระค่าประกัน", done: true },
+  { t: "ชำระค่าการันตีแบรนด์", done: true },
   { t: "เปิดรับงานแล้ว", done: true, now: true },
 ];
 const RECENT = [
   { d: "4 ต.ค.", s: "กินข้าว + ดูหนัง", c: "คุณแนท", net: 3400 },
   { d: "2 ต.ค.", s: "คาเฟ่ + ถ่ายรูป", c: "Ms. Emily", net: 2550 },
-  { d: "29 ก.ย.", s: "นวด + นั่งชิล", c: "คุณพลอย", net: 2975 },
+  { d: "29 ก.ย.", s: "นั่งชิล + คาเฟ่", c: "คุณพลอย", net: 2975 },
 ];
 
 export default function ProviderProfile() {
   const { t, lang } = useI18n();
   const th = lang === "th";
   const [online, setOnline] = useState(true);
-  const left = Math.max(0, P.target - P.done);
+  const left = Math.max(0, P.target - P.month);
 
   return (
     <>
@@ -66,7 +67,7 @@ export default function ProviderProfile() {
           </div>
           <div className="grid grid-cols-3 gap-2 mt-3">
             {[
-              [String(P.done), th ? "งานสำเร็จ" : "Completed"],
+              [String(P.jobs), th ? "งานสำเร็จ" : "Completed"],
               [`★ ${P.rating}`, th ? "คะแนนรีวิว" : "Rating"],
               [`${P.strikes}/3`, th ? "ใบเตือน" : "Strikes"],
             ].map(([v, k]) => (
@@ -78,19 +79,19 @@ export default function ProviderProfile() {
           </div>
         </section>
 
-        {/* ความคืบหน้ารับคืนค่าประกัน */}
+        {/* ความคืบหน้ารับคืนค่าการันตี (ครบ 1 ปี) */}
         <section className="rounded-3xl border border-ink-600 bg-ink-800 p-4 animate-rise">
-          <p className="text-[11px] font-semibold tracking-[0.2em] text-gold-400">DEPOSIT REFUND</p>
+          <p className="text-[11px] font-semibold tracking-[0.2em] text-gold-400">GUARANTEE REFUND</p>
           <div className="flex items-baseline justify-between mt-1">
-            <p className="font-semibold">{th ? "ความคืบหน้ารับคืนค่าประกันคืน" : "Deposit refund progress"} {baht(P.deposit)}</p>
-            <p className="font-display text-gold-300">{P.done} / {P.target} {th ? "งาน" : "jobs"}</p>
+            <p className="font-semibold">{th ? "รับคืนค่าการันตี" : "Guarantee refund"} {baht(P.guarantee)}</p>
+            <p className="font-display text-gold-300">{th ? "เดือนที่" : "Month"} {P.month}/{P.target}</p>
           </div>
-          <div className="flex gap-1 mt-3" aria-label={`${P.done} / ${P.target}`}>
+          <div className="flex gap-1 mt-3" aria-label={`${P.month} / ${P.target}`}>
             {Array.from({ length: P.target }, (_, i) => (
-              <span key={i} className={`h-2.5 flex-1 rounded-full ${i < P.done ? "bg-gradient-to-r from-gold-400 to-gold-500" : "bg-ink-700"}`} />
+              <span key={i} className={`h-2.5 flex-1 rounded-full ${i < P.month ? "bg-gradient-to-r from-gold-400 to-gold-500" : "bg-ink-700"}`} />
             ))}
           </div>
-          <p className="text-xs text-ink-300 mt-3">{left > 0 ? (th ? `ทำงานให้ครบอีก ${left} งาน รับค่าประกันคืนเต็มจำนวน` : `${left} more jobs to get your full deposit back`) : (th ? "ครบแล้ว! ทีมงานจะโอนค่าประกันคืน" : "Done! Your deposit will be refunded")}</p>
+          <p className="text-xs text-ink-300 mt-3">{left > 0 ? (th ? `อีก ${left} เดือน รับค่าการันตีคืนเต็มจำนวน · ไม่ผิดกฎ ไม่ปฏิเสธลูกค้า ✓` : `${left} more months to a full refund · no rule breaks, no declined customers ✓`) : (th ? "ครบ 1 ปีแล้ว! ทีมงานจะโอนค่าการันตีคืน" : "1 year done! Your guarantee will be refunded")}</p>
         </section>
 
         {/* สถานะบัญชี */}

@@ -47,7 +47,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
           <tbody>
             {[
               ["รายได้ GP · Audit log", ["super", "finance", "cs", "kyc"]],
-              ["โอนให้หมอ · โปรโมชัน", ["super", "finance"]],
+              ["โอนให้ Part-Time · โปรโมชัน", ["super", "finance"]],
               ["ตรวจงาน / ออเดอร์", ["super", "finance", "cs"]],
               ["คิว KYC", ["super", "kyc"]],
               ["CS tickets", ["super", "cs"]],

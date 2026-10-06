@@ -24,7 +24,7 @@ export default function OnSiteJobPage({ params }: { params: Promise<{ id: string
 
   useEffect(() => {
     if (phase !== "waiting" || customerHere) return;
-    if (waitSec <= 0) return; // หมดเวลา — งานถือเป็นยกเลิก ยึดมัดจำตามกติกา
+    if (waitSec <= 0) return; // หมดเวลา — ส่งหลักฐาน (GPS + รูป + ประวัติโทร/แชท) ให้แอดมินตรวจ
     const tm = setTimeout(() => setWaitSec((s) => s - 1), 1000);
     return () => clearTimeout(tm);
   }, [phase, waitSec, customerHere]);
@@ -71,7 +71,7 @@ export default function OnSiteJobPage({ params }: { params: Promise<{ id: string
             <p className={`text-5xl font-black my-4 ${waitSec <= 300 ? "text-crimson-400" : "text-gold-400"}`}>{mmss(waitSec)}</p>
             {waitSec <= 0 ? (
               <div>
-                <p className="text-sm text-crimson-300 mb-4">{lang === "th" ? "หมดเวลารอ — ตามกติกา: ยกเลิกงานและรับมัดจำ" : "Timed out — job cancelled, deposit forfeited"}</p>
+                <p className="text-sm text-crimson-300 mb-4">{lang === "th" ? "หมดเวลารอ — ส่งหลักฐานให้แอดมินตรวจ ถ้าลูกค้าผิดนัดจริง คุณได้รับ 85% ของยอด" : "Timed out — evidence sent for review; if confirmed, you receive 85%"}</p>
                 <Link href="/provider" className="btn-ghost rounded-xl px-6 py-2.5 text-sm inline-block">{lang === "th" ? "กลับแดชบอร์ด" : "Back"}</Link>
               </div>
             ) : (
@@ -79,7 +79,7 @@ export default function OnSiteJobPage({ params }: { params: Promise<{ id: string
                 ✅ {lang === "th" ? "ลูกค้ามาถึงแล้ว — เริ่มงาน" : "Customer arrived — start"}
               </button>
             )}
-            <p className="text-[10px] text-ink-500 mt-4">{lang === "th" ? "ลูกค้าสายเกิน 15 นาที ถือว่ายกเลิก มัดจำไม่คืน (ตรวจสอบอัตโนมัติ)" : "15-min no-show = auto cancel, deposit kept"}</p>
+            <p className="text-[10px] text-ink-500 mt-4">{lang === "th" ? "รอครบ 15 นาที + เช็กอิน GPS + ถ่ายรูปที่จุดนัด แอดมินตรวจหลักฐานทั้งสองฝ่ายก่อนตัดสิน" : "Wait 15 min, GPS check-in and photo at the spot; admin reviews both sides"}</p>
           </div>
         )}
 

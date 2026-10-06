@@ -1,15 +1,6 @@
 // ตัวช่วย flow จองล่วงหน้า (โหมดเดโม: คำนวณฝั่งหน้าเว็บ — โหมดจริงให้เซิร์ฟเวอร์คำนวณซ้ำก่อนสร้างออเดอร์)
 import type { Post, PromoCode } from "./types";
 
-export const PACKAGES = [60, 90, 120] as const;
-export type PackageMin = (typeof PACKAGES)[number];
-
-export const HERBAL_PRICE = 100; // ประคบสมุนไพร (อุปกรณ์เสริม)
-
-/** ราคาแพ็กเกจ: คิดตามราคา/ชม. ของหมอ ปัดเป็นหลักสิบ */
-export function packagePrice(post: Post, minutes: number) {
-  return Math.round((post.pricePerHour * minutes) / 60 / 10) * 10;
-}
 
 /** วันให้เลือก 5 วันนับจากวันนี้ (yyyy-mm-dd ตามเวลาเครื่อง) */
 export function nextDays(n = 5) {
@@ -24,7 +15,7 @@ export function nextDays(n = 5) {
   return out;
 }
 
-/** ช่วงเวลาตามเวลาทำงานของหมอ ทุก 90 นาที; ช่องที่ถูกจองแล้วใช้ค่าสุ่มคงที่ตามวัน (เดโม) */
+/** ช่วงเวลาตามเวลาว่างของ Part-Time ทุก 90 นาที; ช่องที่ถูกจองแล้วใช้ค่าสุ่มคงที่ตามวัน (เดโม) */
 export function timeSlots(post: Post, dateIso: string) {
   const [startH, endH] = post.workingHours.split("-").map((t) => Number(t.split(":")[0]));
   const end = endH <= startH ? endH + 24 : endH;
@@ -54,29 +45,31 @@ export function thaiDate(iso: string) {
   return d.toLocaleDateString("th-TH", { weekday: "short", day: "numeric", month: "short" });
 }
 
-// ── บล็อกชั่วโมง (หน่วยขายใหม่) + add-on นวด + สปาพาร์ทเนอร์ ──
+// ── บล็อกชั่วโมง (หน่วยขายเดียว: 3 / 5 ชม.) ── ไม่มี add-on และไม่มีมัดจำ ลูกค้าจ่ายเต็มตอนจอง
 export const BLOCKS = [3, 5] as const;
 export type BlockHours = (typeof BLOCKS)[number];
-export const DEFAULT_MASSAGE_ADDON = 500;
 
 export function blockPrice(post: Post, hours: number) {
-  if (hours === 3 && post.price3h) return post.price3h;
-  if (hours === 5 && post.price5h) return post.price5h;
-  return Math.round((post.pricePerHour * hours) / 10) * 10;
-}
-export function massageAddonPrice(post: Post) {
-  return post.massageSkill ? post.massageAddon ?? DEFAULT_MASSAGE_ADDON : 0;
+  return hours === 5 ? post.price5h : post.price3h;
 }
 
-export const ADDRESS_TYPES = [
-  { id: "home", th: "บ้าน", en: "House" },
-  { id: "condo", th: "คอนโด", en: "Condo" },
-  { id: "hotel", th: "โรงแรม", en: "Hotel" },
-  { id: "work", th: "ที่ทำงาน", en: "Workplace" },
+/** สถานที่นัด 7 แบบ (ตรงกับ PLACES) — hint = ตัวอย่างจุดนัด, room = ต้องกรอกที่อยู่/ห้อง */
+export const MEET_PLACES = [
+  { id: "out", th: "นอกสถานที่", en: "Out & about", sub: "ทริป · ไปด้วยกัน", hint: "จุดนัดรับ เช่น BTS ทองหล่อ" },
+  { id: "outdoor", th: "กลางแจ้ง", en: "Outdoors", sub: "สวน · ริมน้ำ", hint: "เช่น สวนเบญจกิติ ประตู 1" },
+  { id: "mall", th: "ห้าง", en: "Mall", sub: "ห้างสรรพสินค้า", hint: "เช่น EmQuartier ชั้น G" },
+  { id: "cafe", th: "คาเฟ่ / ร้านอาหาร", en: "Café / restaurant", sub: "ร้านที่คุณเลือก", hint: "ชื่อร้าน / สาขา" },
+  { id: "condo", th: "คอนโด", en: "Condo", sub: "ที่พักของฉัน", hint: "" },
+  { id: "hotel", th: "โรงแรม", en: "Hotel", sub: "ห้องพัก / ล็อบบี้", hint: "" },
+  { id: "spa", th: "สปา", en: "Spa", sub: "สถานที่พาร์ทเนอร์", hint: "" },
 ] as const;
+export type MeetPlaceId = (typeof MEET_PLACES)[number]["id"];
+export const isRoomPlace = (id: string) => id === "condo" || id === "hotel";
 
-export const PARTNER_SPAS = [
-  { id: "s1", name: "Lumière Private Spa", area: "สุขุมวิท 24", km: 1.8, rating: 4.9, price: 800 },
-  { id: "s2", name: "The Velvet Room", area: "ทองหล่อ", km: 2.6, rating: 4.8, price: 1000 },
-  { id: "s3", name: "Sathorn Retreat", area: "สาทร", km: 4.1, rating: 4.7, price: 700 },
-] as const;
+export interface PartnerSpa { id: string; name: string; area: string; km?: number | null; rating?: number | null; price: number }
+/** ข้อมูลตัวอย่าง — ใช้เมื่อยังไม่มีสปาพาร์ทเนอร์ที่เปิดแสดงในระบบ (ดู /api/spas) */
+export const PARTNER_SPAS: PartnerSpa[] = [
+  { id: "s1", name: "Lumière Private Spa", area: "สุขุมวิท 24", km: 1.8, rating: 4.9, price: 600 },
+  { id: "s2", name: "The Velvet Room", area: "ทองหล่อ", km: 2.6, rating: 4.8, price: 500 },
+  { id: "s3", name: "Sathorn Retreat", area: "สาทร", km: 4.1, rating: 4.7, price: 450 },
+];

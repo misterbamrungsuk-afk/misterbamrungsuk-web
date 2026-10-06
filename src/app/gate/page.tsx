@@ -34,7 +34,7 @@ export default function GatePage() {
           <button disabled={busy || !pw} className="btn-crimson h-12 font-semibold">{busy ? "…" : "เข้าสู่เว็บไซต์"}</button>
         </form>
       </div>
-      <a href="/join" className="mt-6 text-sm text-ink-200 font-medium">สนใจสมัครเป็นหมอนวด? ไปหน้ารับสมัคร →</a>
+      <a href="/join" className="mt-6 text-sm text-ink-200 font-medium">สนใจสมัครเป็น Part-Time? ไปหน้ารับสมัคร →</a>
     </main>
   );
 }

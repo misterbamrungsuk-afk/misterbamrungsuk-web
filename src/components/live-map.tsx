@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import type { Map as LeafletMap, Marker, Polyline } from "leaflet";
 
 export default function LiveMap({
-  points, myPos, height = 320, followIdx, className = "", providerAvatar, providerName = "หมอนวดของคุณ",
+  points, myPos, height = 320, followIdx, className = "", providerAvatar, providerName = "เพื่อนของคุณ",
 }: {
   points: { lat: number; lng: number }[];
   myPos?: { lat: number; lng: number };

@@ -8,7 +8,7 @@ import { Stars, Toast } from "@/components/ui";
 const DIST = [42, 6, 2, 0, 0];
 const INIT = [
   { id: "r1", name: "คุณแนท", stars: 5, date: "29/09", text: "แรงกำลังดี ตรงเวลา อธิบายจุดปวดชัดเจนมากค่ะ", photo: true, reply: "ขอบคุณมากครับ ไว้เจอกันใหม่ครับ" },
-  { id: "r2", name: "คุณบอม", stars: 4, date: "26/09", text: "นวดดี แต่มาช้านิดหน่อย", photo: false, reply: "" },
+  { id: "r2", name: "คุณบอม", stars: 4, date: "26/09", text: "คุยสนุก แต่มาช้านิดหน่อย", photo: false, reply: "" },
   { id: "r3", name: "คุณปุ๊ก", stars: 5, date: "20/09", text: "ออฟฟิศซินโดรมหายเกลี้ยง", photo: true, reply: "" },
 ];
 type Filter = "all" | "5" | "4" | "photo";

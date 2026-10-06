@@ -10,7 +10,7 @@ import { DEMO_MY_ORDERS, DEMO_POSTS } from "@/lib/demo-data";
 // ยกเลิกการจอง: คืนเต็มถ้ายกเลิกก่อนนัด ≥ 3 ชม. น้อยกว่านั้นคืน 50%
 const FREE_HOURS = 3;
 const HOURS_LEFT = 5 + 20 / 60; // เดโม: เหลือเวลาก่อนนัด 5 ชม. 20 นาที
-const REASONS = { th: ["ติดธุระ ไม่สะดวกเวลานี้", "จองผิดวันหรือเวลา", "หมอขอให้ยกเลิก", "อื่นๆ"], en: ["Something came up", "Wrong date or time", "Therapist asked to cancel", "Other"] };
+const REASONS = { th: ["ติดธุระ ไม่สะดวกเวลานี้", "จองผิดวันหรือเวลา", "เพื่อนขอให้ยกเลิก", "อื่นๆ"], en: ["Something came up", "Wrong date or time", "Companion asked to cancel", "Other"] };
 
 export default function CancelPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -36,7 +36,7 @@ export default function CancelPage({ params }: { params: Promise<{ id: string }>
         <h1 className="text-2xl font-semibold">{th ? "ยกเลิกการจองแล้ว" : "Booking cancelled"}</h1>
         <p className="text-sm text-ink-300">{th ? `คืนเงิน ${baht(refund)} เข้าช่องทางเดิมภายใน 1–3 วันทำการ` : `${baht(refund)} refunded to your original method in 1–3 business days`}</p>
         <div className="w-full flex flex-col gap-2 mt-6">
-          <Link href="/home" className="btn-crimson h-14 rounded-2xl font-display font-semibold flex items-center justify-center">{th ? "หาหมอนวดคนใหม่" : "Find another therapist"}</Link>
+          <Link href="/home" className="btn-crimson h-14 rounded-2xl font-display font-semibold flex items-center justify-center">{th ? "หาเพื่อนคนใหม่" : "Find another companion"}</Link>
           <Link href="/orders" className="h-12 rounded-2xl border border-ink-600 flex items-center justify-center">{th ? "ออเดอร์ของฉัน" : "My orders"}</Link>
         </div>
       </main>

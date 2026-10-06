@@ -21,9 +21,9 @@ export default function NotifyPermissionPage() {
   }
 
   const items = [
-    { i: "✅", t: th ? "หมอรับงานแล้ว" : "Therapist accepted", d: th ? "รู้ทันทีเมื่อการจองได้รับการยืนยัน" : "Know instantly when booking is confirmed" },
-    { i: "🚗", t: th ? "หมอกำลังเดินทาง" : "On the way", d: th ? "แจ้งเวลาถึงโดยประมาณ" : "Estimated arrival updates" },
-    { i: "💬", t: th ? "แชทใหม่" : "New messages", d: th ? "ไม่พลาดข้อความจากหมอ" : "Never miss a message" },
+    { i: "✅", t: th ? "เพื่อนตอบรับนัดแล้ว" : "Companion accepted", d: th ? "รู้ทันทีเมื่อการจองได้รับการยืนยัน" : "Know instantly when booking is confirmed" },
+    { i: "🚗", t: th ? "เพื่อนกำลังเดินทาง" : "On the way", d: th ? "แจ้งเวลาถึงโดยประมาณ" : "Estimated arrival updates" },
+    { i: "💬", t: th ? "แชทใหม่" : "New messages", d: th ? "ไม่พลาดข้อความจากเพื่อน" : "Never miss a message" },
   ];
   const result: Record<Perm, string> = {
     granted: th ? "✓ เปิดการแจ้งเตือนแล้ว" : "✓ Notifications enabled",

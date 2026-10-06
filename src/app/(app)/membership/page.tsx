@@ -50,7 +50,7 @@ export default function MembershipPage() {
   };
 
   const plans: { k: PlanKey; title: string; sub: string; price: number }[] = [
-    { k: "monthly", title: planLabel("monthly", th), sub: th ? "ต่ออายุทุกเดือน · ปลดล็อก Part-Time พรีเมียม" : "Renews monthly · unlocks Premium", price: MEMBERSHIP.monthlyFee },
+    { k: "monthly", title: planLabel("monthly", th), sub: th ? "ต่ออายุทุกเดือน · ปลดล็อกเพื่อนพรีเมียม" : "Renews monthly · unlocks Premium", price: MEMBERSHIP.monthlyFee },
     ...SESSION_PACKS.map((p) => ({ k: p.key, title: planLabel(p.key, th), sub: th ? `ใช้ได้ ${p.validMonths} เดือน · เฉลี่ย ${baht(Math.round(p.price / p.sessions))}/ครั้ง` : `Valid ${p.validMonths} months · ${baht(Math.round(p.price / p.sessions))}/session`, price: p.price })),
   ];
 
@@ -80,7 +80,7 @@ export default function MembershipPage() {
         ) : (
           <section className="glass rounded-2xl p-4 animate-rise">
             <h2 className="section-title">{th ? "สมัครสมาชิก Mister Bamrungsuk" : "Become a member"}</h2>
-            <p className="text-sm text-ink-300 mt-1">{th ? "ปลดล็อก Part-Time กลุ่มพรีเมียม และรับราคาพิเศษเมื่อซื้อเป็นแพ็กเกจ" : "Unlock Premium Part-Time and save with session packs."}</p>
+            <p className="text-sm text-ink-300 mt-1">{th ? "ปลดล็อกเพื่อนกลุ่มพรีเมียม และรับราคาพิเศษเมื่อซื้อเป็นแพ็กเกจ" : "Unlock Premium Part-Time and save with session packs."}</p>
           </section>
         )}
 

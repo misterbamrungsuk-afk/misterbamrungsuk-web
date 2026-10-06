@@ -7,7 +7,7 @@ import { Toast, baht } from "@/components/ui";
 import { ADMIN_ORDERS, STATUS_LABEL, type OrderStatus } from "@/lib/admin-data";
 import { Card, PageHead, Pill } from "../admin-nav";
 
-const FILTERS: [string, OrderStatus | ""][] = [["ทั้งหมด", ""], ["เงินถูกกัน", "held"], ["กำลังนวด", "in_progress"], ["รอปล่อยเงิน", "awaiting_release"], ["ข้อพิพาท", "disputed"]];
+const FILTERS: [string, OrderStatus | ""][] = [["ทั้งหมด", ""], ["เงินถูกกัน", "held"], ["ระหว่างนัด", "in_progress"], ["รอปล่อยเงิน", "awaiting_release"], ["ข้อพิพาท", "disputed"]];
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState(ADMIN_ORDERS);
@@ -16,7 +16,7 @@ export default function AdminOrdersPage() {
   const [selId, setSelId] = useState(ADMIN_ORDERS[0].id);
   const [toast, setToast] = useState("");
 
-  const list = useMemo(() => orders.filter((o) => (!filter || o.status === filter) && (!q || (o.id + o.customer + o.therapist).toLowerCase().includes(q.toLowerCase()))), [orders, filter, q]);
+  const list = useMemo(() => orders.filter((o) => (!filter || o.status === filter) && (!q || (o.id + o.customer + o.partTime).toLowerCase().includes(q.toLowerCase()))), [orders, filter, q]);
   const sel = orders.find((o) => o.id === selId);
   const setStatus = (status: OrderStatus, msg: string) => {
     setOrders(orders.map((o) => (o.id === selId ? { ...o, status } : o)));
@@ -44,7 +44,7 @@ export default function AdminOrdersPage() {
                 <img src={o.avatar} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
                 <span className="flex-1 min-w-0">
                   <span className="block text-sm font-medium truncate">{o.id} · {o.service}</span>
-                  <span className="block text-xs text-ink-300 truncate">{o.customer} → {o.therapist} · {o.when}</span>
+                  <span className="block text-xs text-ink-300 truncate">{o.customer} → {o.partTime} · {o.when}</span>
                 </span>
                 <span className="text-right shrink-0">
                   <span className="block font-display font-semibold">{baht(o.amount)}</span>
@@ -57,7 +57,7 @@ export default function AdminOrdersPage() {
         {sel && (
           <Card className="flex flex-col gap-3 h-fit">
             <div className="flex justify-between items-center"><b className="font-display font-semibold text-lg">{sel.id}</b><Pill tone={STATUS_LABEL[sel.status].tone}>{STATUS_LABEL[sel.status].th}</Pill></div>
-            <p className="text-sm text-ink-300">{sel.customer} → {sel.therapist} · {sel.place} · {sel.when}</p>
+            <p className="text-sm text-ink-300">{sel.customer} → {sel.partTime} · {sel.place} · {sel.when}</p>
             <div className="rounded-xl bg-ink-700 p-3 text-sm flex flex-col gap-1.5">
               <div className="flex justify-between"><span className="text-ink-300">ยอดรวม</span><span>{baht(sel.amount)}</span></div>
               <div className="flex justify-between"><span className="text-ink-300">Part-Time ได้รับ ({100 - site.commissionPercent}%)</span><span>{baht(sel.amount * (100 - site.commissionPercent) / 100)}</span></div>

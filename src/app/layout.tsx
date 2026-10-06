@@ -9,8 +9,8 @@ const plex = IBM_Plex_Sans_Thai({ subsets: ["thai", "latin"], weight: ["400", "5
 const kanit = Kanit({ subsets: ["thai", "latin"], weight: ["500", "600", "700", "800"], variable: "--font-kanit" });
 
 export const metadata: Metadata = {
-  title: "Mister Bamrungsuk — หมอนวดชายมืออาชีพ มาหาคุณถึงที่",
-  description: "จองหมอนวดชายที่ยืนยันตัวตนและใบรับรองแล้ว นวดไทย ออฟฟิศซินโดรม อโรมา นวดกีฬา ถึงบ้าน คอนโด โรงแรม จ่ายผ่านระบบกลางที่ปลอดภัย",
+  title: "Mister Bamrungsuk — เพื่อนกิน เพื่อนเที่ยว ระดับพรีเมียม",
+  description: "นัดเพื่อนกิน เพื่อนเที่ยว ที่ยืนยันตัวตนแล้ว เลือกตามกิจกรรม กิน & เที่ยว คาเฟ่ ดูหนัง ถ่ายรูป ออกกำลัง จองเป็นบล็อก 3 / 5 ชม. จ่ายผ่านแอปอย่างปลอดภัย",
   applicationName: "Mister Bamrungsuk",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "Mister Bamrungsuk", statusBarStyle: "black-translucent" },

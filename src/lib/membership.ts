@@ -104,7 +104,7 @@ export function redeemGift(raw: string): { ok: true; plan: PlanKey } | { ok: fal
   return { ok: true, plan };
 }
 
-// ── หมอหน้าใหม่ / คิวว่าง / การเรียงแบบ "แนะนำ" ──
+// ── Part-Time หน้าใหม่ / คิวว่าง / การเรียงแบบ "แนะนำ" ──
 export const NEW_PROVIDER_DAYS = 30;
 
 export function isNewProvider(p: Post, now = Date.now()) {
@@ -119,7 +119,7 @@ export function queueLabel(p: Post, th = true) {
   return th ? `ว่างในอีก ${n} นาที` : `Free in ${n} min`;
 }
 
-/** แนะนำ: หมอหน้าใหม่ (≤30 วัน) ขึ้นก่อน แล้วตามคะแนน/รีวิว */
+/** แนะนำ: Part-Time หน้าใหม่ (≤30 วัน) ขึ้นก่อน แล้วตามคะแนน/รีวิว */
 export function recommendedSort(a: Post, b: Post) {
   const na = isNewProvider(a) ? 1 : 0, nb = isNewProvider(b) ? 1 : 0;
   if (na !== nb) return nb - na;

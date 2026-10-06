@@ -107,7 +107,7 @@ export default function MatchingPage() {
             <span className="text-5xl">📡</span>
           </div>
           <p className="mt-6 font-semibold text-lg">{t.matching}</p>
-          <p className="text-xs text-ink-400 mt-1">{lang === "th" ? "กำลังบรอดแคสต์ไปยังหมอนวดใกล้เคียง…" : "Broadcasting to nearby therapists…"}</p>
+          <p className="text-xs text-ink-400 mt-1">{lang === "th" ? "กำลังหาเพื่อนที่ว่างใกล้คุณ…" : "Finding free companions near you…"}</p>
 
           <div className="mt-8 w-full grid gap-2">
             {candidates.slice(0, 4).map((c, i) => (

@@ -65,7 +65,7 @@ export default function LoginPage() {
 
       <section className="relative z-10 px-6 pb-9 pt-[34dvh] flex flex-col gap-5 animate-rise">
         <div>
-          <p className="text-[12px] font-semibold tracking-[0.2em] text-[#8f5e00] flex items-center gap-2"><span className="w-6 h-px bg-[#b8860b]" />VVIP MALE MASSAGE</p>
+          <p className="text-[12px] font-semibold tracking-[0.2em] text-[#8f5e00] flex items-center gap-2"><span className="w-6 h-px bg-[#b8860b]" />PREMIUM COMPANIONS</p>
           <h1 className="font-display text-[30px] leading-tight font-bold mt-1.5"><span className="whitespace-nowrap">ผ่อนคลายแบบมืออาชีพ</span><br /><span className="bg-gradient-to-r from-[#b8860b] via-[#e0a400] to-[#9a6b00] bg-clip-text text-transparent">ถึงที่ของคุณ</span></h1>
           <p className="text-ink-200 text-[15px] mt-2.5 leading-relaxed">{t.brandSub}</p>
         </div>
@@ -104,13 +104,13 @@ export default function LoginPage() {
         <a href="/join" className="flex items-center gap-3 rounded-2xl border border-gold-500/45 bg-[linear-gradient(180deg,#fffdf6,#fff)] shadow-[0_6px_18px_rgba(120,80,0,.08)] px-4 py-3">
           <span className="w-10 h-10 rounded-xl bg-gold-500 text-[#1a1206] grid place-items-center font-display font-bold shrink-0">MB</span>
           <span className="flex-1 min-w-0">
-            <span className="block text-sm font-semibold">สมัครเป็นหมอนวด / เพื่อนเที่ยวพรีเมียม</span>
+            <span className="block text-sm font-semibold">สมัครเป็น Part-Time เพื่อนกินเที่ยวพรีเมียม</span>
             <span className="block text-xs text-ink-300">รับจำกัด 50 ท่าน · อบรม 2 วัน</span>
           </span>
           <span className="w-8 h-8 rounded-full bg-[#141210] text-[#f3d27a] grid place-items-center text-sm" aria-hidden>→</span>
         </a>
         <a href="/welcome" className="text-ink-200 text-sm font-medium self-start py-2">รู้จักเราก่อน / About us →</a>
-        <p className="text-ink-400 text-xs">© 2026 Mister Bamrungsuk · สำหรับผู้มีอายุ 18 ปีขึ้นไป · นวดเพื่อสุขภาพเท่านั้น</p>
+        <p className="text-ink-400 text-xs">© 2026 Mister Bamrungsuk · สำหรับผู้มีอายุ 18 ปีขึ้นไป · ไม่มีบริการทางเพศ</p>
       </section>
     </main>
   );

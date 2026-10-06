@@ -32,27 +32,27 @@ const baseRules = [
   "นัดพบครั้งแรกในที่สาธารณะได้ตามต้องการ",
   "ชำระผ่านระบบกลางในแอปเท่านั้น เงินปล่อยเมื่องานเสร็จ",
   "แจ้งแผนกิจกรรมและสถานที่ล่วงหน้า",
-  "ยกเลิกก่อน 3 ชม. คืนมัดจำเต็มจำนวน",
-  "รอลูกค้าได้สูงสุด 15 นาที เกินเวลายึดมัดจำ",
+  "ยกเลิกก่อน 3 ชม. ได้เงินคืนเต็มจำนวน",
+  "รอได้สูงสุด 15 นาที ไม่มาตามนัดถือว่ายกเลิก (ตรวจหลักฐานทั้งสองฝ่าย)",
 ];
 
-const RAW_POSTS: Omit<Post, "activities" | "massageSkill">[] = [
+// ข้อมูลดิบ: pricePerHour = ราคาอ้างอิง ใช้คำนวณบล็อก 3/5 ชม. เท่านั้น (ไม่แสดงต่อลูกค้า)
+type RawPost = Omit<Post, "activities" | "skills" | "places" | "price3h" | "price5h" | "categories"> & { pricePerHour: number };
+const RAW_POSTS: RawPost[] = [
   {
     id: "p1", member: DEMO_MEMBERS[0],
     images: [img("photo-1624395213043-fa2e123b2656"), img("photo-1625327009034-039a65fa3153")],
-    categories: ["thai", "office", "neck", "herbal"],
-    pricePerHour: 500, minHours: 2, deposit: 300, workingHours: "12:00-23:00",
+    pricePerHour: 500, workingHours: "12:00-23:00",
     languages: ["ไทย"], acceptGender: "any", serviceArea: "กรุงเทพ โซนสุขุมวิท อโศก",
     province: "กรุงเทพมหานคร", personality: "ใจเย็น สุภาพ คุยสนุก", interests: "ร้านอาหารลับ คาเฟ่ ดูหนัง",
-    extraInfo: "รู้จักร้านอร่อยย่านสุขุมวิททุกซอย · มีสกิลนวดไทยเป็น add-on", rules: baseRules,
+    extraInfo: "รู้จักร้านอร่อยย่านสุขุมวิททุกซอย", rules: baseRules,
     lat: 13.7465, lng: 100.5349,
     rating: 5, reviewCount: 5, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-01",
   },
   {
     id: "p2", member: DEMO_MEMBERS[1],
     images: [img("photo-1681097561932-36d0df02b379"), img("photo-1564890112980-007a84d5d700")],
-    categories: ["sport", "thai", "herbal"],
-    pricePerHour: 400, minHours: 2, deposit: 200, workingHours: "10:00-20:00",
+    pricePerHour: 400, workingHours: "10:00-20:00",
     languages: ["ไทย", "English"], acceptGender: "any", serviceArea: "กรุงเทพ อารีย์ พหลโยธิน",
     province: "กรุงเทพมหานคร", personality: "กระตือรือร้น สายแอคทีฟ", interests: "วิ่ง ยิม ถ่ายรูปสตรีท",
     extraInfo: "เป็นบัดดี้ออกกำลังได้ทุกระดับ", rules: baseRules,
@@ -62,8 +62,7 @@ const RAW_POSTS: Omit<Post, "activities" | "massageSkill">[] = [
   {
     id: "p3", member: DEMO_MEMBERS[3],
     images: [img("photo-1625327009034-039a65fa3153"), img("photo-1587057173081-36bc799b78ad")],
-    categories: ["oil", "thai", "foot"],
-    pricePerHour: 400, minHours: 2, deposit: 200, workingHours: "11:00-22:00",
+    pricePerHour: 400, workingHours: "11:00-22:00",
     languages: ["ไทย"], acceptGender: "male", serviceArea: "กรุงเทพ / นนทบุรี",
     province: "กรุงเทพมหานคร", personality: "นุ่มนวล ฟังเก่ง", interests: "คาเฟ่ ดนตรี นั่งชิลริมน้ำ",
     extraInfo: "ชวนคุยได้ทุกเรื่อง วิดีโอคอลได้", rules: baseRules,
@@ -73,8 +72,7 @@ const RAW_POSTS: Omit<Post, "activities" | "massageSkill">[] = [
   {
     id: "p4", member: DEMO_MEMBERS[2],
     images: [img("photo-1616326431985-b9f89ebc6ab7"), img("photo-1615269143162-592b3882fcbe")],
-    categories: ["office", "neck", "thai"],
-    pricePerHour: 600, minHours: 3, deposit: 500, workingHours: "06:00-18:00",
+    pricePerHour: 600, workingHours: "06:00-18:00",
     languages: ["ไทย", "English"], acceptGender: "any", serviceArea: "กรุงเทพ สาทร สีลม",
     province: "กรุงเทพมหานคร", personality: "ตรงเวลา เป็นมืออาชีพ", interests: "ไฟน์ไดนิ่ง ถ่ายภาพ ดูหนัง",
     extraInfo: "ถ่ายรูปสวย มีกล้องของตัวเอง", rules: baseRules,
@@ -84,8 +82,7 @@ const RAW_POSTS: Omit<Post, "activities" | "massageSkill">[] = [
   {
     id: "p5", member: DEMO_MEMBERS[6],
     images: [img("photo-1587057173081-36bc799b78ad"), img("photo-1616325629756-e0283ebae72e")],
-    categories: ["sport", "oil"],
-    pricePerHour: 350, minHours: 2, deposit: 150, workingHours: "08:00-18:00",
+    pricePerHour: 350, workingHours: "08:00-18:00",
     languages: ["ไทย"], acceptGender: "any", serviceArea: "กรุงเทพ ทองหล่อ เอกมัย",
     province: "กรุงเทพมหานคร", personality: "สายสปอร์ต สดใส", interests: "ฟิตเนส คาเฟ่ นั่งชิล",
     extraInfo: "ชวนออกกำลังแบบสนุก ไม่กดดัน", rules: baseRules,
@@ -95,8 +92,7 @@ const RAW_POSTS: Omit<Post, "activities" | "massageSkill">[] = [
   {
     id: "p6", member: DEMO_MEMBERS[7],
     images: [img("photo-1544168190-79c17527004f"), img("photo-1624395213043-fa2e123b2656")],
-    categories: ["thai", "herbal", "foot", "couple"],
-    pricePerHour: 600, minHours: 2, deposit: 300, workingHours: "15:00-24:00",
+    pricePerHour: 600, workingHours: "15:00-24:00",
     languages: ["ไทย"], acceptGender: "any", serviceArea: "นนทบุรี / กรุงเทพเหนือ",
     province: "นนทบุรี", personality: "อบอุ่น เป็นกันเอง", interests: "กินเที่ยว ดูหนัง นั่งชิล",
     extraInfo: "ชอบพาไปร้านเด็ดในนนทบุรี", rules: baseRules,
@@ -106,8 +102,7 @@ const RAW_POSTS: Omit<Post, "activities" | "massageSkill">[] = [
   {
     id: "p7", member: DEMO_MEMBERS[5],
     images: [img("photo-1615269143162-592b3882fcbe"), img("photo-1643990083741-c5a4d4ae69e2")],
-    categories: ["foot", "thai"],
-    pricePerHour: 150, minHours: 1, deposit: 0, workingHours: "18:00-02:00",
+    pricePerHour: 150, workingHours: "18:00-02:00",
     languages: ["ไทย", "English"], acceptGender: "any", serviceArea: "กรุงเทพ ทั้งหมด",
     province: "กรุงเทพมหานคร", personality: "สุภาพ พูดน้อย ฟังเก่ง", interests: "วิดีโอคอล นั่งชิล",
     extraInfo: "เพื่อนคุยยามดึก", rules: baseRules,
@@ -116,8 +111,7 @@ const RAW_POSTS: Omit<Post, "activities" | "massageSkill">[] = [
   {
     id: "p8", member: DEMO_MEMBERS[9],
     images: [img("photo-1616325629756-e0283ebae72e"), img("photo-1616326431985-b9f89ebc6ab7")],
-    categories: ["oil", "neck", "office"],
-    pricePerHour: 300, minHours: 2, deposit: 200, workingHours: "09:00-19:00",
+    pricePerHour: 300, workingHours: "09:00-19:00",
     languages: ["ไทย"], acceptGender: "any", serviceArea: "เชียงใหม่ ในเมือง",
     province: "เชียงใหม่", personality: "เป็นกันเอง ภาษาอังกฤษได้", interests: "ถ่ายภาพ คาเฟ่ เที่ยวเมืองเก่า",
     extraInfo: "ไกด์เชียงใหม่ พาเที่ยวคาเฟ่และถ่ายรูป", rules: baseRules,
@@ -126,25 +120,27 @@ const RAW_POSTS: Omit<Post, "activities" | "massageSkill">[] = [
   },
 ];
 
-// ข้อมูลเสริมสำหรับ positioning ใหม่: เพื่อนกินเที่ยว + บล็อก 3/5 ชม. (นวดเป็น add-on เท่านั้น)
-const EXTRA: Record<string, Pick<Post, "activities" | "massageSkill"> & Partial<Post>> = {
-  p1: { activities: ["dine", "cafe", "movie", "chill"], massageSkill: true, heightCm: 178, distanceKm: 1.2, yearsExp: 3, jobsDone: 128, responseRate: 98, nextFreeMin: 0 },
-  p2: { activities: ["fitness", "dine", "photo"], massageSkill: true, heightCm: 182, distanceKm: 2.4, yearsExp: 4, jobsDone: 96, responseRate: 95 },
-  p3: { activities: ["cafe", "chill", "videocall"], massageSkill: true, heightCm: 175, distanceKm: 3.1, yearsExp: 2, jobsDone: 64, responseRate: 92 },
-  p4: { activities: ["dine", "photo", "movie"], massageSkill: false, heightCm: 180, distanceKm: 4.0, yearsExp: 5, jobsDone: 150, responseRate: 99 },
-  p5: { activities: ["fitness", "chill", "cafe"], massageSkill: false, heightCm: 176, distanceKm: 5.6, yearsExp: 1, jobsDone: 22, responseRate: 90 },
-  p6: { activities: ["dine", "movie", "chill", "videocall"], massageSkill: true, heightCm: 183, distanceKm: 7.8, yearsExp: 3, jobsDone: 81, responseRate: 97 },
-  p7: { activities: ["videocall", "chill"], massageSkill: false, heightCm: 174, distanceKm: 9.5, yearsExp: 1, jobsDone: 15, responseRate: 88 },
-  p8: { activities: ["photo", "cafe", "dine"], massageSkill: true, heightCm: 179, distanceKm: 12.3, yearsExp: 2, jobsDone: 40, responseRate: 93 },
+// ข้อมูลเสริม: กิจกรรม / สกิล / สถานที่นัด (นวดผ่อนคลายเป็นแค่สกิลหนึ่ง ต้องมีใบรับรอง)
+type Extra = Pick<Post, "activities" | "skills" | "places"> & Partial<Post>;
+const EXTRA: Record<string, Extra> = {
+  p1: { activities: ["dine", "cafe", "movie", "chill"], skills: ["massage", "eng"], places: ["out", "mall", "cafe", "condo", "spa"], heightCm: 178, distanceKm: 1.2, yearsExp: 3, jobsDone: 128, responseRate: 98, nextFreeMin: 0 },
+  p2: { activities: ["fitness", "dine", "photo"], skills: ["fit", "photo", "massage"], places: ["outdoor", "mall", "cafe", "hotel"], heightCm: 182, distanceKm: 2.4, yearsExp: 4, jobsDone: 96, responseRate: 95 },
+  p3: { activities: ["cafe", "chill", "videocall"], skills: ["music", "massage"], places: ["cafe", "mall", "condo", "spa"], heightCm: 175, distanceKm: 3.1, yearsExp: 2, jobsDone: 64, responseRate: 92 },
+  p4: { activities: ["dine", "photo", "movie"], skills: ["photo", "drive"], places: ["out", "outdoor", "mall", "cafe"], heightCm: 180, distanceKm: 4.0, yearsExp: 5, jobsDone: 150, responseRate: 99 },
+  p5: { activities: ["fitness", "chill", "cafe"], skills: ["fit", "cook"], places: ["outdoor", "cafe", "condo"], heightCm: 176, distanceKm: 5.6, yearsExp: 1, jobsDone: 22, responseRate: 90 },
+  p6: { activities: ["dine", "movie", "chill", "videocall"], skills: ["massage", "drive", "eng"], places: ["out", "mall", "cafe", "hotel", "spa"], heightCm: 183, distanceKm: 7.8, yearsExp: 3, jobsDone: 81, responseRate: 97 },
+  p7: { activities: ["videocall", "chill"], skills: ["music"], places: ["cafe", "mall"], heightCm: 174, distanceKm: 9.5, yearsExp: 1, jobsDone: 15, responseRate: 88 },
+  p8: { activities: ["photo", "cafe", "dine"], skills: ["guide", "photo", "eng", "massage"], places: ["out", "outdoor", "cafe", "hotel", "spa"], heightCm: 179, distanceKm: 12.3, yearsExp: 2, jobsDone: 40, responseRate: 93 },
 };
 
-export const DEMO_POSTS: Post[] = RAW_POSTS.map((p) => {
-  const x = EXTRA[p.id] ?? { activities: ["dine", "chill"], massageSkill: false };
+
+export const DEMO_POSTS: Post[] = RAW_POSTS.map(({ pricePerHour, ...p }) => {
+  const x = EXTRA[p.id] ?? { activities: ["dine", "chill"], skills: [], places: ["cafe", "mall"] };
   return {
     ...p,
-    price3h: Math.round((p.pricePerHour * 3 * 1.6) / 100) * 100,
-    price5h: Math.round((p.pricePerHour * 5 * 1.5) / 100) * 100,
-    massageAddon: x.massageSkill ? 500 : undefined,
+    categories: x.activities,
+    price3h: Math.round((pricePerHour * 3 * 1.6) / 100) * 100,
+    price5h: Math.round((pricePerHour * 5 * 1.5) / 100) * 100,
     ...x,
   };
 });
@@ -171,40 +167,40 @@ const rv = (id: string, name: string, gender: "male" | "female", photo: string, 
 
 export const DEMO_REVIEWS: Review[] = [
   // ทริคกี้
-  rv("r1", "Ninegd93", "male", "photo-1590086782957-93c06ef21604", 5, "นวดดีมาก แรงกำลังพอดี ถามตลอดว่าเจ็บไหม หายปวดหลังเลย", "2026-08-24", "p1"),
-  rv("r2", "Kate", "female", "photo-1610088441520-4352457e7095", 5, "ตรงเวลา สุภาพมาก เอาอุปกรณ์มาครบ ห้องไม่เลอะเลย", "2026-08-12", "p1"),
-  rv("r3", "Jib", "female", "photo-1487412720507-e7ab37603c6f", 5, "ออฟฟิศซินโดรมที่เป็นมานานดีขึ้นเยอะ จะจองซ้ำแน่นอน", "2026-08-17", "p1"),
-  rv("r4", "ต้าเหนิง", "male", "photo-1535713875002-d1d0cf377fde", 5, "มือหนัก กดจุดแม่น ยืดเหยียดให้ก่อนจบ สบายตัวมาก", "2026-07-30", "p1"),
-  rv("r5", "แพร", "female", "photo-1508214751196-bcfd4ca60f91", 4, "บรรยากาศผ่อนคลาย น้ำมันกลิ่นหอม หลับไปเลยครึ่งชั่วโมง", "2026-09-02", "p1"),
+  rv("r1", "Ninegd93", "male", "photo-1590086782957-93c06ef21604", 5, "คุยสนุกมาก ฟังเก่ง ดูแลดีตลอดทั้งมื้อ ไม่มีเงียบเลย", "2026-08-24", "p1"),
+  rv("r2", "Kate", "female", "photo-1610088441520-4352457e7095", 5, "มาตรงเวลา สุภาพมาก แต่งตัวดี วางตัวเหมาะสม", "2026-08-12", "p1"),
+  rv("r3", "Jib", "female", "photo-1487412720507-e7ab37603c6f", 5, "พาไปคาเฟ่ที่ไม่เคยรู้จัก บรรยากาศดีมาก จะนัดซ้ำแน่นอน", "2026-08-17", "p1"),
+  rv("r4", "ต้าเหนิง", "male", "photo-1535713875002-d1d0cf377fde", 5, "ถ่ายรูปให้สวยทุกช็อต จัดมุมเก่งมาก ได้รูปไปลงเพียบ", "2026-07-30", "p1"),
+  rv("r5", "แพร", "female", "photo-1508214751196-bcfd4ca60f91", 4, "นั่งชิลคุยกันเพลินจนลืมเวลา เป็นกันเองแต่มีขอบเขต", "2026-09-02", "p1"),
   // เนย
-  rv("r6", "Ploy", "female", "photo-1544005313-94ddf0286df2", 5, "ประคบสมุนไพรร้อนกำลังดี คุณแม่ชอบมาก", "2026-09-01", "p2"),
-  rv("r7", "โบว์", "female", "photo-1614289371518-722f2615943d", 5, "อธิบายท่ายืดให้ทำเองที่บ้านด้วย มืออาชีพจริง", "2026-08-21", "p2"),
+  rv("r6", "Ploy", "female", "photo-1544005313-94ddf0286df2", 5, "พาคุณแม่ไปทานข้าวด้วย ดูแลคุณแม่ดีมาก ท่านชอบมาก", "2026-09-01", "p2"),
+  rv("r7", "โบว์", "female", "photo-1614289371518-722f2615943d", 5, "เป็นบัดดี้ออกกำลังที่ดี ให้กำลังใจตลอด มืออาชีพจริง", "2026-08-21", "p2"),
   rv("r8", "เจมส์", "male", "photo-1628157588553-5eeea00af15c", 4, "ติดต่อง่าย ตอบแชทไว จ่ายผ่านระบบสบายใจ", "2026-08-05", "p2"),
-  rv("r9", "กร", "male", "photo-1492562080023-ab3db95bfbce", 5, "นวดดีมาก แรงกำลังพอดี ถามตลอดว่าเจ็บไหม หายปวดหลังเลย", "2026-07-18", "p2"),
+  rv("r9", "กร", "male", "photo-1492562080023-ab3db95bfbce", 5, "คุยสนุกมาก ฟังเก่ง ดูแลดีตลอดทั้งมื้อ ไม่มีเงียบเลย", "2026-07-18", "p2"),
   // น้ำส้ม
-  rv("r10", "มาย", "female", "photo-1595152772835-219674b2a8a6", 5, "ตรงเวลา สุภาพมาก เอาอุปกรณ์มาครบ ห้องไม่เลอะเลย", "2026-09-04", "p3"),
-  rv("r11", "อาร์ม", "male", "photo-1506794778202-cad84cf45f1d", 4, "ออฟฟิศซินโดรมที่เป็นมานานดีขึ้นเยอะ จะจองซ้ำแน่นอน", "2026-08-14", "p3"),
-  rv("r12", "แพรวา", "female", "photo-1508214751196-bcfd4ca60f91", 5, "มือหนัก กดจุดแม่น ยืดเหยียดให้ก่อนจบ สบายตัวมาก", "2026-07-22", "p3"),
+  rv("r10", "มาย", "female", "photo-1595152772835-219674b2a8a6", 5, "มาตรงเวลา สุภาพมาก แต่งตัวดี วางตัวเหมาะสม", "2026-09-04", "p3"),
+  rv("r11", "อาร์ม", "male", "photo-1506794778202-cad84cf45f1d", 4, "พาไปคาเฟ่ที่ไม่เคยรู้จัก บรรยากาศดีมาก จะนัดซ้ำแน่นอน", "2026-08-14", "p3"),
+  rv("r12", "แพรวา", "female", "photo-1508214751196-bcfd4ca60f91", 5, "ถ่ายรูปให้สวยทุกช็อต จัดมุมเก่งมาก ได้รูปไปลงเพียบ", "2026-07-22", "p3"),
   // Top
-  rv("r13", "คุณสมชาย", "male", "photo-1601412436009-d964bd02edbc", 5, "บรรยากาศผ่อนคลาย น้ำมันกลิ่นหอม หลับไปเลยครึ่งชั่วโมง", "2026-08-30", "p4"),
-  rv("r14", "หัวหน้าตี๋", "male", "photo-1583195764036-6dc248ac07d9", 5, "ประคบสมุนไพรร้อนกำลังดี คุณแม่ชอบมาก", "2026-08-12", "p4"),
-  rv("r15", "Tanwa", "male", "photo-1535713875002-d1d0cf377fde", 5, "อธิบายท่ายืดให้ทำเองที่บ้านด้วย มืออาชีพจริง", "2026-07-29", "p4"),
+  rv("r13", "คุณสมชาย", "male", "photo-1601412436009-d964bd02edbc", 5, "นั่งชิลคุยกันเพลินจนลืมเวลา เป็นกันเองแต่มีขอบเขต", "2026-08-30", "p4"),
+  rv("r14", "หัวหน้าตี๋", "male", "photo-1583195764036-6dc248ac07d9", 5, "พาคุณแม่ไปทานข้าวด้วย ดูแลคุณแม่ดีมาก ท่านชอบมาก", "2026-08-12", "p4"),
+  rv("r15", "Tanwa", "male", "photo-1535713875002-d1d0cf377fde", 5, "เป็นบัดดี้ออกกำลังที่ดี ให้กำลังใจตลอด มืออาชีพจริง", "2026-07-29", "p4"),
   // มายด์
   rv("r16", "คุณสมชาย", "male", "photo-1601412436009-d964bd02edbc", 5, "ติดต่อง่าย ตอบแชทไว จ่ายผ่านระบบสบายใจ", "2026-09-05", "p5"),
-  rv("r17", "ป้าสมศรี", "female", "photo-1544005313-94ddf0286df2", 5, "นวดดีมาก แรงกำลังพอดี ถามตลอดว่าเจ็บไหม หายปวดหลังเลย", "2026-08-20", "p5"),
-  rv("r18", "Fon", "female", "photo-1517841905240-472988babdf9", 5, "ตรงเวลา สุภาพมาก เอาอุปกรณ์มาครบ ห้องไม่เลอะเลย", "2026-08-02", "p5"),
-  rv("r19", "Ninegd93", "male", "photo-1590086782957-93c06ef21604", 4, "ออฟฟิศซินโดรมที่เป็นมานานดีขึ้นเยอะ จะจองซ้ำแน่นอน", "2026-07-11", "p5"),
+  rv("r17", "ป้าสมศรี", "female", "photo-1544005313-94ddf0286df2", 5, "คุยสนุกมาก ฟังเก่ง ดูแลดีตลอดทั้งมื้อ ไม่มีเงียบเลย", "2026-08-20", "p5"),
+  rv("r18", "Fon", "female", "photo-1517841905240-472988babdf9", 5, "มาตรงเวลา สุภาพมาก แต่งตัวดี วางตัวเหมาะสม", "2026-08-02", "p5"),
+  rv("r19", "Ninegd93", "male", "photo-1590086782957-93c06ef21604", 4, "พาไปคาเฟ่ที่ไม่เคยรู้จัก บรรยากาศดีมาก จะนัดซ้ำแน่นอน", "2026-07-11", "p5"),
   // Guitar
-  rv("r20", "ปอนด์", "male", "photo-1628157588553-5eeea00af15c", 5, "มือหนัก กดจุดแม่น ยืดเหยียดให้ก่อนจบ สบายตัวมาก", "2026-09-07", "p6"),
-  rv("r21", "มายด์ค่า", "female", "photo-1595152772835-219674b2a8a6", 5, "บรรยากาศผ่อนคลาย น้ำมันกลิ่นหอม หลับไปเลยครึ่งชั่วโมง", "2026-08-25", "p6"),
-  rv("r22", "Film", "male", "photo-1544723795-3fb6469f5b39", 4, "ประคบสมุนไพรร้อนกำลังดี คุณแม่ชอบมาก", "2026-08-01", "p6"),
+  rv("r20", "ปอนด์", "male", "photo-1628157588553-5eeea00af15c", 5, "ถ่ายรูปให้สวยทุกช็อต จัดมุมเก่งมาก ได้รูปไปลงเพียบ", "2026-09-07", "p6"),
+  rv("r21", "มายด์ค่า", "female", "photo-1595152772835-219674b2a8a6", 5, "นั่งชิลคุยกันเพลินจนลืมเวลา เป็นกันเองแต่มีขอบเขต", "2026-08-25", "p6"),
+  rv("r22", "Film", "male", "photo-1544723795-3fb6469f5b39", 4, "พาคุณแม่ไปทานข้าวด้วย ดูแลคุณแม่ดีมาก ท่านชอบมาก", "2026-08-01", "p6"),
   // Smart
-  rv("r23", "กัน", "male", "photo-1492562080023-ab3db95bfbce", 5, "อธิบายท่ายืดให้ทำเองที่บ้านด้วย มืออาชีพจริง", "2026-09-09", "p7"),
+  rv("r23", "กัน", "male", "photo-1492562080023-ab3db95bfbce", 5, "เป็นบัดดี้ออกกำลังที่ดี ให้กำลังใจตลอด มืออาชีพจริง", "2026-09-09", "p7"),
   rv("r24", "เต้", "male", "photo-1519085360753-af0119f7cbe7", 4, "ติดต่อง่าย ตอบแชทไว จ่ายผ่านระบบสบายใจ", "2026-08-28", "p7"),
   // Satang
-  rv("r25", "บี้", "male", "photo-1506794778202-cad84cf45f1d", 5, "นวดดีมาก แรงกำลังพอดี ถามตลอดว่าเจ็บไหม หายปวดหลังเลย", "2026-09-11", "p8"),
-  rv("r26", "Namwhan", "female", "photo-1524504388940-b1c1722653e1", 5, "ตรงเวลา สุภาพมาก เอาอุปกรณ์มาครบ ห้องไม่เลอะเลย", "2026-08-16", "p8"),
-  rv("r27", "โอ๋", "female", "photo-1489424731084-a5d8b219a5bb", 4, "ออฟฟิศซินโดรมที่เป็นมานานดีขึ้นเยอะ จะจองซ้ำแน่นอน", "2026-07-25", "p8"),
+  rv("r25", "บี้", "male", "photo-1506794778202-cad84cf45f1d", 5, "คุยสนุกมาก ฟังเก่ง ดูแลดีตลอดทั้งมื้อ ไม่มีเงียบเลย", "2026-09-11", "p8"),
+  rv("r26", "Namwhan", "female", "photo-1524504388940-b1c1722653e1", 5, "มาตรงเวลา สุภาพมาก แต่งตัวดี วางตัวเหมาะสม", "2026-08-16", "p8"),
+  rv("r27", "โอ๋", "female", "photo-1489424731084-a5d8b219a5bb", 4, "พาไปคาเฟ่ที่ไม่เคยรู้จัก บรรยากาศดีมาก จะนัดซ้ำแน่นอน", "2026-07-25", "p8"),
 ];
 
 const now = new Date();
@@ -216,76 +212,69 @@ const daysFromNow = (n: number, h = 15) => {
 export const DEMO_JOBS: JobBoard[] = [
   {
     id: "j1", owner: m("h1", "พลอยแท้✨", "female", 23, "photo-1524504388940-b1c1722653e1"), role: "hirer",
-    title: "หาหมอนวดไทย 2 ชม. ที่คอนโด ปวดหลังมาก", durationHours: 2, scheduleDate: daysFromNow(0), startTime: "15:00", endTime: "17:00",
+    title: "หาเพื่อนไปคาเฟ่ + ถ่ายรูป 3 ชม. แถวสยาม", durationHours: 3, scheduleDate: daysFromNow(0), startTime: "15:00", endTime: "17:00",
     placeName: "คอนโด สยาม", province: "กรุงเทพมหานคร", lat: 13.7465, lng: 100.5349,
     budget: 1000, images: [img("photo-1517248135467-4c7edcad34c4")], interestedCount: 1, isInterested: false, createdAt: "18h",
   },
   {
     id: "j2", owner: m("h2", "Fuyuko Chan", "female", 30, "photo-1517841905240-472988babdf9"), role: "hirer",
-    title: "ออฟฟิศซินโดรม นวดคอ บ่า ไหล่ ที่ออฟฟิศ", durationHours: 4, scheduleDate: daysFromNow(0), startTime: "13:00", endTime: "17:00",
+    title: "หาเพื่อนไปดูหนัง + ดินเนอร์ ทองหล่อ", durationHours: 4, scheduleDate: daysFromNow(0), startTime: "13:00", endTime: "17:00",
     placeName: "ออฟฟิศ ทองหล่อ", province: "กรุงเทพมหานคร", lat: 13.7279, lng: 100.5685,
     budget: 1000, images: [img("photo-1554118811-1e0d58224f24")], interestedCount: 2, isInterested: false, createdAt: "2d",
   },
   {
     id: "j3", owner: DEMO_MEMBERS[2], role: "provider",
-    title: "วันนี้ว่าง รับนวดไทย + ประคบ 17:00–21:00", durationHours: 4, scheduleDate: daysFromNow(0), startTime: "17:00", endTime: "21:00",
+    title: "วันนี้ว่าง รับนัดกินข้าว / นั่งชิล 17:00–21:00", durationHours: 4, scheduleDate: daysFromNow(0), startTime: "17:00", endTime: "21:00",
     placeName: "รัชดาภิเษก", province: "กรุงเทพมหานคร", lat: 13.7706, lng: 100.5698,
     budget: 1000, images: [img("photo-1537944434965-cf4679d1a598")], interestedCount: 3, isInterested: true, createdAt: "11h",
   },
   {
     id: "j4", owner: DEMO_MEMBERS[3], role: "provider",
-    title: "ว่างทั้งวัน รับนวดออฟฟิศซินโดรม โซนอ่อนนุช", durationHours: 10, scheduleDate: daysFromNow(0), startTime: "11:00", endTime: "21:00",
+    title: "ว่างทั้งวัน พาเที่ยว ถ่ายรูป โซนอ่อนนุช", durationHours: 10, scheduleDate: daysFromNow(0), startTime: "11:00", endTime: "21:00",
     placeName: "BTS อ่อนนุช", province: "กรุงเทพมหานคร", lat: 13.7011, lng: 100.6016,
     budget: 1500, images: [img("photo-1504674900247-0877df9cc836")], interestedCount: 0, isInterested: false, createdAt: "17h",
   },
   {
     id: "j5", owner: m("h3", "เจมส์", "male", 30, "photo-1564890112980-007a84d5d700"), role: "provider",
-    title: "รับนวดกีฬา/น้ำมัน ดึกได้ ถึง 02:00", durationHours: 4, scheduleDate: daysFromNow(0), startTime: "22:00", endTime: "02:00",
+    title: "รับนัดคาราโอเกะ / นั่งชิล ดึกได้ ถึง 02:00", durationHours: 4, scheduleDate: daysFromNow(0), startTime: "22:00", endTime: "02:00",
     placeName: "รัชดา ห้าง", province: "กรุงเทพมหานคร", lat: 13.7589, lng: 100.5605,
     budget: 1000, images: [img("photo-1482049016688-2d3e1b311543")], interestedCount: 1, isInterested: false, createdAt: "20h",
   },
   {
     id: "j6", owner: DEMO_MEMBERS[9], role: "provider",
-    title: "รับนวดน้ำมันที่โรงแรม ตัวเมืองเชียงใหม่", durationHours: 6, scheduleDate: daysFromNow(1), startTime: "09:00", endTime: "15:00",
+    title: "พาเที่ยวคาเฟ่ ตัวเมืองเชียงใหม่", durationHours: 6, scheduleDate: daysFromNow(1), startTime: "09:00", endTime: "15:00",
     placeName: "นิมมาน เชียงใหม่", province: "เชียงใหม่", lat: 18.7964, lng: 98.9628,
     budget: 1200, images: [img("photo-1528181304800-259b08848526")], interestedCount: 0, isInterested: false, createdAt: "1d",
   },
 ];
 
-// แชทห้องตัวอย่าง: วงจรเงินครบทุกขั้น (deposit ยืนยันแล้ว, final รอสลิป)
+// แชทห้องตัวอย่าง: ลูกค้าจ่ายเต็มจำนวนครั้งเดียว (รอยืนยันสลิป)
 export const DEMO_ROOMS: ChatRoom[] = [
   {
     id: "room1", partner: DEMO_MEMBERS[0],
-    lastMessage: "โอนเข้าไปแล้วนะครับ ตามสลิปเลย", lastAt: "14:32", unread: 1,
+    lastMessage: "โอนเต็มจำนวนแล้วนะคะ ตามสลิปเลย", lastAt: "14:32", unread: 1,
     orderStatus: "in_progress",
-    depositCreated: true, depositConfirmed: true, finalCreated: true, finalConfirmed: false, reviewed: false,
+    paymentCreated: true, paymentConfirmed: false, reviewed: false,
     messages: [
-      { id: "m1", roomId: "room1", senderId: "me", kind: "text", content: "สวัสดีครับ สนใจนวดไทย 90 นาที ที่คอนโดแถวอโศก คืนวันเสาร์ครับ", createdAt: "13:50", isRead: true },
-      { id: "m2", roomId: "room1", senderId: "u1", kind: "text", content: "สวัสดีครับ ได้เลยครับ วันเสาร์ 19:00 สะดวกไหมครับ มีโรคประจำตัวหรือจุดที่ห้ามนวดไหมครับ", createdAt: "13:55", isRead: true },
-      { id: "m3", roomId: "room1", senderId: "me", kind: "text", content: "ไม่มีครับ แต่ปวดไหล่ขวามาก รวมเท่าไหร่ และมัดจำเท่าไหร่ครับ", createdAt: "14:01", isRead: true },
-      {
-        id: "m4", roomId: "room1", senderId: "u1", kind: "payment", content: "",
-        payment: { id: "pay1", type: "deposit", amount: 300, status: "confirmed", bankLabel: "กสิกรไทย x-4451", discount: 0 },
-        createdAt: "14:05", isRead: true,
-      },
-      { id: "m5", roomId: "room1", senderId: "me", kind: "text", content: "โอนมัดจำแล้วครับ ตามสลิป", createdAt: "14:20", isRead: true },
-      { id: "m6", roomId: "room1", senderId: "u1", kind: "text", content: "ได้รับมัดจำแล้วครับ เจอกันวันเสาร์ 19:00 ครับ", createdAt: "14:22", isRead: true },
+      { id: "m1", roomId: "room1", senderId: "me", kind: "text", content: "สวัสดีค่ะ อยากหาเพื่อนไปดินเนอร์ + ดูหนัง 3 ชม. แถวอโศก คืนวันเสาร์ค่ะ", createdAt: "13:50", isRead: true },
+      { id: "m2", roomId: "room1", senderId: "u1", kind: "text", content: "สวัสดีครับ ได้เลยครับ วันเสาร์ 19:00 สะดวกไหมครับ อยากทานอาหารแนวไหนครับ", createdAt: "13:55", isRead: true },
+      { id: "m3", roomId: "room1", senderId: "me", kind: "text", content: "อาหารญี่ปุ่นค่ะ รวมเท่าไหร่คะ", createdAt: "14:01", isRead: true },
       {
         id: "m7", roomId: "room1", senderId: "u1", kind: "payment", content: "",
-        payment: { id: "pay2", type: "final", amount: 1200, status: "slip_uploaded", bankLabel: "กสิกรไทย x-4451", slipUrl: img("photo-1554224155-6726b3ff858f"), discount: 0 },
+        payment: { id: "pay2", type: "full", amount: 2400, status: "slip_uploaded", bankLabel: "กสิกรไทย x-4451", slipUrl: img("photo-1554224155-6726b3ff858f"), discount: 0 },
         createdAt: "14:30", isRead: true,
       },
-      { id: "m8", roomId: "room1", senderId: "me", kind: "text", content: "โอนเข้าไปแล้วนะครับ ตามสลิปเลย", createdAt: "14:32", isRead: false },
+      { id: "m8", roomId: "room1", senderId: "me", kind: "text", content: "โอนเต็มจำนวนแล้วนะคะ ตามสลิปเลย", createdAt: "14:32", isRead: false },
     ],
   },
   {
     id: "room2", partner: DEMO_MEMBERS[1],
     lastMessage: "เจอกันพรุ่งนี้ครับ", lastAt: "เมื่อวาน", unread: 0,
     orderStatus: "negotiated",
-    depositCreated: false, depositConfirmed: false, finalCreated: false, finalConfirmed: false, reviewed: false,
+    paymentCreated: false, paymentConfirmed: false, reviewed: false,
     messages: [
-      { id: "n1", roomId: "room2", senderId: "me", kind: "text", content: "สวัสดีครับ อยากนวดกีฬาหลังวิ่ง 60 นาทีครับ", createdAt: "10:11", isRead: true },
-      { id: "n2", roomId: "room2", senderId: "u2", kind: "text", content: "ได้ครับ 700/ชม. ขั้นต่ำ 1 ชม. มียืดเหยียดให้ด้วยครับ", createdAt: "10:15", isRead: true },
+      { id: "n1", roomId: "room2", senderId: "me", kind: "text", content: "สวัสดีครับ อยากหาบัดดี้วิ่งที่สวนเบญจกิติ 3 ชม. ค่ะ", createdAt: "10:11", isRead: true },
+      { id: "n2", roomId: "room2", senderId: "u2", kind: "text", content: "ได้ครับ 3 ชม. ฿1,900 วิ่งเสร็จไปหาอะไรทานต่อได้ครับ", createdAt: "10:15", isRead: true },
       { id: "n3", roomId: "room2", senderId: "u2", kind: "text", content: "เจอกันพรุ่งนี้ครับ", createdAt: "10:16", isRead: true },
     ],
   },
@@ -293,7 +282,7 @@ export const DEMO_ROOMS: ChatRoom[] = [
 
 export const DEMO_ORDER: Order = {
   id: "o1", roomId: "room1", hirer: DEMO_ME, provider: DEMO_MEMBERS[0],
-  status: "in_progress", totalAmount: 1500, depositAmount: 300, discount: 0, commission: 240, createdAt: "2026-09-26",
+  status: "in_progress", totalAmount: 2400, discount: 0, commission: 360, createdAt: "2026-09-26",
 };
 
 export const DEMO_BANKS: BankAccount[] = [
@@ -302,15 +291,15 @@ export const DEMO_BANKS: BankAccount[] = [
 ];
 
 export const DEMO_SAVED_REPLIES: SavedReply[] = [
-  { id: "s1", title: "ราคา", message: "ราคา 550฿/ชม. ขั้นต่ำ 1 ชม. นำเบาะ ผ้า น้ำมันไปเองครับ" },
-  { id: "s2", title: "แนะนำตัว", message: "สวัสดีครับ หมอนวดไทย ประสบการณ์ 7 ปี ถนัดออฟฟิศซินโดรมครับ" },
+  { id: "s1", title: "ราคา", message: "ราคา 3 ชม. ฿2,400 / 5 ชม. ฿3,800 ครับ" },
+  { id: "s2", title: "แนะนำตัว", message: "สวัสดีครับ ต้นครับ ชอบคาเฟ่ ดูหนัง ถ่ายรูป คุยได้ทุกเรื่องครับ" },
 ];
 
 export const DEMO_AUTO_REPLY = "สวัสดีจ้า 🙏 รบกวนแจ้งข้อมูลหน่อยนะคะ 🍽️ กิจกรรม: 📅 วันที่: 🕒 เวลานัดพบ: 📍 สถานที่: ⌛ จำนวนชั่วโมง:";
 
 export const DEMO_NOTIS: AppNotification[] = [
-  { id: "n1", type: "chat", title: "ข้อความใหม่", body: "ต้น: ได้รับมัดจำแล้วครับ", isRead: false, createdAt: "14:32" },
-  { id: "n2", type: "job", title: "มีคนสนใจประกาศของคุณ", body: "อาร์ม สนใจงาน 'นวดน้ำมันที่โรงแรม'", isRead: false, createdAt: "12:10" },
+  { id: "n1", type: "chat", title: "ข้อความใหม่", body: "ต้น: เจอกันวันเสาร์ 19:00 นะครับ", isRead: false, createdAt: "14:32" },
+  { id: "n2", type: "job", title: "มีคนสนใจประกาศของคุณ", body: "อาร์ม สนใจงาน 'พาเที่ยวคาเฟ่ เชียงใหม่'", isRead: false, createdAt: "12:10" },
   { id: "n3", type: "kyc", title: "ยืนยันตัวตน", body: "ยืนยันตัวตนเพื่อปลดล็อกทุกฟีเจอร์", isRead: true, createdAt: "09:00" },
 ];
 
@@ -325,19 +314,19 @@ export const DEMO_MY_ORDERS: Order[] = [
   { ...DEMO_ORDER, id: "o1" },
   {
     id: "o2", roomId: "room2", hirer: DEMO_ME, provider: DEMO_MEMBERS[1],
-    status: "negotiated", totalAmount: 800, depositAmount: 200, discount: 0, commission: 128, createdAt: "2026-09-27",
+    status: "negotiated", totalAmount: 1900, discount: 0, commission: 285, createdAt: "2026-09-27",
   },
   {
     id: "o3", roomId: "", hirer: DEMO_ME, provider: DEMO_MEMBERS[6],
-    status: "completed", totalAmount: 1050, depositAmount: 150, discount: 0, commission: 210, createdAt: "2026-09-20",
+    status: "completed", totalAmount: 1400, discount: 0, commission: 210, createdAt: "2026-09-20",
   },
   {
     id: "o4", roomId: "", hirer: DEMO_ME, provider: DEMO_MEMBERS[7],
-    status: "reviewed", totalAmount: 1200, depositAmount: 300, discount: 120, promoCode: "MB10", commission: 216, createdAt: "2026-09-12",
+    status: "reviewed", totalAmount: 1600, discount: 160, promoCode: "MB10", commission: 216, createdAt: "2026-09-12",
   },
 ];
 
-// ── งานเข้า (บรอดแคสต์หาหมอนวด) ──
+// ── งานเข้า (บรอดแคสต์หา Part-Time) ──
 export interface IncomingJob {
   id: string;
   hirer: MemberLite;
@@ -354,12 +343,12 @@ export interface IncomingJob {
 export const DEMO_INCOMING: IncomingJob[] = [
   {
     id: "ij1", hirer: m("ih1", "คุณแนท", "female", 29, "photo-1610088441520-4352457e7095"),
-    title: "นวดไทย 90 นาที ที่คอนโด", hours: 3, place: "คอนโด สยาม", lat: 13.7465, lng: 100.5350,
-    budget: 1200, distanceKm: 1.2, acceptSeconds: 15,
+    title: "ดินเนอร์ + ดูหนัง 3 ชม.", hours: 3, place: "คอนโด สยาม", lat: 13.7465, lng: 100.5350,
+    budget: 2400, distanceKm: 1.2, acceptSeconds: 15,
   },
   {
     id: "ij2", hirer: m("ih2", "พี่บอส", "male", 41, "photo-1601412436009-d964bd02edbc"),
-    title: "ออฟฟิศซินโดรม 60 นาที", hours: 2, place: "ออฟฟิศ สามย่าน", lat: 13.7384, lng: 100.5306,
-    budget: 800, distanceKm: 2.8, acceptSeconds: 15,
+    title: "คาเฟ่ + ถ่ายรูป 3 ชม.", hours: 3, place: "ห้าง สามย่านมิตรทาวน์", lat: 13.7384, lng: 100.5306,
+    budget: 2000, distanceKm: 2.8, acceptSeconds: 15,
   },
 ];

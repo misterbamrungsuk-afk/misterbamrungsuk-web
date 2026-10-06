@@ -69,7 +69,7 @@ export default function RegisterPage() {
           </button>
         </form>
         <a href="/login" className="text-[13px] text-ink-200 self-center">มีบัญชีแล้ว? <span className="font-semibold text-[#8f5e00]">เข้าสู่ระบบ</span></a>
-        <p className="text-ink-400 text-xs">© 2026 Mister Bamrungsuk · สำหรับผู้มีอายุ 18 ปีขึ้นไป · นวดเพื่อสุขภาพเท่านั้น</p>
+        <p className="text-ink-400 text-xs">© 2026 Mister Bamrungsuk · สำหรับผู้มีอายุ 18 ปีขึ้นไป · ไม่มีบริการทางเพศ</p>
       </section>
     </main>
   );

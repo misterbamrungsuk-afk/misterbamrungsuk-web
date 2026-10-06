@@ -50,7 +50,7 @@ export function applicantRegistered(a: ApplicantMail): Mail[] {
 export type BookingMail = { code: string; customerEmail?: string; customerName?: string; providerEmail?: string; providerName: string; date?: string; time?: string; minutes?: string | number; total?: number; place?: string };
 
 const bookingRows = (b: BookingMail): [string, unknown][] => [
-  ["รหัสจอง", b.code], ["หมอนวด", b.providerName], ["วันเวลา", `${b.date || "-"} ${b.time || ""}`], ["ระยะเวลา", b.minutes ? `${b.minutes} นาที` : "-"],
+  ["รหัสจอง", b.code], ["เพื่อน", b.providerName], ["วันเวลา", `${b.date || "-"} ${b.time || ""}`], ["ระยะเวลา", b.minutes ? `${Number(b.minutes) / 60} ชม.` : "-"],
   ["สถานที่", b.place || "-"], ["ยอดรวม", b.total != null ? `฿${Number(b.total).toLocaleString("th-TH")}` : "-"],
 ];
 

@@ -79,10 +79,10 @@ export default function ProviderSettingsPage() {
         </div>
 
         <div className="glass rounded-3xl p-4">
-          <p className="font-semibold text-sm">{th ? "เงินมัดจำประกันงาน" : "Security deposit"}</p>
-          <p className="text-xs text-ink-400 mt-1">{th ? `โอนแล้ว ${baht(500)} · 28/09 10:42 · สลิป #TX88231` : `Transferred ${baht(500)} · 28/09 10:42 · slip #TX88231`}</p>
+          <p className="font-semibold text-sm">{th ? "ค่าการันตีแบรนด์" : "Brand guarantee"}</p>
+          <p className="text-xs text-ink-400 mt-1">{th ? `โอนแล้ว ${baht(15000)} · 28/09 10:42 · สลิป #TX88231 · คืนเต็มจำนวนเมื่อครบ 1 ปี` : `Paid ${baht(15000)} · 28/09 10:42 · slip #TX88231 · fully refunded after 1 year`}</p>
           <button onClick={() => { setSlipOk(true); say(th ? "ยืนยันสลิปแล้ว รอตรวจสอบ" : "Slip confirmed, pending review"); }} disabled={slipOk}
-            className="btn-crimson w-full h-11 mt-3 text-sm font-semibold">{slipOk ? (th ? "ยืนยันแล้ว ✓" : "Confirmed ✓") : th ? "ยืนยันสลิปมัดจำ" : "Confirm deposit slip"}</button>
+            className="btn-crimson w-full h-11 mt-3 text-sm font-semibold">{slipOk ? (th ? "ยืนยันแล้ว ✓" : "Confirmed ✓") : th ? "ยืนยันสลิปค่าการันตี" : "Confirm guarantee slip"}</button>
         </div>
       </div>
       <Toast show={!!toast}>{toast}</Toast>

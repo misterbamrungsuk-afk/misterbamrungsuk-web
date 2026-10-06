@@ -10,7 +10,7 @@ const COLS: [Ticket["status"], string][] = [["new", "ใหม่"], ["doing", "
 export default function AdminCsPage() {
   const [tickets, setTickets] = useState(TICKETS);
   const [selId, setSelId] = useState(TICKETS[0].id);
-  const [msgs, setMsgs] = useState<Record<string, string[]>>({ c1: ["นวดได้ประมาณ 60 นาที แต่จ่ายแพ็กเกจ 90 นาที"] });
+  const [msgs, setMsgs] = useState<Record<string, string[]>>({ c1: ["จอง 3 ชม. แต่ Part-Time อยู่ด้วยแค่ราว 2 ชม."] });
   const [reply, setReply] = useState("");
   const [toast, setToast] = useState("");
   const sel = tickets.find((t) => t.id === selId);

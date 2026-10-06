@@ -76,12 +76,12 @@ export default function TrackingPage({ params }: { params: Promise<{ id: string 
         </div>
 
         <p className="text-[11px] text-ink-500 text-center">
-          {running && !arrived ? `🛰️ ${t.liveLocation}` : arrived ? (lang === "th" ? "🎉 หมอนวดของคุณมาถึงแล้ว!" : "🎉 Your therapist has arrived!") : ""}
+          {running && !arrived ? `🛰️ ${t.liveLocation}` : arrived ? (lang === "th" ? "🎉 เพื่อนของคุณมาถึงแล้ว!" : "🎉 Your companion has arrived!") : ""}
         </p>
 
         {arrived && (
           <Link href="/order/o1/session" className="btn-crimson h-12 rounded-xl w-full font-display font-semibold flex items-center justify-center">
-            {lang === "th" ? "หมอถึงแล้ว · เริ่มนวด" : "Therapist arrived · Start"}
+            {lang === "th" ? "เพื่อนมาถึงแล้ว · เริ่มนัด" : "Companion arrived · Start"}
           </Link>
         )}
 

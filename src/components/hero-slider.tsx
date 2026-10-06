@@ -7,7 +7,7 @@ import { baht } from "@/components/ui";
 import { queueLabel } from "@/lib/membership";
 import { catBySlug } from "@/lib/categories";
 
-// สไลด์ "Part-Time แนะนำ" หน้าแรก — ปัดได้ + เลื่อนเองทุก 5 วิ
+// สไลด์ "เพื่อนแนะนำ" หน้าแรก — ปัดได้ + เลื่อนเองทุก 5 วิ
 export function HeroSlider({ posts, lang }: { posts: Post[]; lang: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const [i, setI] = useState(0);
@@ -38,7 +38,7 @@ export function HeroSlider({ posts, lang }: { posts: Post[]; lang: string }) {
     <section className="px-4 pt-3">
       <div className="flex items-end justify-between mb-2.5">
         <div>
-          <p className="text-[11px] font-semibold tracking-[0.2em] text-gold-500 flex items-center gap-2"><span className="w-5 h-px bg-[#b8860b]" />{th ? "Part-Time แนะนำ" : "RECOMMENDED"}</p>
+          <p className="text-[11px] font-semibold tracking-[0.2em] text-gold-500 flex items-center gap-2"><span className="w-5 h-px bg-[#b8860b]" />{th ? "เพื่อนแนะนำ" : "RECOMMENDED"}</p>
           <h2 className="font-display text-[20px] font-bold mt-0.5">{th ? "คัดมาเพื่อคุณวันนี้" : "Picked for you today"}</h2>
         </div>
         <span className="text-xs text-ink-400">{i + 1}/{posts.length}</span>
@@ -63,7 +63,7 @@ export function HeroSlider({ posts, lang }: { posts: Post[]; lang: string }) {
                 </div>
                 <p className="text-[13px] text-white/80 mt-1.5 truncate">{p.categories.slice(0, 2).map((c) => { const k = catBySlug(c); return k ? (th ? k.th : k.en) : c; }).join(" · ")} · {p.province}</p>
                 <div className="mt-4 flex items-center justify-between">
-                  <p className="font-display text-[22px] font-bold text-[#f3d27a]">{baht(p.pricePerHour)}<span className="text-[12px] font-sans font-normal text-white/70"> /{th ? "ชม." : "hr"}</span></p>
+                  <p className="font-display text-[22px] font-bold text-[#f3d27a]">{baht(p.price3h)}<span className="text-[12px] font-sans font-normal text-white/70"> /{th ? "3 ชม." : "3h"}</span></p>
                   <span className="h-11 px-5 rounded-full bg-[linear-gradient(180deg,#e8293f,#c8142a)] text-white text-[14px] font-semibold flex items-center gap-1.5 shadow-[0_6px_16px_rgba(215,25,47,.35)]">{th ? "ดูโปรไฟล์" : "View"} →</span>
                 </div>
               </div>

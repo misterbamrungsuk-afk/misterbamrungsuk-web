@@ -13,9 +13,9 @@ export default function OnboardingPage() {
   const [i, setI] = useState(0);
   const startX = useRef<number | null>(null);
   const slides = [
-    { icon: "💆‍♂️", t: th ? "หมอนวดชายมืออาชีพ" : "Professional therapists", d: th ? "ทุกคนยืนยันตัวตนและใบรับรองแล้ว" : "Every therapist is verified and certified" },
+    { icon: "🍽️", t: th ? "เพื่อนกิน เพื่อนเที่ยว" : "Dining & outing companions", d: th ? "เพื่อนทุกคนยืนยันตัวตนแล้ว" : "Every companion is ID-verified" },
     { icon: "🔒", t: th ? "จ่ายผ่านระบบกลาง" : "Secure escrow", d: th ? "เงินของคุณถูกกันไว้จนกว่างานจะเสร็จ" : "Your money is held until the job is done" },
-    { icon: "📍", t: th ? "ติดตามสดและปุ่ม SOS" : "Live tracking & SOS", d: th ? "รู้ตำแหน่งหมอ และขอความช่วยเหลือได้ทันที" : "See where your therapist is and get help instantly" },
+    { icon: "📍", t: th ? "ติดตามสดและปุ่ม SOS" : "Live tracking & SOS", d: th ? "รู้ตำแหน่งเพื่อน และขอความช่วยเหลือได้ทันที" : "See where your companion is and get help instantly" },
   ];
   const last = i === slides.length - 1;
   const next = () => (last ? router.push("/home") : setI(i + 1));

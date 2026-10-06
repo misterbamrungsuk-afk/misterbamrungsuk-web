@@ -5,12 +5,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useI18n } from "@/i18n/provider";
 import { TopBar } from "@/components/shell";
 import { Field, Modal, Toast } from "@/components/ui";
-import { CATEGORIES, PROVINCES } from "@/lib/categories";
+import { PROVINCES } from "@/lib/categories";
+import { ActivityInput, BlockPriceInputs, PlacesPicker, SkillsPicker } from "@/components/offer-fields";
+import { usePartnerSpas } from "@/lib/spas";
+import { DEMO_POSTS } from "@/lib/demo-data";
 
 const DEFAULT_RULES = [
   "นัดเจอเฉพาะสถานที่สาธารณะเท่านั้น",
   "ลูกค้ารับผิดชอบค่าเดินทางและค่าใช้จ่ายทั้งหมด",
-  "ชำระ 50% ก่อนเริ่มงาน / 50% หลังจบงาน (ผ่านระบบในแอป)",
+  "ลูกค้าชำระเต็มจำนวนผ่านแอปตอนจอง เงินพักไว้กับเราจนจบนัด",
   "ไม่รับงานผิดกฎหมายทุกประเภท / ไม่รับงานเสี่ยงอันตราย",
 ];
 
@@ -28,10 +31,14 @@ function CreatePostForm() {
   const search = useSearchParams();
   const isEdit = search.get("id") === "p7"; // demo: แก้ไขโพสต์ Smart
 
-  const [cats, setCats] = useState<string[]>(isEdit ? ["gaming", "language"] : []);
-  const [price, setPrice] = useState(isEdit ? "150" : "400");
-  const [minHours, setMinHours] = useState("2");
-  const [deposit, setDeposit] = useState("200");
+  const editing = isEdit ? DEMO_POSTS.find((p) => p.id === "p7") : undefined;
+  const spas = usePartnerSpas();
+  const [acts, setActs] = useState<string[]>(editing?.activities ?? []);
+  const [skills, setSkills] = useState<string[]>(editing?.skills ?? []);
+  const [places, setPlaces] = useState<string[]>(editing?.places ?? []);
+  const [spaIds, setSpaIds] = useState<string[]>([]);
+  const [p3, setP3] = useState<number>(editing?.price3h ?? 2400);
+  const [p5, setP5] = useState<number>(editing?.price5h ?? 3800);
   const [workStart, setWorkStart] = useState("12:00");
   const [workEnd, setWorkEnd] = useState("23:00");
   const [langs, setLangs] = useState<string[]>(["ไทย"]);
@@ -47,7 +54,7 @@ function CreatePostForm() {
   const [needVerify, setNeedVerify] = useState(false);
   const [done, setDone] = useState(false);
 
-  const valid = cats.length > 0 && +price > 0 && images.length > 0;
+  const valid = acts.length > 0 && places.length > 0 && p3 > 0 && p5 > 0 && images.length > 0;
 
   function toggleLang(l: string) {
     setLangs((ls) => (ls.includes(l) ? ls.filter((x) => x !== l) : [...ls, l]));
@@ -92,21 +99,11 @@ function CreatePostForm() {
           </div>
         </Field>
 
-        <Field label={lang === "th" ? "หมวดบริการ (เลือกได้หลายหมวด)" : "Categories"}>
-          <div className="flex flex-wrap gap-2">
-            {CATEGORIES.filter((c) => c.slug !== "other").map((c) => (
-              <button key={c.slug} onClick={() => setCats((cs) => (cs.includes(c.slug) ? cs.filter((x) => x !== c.slug) : [...cs, c.slug]))}
-                className={`chip ${cats.includes(c.slug) ? "chip-red" : ""}`}>
-                {c.emoji} {lang === "th" ? c.th : c.en}
-              </button>
-            ))}
-          </div>
-        </Field>
-
-        <div className="grid grid-cols-3 gap-2">
-          <Field label={`฿ / ${t.hoursUnit}`}><input type="number" min={1} value={price} onChange={(e) => setPrice(e.target.value)} className="input-dark" /></Field>
-          <Field label={t.minHours}><input type="number" min={1} value={minHours} onChange={(e) => setMinHours(e.target.value)} className="input-dark" /></Field>
-          <Field label={t.deposit}><input type="number" min={0} value={deposit} onChange={(e) => setDeposit(e.target.value)} className="input-dark" /></Field>
+        <div className="flex flex-col gap-5 pb-4">
+          <ActivityInput value={acts} onChange={setActs} th={lang === "th"} />
+          <SkillsPicker value={skills} onChange={setSkills} th={lang === "th"} />
+          <PlacesPicker value={places} onChange={setPlaces} spas={spas} spaIds={spaIds} onSpaIds={setSpaIds} th={lang === "th"} />
+          <BlockPriceInputs p3={p3} p5={p5} onP3={setP3} onP5={setP5} th={lang === "th"} />
         </div>
 
         <Field label={t.workingHours}>

@@ -44,8 +44,8 @@ export async function getPosts(filters: {
     if (filters.province) list = list.filter((p) => p.province === filters.province);
     if (filters.ageMin) list = list.filter((p) => (p.member.age ?? 0) >= filters.ageMin!);
     if (filters.ageMax) list = list.filter((p) => (p.member.age ?? 999) <= filters.ageMax!);
-    if (filters.rateMin) list = list.filter((p) => p.pricePerHour >= filters.rateMin!);
-    if (filters.rateMax) list = list.filter((p) => p.pricePerHour <= filters.rateMax!);
+    if (filters.rateMin) list = list.filter((p) => p.price3h >= filters.rateMin!);
+    if (filters.rateMax) list = list.filter((p) => p.price3h <= filters.rateMax!);
     return list;
   }
   // LIVE (stub — เติมเมื่อผูก Supabase แล้ว)

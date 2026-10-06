@@ -6,20 +6,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useI18n } from "@/i18n/provider";
 import { TopBar } from "@/components/shell";
 import { BookSteps } from "@/components/book-steps";
-import { baht, Modal } from "@/components/ui";
+import { baht } from "@/components/ui";
 import { DEMO_POSTS, DEMO_PROMOS } from "@/lib/demo-data";
-import { PARTNER_SPAS, blockPrice, massageAddonPrice, nextDays, promoDiscount, thaiDate, timeSlots } from "@/lib/booking";
+import { blockPrice, nextDays, promoDiscount, thaiDate, timeSlots } from "@/lib/booking";
 import { BANK } from "@/lib/join/config";
 import { promptPayPayload } from "@/lib/join/promptpay";
 import QRCode from "qrcode";
+import { usePartnerSpas } from "@/lib/spas";
 
-// ขั้นที่ 4/4: เวลา + สรุปยอด + วิธีชำระ + ยินยอมความปลอดภัย (บังคับ) + ยืนยันด้านสุขภาพ (popup เดิม)
-const HEALTH = [
-  { id: "heart", th: "ความดันสูง / โรคหัวใจ", en: "High blood pressure / heart condition" },
-  { id: "surgery", th: "ผ่าตัดภายใน 6 เดือน", en: "Surgery within 6 months" },
-  { id: "injury", th: "กระดูก / ข้อ บาดเจ็บ", en: "Bone / joint injury" },
-  { id: "pregnant", th: "ตั้งครรภ์", en: "Pregnant" },
-] as const;
+// ขั้นที่ 4/4: เวลา + สรุปยอด + วิธีชำระ (จ่ายเต็มจำนวนตอนจอง ไม่มีมัดจำ) + ยินยอมความปลอดภัย (บังคับ)
 
 const SAFETY_TH = "รับทราบว่าการอยู่ในสถานที่ส่วนตัวสองต่อสองกับบุคคลที่เพิ่งรู้จัก ท่านต้องดูแลและป้องกันตัวเอง บริษัทเป็นเพียงสื่อกลางในการให้บริการ และไม่มีบริการทางเพศ";
 const SAFETY_EN = "I understand that being alone in a private place with someone I have just met means I must look after and protect myself. The company is only an intermediary, and no sexual services are offered.";
@@ -36,9 +31,9 @@ function CheckoutInner({ id }: { id: string }) {
   const post = DEMO_POSTS.find((p) => p.id === id);
 
   const hrs = Number(sp.get("hrs") ?? 3) === 5 ? 5 : 3;
-  const massage = sp.get("massage") === "1";
-  const loc = sp.get("loc") === "spa" ? "spa" : "home";
-  const spaObj = PARTNER_SPAS.find((s) => s.id === sp.get("spa"));
+  const loc = sp.get("loc") ?? "";
+  const spas = usePartnerSpas();
+  const spaObj = spas.find((s) => s.id === sp.get("spa"));
   const place = sp.get("place") ?? "";
   const note = sp.get("note") ?? "";
   const days = useMemo(() => nextDays(5), []);
@@ -46,10 +41,6 @@ function CheckoutInner({ id }: { id: string }) {
   const [when, setWhen] = useState<"now" | "later">("now");
   const [date, setDate] = useState(days[0].iso);
   const [time, setTime] = useState("");
-  const [health, setHealth] = useState<Record<string, boolean>>({});
-  const [avoid, setAvoid] = useState("");
-  const [consentOpen, setConsentOpen] = useState(false);
-  const [consent, setConsent] = useState(false);
   const [safety, setSafety] = useState(false);
   const [paid, setPaid] = useState(false);
   const [method, setMethod] = useState<Method>("promptpay");
@@ -70,13 +61,11 @@ function CheckoutInner({ id }: { id: string }) {
   }
 
   const base = blockPrice(post, hrs);
-  const addon = massage ? massageAddonPrice(post) : 0;
   const spaFee = loc === "spa" ? spaObj?.price ?? 0 : 0;
-  const subtotal = base + addon + spaFee;
+  const subtotal = base + spaFee;
   const promo = DEMO_PROMOS.find((p) => p.code === applied);
   const discount = promoDiscount(promo, subtotal);
   const total = subtotal - discount;
-  const hasCondition = Object.values(health).some(Boolean);
   const slots = timeSlots(post, date);
   const timeOk = when === "now" || !!time;
   const canConfirm = method === "promptpay" && paid && safety && timeOk;
@@ -112,7 +101,7 @@ function CheckoutInner({ id }: { id: string }) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={post.images[0] ?? post.member.avatar} alt="" className="w-16 h-20 rounded-xl object-cover shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="font-display font-semibold truncate">{post.member.name} · Part-Time {hrs} {th ? "ชม." : "h"}</p>
+            <p className="font-display font-semibold truncate">{post.member.name} · {th ? "เพื่อน" : "Companion"} {hrs} {th ? "ชม." : "h"}</p>
             <p className="text-sm text-ink-300 truncate">{place}</p>
             {note && <p className="text-xs text-ink-400 truncate">{note}</p>}
           </div>
@@ -152,28 +141,6 @@ function CheckoutInner({ id }: { id: string }) {
           )}
         </section>
 
-        {massage && (
-          <section className={box}>
-            <h2 className="section-title">{th ? "ข้อมูลสุขภาพ (สำหรับ add-on นวด)" : "Health info (massage add-on)"}</h2>
-            <p className="text-xs text-ink-300 -mt-1">{th ? "ข้อมูลนี้ส่งให้ Part-Time เท่านั้น เพื่อความปลอดภัยของคุณ" : "Shared with your Part-Time only, for your safety"}</p>
-            {HEALTH.map((h) => (
-              <div key={h.id} className="flex items-center justify-between gap-3">
-                <span className="text-sm">{th ? h.th : h.en}</span>
-                <div className="flex gap-1.5 shrink-0" role="group" aria-label={th ? h.th : h.en}>
-                  {[true, false].map((v) => (
-                    <button key={String(v)} onClick={() => setHealth({ ...health, [h.id]: v })} aria-pressed={health[h.id] === v}
-                      className={`h-9 px-3.5 rounded-xl border text-sm ${health[h.id] === v ? "bg-crimson-500 border-crimson-500 text-white font-semibold" : "border-ink-600"}`}>
-                      {v ? (th ? "มี" : "Yes") : (th ? "ไม่มี" : "No")}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-            {hasCondition && <p className="text-xs text-crimson-200">{th ? "หากไม่แน่ใจควรปรึกษาแพทย์ก่อน" : "If unsure, consult a doctor first."}</p>}
-            <input value={avoid} onChange={(e) => setAvoid(e.target.value)} className="input-dark h-11" placeholder={th ? "จุดที่ห้ามนวด เช่น เข่าซ้าย" : "Areas to avoid, e.g. left knee"} aria-label={th ? "จุดที่ห้ามนวด" : "Areas to avoid"} />
-          </section>
-        )}
-
         <section className={box}>
           <h2 className="section-title">{th ? "โค้ดส่วนลด" : "Promo code"}</h2>
           <div className="flex gap-2">
@@ -186,12 +153,11 @@ function CheckoutInner({ id }: { id: string }) {
 
         {/* สรุปยอด */}
         <section className={`${box} !gap-2 text-sm`}>
-          <div className="flex justify-between"><span className="text-ink-300">Part-Time {hrs} {th ? "ชม." : "h"}</span><span>{baht(base)}</span></div>
-          {addon > 0 && <div className="flex justify-between"><span className="text-ink-300">{th ? "Add-on สกิลนวด" : "Massage add-on"}</span><span>{baht(addon)}</span></div>}
+          <div className="flex justify-between"><span className="text-ink-300">{th ? "เพื่อน" : "Companion"} {hrs} {th ? "ชม." : "h"}</span><span>{baht(base)}</span></div>
           {spaFee > 0 && <div className="flex justify-between"><span className="text-ink-300">{th ? "ค่าห้อง" : "Room"} · {spaObj?.name}</span><span>{baht(spaFee)}</span></div>}
           {discount > 0 && <div className="flex justify-between text-gold-300"><span>{applied}</span><span>−{baht(discount)}</span></div>}
           <div className="flex justify-between border-t border-ink-600 pt-2.5 mt-1"><b className="font-medium">{th ? "รวม" : "Total"}</b><b className="font-display font-semibold text-xl text-gold-300">{baht(total)}</b></div>
-          <p className="text-xs text-ink-300 mt-1">🔒 {th ? "เงินถูกกันในระบบกลางจนงานเสร็จ ยกเลิกก่อน 3 ชม. คืนเต็มจำนวน" : "Held in escrow until done. Free cancellation up to 3h before."}</p>
+          <p className="text-xs text-ink-300 mt-1">🔒 {th ? "จ่ายเต็มจำนวนครั้งเดียว เงินพักไว้กับเราจนจบนัด ยกเลิกก่อน 3 ชม. ได้คืนเต็มจำนวน" : "Pay the full amount once. We hold it until your meet-up ends. Free cancellation up to 3h before."}</p>
         </section>
 
         {/* วิธีชำระ */}
@@ -237,7 +203,7 @@ function CheckoutInner({ id }: { id: string }) {
       </div>
 
       <div className="fixed left-1/2 -translate-x-1/2 w-full max-w-[480px] z-30 px-4" style={{ bottom: "calc(16px + env(safe-area-inset-bottom))" }}>
-        <button onClick={() => { setConsent(false); setConsentOpen(true); }} disabled={!canConfirm} className="btn-crimson w-full h-14 rounded-2xl font-display font-semibold text-lg">
+        <button onClick={pay} disabled={!canConfirm} className="btn-crimson w-full h-14 rounded-2xl font-display font-semibold text-lg">
           {!timeOk ? (th ? "เลือกเวลานัดก่อน" : "Pick a time first")
             : method !== "promptpay" ? (th ? "โปรดเลือกพร้อมเพย์" : "Please use PromptPay")
             : !paid ? (th ? `สแกนจ่าย ${baht(total)} แล้วติ๊กยืนยัน` : `Pay ${baht(total)}, then tick confirm`)
@@ -246,18 +212,6 @@ function CheckoutInner({ id }: { id: string }) {
         </button>
       </div>
 
-      {/* ยืนยันด้านสุขภาพ — ถามทุกครั้งก่อนยืนยันการจอง */}
-      <Modal open={consentOpen} onClose={() => setConsentOpen(false)} title={th ? "ยืนยันด้านสุขภาพ" : "Health consent"}>
-        <p className="text-sm text-ink-300 leading-relaxed">{th ? "เพื่อความปลอดภัยของคุณ กรุณายืนยันก่อนจองทุกครั้ง หากมีข้อสงสัยควรปรึกษาแพทย์ก่อนรับบริการ" : "For your safety, please confirm before every booking. If unsure, consult a doctor first."}</p>
-        <label className="flex items-start gap-2.5 text-sm text-ink-100 mt-4 min-h-9">
-          <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="w-5 h-5 mt-0.5 shrink-0 accent-[#d4af37]" />
-          {th ? "ข้าพเจ้ายืนยันว่าสุขภาพพร้อมสำหรับกิจกรรมที่จอง และข้อมูลที่ให้ไว้ถูกต้อง" : "I confirm I am fit for the booked activities and my info is correct."}
-        </label>
-        <div className="flex gap-2 mt-5">
-          <button onClick={() => setConsentOpen(false)} className="btn-ghost rounded-xl flex-1 h-12 text-sm">{th ? "ยกเลิก" : "Cancel"}</button>
-          <button onClick={pay} disabled={!consent} className="btn-crimson rounded-xl flex-1 h-12 text-sm font-semibold">{th ? "ยืนยันการจอง" : "Confirm booking"}</button>
-        </div>
-      </Modal>
     </>
   );
 }

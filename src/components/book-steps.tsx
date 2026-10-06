@@ -2,7 +2,7 @@
 
 /** แท็บขั้นตอนจอง (ใช้ร่วมกับหน้า checkout) */
 export function BookSteps({ step, th }: { step: 1 | 2 | 3 | 4; th: boolean }) {
-  const labels = th ? ["เลือก Part-Time", "เลือกบริการ", "เลือกสถานที่", "ยืนยันและชำระ"] : ["Part-Time", "Service", "Location", "Confirm & pay"];
+  const labels = th ? ["เลือกเพื่อน", "เลือกบริการ", "เลือกสถานที่", "ยืนยันและชำระ"] : ["Companion", "Service", "Location", "Confirm & pay"];
   return (
     <ol className="grid grid-cols-4 gap-1 px-4 pt-3">
       {labels.map((l, i) => {

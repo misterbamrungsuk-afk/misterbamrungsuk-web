@@ -8,13 +8,13 @@ import { baht } from "@/components/ui";
 import { DEMO_POSTS } from "@/lib/demo-data";
 import { ADDRESSES, thaiDate } from "@/lib/booking";
 
-// ขั้นที่ 3/3: จองสำเร็จ — เงินถูกกันในระบบกลาง
+// จองสำเร็จ — จ่ายเต็มจำนวนแล้ว เงินพักไว้กับเราจนจบนัด
 function SuccessInner() {
   const { lang } = useI18n();
   const th = lang === "th";
   const sp = useSearchParams();
   const post = DEMO_POSTS.find((p) => p.id === sp.get("id")) ?? DEMO_POSTS[0];
-  const pkg = sp.get("pkg") ?? "90";
+  const pkg = sp.get("pkg") ?? "180";
   const date = sp.get("date") ?? "";
   const time = sp.get("time") ?? "";
   const total = Number(sp.get("total") ?? 0);
@@ -79,10 +79,10 @@ function SuccessInner() {
         ) : <span />}
         <button onClick={share} className="h-12 rounded-xl border border-ink-600 text-sm">{th ? "แชร์ให้คนใกล้ชิด" : "Share with someone"}</button>
       </div>
-      <p className="text-xs text-ink-300 mt-2">{th ? "เราจะแจ้งเตือนก่อนนัด 1 ชม. และตอน Part-Time เริ่มเดินทาง" : "We'll remind you 1h before and when your Part-Time sets off"}</p>
+      <p className="text-xs text-ink-300 mt-2">{th ? "เราจะแจ้งเตือนก่อนนัด 1 ชม. และตอนเพื่อนเริ่มเดินทาง" : "We'll remind you 1h before and when your companion sets off"}</p>
 
       <div className="w-full flex flex-col gap-2 mt-4">
-        <Link href="/chat/room1" className="btn-crimson h-14 rounded-2xl font-display font-semibold text-lg flex items-center justify-center">{th ? "แชทกับ Part-Time" : "Chat with Part-Time"}</Link>
+        <Link href="/chat/room1" className="btn-crimson h-14 rounded-2xl font-display font-semibold text-lg flex items-center justify-center">{th ? "แชทกับเพื่อน" : "Chat with your companion"}</Link>
         <Link href="/escrow/o1" className="h-12 rounded-2xl border border-gold-500 text-gold-300 flex items-center justify-center">{th ? "ดูเงินในระบบกลาง" : "View escrow"}</Link>
         <Link href="/orders" className="h-12 rounded-2xl border border-ink-600 flex items-center justify-center">{th ? "ออเดอร์ของฉัน" : "My orders"}</Link>
       </div>

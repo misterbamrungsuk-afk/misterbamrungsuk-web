@@ -9,13 +9,13 @@ export default function WelcomePage() {
   const { lang } = useI18n();
   const th = lang === "th";
   const steps = [
-    { n: "01", t: th ? "เลือกหมอนวด" : "Pick a therapist", d: th ? "ดูโปรไฟล์ รีวิว และใบรับรอง" : "Browse profiles, reviews and certificates" },
+    { n: "01", t: th ? "เลือกเพื่อนตามกิจกรรม" : "Pick by activity", d: th ? "ดูโปรไฟล์ รีวิว และสกิลพิเศษ" : "Browse profiles, reviews and skills" },
     { n: "02", t: th ? "จองและชำระผ่านระบบกลาง" : "Book & pay via escrow", d: th ? "เงินถูกกันไว้จนงานเสร็จ" : "Funds held until the job is done" },
-    { n: "03", t: th ? "หมอมาถึงที่" : "Therapist arrives", d: th ? "ติดตามสด LIVE พร้อมปุ่ม SOS" : "Live tracking with SOS button" },
+    { n: "03", t: th ? "เจอกันตามนัด" : "Meet up", d: th ? "ติดตามสด LIVE พร้อมปุ่ม SOS" : "Live tracking with SOS button" },
   ];
   const trust = [
-    { i: "🛡️", t: th ? "ยืนยันตัวตน KYC" : "KYC verified", d: th ? "บัตรประชาชน + ใบรับรองนวด" : "ID + massage certificate" },
-    { i: "💳", t: th ? "จ่ายผ่านระบบกลาง" : "Escrow payments", d: th ? "ไม่ต้องโอนตรงให้หมอ" : "Never pay the therapist directly" },
+    { i: "🛡️", t: th ? "ยืนยันตัวตน KYC" : "KYC verified", d: th ? "บัตรประชาชน + ตรวจประวัติ" : "ID + background check" },
+    { i: "💳", t: th ? "จ่ายผ่านแอป" : "In-app payments", d: th ? "เงินพักไว้กับเราจนจบนัด" : "We hold it until the meet-up ends" },
     { i: "🚨", t: th ? "SOS 24 ชม." : "24h SOS", d: th ? "แจ้งทีมงานพร้อมตำแหน่งทันที" : "Alert our team with your location" },
     { i: "⭐", t: th ? "รีวิวจริง" : "Real reviews", d: th ? "เฉพาะผู้ที่จองจริงเท่านั้น" : "Only from real bookings" },
   ];
@@ -29,7 +29,7 @@ export default function WelcomePage() {
           <nav className="hidden md:flex gap-6 text-sm text-ink-300">
             <a href="#how" className="hover:text-gold-300">{th ? "วิธีใช้งาน" : "How it works"}</a>
             <a href="#safety" className="hover:text-gold-300">{th ? "ความปลอดภัย" : "Safety"}</a>
-            <Link href="/join" className="hover:text-gold-300">{th ? "สมัครเป็นหมอนวด" : "Become a therapist"}</Link>
+            <Link href="/join" className="hover:text-gold-300">{th ? "สมัครเป็น Part-Time" : "Become a Part-Time"}</Link>
           </nav>
           <div className="flex items-center gap-2 shrink-0">
             <LangToggle className="hidden min-[400px]:inline-flex" />
@@ -40,9 +40,9 @@ export default function WelcomePage() {
 
       <section className="mx-auto max-w-6xl px-4 pt-10 pb-12 md:pt-20 grid md:grid-cols-2 gap-10 items-center">
         <div>
-          <p className="text-xs font-semibold tracking-[0.18em] text-gold-600">PREMIUM MALE MASSAGE · BANGKOK</p>
-          <h1 className="font-display text-[32px] md:text-5xl leading-tight font-bold mt-3">{th ? "หมอนวดชายมืออาชีพ มาหาคุณถึงที่" : "Professional male therapists, at your door"}</h1>
-          <p className="text-ink-300 mt-4 text-[15px] leading-relaxed">{th ? "หมอนวดทุกคนยืนยันตัวตนและใบรับรอง จองง่าย จ่ายผ่านระบบกลางที่ปลอดภัย" : "Every therapist is ID- and certificate-verified. Easy booking, secure escrow payments."}</p>
+          <p className="text-xs font-semibold tracking-[0.18em] text-gold-600">เพื่อนกิน เพื่อนเที่ยว · BANGKOK</p>
+          <h1 className="font-display text-[32px] md:text-5xl leading-tight font-bold mt-3">{th ? <>เพื่อนกิน เพื่อนเที่ยว<br />ระดับพรีเมียม</> : "Premium dining & outing companions"}</h1>
+          <p className="text-ink-300 mt-4 text-[15px] leading-relaxed">{th ? "เลือกเพื่อนตามกิจกรรมที่อยากทำ เพื่อนทุกคนยืนยันตัวตนแล้ว จองง่าย จ่ายผ่านแอปอย่างปลอดภัย" : "Pick a companion by activity. Everyone is ID-verified. Easy booking, secure in-app payment."}</p>
           <div className="flex flex-wrap gap-3 mt-7">
             <Link href="/login" className="btn-crimson rounded-full px-6 h-12 inline-flex items-center font-semibold">{th ? "เริ่มจองเลย" : "Book now"}</Link>
             <Link href="/onboarding" className="btn-ghost rounded-full px-6 h-12 inline-flex items-center font-semibold">{th ? "ดูวิธีใช้งาน" : "Take the tour"}</Link>
@@ -72,7 +72,7 @@ export default function WelcomePage() {
 
       <section className="mx-auto max-w-6xl px-4 py-12">
         <p className="text-xs font-semibold tracking-[0.18em] text-gold-600">FEATURED</p>
-        <h2 className="font-display text-2xl md:text-3xl font-bold mt-2">{th ? "หมอนวดแนะนำ" : "Featured therapists"}</h2>
+        <h2 className="font-display text-2xl md:text-3xl font-bold mt-2">{th ? "เพื่อนแนะนำ" : "Featured companions"}</h2>
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mt-6">
           {featured.map((p) => (
             <Link key={p.id} href="/login" className="relative block rounded-3xl overflow-hidden h-80 glass-hover">
@@ -83,7 +83,7 @@ export default function WelcomePage() {
                 <p className="text-xs text-ink-300 truncate">{p.serviceArea}</p>
                 <div className="flex items-center justify-between mt-1.5 gap-2">
                   <Stars value={p.rating} size={12} />
-                  <span className="text-gold-300 text-sm font-semibold whitespace-nowrap">฿{p.pricePerHour}/{th ? "ชม." : "hr"}</span>
+                  <span className="text-gold-300 text-sm font-semibold whitespace-nowrap">฿{p.price3h.toLocaleString()}/{th ? "3 ชม." : "3h"}</span>
                 </div>
               </div>
             </Link>
@@ -108,18 +108,18 @@ export default function WelcomePage() {
       <section className="mx-auto max-w-6xl px-4 py-12">
         <div className="glass rounded-3xl p-6 md:p-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div>
-            <h2 className="font-display text-2xl font-bold">{th ? "เป็นหมอนวดกับ Mister Bamrungsuk" : "Become a Mister Bamrungsuk therapist"}</h2>
+            <h2 className="font-display text-2xl font-bold">{th ? "เป็น Part-Time กับ Mister Bamrungsuk" : "Become a Mister Bamrungsuk Part-Time"}</h2>
             <p className="text-ink-400 text-sm mt-1">{th ? "รับงานใกล้คุณ รายได้โปร่งใส จ่ายตรงเวลา" : "Nearby jobs, transparent earnings, on-time payouts"}</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href="/join" className="btn-ghost rounded-full px-6 h-12 inline-flex items-center font-semibold">{th ? "สมัครเป็นหมอนวด" : "Apply now"}</Link>
+            <Link href="/join" className="btn-ghost rounded-full px-6 h-12 inline-flex items-center font-semibold">{th ? "สมัครเป็น Part-Time" : "Apply now"}</Link>
             <Link href="/login" className="btn-crimson rounded-full px-6 h-12 inline-flex items-center font-semibold">{th ? "เข้าสู่ระบบ" : "Log in"}</Link>
           </div>
         </div>
       </section>
 
       <footer className="mx-auto max-w-6xl px-4 py-8 text-xs text-ink-500 border-t border-ink-600">
-        © 2026 Mister Bamrungsuk · {th ? "สำหรับผู้มีอายุ 18 ปีขึ้นไป · นวดเพื่อสุขภาพเท่านั้น" : "18+ only · Wellness massage only"}
+        © 2026 Mister Bamrungsuk · {th ? "สำหรับผู้มีอายุ 18 ปีขึ้นไป · ไม่มีบริการทางเพศ" : "18+ only · No sexual services"}
       </footer>
     </main>
   );

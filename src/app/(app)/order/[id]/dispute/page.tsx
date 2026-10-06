@@ -8,8 +8,8 @@ import { baht } from "@/components/ui";
 import { DEMO_MY_ORDERS } from "@/lib/demo-data";
 
 const REASONS = {
-  th: ["หมอไม่มาตามนัด", "ระยะเวลาไม่ครบตามแพ็กเกจ", "พฤติกรรมไม่เหมาะสม", "บริการไม่ตรงที่ตกลง", "อื่นๆ"],
-  en: ["Therapist no-show", "Session shorter than package", "Inappropriate behavior", "Service not as agreed", "Other"],
+  th: ["เพื่อนไม่มาตามนัด", "เวลาไม่ครบตามที่จอง", "พฤติกรรมไม่เหมาะสม", "บริการไม่ตรงที่ตกลง", "อื่นๆ"],
+  en: ["Companion no-show", "Shorter than booked", "Inappropriate behavior", "Service not as agreed", "Other"],
 };
 
 export default function DisputePage({ params }: { params: Promise<{ id: string }> }) {
@@ -75,7 +75,7 @@ export default function DisputePage({ params }: { params: Promise<{ id: string }
         <section>
           <p className="font-display font-medium mb-2">{th ? "รายละเอียด" : "Details"}</p>
           <textarea value={text} onChange={(e) => setText(e.target.value)} maxLength={500} aria-label={th ? "รายละเอียด" : "Details"}
-            placeholder={th ? "เช่น นวดได้ประมาณ 60 นาที แต่จ่ายแพ็กเกจ 90 นาที" : "e.g. Only ~60 min of a 90-min package"} className="input-dark w-full h-28 resize-none" />
+            placeholder={th ? "เช่น จอง 3 ชม. แต่อยู่ด้วยกันแค่ราว 2 ชม." : "e.g. Booked 3h but only ~2h together"} className="input-dark w-full h-28 resize-none" />
           <p className="text-right text-xs text-ink-300 mt-1">{text.length}/500</p>
         </section>
 

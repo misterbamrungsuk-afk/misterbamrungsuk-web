@@ -71,7 +71,7 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
   const moneyAt =
     step < 2 ? { icon: "👤", label: th ? "อยู่กับลูกค้า (ยังไม่โอน)" : "With hirer (not paid)", tone: "text-ink-300" }
     : step < 5 ? { icon: "🔒", label: th ? "ระบบกลางกันเงินไว้" : "HELD IN ESCROW", tone: "text-gold-600" }
-    : { icon: "💸", label: th ? "โอนให้หมอแล้ว" : "Released to therapist", tone: "text-emerald-400" };
+    : { icon: "💸", label: th ? "โอนให้เพื่อนแล้ว" : "Released to your companion", tone: "text-emerald-400" };
 
   return (
     <main className="app-frame safe-bottom pb-8">
@@ -82,7 +82,7 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
         <div className="glass rounded-full p-0.5 flex">
           {(["hirer", "provider"] as Role[]).map((r) => (
             <button key={r} onClick={() => setRole(r)} className={`px-3 py-1 rounded-full text-[11px] font-semibold ${role === r ? "btn-crimson" : "text-ink-400"}`}>
-              {r === "hirer" ? (th ? "ลูกค้า" : "Hirer") : (th ? "หมอนวด" : "Therapist")}
+              {r === "hirer" ? (th ? "ลูกค้า" : "Hirer") : (th ? "เพื่อน" : "Companion")}
             </button>
           ))}
         </div>
@@ -109,7 +109,7 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
           <p className="text-3xl font-black text-gold-600 mt-2">{baht(order.amount)}</p>
           <div className="flex justify-center gap-4 text-[11px] text-ink-400 mt-2">
             <span>{th ? "ระบบกันไว้" : "Held"}: {step >= 2 && step < 5 ? baht(order.amount) : baht(0)}</span>
-            <span>{th ? "หมอจะได้รับ" : "Therapist gets"}: {baht(providerNet)} <span className="text-ink-500">(GP {order.gpPercent}%)</span></span>
+            <span>{th ? "เพื่อนจะได้รับ" : "Companion receives"}: {baht(providerNet)} <span className="text-ink-500">(GP {order.gpPercent}%)</span></span>
           </div>
         </div>
 
@@ -163,16 +163,16 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
               {role === "hirer" && order.state === "delivered" && (
                 <>
                   <button onClick={() => act("release")} disabled={busy} className="btn-crimson rounded-xl py-3.5 font-bold animate-[pulseRed_2.4s_ease-in-out_infinite]">
-                    ✅ {th ? "รับงานแล้ว — ปล่อยเงินให้หมอ" : "Approve & release money"}
+                    ✅ {th ? "จบนัดแล้ว — ปล่อยเงินให้เพื่อน" : "Approve & release money"}
                   </button>
                   <p className="text-[10px] text-ink-500 text-center">{th ? "ไม่กดภายใน 24 ชม. ระบบปล่อยเงินให้อัตโนมัติ" : "Auto-releases after 24h"}</p>
                 </>
               )}
               {role === "hirer" && (order.state === "funded" || order.state === "in_progress") && (
-                <p className="text-center text-xs text-ink-400 py-3">🔒 {th ? "เงินของคุณถูกกันไว้แล้ว ปลอดภัย — จ่ายหมอเมื่องานเสร็จเท่านั้น" : "Your money is held safely — released only when work is done"}</p>
+                <p className="text-center text-xs text-ink-400 py-3">🔒 {th ? "เงินพักไว้กับเราอย่างปลอดภัย — จ่ายให้เพื่อนเมื่อจบนัดเท่านั้น" : "Your money is held safely — released only when work is done"}</p>
               )}
 
-              {/* ฝั่งหมอนวด */}
+              {/* ฝั่ง Part-Time */}
               {role === "provider" && order.state === "accepted" && (
                 <p className="text-center text-xs text-ink-400 py-3">⏳ {th ? "รอลูกค้าโอนเข้าระบบกลาง — ยังไม่ต้องเริ่มงาน" : "Waiting for hirer to fund escrow — don't start yet"}</p>
               )}
@@ -215,8 +215,8 @@ export default function EscrowPage({ params }: { params: Promise<{ id: string }>
 
         <p className="text-[10px] text-ink-500 text-center leading-relaxed">
           {th
-            ? "🏦 ระบบกลาง Mister Bamrungsuk กันเงินไว้ให้ทั้งสองฝ่าย — ลูกค้ามั่นใจว่าจ่ายเมื่องานเสร็จ หมอมั่นใจว่าเงินมีจริงก่อนเริ่มงาน (โหมดจริง: เชื่อม Omise PromptPay + webhook ตรวจสอบอัตโนมัติ)"
-            : "Mister Bamrungsuk escrow protects both sides — hirer pays on completion, therapist starts only when funds are secured"}
+            ? "🏦 ระบบกลาง Mister Bamrungsuk กันเงินไว้ให้ทั้งสองฝ่าย — ลูกค้ามั่นใจว่าเงินถึงมือเพื่อนเมื่อจบนัด เพื่อนมั่นใจว่าเงินมีจริงก่อนเริ่มนัด (โหมดจริง: เชื่อม Omise PromptPay + webhook ตรวจสอบอัตโนมัติ)"
+            : "Mister Bamrungsuk escrow protects both sides — money reaches your companion only after the meet-up, and they start knowing funds are secured"}
         </p>
       </div>
 

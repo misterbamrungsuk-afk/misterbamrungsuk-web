@@ -6,8 +6,8 @@ import { useI18n } from "@/i18n/provider";
 import { TopBar } from "@/components/shell";
 import PostCard from "@/components/post-card";
 import { HeroSlider } from "@/components/hero-slider";
-import { Sheet, Field } from "@/components/ui";
-import { ACTIVITIES, PROVINCES } from "@/lib/categories";
+import { ACTIVITIES } from "@/lib/categories";
+import { DEFAULT_FILTER, FilterButton, FriendFilterSheet, activeFilterCount, applyFriendFilter, type FriendFilter } from "@/components/friend-filter";
 import type { Post } from "@/lib/types";
 import { isDemo } from "@/lib/data";
 import { DEMO_POSTS } from "@/lib/demo-data";
@@ -22,21 +22,16 @@ function HomeInner({ posts }: { posts: Post[] }) {
   const { t, lang } = useI18n();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string>(""); // activity slug
-  const [massage, setMassage] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("");
   const [seg, setSeg] = useState<"near" | "premium">("near");
   const [filterOpen, setFilterOpen] = useState(false);
-  const [province, setProvince] = useState("");
-  const [ageMin, setAgeMin] = useState("");
-  const [ageMax, setAgeMax] = useState("");
-  const [rateMin, setRateMin] = useState("");
-  const [rateMax, setRateMax] = useState("");
+  const [ff, setFf] = useState<FriendFilter>(DEFAULT_FILTER);
   const [premiumOpen, setPremiumOpen] = useState(false);
   useEffect(() => { setPremiumOpen(isPremiumUnlocked()); }, []);
   const premiumPosts = useMemo(() => posts.filter((p) => p.premium).sort(recommendedSort), [posts]);
 
   const filtered = useMemo(() => {
-    // หมอพรีเมียมแสดงในฟีดหลักเฉพาะเมื่อปลดล็อกแล้ว
+    // เพื่อนพรีเมียมแสดงในฟีดหลักเฉพาะเมื่อปลดล็อกแล้ว
     let list = posts.filter((p) => premiumOpen || !p.premium);
     if (q.trim()) {
       const s = q.toLowerCase();
@@ -46,23 +41,19 @@ function HomeInner({ posts }: { posts: Post[] }) {
       );
     }
     if (cat) list = list.filter((p) => p.activities.includes(cat));
-    if (massage) list = list.filter((p) => p.massageSkill);
     if (sortKey === "now") list = list.filter((p) => (p.nextFreeMin ?? 0) <= 0);
     if (sortKey === "new") list = list.filter((p) => isNewProvider(p));
-    if (province) list = list.filter((p) => p.province === province);
-    if (ageMin) list = list.filter((p) => (p.member.age ?? 0) >= +ageMin);
-    if (ageMax) list = list.filter((p) => (p.member.age ?? 999) <= +ageMax);
-    if (rateMin) list = list.filter((p) => p.pricePerHour >= +rateMin);
-    if (rateMax) list = list.filter((p) => p.pricePerHour <= +rateMax);
+    list = applyFriendFilter(list, ff);
     // ค่าเริ่มต้น: รายการจัดอันดับ "แนะนำ" ไม่บังคับกรอง
     if (sortKey === "near") return list.sort((a, b) => (a.distanceKm ?? 99) - (b.distanceKm ?? 99));
     if (sortKey === "rating") return list.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0) || b.reviewCount - a.reviewCount);
     return list.sort(recommendedSort);
-  }, [posts, premiumOpen, q, cat, massage, sortKey, province, ageMin, ageMax, rateMin, rateMax]);
+  }, [posts, premiumOpen, q, cat, sortKey, ff]);
   const onlineCount = useMemo(() => posts.filter((p) => (premiumOpen || !p.premium) && (p.nextFreeMin ?? 0) <= 0).length, [posts, premiumOpen]);
 
-  const activeFilters = [province, ageMin, ageMax, rateMin, rateMax].filter(Boolean).length;
-    // Part-Time แนะนำ: ยืนยันตัวตนแล้ว เรียงตามคะแนน (ไม่รวมพรีเมียมถ้ายังไม่ปลดล็อก)
+  const activeFilters = activeFilterCount(ff);
+  const countFor = (f: FriendFilter) => applyFriendFilter(posts.filter((p) => premiumOpen || !p.premium), f).length;
+  // เพื่อนแนะนำ: ยืนยันตัวตนแล้ว เรียงตามคะแนน (ไม่รวมพรีเมียมถ้ายังไม่ปลดล็อก)
   const featured = useMemo(() => posts.filter((p) => p.member.kycVerified && (premiumOpen || !p.premium)).sort((x, y) => (y.rating ?? 0) - (x.rating ?? 0)).slice(0, 5), [posts, premiumOpen]);
 
   return (
@@ -72,7 +63,7 @@ function HomeInner({ posts }: { posts: Post[] }) {
       {/* ── ทักทาย + แท็บ ── */}
       <section className="px-4 pt-3">
         <p className="text-[13px] text-ink-300">{lang === "th" ? `สวัสดีค่ะ คุณ${DEMO_ME.name}` : `Hello, ${DEMO_ME.name}`}</p>
-        <h1 className="font-display font-bold text-[28px] leading-tight tracking-tight text-gold-500 mt-0.5">{lang === "th" ? "เลือกคนดูแลคุณวันนี้" : "Choose your companion today"}</h1>
+        <h1 className="font-display font-bold text-[28px] leading-tight tracking-tight text-gold-500 mt-0.5">{lang === "th" ? <>วันนี้อยากไปไหน <span className="whitespace-nowrap">กับใคร?</span></> : "Where to today, and with whom?"}</h1>
         <div className="mt-4 grid grid-cols-2 p-1 rounded-2xl border border-ink-600 bg-ink-800" role="tablist">
           {([["near", lang === "th" ? "ใกล้คุณ" : "Near you"], ["premium", lang === "th" ? "♛ พรีเมียม" : "♛ Premium"]] as const).map(([k, l]) => (
             <button key={k} role="tab" aria-selected={seg === k}
@@ -82,7 +73,7 @@ function HomeInner({ posts }: { posts: Post[] }) {
         </div>
       </section>
 
-      {/* ── สไลด์ Part-Time แนะนำ ── */}
+      {/* ── สไลด์เพื่อนแนะนำ ── */}
       <HeroSlider posts={featured} lang={lang} />
 
       {/* ── รับสมัคร Part-Time (sale funnel /join) ── */}
@@ -109,7 +100,7 @@ function HomeInner({ posts }: { posts: Post[] }) {
         </Link>
       </section>
 
-      {/* ── Part-Time พรีเมียม (ล็อกจนกว่าจะเป็นสมาชิก/รับของขวัญ) ── */}
+      {/* ── เพื่อนพรีเมียม (ล็อกจนกว่าจะเป็นสมาชิก/รับของขวัญ) ── */}
       {premiumPosts.length > 0 && (
         <section id="premium" className="px-4 pt-8 scroll-mt-16">
           <div className="flex items-center justify-between gap-2">
@@ -133,7 +124,7 @@ function HomeInner({ posts }: { posts: Post[] }) {
               <div className="absolute inset-0 grid place-items-center bg-ink-900/40 text-center px-4">
                 <div>
                   <p className="text-2xl">🔒</p>
-                  <p className="text-sm font-semibold mt-1">{lang === "th" ? `Part-Time พรีเมียม ${premiumPosts.length} คน` : `${premiumPosts.length} Premium Part-Time`}</p>
+                  <p className="text-sm font-semibold mt-1">{lang === "th" ? `เพื่อนพรีเมียม ${premiumPosts.length} คน` : `${premiumPosts.length} premium companions`}</p>
                   <div className="flex gap-2 justify-center mt-2">
                     <Link href="/membership" className="btn-crimson rounded-xl h-10 px-4 grid place-items-center text-[13px] font-semibold">{lang === "th" ? "สมัครสมาชิก" : "Join"}</Link>
                     <Link href="/membership/redeem" className="btn-ghost rounded-xl h-10 px-4 grid place-items-center text-[13px]">{lang === "th" ? "ใช้โค้ดของขวัญ" : "Redeem gift"}</Link>
@@ -152,11 +143,14 @@ function HomeInner({ posts }: { posts: Post[] }) {
           <span className="text-[12px] text-ink-300 inline-flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500" />{lang === "th" ? `ออนไลน์ ${onlineCount} คน` : `${onlineCount} online`}</span>
         </div>
 
-        <div className="relative mt-3">
+        <div className="mt-3 flex gap-2">
+        <div className="relative flex-1 min-w-0">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[18px] h-[18px] absolute left-4 top-1/2 -translate-y-1/2 text-ink-300">
             <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" strokeLinecap="round" />
           </svg>
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t.search} aria-label={t.search} className="input-dark h-12 pl-11" />
+        </div>
+          <FilterButton count={activeFilters} onClick={() => setFilterOpen(true)} th={lang === "th"} />
         </div>
 
         {/* กิจกรรม: ไอคอนเส้น */}
@@ -172,10 +166,6 @@ function HomeInner({ posts }: { posts: Post[] }) {
             );
           })}
         </div>
-        <label className="flex items-center gap-2 text-[13px] text-ink-200 min-h-9 cursor-pointer">
-          <input type="checkbox" checked={massage} onChange={(e) => setMassage(e.target.checked)} className="w-[18px] h-[18px] accent-[#d4af37]" />
-          {lang === "th" ? "มีสกิลนวด (add-on)" : "Has massage skill (add-on)"}
-        </label>
 
         {/* เรียง / ด่วน */}
         <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 py-2">
@@ -187,26 +177,10 @@ function HomeInner({ posts }: { posts: Post[] }) {
           ))}
         </div>
 
-        {/* ตัวกรอง */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 pb-1">
-          {[
-            { k: "age", th: "อายุ", en: "Age", on: !!(ageMin || ageMax), icon: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0" },
-            { k: "rate", th: "ราคา", en: "Rate", on: !!(rateMin || rateMax), icon: "M12 3v18M17 7H9.5a3 3 0 0 0 0 6h5a3 3 0 0 1 0 6H6" },
-            { k: "area", th: "พื้นที่", en: "Area", on: !!province, icon: "M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21zM12 12a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" },
-          ].map((x) => (
-            <button key={x.k} onClick={() => setFilterOpen(true)}
-              className={`shrink-0 h-10 pl-3 pr-3.5 rounded-xl border text-[13px] inline-flex items-center gap-1.5 ${x.on ? "border-gold-500 text-gold-300" : "border-ink-600 text-ink-200"}`}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d={x.icon} /></svg>
-              {lang === "th" ? x.th : x.en}
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5 opacity-60"><path d="m6 9 6 6 6-6" /></svg>
-            </button>
-          ))}
-        </div>
-
         <div className="flex items-center justify-between mt-3 mb-3">
           <span className="text-[12px] font-semibold rounded-full bg-ink-800 border border-ink-600 px-3 py-1">{lang === "th" ? `พบ ${filtered.length} คน` : `${filtered.length} found`}</span>
-          {(activeFilters > 0 || cat || q || massage || sortKey) && (
-            <button onClick={() => { setCat(""); setQ(""); setMassage(false); setSortKey(""); setProvince(""); setAgeMin(""); setAgeMax(""); setRateMin(""); setRateMax(""); }}
+          {(activeFilters > 0 || cat || q || sortKey) && (
+            <button onClick={() => { setCat(""); setQ(""); setSortKey(""); setFf(DEFAULT_FILTER); }}
               className="text-[13px] text-ink-200 inline-flex items-center gap-1.5 min-h-9 px-1">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="w-4 h-4"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5" /></svg>
               {lang === "th" ? "รีเซ็ตตัวกรอง" : "Reset filters"}
@@ -218,7 +192,7 @@ function HomeInner({ posts }: { posts: Post[] }) {
       {/* feed: กริด 2 คอลัมน์แบบรูปเต็ม */}
       <div className="px-4 pb-6">
         {filtered.length === 0 ? (
-          <div className="text-center py-20 text-ink-300">{t.empty}</div>
+          <div className="text-center py-20 text-ink-300">{lang === "th" ? "ยังไม่เจอเพื่อนที่ตรงใจ ลองเลือกกิจกรรมให้น้อยลงดูนะคะ" : "No match yet — try fewer activities"}</div>
         ) : (
           <div className="grid grid-cols-2 gap-2.5">
             {filtered.map((p) => <PostCard key={p.id} post={p} />)}
@@ -226,33 +200,8 @@ function HomeInner({ posts }: { posts: Post[] }) {
         )}
       </div>
 
-      {/* filter sheet */}
-      <Sheet open={filterOpen} onClose={() => setFilterOpen(false)} title={t.filters}>
-        <Field label={t.province}>
-          <select value={province} onChange={(e) => setProvince(e.target.value)} className="input-dark">
-            <option value="">{t.anyGender === "Any" ? "All provinces" : "ทุกจังหวัด"}</option>
-            {PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
-          </select>
-        </Field>
-        <Field label={t.ageRange}>
-          <div className="flex gap-2 items-center">
-            <input type="number" min={0} max={90} value={ageMin} onChange={(e) => setAgeMin(e.target.value)} placeholder="18" className="input-dark" />
-            <span className="text-ink-400">–</span>
-            <input type="number" min={0} max={90} value={ageMax} onChange={(e) => setAgeMax(e.target.value)} placeholder="60" className="input-dark" />
-          </div>
-        </Field>
-        <Field label={t.rateRange}>
-          <div className="flex gap-2 items-center">
-            <input type="number" min={0} value={rateMin} onChange={(e) => setRateMin(e.target.value)} placeholder="100" className="input-dark" />
-            <span className="text-ink-400">–</span>
-            <input type="number" min={0} value={rateMax} onChange={(e) => setRateMax(e.target.value)} placeholder="999" className="input-dark" />
-          </div>
-        </Field>
-        <div className="flex gap-2 mt-2">
-          <button onClick={() => { setProvince(""); setAgeMin(""); setAgeMax(""); setRateMin(""); setRateMax(""); }} className="btn-ghost rounded-xl flex-1 py-2.5 text-sm">{t.reset}</button>
-          <button onClick={() => setFilterOpen(false)} className="btn-crimson rounded-xl flex-1 py-2.5 text-sm font-semibold">{t.apply}</button>
-        </div>
-      </Sheet>
+      {/* ตัวกรองเต็ม (S03) */}
+      <FriendFilterSheet open={filterOpen} onClose={() => setFilterOpen(false)} value={ff} onApply={setFf} count={countFor} th={lang === "th"} />
     </>
   );
 }

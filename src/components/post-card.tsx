@@ -19,7 +19,7 @@ export default function PostCard({ post }: { post: Post }) {
   const cover = post.images[0] ?? post.member.avatar;
   const free = (post.nextFreeMin ?? 0) <= 0;
   const skills = post.activities.slice(0, 2).map((s) => { const a = activityBySlug(s); return a ? (th ? a.th : a.en) : s; });
-  if (post.massageSkill) skills.push(th ? "นวด (add-on)" : "Massage add-on");
+  if (post.skills.includes("massage")) skills.push(th ? "นวดผ่อนคลาย" : "Massage");
 
   return (
     <article className="rounded-[20px] overflow-hidden bg-ink-800 border border-gold-500/20 animate-rise">

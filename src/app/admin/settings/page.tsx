@@ -9,7 +9,6 @@ import { Card, PageHead } from "../admin-nav";
 // ค่าระบบ — โหมดเดโมเก็บใน state; โหมดจริงบันทึกลงตาราง settings + บันทึก Audit log
 const FIELDS = [
   { group: "การเงิน", key: "gp", label: "ค่าธรรมเนียม GP (%)", value: site.commissionPercent },
-  { group: "การเงิน", key: "deposit", label: "มัดจำเริ่มต้น (บาท)", value: site.depositDefault },
   { group: "การเงิน", key: "autoRelease", label: "ปล่อยเงินอัตโนมัติหลัง (ชม.)", value: 24 },
   { group: "การเงิน", key: "freeCancel", label: "ยกเลิกฟรีก่อนนัด (ชม.)", value: 3 },
   { group: "กติกาและความปลอดภัย", key: "strike", label: "Strike ก่อนระงับอัตโนมัติ", value: site.strikeLimit },
@@ -56,7 +55,7 @@ export default function AdminSettingsPage() {
             ))}
           </div>
           <div className="flex gap-2">
-            <input value={newCat} onChange={(e) => setNewCat(e.target.value)} placeholder="เพิ่มหมวด เช่น นวดหน้า" aria-label="หมวดใหม่" className="input-dark h-11" />
+            <input value={newCat} onChange={(e) => setNewCat(e.target.value)} placeholder="เพิ่มกิจกรรม เช่น คาราโอเกะ" aria-label="หมวดใหม่" className="input-dark h-11" />
             <button onClick={() => { const v = newCat.trim(); if (v && !cats.includes(v)) { setCats([...cats, v]); setNewCat(""); setDirty(true); } }} disabled={!newCat.trim()} className="h-11 px-4 rounded-xl border border-gold-500 text-gold-300 shrink-0 disabled:opacity-40">เพิ่ม</button>
           </div>
         </Card>

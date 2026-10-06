@@ -5,20 +5,12 @@ export interface Category {
   emoji: string;
 }
 
-// หมวดบริการนวด (หมอนวดชาย) — แก้ได้จากหลังบ้านในอนาคต
-export const CATEGORIES: Category[] = [
-  { slug: "thai", th: "นวดไทย", en: "Thai Massage", emoji: "" },
-  { slug: "oil", th: "นวดน้ำมัน / อโรมา", en: "Oil / Aroma", emoji: "" },
-  { slug: "office", th: "ออฟฟิศซินโดรม", en: "Office Syndrome", emoji: "" },
-  { slug: "foot", th: "นวดเท้า", en: "Foot Massage", emoji: "" },
-  { slug: "sport", th: "นวดกีฬา", en: "Sports Massage", emoji: "" },
-  { slug: "herbal", th: "ประคบสมุนไพร", en: "Herbal Compress", emoji: "" },
-  { slug: "neck", th: "คอ บ่า ไหล่", en: "Neck & Shoulder", emoji: "" },
-  { slug: "couple", th: "นวดคู่", en: "Couple Massage", emoji: "" },
-  { slug: "other", th: "อื่นๆ", en: "Other", emoji: "" },
-];
-
-export const catBySlug = (slug: string) => CATEGORIES.find((c) => c.slug === slug);
+// หมวด = กิจกรรม (เพื่อนกิน เพื่อนเที่ยว) — นวดเป็นแค่สกิลหนึ่ง ดู SKILLS ด้านล่าง
+// (ประกาศเป็นฟังก์ชันเพราะ ACTIVITIES อยู่ท้ายไฟล์)
+export const catBySlug = (slug: string): Category | undefined => {
+  const a = ACTIVITIES.find((x) => x.slug === slug);
+  return a ? { slug: a.slug, th: a.th, en: a.en, emoji: "" } : undefined;
+};
 
 export const PROVINCES = [
   "กรุงเทพมหานคร", "นนทบุรี", "ปทุมธานี", "สมุทรปราการ", "นครปฐม", "สมุทรสาคร",
@@ -59,3 +51,42 @@ export const ACTIVITIES: Activity[] = [
   { slug: "chill", th: "นั่งชิล", en: "Chill", icon: "M5 11V7a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v4M3 11h18v5H3zM6 16v3M18 16v3" },
 ];
 export const activityBySlug = (slug: string) => ACTIVITIES.find((a) => a.slug === slug);
+
+export const CATEGORIES: Category[] = ACTIVITIES.map((a) => ({ slug: a.slug, th: a.th, en: a.en, emoji: "" }));
+
+/** คำแนะนำตอนพิมพ์กิจกรรมเอง (Part-Time เพิ่มเองได้นอกเหนือรายการนี้) */
+export const ACTIVITY_SUGGESTIONS: string[] = [
+  ...ACTIVITIES.map((a) => a.th),
+  "ช้อปปิ้ง", "ตีกอล์ฟ", "คาราโอเกะ", "ดินเนอร์", "เที่ยวต่างจังหวัด", "คอนเสิร์ต", "ฟิตเนส", "ว่ายน้ำ", "เดินเล่นสวน",
+];
+/** ป้ายกิจกรรม: slug มาตรฐาน → ชื่อ, ข้อความที่ Part-Time พิมพ์เอง → แสดงตามนั้น */
+export const activityLabel = (v: string, th = true) => { const a = activityBySlug(v); return a ? (th ? a.th : a.en) : v; };
+/** แปลงชื่อไทยกลับเป็น slug ถ้าตรงกับกิจกรรมมาตรฐาน */
+export const activityValue = (label: string) => ACTIVITIES.find((a) => a.th === label)?.slug ?? label;
+
+// ── สกิลพิเศษ (แท็กบนโปรไฟล์ ไม่มีค่าบริการเพิ่ม) ──
+export interface Option { slug: string; th: string; en: string }
+export const SKILLS: Option[] = [
+  { slug: "massage", th: "นวดผ่อนคลาย", en: "Relaxing massage" },
+  { slug: "photo", th: "ถ่ายรูปเก่ง", en: "Great photos" },
+  { slug: "eng", th: "พูดอังกฤษได้", en: "Speaks English" },
+  { slug: "drive", th: "ขับรถพาเที่ยว", en: "Can drive" },
+  { slug: "fit", th: "เต้น / ฟิตเนสโค้ช", en: "Dance / fitness coach" },
+  { slug: "cook", th: "ทำอาหาร", en: "Cooking" },
+  { slug: "music", th: "เล่นดนตรี / ร้องเพลง", en: "Music / singing" },
+  { slug: "guide", th: "ไกด์ท้องถิ่น", en: "Local guide" },
+];
+export const skillBySlug = (slug: string) => SKILLS.find((x) => x.slug === slug);
+export const MASSAGE_NOTE = { th: "แสดงเฉพาะเพื่อนที่มีใบรับรอง", en: "Only companions with a certificate" };
+
+// ── สถานที่นัด ──
+export const PLACES: Option[] = [
+  { slug: "out", th: "นอกสถานที่", en: "Out & about" },
+  { slug: "outdoor", th: "กลางแจ้ง", en: "Outdoors" },
+  { slug: "mall", th: "ห้าง", en: "Mall" },
+  { slug: "cafe", th: "คาเฟ่ / ร้านอาหาร", en: "Café / restaurant" },
+  { slug: "condo", th: "คอนโด", en: "Condo" },
+  { slug: "hotel", th: "โรงแรม", en: "Hotel" },
+  { slug: "spa", th: "สปา", en: "Spa" },
+];
+export const placeBySlug = (slug: string) => PLACES.find((x) => x.slug === slug);

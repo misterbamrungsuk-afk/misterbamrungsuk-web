@@ -47,7 +47,7 @@ export async function middleware(request: NextRequest) {
     pathname === "/welcome" ||
     pathname === "/onboarding" ||
     pathname === "/sos" ||
-    // หน้ารับสมัครหมอ (sale funnel) เปิดสาธารณะ
+    // หน้ารับสมัคร Part-Time (sale funnel) เปิดสาธารณะ
     pathname === "/join" ||
     pathname.startsWith("/join/") ||
     // หน้าขายพื้นที่พาร์ทเนอร์ เปิดสาธารณะ

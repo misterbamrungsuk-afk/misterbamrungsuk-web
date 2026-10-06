@@ -6,7 +6,8 @@ import { useI18n } from "@/i18n/provider";
 import { TopBar } from "@/components/shell";
 import { EmptyState, Modal, baht } from "@/components/ui";
 import { DEMO_POSTS } from "@/lib/demo-data";
-import { catBySlug } from "@/lib/categories";
+import { activityLabel, placeBySlug, skillBySlug } from "@/lib/categories";
+import { site } from "@/lib/site";
 
 export default function MyPostPage() {
   const { t, lang } = useI18n();
@@ -42,14 +43,14 @@ export default function MyPostPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-bold">{post.member.name}</p>
-                  <p className="text-gold-600 font-semibold">{baht(post.pricePerHour)}{t.perHour}</p>
+                  <p className="text-gold-600 font-semibold">3 {lang === "th" ? "ชม." : "h"} {baht(post.price3h)} · 5 {lang === "th" ? "ชม." : "h"} {baht(post.price5h)}</p>
+                  <p className="text-[11px] text-ink-300">{lang === "th" ? `หักค่าธรรมเนียม ${site.commissionPercent}% คุณได้ ${100 - site.commissionPercent}%` : `${site.commissionPercent}% fee · you get ${100 - site.commissionPercent}%`}</p>
                 </div>
-                <div className="flex flex-wrap gap-1 justify-end max-w-[55%]">
-                  {post.categories.slice(0, 4).map((c) => {
-                    const cat = catBySlug(c);
-                    return <span key={c} className="chip">{cat?.emoji}</span>;
-                  })}
-                </div>
+              </div>
+              <div className="space-y-2 text-xs">
+                <div className="flex flex-wrap gap-1">{post.activities.map((c) => <span key={c} className="chip">{activityLabel(c, lang === "th")}</span>)}</div>
+                {post.skills.length > 0 && <div className="flex flex-wrap gap-1">{post.skills.map((k) => <span key={k} className="chip chip-gold">{lang === "th" ? skillBySlug(k)?.th : skillBySlug(k)?.en}</span>)}</div>}
+                <p className="text-ink-300">📍 {post.places.map((k) => (lang === "th" ? placeBySlug(k)?.th : placeBySlug(k)?.en) ?? k).join(" · ")}</p>
               </div>
               <div className="gold-line" />
               <div className="grid grid-cols-2 gap-2">

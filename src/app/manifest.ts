@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Mister Bamrungsuk — หมอนวดชายมืออาชีพ",
+    name: "Mister Bamrungsuk — เพื่อนกิน เพื่อนเที่ยว",
     short_name: "Bamrungsuk",
-    description: "จองหมอนวดชายที่ยืนยันตัวตนแล้ว ถึงที่ของคุณ",
+    description: "นัดเพื่อนกิน เพื่อนเที่ยว ระดับพรีเมียม ที่ยืนยันตัวตนแล้ว",
     lang: "th",
     start_url: "/home",
     scope: "/",
@@ -12,7 +12,7 @@ export default function manifest(): MetadataRoute.Manifest {
     orientation: "portrait",
     background_color: "#ffffff",
     theme_color: "#ffffff",
-    categories: ["health", "lifestyle"],
+    categories: ["lifestyle", "social"],
     icons: [
       { src: "/pwa-icon/192", sizes: "192x192", type: "image/png" },
       { src: "/pwa-icon/512", sizes: "512x512", type: "image/png" },

@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useI18n } from "@/i18n/provider";
 
-// สลับมุมมองผู้ใช้: ลูกค้า / หมอ / แอดมิน
-// - หน้าเฉพาะกลุ่มกำหนดโหมดเอง (/provider/*, /jobs → หมอ)
+// สลับมุมมองผู้ใช้: ลูกค้า / Part-Time / แอดมิน
+// - หน้าเฉพาะกลุ่มกำหนดโหมดเอง (/provider/*, /jobs → Part-Time)
 // - หน้าที่ใช้ร่วมกัน (แชท, โปรไฟล์, แจ้งเตือน) ใช้โหมดล่าสุดที่เลือกไว้ในเครื่อง
 export type Mode = "customer" | "provider" | "admin";
 const KEY = "mb_mode";
@@ -68,7 +68,7 @@ export function ModeSwitch() {
 
   const items: { k: Mode; th: string; en: string }[] = [
     { k: "customer", th: "ลูกค้า", en: "Customer" },
-    { k: "provider", th: "หมอ", en: "Therapist" },
+    { k: "provider", th: "Part-Time", en: "Part-Time" },
     { k: "admin", th: "แอดมิน", en: "Admin" },
   ];
 

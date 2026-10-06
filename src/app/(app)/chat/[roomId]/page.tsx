@@ -7,6 +7,8 @@ import { baht, Modal, Field, Sheet, Toast } from "@/components/ui";
 import { DEMO_ROOMS } from "@/lib/demo-data";
 import type { ChatMessage, ChatPayment } from "@/lib/types";
 
+const FULL_AMOUNT = 2400; // เดโม: ราคาบล็อก 3 ชม.
+
 export default function ChatRoomPage({ params }: { params: Promise<{ roomId: string }> }) {
   const { roomId } = use(params);
   const { t, lang } = useI18n();
@@ -20,11 +22,9 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
   const [toast, setToast] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // payment state (mirror ของ Hafriend + Order ของเรา)
-  const [depositCreated, setDepositCreated] = useState(room?.depositCreated ?? false);
-  const [depositConfirmed, setDepositConfirmed] = useState(room?.depositConfirmed ?? false);
-  const [finalCreated, setFinalCreated] = useState(room?.finalCreated ?? false);
-  const [finalConfirmed, setFinalConfirmed] = useState(room?.finalConfirmed ?? false);
+  // payment state — ลูกค้าจ่ายเต็มจำนวนครั้งเดียว (ไม่มีมัดจำ)
+  const [paymentCreated, setPaymentCreated] = useState(room?.paymentCreated ?? false);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(room?.paymentConfirmed ?? false);
   const [reviewed, setReviewed] = useState(room?.reviewed ?? false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [blocked, setBlocked] = useState(false);
@@ -103,10 +103,10 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
     }, 1200);
   }
 
-  function sendPayment(type: "deposit" | "final") {
-    const amount = type === "deposit" ? 300 : 1200;
+  function sendPayment() {
+    const amount = FULL_AMOUNT;
     const pay: ChatPayment = {
-      id: String(Date.now()), type,
+      id: String(Date.now()), type: "full",
       amount: Math.max(0, amount - promoApplied),
       status: "created", bankLabel: "กสิกรไทย x-4451",
       promoCode: promoApplied ? promoCode : undefined, discount: promoApplied,
@@ -115,7 +115,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
       id: String(Date.now()), roomId, senderId: "me", kind: "payment", content: "",
       payment: pay, createdAt: new Date().toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" }), isRead: false,
     }]);
-    if (type === "deposit") setDepositCreated(true); else setFinalCreated(true);
+    setPaymentCreated(true);
     flash(lang === "th" ? "ส่งข้อความการชำระเงินแล้ว" : "Payment message sent");
   }
 
@@ -130,9 +130,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
     setMessages((m) => m.map((msg) =>
       msg.id === payId && msg.payment ? { ...msg, payment: { ...msg.payment, status: "confirmed" } } : msg
     ));
-    const msg = messages.find((x) => x.id === payId);
-    if (msg?.payment?.type === "deposit") setDepositConfirmed(true);
-    else setFinalConfirmed(true);
+    setPaymentConfirmed(true);
     flash(lang === "th" ? "ยืนยันรับเงินเรียบร้อย ✓" : "Payment confirmed ✓");
   }
 
@@ -142,7 +140,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
     return (
       <div className={`glass rounded-2xl p-4 min-w-[240px] ${mine ? "ml-auto border-crimson-500/30" : "border-gold-500/25"}`}>
         <div className="flex items-center justify-between mb-2">
-          <span className="chip chip-red">{pay.type === "deposit" ? `💰 ${t.paymentDeposit}` : `🧾 ${t.paymentFinal}`}</span>
+          <span className="chip chip-red">🧾 {t.paymentFull}</span>
           <span className={`text-xs font-semibold ${statusTone}`}>● {statusLabel}</span>
         </div>
         <p className="text-2xl font-bold text-gold-600">{baht(pay.amount)}</p>
@@ -194,7 +192,7 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
           <div className="flex-1 min-w-0">
             <p className="font-semibold truncate">{room.partner.name}</p>
             <p className="text-[11px] text-gold-600 truncate">
-              {depositConfirmed && finalConfirmed ? t.stCompleted : depositConfirmed ? t.stInProgress : t.stNegotiated}
+              {reviewed ? t.stCompleted : paymentConfirmed ? t.stPaid : t.stNegotiated}
             </p>
           </div>
           <Link href={`/call/${room.id}`} className="btn-ghost rounded-full w-9 h-9 grid place-items-center shrink-0" aria-label="call">📞</Link>
@@ -207,9 +205,9 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
         <div className="flex items-start justify-between px-4 pb-2.5 gap-1">
           {[
             [t.stNegotiated, true],
-            [t.stDeposit, depositConfirmed],
-            [t.stInProgress, depositConfirmed && finalCreated],
-            [t.stCompleted, depositConfirmed && finalConfirmed],
+            [t.stPaid, paymentConfirmed],
+            [t.stInProgress, paymentConfirmed],
+            [t.stCompleted, reviewed],
             [t.stReviewed, reviewed],
           ].map(([label, done], i, arr) => (
             <div key={i} className="flex items-start flex-1 last:flex-none">
@@ -264,28 +262,23 @@ export default function ChatRoomPage({ params }: { params: Promise<{ roomId: str
         <div ref={bottomRef} />
       </div>
 
-      {/* payment action bar (ฝั่งผู้ว่าจ้าง: ปุ่มส่งมัดจำ/ค่าจ้าง; ฝั่งเพื่อน: ยืนยันในการ์ด) */}
-      {!(depositConfirmed && finalConfirmed) && (
+      {/* payment action bar (ลูกค้า: จ่ายเต็มจำนวนครั้งเดียว; อีกฝ่ายยืนยันในการ์ด) */}
+      {!paymentConfirmed && (
         <div className="px-4 pb-2 pt-2 border-t border-ink-600 bg-ink-950/80 backdrop-blur flex gap-2">
-          {!depositCreated && (
-            <button onClick={() => sendPayment("deposit")} className="btn-crimson rounded-xl px-4 py-2.5 text-xs font-bold flex-1">
-              💰 {t.depositBtn} {baht(300 - promoApplied)}
+          {!paymentCreated && (
+            <button onClick={sendPayment} className="btn-crimson rounded-xl px-4 py-2.5 text-xs font-bold flex-1">
+              🧾 {t.payBtn} {baht(FULL_AMOUNT - promoApplied)}
             </button>
           )}
-          {depositConfirmed && !finalCreated && (
-            <button onClick={() => sendPayment("final")} className="btn-crimson rounded-xl px-4 py-2.5 text-xs font-bold flex-1">
-              🧾 {t.finalBtn} {baht(1200 - promoApplied)}
-            </button>
-          )}
-          {depositCreated && !depositConfirmed && (
-            <span className="flex-1 text-center text-xs text-gold-600 py-2.5">⏳ {lang === "th" ? "รอผู้รับเงินยืนยันมัดจำ…" : "Waiting deposit confirmation…"}</span>
+          {paymentCreated && (
+            <span className="flex-1 text-center text-xs text-gold-600 py-2.5">⏳ {lang === "th" ? "รอยืนยันยอดชำระ…" : "Waiting for payment confirmation…"}</span>
           )}
           <button onClick={() => setPromoOpen(true)} className="btn-ghost rounded-xl px-3 text-sm">🎟️</button>
         </div>
       )}
 
       {/* review unlock */}
-      {depositConfirmed && finalConfirmed && !reviewed && (
+      {paymentConfirmed && !reviewed && (
         <div className="px-4 pb-2 pt-2 border-t border-ink-600 bg-ink-950/80">
           <button onClick={() => setReviewOpen(true)} className="btn-crimson w-full rounded-xl py-2.5 text-xs font-bold">⭐ {t.writeReview}</button>
         </div>

@@ -10,8 +10,8 @@ export async function GET(_req: Request, ctx: Ctx) {
   if (isDemo) {
     const room = store().rooms.find((r) => r.id === roomId);
     return NextResponse.json({ messages: room?.messages ?? [], state: room ? {
-      depositCreated: room.depositCreated, depositConfirmed: room.depositConfirmed,
-      finalCreated: room.finalCreated, finalConfirmed: room.finalConfirmed, reviewed: room.reviewed,
+      paymentCreated: room.paymentCreated, paymentConfirmed: room.paymentConfirmed,
+      reviewed: room.reviewed,
     } : null });
   }
   // LIVE (Prisma) — เปิดใช้เมื่อผูก DATABASE_URL

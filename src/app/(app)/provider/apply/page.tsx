@@ -55,7 +55,7 @@ function ApplyInner() {
   if (done) {
     return (
       <>
-        <TopBar back="/provider" title={th ? "สมัคร Part-Time" : "Become a therapist"} />
+        <TopBar back="/provider" title={th ? "สมัคร Part-Time" : "Become a Part-Time"} />
         <div className="px-4 py-10 flex flex-col items-center text-center gap-3">
           <p className="text-6xl">🎉</p>
           <h1 className="font-display text-2xl font-semibold">{th ? "ส่งใบสมัครแล้ว" : "Application submitted"}</h1>
@@ -73,7 +73,7 @@ function ApplyInner() {
 
   return (
     <>
-      <TopBar back="/provider" title={th ? "สมัคร Part-Time" : "Become a therapist"} />
+      <TopBar back="/provider" title={th ? "สมัคร Part-Time" : "Become a Part-Time"} />
       <div className="px-4 py-4 space-y-4 pb-8">
         <div className="grid grid-cols-3 gap-2">
           {titles.map((t, i) => (

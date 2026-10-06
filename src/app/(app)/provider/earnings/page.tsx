@@ -10,10 +10,10 @@ const TOTAL: Record<Period, number> = { day: 1240, week: 6850, month: 18600 };
 const BARS = [820, 1240, 0, 1580, 960, 1450, 800];
 const DAYS = { th: ["จ", "อ", "พ", "พฤ", "ศ", "ส", "อา"], en: ["M", "T", "W", "T", "F", "S", "S"] };
 const HISTORY = [
-  { id: "h1", th: "นวดไทย 2 ชม. · คุณแนท", en: "Thai massage 2h · Nat", date: "30/09 17:00", amount: 960 },
+  { id: "h1", th: "ดินเนอร์ + ดูหนัง 3 ชม. · คุณแนท", en: "Dinner + movie 3h · Nat", date: "30/09 17:00", amount: 960 },
   { id: "h2", th: "ออฟฟิศซินโดรม · คุณบอม", en: "Office syndrome · Bom", date: "29/09 13:00", amount: 1180 },
   { id: "h3", th: "ถอนเงินเข้าบัญชี", en: "Withdrawal", date: "28/09 09:12", amount: -5000 },
-  { id: "h4", th: "นวดน้ำมัน 1.5 ชม. · คุณปุ๊ก", en: "Oil massage 1.5h · Puk", date: "27/09 19:30", amount: 840 },
+  { id: "h4", th: "คาเฟ่ + ถ่ายรูป 3 ชม. · คุณปุ๊ก", en: "Café + photos 3h · Puk", date: "27/09 19:30", amount: 840 },
 ];
 
 export default function EarningsPage() {

@@ -7,7 +7,7 @@ import { useI18n } from "@/i18n/provider";
 import { Toast, baht } from "@/components/ui";
 import { DEMO_MY_ORDERS, DEMO_POSTS } from "@/lib/demo-data";
 
-// งานเสร็จ: ให้คะแนน + ทิป + ปล่อยเงินให้หมอ
+// จบนัด: ให้คะแนน + ทิป + ปล่อยเงินให้เพื่อน
 const TAGS = { th: ["ตรงเวลา", "แรงกำลังดี", "สุภาพ", "สะอาด", "อธิบายดี"], en: ["On time", "Good pressure", "Polite", "Clean", "Explains well"] };
 const TIPS = [0, 40, 80, 100];
 
@@ -19,7 +19,7 @@ function CompleteInner({ id }: { id: string }) {
   const order = DEMO_MY_ORDERS.find((o) => o.id === id) ?? DEMO_MY_ORDERS[0];
   const post = DEMO_POSTS.find((p) => p.member.id === order.provider.id);
   const extra = Number(sp.get("extra") ?? 0);
-  const extendCost = Math.round(((post?.pricePerHour ?? 600) * 30) / 60 / 10) * 10;
+  const extendCost = Math.round((((post?.price3h ?? 1800) / 3) * 30) / 60 / 10) * 10;
 
   const [stars, setStars] = useState(0);
   const [tags, setTags] = useState<number[]>([]);
@@ -38,12 +38,12 @@ function CompleteInner({ id }: { id: string }) {
       <div className="flex flex-col items-center text-center gap-1">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={order.provider.avatar} alt="" className="w-20 h-20 rounded-full object-cover border-2 border-gold-500" />
-        <h1 className="text-2xl font-semibold mt-2">{th ? `นวดกับ${order.provider.name}เสร็จแล้ว` : `Session with ${order.provider.name} done`}</h1>
+        <h1 className="text-2xl font-semibold mt-2">{th ? `นัดกับ${order.provider.name}จบแล้ว` : `Session with ${order.provider.name} done`}</h1>
         <p className="text-sm text-ink-300">{order.id.toUpperCase()}</p>
       </div>
 
       <section className="flex flex-col items-center gap-2">
-        <p className="text-sm">{th ? "ให้คะแนนหมอ" : "Rate your therapist"}</p>
+        <p className="text-sm">{th ? "ให้คะแนนเพื่อน" : "Rate your companion"}</p>
         <div className="flex gap-1" role="radiogroup" aria-label={th ? "คะแนน" : "Rating"}>
           {[1, 2, 3, 4, 5].map((n) => (
             <button key={n} onClick={() => setStars(n)} role="radio" aria-checked={stars === n} aria-label={`${n} ${th ? "ดาว" : "stars"}`}
@@ -61,7 +61,7 @@ function CompleteInner({ id }: { id: string }) {
       </section>
 
       <section>
-        <p className="text-sm mb-2">{th ? "ทิปให้หมอ" : "Tip"} <span className="text-xs text-ink-300">· {th ? "หมอได้เต็ม 100%" : "100% goes to your therapist"}</span></p>
+        <p className="text-sm mb-2">{th ? "ทิปให้เพื่อน" : "Tip"} <span className="text-xs text-ink-300">· {th ? "เพื่อนได้เต็ม 100%" : "100% goes to your companion"}</span></p>
         <div className="grid grid-cols-4 gap-2">
           {TIPS.map((v) => (
             <button key={v} onClick={() => setTip(v)} aria-pressed={tip === v}
@@ -74,7 +74,7 @@ function CompleteInner({ id }: { id: string }) {
         <div className="flex justify-between"><span className="text-ink-300">{th ? "ค่าบริการ" : "Service"}</span><span>{baht(order.totalAmount - order.discount)}</span></div>
         {extra > 0 && <div className="flex justify-between"><span className="text-ink-300">{th ? `ต่อเวลา ${extra} นาที` : `Extended ${extra} min`}</span><span>{baht((extra / 30) * extendCost)}</span></div>}
         {tip > 0 && <div className="flex justify-between"><span className="text-ink-300">{th ? "ทิป" : "Tip"}</span><span className="text-gold-300">+{baht(tip)}</span></div>}
-        <div className="flex justify-between border-t border-gold-500/40 pt-2 mt-1"><b className="font-medium">{th ? "ปล่อยเงินให้หมอ" : "Release to therapist"}</b><b className="font-display font-semibold text-xl text-gold-300">{baht(release)}</b></div>
+        <div className="flex justify-between border-t border-gold-500/40 pt-2 mt-1"><b className="font-medium">{th ? "ปล่อยเงินให้เพื่อน" : "Release to companion"}</b><b className="font-display font-semibold text-xl text-gold-300">{baht(release)}</b></div>
       </section>
 
       <div className="mt-auto flex flex-col gap-2">

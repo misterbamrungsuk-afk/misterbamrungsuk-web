@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useI18n } from "@/i18n/provider";
 import { TopBar } from "@/components/shell";
 import { Stars, VerifiedBadge, baht, Modal, Field, Sheet } from "@/components/ui";
-import { activityBySlug } from "@/lib/categories";
-import { BLOCKS, blockPrice, massageAddonPrice } from "@/lib/booking";
+import { activityLabel, placeBySlug, skillBySlug } from "@/lib/categories";
+import { BLOCKS, blockPrice } from "@/lib/booking";
 import { DEMO_POSTS, DEMO_REVIEWS } from "@/lib/demo-data";
 import { isDemo } from "@/lib/data";
 import { isNewProvider, queueLabel } from "@/lib/membership";
@@ -22,7 +22,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   const [reviewOpen, setReviewOpen] = useState(false);
   const [rating, setRating] = useState(5);
   const [reviewText, setReviewText] = useState("");
-  const [loc, setLoc] = useState<"home" | "spa">("home");
+  const [loc, setLoc] = useState<string>("");
 
   if (!post) {
     return (
@@ -96,11 +96,20 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
           <h2 className="section-title mb-2">{th ? "เกี่ยวกับ" : "About"}</h2>
           <p className="text-sm text-ink-200 leading-relaxed">{post.personality} · {post.interests}. {post.extraInfo}</p>
           <div className="flex flex-wrap gap-1.5 mt-3">
-            {post.activities.map((s) => { const a = activityBySlug(s); return <span key={s} className="chip">{a ? (th ? a.th : a.en) : s}</span>; })}
-            {post.massageSkill && <span className="chip chip-gold">{th ? "มีสกิลนวด (add-on)" : "Massage skill (add-on)"}</span>}
+            {post.activities.map((s) => <span key={s} className="chip">{activityLabel(s, th)}</span>)}
             {post.languages.map((l) => <span key={l} className="chip">{l}</span>)}
           </div>
         </section>
+
+        {/* skills */}
+        {post.skills.length > 0 && (
+          <section className="animate-rise">
+            <h2 className="section-title mb-2">{th ? "สกิลพิเศษ" : "Special skills"}</h2>
+            <div className="flex flex-wrap gap-1.5">
+              {post.skills.map((k) => { const x = skillBySlug(k); return <span key={k} className="chip chip-gold">{x ? (th ? x.th : x.en) : k}{k === "massage" ? (th ? " · มีใบรับรอง" : " · certified") : ""}</span>; })}
+            </div>
+          </section>
+        )}
 
         {/* services */}
         <section className="animate-rise">
@@ -109,38 +118,25 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
             {BLOCKS.map((h) => (
               <div key={h} className="flex items-center justify-between px-4 py-3">
                 <div>
-                  <p className="text-sm font-medium">{th ? `Part-Time ${h} ชั่วโมง` : `Part-Time ${h} hours`}</p>
+                  <p className="text-sm font-medium">{th ? `เพื่อน ${h} ชั่วโมง` : `Companion ${h} hours`}</p>
                   <p className="text-xs text-ink-300">{th ? "เพื่อนกินเที่ยว · ทำกิจกรรมตามที่ตกลง" : "Dining & outing companion"}</p>
                 </div>
                 <span className="font-display font-semibold text-gold-300">{baht(blockPrice(post, h))}</span>
               </div>
             ))}
-            {post.massageSkill && (
-              <div className="flex items-center justify-between px-4 py-3">
-                <div>
-                  <p className="text-sm font-medium">{th ? "Add-on: สกิลนวด" : "Add-on: massage"}</p>
-                  <p className="text-xs text-ink-300">{th ? "เพิ่มได้ตอนจอง" : "Add when booking"}</p>
-                </div>
-                <span className="font-display font-semibold text-gold-300">+{baht(massageAddonPrice(post))}</span>
-              </div>
-            )}
           </div>
         </section>
 
         {/* location choice */}
         <section className="animate-rise">
-          <h2 className="section-title mb-2">{th ? "เรียกไปที่ไหน" : "Where to meet"}</h2>
-          <div className="grid grid-cols-2 gap-2">
-            {([
-              ["home", th ? "ที่พักของฉัน" : "My place", th ? "บ้าน คอนโด โรงแรม" : "House, condo, hotel"],
-              ["spa", th ? "สปาพาร์ทเนอร์" : "Partner spa", th ? "ห้องส่วนตัวพร้อมอุปกรณ์" : "Private room, fully equipped"],
-            ] as const).map(([k, title, sub]) => (
-              <button key={k} onClick={() => setLoc(k)} aria-pressed={loc === k}
-                className={`rounded-2xl border p-3.5 text-left transition ${loc === k ? "border-gold-500 bg-gold-500/10" : "border-ink-600 bg-ink-800"}`}>
-                <span className={`block text-sm font-semibold ${loc === k ? "text-gold-300" : ""}`}>{title}</span>
-                <span className="block text-xs text-ink-300 mt-0.5">{sub}</span>
+          <h2 className="section-title mb-2">{th ? "สถานที่ที่รับนัด" : "Meets at"}</h2>
+          <div className="flex flex-wrap gap-2">
+            {post.places.map((k) => { const x = placeBySlug(k); return (
+              <button key={k} onClick={() => setLoc(loc === k ? "" : k)} aria-pressed={loc === k}
+                className={`h-10 px-3.5 rounded-full border text-[13px] transition ${loc === k ? "border-gold-500 bg-gold-500/10 text-gold-300 font-semibold" : "border-ink-600 bg-ink-800 text-ink-200"}`}>
+                {x ? (th ? x.th : x.en) : k}
               </button>
-            ))}
+            ); })}
           </div>
         </section>
 
@@ -157,7 +153,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
         {/* CTA */}
         <section className="flex gap-2 animate-rise">
           <Link href={`/chat/room1`} className="btn-ghost h-12 px-6 grid place-items-center font-semibold">{t.chat}</Link>
-          <Link href={`/book/${post.id}?loc=${loc}`} className="btn-crimson flex-1 h-12 grid place-items-center font-display font-semibold text-base">{th ? "จองเลย" : "Book now"}</Link>
+          <Link href={`/book/${post.id}${loc ? `?loc=${loc}` : ""}`} className="btn-crimson flex-1 h-12 grid place-items-center font-display font-semibold text-base">{th ? "จองเลย" : "Book now"}</Link>
         </section>
 
         <button onClick={() => setReportOpen(true)} className="text-xs text-ink-400 hover:text-crimson-300 underline underline-offset-4">

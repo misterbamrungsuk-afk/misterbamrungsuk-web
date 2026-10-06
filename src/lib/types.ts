@@ -3,9 +3,10 @@ export type Gender = "male" | "female" | "other";
 export type KycStatus = "none" | "pending" | "verified" | "rejected";
 export type MemberStatus = "active" | "suspended" | "banned";
 export type JobRole = "hirer" | "provider";
-export type PaymentType = "deposit" | "final";
+/** ลูกค้าจ่ายเต็มจำนวนครั้งเดียวตอนจอง (ไม่มีระบบมัดจำ) */
+export type PaymentType = "full";
 export type PaymentStatus = "created" | "slip_uploaded" | "confirmed" | "failed";
-export type OrderStatus = "negotiated" | "deposit_paid" | "in_progress" | "completed" | "reviewed";
+export type OrderStatus = "negotiated" | "paid" | "in_progress" | "completed" | "reviewed";
 
 export interface MemberLite {
   id: string;
@@ -21,10 +22,7 @@ export interface Post {
   id: string;
   member: MemberLite;
   images: string[];
-  categories: string[]; // slugs
-  pricePerHour: number;
-  minHours: number;
-  deposit: number;
+  categories: string[]; // slugs กิจกรรม (เท่ากับ activities)
   workingHours: string; // "12:00-23:00"
   languages: string[];
   acceptGender: "any" | "male" | "female";
@@ -41,21 +39,21 @@ export interface Post {
   expiresAt: string;
   isHidden: boolean;
   createdAt: string;
-  /** วันที่หมอเข้าร่วมแพลตฟอร์ม (ISO) — ใช้ดันหมอหน้าใหม่ใน 30 วันแรก */
+  /** วันที่ Part-Time เข้าร่วมแพลตฟอร์ม (ISO) — ใช้ดันหน้าใหม่ใน 30 วันแรก */
   joinedAt?: string;
   /** คิวว่างในอีกกี่นาที (0 = ว่างตอนนี้) — เดโมกำหนดตายตัว */
   nextFreeMin?: number;
   /** Part-Time กลุ่มพรีเมียม — เห็นได้เฉพาะสมาชิก/ผู้ได้รับของขวัญ */
   premium?: boolean;
-  /** กิจกรรมที่รับ (slug จาก ACTIVITIES ใน categories.ts) */
+  /** กิจกรรมที่รับ: slug จาก ACTIVITIES หรือข้อความที่ Part-Time พิมพ์เอง */
   activities: string[];
-  /** มีสกิลนวด (add-on เท่านั้น ไม่ใช่บริการหลัก) */
-  massageSkill: boolean;
-  /** ราคาบล็อก 3 ชม. / 5 ชม. (ถ้าไม่ระบุ คำนวณจาก pricePerHour) */
-  price3h?: number;
-  price5h?: number;
-  /** ค่าบริการเสริมนวด (ถ้ามี massageSkill) */
-  massageAddon?: number;
+  /** สกิลพิเศษ (slug จาก SKILLS) — แท็กเท่านั้น ไม่มีค่าบริการเพิ่ม; "massage" = นวดผ่อนคลาย (ต้องมีใบรับรอง) */
+  skills: string[];
+  /** สถานที่ที่รับนัด (slug จาก PLACES) */
+  places: string[];
+  /** ราคาบล็อก 3 ชม. / 5 ชม. (หน่วยขายเดียว) */
+  price3h: number;
+  price5h: number;
   heightCm?: number;
   distanceKm?: number;
   yearsExp?: number;
@@ -121,10 +119,8 @@ export interface ChatRoom {
   lastAt: string;
   unread: number;
   orderStatus: OrderStatus;
-  depositCreated: boolean;
-  depositConfirmed: boolean;
-  finalCreated: boolean;
-  finalConfirmed: boolean;
+  paymentCreated: boolean;
+  paymentConfirmed: boolean;
   reviewed: boolean;
   messages: ChatMessage[];
 }
@@ -136,7 +132,6 @@ export interface Order {
   provider: MemberLite;
   status: OrderStatus;
   totalAmount: number;
-  depositAmount: number;
   discount: number;
   promoCode?: string;
   commission: number;
