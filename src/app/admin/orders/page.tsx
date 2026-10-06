@@ -1,5 +1,6 @@
 "use client";
 
+import { site } from "@/lib/site";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Toast, baht } from "@/components/ui";
@@ -59,8 +60,8 @@ export default function AdminOrdersPage() {
             <p className="text-sm text-ink-300">{sel.customer} → {sel.therapist} · {sel.place} · {sel.when}</p>
             <div className="rounded-xl bg-ink-700 p-3 text-sm flex flex-col gap-1.5">
               <div className="flex justify-between"><span className="text-ink-300">ยอดรวม</span><span>{baht(sel.amount)}</span></div>
-              <div className="flex justify-between"><span className="text-ink-300">ผู้ให้บริการได้ (80%)</span><span>{baht(sel.amount * 0.8)}</span></div>
-              <div className="flex justify-between text-gold-300"><span>GP 20%</span><span>{baht(sel.amount * 0.2)}</span></div>
+              <div className="flex justify-between"><span className="text-ink-300">Part-Time ได้รับ ({100 - site.commissionPercent}%)</span><span>{baht(sel.amount * (100 - site.commissionPercent) / 100)}</span></div>
+              <div className="flex justify-between text-gold-300"><span>ค่าธรรมเนียมแพลตฟอร์ม {site.commissionPercent}%</span><span>{baht((sel.amount * site.commissionPercent) / 100)}</span></div>
             </div>
             <p className="font-display font-medium">ไทม์ไลน์เงิน</p>
             <ol className="text-sm flex flex-col gap-2 border-l border-ink-600 pl-4">

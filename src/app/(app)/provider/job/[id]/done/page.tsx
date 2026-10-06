@@ -1,5 +1,6 @@
 "use client";
 
+import { site } from "@/lib/site";
 import { use, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/i18n/provider";
@@ -14,7 +15,7 @@ export default function JobDonePage({ params }: { params: Promise<{ id: string }
   const { lang } = useI18n();
   const th = lang === "th";
   const fee = 1200;
-  const gp = Math.round(fee * 0.2);
+  const gp = Math.round((fee * site.commissionPercent) / 100);
   const tip = 80;
   const net = fee - gp + tip;
   const [stars, setStars] = useState(0);
@@ -38,7 +39,7 @@ export default function JobDonePage({ params }: { params: Promise<{ id: string }
 
       <section className="glass rounded-3xl border-gold-500/40 p-4 text-sm flex flex-col gap-1.5">
         <div className="flex justify-between"><span className="text-ink-300">{th ? "ค่าบริการ" : "Service fee"}</span><span>{baht(fee)}</span></div>
-        <div className="flex justify-between"><span className="text-ink-300">{th ? "ค่าธรรมเนียม GP 20%" : "GP fee 20%"}</span><span className="text-crimson-400">-{baht(gp)}</span></div>
+        <div className="flex justify-between"><span className="text-ink-300">{th ? `ค่าธรรมเนียมแพลตฟอร์ม ${site.commissionPercent}%` : `Platform fee ${site.commissionPercent}%`}</span><span className="text-crimson-400">-{baht(gp)}</span></div>
         <div className="flex justify-between"><span className="text-ink-300">{th ? "ทิปจากลูกค้า" : "Customer tip"}</span><span className="text-gold-300">+{baht(tip)}</span></div>
         <div className="flex justify-between border-t border-gold-500/40 pt-2 mt-1"><b className="font-medium">{th ? "รายได้สุทธิ" : "Net earnings"}</b><b className="font-display font-semibold text-xl text-gold-300">{baht(net)}</b></div>
         <p className="text-[11px] text-ink-400">{th ? "โอนเข้ายอดถอนได้เมื่อลูกค้ายืนยัน (หรืออัตโนมัติใน 24 ชม.)" : "Added to withdrawable balance once confirmed (auto in 24h)"}</p>
