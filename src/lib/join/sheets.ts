@@ -1,7 +1,7 @@
 import "server-only";
 import { createSign } from "node:crypto";
 import { PACKAGES } from "./config";
-import { DOC_LABEL, type Applicant } from "./store";
+import { DOC_LABEL, extraOf, type Applicant } from "./store";
 
 // ส่งแถวผู้สมัครเข้า Google Sheet ให้ทีมเปิดดู (สำเนา — ข้อมูลจริงอยู่ใน Supabase)
 // ตั้งค่าได้ 2 แบบ:
@@ -69,6 +69,7 @@ export const COLUMNS = [
   "ระดับการศึกษา", "วันที่สะดวกเริ่มงาน", "สถานภาพ", "เบอร์ที่ติดต่อได้", "ID LINE", "email ส่วนตัว",
   "ธนาคาร", "เลขที่บัญชี", "ชื่อตามสมุดบัญชี", "ที่อยู่ในการจัดส่งเอกสาร", "รหัสไปรษณีย์",
   "ประสบการณ์", "จุดเด่น", "แนะนำตัว", "ช่องทางชำระ", "เอกสารที่แนบ", "ยินยอม PDPA (เวอร์ชัน)", "รับข่าวสาร",
+  "กิจกรรม", "ใบรับรองนวด", "เวลาที่สะดวก", "รุ่นอบรม", "กลุ่ม LINE",
 ];
 
 export function applicantRow(a: Applicant): (string | number)[] {
@@ -78,7 +79,12 @@ export function applicantRow(a: Applicant): (string | number)[] {
     a.education, a.start_date ?? "", a.marital, `'${a.tel}`, a.line_id, a.email || "-",
     a.bank, a.bank_account ? `'${a.bank_account}` : "", a.bank_account_name, a.address, `'${a.zipcode}`,
     a.experience, a.skills.join(", "), a.intro, a.payment_method === "qr" ? "QR" : "โอนบัญชี",
-    Object.keys(a.docs).map((k) => DOC_LABEL[k as keyof typeof DOC_LABEL]).join(", "),
+    Object.keys(a.docs).filter((k) => k in DOC_LABEL).map((k) => DOC_LABEL[k as keyof typeof DOC_LABEL]).join(", "),
     a.consent_version, a.consent_marketing ? "ยินยอม" : "ไม่ยินยอม",
+    ...((x) => [
+      (x.activities ?? []).join(", "), x.massage_cert == null ? "-" : x.massage_cert ? "มี" : "ไม่มี",
+      x.availability ? `${x.availability.slots.join("/")} · ${x.availability.days ?? "-"} วัน/สัปดาห์ · ${x.availability.hours ?? "-"} ชม./วัน` : "-",
+      x.cohort ? `รุ่น ${x.cohort}` : "-", x.line_joined ? "เข้าแล้ว" : "ยังไม่เข้า",
+    ])(extraOf(a)),
   ];
 }

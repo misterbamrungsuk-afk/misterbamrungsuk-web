@@ -33,7 +33,7 @@ export default function AdminPayoutsPage() {
 
   return (
     <>
-      <PageHead title="รับเงิน / โอนให้หมอ" sub="ยอดหลังหัก GP 20% · รายที่ติดข้อพิพาทถูกพักไว้"
+      <PageHead title="รับเงิน / โอนให้ผู้ให้บริการ" sub="ยอดหลังหัก GP 20% · รายที่ติดข้อพิพาทถูกพักไว้"
         right={<button onClick={exportCsv} className="h-11 px-4 rounded-xl bg-gold-500 text-[#1a1206] font-semibold">ส่งออกไฟล์โอน (CSV)</button>} />
       <div className="flex flex-col gap-2">
         {rows.map((r) => (

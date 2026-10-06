@@ -23,7 +23,7 @@ export function UpsellCard({ providerId, th }: { providerId: string; th: boolean
         <span className="chip chip-gold">{th ? "5 / 10 ครั้ง" : "5 / 10 sessions"}</span>
       </div>
       <p className="text-xs text-ink-400 mt-1">{th ? "ลูกค้าประทับใจ? ให้สแกน/เปิดลิงก์สมัครแพ็กเกจ ระบบผูกรหัสแนะนำของคุณอัตโนมัติ" : "Happy customer? Share the link — your referral code is attached."}</p>
-      <p className="text-xs mt-2">{th ? "รหัสแนะนำ" : "Referral code"}: <b className="text-gold-600">{providerId}</b></p>
+      <p className="text-xs mt-2">{th ? "รหัสแนะนำ" : "Referral code"}: <b className="text-gold-400">{providerId}</b></p>
       <div className="flex gap-2 mt-3">
         <a href={path} target="_blank" rel="noopener" className="btn-ghost rounded-xl flex-1 py-2.5 text-sm text-center">{th ? "เปิดให้ลูกค้าดู" : "Show customer"}</a>
         <button onClick={share} className="btn-crimson rounded-xl flex-1 py-2.5 text-sm font-bold">{copied ? (th ? "คัดลอกแล้ว ✓" : "Copied ✓") : th ? "แชร์ลิงก์" : "Share link"}</button>

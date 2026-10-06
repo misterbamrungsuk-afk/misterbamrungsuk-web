@@ -59,19 +59,19 @@ export default function AdminOrdersPage() {
             <p className="text-sm text-ink-300">{sel.customer} → {sel.therapist} · {sel.place} · {sel.when}</p>
             <div className="rounded-xl bg-ink-700 p-3 text-sm flex flex-col gap-1.5">
               <div className="flex justify-between"><span className="text-ink-300">ยอดรวม</span><span>{baht(sel.amount)}</span></div>
-              <div className="flex justify-between"><span className="text-ink-300">หมอได้ (80%)</span><span>{baht(sel.amount * 0.8)}</span></div>
+              <div className="flex justify-between"><span className="text-ink-300">ผู้ให้บริการได้ (80%)</span><span>{baht(sel.amount * 0.8)}</span></div>
               <div className="flex justify-between text-gold-300"><span>GP 20%</span><span>{baht(sel.amount * 0.2)}</span></div>
             </div>
             <p className="font-display font-medium">ไทม์ไลน์เงิน</p>
             <ol className="text-sm flex flex-col gap-2 border-l border-ink-600 pl-4">
               <li>สร้างออเดอร์ · ลูกค้าโอนเข้าระบบกลาง</li>
               <li>ตรวจสลิปผ่าน · เงินถูกกัน</li>
-              <li className={sel.status === "released" ? "" : "text-ink-300"}>{sel.status === "cancelled" ? "ยกเลิก · คืนเงินลูกค้า" : "ปล่อยเงินให้หมอ (หรืออัตโนมัติใน 24 ชม.)"}</li>
+              <li className={sel.status === "released" ? "" : "text-ink-300"}>{sel.status === "cancelled" ? "ยกเลิก · คืนเงินลูกค้า" : "ปล่อยเงินให้ผู้ให้บริการ (หรืออัตโนมัติใน 24 ชม.)"}</li>
             </ol>
             <Link href="/escrow/o1" className="text-sm text-gold-600 min-h-9 inline-flex items-center">ดูหน้าระบบกลางเงินของออเดอร์ →</Link>
             <div className="flex gap-2">
               <button onClick={() => setStatus("cancelled", `ยกเลิก ${sel.id} และคืนเงินลูกค้าแล้ว`)} disabled={!open} className="flex-1 h-11 rounded-xl border border-crimson-500 text-crimson-200 disabled:opacity-40">ยกเลิก + คืนเงิน</button>
-              <button onClick={() => setStatus("released", `ปิดงาน ${sel.id} · ปล่อยเงินให้หมอแล้ว`)} disabled={!open} className="flex-1 h-11 rounded-xl bg-crimson-500 text-white font-semibold disabled:opacity-40">ปิดงาน</button>
+              <button onClick={() => setStatus("released", `ปิดงาน ${sel.id} · ปล่อยเงินให้ผู้ให้บริการแล้ว`)} disabled={!open} className="flex-1 h-11 rounded-xl bg-crimson-500 text-white font-semibold disabled:opacity-40">ปิดงาน</button>
             </div>
           </Card>
         )}

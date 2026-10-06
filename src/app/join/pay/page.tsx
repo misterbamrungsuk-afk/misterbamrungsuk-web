@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Logo } from "@/components/ui";
-import { BANK, PACKAGES } from "@/lib/join/config";
+import { BANK, PACKAGES, feeBreakdown } from "@/lib/join/config";
 import { FILE_FIELDS, FORM_KEY, dataUrlToFile, resizeImage, type JoinForm } from "@/lib/join/form";
 import { promptPayPayload } from "@/lib/join/promptpay";
 import QRCode from "qrcode";
@@ -62,14 +62,16 @@ export default function PayPage() {
     setErr("");
     try {
       const fd = new FormData();
-      const { skills, accept_terms, consent_pdpa, consent_marketing, photo, id_card, bankbook, other_doc, ...rest } = f;
+      const { skills, activities, avail_slots, accept_terms, consent_pdpa, consent_marketing, photo, id_card, bankbook, other_doc, cert_doc, ...rest } = f;
       Object.entries(rest).forEach(([k, v]) => fd.append(k, String(v)));
       skills.forEach((s) => fd.append("skills", s));
+      (activities ?? []).forEach((s) => fd.append("activities", s));
+      (avail_slots ?? []).forEach((s) => fd.append("avail_slots", s));
       fd.append("accept_terms", String(accept_terms));
       fd.append("consent_pdpa", String(consent_pdpa));
       fd.append("consent_marketing", String(consent_marketing));
       fd.append("payment_method", method);
-      const files = { photo, id_card, bankbook, other_doc };
+      const files = { photo, id_card, bankbook, other_doc, cert_doc };
       for (const k of FILE_FIELDS) if (files[k]) fd.append(k, await dataUrlToFile(files[k], `${k}.jpg`));
       fd.append("slip", await dataUrlToFile(slip, "slip.jpg"));
       const res = await fetch("/api/join/register", { method: "POST", body: fd });
@@ -91,13 +93,17 @@ export default function PayPage() {
         <span className="ml-auto text-xs text-ink-300">ขั้นตอน 2/3</span>
       </header>
 
-      <h1 className="font-display text-2xl font-semibold mt-2">ชำระค่าสมัคร</h1>
+      <h1 className="font-display text-2xl font-semibold mt-2">ชำระค่าการันตี + ค่าอบรม</h1>
 
       <section className="glass rounded-3xl p-5 mt-5">
         <div className="flex justify-between text-sm"><span className="text-ink-300">ผู้สมัคร</span><span className="truncate ml-3">{f.title}{f.first_name} {f.last_name} ({f.nickname})</span></div>
         <div className="flex justify-between text-sm mt-2"><span className="text-ink-300">แพ็กเกจ {f.package}</span><span>{pkg.name}</span></div>
+        <div className="mt-3 rounded-2xl bg-ink-900/60 px-4 py-3 text-[13px] space-y-1.5">
+          {feeBreakdown(f.package).map((x) => <div key={x.name} className="flex justify-between gap-3"><span className="text-ink-300">{x.name}</span><span className="font-display text-gold-300">฿{x.amount.toLocaleString("th-TH")}</span></div>)}
+          <p className="text-[11.5px] text-ink-400 pt-1">ฟรีค่าสมาชิก 6 เดือนแรก · หลังจากนั้น ฿{pkg.membershipAfter.toLocaleString("th-TH")} / 6 เดือน</p>
+        </div>
         <div className="flex justify-between items-baseline border-t border-ink-600 mt-4 pt-4">
-          <span className="font-medium">ยอดชำระ</span>
+          <span className="font-medium">ยอดชำระรวม</span>
           <span className="font-display text-3xl font-bold text-gold-300">฿{pkg.price.toLocaleString("th-TH")}</span>
         </div>
       </section>

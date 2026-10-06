@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useI18n } from "@/i18n/provider";
 import { TopBar } from "@/components/shell";
 import { Stars, VerifiedBadge, baht, Modal, Field, Sheet } from "@/components/ui";
-import { catBySlug } from "@/lib/categories";
+import { activityBySlug } from "@/lib/categories";
+import { BLOCKS, blockPrice, massageAddonPrice } from "@/lib/booking";
 import { DEMO_POSTS, DEMO_REVIEWS } from "@/lib/demo-data";
 import { isDemo } from "@/lib/data";
 import { isNewProvider, queueLabel } from "@/lib/membership";
@@ -21,6 +22,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   const [reviewOpen, setReviewOpen] = useState(false);
   const [rating, setRating] = useState(5);
   const [reviewText, setReviewText] = useState("");
+  const [loc, setLoc] = useState<"home" | "spa">("home");
 
   if (!post) {
     return (
@@ -31,112 +33,123 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
     );
   }
   void isDemo;
+  const th = lang === "th";
+  const free = (post.nextFreeMin ?? 0) <= 0;
 
   return (
     <>
       <TopBar back="/home" title={post.member.name} />
 
-      {/* gallery (แนว Spafy: รูปโค้งในกรอบ) */}
+      {/* gallery: รูปใหญ่ + thumbnails */}
       <div className="px-4 pt-2">
-        <div className="relative rounded-3xl overflow-hidden bg-ink-800">
+        <div className="relative rounded-3xl overflow-hidden bg-ink-800 border border-gold-500/20">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={post.images[imgIdx]} alt={post.member.name} className="w-full aspect-[4/3] object-cover" />
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-            {post.images.map((_, i) => (
-              <button key={i} onClick={() => setImgIdx(i)} aria-label={`image ${i + 1}`} className="h-9 min-w-9 px-1.5 grid place-items-center">
-                <span className={`block h-1.5 rounded-full transition-all ${i === imgIdx ? "w-5 bg-gold-500" : "w-1.5 bg-white/60"}`} />
+          <img src={post.images[imgIdx]} alt={post.member.name} className="w-full aspect-[4/5] object-cover" />
+          <span className={`absolute top-3 left-3 h-7 px-3 rounded-full bg-black/60 backdrop-blur border border-gold-500/40 text-[12px] font-semibold text-ink-100 inline-flex items-center gap-1.5`}>
+            <span className={`w-2 h-2 rounded-full ${free ? "bg-emerald-500" : "bg-gold-500"}`} />{free ? (th ? "ออนไลน์" : "Online") : queueLabel(post, th)}
+          </span>
+        </div>
+        {post.images.length > 1 && (
+          <div className="flex gap-2 mt-2">
+            {post.images.map((src, i) => (
+              <button key={i} onClick={() => setImgIdx(i)} aria-label={`image ${i + 1}`}
+                className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition ${i === imgIdx ? "border-gold-500" : "border-transparent opacity-70"}`}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={src} alt="" className="w-full h-full object-cover" />
               </button>
             ))}
           </div>
-        </div>
+        )}
       </div>
 
       <div className="px-4 py-4 space-y-5">
-        {/* head: ชื่อ + ราคา */}
+        {/* head */}
         <section className="animate-rise">
-          <div className="flex items-start gap-3">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl font-semibold">{post.member.name}, {post.member.age}</h1>
-                {post.member.kycVerified && <VerifiedBadge label={t.verified} />}
-                {isNewProvider(post) && <span className="chip bg-crimson-500 text-white border-crimson-500">{lang === "th" ? "หน้าใหม่" : "New"}</span>}
-                {post.premium && <span className="chip chip-gold">♛ Premium</span>}
-              </div>
-              <p className={`text-sm font-medium mt-1 flex items-center gap-1.5 ${(post.nextFreeMin ?? 0) <= 0 ? "text-emerald-600" : "text-gold-600"}`}>
-                <span className={`w-2 h-2 rounded-full ${(post.nextFreeMin ?? 0) <= 0 ? "bg-emerald-500" : "bg-gold-500"}`} />{queueLabel(post, lang === "th")}
-              </p>
-              <p className="text-xs text-ink-300 mt-1">🕓 {post.workingHours} · 📍 {post.province}</p>
-            </div>
-            <div className="text-right shrink-0">
-              <p className="font-display font-semibold text-lg text-gold-600">{baht(post.pricePerHour)}<span className="text-xs text-ink-300 font-normal">{t.perHour}</span></p>
-              <p className="text-xs text-ink-300 flex items-center justify-end gap-1"><span className="text-amber-500">★</span> {(post.rating ?? 0).toFixed(1)} ({post.reviewCount} {lang === "th" ? "รีวิว" : "reviews"})</p>
-            </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="font-display text-[26px] font-bold text-gold-500">{post.member.name}</h1>
+            {post.member.kycVerified && <VerifiedBadge label={t.verified} />}
+            {isNewProvider(post) && <span className="chip bg-crimson-500 text-white border-crimson-500">{th ? "หน้าใหม่" : "New"}</span>}
+            {post.premium && <span className="chip chip-gold">♛ Premium</span>}
           </div>
+          <p className="text-sm text-ink-300 mt-1">
+            {post.member.age} {th ? "ปี" : "y"}{post.heightCm ? ` · ${post.heightCm} ${th ? "ซม." : "cm"}` : ""}{post.distanceKm != null ? ` · ${post.distanceKm} ${th ? "กม." : "km"}` : ""} · {post.province}
+          </p>
 
-          {/* แถบไอคอน 4 ช่อง */}
-          <div className="glass rounded-2xl grid grid-cols-4 mt-4 py-3">
+          {/* stats */}
+          <div className="rounded-2xl border border-gold-500/25 bg-ink-800 grid grid-cols-4 mt-4 py-3 divide-x divide-ink-600">
             {[
-              ["M12 8v4l3 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z", lang === "th" ? "ขั้นต่ำ" : "Min", `${post.minHours} ${t.hoursUnit}`],
-              ["M4 7h16M4 12h16M4 17h10", lang === "th" ? "ผ้า/น้ำมัน" : "Kit", lang === "th" ? "เตรียมให้" : "Included"],
-              ["M3 10h18M7 3v4M17 3v4M5 6h14v14H5z", lang === "th" ? "วันทำงาน" : "Days", lang === "th" ? "ทุกวัน" : "Daily"],
-              ["M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z", lang === "th" ? "มัดจำ" : "Deposit", baht(post.deposit)],
-            ].map(([d, k, v]) => (
-              <div key={k} className="flex flex-col items-center gap-1 text-center px-1 min-w-0">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-gold-600"><path d={d} /></svg>
-                <span className="text-[11px] text-ink-300">{k}</span>
-                <span className="text-xs font-medium truncate max-w-full">{v}</span>
+              [(post.rating ?? 0).toFixed(1), th ? `คะแนน (${post.reviewCount})` : `Rating (${post.reviewCount})`],
+              [String(post.jobsDone ?? 0), th ? "งาน" : "Jobs"],
+              [`${post.yearsExp ?? 1}`, th ? "ปีประสบการณ์" : "Yrs exp"],
+              [`${post.responseRate ?? 90}%`, th ? "ตอบกลับ" : "Response"],
+            ].map(([v, k]) => (
+              <div key={k} className="flex flex-col items-center text-center px-1 min-w-0">
+                <span className="font-display font-semibold text-lg text-gold-300">{v}</span>
+                <span className="text-[10.5px] text-ink-300 leading-tight">{k}</span>
               </div>
             ))}
           </div>
-
-          <div className="flex flex-wrap gap-1.5 mt-3">
-            {post.categories.map((c) => {
-              const cat = catBySlug(c);
-              return <span key={c} className="chip">{lang === "th" ? cat?.th : cat?.en}</span>;
-            })}
-          </div>
-        </section>
-
-        <div className="gold-line" />
-
-        {/* key info grid */}
-        <section className="grid grid-cols-2 gap-3 animate-rise">
-          {[
-            [t.jobPlace, `📍 ${post.province}`],
-            [t.serviceArea, post.serviceArea],
-            [t.workingHours, `🕓 ${post.workingHours}`],
-            [t.languages, post.languages.join(", ")],
-            [t.acceptGender, post.acceptGender === "any" ? (lang === "th" ? "ไม่จำกัดเพศ" : "Any gender") : post.acceptGender === "male" ? (lang === "th" ? "รับชาย" : "Male only") : (lang === "th" ? "รับหญิง" : "Female only")],
-            [t.minHours, `${post.minHours} ${t.hoursUnit}`],
-            [t.deposit, baht(post.deposit)],
-            ["✅ " + t.publicMeet, lang === "th" ? "นัดพบที่สาธารณะเท่านั้น" : "Public places only"],
-          ].map(([k, v]) => (
-            <div key={k} className="glass rounded-xl px-3.5 py-3">
-              <p className="text-[10px] text-ink-400 uppercase tracking-wide">{k}</p>
-              <p className="text-sm text-ink-100 mt-1 font-medium">{v}</p>
-            </div>
-          ))}
         </section>
 
         {/* about */}
         <section className="animate-rise">
-          <h2 className="section-title mb-2">{lang === "th" ? "รายละเอียด" : "Details"}</h2>
-          <div className="glass rounded-2xl p-4 text-sm text-ink-200 space-y-2">
-            <p>😊 {lang === "th" ? "นิสัย" : "Personality"}: {post.personality}</p>
-            <p>🌟 {lang === "th" ? "ความสนใจ" : "Interests"}: {post.interests}</p>
-            <p>ℹ️ {lang === "th" ? "ข้อมูลเพิ่มเติม" : "More info"}: {post.extraInfo}</p>
+          <h2 className="section-title mb-2">{th ? "เกี่ยวกับ" : "About"}</h2>
+          <p className="text-sm text-ink-200 leading-relaxed">{post.personality} · {post.interests}. {post.extraInfo}</p>
+          <div className="flex flex-wrap gap-1.5 mt-3">
+            {post.activities.map((s) => { const a = activityBySlug(s); return <span key={s} className="chip">{a ? (th ? a.th : a.en) : s}</span>; })}
+            {post.massageSkill && <span className="chip chip-gold">{th ? "มีสกิลนวด (add-on)" : "Massage skill (add-on)"}</span>}
+            {post.languages.map((l) => <span key={l} className="chip">{l}</span>)}
+          </div>
+        </section>
+
+        {/* services */}
+        <section className="animate-rise">
+          <h2 className="section-title mb-2">{th ? "บริการ" : "Services"}</h2>
+          <div className="rounded-2xl border border-gold-500/25 bg-ink-800 divide-y divide-ink-600">
+            {BLOCKS.map((h) => (
+              <div key={h} className="flex items-center justify-between px-4 py-3">
+                <div>
+                  <p className="text-sm font-medium">{th ? `Part-Time ${h} ชั่วโมง` : `Part-Time ${h} hours`}</p>
+                  <p className="text-xs text-ink-300">{th ? "เพื่อนกินเที่ยว · ทำกิจกรรมตามที่ตกลง" : "Dining & outing companion"}</p>
+                </div>
+                <span className="font-display font-semibold text-gold-300">{baht(blockPrice(post, h))}</span>
+              </div>
+            ))}
+            {post.massageSkill && (
+              <div className="flex items-center justify-between px-4 py-3">
+                <div>
+                  <p className="text-sm font-medium">{th ? "Add-on: สกิลนวด" : "Add-on: massage"}</p>
+                  <p className="text-xs text-ink-300">{th ? "เพิ่มได้ตอนจอง" : "Add when booking"}</p>
+                </div>
+                <span className="font-display font-semibold text-gold-300">+{baht(massageAddonPrice(post))}</span>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* location choice */}
+        <section className="animate-rise">
+          <h2 className="section-title mb-2">{th ? "เรียกไปที่ไหน" : "Where to meet"}</h2>
+          <div className="grid grid-cols-2 gap-2">
+            {([
+              ["home", th ? "ที่พักของฉัน" : "My place", th ? "บ้าน คอนโด โรงแรม" : "House, condo, hotel"],
+              ["spa", th ? "สปาพาร์ทเนอร์" : "Partner spa", th ? "ห้องส่วนตัวพร้อมอุปกรณ์" : "Private room, fully equipped"],
+            ] as const).map(([k, title, sub]) => (
+              <button key={k} onClick={() => setLoc(k)} aria-pressed={loc === k}
+                className={`rounded-2xl border p-3.5 text-left transition ${loc === k ? "border-gold-500 bg-gold-500/10" : "border-ink-600 bg-ink-800"}`}>
+                <span className={`block text-sm font-semibold ${loc === k ? "text-gold-300" : ""}`}>{title}</span>
+                <span className="block text-xs text-ink-300 mt-0.5">{sub}</span>
+              </button>
+            ))}
           </div>
         </section>
 
         {/* rules */}
         <section className="animate-rise">
-          <h2 className="section-title mb-2">📋 {t.rules}</h2>
+          <h2 className="section-title mb-2">{t.rules}</h2>
           <ul className="glass rounded-2xl p-4 text-sm text-ink-200 space-y-2">
             {post.rules.map((r, i) => (
-              <li key={i} className="flex gap-2">
-                <span className="text-crimson-400">{r.startsWith("ไม่") || r.includes("ห้าม") || r.includes("สาย") ? "❌" : "✅"}</span>
-                <span>{r}</span>
-              </li>
+              <li key={i} className="flex gap-2"><span className="text-gold-500">•</span><span>{r}</span></li>
             ))}
           </ul>
         </section>
@@ -144,7 +157,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
         {/* CTA */}
         <section className="flex gap-2 animate-rise">
           <Link href={`/chat/room1`} className="btn-ghost h-12 px-6 grid place-items-center font-semibold">{t.chat}</Link>
-          <Link href={`/book/${post.id}`} className="btn-crimson flex-1 h-12 grid place-items-center font-display font-semibold text-base">{lang === "th" ? "จองเลย" : "Book now"}</Link>
+          <Link href={`/book/${post.id}?loc=${loc}`} className="btn-crimson flex-1 h-12 grid place-items-center font-display font-semibold text-base">{th ? "จองเลย" : "Book now"}</Link>
         </section>
 
         <button onClick={() => setReportOpen(true)} className="text-xs text-ink-400 hover:text-crimson-300 underline underline-offset-4">
@@ -153,7 +166,27 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
 
         {/* reviews */}
         <section className="animate-rise">
-          <h2 className="section-title mb-3">⭐ {t.reviews} ({reviews.length})</h2>
+          <h2 className="section-title mb-3">{t.reviews} ({reviews.length})</h2>
+          <div className="rounded-2xl border border-gold-500/25 bg-ink-800 p-4 flex gap-4 items-center mb-3">
+            <div className="text-center shrink-0">
+              <p className="font-display text-4xl font-bold text-gold-500">{(post.rating ?? 0).toFixed(1)}</p>
+              <Stars value={post.rating ?? 0} size={12} />
+              <p className="text-[11px] text-ink-300 mt-1">{post.reviewCount} {th ? "รีวิว" : "reviews"}</p>
+            </div>
+            <div className="flex-1 space-y-1">
+              {[5, 4, 3, 2, 1].map((n) => {
+                const c = reviews.filter((r) => Math.round(r.rating) === n).length;
+                const pct = reviews.length ? (c / reviews.length) * 100 : 0;
+                return (
+                  <div key={n} className="flex items-center gap-2 text-[11px] text-ink-300">
+                    <span className="w-3">{n}</span>
+                    <span className="flex-1 h-1.5 rounded-full bg-ink-600 overflow-hidden"><span className="block h-full bg-gold-500" style={{ width: `${pct}%` }} /></span>
+                    <span className="w-4 text-right">{c}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
           <div className="space-y-3">
             {reviews.length === 0 && <p className="text-sm text-ink-400">— {t.empty} —</p>}
             {reviews.map((r) => (
@@ -172,6 +205,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
             ))}
           </div>
         </section>
+
       </div>
 
       {/* report modal */}

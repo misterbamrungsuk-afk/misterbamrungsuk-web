@@ -53,3 +53,30 @@ export function thaiDate(iso: string) {
   const d = new Date(`${iso}T00:00:00`);
   return d.toLocaleDateString("th-TH", { weekday: "short", day: "numeric", month: "short" });
 }
+
+// ── บล็อกชั่วโมง (หน่วยขายใหม่) + add-on นวด + สปาพาร์ทเนอร์ ──
+export const BLOCKS = [3, 5] as const;
+export type BlockHours = (typeof BLOCKS)[number];
+export const DEFAULT_MASSAGE_ADDON = 500;
+
+export function blockPrice(post: Post, hours: number) {
+  if (hours === 3 && post.price3h) return post.price3h;
+  if (hours === 5 && post.price5h) return post.price5h;
+  return Math.round((post.pricePerHour * hours) / 10) * 10;
+}
+export function massageAddonPrice(post: Post) {
+  return post.massageSkill ? post.massageAddon ?? DEFAULT_MASSAGE_ADDON : 0;
+}
+
+export const ADDRESS_TYPES = [
+  { id: "home", th: "บ้าน", en: "House" },
+  { id: "condo", th: "คอนโด", en: "Condo" },
+  { id: "hotel", th: "โรงแรม", en: "Hotel" },
+  { id: "work", th: "ที่ทำงาน", en: "Workplace" },
+] as const;
+
+export const PARTNER_SPAS = [
+  { id: "s1", name: "Lumière Private Spa", area: "สุขุมวิท 24", km: 1.8, rating: 4.9, price: 800 },
+  { id: "s2", name: "The Velvet Room", area: "ทองหล่อ", km: 2.6, rating: 4.8, price: 1000 },
+  { id: "s3", name: "Sathorn Retreat", area: "สาทร", km: 4.1, rating: 4.7, price: 700 },
+] as const;

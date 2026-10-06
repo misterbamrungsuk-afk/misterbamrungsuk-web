@@ -60,7 +60,7 @@ export default function SearchPage() {
 
   return (
     <>
-      <TopBar back="/home" title={th ? "ค้นหาหมอนวด" : "Search therapists"} right={<span />} />
+      <TopBar back="/home" title={th ? "ค้นหา Part-Time" : "Search Part-Time"} right={<span />} />
       <div className="px-4 pt-4 pb-28">
         <div className="flex gap-2">
           <label className="flex-1 min-w-0 flex items-center gap-2 input-dark h-12 rounded-2xl">
@@ -83,7 +83,7 @@ export default function SearchPage() {
         <p className="text-xs text-ink-300 mt-3">{results.length} {th ? "ผลลัพธ์ · เรียงตาม" : "results · sorted by"} <span className="text-gold-300">{th ? cur.th : cur.en}</span></p>
 
         {results.length === 0 ? (
-          <EmptyState icon="🔍" title={th ? "ไม่พบหมอนวดที่ตรงเงื่อนไข" : "No therapists match"} body={th ? "ลองขยายรัศมี ปรับช่วงราคา หรือเปลี่ยนคำค้น" : "Try a wider radius, another price range or different keywords"}
+          <EmptyState icon="🔍" title={th ? "ไม่พบ Part-Time ที่ตรงเงื่อนไข" : "No Part-Time match"} body={th ? "ลองขยายรัศมี ปรับช่วงราคา หรือเปลี่ยนคำค้น" : "Try a wider radius, another price range or different keywords"}
             ctaLabel={th ? "ล้างฟิลเตอร์" : "Reset filters"} onCta={() => { setF(DEFAULT); setQ(""); }} />
         ) : (
           <ul className="mt-2 flex flex-col gap-3">
@@ -93,7 +93,7 @@ export default function SearchPage() {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={p.images[0]} alt="" className="w-[84px] h-[104px] rounded-2xl object-cover shrink-0" />
                   <div className="flex-1 min-w-0 flex flex-col gap-1">
-                    <p className="font-semibold truncate">{p.member.name}{p.member.age ? `, ${p.member.age}` : ""} {p.member.kycVerified && <span className="text-gold-600">✓</span>} {isNewProvider(p) && <span className="text-[10.5px] h-5 px-1.5 rounded-full bg-crimson-500 text-white font-semibold inline-flex items-center align-middle">{th ? "หน้าใหม่" : "New"}</span>}</p>
+                    <p className="font-semibold truncate">{p.member.name}{p.member.age ? `, ${p.member.age}` : ""} {p.member.kycVerified && <span className="text-gold-500">✓</span>} {isNewProvider(p) && <span className="text-[10.5px] h-5 px-1.5 rounded-full bg-crimson-500 text-white font-semibold inline-flex items-center align-middle">{th ? "หน้าใหม่" : "New"}</span>}</p>
                     <p className={`text-[11.5px] font-medium flex items-center gap-1 ${(p.nextFreeMin ?? 0) <= 0 ? "text-emerald-600" : "text-ink-300"}`}><span className={`w-1.5 h-1.5 rounded-full ${(p.nextFreeMin ?? 0) <= 0 ? "bg-emerald-500" : "bg-gold-500"}`} />{queueLabel(p, th)}</p>
                     <p className="text-xs text-ink-300 truncate"><span className="font-semibold text-ink-100"><span className="text-amber-500">★</span> {p.rating?.toFixed(1) ?? "–"}</span> · {d < 1 ? `${Math.round(d * 1000)} ${th ? "ม." : "m"}` : `${d.toFixed(1)} ${th ? "กม." : "km"}`} · {p.serviceArea}</p>
                     <div className="flex flex-wrap gap-1 mt-0.5">

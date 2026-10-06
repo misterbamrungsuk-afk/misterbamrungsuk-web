@@ -50,7 +50,7 @@ export default function MembershipPage() {
   };
 
   const plans: { k: PlanKey; title: string; sub: string; price: number }[] = [
-    { k: "monthly", title: planLabel("monthly", th), sub: th ? "ต่ออายุทุกเดือน · ปลดล็อกหมอพรีเมียม" : "Renews monthly · unlocks Premium", price: MEMBERSHIP.monthlyFee },
+    { k: "monthly", title: planLabel("monthly", th), sub: th ? "ต่ออายุทุกเดือน · ปลดล็อก Part-Time พรีเมียม" : "Renews monthly · unlocks Premium", price: MEMBERSHIP.monthlyFee },
     ...SESSION_PACKS.map((p) => ({ k: p.key, title: planLabel(p.key, th), sub: th ? `ใช้ได้ ${p.validMonths} เดือน · เฉลี่ย ${baht(Math.round(p.price / p.sessions))}/ครั้ง` : `Valid ${p.validMonths} months · ${baht(Math.round(p.price / p.sessions))}/session`, price: p.price })),
   ];
 
@@ -80,7 +80,7 @@ export default function MembershipPage() {
         ) : (
           <section className="glass rounded-2xl p-4 animate-rise">
             <h2 className="section-title">{th ? "สมัครสมาชิก Mister Bamrungsuk" : "Become a member"}</h2>
-            <p className="text-sm text-ink-300 mt-1">{th ? "ปลดล็อกหมอนวดกลุ่มพรีเมียม และรับราคาพิเศษเมื่อซื้อเป็นแพ็กเกจ" : "Unlock Premium therapists and save with session packs."}</p>
+            <p className="text-sm text-ink-300 mt-1">{th ? "ปลดล็อก Part-Time กลุ่มพรีเมียม และรับราคาพิเศษเมื่อซื้อเป็นแพ็กเกจ" : "Unlock Premium Part-Time and save with session packs."}</p>
           </section>
         )}
 
@@ -95,7 +95,7 @@ export default function MembershipPage() {
                 <span className="block font-semibold">{p.title}</span>
                 <span className="block text-xs text-ink-300">{p.sub}</span>
               </span>
-              <span className="font-display font-semibold text-gold-600 shrink-0">{baht(p.price)}</span>
+              <span className="font-display font-semibold text-gold-500 shrink-0">{baht(p.price)}</span>
             </button>
           ))}
           <p className="text-xs text-ink-300">{th ? `ค่าแรกเข้า ${baht(MEMBERSHIP.entryFee)} (ครั้งเดียว)` : `One-time entry fee ${baht(MEMBERSHIP.entryFee)}`}{entryPaid && !asGift ? (th ? " · คุณชำระแล้ว" : " · already paid") : ""}</p>
@@ -122,7 +122,7 @@ export default function MembershipPage() {
           <section className="glass rounded-2xl p-5 text-center flex flex-col items-center gap-2 border-gold-500/50 animate-rise">
             <p className="text-3xl">🎁</p>
             <h2 className="font-display font-semibold text-lg">{th ? `ของขวัญสำหรับ ${gift.toName} พร้อมแล้ว` : `Gift for ${gift.toName} is ready`}</h2>
-            <p className="font-display font-bold text-2xl tracking-widest text-gold-600 select-all">{gift.code}</p>
+            <p className="font-display font-bold text-2xl tracking-widest text-gold-500 select-all">{gift.code}</p>
             <p className="text-xs text-ink-300">{th ? "ส่งโค้ดนี้ให้เพื่อน แล้วให้กรอกที่หน้า “รับของขวัญ”" : "Send this code to your friend to redeem."}</p>
             <button onClick={() => { try { navigator.clipboard?.writeText(gift.code); } catch { /* ignore */ } setToast(th ? "คัดลอกโค้ดแล้ว" : "Code copied"); setTimeout(() => setToast(""), 2000); }} className="btn-ghost rounded-xl h-11 px-5 text-sm mt-1">{th ? "คัดลอกโค้ด" : "Copy code"}</button>
           </section>
@@ -143,7 +143,7 @@ export default function MembershipPage() {
           </section>
         )}
 
-        <Link href="/membership/redeem" className="text-sm text-gold-600 text-center min-h-9 inline-flex items-center justify-center">🎁 {th ? "มีโค้ดของขวัญ? รับของขวัญที่นี่" : "Have a gift code? Redeem"}</Link>
+        <Link href="/membership/redeem" className="text-sm text-gold-500 text-center min-h-9 inline-flex items-center justify-center">🎁 {th ? "มีโค้ดของขวัญ? รับของขวัญที่นี่" : "Have a gift code? Redeem"}</Link>
       </div>
 
       {!gift && (

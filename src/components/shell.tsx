@@ -38,7 +38,7 @@ export function TabBar({ unread = 0 }: { unread?: number }) {
   const path = usePathname();
   const mode = useMode();
   const th = lang === "th";
-  // เมนูล่างเปลี่ยนตามโหมด: ลูกค้า / หมอ
+  // เมนูล่างเปลี่ยนตามโหมด: ลูกค้า / Part-Time
   const tabs: Tab[] = mode === "provider"
     ? [
         { href: "/provider", key: "home", label: th ? "แดชบอร์ด" : "Dashboard", match: /^\/provider$|^\/provider\/(earnings|availability|reviews|strikes|job)/ },
@@ -56,7 +56,7 @@ export function TabBar({ unread = 0 }: { unread?: number }) {
       ];
 
   return (
-    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-40 border-t border-ink-600 bg-white/95 backdrop-blur-xl shadow-[0_-4px_20px_rgba(16,16,24,.05)]" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-40 border-t border-ink-600 bg-ink-900/95 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,.5)]" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
       <div className="grid grid-cols-5 h-[68px] items-center">
         {tabs.map((tab) => {
           const active = tab.match ? tab.match.test(path) : path === tab.href || path.startsWith(tab.href + "/");

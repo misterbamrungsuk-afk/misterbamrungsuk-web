@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { CLOSE_AT, ageError, EXPERIENCE, PACKAGES, QUOTA, STRENGTHS, TITLES, type PackageKey } from "@/lib/join/config";
+import { ACTIVITIES, CLOSE_AT, ageError, EXPERIENCE, PACKAGES, QUOTA, STRENGTHS, TIME_SLOTS, TITLES, type PackageKey } from "@/lib/join/config";
 import { countActive, createApplicant, updateApplicant, type DocKind } from "@/lib/join/store";
 import { appendToSheet } from "@/lib/join/sheets";
 import { applicantRegistered, sendAll } from "@/lib/email";
@@ -50,6 +50,11 @@ export async function POST(req: Request) {
   const email = s("email").toLowerCase();
   const skills = form.getAll("skills").map(String).filter((x) => oneOf(STRENGTHS, x));
   const method = s("payment_method");
+  const activities = form.getAll("activities").map(String).filter((x) => oneOf(ACTIVITIES, x));
+  const slots = form.getAll("avail_slots").map(String).filter((x) => oneOf(TIME_SLOTS, x));
+  const days = Number(s("avail_days"));
+  const hoursPerDay = Number(s("avail_hours"));
+  const cert = s("massage_cert");
 
   const errors: string[] = [];
   if (!(pkg in PACKAGES)) errors.push("package");
@@ -74,9 +79,17 @@ export async function POST(req: Request) {
   }
   if (s("start_date") && !isDate(s("start_date"))) errors.push("start_date");
   if (s("bank_account") && !/^\d{10,12}$/.test(account)) errors.push("bank_account");
+  // ข้อมูล Part-Time
+  if (!activities.length) errors.push("activities");
+  if (!slots.length) errors.push("avail_slots");
+  if (!(Number.isInteger(days) && days >= 1 && days <= 7)) errors.push("avail_days");
+  if (!(hoursPerDay >= 1 && hoursPerDay <= 24)) errors.push("avail_hours");
+  if (pkg === "B" && cert !== "yes" && cert !== "no") errors.push("massage_cert");
+  if (s("ack_hours") !== "true") errors.push("ack_hours");
+  if (s("ack_no_refuse") !== "true") errors.push("ack_no_refuse");
 
   const files: Partial<Record<DocKind, File>> = {};
-  for (const k of [...REQUIRED_DOCS, "bankbook", "other_doc"] as DocKind[]) {
+  for (const k of [...REQUIRED_DOCS, "bankbook", "other_doc", "cert_doc"] as DocKind[]) {
     const f = form.get(k);
     if (f instanceof File && f.size > 0) {
       if (!IMAGE_TYPES.includes(f.type) || f.size > MAX_FILE) errors.push(k);
@@ -96,6 +109,9 @@ export async function POST(req: Request) {
         experience: s("experience"), skills, intro: s("intro", 1000),
         consent_marketing: s("consent_marketing") === "true",
         consent_criminal: true,
+        activities, massage_cert: pkg === "B" ? cert === "yes" : null,
+        availability: { slots, days, hours: hoursPerDay },
+        ack_hours: true, ack_no_refuse: true,
         // ต่อท้าย "/criminal" ใน consent_version ด้วย — บันทึกความยินยอมได้แม้ยังไม่รัน migration 0002
         consent_version: `privacy-${PRIVACY_VERSION}/terms-${TERMS_VERSION}/criminal`, consented_at: new Date().toISOString(),
         package: pkg, amount: PACKAGES[pkg].price, payment_method: method as "qr" | "transfer", ip,

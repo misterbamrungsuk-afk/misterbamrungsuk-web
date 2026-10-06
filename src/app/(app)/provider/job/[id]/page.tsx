@@ -61,14 +61,14 @@ export default function OnSiteJobPage({ params }: { params: Promise<{ id: string
             <Link href="/chat/room1" className="btn-ghost rounded-xl px-3 py-2 text-sm">{t.chat}</Link>
           </div>
           <div className="gold-line my-3" />
-          <p className="text-sm">{job.title} · {job.hours} {t.hoursUnit} · <span className="text-gold-600 font-bold">{baht(job.budget)}</span></p>
+          <p className="text-sm">{job.title} · {job.hours} {t.hoursUnit} · <span className="text-gold-400 font-bold">{baht(job.budget)}</span></p>
         </div>
 
         {/* state card */}
         {phase === "waiting" && (
           <div className="glass rounded-2xl p-6 text-center animate-rise border-crimson-500/30">
             <p className="text-xs text-ink-400 uppercase tracking-widest">{lang === "th" ? "รอลูกค้ามาถึง (สูงสุด 15 นาที)" : "Waiting for customer (max 15 min)"}</p>
-            <p className={`text-5xl font-black my-4 ${waitSec <= 300 ? "text-crimson-400" : "text-gold-600"}`}>{mmss(waitSec)}</p>
+            <p className={`text-5xl font-black my-4 ${waitSec <= 300 ? "text-crimson-400" : "text-gold-400"}`}>{mmss(waitSec)}</p>
             {waitSec <= 0 ? (
               <div>
                 <p className="text-sm text-crimson-300 mb-4">{lang === "th" ? "หมดเวลารอ — ตามกติกา: ยกเลิกงานและรับมัดจำ" : "Timed out — job cancelled, deposit forfeited"}</p>
@@ -87,7 +87,7 @@ export default function OnSiteJobPage({ params }: { params: Promise<{ id: string
           <div className="glass rounded-2xl p-6 text-center animate-rise">
             <p className="text-xs text-ink-400 uppercase tracking-widest">{lang === "th" ? "กำลังให้บริการ" : "In progress"}</p>
             <p className="text-5xl font-black text-crimson-400 my-4">{mmss(runSec)}</p>
-            <p className="text-sm text-gold-600 font-bold mb-1">{lang === "th" ? "คิดตามจริง ~" : "Earning ~"} {baht(Math.floor(earnings))}</p>
+            <p className="text-sm text-gold-400 font-bold mb-1">{lang === "th" ? "คิดตามจริง ~" : "Earning ~"} {baht(Math.floor(earnings))}</p>
             <p className="text-[10px] text-ink-500 mb-4">{lang === "th" ? "ตำแหน่งของคุณกำลังส่งให้ลูกค้าแบบสด (ติดตาม LIVE)" : "Your location is being shared live"}</p>
             <div className="flex gap-2">
               <Link href="/tracking/o1" className="btn-ghost rounded-xl flex-1 py-3 text-sm">📍 {t.tracking}</Link>

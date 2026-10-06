@@ -28,23 +28,23 @@ export const DEMO_MEMBERS: MemberLite[] = [
 ];
 
 const baseRules = [
-  "นวดเพื่อสุขภาพเท่านั้น สุภาพ มีขอบเขตชัดเจน",
-  "หมอนำเบาะ ผ้า และน้ำมันมาเอง",
+  "ไม่มีบริการทางเพศ สุภาพ มีขอบเขตชัดเจน",
+  "นัดพบครั้งแรกในที่สาธารณะได้ตามต้องการ",
   "ชำระผ่านระบบกลางในแอปเท่านั้น เงินปล่อยเมื่องานเสร็จ",
-  "แจ้งโรคประจำตัว / จุดที่ห้ามนวดก่อนเริ่มงาน",
+  "แจ้งแผนกิจกรรมและสถานที่ล่วงหน้า",
   "ยกเลิกก่อน 3 ชม. คืนมัดจำเต็มจำนวน",
   "รอลูกค้าได้สูงสุด 15 นาที เกินเวลายึดมัดจำ",
 ];
 
-export const DEMO_POSTS: Post[] = [
+const RAW_POSTS: Omit<Post, "activities" | "massageSkill">[] = [
   {
     id: "p1", member: DEMO_MEMBERS[0],
     images: [img("photo-1624395213043-fa2e123b2656"), img("photo-1625327009034-039a65fa3153")],
     categories: ["thai", "office", "neck", "herbal"],
     pricePerHour: 500, minHours: 2, deposit: 300, workingHours: "12:00-23:00",
     languages: ["ไทย"], acceptGender: "any", serviceArea: "กรุงเทพ โซนสุขุมวิท อโศก",
-    province: "กรุงเทพมหานคร", personality: "ใจเย็น สุภาพ ถามแรงนวดทุกครั้ง", interests: "นวดไทยแผนโบราณ แก้ออฟฟิศซินโดรม",
-    extraInfo: "ใบประกาศนวดไทย 150 ชม. ประสบการณ์ 7 ปี", rules: baseRules,
+    province: "กรุงเทพมหานคร", personality: "ใจเย็น สุภาพ คุยสนุก", interests: "ร้านอาหารลับ คาเฟ่ ดูหนัง",
+    extraInfo: "รู้จักร้านอร่อยย่านสุขุมวิททุกซอย · มีสกิลนวดไทยเป็น add-on", rules: baseRules,
     lat: 13.7465, lng: 100.5349,
     rating: 5, reviewCount: 5, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-01",
   },
@@ -54,8 +54,8 @@ export const DEMO_POSTS: Post[] = [
     categories: ["sport", "thai", "herbal"],
     pricePerHour: 400, minHours: 2, deposit: 200, workingHours: "10:00-20:00",
     languages: ["ไทย", "English"], acceptGender: "any", serviceArea: "กรุงเทพ อารีย์ พหลโยธิน",
-    province: "กรุงเทพมหานคร", personality: "กระตือรือร้น อธิบายท่ายืดเหยียดให้", interests: "นวดกีฬา คลายกล้ามเนื้อหลังออกกำลัง",
-    extraInfo: "อดีตนักกายภาพประจำยิม ดูแลนักวิ่งมาราธอน", rules: baseRules,
+    province: "กรุงเทพมหานคร", personality: "กระตือรือร้น สายแอคทีฟ", interests: "วิ่ง ยิม ถ่ายรูปสตรีท",
+    extraInfo: "เป็นบัดดี้ออกกำลังได้ทุกระดับ", rules: baseRules,
     lat: 13.7279, lng: 100.5685,
     rating: 4.9, reviewCount: 4, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-03",
   },
@@ -65,8 +65,8 @@ export const DEMO_POSTS: Post[] = [
     categories: ["oil", "thai", "foot"],
     pricePerHour: 400, minHours: 2, deposit: 200, workingHours: "11:00-22:00",
     languages: ["ไทย"], acceptGender: "male", serviceArea: "กรุงเทพ / นนทบุรี",
-    province: "กรุงเทพมหานคร", personality: "นุ่มนวล บรรยากาศผ่อนคลาย", interests: "อโรมาเธอราพี นวดน้ำมัน นวดเท้า",
-    extraInfo: "ใช้น้ำมันออร์แกนิก ปรับกลิ่นตามชอบได้", rules: baseRules,
+    province: "กรุงเทพมหานคร", personality: "นุ่มนวล ฟังเก่ง", interests: "คาเฟ่ ดนตรี นั่งชิลริมน้ำ",
+    extraInfo: "ชวนคุยได้ทุกเรื่อง วิดีโอคอลได้", rules: baseRules,
     lat: 13.7011, lng: 100.6016,
     rating: 4.8, reviewCount: 3, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-05",
   },
@@ -76,8 +76,8 @@ export const DEMO_POSTS: Post[] = [
     categories: ["office", "neck", "thai"],
     pricePerHour: 600, minHours: 3, deposit: 500, workingHours: "06:00-18:00",
     languages: ["ไทย", "English"], acceptGender: "any", serviceArea: "กรุงเทพ สาทร สีลม",
-    province: "กรุงเทพมหานคร", personality: "ตรงเวลา เป็นมืออาชีพ", interests: "ออฟฟิศซินโดรม คอ บ่า ไหล่",
-    extraInfo: "รับนวดที่ออฟฟิศช่วงพักเที่ยงได้", rules: baseRules,
+    province: "กรุงเทพมหานคร", personality: "ตรงเวลา เป็นมืออาชีพ", interests: "ไฟน์ไดนิ่ง ถ่ายภาพ ดูหนัง",
+    extraInfo: "ถ่ายรูปสวย มีกล้องของตัวเอง", rules: baseRules,
     lat: 13.7706, lng: 100.5698,
     rating: 5, reviewCount: 3, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-02",
   },
@@ -87,8 +87,8 @@ export const DEMO_POSTS: Post[] = [
     categories: ["sport", "oil"],
     pricePerHour: 350, minHours: 2, deposit: 150, workingHours: "08:00-18:00",
     languages: ["ไทย"], acceptGender: "any", serviceArea: "กรุงเทพ ทองหล่อ เอกมัย",
-    province: "กรุงเทพมหานคร", personality: "สายสปอร์ต แรงนวดหนักแน่น", interests: "นวดกีฬา นวดน้ำมันลึก",
-    extraInfo: "เหมาะกับคนออกกำลังหนัก ยืดเหยียดหลังนวด", rules: baseRules,
+    province: "กรุงเทพมหานคร", personality: "สายสปอร์ต สดใส", interests: "ฟิตเนส คาเฟ่ นั่งชิล",
+    extraInfo: "ชวนออกกำลังแบบสนุก ไม่กดดัน", rules: baseRules,
     lat: 13.7805, lng: 100.5414,
     rating: 5, reviewCount: 4, expiresAt: "+30d", isHidden: false, createdAt: "2026-08-28",
   },
@@ -98,8 +98,8 @@ export const DEMO_POSTS: Post[] = [
     categories: ["thai", "herbal", "foot", "couple"],
     pricePerHour: 600, minHours: 2, deposit: 300, workingHours: "15:00-24:00",
     languages: ["ไทย"], acceptGender: "any", serviceArea: "นนทบุรี / กรุงเทพเหนือ",
-    province: "นนทบุรี", personality: "อบอุ่น ดูแลผู้สูงอายุได้ดี", interests: "นวดไทย ประคบสมุนไพร นวดคู่",
-    extraInfo: "ประคบสมุนไพรสด ทำเองทุกวัน", rules: baseRules,
+    province: "นนทบุรี", personality: "อบอุ่น เป็นกันเอง", interests: "กินเที่ยว ดูหนัง นั่งชิล",
+    extraInfo: "ชอบพาไปร้านเด็ดในนนทบุรี", rules: baseRules,
     lat: 13.8591, lng: 100.5148,
     rating: 4.9, reviewCount: 3, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-08",
   },
@@ -109,8 +109,8 @@ export const DEMO_POSTS: Post[] = [
     categories: ["foot", "thai"],
     pricePerHour: 150, minHours: 1, deposit: 0, workingHours: "18:00-02:00",
     languages: ["ไทย", "English"], acceptGender: "any", serviceArea: "กรุงเทพ ทั้งหมด",
-    province: "กรุงเทพมหานคร", personality: "สุภาพ พูดน้อย เน้นผ่อนคลาย", interests: "นวดเท้า นวดไทย",
-    extraInfo: "จุดสะท้อนเท้า ช่วยเรื่องนอนไม่หลับ", rules: baseRules,
+    province: "กรุงเทพมหานคร", personality: "สุภาพ พูดน้อย ฟังเก่ง", interests: "วิดีโอคอล นั่งชิล",
+    extraInfo: "เพื่อนคุยยามดึก", rules: baseRules,
     rating: 4.5, reviewCount: 2, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-10",
   },
   {
@@ -119,12 +119,35 @@ export const DEMO_POSTS: Post[] = [
     categories: ["oil", "neck", "office"],
     pricePerHour: 300, minHours: 2, deposit: 200, workingHours: "09:00-19:00",
     languages: ["ไทย"], acceptGender: "any", serviceArea: "เชียงใหม่ ในเมือง",
-    province: "เชียงใหม่", personality: "เป็นกันเอง ภาษาอังกฤษได้", interests: "นวดน้ำมัน คอ บ่า ไหล่",
-    extraInfo: "รับลูกค้าต่างชาติ โรงแรมในตัวเมือง", rules: baseRules,
+    province: "เชียงใหม่", personality: "เป็นกันเอง ภาษาอังกฤษได้", interests: "ถ่ายภาพ คาเฟ่ เที่ยวเมืองเก่า",
+    extraInfo: "ไกด์เชียงใหม่ พาเที่ยวคาเฟ่และถ่ายรูป", rules: baseRules,
     lat: 18.7964, lng: 98.9628,
     rating: 5, reviewCount: 3, expiresAt: "+30d", isHidden: false, createdAt: "2026-09-12",
   },
 ];
+
+// ข้อมูลเสริมสำหรับ positioning ใหม่: เพื่อนกินเที่ยว + บล็อก 3/5 ชม. (นวดเป็น add-on เท่านั้น)
+const EXTRA: Record<string, Pick<Post, "activities" | "massageSkill"> & Partial<Post>> = {
+  p1: { activities: ["dine", "cafe", "movie", "chill"], massageSkill: true, heightCm: 178, distanceKm: 1.2, yearsExp: 3, jobsDone: 128, responseRate: 98, nextFreeMin: 0 },
+  p2: { activities: ["fitness", "dine", "photo"], massageSkill: true, heightCm: 182, distanceKm: 2.4, yearsExp: 4, jobsDone: 96, responseRate: 95 },
+  p3: { activities: ["cafe", "chill", "videocall"], massageSkill: true, heightCm: 175, distanceKm: 3.1, yearsExp: 2, jobsDone: 64, responseRate: 92 },
+  p4: { activities: ["dine", "photo", "movie"], massageSkill: false, heightCm: 180, distanceKm: 4.0, yearsExp: 5, jobsDone: 150, responseRate: 99 },
+  p5: { activities: ["fitness", "chill", "cafe"], massageSkill: false, heightCm: 176, distanceKm: 5.6, yearsExp: 1, jobsDone: 22, responseRate: 90 },
+  p6: { activities: ["dine", "movie", "chill", "videocall"], massageSkill: true, heightCm: 183, distanceKm: 7.8, yearsExp: 3, jobsDone: 81, responseRate: 97 },
+  p7: { activities: ["videocall", "chill"], massageSkill: false, heightCm: 174, distanceKm: 9.5, yearsExp: 1, jobsDone: 15, responseRate: 88 },
+  p8: { activities: ["photo", "cafe", "dine"], massageSkill: true, heightCm: 179, distanceKm: 12.3, yearsExp: 2, jobsDone: 40, responseRate: 93 },
+};
+
+export const DEMO_POSTS: Post[] = RAW_POSTS.map((p) => {
+  const x = EXTRA[p.id] ?? { activities: ["dine", "chill"], massageSkill: false };
+  return {
+    ...p,
+    price3h: Math.round((p.pricePerHour * 3 * 1.6) / 100) * 100,
+    price5h: Math.round((p.pricePerHour * 5 * 1.5) / 100) * 100,
+    massageAddon: x.massageSkill ? 500 : undefined,
+    ...x,
+  };
+});
 
 // ── ข้อมูลเสริมเดโม: วันเข้าร่วม / คิวว่าง / พรีเมียม (กำหนดตายตัวเพื่อให้ผลลัพธ์คงที่) ──
 const POST_META: Record<string, Pick<Post, "joinedAt" | "nextFreeMin" | "premium">> = {

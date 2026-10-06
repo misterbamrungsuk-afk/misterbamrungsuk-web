@@ -45,8 +45,22 @@ export interface Post {
   joinedAt?: string;
   /** คิวว่างในอีกกี่นาที (0 = ว่างตอนนี้) — เดโมกำหนดตายตัว */
   nextFreeMin?: number;
-  /** หมอกลุ่มพรีเมียม — เห็นได้เฉพาะสมาชิก/ผู้ได้รับของขวัญ */
+  /** Part-Time กลุ่มพรีเมียม — เห็นได้เฉพาะสมาชิก/ผู้ได้รับของขวัญ */
   premium?: boolean;
+  /** กิจกรรมที่รับ (slug จาก ACTIVITIES ใน categories.ts) */
+  activities: string[];
+  /** มีสกิลนวด (add-on เท่านั้น ไม่ใช่บริการหลัก) */
+  massageSkill: boolean;
+  /** ราคาบล็อก 3 ชม. / 5 ชม. (ถ้าไม่ระบุ คำนวณจาก pricePerHour) */
+  price3h?: number;
+  price5h?: number;
+  /** ค่าบริการเสริมนวด (ถ้ามี massageSkill) */
+  massageAddon?: number;
+  heightCm?: number;
+  distanceKm?: number;
+  yearsExp?: number;
+  jobsDone?: number;
+  responseRate?: number;
 }
 
 export interface Review {

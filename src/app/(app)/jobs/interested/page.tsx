@@ -34,7 +34,7 @@ export default function InterestedListPage() {
       {job && (
         <div className="px-4 py-3">
           <div className="glass rounded-2xl p-4">
-            <p className="font-semibold">{job.title} <span className="text-gold-600">({job.durationHours}{t.hoursUnit})</span></p>
+            <p className="font-semibold">{job.title} <span className="text-gold-400">({job.durationHours}{t.hoursUnit})</span></p>
             <p className="text-xs text-ink-400 mt-1">📍 {job.placeName} · 📅 {job.scheduleDate.slice(0, 10)} · {job.startTime}–{job.endTime} · {baht(job.budget)}</p>
           </div>
         </div>

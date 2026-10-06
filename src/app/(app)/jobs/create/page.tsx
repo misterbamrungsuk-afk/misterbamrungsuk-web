@@ -40,7 +40,7 @@ export default function CreateJobPage() {
           </div>
         </Field>
         <Field label={lang === "th" ? "หัวข้อประกาศ" : "Title"}>
-          <input value={title} onChange={(e) => setTitle(e.target.value)} className="input-dark" placeholder={role === "hirer" ? (lang === "th" ? "หาหมอนวดไทย 2 ชม. ที่คอนโด…" : "Looking for a massage…") : (lang === "th" ? "ว่างวันนี้ ชวนได้…" : "Free today…")} />
+          <input value={title} onChange={(e) => setTitle(e.target.value)} className="input-dark" placeholder={role === "hirer" ? (lang === "th" ? "หาเพื่อนกินเที่ยว 3 ชม. แถวสยาม…" : "Looking for a massage…") : (lang === "th" ? "ว่างวันนี้ ชวนได้…" : "Free today…")} />
         </Field>
         <div className="grid grid-cols-2 gap-2">
           <Field label={lang === "th" ? "จำนวนชม." : "Hours"}>

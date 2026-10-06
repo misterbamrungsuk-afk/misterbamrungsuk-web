@@ -37,7 +37,7 @@ export default function AdminMembersPage() {
                 : <span className="w-10 h-10 rounded-full border border-ink-600 grid place-items-center text-sm shrink-0">{m.name.slice(-2, -1)}</span>}
               <span className="flex-1 min-w-0">
                 <span className="block font-medium truncate">{m.name} {m.kyc && <span className="text-gold-600 text-xs">✓</span>}</span>
-                <span className="block text-xs text-ink-300">{m.role === "therapist" ? "หมอนวด" : "ลูกค้า"} · {m.jobs} งาน · ★ {m.rating}</span>
+                <span className="block text-xs text-ink-300">{m.role === "therapist" ? "Part-Time" : "ลูกค้า"} · {m.jobs} งาน · ★ {m.rating}</span>
               </span>
               <span className="flex flex-col items-end gap-1 shrink-0"><Strikes n={m.strikes} />{m.suspended ? <Pill tone="red">{m.strikes >= LIMIT ? "แบนอัตโนมัติ" : "ระงับ"}</Pill> : m.strikes > 0 ? <Pill tone="gold">{strikeStatus(m.strikes).label}</Pill> : <Pill>ปกติ</Pill>}</span>
             </button>
@@ -50,7 +50,7 @@ export default function AdminMembersPage() {
                 // eslint-disable-next-line @next/next/no-img-element
                 ? <img src={sel.avatar} alt="" className="w-14 h-14 rounded-full object-cover" />
                 : <span className="w-14 h-14 rounded-full border border-ink-600 grid place-items-center">{sel.name.slice(-2, -1)}</span>}
-              <div><b className="font-display font-semibold text-lg">{sel.name}</b><p className="text-xs text-ink-300">{sel.role === "therapist" ? "หมอนวด" : "ลูกค้า"}</p></div>
+              <div><b className="font-display font-semibold text-lg">{sel.name}</b><p className="text-xs text-ink-300">{sel.role === "therapist" ? "Part-Time" : "ลูกค้า"}</p></div>
             </div>
             <div className={`rounded-xl p-3 border ${sel.strikes >= 2 ? "border-crimson-500 bg-crimson-500/5" : "border-ink-600"}`}>
               <div className="flex justify-between text-sm"><span>Strike {sel.strikes} / {LIMIT}</span><Strikes n={sel.strikes} /></div>

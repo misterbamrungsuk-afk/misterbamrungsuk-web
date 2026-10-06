@@ -27,7 +27,7 @@ export default function AdminGpPage() {
         <Card><p className="text-xs text-ink-300">GMV เดือนนี้</p><p className="font-display font-semibold text-2xl mt-1">{baht(gmv)}</p></Card>
         <Card className="border-gold-500"><p className="text-xs text-gold-600">รายได้ GP 20%</p><p className="font-display font-semibold text-2xl mt-1 text-gold-300">{baht(gp)}</p></Card>
         <Card><p className="text-xs text-ink-300">เงินถูกกันในระบบ</p><p className="font-display font-semibold text-2xl mt-1">{baht(held)}</p></Card>
-        <Link href="/admin/payouts" className="block"><Card className="h-full hover:border-gold-500 transition"><p className="text-xs text-ink-300">ค้างโอนให้หมอ</p><p className="font-display font-semibold text-2xl mt-1">{baht(pendingPay)}</p></Card></Link>
+        <Link href="/admin/payouts" className="block"><Card className="h-full hover:border-gold-500 transition"><p className="text-xs text-ink-300">ค้างโอนให้ผู้ให้บริการ</p><p className="font-display font-semibold text-2xl mt-1">{baht(pendingPay)}</p></Card></Link>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-3 mt-3">
@@ -53,7 +53,7 @@ export default function AdminGpPage() {
           <div className="flex flex-col divide-y divide-ink-600 text-sm">
             <Link href="/admin/kyc" className="flex justify-between py-3"><span>คิว KYC</span><Pill tone="red">{KYC_QUEUE.length}</Pill></Link>
             <Link href="/admin/orders" className="flex justify-between py-3"><span>ข้อพิพาท</span><Pill tone="red">{ADMIN_ORDERS.filter((o) => o.status === "disputed").length}</Pill></Link>
-            <Link href="/admin/payouts" className="flex justify-between py-3"><span>โอนให้หมอ</span><Pill tone="gold">{PAYOUTS.filter((p) => !p.hold).length} ราย</Pill></Link>
+            <Link href="/admin/payouts" className="flex justify-between py-3"><span>โอนให้ผู้ให้บริการ</span><Pill tone="gold">{PAYOUTS.filter((p) => !p.hold).length} ราย</Pill></Link>
             <Link href="/admin/cs" className="flex justify-between py-3"><span>CS ใหม่</span><Pill>3</Pill></Link>
           </div>
         </Card>

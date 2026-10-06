@@ -41,7 +41,7 @@ export default function AdminAuditPage() {
             <button onClick={() => { setSosTaken(true); flash("รับเรื่อง SOS แล้ว · กำลังโทรหาลูกค้า"); }} disabled={sosTaken} className="h-11 rounded-xl bg-crimson-500 text-white font-semibold disabled:opacity-50">รับเรื่อง + โทรหาลูกค้า</button>
             <div className="flex gap-2">
               <a href="tel:191" className="flex-1 h-11 rounded-xl border border-ink-600 grid place-items-center text-sm">แจ้ง 191</a>
-              <button onClick={() => flash("ระงับหมอชั่วคราวแล้ว")} className="flex-1 h-11 rounded-xl border border-ink-600 text-sm">ระงับหมอชั่วคราว</button>
+              <button onClick={() => flash("ระงับผู้ให้บริการชั่วคราวแล้ว")} className="flex-1 h-11 rounded-xl border border-ink-600 text-sm">ระงับผู้ให้บริการชั่วคราว</button>
             </div>
           </div>
         </Card>

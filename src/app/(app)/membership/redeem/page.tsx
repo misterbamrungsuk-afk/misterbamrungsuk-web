@@ -26,10 +26,10 @@ export default function RedeemGiftPage() {
           <section className="glass rounded-2xl p-6 text-center flex flex-col items-center gap-2 animate-rise">
             <p className="text-4xl">🎉</p>
             <h1 className="font-display font-semibold text-xl">{th ? "รับของขวัญเรียบร้อย" : "Gift redeemed"}</h1>
-            <p className="text-sm text-ink-300">{planLabel(done, th)} · {th ? "ปลดล็อกหมอนวดพรีเมียมแล้ว" : "Premium therapists unlocked"}</p>
+            <p className="text-sm text-ink-300">{planLabel(done, th)} · {th ? "ปลดล็อก Part-Time พรีเมียมแล้ว" : "Premium Part-Time unlocked"}</p>
             <div className="flex gap-2 mt-3 w-full">
               <Link href="/membership" className="btn-ghost rounded-xl flex-1 h-12 grid place-items-center text-sm">{th ? "ดูสมาชิก" : "Membership"}</Link>
-              <Link href="/home#premium" className="btn-crimson rounded-xl flex-1 h-12 grid place-items-center text-sm font-semibold">{th ? "ดูหมอพรีเมียม" : "See Premium"}</Link>
+              <Link href="/home#premium" className="btn-crimson rounded-xl flex-1 h-12 grid place-items-center text-sm font-semibold">{th ? "ดู Part-Time พรีเมียม" : "See Premium"}</Link>
             </div>
           </section>
         ) : (

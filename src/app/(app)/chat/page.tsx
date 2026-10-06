@@ -34,7 +34,7 @@ export default function ChatListPage() {
       <TopBar
         title={
           <div>
-            <p className="text-[11px] text-gold-600 tracking-widest font-semibold uppercase">{lang === "th" ? "ข้อความ" : "Messages"}</p>
+            <p className="text-[11px] text-gold-500 tracking-widest font-semibold uppercase">{lang === "th" ? "ข้อความ" : "Messages"}</p>
             <h1 className="font-semibold -mt-0.5">{t.chat}</h1>
           </div>
         }

@@ -27,7 +27,7 @@ export default function KycRejectedPage() {
         <div className="glass rounded-3xl divide-y divide-white/5 overflow-hidden">
           {items.map((it) => (
             <div key={it.label} className="flex items-start gap-3 px-4 py-3">
-              <span className={`w-7 h-7 rounded-full grid place-items-center text-sm shrink-0 ${it.ok ? "bg-gold-500/20 text-gold-600" : "bg-crimson-600/20 text-crimson-400"}`}>{it.ok ? "✓" : "!"}</span>
+              <span className={`w-7 h-7 rounded-full grid place-items-center text-sm shrink-0 ${it.ok ? "bg-gold-500/20 text-gold-400" : "bg-crimson-600/20 text-crimson-400"}`}>{it.ok ? "✓" : "!"}</span>
               <div className="flex-1 min-w-0">
                 <p className="text-sm">{it.label}</p>
                 {it.note && <p className="text-xs text-crimson-300 mt-0.5">{it.note}</p>}

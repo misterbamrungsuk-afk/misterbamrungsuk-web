@@ -40,11 +40,25 @@ export interface JoinForm {
   consent_pdpa: boolean;
   /** ยินยอมให้ตรวจสอบประวัติอาชญากรรม — บังคับ */
   consent_criminal: boolean;
+  /** กิจกรรมที่ทำได้ (ACTIVITIES) */
+  activities: string[];
+  /** แพ็กเกจ B: มีใบรับรองการนวดไหม ("yes" / "no" / "") */
+  massage_cert: "" | "yes" | "no";
+  /** ไฟล์ใบรับรองการนวด (ไม่บังคับ) */
+  cert_doc: string;
+  /** ช่วงเวลาที่สะดวก (TIME_SLOTS) */
+  avail_slots: string[];
+  avail_days: string; // 1–7 วัน/สัปดาห์
+  avail_hours: string; // ชม./วัน
+  /** รับทราบชั่วโมงงานตามแพ็กเกจ */
+  ack_hours: boolean;
+  /** ยอมรับเงื่อนไขไม่ปฏิเสธลูกค้า + การคืนค่าการันตี */
+  ack_no_refuse: boolean;
   /** ยินยอมรับข่าวสาร — ไม่บังคับ */
   consent_marketing: boolean;
 }
 
-export const FILE_FIELDS = ["photo", "id_card", "bankbook", "other_doc"] as const;
+export const FILE_FIELDS = ["photo", "id_card", "bankbook", "other_doc", "cert_doc"] as const;
 export type FileField = (typeof FILE_FIELDS)[number];
 
 export const emptyForm: JoinForm = {
@@ -52,6 +66,7 @@ export const emptyForm: JoinForm = {
   nationality: "ไทย", ethnicity: "ไทย", religion: "", education: "", marital: "", start_date: "",
   tel: "", line_id: "", email: "", address: "", zipcode: "", bank: "", bank_account: "", bank_account_name: "",
   experience: "", skills: [], intro: "", photo: "", id_card: "", bankbook: "", other_doc: "", accept_terms: false, consent_pdpa: false, consent_criminal: false, consent_marketing: false,
+  activities: [], massage_cert: "", cert_doc: "", avail_slots: [], avail_days: "", avail_hours: "", ack_hours: false, ack_no_refuse: false,
 };
 
 /** อายุเต็มปีจากวันเกิด */

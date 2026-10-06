@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Logo } from "@/components/ui";
-import { AGE_LIMITS, BRAND, CLOSE_AT, PROVIDER_FEES, ageError, EXPERIENCE, FAQ, HERO_IMAGE, PACKAGES, QUOTA, STRENGTHS, TERMS_SUMMARY, type PackageKey } from "@/lib/join/config";
+import { ACTIVITIES, AGE_LIMITS, BRAND, CLOSE_AT, GUARANTEE_REFUND_NOTE, INVITE, JOIN_STEPS, TIMELINE, TIME_SLOTS, ageError, feeBreakdown, EXPERIENCE, FAQ, HERO_IMAGE, PACKAGES, QUOTA, STRENGTHS, TERMS_SUMMARY, type PackageKey } from "@/lib/join/config";
 import { FORM_KEY, ageFrom, emptyForm, resizeImage, type FileField, type JoinForm } from "@/lib/join/form";
 
 const WHY = [
@@ -83,6 +83,13 @@ export default function SalePage() {
     else if (f.package) { const ae = ageError(f.package, ageFrom(f.birthdate)); if (ae) e.birthdate = ae; }
     if (!f.consent_criminal) e.consent_criminal = "ต้องยินยอมให้ตรวจสอบประวัติอาชญากรรม";
     if (!f.experience) e.experience = "เลือกประสบการณ์";
+    if (!f.activities?.length) e.activities = "เลือกอย่างน้อย 1 กิจกรรม";
+    if (f.package === "B" && !f.massage_cert) e.massage_cert = "ระบุว่ามีใบรับรองการนวดหรือไม่";
+    if (!f.avail_slots?.length) e.avail_slots = "เลือกช่วงเวลาที่สะดวก";
+    if (!(+f.avail_days >= 1 && +f.avail_days <= 7)) e.avail_days = "1–7";
+    if (!(+f.avail_hours >= 1 && +f.avail_hours <= 24)) e.avail_hours = "1–24";
+    if (!f.ack_hours) e.ack_hours = "required";
+    if (!f.ack_no_refuse) e.ack_no_refuse = "required";
     if (!f.photo) e.photo = "แนบรูปถ่าย";
     if (!f.id_card) e.id_card = "แนบบัตรประชาชน";
     setErrs(e);
@@ -114,17 +121,17 @@ export default function SalePage() {
         <section className="relative h-[100dvh] min-h-[640px] flex flex-col overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={HERO_IMAGE} alt="" className="absolute inset-0 w-full h-[118%] object-cover object-[50%_72%]" style={{ transform: `translateY(${parallax}px)` }} />
-          <div className="absolute inset-0 bg-gradient-to-b from-white/50 via-transparent to-ink-900" />
+          <div className="absolute inset-0 bg-gradient-to-b from-ink-900/60 via-transparent to-ink-900" />
           <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-ink-900 via-ink-900/85 to-transparent" />
-          <div className="absolute -left-24 bottom-24 w-72 h-72 rounded-full bg-gold-400/35 blur-3xl" />
+          <div className="absolute -left-24 bottom-24 w-72 h-72 rounded-full bg-crimson-500/30 blur-3xl" />
 
           <header className="relative z-10 flex items-center justify-between px-5 pt-[max(14px,env(safe-area-inset-top))] h-16">
             <Logo size={28} />
-            <span className="text-[10px] font-semibold tracking-[0.25em] text-gold-600 border border-gold-500/40 rounded-full px-3 py-1.5 bg-white/80 backdrop-blur">PREMIUM</span>
+            <span className="text-[10px] font-semibold tracking-[0.25em] text-gold-400 border border-gold-500/40 rounded-full px-3 py-1.5 bg-ink-900/70 backdrop-blur">PREMIUM</span>
           </header>
 
           <div className="relative z-10 mt-auto px-5 pb-8">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/85 backdrop-blur border border-gold-500/50 pl-1.5 pr-3.5 py-1.5">
+            <div className="inline-flex items-center gap-2 rounded-full bg-ink-900/75 backdrop-blur border border-gold-500/50 pl-1.5 pr-3.5 py-1.5">
               <span className="w-6 h-6 rounded-full bg-gold-500 text-[#1a1206] grid place-items-center text-xs">⚡</span>
               <span className="text-[12px] text-gold-200 leading-tight">รับจำกัด {QUOTA} ท่าน · ถึงสิ้น {closeDate}</span>
             </div>
@@ -133,13 +140,13 @@ export default function SalePage() {
               ยกระดับอาชีพของคุณ<br />
               <span className="text-gradient-gold">สู่ผู้ให้บริการ<br />ระดับพรีเมียม</span>
             </h1>
-            <p className="text-[15px] text-ink-200 mt-3 leading-relaxed">รายได้มั่นคง พร้อมการฝึกอบรมมาตรฐานสากล สำหรับดูแลลูกค้า VVIP <span className="text-gold-300">(เฉพาะสุภาพสตรี)</span></p>
+            <p className="text-[15px] text-ink-200 mt-3 leading-relaxed">ร่วมทีม Part-Time “เพื่อนกินเที่ยว” ระดับพรีเมียม ดูแลลูกค้า VVIP <span className="text-gold-300">(เฉพาะสุภาพสตรี)</span></p>
 
             {/* แถบตัวเลขความน่าเชื่อถือ */}
             <div className="grid grid-cols-3 mt-5 rounded-2xl bg-white/[0.06] border border-ink-600 backdrop-blur divide-x divide-white/10">
               {[
                 [String(closed ? 0 : left), "ที่นั่งคงเหลือ"],
-                ["2 วัน", "อบรมเข้มข้น"],
+                ["30 พ.ย.", "เปิดให้บริการ"],
                 ["VVIP", "ฐานลูกค้า"],
               ].map(([v, k]) => (
                 <div key={k} className="py-3 text-center">
@@ -157,10 +164,24 @@ export default function SalePage() {
         </section>
 
         <div className="px-5">
+          {/* ── 1.5 · คำเชิญจากมาดามกอ ── */}
+          <section className="pt-8">
+            <div className="reveal relative rounded-[28px] border border-gold-500/40 bg-[linear-gradient(160deg,rgba(140,20,30,.35),rgba(14,10,10,.9)_65%)] p-5 overflow-hidden">
+              <span className="absolute -right-6 -top-8 font-display text-[120px] leading-none text-gold-500/10 select-none" aria-hidden>“</span>
+              <p className="text-[11px] font-semibold tracking-[0.25em] text-gold-400">INVITATION · MADAME GOR</p>
+              <p className="font-display text-[20px] font-semibold mt-2 leading-snug text-gold-200">{INVITE.lead}</p>
+              <p className="text-[14px] text-ink-200 mt-3 leading-relaxed">{INVITE.body}</p>
+              <div className="flex flex-wrap gap-2 mt-4">
+                {INVITE.traits.map((t) => <span key={t} className="h-8 px-3 rounded-full border border-gold-500/40 bg-gold-500/10 text-[13px] text-gold-200 inline-flex items-center gap-1.5"><span aria-hidden>✅</span>{t}</span>)}
+              </div>
+              <p className="text-[14px] text-ink-100 mt-4 font-medium">{INVITE.close}</p>
+            </div>
+          </section>
+
           {/* ── 2 · Why choose us ── */}
           <section className="pt-8 pb-12">
             <SectionHead kicker="WHY US" title="ทำไมต้องร่วมงานกับเรา" />
-            <div className="mt-6 rounded-[28px] border border-gold-500/25 bg-[linear-gradient(165deg,rgba(224,164,0,.08),rgba(255,255,255,.01)_45%)] px-5">
+            <div className="mt-6 rounded-[28px] border border-gold-500/25 bg-[linear-gradient(165deg,rgba(212,175,55,.08),rgba(255,255,255,.01)_45%)] px-5">
               {WHY.map((w, i) => (
                 <div key={w.t} className={`reveal flex items-center gap-4 py-5 ${i ? "border-t border-white/[0.07]" : ""}`} style={{ transitionDelay: `${i * 70}ms` }}>
                   <span className="font-display text-[28px] font-bold leading-none text-gradient-gold w-10 shrink-0 tabular-nums">0{i + 1}</span>
@@ -168,7 +189,7 @@ export default function SalePage() {
                     <span className="block text-[16px] font-semibold">{w.t}</span>
                     <span className="block text-[13px] text-ink-300 mt-0.5">{w.d}</span>
                   </span>
-                  <span className="w-10 h-10 rounded-full border border-gold-500/40 grid place-items-center text-gold-600 shrink-0">
+                  <span className="w-10 h-10 rounded-full border border-gold-500/40 grid place-items-center text-gold-400 shrink-0">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d={w.icon} /></svg>
                   </span>
                 </div>
@@ -176,9 +197,37 @@ export default function SalePage() {
             </div>
           </section>
 
+          {/* ── 2.5 · 5 ขั้นตอน + ไทม์ไลน์ ── */}
+          <section className="pb-12">
+            <SectionHead kicker="HOW IT WORKS" title="5 ขั้นตอนสู่การรับงาน" />
+            <ol className="mt-5 relative">
+              {JOIN_STEPS.map((s, i) => (
+                <li key={s.t} className="reveal flex gap-4 pb-5 last:pb-0 relative">
+                  {i < JOIN_STEPS.length - 1 && <span className="absolute left-[17px] top-9 bottom-0 w-px bg-gold-500/30" aria-hidden />}
+                  <span className="w-9 h-9 rounded-full bg-gradient-to-br from-gold-300 to-gold-500 text-[#1a1206] font-display font-bold grid place-items-center shrink-0">{i + 1}</span>
+                  <span className="pt-1">
+                    <span className="block text-[15px] font-semibold">{s.t}</span>
+                    <span className="block text-[13px] text-ink-300 mt-0.5">{s.d}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+            <div className="reveal mt-7 rounded-3xl border border-ink-600 bg-ink-800 p-4">
+              <p className="text-[11px] font-semibold tracking-[0.25em] text-gold-400">TIMELINE · 2569</p>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {TIMELINE.map((x) => (
+                  <div key={x.t} className="rounded-2xl border border-ink-600 bg-ink-900/60 px-3 py-2.5">
+                    <p className="text-[11.5px] text-gold-300">{x.d}</p>
+                    <p className="text-[14px] font-medium mt-0.5">{x.t}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
           {/* ── 3 · Pricing ── */}
           <section className="pb-10" id="packages">
-            <SectionHead kicker="PACKAGES" title="เลือกแพ็กเกจของคุณ" sub="ชำระครั้งเดียว รวมค่าอบรมแล้ว" />
+            <SectionHead kicker="PACKAGES" title="เลือกแพ็กเกจของคุณ" sub="ชำระตอนสมัคร = ค่าการันตีแบรนด์ + ค่าอบรม" />
             <div className="flex flex-col gap-4 mt-5" role="radiogroup" aria-label="แพ็กเกจ">
               {(Object.keys(PACKAGES) as PackageKey[]).map((k) => {
                 const p = PACKAGES[k];
@@ -187,26 +236,29 @@ export default function SalePage() {
                 return (
                   <button key={k} role="radio" aria-checked={on} onClick={() => pick(k)}
                     className={`reveal relative text-left rounded-[28px] p-[1.5px] transition active:scale-[0.99] ${on ? "bg-gradient-to-br from-gold-300 via-gold-500 to-crimson-500" : premium ? "bg-gradient-to-br from-gold-500/60 to-white/5" : "bg-ink-700"}`}>
-                    <div className={`rounded-[26.5px] p-5 ${premium ? "bg-[linear-gradient(160deg,#f4f4f5,#fafafa_70%)]" : "bg-ink-850"}`}>
+                    <div className={`rounded-[26.5px] p-5 ${premium ? "bg-[linear-gradient(160deg,#2a1414,#160e0e_70%)]" : "bg-ink-850"}`}>
                       {premium && <span className="absolute -top-3 right-5 rounded-full bg-gold-500 text-[#1a1206] text-[11px] font-bold px-3 py-1 shadow-lg">PREMIUM</span>}
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <p className="text-[11px] font-semibold tracking-[0.2em] text-gold-600">แพ็กเกจ {k}</p>
+                          <p className="text-[11px] font-semibold tracking-[0.2em] text-gold-400">แพ็กเกจ {k}</p>
                           <p className="font-display text-xl font-semibold mt-1">{p.name}</p>
                         </div>
                         <span className={`mt-1 w-7 h-7 rounded-full border-2 grid place-items-center shrink-0 ${on ? "border-gold-400 bg-gold-500" : "border-ink-500"}`}>
-                          {on && <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3" className="w-4 h-4"><path d="m5 12 5 5 9-10" /></svg>}
+                          {on && <svg viewBox="0 0 24 24" fill="none" stroke="#1a1206" strokeWidth="3" className="w-4 h-4"><path d="m5 12 5 5 9-10" /></svg>}
                         </span>
                       </div>
                       <p className="mt-4 flex items-baseline gap-1">
-                        <span className="text-gold-600 text-lg">฿</span>
+                        <span className="text-gold-400 text-lg">฿</span>
                         <span className="font-display text-[40px] leading-none font-bold text-gradient-gold">{baht(p.price)}</span>
                       </p>
+                      <div className="mt-3 space-y-1 text-[12.5px]">
+                        {feeBreakdown(k).map((x) => <p key={x.name} className="flex justify-between gap-3 text-ink-300"><span>{x.name}</span><span className="text-gold-300">฿{baht(x.amount)}</span></p>)}
+                      </div>
                       <div className="h-px bg-ink-700 my-4" />
                       <ul className="space-y-2.5 text-[14px] text-ink-100">
                         {p.items.map((it) => (
                           <li key={it} className="flex gap-2.5 items-start">
-                            <span className="w-5 h-5 rounded-full bg-gold-500/15 text-gold-600 grid place-items-center text-[11px] shrink-0 mt-0.5">✓</span>{it}
+                            <span className="w-5 h-5 rounded-full bg-gold-500/15 text-gold-400 grid place-items-center text-[11px] shrink-0 mt-0.5">✓</span>{it}
                           </li>
                         ))}
                       </ul>
@@ -225,11 +277,18 @@ export default function SalePage() {
             <SectionHead kicker="FAQ" title="คำถามที่พบบ่อย" />
             <div className="mt-5 space-y-2.5">
               <div className="reveal rounded-2xl border border-gold-500/40 bg-gold-500/5 px-4 py-3.5 text-[13.5px] leading-relaxed">
-                <p className="font-medium">ค่าใช้จ่ายผู้ให้บริการ (ข้อมูลประกอบ)</p>
-                <ul className="mt-1.5 space-y-1 text-ink-200">
-                  {PROVIDER_FEES.map((x) => <li key={x.key} className="flex justify-between gap-3"><span>{x.name}</span><span className="font-display text-gold-300">฿{baht(x.amount)}</span></li>)}
-                </ul>
-                <p className="text-[12px] text-ink-400 mt-1.5">ชำระหลังผ่านการอบรม · ไม่รวมในค่าสมัครหน้านี้ · อายุ: A ไม่เกิน {AGE_LIMITS.A.max} ปี / B ไม่เกิน {AGE_LIMITS.B.max} ปี</p>
+                <p className="font-medium">คุณสมบัติผู้สมัคร</p>
+                <div className="grid grid-cols-2 gap-2 mt-2 text-[12.5px] text-ink-200">
+                  {[
+                    `อายุ ${AGE_LIMITS.A.min}+ (A ≤ ${AGE_LIMITS.A.max} / B ≤ ${AGE_LIMITS.B.max} ปี)`,
+                    "ใจรักงานบริการ",
+                    "สุภาพ อ่อนน้อม สะอาด",
+                    "ยินยอมตรวจประวัติอาชญากรรม",
+                    "ไม่ปฏิเสธลูกค้า",
+                    "แพ็กเกจ B: มีทักษะนวด",
+                  ].map((q) => <span key={q} className="rounded-xl border border-ink-600 bg-ink-900/50 px-2.5 py-2 flex gap-1.5"><span className="text-gold-400">✓</span>{q}</span>)}
+                </div>
+                <p className="text-[12px] text-ink-400 mt-2">{GUARANTEE_REFUND_NOTE}</p>
               </div>
               {FAQ.map((x, i) => {
                 const open = faq === i;
@@ -237,7 +296,7 @@ export default function SalePage() {
                   <div key={x.q} className={`reveal rounded-2xl border transition-colors ${open ? "border-gold-500/50 bg-white/[0.05]" : "border-ink-600 bg-white/[0.02]"}`}>
                     <button onClick={() => setFaq(open ? null : i)} aria-expanded={open} className="w-full min-h-14 px-4 flex items-center justify-between gap-3 text-left text-[15px] font-medium">
                       {x.q}
-                      <span className={`w-7 h-7 rounded-full grid place-items-center shrink-0 transition ${open ? "bg-gold-500 text-[#1a1206] rotate-45" : "bg-ink-700 text-gold-600"}`}>+</span>
+                      <span className={`w-7 h-7 rounded-full grid place-items-center shrink-0 transition ${open ? "bg-gold-500 text-[#1a1206] rotate-45" : "bg-ink-700 text-gold-400"}`}>+</span>
                     </button>
                     <div className={`grid transition-all duration-300 ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
                       <p className="overflow-hidden px-4 text-[14px] text-ink-200 leading-relaxed"><span className="block pb-4">{x.a}</span></p>
@@ -259,7 +318,7 @@ export default function SalePage() {
                   {(Object.keys(PACKAGES) as PackageKey[]).map((k) => (
                     <button key={k} type="button" onClick={() => set("package", k)} aria-pressed={f.package === k}
                       className={`rounded-2xl border px-3 py-3 text-left transition ${f.package === k ? "border-gold-500 bg-gold-500/10" : "border-ink-600"}`}>
-                      <span className="block text-[11px] text-gold-600 font-semibold">แพ็กเกจ {k}</span>
+                      <span className="block text-[11px] text-gold-400 font-semibold">แพ็กเกจ {k}</span>
                       <span className="block text-[13px] font-medium mt-0.5">{PACKAGES[k].name}</span>
                       <span className="block font-display text-gold-300 mt-1">฿{baht(PACKAGES[k].price)}</span>
                     </button>
@@ -303,6 +362,27 @@ export default function SalePage() {
                 <Field label="แนะนำตัวสั้นๆ (ไม่บังคับ)"><textarea className="input-dark min-h-24 py-3" maxLength={1000} value={f.intro} onChange={(e) => set("intro", e.target.value)} placeholder="เล่าเกี่ยวกับตัวคุณ หรือเหตุผลที่สนใจ" /></Field>
               </Card>
 
+              <Card title="กิจกรรมและเวลาที่สะดวก">
+                <Field label="กิจกรรมที่ทำได้ (เลือกได้หลายข้อ)" err={errs.activities}>
+                  <Chips options={ACTIVITIES} value={f.activities ?? []} onChange={(v) => set("activities", v)} />
+                </Field>
+                {f.package === "B" && (
+                  <Field label="มีใบรับรองการนวด?" err={errs.massage_cert}>
+                    <Seg options={["มี", "ไม่มี"]} value={f.massage_cert === "yes" ? "มี" : f.massage_cert === "no" ? "ไม่มี" : ""} onChange={(v) => set("massage_cert", v === "มี" ? "yes" : "no")} />
+                  </Field>
+                )}
+                {f.package === "B" && f.massage_cert === "yes" && (
+                  <div className="w-1/2"><Upload label="ใบรับรองการนวด" hint="ไม่บังคับ" value={f.cert_doc ?? ""} err={errs.cert_doc} onPick={(file) => onFile("cert_doc", file)} /></div>
+                )}
+                <Field label="ช่วงเวลาที่สะดวก" err={errs.avail_slots}>
+                  <Chips options={TIME_SLOTS} value={f.avail_slots ?? []} onChange={(v) => set("avail_slots", v)} />
+                </Field>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="วัน / สัปดาห์ (1–7)" err={errs.avail_days}><input className="input-dark h-12" inputMode="numeric" maxLength={1} value={f.avail_days ?? ""} onChange={(e) => set("avail_days", e.target.value.replace(/[^1-7]/g, ""))} /></Field>
+                  <Field label="ชม. / วัน" err={errs.avail_hours}><input className="input-dark h-12" inputMode="numeric" maxLength={2} value={f.avail_hours ?? ""} onChange={(e) => set("avail_hours", e.target.value.replace(/\D/g, ""))} /></Field>
+                </div>
+              </Card>
+
               <Card title="รูปถ่ายและเอกสาร">
                 <div className="grid grid-cols-2 gap-3">
                   <Upload label="รูปถ่ายหน้าตรง" hint="เห็นหน้าชัด" value={f.photo} err={errs.photo} onPick={(file) => onFile("photo", file)} />
@@ -325,13 +405,20 @@ export default function SalePage() {
                   ข้าพเจ้ายินยอมให้บริษัทตรวจสอบประวัติอาชญากรรม เพื่อความปลอดภัยของลูกค้าและผู้ให้บริการ
                 </Consent>
                 {errs.consent_criminal && <p data-err="1" className="text-[12px] text-crimson-300 -mt-1">{errs.consent_criminal}</p>}
+                <Consent checked={!!f.ack_hours} onChange={(v) => set("ack_hours", v)} required>
+                  ข้าพเจ้ารับทราบว่าการให้บริการอยู่ที่ {f.package ? `${PACKAGES[f.package].hours} ชม.` : "3–8 ชม. (A) / 3–5 ชม. (B)"} ต่องาน แล้วแต่ package
+                </Consent>
+                <Consent checked={!!f.ack_no_refuse} onChange={(v) => set("ack_no_refuse", v)} required>
+                  ข้าพเจ้ายอมรับเงื่อนไขไม่ปฏิเสธการรับลูกค้า และเงื่อนไขการคืนค่าการันตีแบรนด์ (คืนเมื่อครบ 1 ปี หากไม่ทำผิดกฎบริษัท/กฎหมาย)
+                </Consent>
+                {(errs.ack_hours || errs.ack_no_refuse) && <p data-err="1" className="text-[12px] text-crimson-300 -mt-1">ต้องติ๊กรับทราบเงื่อนไขทั้งสองข้อ</p>}
                 <Consent checked={f.consent_marketing} onChange={(v) => set("consent_marketing", v)}>
                   ยินยอมรับข่าวสาร โปรโมชัน และรอบรับสมัครถัดไป (ไม่บังคับ ถอนได้ทุกเมื่อ)
                 </Consent>
               </Card>
 
-              <button onClick={next} disabled={!f.accept_terms || !f.consent_pdpa || !f.consent_criminal || closed} className="btn-crimson h-14 font-display font-semibold text-[17px]">
-                {closed ? "ปิดรับสมัครแล้ว" : f.accept_terms && f.consent_pdpa && f.consent_criminal ? "ถัดไป · ชำระค่าสมัคร →" : "ติ๊กยอมรับ 3 ข้อที่จำเป็นก่อน"}
+              <button onClick={next} disabled={!f.accept_terms || !f.consent_pdpa || !f.consent_criminal || !f.ack_hours || !f.ack_no_refuse || closed} className="btn-crimson h-14 font-display font-semibold text-[17px]">
+                {closed ? "ปิดรับสมัครแล้ว" : f.accept_terms && f.consent_pdpa && f.consent_criminal && f.ack_hours && f.ack_no_refuse ? "ถัดไป · ชำระค่าสมัคร →" : "ติ๊กยอมรับ 5 ข้อที่จำเป็นก่อน"}
               </button>
             </div>
           </section>
@@ -351,7 +438,7 @@ export default function SalePage() {
 
         {/* ── แถบจองลอยด้านล่าง ── */}
         <div className={`fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-30 px-4 pb-[max(14px,env(safe-area-inset-bottom))] pt-3 transition-all duration-300 ${showBar && !closed ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"}`}>
-          <div className="flex items-center gap-3 rounded-full bg-white/95 backdrop-blur-xl border border-ink-600 pl-5 pr-1.5 py-1.5 shadow-[0_12px_32px_rgba(16,16,24,.14)]">
+          <div className="flex items-center gap-3 rounded-full bg-ink-800/95 backdrop-blur-xl border border-gold-500/30 pl-5 pr-1.5 py-1.5 shadow-[0_12px_32px_rgba(0,0,0,.5)]">
             <div className="flex-1 min-w-0">
               <p className="text-[11px] text-ink-300 truncate">{sel ? sel.name : `เหลือ ${left} ที่นั่ง`}</p>
               <p className="font-display text-ink-100 text-lg font-bold leading-tight">{sel ? `฿${baht(sel.price)}` : `เริ่ม ฿${baht(PACKAGES.A.price)}`}</p>
@@ -367,7 +454,7 @@ export default function SalePage() {
 function SectionHead({ kicker, title, sub }: { kicker: string; title: string; sub?: string }) {
   return (
     <div className="reveal">
-      <p className="text-[11px] font-semibold tracking-[0.25em] text-gold-600">{kicker}</p>
+      <p className="text-[11px] font-semibold tracking-[0.25em] text-gold-400">{kicker}</p>
       <h2 className="font-display text-[26px] font-semibold mt-1 leading-tight">{title}</h2>
       {sub && <p className="text-[13px] text-ink-300 mt-1">{sub}</p>}
     </div>
@@ -405,7 +492,7 @@ function Upload({ label, hint, value, err, onPick }: { label: string; hint: stri
         {value
           // eslint-disable-next-line @next/next/no-img-element
           ? <img src={value} alt={label} className="absolute inset-0 w-full h-full object-cover" />
-          : <span className="flex flex-col items-center gap-1.5 text-gold-600">
+          : <span className="flex flex-col items-center gap-1.5 text-gold-400">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="w-8 h-8"><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
               <span className="text-[11px]">แตะเพื่อเลือก</span>
             </span>}
@@ -422,7 +509,7 @@ function Upload({ label, hint, value, err, onPick }: { label: string; hint: stri
 function Consent({ checked, onChange, required, children }: { checked: boolean; onChange: (v: boolean) => void; required?: boolean; children: React.ReactNode }) {
   return (
     <label className={`flex items-start gap-3 rounded-2xl border px-4 py-3.5 cursor-pointer transition ${checked ? "border-gold-500 bg-gold-500/10" : "border-white/15"}`}>
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="w-5 h-5 mt-0.5 accent-[#e0a400] shrink-0" />
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="w-5 h-5 mt-0.5 accent-[#d4af37] shrink-0" />
       <span className="text-[13.5px] leading-relaxed">
         {children}
         {required && <span className="text-crimson-300"> *</span>}
@@ -447,6 +534,20 @@ function Field({ label, err, children }: { label: string; err?: string; children
       <span className="text-[13px] text-ink-300">{label}</span>
       {children}
       {err && <span role="alert" className="text-xs text-crimson-300">{err}</span>}
+    </div>
+  );
+}
+
+function Chips({ options, value, onChange }: { options: readonly string[]; value: string[]; onChange: (v: string[]) => void }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((x) => {
+        const on = value.includes(x);
+        return (
+          <button key={x} type="button" aria-pressed={on} onClick={() => onChange(on ? value.filter((s) => s !== x) : [...value, x])}
+            className={`h-10 px-4 rounded-full border text-[13px] transition ${on ? "border-gold-500 bg-gold-500/15 text-gold-300" : "border-white/15"}`}>{on ? "✓ " : ""}{x}</button>
+        );
+      })}
     </div>
   );
 }

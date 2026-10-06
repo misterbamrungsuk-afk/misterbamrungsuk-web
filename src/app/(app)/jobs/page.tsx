@@ -44,7 +44,7 @@ export default function JobsPage() {
       <TopBar
         title={
           <div>
-            <p className="text-[11px] text-gold-600 tracking-widest font-semibold uppercase">{lang === "th" ? "หาหมอนวด / หางาน" : "Find therapists"}</p>
+            <p className="text-[11px] text-gold-400 tracking-widest font-semibold uppercase">{lang === "th" ? "หาผู้ให้บริการ / หางาน" : "Find therapists"}</p>
             <h1 className="font-semibold -mt-0.5">{t.jobsTitle}</h1>
           </div>
         }

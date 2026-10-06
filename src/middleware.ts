@@ -50,6 +50,9 @@ export async function middleware(request: NextRequest) {
     // หน้ารับสมัครหมอ (sale funnel) เปิดสาธารณะ
     pathname === "/join" ||
     pathname.startsWith("/join/") ||
+    // หน้าขายพื้นที่พาร์ทเนอร์ เปิดสาธารณะ
+    pathname === "/partner" ||
+    pathname.startsWith("/partner/") ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/auth") ||

@@ -34,7 +34,7 @@ export default function StrikesPage() {
           <div className="grid grid-cols-3 gap-2 mt-3">
             {Array.from({ length: STRIKE_LIMIT }, (_, i) => <div key={i} className={`h-2 rounded-full ${i < ev.count ? "bg-crimson-500" : "bg-ink-700"}`} />)}
           </div>
-          <p className="text-sm mt-3">{th ? "คะแนนความประพฤติ" : "Conduct score"} <b className="text-gold-600">{ev.score}</b><span className="text-ink-500">/{BASE_SCORE}</span></p>
+          <p className="text-sm mt-3">{th ? "คะแนนความประพฤติ" : "Conduct score"} <b className="text-gold-400">{ev.score}</b><span className="text-ink-500">/{BASE_SCORE}</span></p>
           <p className="text-xs text-ink-400 mt-2">{th ? `รีวิว 1 ดาว หรือถูกรายงานไม่เหมาะสม = 1 strike (หัก ${STRIKE_DEDUCTION} คะแนน แจ้งแอดมินอัตโนมัติ) · ครบ ${STRIKE_LIMIT} ระงับบัญชี · หมดอายุใน ${STRIKE_EXPIRE_DAYS} วัน` : `1-star review or inappropriate report = 1 strike (−${STRIKE_DEDUCTION} pts, admin notified) · ${STRIKE_LIMIT} = suspension · expire after ${STRIKE_EXPIRE_DAYS} days`}</p>
         </div>
 

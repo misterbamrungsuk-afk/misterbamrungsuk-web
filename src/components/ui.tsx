@@ -25,7 +25,7 @@ export function Logo({ size = 34, mark = true }: { size?: number; mark?: boolean
     <span className="inline-flex items-center gap-2 select-none" aria-label="Mister Bamrungsuk">
       {mark && <LogoMark size={Math.round(size * 1.05)} />}
       <span className="flex flex-col leading-none">
-        <span className="font-display font-semibold tracking-[0.18em] text-gold-600 uppercase" style={{ fontSize: Math.round(size * 0.3) }}>Mister</span>
+        <span className="font-display font-semibold tracking-[0.18em] text-gold-500 uppercase" style={{ fontSize: Math.round(size * 0.3) }}>Mister</span>
         <span className="font-display font-bold text-ink-100 whitespace-nowrap" style={{ fontSize: Math.round(size * 0.52) }}>Bamrungsuk</span>
       </span>
     </span>

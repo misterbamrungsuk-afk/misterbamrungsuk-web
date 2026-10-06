@@ -7,18 +7,24 @@ import { TopBar } from "@/components/shell";
 import PostCard from "@/components/post-card";
 import { HeroSlider } from "@/components/hero-slider";
 import { Sheet, Field } from "@/components/ui";
-import { CATEGORIES, PROVINCES } from "@/lib/categories";
+import { ACTIVITIES, PROVINCES } from "@/lib/categories";
 import type { Post } from "@/lib/types";
 import { isDemo } from "@/lib/data";
 import { DEMO_POSTS } from "@/lib/demo-data";
-import { isPremiumUnlocked, recommendedSort, MEMBERSHIP } from "@/lib/membership";
+import { isPremiumUnlocked, recommendedSort, isNewProvider, MEMBERSHIP } from "@/lib/membership";
+import { DEMO_ME } from "@/lib/demo-data";
+
+type SortKey = "" | "near" | "rating" | "now" | "new";
 import { baht } from "@/components/ui";
 
 
 function HomeInner({ posts }: { posts: Post[] }) {
   const { t, lang } = useI18n();
   const [q, setQ] = useState("");
-  const [cat, setCat] = useState<string>("");
+  const [cat, setCat] = useState<string>(""); // activity slug
+  const [massage, setMassage] = useState(false);
+  const [sortKey, setSortKey] = useState<SortKey>("");
+  const [seg, setSeg] = useState<"near" | "premium">("near");
   const [filterOpen, setFilterOpen] = useState(false);
   const [province, setProvince] = useState("");
   const [ageMin, setAgeMin] = useState("");
@@ -36,66 +42,55 @@ function HomeInner({ posts }: { posts: Post[] }) {
       const s = q.toLowerCase();
       list = list.filter((p) =>
         p.member.name.toLowerCase().includes(s) ||
-        (p.personality + p.interests + p.extraInfo + p.categories.join(" ")).toLowerCase().includes(s)
+        (p.personality + p.interests + p.extraInfo + p.serviceArea + p.activities.join(" ")).toLowerCase().includes(s)
       );
     }
-    if (cat) list = list.filter((p) => p.categories.includes(cat));
+    if (cat) list = list.filter((p) => p.activities.includes(cat));
+    if (massage) list = list.filter((p) => p.massageSkill);
+    if (sortKey === "now") list = list.filter((p) => (p.nextFreeMin ?? 0) <= 0);
+    if (sortKey === "new") list = list.filter((p) => isNewProvider(p));
     if (province) list = list.filter((p) => p.province === province);
     if (ageMin) list = list.filter((p) => (p.member.age ?? 0) >= +ageMin);
     if (ageMax) list = list.filter((p) => (p.member.age ?? 999) <= +ageMax);
     if (rateMin) list = list.filter((p) => p.pricePerHour >= +rateMin);
     if (rateMax) list = list.filter((p) => p.pricePerHour <= +rateMax);
-    // เรียงแบบ "แนะนำ": ดันหมอหน้าใหม่ (เข้าร่วม ≤30 วัน) ขึ้นก่อน
+    // ค่าเริ่มต้น: รายการจัดอันดับ "แนะนำ" ไม่บังคับกรอง
+    if (sortKey === "near") return list.sort((a, b) => (a.distanceKm ?? 99) - (b.distanceKm ?? 99));
+    if (sortKey === "rating") return list.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0) || b.reviewCount - a.reviewCount);
     return list.sort(recommendedSort);
-  }, [posts, premiumOpen, q, cat, province, ageMin, ageMax, rateMin, rateMax]);
+  }, [posts, premiumOpen, q, cat, massage, sortKey, province, ageMin, ageMax, rateMin, rateMax]);
+  const onlineCount = useMemo(() => posts.filter((p) => (premiumOpen || !p.premium) && (p.nextFreeMin ?? 0) <= 0).length, [posts, premiumOpen]);
 
   const activeFilters = [province, ageMin, ageMax, rateMin, rateMax].filter(Boolean).length;
-  const heroPhoto = (posts.find((p) => p.member.kycVerified) ?? posts[0])?.images[0] ?? "";
-  // หมอแนะนำ: ยืนยันตัวตนแล้ว เรียงตามคะแนน (ไม่รวมพรีเมียมถ้ายังไม่ปลดล็อก)
+    // Part-Time แนะนำ: ยืนยันตัวตนแล้ว เรียงตามคะแนน (ไม่รวมพรีเมียมถ้ายังไม่ปลดล็อก)
   const featured = useMemo(() => posts.filter((p) => p.member.kycVerified && (premiumOpen || !p.premium)).sort((x, y) => (y.rating ?? 0) - (x.rating ?? 0)).slice(0, 5), [posts, premiumOpen]);
 
   return (
     <>
       <TopBar />
 
-      {/* ── Hero (แนว editorial: หัวข้อตัวโต + รูปหมอ) ── */}
+      {/* ── ทักทาย + แท็บ ── */}
       <section className="px-4 pt-3">
-        <div className="relative overflow-hidden rounded-[28px] border border-ink-600 bg-ink-850">
-          <div className="relative h-[300px]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={heroPhoto} alt="" className="absolute inset-0 w-full h-full object-cover object-[50%_20%]" />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent from-25% via-ink-850/75 via-70% to-ink-850" />
-          </div>
-          <div className="relative -mt-24 px-5 pb-6">
-            <p className="flex items-center gap-2 text-[12px] text-ink-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-crimson-500" />
-              {lang === "th" ? "ผ่อนคลาย ถึงที่ของคุณ" : "Wellbeing, brought to you"}
-            </p>
-            <h1 className="font-display font-bold text-[36px] leading-[1.12] tracking-tight mt-3">
-              {lang === "th" ? <>ผ่อนคลายระดับ<br /><span className="bg-gradient-to-r from-[#b8860b] via-[#e0a400] to-[#9a6b00] bg-clip-text text-transparent">พรีเมียม</span> ถึงที่คุณ</> : <>VVIP relaxation,<br /><span className="bg-gradient-to-r from-[#b8860b] via-[#e0a400] to-[#9a6b00] bg-clip-text text-transparent">at your door</span></>}
-            </h1>
-            <p className="text-[14px] text-ink-300 leading-relaxed mt-3 max-w-[34ch]">
-              {lang === "th" ? "พักผ่อนในพื้นที่ของคุณเอง เลือกหมอนวดชายที่ยืนยันตัวตนแล้ว ให้การนวดที่ใช่สำหรับคุณ" : "Unwind in your own space. Discover verified male therapists for a massage that feels right for you."}
-            </p>
-            <button onClick={() => document.getElementById("find")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-              className="mt-5 h-12 px-5 rounded-xl bg-crimson-500 text-white font-semibold text-[15px] inline-flex items-center gap-3 active:scale-[0.98] transition">
-              {lang === "th" ? "ค้นหาหมอนวด" : "Find your therapist"}
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="w-4 h-4"><path d="M12 5v14M6 13l6 6 6-6" /></svg>
-            </button>
-            <p className="text-[11px] text-ink-400 mt-3">{lang === "th" ? "พื้นที่ของคุณ จังหวะของคุณ" : "Your space. Your pace."}</p>
-          </div>
+        <p className="text-[13px] text-ink-300">{lang === "th" ? `สวัสดีค่ะ คุณ${DEMO_ME.name}` : `Hello, ${DEMO_ME.name}`}</p>
+        <h1 className="font-display font-bold text-[28px] leading-tight tracking-tight text-gold-500 mt-0.5">{lang === "th" ? "เลือกคนดูแลคุณวันนี้" : "Choose your companion today"}</h1>
+        <div className="mt-4 grid grid-cols-2 p-1 rounded-2xl border border-ink-600 bg-ink-800" role="tablist">
+          {([["near", lang === "th" ? "ใกล้คุณ" : "Near you"], ["premium", lang === "th" ? "♛ พรีเมียม" : "♛ Premium"]] as const).map(([k, l]) => (
+            <button key={k} role="tab" aria-selected={seg === k}
+              onClick={() => { setSeg(k); document.getElementById(k === "near" ? "find" : "premium")?.scrollIntoView({ behavior: "smooth", block: "start" }); }}
+              className={`h-10 rounded-xl text-[14px] font-semibold transition ${seg === k ? "bg-crimson-500 text-white" : "text-ink-300"}`}>{l}</button>
+          ))}
         </div>
       </section>
 
-      {/* ── สไลด์หมอแนะนำ ── */}
+      {/* ── สไลด์ Part-Time แนะนำ ── */}
       <HeroSlider posts={featured} lang={lang} />
 
-      {/* ── รับสมัครหมอ (sale funnel /join) ── */}
+      {/* ── รับสมัคร Part-Time (sale funnel /join) ── */}
       <section className="px-4 pt-4">
         <Link href="/join" className="flex items-center gap-3 rounded-2xl border border-gold-500/40 bg-[linear-gradient(120deg,rgba(224,164,0,.12),rgba(224,36,60,.08))] px-4 py-3.5">
           <span className="w-11 h-11 rounded-xl bg-gold-500 text-[#1a1206] grid place-items-center font-display font-bold shrink-0">MB</span>
           <span className="flex-1 min-w-0">
-            <span className="block text-[14px] font-semibold">{lang === "th" ? "เปิดรับสมัครหมอนวด & เพื่อนเที่ยว" : "Now recruiting therapists & companions"}</span>
+            <span className="block text-[14px] font-semibold">{lang === "th" ? "เปิดรับสมัคร Part-Time เพื่อนกินเที่ยว" : "Now recruiting Part-Time companions"}</span>
             <span className="block text-xs text-ink-300">{lang === "th" ? "รับจำกัด 50 ท่าน · อบรม 2 วัน · รายได้ระดับพรีเมียม" : "50 seats · 2-day training · premium income"}</span>
           </span>
           <span className="text-gold-300 text-lg" aria-hidden>→</span>
@@ -114,14 +109,14 @@ function HomeInner({ posts }: { posts: Post[] }) {
         </Link>
       </section>
 
-      {/* ── หมอพรีเมียม (ล็อกจนกว่าจะเป็นสมาชิก/รับของขวัญ) ── */}
+      {/* ── Part-Time พรีเมียม (ล็อกจนกว่าจะเป็นสมาชิก/รับของขวัญ) ── */}
       {premiumPosts.length > 0 && (
         <section id="premium" className="px-4 pt-8 scroll-mt-16">
           <div className="flex items-center justify-between gap-2">
             <h2 className="font-display font-bold text-[22px] leading-tight tracking-tight flex items-center gap-2">
               Premium <span className="chip chip-gold text-[11px]">♛ {lang === "th" ? "สมาชิกเท่านั้น" : "Members only"}</span>
             </h2>
-            {!premiumOpen && <Link href="/membership" className="text-[13px] text-gold-600 min-h-9 inline-flex items-center">{lang === "th" ? "ปลดล็อก" : "Unlock"}</Link>}
+            {!premiumOpen && <Link href="/membership" className="text-[13px] text-gold-500 min-h-9 inline-flex items-center">{lang === "th" ? "ปลดล็อก" : "Unlock"}</Link>}
           </div>
           {premiumOpen ? (
             <div className="grid grid-cols-2 gap-2.5 mt-3">
@@ -138,7 +133,7 @@ function HomeInner({ posts }: { posts: Post[] }) {
               <div className="absolute inset-0 grid place-items-center bg-ink-900/40 text-center px-4">
                 <div>
                   <p className="text-2xl">🔒</p>
-                  <p className="text-sm font-semibold mt-1">{lang === "th" ? `หมอพรีเมียม ${premiumPosts.length} คน` : `${premiumPosts.length} Premium therapists`}</p>
+                  <p className="text-sm font-semibold mt-1">{lang === "th" ? `Part-Time พรีเมียม ${premiumPosts.length} คน` : `${premiumPosts.length} Premium Part-Time`}</p>
                   <div className="flex gap-2 justify-center mt-2">
                     <Link href="/membership" className="btn-crimson rounded-xl h-10 px-4 grid place-items-center text-[13px] font-semibold">{lang === "th" ? "สมัครสมาชิก" : "Join"}</Link>
                     <Link href="/membership/redeem" className="btn-ghost rounded-xl h-10 px-4 grid place-items-center text-[13px]">{lang === "th" ? "ใช้โค้ดของขวัญ" : "Redeem gift"}</Link>
@@ -150,25 +145,44 @@ function HomeInner({ posts }: { posts: Post[] }) {
         </section>
       )}
 
-      {/* ── หาความผ่อนคลายในแบบคุณ ── */}
+      {/* ── ใกล้คุณ ── */}
       <section id="find" className="px-4 pt-8 scroll-mt-16">
-        <h2 className="font-display font-bold text-[26px] leading-tight tracking-tight">{lang === "th" ? "หาความผ่อนคลายในแบบคุณ" : "Find your kind of calm"}</h2>
-        <p className="text-[13px] text-ink-300 mt-1">{lang === "th" ? "เลือกเทคนิค แล้วพบหมอนวดของคุณ" : "Choose a technique. Meet your therapist."}</p>
+        <div className="flex items-end justify-between gap-2">
+          <h2 className="font-display font-bold text-[24px] leading-tight tracking-tight text-gold-500">{lang === "th" ? "ใกล้คุณ" : "Near you"}</h2>
+          <span className="text-[12px] text-ink-300 inline-flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500" />{lang === "th" ? `ออนไลน์ ${onlineCount} คน` : `${onlineCount} online`}</span>
+        </div>
 
-        <div className="relative mt-4">
+        <div className="relative mt-3">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[18px] h-[18px] absolute left-4 top-1/2 -translate-y-1/2 text-ink-300">
             <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" strokeLinecap="round" />
           </svg>
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t.search} aria-label={t.search} className="input-dark h-12 pl-11" />
         </div>
 
-        {/* หมวด: ปุ่มกล่อง */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar py-4 -mx-4 px-4">
-          <button onClick={() => setCat("")} className={`shrink-0 h-11 px-5 rounded-xl border text-[14px] transition ${!cat ? "bg-crimson-500 text-white border-ink-100 font-semibold" : "border-ink-600 text-ink-200"}`}>{t.allCategories}</button>
-          {CATEGORIES.filter((c) => c.slug !== "other").map((c) => (
-            <button key={c.slug} onClick={() => setCat(cat === c.slug ? "" : c.slug)}
-              className={`shrink-0 h-11 px-5 rounded-xl border text-[14px] whitespace-nowrap transition ${cat === c.slug ? "bg-crimson-500 text-white border-ink-100 font-semibold" : "border-ink-600 text-ink-200"}`}>
-              {lang === "th" ? c.th : c.en}
+        {/* กิจกรรม: ไอคอนเส้น */}
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pt-4 pb-2 -mx-4 px-4">
+          {ACTIVITIES.map((a) => {
+            const on = cat === a.slug;
+            return (
+              <button key={a.slug} onClick={() => setCat(on ? "" : a.slug)} aria-pressed={on}
+                className={`shrink-0 w-[76px] py-2.5 rounded-2xl border flex flex-col items-center gap-1.5 transition ${on ? "border-gold-500 bg-gold-500/10 text-gold-300" : "border-ink-600 bg-ink-800 text-ink-200"}`}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d={a.icon} /></svg>
+                <span className="text-[11px] leading-tight text-center whitespace-nowrap">{lang === "th" ? a.th : a.en}</span>
+              </button>
+            );
+          })}
+        </div>
+        <label className="flex items-center gap-2 text-[13px] text-ink-200 min-h-9 cursor-pointer">
+          <input type="checkbox" checked={massage} onChange={(e) => setMassage(e.target.checked)} className="w-[18px] h-[18px] accent-[#d4af37]" />
+          {lang === "th" ? "มีสกิลนวด (add-on)" : "Has massage skill (add-on)"}
+        </label>
+
+        {/* เรียง / ด่วน */}
+        <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 py-2">
+          {([["near", "ใกล้ที่สุด", "Nearest"], ["rating", "คะแนนสูงสุด", "Top rated"], ["now", "ว่างตอนนี้", "Free now"], ["new", "หน้าใหม่", "New"]] as const).map(([k, thL, enL]) => (
+            <button key={k} onClick={() => setSortKey(sortKey === k ? "" : k)} aria-pressed={sortKey === k}
+              className={`shrink-0 h-9 px-4 rounded-full border text-[13px] whitespace-nowrap transition ${sortKey === k ? "bg-crimson-500 border-crimson-500 text-white font-semibold" : "border-ink-600 text-ink-200"}`}>
+              {lang === "th" ? thL : enL}
             </button>
           ))}
         </div>
@@ -191,8 +205,8 @@ function HomeInner({ posts }: { posts: Post[] }) {
 
         <div className="flex items-center justify-between mt-3 mb-3">
           <span className="text-[12px] font-semibold rounded-full bg-ink-800 border border-ink-600 px-3 py-1">{lang === "th" ? `พบ ${filtered.length} คน` : `${filtered.length} found`}</span>
-          {(activeFilters > 0 || cat || q) && (
-            <button onClick={() => { setCat(""); setQ(""); setProvince(""); setAgeMin(""); setAgeMax(""); setRateMin(""); setRateMax(""); }}
+          {(activeFilters > 0 || cat || q || massage || sortKey) && (
+            <button onClick={() => { setCat(""); setQ(""); setMassage(false); setSortKey(""); setProvince(""); setAgeMin(""); setAgeMax(""); setRateMin(""); setRateMax(""); }}
               className="text-[13px] text-ink-200 inline-flex items-center gap-1.5 min-h-9 px-1">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="w-4 h-4"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5" /></svg>
               {lang === "th" ? "รีเซ็ตตัวกรอง" : "Reset filters"}

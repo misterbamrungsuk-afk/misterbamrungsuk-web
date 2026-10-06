@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { Logo } from "@/components/ui";
-import { CONTRACT, LINE_OA_ID, PACKAGES, lineAddUrl } from "@/lib/join/config";
+import { CONTRACT, GUARANTEE_REFUND_NOTE, LINE_OA_ID, PACKAGES, feeBreakdown, lineAddUrl } from "@/lib/join/config";
 import { getByMb } from "@/lib/join/store";
 import { CopyCode, ContractAccept } from "./client";
 
@@ -17,20 +17,25 @@ export default async function DonePage({ params }: { params: Promise<{ mb: strin
       <header className="flex items-center h-16"><Logo size={26} /></header>
 
       <section className="flex flex-col items-center text-center mt-6">
-        <span className="w-24 h-24 rounded-full border-2 border-gold-500 grid place-items-center text-gold-600 shadow-[0_0_40px_rgba(224,164,0,.25)]">
+        <span className="w-24 h-24 rounded-full border-2 border-gold-500 grid place-items-center text-gold-400 shadow-[0_0_40px_rgba(212,175,55,.25)]">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-12 h-12"><path d="m5 12 5 5 9-10" /></svg>
         </span>
         <h1 className="font-display text-3xl font-semibold mt-5">การสมัครเสร็จสมบูรณ์</h1>
         <p className="text-sm text-ink-300 mt-1">{row.nickname} · แพ็กเกจ {row.package} {PACKAGES[row.package].name}</p>
         <p className="text-sm text-ink-300 mt-6">รหัสของคุณคือ</p>
         <CopyCode code={row.mb_code} />
+        <div className="w-full mt-5 rounded-2xl border border-ink-600 bg-ink-800 px-4 py-3 text-[13px] text-left space-y-1.5">
+          {feeBreakdown(row.package).map((x) => <div key={x.name} className="flex justify-between gap-3"><span className="text-ink-300">{x.name}</span><span className="font-display text-gold-300">฿{x.amount.toLocaleString("th-TH")}</span></div>)}
+          <div className="flex justify-between gap-3 border-t border-ink-600 pt-1.5"><span>ยอดชำระรวม</span><span className="font-display text-gold-300 font-semibold">฿{row.amount.toLocaleString("th-TH")}</span></div>
+          <p className="text-[11.5px] text-ink-400">{GUARANTEE_REFUND_NOTE}</p>
+        </div>
         <p className="text-xs text-ink-400 mt-2">สถานะ: {row.status === "verified" ? "ชำระเงินแล้ว" : "รอทีมงานตรวจสลิป"}</p>
       </section>
 
       <section className="glass rounded-3xl p-5 mt-8">
         <p className="font-semibold">ขั้นตอนถัดไป</p>
         <ol className="mt-3 space-y-3 text-sm">
-          {["แคปหน้าจอนี้เก็บไว้", `แอดไลน์ทีมงาน ${LINE_OA_ID}`, "แจ้งรหัส MB เพื่อรับคิวอบรม"].map((s, i) => (
+          {["แคปหน้าจอนี้เก็บไว้", `แอดไลน์ทีมงาน ${LINE_OA_ID}`, "แจ้งรหัส MB เพื่อเข้ากลุ่ม LINE และรับรุ่นอบรม"].map((s, i) => (
             <li key={s} className="flex items-center gap-3"><span className="w-7 h-7 rounded-full bg-gold-500 text-[#1a1206] grid place-items-center font-bold text-sm shrink-0">{i + 1}</span>{s}</li>
           ))}
         </ol>

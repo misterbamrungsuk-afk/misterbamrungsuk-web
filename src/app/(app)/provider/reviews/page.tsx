@@ -38,7 +38,7 @@ export default function ProviderReviewsPage() {
       <div className="px-4 py-4 space-y-4 pb-8">
         <div className="glass rounded-3xl p-5 flex gap-4 items-center">
           <div className="text-center shrink-0">
-            <p className="font-display text-4xl font-bold text-gold-600">4.9</p>
+            <p className="font-display text-4xl font-bold text-gold-400">4.9</p>
             <Stars value={4.9} />
             <p className="text-[10px] text-ink-400 mt-1">{total} {th ? "รีวิว" : "reviews"}</p>
           </div>
@@ -72,7 +72,7 @@ export default function ProviderReviewsPage() {
               <p className="text-sm mt-2">{r.text}</p>
               {r.reply ? (
                 <div className="mt-3 rounded-2xl bg-ink-850 p-3 text-sm">
-                  <p className="text-[11px] text-gold-600 mb-1">{th ? "คำตอบของคุณ" : "Your reply"}</p>
+                  <p className="text-[11px] text-gold-400 mb-1">{th ? "คำตอบของคุณ" : "Your reply"}</p>
                   {r.reply}
                 </div>
               ) : editing === r.id ? (
@@ -81,7 +81,7 @@ export default function ProviderReviewsPage() {
                   <button onClick={() => send(r.id)} disabled={!draft.trim()} className="btn-crimson h-10 px-4 text-sm shrink-0">{th ? "ส่ง" : "Send"}</button>
                 </div>
               ) : (
-                <button onClick={() => { setEditing(r.id); setDraft(""); }} className="mt-2 min-h-9 text-sm text-gold-600">{th ? "ตอบกลับ" : "Reply"}</button>
+                <button onClick={() => { setEditing(r.id); setDraft(""); }} className="mt-2 min-h-9 text-sm text-gold-400">{th ? "ตอบกลับ" : "Reply"}</button>
               )}
             </div>
           ))}

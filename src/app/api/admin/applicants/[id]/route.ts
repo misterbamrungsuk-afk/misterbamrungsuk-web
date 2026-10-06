@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { listApplicants, updateApplicant, type ApplicantStatus } from "@/lib/join/store";
+import { extraOf, listApplicants, updateApplicant, updateExtra, type ApplicantStatus } from "@/lib/join/store";
+import { COHORTS } from "@/lib/join/config";
 import { appendToSheet } from "@/lib/join/sheets";
 
 import { cookies } from "next/headers";
@@ -18,7 +19,16 @@ const STATUSES: ApplicantStatus[] = ["pending_slip", "verified", "rejected", "re
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!(await allowed())) return NextResponse.json({ ok: false }, { status: 401 });
   const { id } = await params;
-  const body = (await req.json().catch(() => ({}))) as { status?: ApplicantStatus; sync?: boolean };
+  const body = (await req.json().catch(() => ({}))) as { status?: ApplicantStatus; sync?: boolean; cohort?: string | null; line_joined?: boolean };
+  // จัดรุ่นอบรม / สถานะกลุ่ม LINE
+  if (body.cohort !== undefined || body.line_joined !== undefined) {
+    if (body.cohort != null && !COHORTS.some((c) => c.key === body.cohort)) return NextResponse.json({ ok: false }, { status: 400 });
+    const patch: { cohort?: string | null; line_joined?: boolean } = {};
+    if (body.cohort !== undefined) patch.cohort = body.cohort;
+    if (typeof body.line_joined === "boolean") patch.line_joined = body.line_joined;
+    const row = await updateExtra(id, patch);
+    return row ? NextResponse.json({ ok: true, row: { ...row, ...extraOf(row) } }) : NextResponse.json({ ok: false }, { status: 404 });
+  }
   if (body.sync) {
     const row = (await listApplicants()).find((r) => r.id === id);
     if (!row) return NextResponse.json({ ok: false }, { status: 404 });
@@ -28,5 +38,5 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
   if (!body.status || !STATUSES.includes(body.status)) return NextResponse.json({ ok: false }, { status: 400 });
   const row = await updateApplicant(id, { status: body.status });
-  return row ? NextResponse.json({ ok: true, row }) : NextResponse.json({ ok: false }, { status: 404 });
+  return row ? NextResponse.json({ ok: true, row: { ...row, ...extraOf(row) } }) : NextResponse.json({ ok: false }, { status: 404 });
 }

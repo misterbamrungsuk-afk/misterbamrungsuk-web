@@ -7,7 +7,7 @@ import { Card, PageHead, Pill } from "../admin-nav";
 import { DEMO_STRIKE_EVENTS, evaluateStrikes } from "@/lib/strikes";
 
 // แจ้งเตือนอัตโนมัติจากระบบ strike (รีวิว 1 ดาว / รายงานไม่เหมาะสม → strike, ครบ 3 → แบน)
-const AUTO = evaluateStrikes("หมอ (เดโม)", DEMO_STRIKE_EVENTS).notices;
+const AUTO = evaluateStrikes("ผู้ให้บริการ (เดโม)", DEMO_STRIKE_EVENTS).notices;
 
 const SEV = { high: { th: "สูง", tone: "red" }, mid: { th: "กลาง", tone: "gold" }, low: { th: "ต่ำ", tone: "muted" } } as const;
 
