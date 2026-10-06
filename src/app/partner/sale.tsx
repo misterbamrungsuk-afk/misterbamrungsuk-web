@@ -49,6 +49,7 @@ export function PartnerSalePage() {
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
+  const [token, setToken] = useState("");
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setF((s) => ({ ...s, [k]: v }));
 
   const pick = (k: PartnerPackageKey) => {
@@ -63,9 +64,12 @@ export function PartnerSalePage() {
     setBusy(true);
     try {
       const res = await fetch("/api/partner/apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(f) });
-      const out = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      const out = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; token?: string };
       if (!res.ok || !out.ok) setErr(out.error || "ส่งไม่สำเร็จ กรุณาลองใหม่");
-      else setDone(true);
+      else {
+        setToken(out.token ?? "");
+        setDone(true);
+      }
     } catch {
       setErr("เชื่อมต่อไม่ได้ กรุณาลองใหม่");
     } finally {
@@ -218,7 +222,17 @@ export function PartnerSalePage() {
               <p className="text-4xl text-gold-500">✓</p>
               <h2 className="mt-3 text-2xl font-semibold">ได้รับข้อมูลของคุณแล้ว</h2>
               <p className="mt-2 text-ink-300">ทีมงานจะติดต่อกลับภายใน 24 ชม.</p>
-              <a href={lineAddUrl()} target="_blank" rel="noopener noreferrer" className="mt-6 btn-crimson h-12 px-6 rounded-full inline-flex items-center font-semibold">
+              {token && (
+                <div className="mt-6 flex flex-col items-center gap-3">
+                  {f.package && PARTNER_PACKAGES[f.package].price != null && (
+                    <a href={`/partner/pay?t=${encodeURIComponent(token)}&pkg=${f.package}`} className="btn-crimson h-12 px-6 rounded-full inline-flex items-center font-semibold">
+                      ชำระค่าแพ็กเกจ {PARTNER_PACKAGES[f.package].label} ด้วย QR
+                    </a>
+                  )}
+                  <a href={`/partner/register?t=${encodeURIComponent(token)}`} className="text-sm text-gold-300 underline underline-offset-4">ตั้งรหัสผ่านเข้าพอร์ทัลพาร์ทเนอร์</a>
+                </div>
+              )}
+              <a href={lineAddUrl()} target="_blank" rel="noopener noreferrer" className="mt-6 btn-ghost h-12 px-6 rounded-full inline-flex items-center font-semibold">
                 ทัก LINE OA {LINE_OA_ID}
               </a>
             </div>

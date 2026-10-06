@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Card, Pill } from "../admin-nav";
 import { PACKAGE_KEYS, PARTNER_PACKAGES, baht, type PartnerPackageKey } from "@/lib/partner/config";
+import { ACCOUNT_LABEL, ACCOUNT_STATUSES, CLIP_LABEL, CLIP_STATUSES, PURCHASE_LABEL, fileUrl, type AccountStatus, type ClipStatus, type Purchase } from "@/lib/partner/portal-types";
 import { PARTNER_STATUSES, QC_LABEL, QC_STATES, STATUS_LABEL, daysLeft, type PartnerQc, type PartnerStatus } from "@/lib/partner/status";
 
 // ชนิดฝั่ง client (ตรงกับ Partner ใน store.ts — store เป็น server-only)
@@ -10,6 +11,7 @@ export type PartnerRow = {
   id: string; business_name: string; type: string; province: string; contact_name: string; tel: string; email: string;
   line_id: string; links: string; package: PartnerPackageKey; message: string; status: PartnerStatus; qc: PartnerQc;
   starts_at: string | null; ends_at: string | null; amount: number; notes: string | null; created_at: string;
+  account_status?: AccountStatus; clip_status?: ClipStatus | null; clip_note?: string | null; platform_pct?: number | null; has_login?: boolean;
 };
 
 const TONE: Record<PartnerStatus, "gold" | "red" | "muted" | "green"> = {
@@ -33,8 +35,9 @@ function Remaining({ p }: { p: PartnerRow }) {
   );
 }
 
-export function PartnerList({ initial }: { initial: PartnerRow[] }) {
+export function PartnerList({ initial, purchases: initialPurchases }: { initial: PartnerRow[]; purchases: Purchase[] }) {
   const [rows, setRows] = useState(initial);
+  const [purchases, setPurchases] = useState(initialPurchases);
   const [tab, setTab] = useState<PartnerStatus | "all">("all");
   const [sel, setSel] = useState<string | null>(null);
 
@@ -45,16 +48,17 @@ export function PartnerList({ initial }: { initial: PartnerRow[] }) {
       ["กำลังโปรโมท", String(rows.filter((r) => r.status === "active").length)],
       ["รอทำสัญญา / QC", String(rows.filter((r) => r.status === "qc" || r.status === "contacted").length)],
       ["ใกล้หมดอายุ ≤30 วัน", String(soon)],
+      ["สลิปแพ็กเกจรอตรวจ", String(purchases.filter((x) => x.status === "pending").length)],
       ["รายได้รวม", `฿${baht(rows.reduce((s, r) => s + (r.amount || 0), 0))}`],
     ];
-  }, [rows]);
+  }, [rows, purchases]);
 
   const shown = tab === "all" ? rows : rows.filter((r) => r.status === tab);
   const cur = rows.find((r) => r.id === sel) ?? null;
 
   return (
     <>
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
         {kpi.map(([k, v]) => (
           <Card key={k}><p className="text-xs text-ink-300">{k}</p><p className="font-display text-2xl font-semibold mt-1 truncate">{v}</p></Card>
         ))}
@@ -86,7 +90,7 @@ export function PartnerList({ initial }: { initial: PartnerRow[] }) {
               <tbody>
                 {shown.map((p) => (
                   <tr key={p.id} onClick={() => setSel(p.id)} className={`border-b border-ink-600/60 cursor-pointer hover:bg-ink-700/50 ${sel === p.id ? "bg-ink-700" : ""}`}>
-                    <td className="p-3"><p className="font-semibold">{p.business_name}</p><p className="text-xs text-ink-300">{p.type} · {p.province}</p></td>
+                    <td className="p-3"><p className="font-semibold">{p.business_name}{purchases.some((x) => x.partner_id === p.id && x.status === "pending") && <span className="ml-2 text-[11px] text-gold-300">● สลิปรอตรวจ</span>}</p><p className="text-xs text-ink-300">{p.type} · {p.province}</p></td>
                     <td className="p-3 whitespace-nowrap">{PARTNER_PACKAGES[p.package]?.label ?? p.package}</td>
                     <td className="p-3 whitespace-nowrap">{fmt(p.starts_at)}</td>
                     <td className="p-3"><Pill tone={TONE[p.status]}>{STATUS_LABEL[p.status]}</Pill></td>
@@ -98,13 +102,36 @@ export function PartnerList({ initial }: { initial: PartnerRow[] }) {
             </table>
           )}
         </Card>
-        {cur && <Detail key={cur.id} p={cur} onClose={() => setSel(null)} onSaved={(r) => setRows((rs) => rs.map((x) => (x.id === r.id ? r : x)))} />}
+        {cur && (
+          <Detail key={cur.id} p={cur} purchases={purchases.filter((x) => x.partner_id === cur.id)} onClose={() => setSel(null)}
+            onSaved={(r) => setRows((rs) => rs.map((x) => (x.id === r.id ? r : x)))}
+            onPurchase={(x) => setPurchases((ps) => ps.map((y) => (y.id === x.id ? x : y)))} />
+        )}
       </div>
     </>
   );
 }
 
-function Detail({ p, onClose, onSaved }: { p: PartnerRow; onClose: () => void; onSaved: (r: PartnerRow) => void }) {
+function Detail({ p, purchases, onClose, onSaved, onPurchase }: { p: PartnerRow; purchases: Purchase[]; onClose: () => void; onSaved: (r: PartnerRow) => void; onPurchase: (x: Purchase) => void }) {
+  const [account, setAccount] = useState<AccountStatus>(p.account_status ?? "pending");
+  const [clip, setClip] = useState<ClipStatus | "">(p.clip_status ?? "");
+  const [clipNote, setClipNote] = useState(p.clip_note ?? "");
+  const [pct, setPct] = useState(p.platform_pct == null ? "" : String(p.platform_pct));
+  const decide = async (x: Purchase, action: "approve" | "reject") => {
+    if (action === "approve" && !confirm(`อนุมัติสลิป ${x.invoice_no} ฿${baht(x.amount)} และต่ออายุแพ็กเกจ?`)) return;
+    setBusy(true);
+    setMsg("");
+    try {
+      const res = await fetch(`/api/admin/partners/purchases/${x.id}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action }) });
+      const out = (await res.json().catch(() => ({}))) as { ok?: boolean; row?: Purchase; partner?: PartnerRow; error?: string };
+      if (!out.ok || !out.row) return setMsg(`ไม่สำเร็จ ${out.error ?? ""}`);
+      onPurchase(out.row);
+      if (out.partner) onSaved(out.partner);
+      setMsg(action === "approve" ? "อนุมัติแล้ว ต่ออายุแพ็กเกจให้แล้ว" : "ปฏิเสธสลิปแล้ว");
+    } finally {
+      setBusy(false);
+    }
+  };
   const [status, setStatus] = useState(p.status);
   const [qc, setQc] = useState(p.qc);
   const [pkg, setPkg] = useState(p.package);
@@ -120,7 +147,7 @@ function Detail({ p, onClose, onSaved }: { p: PartnerRow; onClose: () => void; o
     try {
       const res = await fetch(`/api/admin/partners/${p.id}`, {
         method: "PATCH", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status, qc, package: pkg, starts_at: start || null, amount: Number(amount || 0), notes }),
+        body: JSON.stringify({ status, qc, package: pkg, starts_at: start || null, amount: Number(amount || 0), notes, account_status: account, clip_status: clip || null, clip_note: clipNote, platform_pct: pct === "" ? null : Number(pct) }),
       });
       const out = (await res.json().catch(() => ({}))) as { ok?: boolean; row?: PartnerRow; error?: string };
       if (out.ok && out.row) { onSaved(out.row); setMsg("บันทึกแล้ว"); }
@@ -178,6 +205,27 @@ function Detail({ p, onClose, onSaved }: { p: PartnerRow; onClose: () => void; o
           <input type="number" min={0} inputMode="numeric" className="input-dark w-full" value={amount} onChange={(e) => setAmount(e.target.value)} />
         </div>
         <p className="col-span-2 text-xs text-ink-300">สิ้นสุด: {fmt(p.ends_at)} (คำนวณอัตโนมัติจากวันเริ่ม + แพ็กเกจเมื่อบันทึก)</p>
+        <div>
+          <label className={lab}>บัญชีพอร์ทัล {p.has_login ? "" : "(ยังไม่ตั้งรหัส)"}</label>
+          <select className="input-dark w-full" value={account} onChange={(e) => setAccount(e.target.value as AccountStatus)}>
+            {ACCOUNT_STATUSES.map((s) => <option key={s} value={s}>{ACCOUNT_LABEL[s]}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className={lab}>% หักแพลตฟอร์ม</label>
+          <input type="number" min={0} max={100} step="0.5" placeholder="[รอกำหนด]" className="input-dark w-full" value={pct} onChange={(e) => setPct(e.target.value)} />
+        </div>
+        <div>
+          <label className={lab}>คลิปโปรโมท</label>
+          <select className="input-dark w-full" value={clip} onChange={(e) => setClip(e.target.value as ClipStatus | "")}>
+            <option value="">ยังไม่เริ่ม</option>
+            {CLIP_STATUSES.map((s) => <option key={s} value={s}>{CLIP_LABEL[s]}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className={lab}>หมายเหตุคลิป</label>
+          <input className="input-dark w-full" value={clipNote} onChange={(e) => setClipNote(e.target.value)} placeholder="เช่น ถ่ายที่ร้าน 20 ก.ย." />
+        </div>
         <div className="col-span-2">
           <label className={lab}>โน้ต</label>
           <textarea rows={3} className="input-dark w-full" value={notes} onChange={(e) => setNotes(e.target.value)} />
@@ -185,6 +233,31 @@ function Detail({ p, onClose, onSaved }: { p: PartnerRow; onClose: () => void; o
       </div>
       <button onClick={save} disabled={busy} className="mt-4 w-full btn-crimson h-11 rounded-xl font-semibold disabled:opacity-60">{busy ? "กำลังบันทึก…" : "บันทึก"}</button>
       {msg && <p className="mt-2 text-xs text-ink-300">{msg}</p>}
+
+      <div className="mt-5 border-t border-ink-600 pt-4">
+        <p className="font-semibold text-sm">การชำระค่าแพ็กเกจ</p>
+        {purchases.length === 0 ? <p className="text-xs text-ink-300 mt-2">ยังไม่มีรายการ</p> : (
+          <ul className="mt-2 space-y-2">
+            {purchases.map((x) => (
+              <li key={x.id} className="rounded-xl bg-ink-700/60 p-3 text-sm">
+                <div className="flex justify-between gap-2">
+                  <span className="font-medium">{x.invoice_no}</span>
+                  <Pill tone={x.status === "paid" ? "green" : x.status === "rejected" ? "red" : "gold"}>{PURCHASE_LABEL[x.status]}</Pill>
+                </div>
+                <p className="text-xs text-ink-300 mt-1">{PARTNER_PACKAGES[x.package]?.label} · ฿{baht(x.amount)} · {new Date(x.created_at).toLocaleString("th-TH")}</p>
+                {x.starts_at && <p className="text-xs text-ink-300">ช่วง {fmt(x.starts_at)} – {fmt(x.ends_at)}</p>}
+                {x.slip_url && <a href={fileUrl(x.slip_url)} target="_blank" rel="noopener noreferrer" className="text-xs text-gold-300 underline">ดูสลิป</a>}
+                {x.status === "pending" && (
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    <button disabled={busy} onClick={() => decide(x, "reject")} className="chip h-9 justify-center">ปฏิเสธ</button>
+                    <button disabled={busy} onClick={() => decide(x, "approve")} className="chip chip-red h-9 justify-center">อนุมัติ + ต่ออายุ</button>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </Card>
   );
 }

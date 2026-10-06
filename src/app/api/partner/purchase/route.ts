@@ -1,0 +1,42 @@
+import { NextResponse } from "next/server";
+import { clientIp, rateLimited } from "@/lib/customer/auth";
+import { PACKAGE_KEYS, PARTNER_PACKAGES, type PartnerPackageKey } from "@/lib/partner/config";
+import { currentPartner, verifyApplyToken } from "@/lib/partner/auth";
+import { IMAGE_TYPES, MAX_FILE, createPurchase, putPartnerFile } from "@/lib/partner/portal";
+import { getPartner } from "@/lib/partner/store";
+import { notifyPurchase } from "@/lib/partner/notify";
+
+export const runtime = "nodejs";
+const bad = (error: string, status = 400) => NextResponse.json({ ok: false, error }, { status });
+
+// ชำระค่าแพ็กเกจ (QR + สลิป) → purchase สถานะ pending รอแอดมินตรวจ
+// ผู้เรียก: พาร์ทเนอร์ที่ล็อกอิน (ต่ออายุ/อัปเกรด) หรือผู้สมัครใหม่ที่ถือ token จากฟอร์มสมัคร
+export async function POST(req: Request) {
+  if (rateLimited(`ppay:${clientIp(req)}`, 6, 10 * 60_000)) return bad("ส่งบ่อยเกินไป กรุณารอสักครู่", 429);
+  let form: FormData;
+  try {
+    form = await req.formData();
+  } catch {
+    return bad("ข้อมูลไม่ถูกต้อง");
+  }
+  const tokenPid = verifyApplyToken(String(form.get("token") ?? ""));
+  const partner = tokenPid ? await getPartner(tokenPid) : await currentPartner();
+  if (!partner) return bad("กรุณาเข้าสู่ระบบ", 401);
+
+  const pkg = String(form.get("package") ?? "") as PartnerPackageKey;
+  if (!PACKAGE_KEYS.includes(pkg)) return bad("เลือกแพ็กเกจ");
+  if (PARTNER_PACKAGES[pkg].price == null) return bad("แพ็กเกจนี้กรุณาติดต่อทีมงาน");
+  const slip = form.get("slip");
+  if (!(slip instanceof File) || !slip.size) return bad("แนบสลิปการโอนก่อน");
+  if (!IMAGE_TYPES.includes(slip.type) || slip.size > MAX_FILE) return bad("สลิปต้องเป็นรูป JPG/PNG/WEBP ไม่เกิน 5MB");
+
+  try {
+    const path = await putPartnerFile(partner.id, "slips", slip);
+    const row = await createPurchase(partner.id, pkg, path);
+    void notifyPurchase(partner, row);
+    return NextResponse.json({ ok: true, invoice_no: row.invoice_no });
+  } catch (e) {
+    console.error("partner purchase", e);
+    return bad("ระบบขัดข้อง กรุณาลองใหม่", 500);
+  }
+}

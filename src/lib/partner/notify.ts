@@ -2,6 +2,7 @@ import "server-only";
 import { sendEmail } from "@/lib/email";
 import { PARTNER_PACKAGES } from "./config";
 import type { Partner } from "./store";
+import type { Purchase } from "./portal-types";
 
 // sheet + อีเมลแจ้งทีม — ไม่บล็อกการสมัคร (ล้มเหลวก็แค่ log)
 // ชีต: ใช้ webhook Apps Script เดียวกับ /join (GOOGLE_SHEETS_WEBHOOK_URL/TOKEN) โดยส่ง sheet: "partners"
@@ -34,4 +35,12 @@ export async function notifyAdmin(p: Partner) {
   const trs = rows.map(([k, v]) => `<tr><td style="padding:4px 12px 4px 0;color:#6b6152">${esc(k)}</td><td style="font-weight:600">${esc(v)}</td></tr>`).join("");
   const html = `<div style="font-family:Tahoma,sans-serif;max-width:520px;margin:auto;padding:24px;border:1px solid #d4af37;border-radius:16px"><p style="letter-spacing:.2em;font-size:12px;color:#8f5e00;margin:0">MISTER BAMRUNGSUK · PARTNER</p><h2>มีพาร์ทเนอร์สนใจใหม่</h2><table style="font-size:14px">${trs}</table><p style="font-size:13px;color:#6b6152">จัดการได้ที่ /admin/partners</p></div>`;
   return sendEmail({ to: admin.split(",").map((x) => x.trim()), subject: `[พาร์ทเนอร์ใหม่] ${p.business_name}`, html });
+}
+
+/** แจ้งทีม: มีสลิปค่าแพ็กเกจพาร์ทเนอร์รอตรวจ */
+export async function notifyPurchase(p: Partner, x: Purchase) {
+  const admin = process.env.ADMIN_NOTIFY_EMAIL;
+  if (!admin) return false;
+  const html = `<div style="font-family:Tahoma,sans-serif;max-width:520px;margin:auto;padding:24px;border:1px solid #d4af37;border-radius:16px"><p style="letter-spacing:.2em;font-size:12px;color:#8f5e00;margin:0">MISTER BAMRUNGSUK · PARTNER</p><h2>สลิปค่าแพ็กเกจรอตรวจ</h2><p>${esc(p.business_name)} · ${esc(PARTNER_PACKAGES[x.package].label)} · ฿${x.amount.toLocaleString("th-TH")}</p><p style="font-size:13px;color:#6b6152">ใบแจ้งหนี้ ${esc(x.invoice_no)} · ตรวจได้ที่ /admin/partners</p></div>`;
+  return sendEmail({ to: admin.split(",").map((s) => s.trim()), subject: `[สลิปพาร์ทเนอร์] ${p.business_name} ${x.invoice_no}`, html }).catch(() => false);
 }

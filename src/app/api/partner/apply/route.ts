@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { PACKAGE_KEYS, PARTNER_TYPES, type PartnerPackageKey } from "@/lib/partner/config";
 import { createPartner } from "@/lib/partner/store";
 import { notifyAdmin, syncPartnerSheet } from "@/lib/partner/notify";
+import { signApplyToken } from "@/lib/partner/auth";
 
 export const runtime = "nodejs";
 
@@ -43,7 +44,8 @@ export async function POST(req: Request) {
   try {
     const row = await createPartner({ ...input, consented_at: new Date().toISOString(), ip });
     void Promise.allSettled([syncPartnerSheet(row), notifyAdmin(row)]);
-    return NextResponse.json({ ok: true });
+    // token สำหรับชำระค่าแพ็กเกจ + ตั้งรหัสผ่านเข้าพอร์ทัล (/partner/pay)
+    return NextResponse.json({ ok: true, token: signApplyToken(row.id), package: row.package });
   } catch (e) {
     console.error("partner apply", e);
     return bad("ระบบขัดข้อง กรุณาลองใหม่", 500);

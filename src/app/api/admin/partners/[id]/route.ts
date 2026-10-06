@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { PACKAGE_KEYS, type PartnerPackageKey } from "@/lib/partner/config";
 import { PARTNER_STATUSES, QC_STATES, endDateFor, listPartners, updatePartner, type PartnerPatch, type PartnerQc, type PartnerStatus } from "@/lib/partner/store";
 import { allowed } from "../guard";
+import { ACCOUNT_STATUSES, CLIP_STATUSES, type AccountStatus, type ClipStatus } from "@/lib/partner/portal-types";
 
 export const runtime = "nodejs";
 const isDate = (v: unknown): v is string => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v));
@@ -41,6 +42,24 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const n = Math.round(Number(b.amount));
     if (!Number.isFinite(n) || n < 0 || n > 100_000_000) return fail("amount");
     patch.amount = n;
+  }
+  // พอร์ทัล (migration 0002_portal)
+  if (b.account_status !== undefined) {
+    if (!ACCOUNT_STATUSES.includes(b.account_status as AccountStatus)) return fail("account_status");
+    patch.account_status = b.account_status as AccountStatus;
+  }
+  if (b.clip_status !== undefined) {
+    if (b.clip_status !== null && b.clip_status !== "" && !CLIP_STATUSES.includes(b.clip_status as ClipStatus)) return fail("clip_status");
+    patch.clip_status = (b.clip_status || null) as ClipStatus | null;
+  }
+  if (b.clip_note !== undefined) patch.clip_note = typeof b.clip_note === "string" ? b.clip_note.slice(0, 200) || null : null;
+  if (b.platform_pct !== undefined) {
+    if (b.platform_pct === null || b.platform_pct === "") patch.platform_pct = null;
+    else {
+      const n = Number(b.platform_pct);
+      if (!Number.isFinite(n) || n < 0 || n > 100) return fail("platform_pct");
+      patch.platform_pct = Math.round(n * 100) / 100;
+    }
   }
   if (b.notes !== undefined) patch.notes = typeof b.notes === "string" ? b.notes.slice(0, 2000) : null;
   if (!Object.keys(patch).length) return fail("empty");

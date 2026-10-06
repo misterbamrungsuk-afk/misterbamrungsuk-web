@@ -1,4 +1,5 @@
 import { isDemo, listPartners } from "@/lib/partner/store";
+import { listPurchases } from "@/lib/partner/portal";
 import { PageHead } from "../admin-nav";
 import { PartnerList } from "./list";
 
@@ -7,7 +8,7 @@ export const metadata = { title: "พาร์ทเนอร์ · แอดม
 
 // พาร์ทเนอร์ที่ซื้อพื้นที่โปรโมท (จากหน้า /partner) — สถานะ แพ็กเกจ วันหมดอายุ รายได้
 export default async function PartnersPage() {
-  const rows = await listPartners();
+  const [rows, purchases] = await Promise.all([listPartners(), listPurchases().catch(() => [])]);
   return (
     <>
       <PageHead title="พาร์ทเนอร์ / พื้นที่โปรโมท" sub="จากหน้า /partner · ติดตามสัญญา QC และระยะเวลาโปรโมท"
@@ -17,7 +18,7 @@ export default async function PartnersPage() {
           โหมดเดโม: ยังไม่ได้ตั้ง SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY ข้อมูลหายเมื่อรีสตาร์ท
         </p>
       )}
-      <PartnerList initial={rows} />
+      <PartnerList initial={rows} purchases={purchases} />
     </>
   );
 }
