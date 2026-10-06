@@ -37,6 +37,17 @@ export default function TrackingPage({ params }: { params: Promise<{ id: string 
 
   const arrived = idx >= ROUTE.length - 1;
 
+  // สถานะจริงจาก Part-Time กด "ถึงจุดนัดแล้ว" (โพลทุก 15 วิ)
+  const [arrivedAt, setArrivedAt] = useState<string | null>(null);
+  useEffect(() => {
+    let stop = false;
+    const poll = () => fetch(`/api/jobs/${encodeURIComponent(id)}/arrive`, { cache: "no-store" }).then((r) => r.json())
+      .then((d: { arrival?: { arrived_at: string } | null }) => { if (!stop && d.arrival) setArrivedAt(d.arrival.arrived_at); }).catch(() => {});
+    poll();
+    const iv = setInterval(() => { if (!arrivedAt) poll(); }, 15_000);
+    return () => { stop = true; clearInterval(iv); };
+  }, [id, arrivedAt]);
+
   return (
     <main className="app-frame safe-bottom pb-8">
       <header className="sticky top-0 z-30 bg-ink-950/90 backdrop-blur-xl border-b border-ink-600 px-4 h-14 flex items-center gap-3">
@@ -44,6 +55,12 @@ export default function TrackingPage({ params }: { params: Promise<{ id: string 
         <h1 className="font-semibold flex-1">📍 {t.tracking}</h1>
         <span className={`chip ${arrived ? "chip-gold" : "chip-red animate-pulse"}`}>● LIVE</span>
       </header>
+      {arrivedAt && (
+        <div role="status" className="mx-4 mt-3 rounded-2xl border border-gold-500/50 bg-gold-500/10 px-4 py-3 text-sm">
+          🚩 {lang === "th" ? "เพื่อนถึงจุดนัดแล้ว" : "Your companion has arrived"} · {new Date(arrivedAt).toLocaleTimeString(lang === "th" ? "th-TH" : "en-GB", { hour: "2-digit", minute: "2-digit" })}
+          <span className="block text-[11px] text-ink-400 mt-0.5">{lang === "th" ? "เพื่อนจะรอสูงสุด 15 นาที" : "They will wait up to 15 minutes"}</span>
+        </div>
+      )}
 
       <div className="px-4 py-4 space-y-4">
         <div className="glass rounded-2xl p-4 flex items-center gap-3 animate-rise">

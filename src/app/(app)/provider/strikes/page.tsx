@@ -1,11 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useI18n } from "@/i18n/provider";
 import { TopBar } from "@/components/shell";
 import { Toast } from "@/components/ui";
 import { NOSHOW_RULES_TH } from "@/lib/noshow-rules";
-import { BASE_SCORE, DEMO_STRIKE_EVENTS, STRIKE_DEDUCTION, STRIKE_EXPIRE_DAYS, STRIKE_LIMIT, evaluateStrikes } from "@/lib/strikes";
+import { BASE_SCORE, DEMO_STRIKE_EVENTS, STRIKE_DEDUCTION, STRIKE_EXPIRE_DAYS, evaluateStrikes, strikeStatus } from "@/lib/strikes";
+import { site } from "@/lib/site";
+import { DEMO_ME } from "@/lib/demo-data";
+
+const STRIKE_LIMIT = site.strikeLimit;
+type ApiStrike = { id: string; provider_id: string; reason: string; ref: string | null; points: number; created_at: string };
+type Item = { id: string; reason: string; note: string; ref?: string; at: string; expiresAt: string; points: number };
+const REASON_TH: Record<string, string> = { no_show: "ไม่มาตามนัด" };
+const addDays = (iso: string, d: number) => new Date(new Date(iso).getTime() + d * 86400_000).toISOString();
 
 export default function StrikesPage() {
   const { lang } = useI18n();
@@ -14,7 +22,23 @@ export default function StrikesPage() {
   const [photo, setPhoto] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const [toast, setToast] = useState("");
-  const ev = evaluateStrikes("คุณ", DEMO_STRIKE_EVENTS);
+  // ใบเตือนจริงจากการตัดสินของแอดมิน (provider_strikes) + ข้อมูลเดโมเมื่ออยู่ในโหมดเดโม
+  const [real, setReal] = useState<ApiStrike[]>([]);
+  const [demoMode, setDemoMode] = useState(true);
+  useEffect(() => {
+    fetch(`/api/provider/strikes?provider=${encodeURIComponent(DEMO_ME.id)}`, { cache: "no-store" })
+      .then((r) => r.json()).then((d: { ok?: boolean; demo?: boolean; strikes?: ApiStrike[] }) => { if (d.ok) { setReal(d.strikes ?? []); setDemoMode(!!d.demo); } })
+      .catch(() => {});
+  }, []);
+  const demoEv = evaluateStrikes("คุณ", DEMO_STRIKE_EVENTS);
+  const now = Date.now();
+  const items: Item[] = [
+    ...real.map((s) => ({ id: s.id, reason: REASON_TH[s.reason] ?? s.reason, note: `${REASON_TH[s.reason] ?? s.reason}${s.ref ? ` · ${s.ref}` : ""}`, at: s.created_at, expiresAt: addDays(s.created_at, STRIKE_EXPIRE_DAYS), points: s.points || STRIKE_DEDUCTION })),
+    ...(demoMode ? demoEv.strikes.map((s) => ({ ...s, note: `${DEMO_STRIKE_EVENTS.find((e) => e.id === s.id)?.note ?? s.reason}${s.ref ? ` · ${s.ref}` : ""}`, points: STRIKE_DEDUCTION })) : []),
+  ].filter((s) => Date.parse(s.expiresAt) > now).sort((a, b) => b.at.localeCompare(a.at));
+  const total = items.length;
+  const count = Math.min(total, STRIKE_LIMIT);
+  const ev = { count, total, banned: total >= STRIKE_LIMIT, status: strikeStatus(count), score: Math.max(0, BASE_SCORE - items.reduce((n, s) => n + s.points, 0)) };
   const fmt = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { timeZone: "Asia/Bangkok" });
 
   const submit = () => {
@@ -32,6 +56,7 @@ export default function StrikesPage() {
             {th ? ev.status.label : ev.status.kind === "ok" ? "Good standing" : ev.status.kind === "warned" ? `Warned ${ev.count}/${STRIKE_LIMIT}` : "Suspended"}
           </span>
           <p className="font-display text-4xl font-bold mt-2"><span className="text-crimson-400">{ev.count}</span><span className="text-ink-500">/{STRIKE_LIMIT}</span></p>
+          <p className="text-xs text-ink-400 mt-1">{th ? `ใบเตือนที่มีผลทั้งหมด ${ev.total} ใบ · ครบ ${STRIKE_LIMIT} ระงับบัญชี` : `${ev.total} active strikes · ${STRIKE_LIMIT} = suspension`}</p>
           <div className="grid grid-cols-3 gap-2 mt-3">
             {Array.from({ length: STRIKE_LIMIT }, (_, i) => <div key={i} className={`h-2 rounded-full ${i < ev.count ? "bg-crimson-500" : "bg-ink-700"}`} />)}
           </div>
@@ -46,14 +71,15 @@ export default function StrikesPage() {
           ))}
         </div>
 
-        {ev.strikes.map((s) => (
+        {items.length === 0 && <p className="text-center text-sm text-ink-400">{th ? "ไม่มีใบเตือนที่ยังมีผล" : "No active strikes"}</p>}
+        {items.map((s) => (
           <div key={s.id} className="glass rounded-3xl p-4 border-crimson-500/30">
             <div className="flex items-center justify-between gap-2">
               <span className="chip chip-red">{s.reason}</span>
               <span className="text-[11px] text-ink-400">{fmt(s.at)}</span>
             </div>
-            <p className="text-sm mt-2">{DEMO_STRIKE_EVENTS.find((e) => e.id === s.id)?.note}{s.ref ? ` (${th ? "ออเดอร์" : "order"} ${s.ref})` : ""}</p>
-            <p className="text-xs text-ink-400 mt-1">{th ? "หมดอายุ" : "Expires"} {fmt(s.expiresAt)}</p>
+            <p className="text-sm mt-2">{s.note}</p>
+            <p className="text-xs text-ink-400 mt-1">{th ? `หัก ${s.points} คะแนน · หมดอายุ` : `−${s.points} pts · Expires`} {fmt(s.expiresAt)} ({STRIKE_EXPIRE_DAYS} {th ? "วัน" : "days"})</p>
           </div>
         ))}
 

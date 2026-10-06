@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Toast } from "@/components/ui";
 import { MEMBERS } from "@/lib/admin-data";
 import { STRIKE_LIMIT as LIMIT, strikeStatus } from "@/lib/strikes";
@@ -16,6 +16,9 @@ export default function AdminMembersPage() {
   const [q, setQ] = useState("");
   const [selId, setSelId] = useState(MEMBERS[0].id);
   const [toast, setToast] = useState("");
+  // ใบเตือนจากการตัดสินผิดนัด (provider_strikes) ต่อ provider_id — อ่านอย่างเดียว
+  const [live, setLive] = useState<Record<string, number>>({});
+  useEffect(() => { fetch("/api/admin/strikes", { cache: "no-store" }).then((r) => r.json()).then((d: { counts?: Record<string, number> }) => setLive(d.counts ?? {})).catch(() => {}); }, []);
   const list = useMemo(() => members.filter((m) => !q || m.name.includes(q)), [members, q]);
   const sel = members.find((m) => m.id === selId);
   const flash = (m: string) => { setToast(m); setTimeout(() => setToast(""), 2200); };
@@ -65,6 +68,22 @@ export default function AdminMembersPage() {
           </Card>
         )}
       </div>
+      {Object.keys(live).length > 0 && (
+        <Card className="mt-3">
+          <b className="font-display">Strike จากคำร้องผิดนัด (อ่านอย่างเดียว · มีผล 90 วัน)</b>
+          <div className="mt-2 flex flex-col gap-1.5 text-sm">
+            {Object.entries(live).sort((a, b) => b[1] - a[1]).map(([pid, n]) => {
+              const m = members.find((x) => x.id === pid);
+              return (
+                <div key={pid} className="flex items-center justify-between gap-3 rounded-xl bg-ink-700 px-3 py-2">
+                  <span className="truncate">{m ? m.name : "Part-Time"} <span className="text-ink-300 text-xs">({pid})</span></span>
+                  <span className="flex items-center gap-2 shrink-0"><Strikes n={Math.min(n, LIMIT)} /><span className={n >= LIMIT ? "text-crimson-200" : "text-gold-300"}>{n}/{LIMIT}</span></span>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
       <Toast show={!!toast}>{toast}</Toast>
     </>
   );

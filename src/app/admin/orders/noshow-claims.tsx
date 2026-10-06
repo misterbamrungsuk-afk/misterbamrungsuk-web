@@ -22,6 +22,11 @@ function Side({ title, ev }: { title: string; ev: Evidence | null }) {
       {!ev ? <p className="text-ink-300">ยังไม่ส่งหลักฐาน</p> : (
         <>
           <p className="text-ink-300 text-xs">ส่งเมื่อ {time(ev.at)}</p>
+          {ev.arrival && (
+            <p>🚩 ถึงจุดนัด {time(ev.arrival.at)} <span className="text-ink-300 text-xs">(รอ {Math.round((Date.parse(ev.at) - Date.parse(ev.arrival.at)) / 60_000)} นาทีก่อนแจ้ง)</span>
+              {" · "}{ev.arrival.gps ? <a className="text-gold-300 underline" target="_blank" rel="noreferrer" href={`https://www.google.com/maps?q=${ev.arrival.gps.lat},${ev.arrival.gps.lng}`}>{ev.arrival.gps.lat.toFixed(5)}, {ev.arrival.gps.lng.toFixed(5)}</a> : <span className="text-crimson-200">ไม่มี GPS ตอนถึง{ev.arrival.gpsError ? ` (${ev.arrival.gpsError})` : ""}</span>}
+            </p>
+          )}
           <p>📍 {ev.gps ? <a className="text-gold-300 underline" target="_blank" rel="noreferrer" href={`https://www.google.com/maps?q=${ev.gps.lat},${ev.gps.lng}`}>{ev.gps.lat.toFixed(5)}, {ev.gps.lng.toFixed(5)}</a> : <span className="text-crimson-200">ไม่มี GPS{ev.gpsError ? ` (${ev.gpsError})` : ""}</span>}{ev.gps && <span className="text-ink-300"> ±{ev.gps.accuracy} ม.</span>}</p>
           <p>📞 ติดต่อ {ev.attempts} ครั้ง <span className="text-ink-300 text-xs">({ev.attemptsSource === "chat_log" ? "จากแชทในแอป" : "กรอกเอง"})</span></p>
           {ev.note && <p className="text-ink-200">“{ev.note}”</p>}

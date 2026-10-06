@@ -8,7 +8,14 @@ import { DEMO_INCOMING, DEMO_ME } from "@/lib/demo-data";
 import { BelongingsChecklist, type BelongingsRecord } from "../../_components/belongings-checklist";
 import { UpsellCard } from "../../_components/upsell-card";
 import { NoShowEvidence } from "@/components/noshow-evidence";
-import { NOSHOW_DECISION_HOURS, PAYOUT_PERCENT } from "@/lib/noshow-rules";
+import { NOSHOW_DECISION_HOURS, NOSHOW_WAIT_MIN, PAYOUT_PERCENT } from "@/lib/noshow-rules";
+
+type ArrivalInfo = { at: string; gps: { lat: number; lng: number; accuracy: number } | null; gpsError?: string };
+const LS_KEY = (id: string) => `mb_arrival:${id}`;
+const readLocal = (id: string): ArrivalInfo | null => { try { const v = localStorage.getItem(LS_KEY(id)); return v ? (JSON.parse(v) as ArrivalInfo) : null; } catch { return null; } };
+const saveLocal = (id: string, a: ArrivalInfo) => { try { localStorage.setItem(LS_KEY(id), JSON.stringify(a)); } catch {} };
+type ApiArrival = { arrived_at: string; lat: number | null; lng: number | null; accuracy: number | null; gps_error: string | null };
+const fromApi = (a: ApiArrival): ArrivalInfo => ({ at: a.arrived_at, gps: a.lat != null && a.lng != null ? { lat: a.lat, lng: a.lng, accuracy: a.accuracy ?? 0 } : null, gpsError: a.gps_error ?? undefined });
 
 type Phase = "waiting" | "running" | "check" | "done" | "noshow" | "claimed";
 
@@ -19,17 +26,55 @@ export default function OnSiteJobPage({ params }: { params: Promise<{ id: string
   const job = DEMO_INCOMING.find((j) => j.id === id) ?? DEMO_INCOMING[0];
 
   const [phase, setPhase] = useState<Phase>("waiting");
-  const [waitSec, setWaitSec] = useState(15 * 60); // รอลูกค้า 15 นาที
+  // ตัวจับเวลารอ 15 นาทีเริ่มจากเวลาที่กด "ถึงจุดนัดแล้ว" (เก็บบนเซิร์ฟเวอร์ + localStorage → รีโหลดแล้วไม่รีเซ็ต)
+  const [arrival, setArrival] = useState<ArrivalInfo | null>(null);
+  const [arriving, setArriving] = useState(false);
+  const [arriveErr, setArriveErr] = useState("");
+  const [now, setNow] = useState(() => Date.now());
+  const waitSec = arrival ? Math.max(0, Math.ceil((NOSHOW_WAIT_MIN * 60_000 - (now - Date.parse(arrival.at))) / 1000)) : NOSHOW_WAIT_MIN * 60;
   const [runSec, setRunSec] = useState(0);
   const [customerHere, setCustomerHere] = useState(false);
   const [belongings, setBelongings] = useState<BelongingsRecord | null>(null);
 
   useEffect(() => {
-    if (phase !== "waiting" || customerHere) return;
-    if (waitSec <= 0) return; // หมดเวลา — ส่งหลักฐาน (GPS + รูป + ประวัติโทร/แชท) ให้แอดมินตรวจ
-    const tm = setTimeout(() => setWaitSec((s) => s - 1), 1000);
+    const local = readLocal(job.id);
+    if (local) setArrival(local);
+    fetch(`/api/jobs/${encodeURIComponent(job.id)}/arrive`, { cache: "no-store" })
+      .then((r) => r.json()).then((d: { arrival?: ApiArrival | null }) => { if (d.arrival) { const a = fromApi(d.arrival); setArrival(a); saveLocal(job.id, a); } })
+      .catch(() => {});
+  }, [job.id]);
+
+  useEffect(() => {
+    if (phase !== "waiting" || customerHere || !arrival || waitSec <= 0) return;
+    const tm = setTimeout(() => setNow(Date.now()), 1000);
     return () => clearTimeout(tm);
-  }, [phase, waitSec, customerHere]);
+  }, [phase, customerHere, arrival, waitSec, now]);
+
+  const arrive = async () => {
+    setArriving(true); setArriveErr("");
+    const pos = await new Promise<{ lat?: number; lng?: number; accuracy?: number; gpsError?: string }>((resolve) => {
+      if (typeof navigator === "undefined" || !navigator.geolocation) return resolve({ gpsError: "unsupported" });
+      navigator.geolocation.getCurrentPosition(
+        (p) => resolve({ lat: p.coords.latitude, lng: p.coords.longitude, accuracy: p.coords.accuracy }),
+        (e) => resolve({ gpsError: e.code === e.PERMISSION_DENIED ? "permission_denied" : "unavailable" }),
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+      );
+    });
+    const fallback: ArrivalInfo = { at: new Date().toISOString(), gps: pos.lat != null ? { lat: pos.lat, lng: pos.lng!, accuracy: Math.round(pos.accuracy ?? 0) } : null, gpsError: pos.gpsError };
+    try {
+      const r = await fetch(`/api/jobs/${encodeURIComponent(job.id)}/arrive`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ providerId: DEMO_ME.id, ...pos }) });
+      const d = (await r.json()) as { ok?: boolean; arrival?: ApiArrival; error?: string };
+      if (!d.ok || !d.arrival) throw new Error(d.error || "failed");
+      const a = fromApi(d.arrival);
+      setArrival(a); saveLocal(job.id, a);
+    } catch {
+      // ออฟไลน์ / API ล้ม → เก็บในเครื่องไว้ก่อน (แอดมินจะไม่เห็นเวลานี้จนกว่าจะกดซ้ำตอนออนไลน์)
+      setArrival(fallback); saveLocal(job.id, fallback);
+      setArriveErr(lang === "th" ? "บันทึกในเครื่องแล้ว ยังส่งเซิร์ฟเวอร์ไม่ได้ — กดอีกครั้งเมื่อมีสัญญาณ" : "Saved on device only — tap again when online");
+    }
+    setNow(Date.now());
+    setArriving(false);
+  };
 
   useEffect(() => {
     if (phase !== "running" && phase !== "check") return;
@@ -70,13 +115,24 @@ export default function OnSiteJobPage({ params }: { params: Promise<{ id: string
         {phase === "waiting" && (
           <div className="glass rounded-2xl p-6 text-center animate-rise border-crimson-500/30">
             <p className="text-xs text-ink-400 uppercase tracking-widest">{lang === "th" ? "รอลูกค้ามาถึง (สูงสุด 15 นาที)" : "Waiting for customer (max 15 min)"}</p>
-            <p className={`text-5xl font-black my-4 ${waitSec <= 300 ? "text-crimson-400" : "text-gold-400"}`}>{mmss(waitSec)}</p>
+            {arrival ? (
+              <>
+                <p className={`text-5xl font-black my-4 ${waitSec <= 300 ? "text-crimson-400" : "text-gold-400"}`}>{mmss(waitSec)}</p>
+                <p className="text-[11px] text-ink-400 -mt-2 mb-3">🚩 {lang === "th" ? "ถึงจุดนัด" : "Arrived"} {new Date(arrival.at).toLocaleTimeString(lang === "th" ? "th-TH" : "en-GB", { hour: "2-digit", minute: "2-digit" })}{arrival.gps ? ` · GPS ±${arrival.gps.accuracy} ม.` : lang === "th" ? " · ไม่มี GPS" : " · no GPS"}</p>
+              </>
+            ) : (
+              <div className="my-4">
+                <p className="text-sm text-ink-300 mb-3">{lang === "th" ? "กดเมื่อถึงจุดนัด ระบบเริ่มนับเวลารอ 15 นาทีจากตอนนี้" : "Tap when you reach the meeting point; the 15-minute wait starts then"}</p>
+                <button onClick={arrive} disabled={arriving} className="btn-crimson rounded-xl px-8 py-3 font-bold w-full disabled:opacity-60">📍 {arriving ? "…" : lang === "th" ? "ถึงจุดนัดแล้ว" : "I've arrived"}</button>
+              </div>
+            )}
+            {arriveErr && <p className="text-[11px] text-crimson-300 mb-2">{arriveErr}</p>}
             <div className="flex flex-col gap-2">
               <button onClick={() => { setCustomerHere(true); setPhase("running"); }} className="btn-crimson rounded-xl px-8 py-3 font-bold">
                 ✅ {lang === "th" ? "ลูกค้ามาถึงแล้ว — เริ่มงาน" : "Customer arrived — start"}
               </button>
-              <button onClick={() => setPhase("noshow")} disabled={waitSec > 0} className="btn-ghost rounded-xl px-8 py-3 text-sm disabled:opacity-40">
-                🚫 {lang === "th" ? "ลูกค้าไม่มา" : "Customer no-show"}{waitSec > 0 && <span className="block text-[10px] text-ink-400">{lang === "th" ? `กดได้เมื่อรอครบ 15 นาที (อีก ${mmss(waitSec)})` : `Available after 15 min (${mmss(waitSec)})`}</span>}
+              <button onClick={() => setPhase("noshow")} disabled={!arrival || waitSec > 0} className="btn-ghost rounded-xl px-8 py-3 text-sm disabled:opacity-40">
+                🚫 {lang === "th" ? "ลูกค้าไม่มา" : "Customer no-show"}{!arrival ? <span className="block text-[10px] text-ink-400">{lang === "th" ? "กด \"ถึงจุดนัดแล้ว\" ก่อน" : "Tap \"I've arrived\" first"}</span> : waitSec > 0 && <span className="block text-[10px] text-ink-400">{lang === "th" ? `กดได้เมื่อรอครบ 15 นาทีนับจากถึงจุดนัด (อีก ${mmss(waitSec)})` : `Available 15 min after arrival (${mmss(waitSec)})`}</span>}
               </button>
             </div>
             <p className="text-[10px] text-ink-500 mt-4">{lang === "th" ? "รอครบ 15 นาที + เช็กอิน GPS + ถ่ายรูปที่จุดนัด แอดมินตรวจหลักฐานทั้งสองฝ่ายก่อนตัดสิน" : "Wait 15 min, GPS check-in and photo at the spot; admin reviews both sides"}</p>

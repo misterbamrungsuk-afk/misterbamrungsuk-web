@@ -25,7 +25,8 @@ function checkMissing(err: { code?: string; message?: string } | null) {
 let sb: SupabaseClient | null = null;
 const db = () => (sb ??= createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } }));
 
-type Demo = { rows: NoShowClaim[]; files: Map<string, { type: string; data: Buffer }>; strikes: { providerId: string; ref: string; at: string }[] };
+export interface ProviderStrike { id: string; provider_id: string; reason: string; ref: string | null; points: number; created_at: string }
+type Demo = { rows: NoShowClaim[]; files: Map<string, { type: string; data: Buffer }>; strikes: ProviderStrike[] };
 const g = globalThis as unknown as { __mbNoShow?: Demo };
 const ago = (h: number) => new Date(Date.now() - h * 3600_000).toISOString();
 const demo: Demo = (g.__mbNoShow ??= {
@@ -99,7 +100,8 @@ export async function submitEvidence(input: {
     if (!Number(existing.amount) && input.amount) meta.amount = input.amount;
     if (!existing.customer_name && input.customerName) meta.customer_name = input.customerName;
     if (!existing.provider_name && input.providerName) meta.provider_name = input.providerName;
-    if (!existing.provider_id && input.providerId) meta.provider_id = input.providerId;
+    // ฝั่ง Part-Time รู้ id ตัวเองแน่นอน → ใช้แทนค่าที่ลูกค้าส่งมา (strike ต้องลงคนที่ถูก)
+    if (input.providerId && (input.side === "provider" ? existing.provider_id !== input.providerId : !existing.provider_id)) meta.provider_id = input.providerId;
     if (noshowDemo()) { Object.assign(existing, meta, { [field]: input.evidence }); return existing; }
     const { data, error } = await db().from("noshow_claims").update({ ...meta, [field]: input.evidence }).eq("id", existing.id).select("*").single();
     if (error) throw new Error(error.message);
@@ -132,16 +134,51 @@ export async function decideClaim(id: string, decision: Exclude<ClaimStatus, "pe
   };
   if (noshowDemo()) {
     Object.assign(c, patch);
-    if (providerFault) demo.strikes.push({ providerId: c.provider_id, ref: c.booking_id, at: patch.decided_at! });
+    if (providerFault) demo.strikes.push({ id: randomUUID(), provider_id: c.provider_id, reason: "no_show", ref: c.booking_id, points: NOSHOW_POINTS, created_at: patch.decided_at! });
   } else {
     const { data, error } = await db().from("noshow_claims").update(patch).eq("id", id).eq("status", "pending").select("*").single();
     if (error) throw new Error(error.message);
     Object.assign(c, data);
     if (providerFault) {
-      const { error: e2 } = await db().from("provider_strikes").insert({ provider_id: c.provider_id, reason: "no_show", ref: c.booking_id, points: NOSHOW_POINTS });
-      if (e2) console.error("strike insert", e2.message);
+      if (!c.provider_id) console.warn("[noshow] provider_no_show without provider_id — strike not recorded", c.booking_id);
+      else {
+        const { error: e2 } = await db().from("provider_strikes").insert({ provider_id: c.provider_id, reason: "no_show", ref: c.booking_id, points: NOSHOW_POINTS, created_at: patch.decided_at });
+        // ตาราง strike ไม่มี → เก็บในหน่วยความจำ ไม่ให้ใบเตือนหาย
+        if (e2) { console.error("strike insert", e2.message); demo.strikes.push({ id: randomUUID(), provider_id: c.provider_id, reason: "no_show", ref: c.booking_id, points: NOSHOW_POINTS, created_at: patch.decided_at! }); }
+      }
     }
   }
   store().audit.unshift({ id: `a-${Date.now()}`, actor: admin, action: `noshow.${decision}`, entity: `Booking ${c.booking_id}`, at: new Date().toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Bangkok" }) });
   return c;
+}
+
+// ── ใบเตือน (strike) จากการตัดสิน — provider_strikes หรือหน่วยความจำ ──
+const gs = globalThis as unknown as { __mbStrikesMissing?: boolean };
+async function strikeRows(providerId?: string): Promise<ProviderStrike[]> {
+  const local = demo.strikes.filter((s) => !providerId || s.provider_id === providerId);
+  if (envDemo || gs.__mbStrikesMissing) return local;
+  let q = db().from("provider_strikes").select("*").order("created_at", { ascending: false }).limit(500);
+  if (providerId) q = q.eq("provider_id", providerId);
+  const { data, error } = await q;
+  if (error) {
+    if (error.code === "PGRST205" || error.code === "42P01" || /could not find the table|does not exist/i.test(error.message)) {
+      if (!gs.__mbStrikesMissing) console.warn("[noshow] provider_strikes table missing — run supabase/0002_noshow.sql; using in-memory store");
+      gs.__mbStrikesMissing = true;
+    } else console.error("strikes select", error.message);
+    return local;
+  }
+  return [...(data as ProviderStrike[]), ...local];
+}
+
+/** ใบเตือนของ Part-Time คนหนึ่ง (ใหม่ → เก่า) */
+export async function listStrikes(providerId: string): Promise<ProviderStrike[]> {
+  return (await strikeRows(providerId)).sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+/** จำนวนใบเตือนที่ยังไม่หมดอายุ ต่อ provider_id (สำหรับแอดมิน) */
+export async function strikeCounts(expireDays: number): Promise<Record<string, number>> {
+  const since = new Date(Date.now() - expireDays * 86400_000).toISOString();
+  const out: Record<string, number> = {};
+  for (const s of await strikeRows()) if (s.created_at >= since) out[s.provider_id] = (out[s.provider_id] ?? 0) + 1;
+  return out;
 }

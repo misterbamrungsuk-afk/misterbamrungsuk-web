@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { clientIp, rateLimited } from "@/lib/customer/auth";
 import { chatAttempts, savePhoto, submitEvidence } from "@/lib/noshow";
-import type { Evidence } from "@/lib/noshow-rules";
+import { NOSHOW_WAIT_MIN, type Evidence } from "@/lib/noshow-rules";
+import { getArrival } from "@/lib/arrival";
 
 export const runtime = "nodejs";
 const bad = (error: string, status = 400) => NextResponse.json({ ok: false, error }, { status });
@@ -39,9 +40,20 @@ export async function POST(req: Request) {
   }
   if (side === "provider" && (!photo || (!gps && !s("gpsError")))) return bad("ต้องมีรูปสถานที่และเช็กอิน GPS");
 
+  // Part-Time: ต้องกด "ถึงจุดนัดแล้ว" และรอครบ 15 นาทีนับจากเวลาที่บันทึกบนเซิร์ฟเวอร์
+  let arrival: Evidence["arrival"] = null;
+  if (side === "provider") {
+    const a = await getArrival(bookingId).catch(() => null);
+    if (!a) return bad("กด \"ถึงจุดนัดแล้ว\" ก่อน แล้วรอครบ " + NOSHOW_WAIT_MIN + " นาที");
+    const left = NOSHOW_WAIT_MIN * 60_000 - (Date.now() - Date.parse(a.arrived_at));
+    if (left > 0) return bad(`ยังรอไม่ครบ ${NOSHOW_WAIT_MIN} นาที (อีก ${Math.ceil(left / 60_000)} นาที)`);
+    arrival = { at: a.arrived_at, gps: a.lat != null && a.lng != null ? { lat: a.lat, lng: a.lng, accuracy: a.accuracy ?? 0 } : null, gpsError: a.gps_error ?? undefined };
+  }
+
   const evidence: Evidence = {
     at: new Date().toISOString(), gps, gpsError: gps ? undefined : s("gpsError").slice(0, 120) || undefined,
     photo, attempts, attemptsSource: s("attemptsSource") === "chat_log" ? "chat_log" : "manual", note: s("note").slice(0, 500) || undefined,
+    ...(arrival ? { arrival } : {}),
   };
   try {
     const claim = await submitEvidence({

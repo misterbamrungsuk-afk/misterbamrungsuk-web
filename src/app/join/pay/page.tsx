@@ -9,6 +9,7 @@ import { FILE_FIELDS, FORM_KEY, dataUrlToFile, resizeImage, type JoinForm } from
 import { promptPayPayload } from "@/lib/join/promptpay";
 import QRCode from "qrcode";
 import { Turnstile } from "@/components/turnstile";
+import { OtpStep } from "@/components/otp-step";
 
 export default function PayPage() {
   const router = useRouter();
@@ -23,6 +24,7 @@ export default function PayPage() {
   const [err, setErr] = useState("");
   const [ts, setTs] = useState("");
   const [tsKey, setTsKey] = useState(0);
+  const [phoneOk, setPhoneOk] = useState(false);
 
   useEffect(() => {
     try {
@@ -34,6 +36,22 @@ export default function PayPage() {
       router.replace("/join#register");
     }
   }, [router]);
+
+  // ยืนยันเบอร์ไว้แล้วใน 30 นาทีนี้ (cookie) และเบอร์ตรงกับใบสมัคร → ไม่ต้องขอ OTP ซ้ำ
+  useEffect(() => {
+    if (!f?.tel) return;
+    fetch("/api/otp/verify", { cache: "no-store" }).then((r) => r.json()).then((d: { phone?: string | null }) => {
+      if (d.phone && d.phone === f.tel.replace(/\D/g, "")) setPhoneOk(true);
+    }).catch(() => {});
+  }, [f?.tel]);
+
+  const setTel = (tel: string) => {
+    if (!f) return;
+    const next = { ...f, tel };
+    setF(next);
+    setPhoneOk(false);
+    try { sessionStorage.setItem(FORM_KEY, JSON.stringify(next)); } catch {}
+  };
 
   useEffect(() => {
     if (!f?.package) return;
@@ -60,6 +78,7 @@ export default function PayPage() {
   };
 
   const submit = async () => {
+    if (!phoneOk) return setErr("ยืนยันเบอร์โทรด้วยรหัส OTP ก่อน");
     if (!slip) return setErr("แนบสลิปการโอนก่อน");
     setBusy(true);
     setErr("");
@@ -80,6 +99,7 @@ export default function PayPage() {
       fd.append("slip", await dataUrlToFile(slip, "slip.jpg"));
       const res = await fetch("/api/join/register", { method: "POST", body: fd });
       const data = await res.json();
+      if (data.needOtp) setPhoneOk(false);
       if (!res.ok || !data.ok) throw new Error(data.error || "ส่งข้อมูลไม่สำเร็จ");
       sessionStorage.removeItem(FORM_KEY);
       router.replace(`/join/done/${data.mb_code}`);
@@ -161,10 +181,16 @@ export default function PayPage() {
         </label>
       </section>
 
+      <section className="mt-5">
+        <p className="text-sm text-ink-300 mb-2">ยืนยันเบอร์มือถือ (OTP) ก่อนส่งใบสมัคร</p>
+        <OtpStep phone={f.tel} onPhone={setTel} verified={phoneOk} onVerified={() => setPhoneOk(true)}
+          inputCls="h-12 w-full min-w-0 rounded-2xl border border-ink-600 bg-ink-900/60 px-4 text-[15px]" />
+      </section>
+
       {err && <p role="alert" className="text-sm text-crimson-300 mt-4">{err}</p>}
 
       <Turnstile key={tsKey} onToken={setTs} className="mt-5 flex justify-center" />
-      <button onClick={submit} disabled={busy} className="btn-crimson w-full h-14 mt-6 font-display font-semibold text-lg">
+      <button onClick={submit} disabled={busy || !phoneOk} className="btn-crimson w-full h-14 mt-6 font-display font-semibold text-lg">
         {busy ? "กำลังส่งข้อมูล…" : "ยืนยันการชำระเงิน"}
       </button>
       <p className="text-xs text-ink-400 text-center mt-3">ทีมงานตรวจสลิปภายใน 24 ชม. และแจ้งผลทาง LINE</p>

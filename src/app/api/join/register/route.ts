@@ -6,6 +6,8 @@ import { applicantRegistered, sendAll } from "@/lib/email";
 import { ageFrom } from "@/lib/join/form";
 import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/join/legal";
 import { TURNSTILE_ERROR, verifyTurnstile } from "@/lib/turnstile";
+import { cookies } from "next/headers";
+import { PHONE_COOKIE, normalizePhone, readPhoneToken } from "@/lib/otp";
 
 export const runtime = "nodejs";
 
@@ -100,6 +102,11 @@ export async function POST(req: Request) {
   }
   if (errors.length) return NextResponse.json({ ok: false, error: "กรอกข้อมูลไม่ครบหรือไม่ถูกต้อง", fields: errors }, { status: 400 });
 
+  // เบอร์ที่ส่งมาต้องตรงกับเบอร์ที่ยืนยัน OTP แล้ว (cookie ลงลายเซ็นจาก /api/otp/verify)
+  const verifiedPhone = readPhoneToken((await cookies()).get(PHONE_COOKIE)?.value);
+  if (!verifiedPhone || verifiedPhone !== normalizePhone(tel))
+    return NextResponse.json({ ok: false, error: "กรุณายืนยันเบอร์โทรด้วยรหัส OTP ก่อนส่งใบสมัคร", fields: ["tel"], needOtp: true }, { status: 403 });
+
   try {
     const row = await createApplicant(
       {
@@ -114,6 +121,7 @@ export async function POST(req: Request) {
         activities, massage_cert: pkg === "B" ? cert === "yes" : null,
         availability: { slots, days, hours: hoursPerDay },
         ack_hours: true, ack_no_refuse: true,
+        phone_verified_at: new Date().toISOString(),
         // ต่อท้าย "/criminal" ใน consent_version ด้วย — บันทึกความยินยอมได้แม้ยังไม่รัน migration 0002
         consent_version: `privacy-${PRIVACY_VERSION}/terms-${TERMS_VERSION}/criminal`, consented_at: new Date().toISOString(),
         package: pkg, amount: PACKAGES[pkg].price, payment_method: method as "qr" | "transfer", ip,
@@ -124,7 +132,9 @@ export async function POST(req: Request) {
     // อีเมลแจ้งผู้สมัคร + แอดมิน (ไม่รอ ไม่ทำให้คำขอล้ม)
     void sendAll(applicantRegistered({ mb_code: row.mb_code, first_name: row.first_name, last_name: row.last_name, email: row.email, tel: row.tel, package: PACKAGES[pkg].name ?? pkg, amount: row.amount }));
     if (await appendToSheet(row)) await updateApplicant(row.id, { sheet_synced: true });
-    return NextResponse.json({ ok: true, mb_code: row.mb_code });
+    const res = NextResponse.json({ ok: true, mb_code: row.mb_code });
+    res.cookies.delete(PHONE_COOKIE);
+    return res;
   } catch (e) {
     console.error("register failed", e);
     return bad("ระบบขัดข้อง กรุณาลองใหม่อีกครั้ง", 500);

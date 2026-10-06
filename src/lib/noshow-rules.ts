@@ -22,6 +22,8 @@ export interface Evidence {
   attempts: number;
   attemptsSource: "chat_log" | "manual";
   note?: string;
+  /** เวลา + GPS ตอนกด "ถึงจุดนัดแล้ว" (ฝั่ง Part-Time; ดึงจากที่บันทึกบนเซิร์ฟเวอร์ ไม่ใช่ค่าที่ client ส่งมา) */
+  arrival?: { at: string; gps: { lat: number; lng: number; accuracy: number } | null; gpsError?: string } | null;
 }
 
 export interface NoShowClaim {

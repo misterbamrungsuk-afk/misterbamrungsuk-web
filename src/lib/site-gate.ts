@@ -13,6 +13,7 @@ export function gateExempt(p: string) {
     p === "/gate" || p === "/api/gate" ||
     p.startsWith("/api/cron/") || // Vercel Cron (ป้องกันด้วย CRON_SECRET เอง)
     p === "/join" || p.startsWith("/join/") || p.startsWith("/api/join/") ||
+    p.startsWith("/api/otp/") || // OTP ใช้ในหน้ารับสมัคร /join/pay (มี Turnstile + rate limit)
     p === "/partner" || p.startsWith("/partner/") || p.startsWith("/api/partner/") ||
     p.startsWith("/_next") || p === "/favicon.ico" || p === "/manifest.webmanifest" ||
     p === "/sw.js" || p.startsWith("/pwa-icon") || p.startsWith("/brand")

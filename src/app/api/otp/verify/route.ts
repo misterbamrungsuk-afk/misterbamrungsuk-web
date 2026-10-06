@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { clientIp, rateLimited } from "@/lib/customer/auth";
-import { PHONE_COOKIE, PHONE_TOKEN_MS, normalizePhone, signPhoneToken, verifyOtp } from "@/lib/otp";
+import { PHONE_COOKIE, PHONE_TOKEN_MS, normalizePhone, readPhoneToken, signPhoneToken, verifyOtp } from "@/lib/otp";
 
 export const runtime = "nodejs";
 
@@ -23,4 +23,11 @@ export async function POST(req: Request) {
     httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: PHONE_TOKEN_MS / 1000,
   });
   return res;
+}
+
+// เบอร์ที่ยืนยันแล้วใน session นี้ (cookie เป็น httpOnly หน้าเว็บอ่านเองไม่ได้)
+export async function GET(req: Request) {
+  const m = /(?:^|;\s*)mb_phone_ok=([^;]+)/.exec(req.headers.get("cookie") ?? "");
+  const phone = readPhoneToken(m ? decodeURIComponent(m[1]) : undefined);
+  return NextResponse.json({ ok: true, phone: phone ? `0${phone.slice(2)}` : null });
 }
