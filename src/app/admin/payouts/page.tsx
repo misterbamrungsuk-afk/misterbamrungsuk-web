@@ -1,11 +1,12 @@
 "use client";
 
+import { site } from "@/lib/site";
 import { useState } from "react";
 import { Toast, baht } from "@/components/ui";
 import { PAYOUTS } from "@/lib/admin-data";
 import { Card, PageHead, Pill } from "../admin-nav";
 
-const GP = 0.2;
+const GP = site.commissionPercent / 100;
 
 export default function AdminPayoutsPage() {
   const [rows, setRows] = useState(PAYOUTS.map((p) => ({ ...p, paid: false, picked: !p.hold })));
@@ -33,7 +34,7 @@ export default function AdminPayoutsPage() {
 
   return (
     <>
-      <PageHead title="รับเงิน / โอนให้ผู้ให้บริการ" sub="ยอดหลังหัก GP 20% · รายที่ติดข้อพิพาทถูกพักไว้"
+      <PageHead title="รับเงิน / โอนให้ Part-Time" sub={`ยอดหลังหักค่าธรรมเนียม ${site.commissionPercent}% · รายที่ติดข้อพิพาทถูกพักไว้`}
         right={<button onClick={exportCsv} className="h-11 px-4 rounded-xl bg-gold-500 text-[#1a1206] font-semibold">ส่งออกไฟล์โอน (CSV)</button>} />
       <div className="flex flex-col gap-2">
         {rows.map((r) => (

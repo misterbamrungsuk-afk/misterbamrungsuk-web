@@ -1,5 +1,6 @@
 "use client";
 
+import { site } from "@/lib/site";
 import Link from "next/link";
 import { baht } from "@/components/ui";
 import { ADMIN_ORDERS, AUDIT, KYC_QUEUE, PAYOUTS, WEEKLY } from "@/lib/admin-data";
@@ -9,7 +10,7 @@ export default function AdminGpPage() {
   const gmv = WEEKLY.reduce((s, w) => s + w.gmv, 0);
   const gp = WEEKLY.reduce((s, w) => s + w.gp, 0);
   const held = ADMIN_ORDERS.filter((o) => ["held", "in_progress", "awaiting_release", "disputed"].includes(o.status)).reduce((s, o) => s + o.amount, 0);
-  const pendingPay = PAYOUTS.filter((p) => !p.hold).reduce((s, p) => s + p.gross * 0.8, 0);
+  const pendingPay = PAYOUTS.filter((p) => !p.hold).reduce((s, p) => s + p.gross * (100 - site.commissionPercent) / 100, 0);
   const max = Math.max(...WEEKLY.map((w) => w.gmv));
   const sos = AUDIT.find((a) => a.type === "SOS");
 
@@ -25,7 +26,7 @@ export default function AdminGpPage() {
       )}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card><p className="text-xs text-ink-300">GMV เดือนนี้</p><p className="font-display font-semibold text-2xl mt-1">{baht(gmv)}</p></Card>
-        <Card className="border-gold-500"><p className="text-xs text-gold-600">รายได้ GP 20%</p><p className="font-display font-semibold text-2xl mt-1 text-gold-300">{baht(gp)}</p></Card>
+        <Card className="border-gold-500"><p className="text-xs text-gold-600">รายได้ค่าธรรมเนียม {site.commissionPercent}%</p><p className="font-display font-semibold text-2xl mt-1 text-gold-300">{baht(gp)}</p></Card>
         <Card><p className="text-xs text-ink-300">เงินถูกกันในระบบ</p><p className="font-display font-semibold text-2xl mt-1">{baht(held)}</p></Card>
         <Link href="/admin/payouts" className="block"><Card className="h-full hover:border-gold-500 transition"><p className="text-xs text-ink-300">ค้างโอนให้ผู้ให้บริการ</p><p className="font-display font-semibold text-2xl mt-1">{baht(pendingPay)}</p></Card></Link>
       </div>
