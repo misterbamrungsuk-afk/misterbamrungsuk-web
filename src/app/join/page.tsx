@@ -107,7 +107,7 @@ export default function SalePage() {
     try {
       sessionStorage.setItem(FORM_KEY, JSON.stringify(f));
     } catch {
-      return setErrs({ photo: "รูปใหญ่เกินไป ลองรูปอื่น" });
+      return setErrs({ photo: "ไฟล์รูปใหญ่เกินไป กรุณาเลือกรูปอื่น" });
     }
     router.push("/join/pay");
   };
@@ -159,7 +159,7 @@ export default function SalePage() {
             </div>
 
             <button onClick={toForm} disabled={closed} className="btn-crimson w-full h-14 mt-5 font-display font-semibold text-[17px] flex items-center justify-center gap-2">
-              {closed ? "ปิดรับสมัครแล้ว" : <>สมัครเป็นพาร์ทเนอร์ <span aria-hidden>→</span></>}
+              {closed ? "ปิดรับสมัครแล้ว" : <>สมัครเป็นพาร์ตเนอร์ <span aria-hidden>→</span></>}
             </button>
             <p className="text-center text-[11px] text-ink-400 mt-3 animate-bounce">เลื่อนดูรายละเอียด ↓</p>
           </div>
@@ -193,8 +193,8 @@ export default function SalePage() {
 
           {/* ── 3 · Packages ── */}
           <section className="pb-10" id="packages">
-            <SectionHead kicker="เลือกระดับความสำเร็จของคุณ" title="การลงทุนเพื่อภาพลักษณ์ และมาตรฐานที่ลูกค้า VIP ไว้วางใจ" />
-            <p className="reveal text-[14px] text-ink-200 mt-3 leading-relaxed">เพื่อรักษามาตรฐานระดับพรีเมียม เราจึงมีระบบ “เงินประกันมาตรฐานแบรนด์” ซึ่งคุณจะ <b className="text-gold-300">ได้รับคืนเต็มจำนวน</b> เมื่อทำงานครบตามกำหนด ถือเป็นการการันตีความมั่นใจทั้งสำหรับคุณและลูกค้า</p>
+            <SectionHead kicker="เลือกระดับความสำเร็จของคุณ" title="การลงทุนเพื่อภาพลักษณ์และมาตรฐานที่ลูกค้า VIP ไว้วางใจ" />
+            <p className="reveal text-[14px] text-ink-200 mt-3 leading-relaxed">เพื่อรักษามาตรฐานระดับพรีเมียม เราจึงมีระบบ “เงินประกันมาตรฐานแบรนด์” ซึ่งคุณจะ<b className="text-gold-300">ได้รับคืนเต็มจำนวน</b> เมื่อทำงานครบตามกำหนด ถือเป็นการรับประกันความมั่นใจทั้งสำหรับคุณและลูกค้า</p>
             <div className="flex flex-col gap-4 mt-5" role="radiogroup" aria-label="แพ็กเกจ">
               {(Object.keys(PACKAGES) as PackageKey[]).map((k) => {
                 const p = PACKAGES[k];
@@ -325,7 +325,7 @@ export default function SalePage() {
                     })}
                   </div>
                 </Field>
-                <Field label="แนะนำตัวสั้นๆ (ไม่บังคับ)"><textarea className="input-dark min-h-24 py-3" maxLength={1000} value={f.intro} onChange={(e) => set("intro", e.target.value)} placeholder="เล่าเกี่ยวกับตัวคุณ หรือเหตุผลที่สนใจ" /></Field>
+                <Field label="แนะนำตัวสั้น ๆ (ไม่บังคับ)"><textarea className="input-dark min-h-24 py-3" maxLength={1000} value={f.intro} onChange={(e) => set("intro", e.target.value)} placeholder="เล่าเกี่ยวกับตัวคุณ หรือเหตุผลที่สนใจ" /></Field>
               </Card>
 
               <Card title="ความสามารถพิเศษ (ทำอาหาร, ดนตรี ฯลฯ)" err={errs.talents}>
@@ -334,7 +334,7 @@ export default function SalePage() {
                 </Field>
               </Card>
 
-              <Card title="กิจกรรม และเวลาที่สะดวกรับลูกค้า (วันไหน, สัปดาห์ละกี่วัน/กี่ชม.)">
+              <Card title="กิจกรรมและเวลาที่สะดวกรับลูกค้า (วันไหน สัปดาห์ละกี่วัน วันละกี่ชั่วโมง)">
                 <Field label="กิจกรรมที่ทำได้ (เลือกได้หลายข้อ)" err={errs.activities}>
                   <Chips options={ACTIVITIES} value={f.activities ?? []} onChange={(v) => set("activities", v)} />
                 </Field>
@@ -378,7 +378,7 @@ export default function SalePage() {
                 </Consent>
                 {errs.consent_criminal && <p data-err="1" className="text-[12px] text-crimson-300 -mt-1">{errs.consent_criminal}</p>}
                 <Consent checked={!!f.ack_hours} onChange={(v) => set("ack_hours", v)} required>
-                  รับทราบว่าการให้บริการอยู่ที่ {f.package ? PACKAGES[f.package].hours : "3–8 (A) / 3–5 (B)"} ชม. แล้วแต่ package
+                  รับทราบว่าการให้บริการอยู่ที่ {f.package ? PACKAGES[f.package].hours : "3–8 (A) / 3–5 (B)"} ชม. แล้วแต่แพ็กเกจ
                 </Consent>
                 <Consent checked={!!f.ack_no_refuse} onChange={(v) => set("ack_no_refuse", v)} required>
                   {ACK_NO_REFUSE_TEXT}

@@ -126,7 +126,7 @@ export default function PayPage() {
         <div className="flex justify-between text-sm mt-2"><span className="text-ink-300">แพ็กเกจ {f.package}</span><span>{pkg.name}</span></div>
         <div className="mt-3 rounded-2xl bg-ink-900/60 px-4 py-3 text-[13px] space-y-1.5">
           {feeBreakdown(f.package).map((x) => <div key={x.name} className="flex justify-between gap-3"><span className="text-ink-300">{x.name}</span><span className="font-display text-gold-300">฿{x.amount.toLocaleString("th-TH")}</span></div>)}
-          <p className="text-[11.5px] text-ink-400 pt-1">ฟรีค่าสมาชิก 6 เดือนแรก · หลังจากนั้น ฿{pkg.membershipAfter.toLocaleString("th-TH")} / 6 เดือน</p>
+          <p className="text-[11.5px] text-ink-400 pt-1">ฟรีค่าธรรมเนียมระบบ 6 เดือนแรก · หลังจากนั้น ฿{pkg.membershipAfter.toLocaleString("th-TH")} / 6 เดือน</p>
         </div>
         <div className="flex justify-between items-baseline border-t border-ink-600 mt-4 pt-4">
           <span className="font-medium">ยอดชำระรวม</span>
@@ -156,7 +156,7 @@ export default function PayPage() {
                 <p className="font-display text-2xl font-bold mt-1">฿{pkg.price.toLocaleString("th-TH", { minimumFractionDigits: 2 })}</p>
               </div>
             </div>
-            <p className="text-[13px] text-ink-300 mt-3 text-center leading-relaxed">สแกนด้วยแอปธนาคารใดก็ได้ ยอดเงินขึ้นให้อัตโนมัติ<br />ตรวจชื่อผู้รับให้ตรงก่อนกดยืนยัน แล้วแคปสลิปมาแนบด้านล่าง</p>
+            <p className="text-[13px] text-ink-300 mt-3 text-center leading-relaxed">สแกนด้วยแอปธนาคารใดก็ได้ ยอดเงินขึ้นให้อัตโนมัติ<br />ตรวจชื่อผู้รับให้ตรงก่อนกดยืนยัน แล้วบันทึกสลิปมาแนบด้านล่าง</p>
           </div>
         ) : (
           <div className="flex flex-col gap-2 text-sm">
