@@ -84,10 +84,11 @@ export default function PayPage() {
     setErr("");
     try {
       const fd = new FormData();
-      const { skills, activities, avail_slots, accept_terms, consent_pdpa, consent_marketing, photo, id_card, bankbook, other_doc, cert_doc, ...rest } = f;
+      const { skills, activities, talents, avail_slots, accept_terms, consent_pdpa, consent_marketing, photo, id_card, bankbook, other_doc, cert_doc, ...rest } = f;
       Object.entries(rest).forEach(([k, v]) => fd.append(k, String(v)));
       skills.forEach((s) => fd.append("skills", s));
       (activities ?? []).forEach((s) => fd.append("activities", s));
+      (talents ?? []).forEach((s) => fd.append("talents", s));
       (avail_slots ?? []).forEach((s) => fd.append("avail_slots", s));
       fd.append("accept_terms", String(accept_terms));
       fd.append("consent_pdpa", String(consent_pdpa));

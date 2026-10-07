@@ -192,6 +192,7 @@ export function ApplicantList({ initial }: { initial: Applicant[] }) {
                 ["โทร", sel.tel], ["LINE", sel.line_id || "-"], ["อีเมล", sel.email || "-"], ["รหัสไปรษณีย์", sel.zipcode],
                 ["ประสบการณ์", sel.experience], ["จุดเด่น", sel.skills.join(", ") || "-"],
                 ["กิจกรรม", sel.activities?.join(", ") || "-"],
+                ["ความสามารถพิเศษ", sel.talents?.join(", ") || "-"],
                 ["ใบรับรองนวด", sel.massage_cert == null ? "-" : sel.massage_cert ? "มี" : "ไม่มี"],
                 ["เวลาที่สะดวก", sel.availability ? `${sel.availability.slots.join(" / ")} · ${sel.availability.days ?? "-"} วัน/สัปดาห์ · ${sel.availability.hours ?? "-"} ชม./วัน` : "-"],
                 ["รับทราบชั่วโมงงาน", sel.ack_hours ? "✓" : "-"], ["ยอมรับไม่ปฏิเสธลูกค้า", sel.ack_no_refuse ? "✓" : "-"],

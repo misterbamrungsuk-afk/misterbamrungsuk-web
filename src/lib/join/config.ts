@@ -27,7 +27,7 @@ export const PACKAGES = {
     ] as readonly string[],
   }),
   B: pkg({
-    name: "เพื่อนกินเที่ยว — มีความสามารถในการนวด",
+    name: "เพื่อนกินเที่ยว – ทักษะการนวด",
     nameEn: "Premium Companion + Massage",
     guarantee: 15000,
     training: 6000,
@@ -49,8 +49,8 @@ export const GUARANTEE_REFUND_NOTE = "คืนค่าการันตีแ
 /** รายการแยกยอด (แสดงทุกหน้า: landing / ชำระเงิน / done / แอดมิน) */
 export function feeBreakdown(k: PackageKey) {
   return [
-    { name: "ค่าการันตีแบรนด์ (คืนเมื่อครบ 1 ปี)", amount: PACKAGES[k].guarantee },
-    { name: "ค่าอบรม", amount: PACKAGES[k].training },
+    { name: "เงินประกันรักษามาตรฐานแบรนด์ (Refundable)", amount: PACKAGES[k].guarantee },
+    { name: k === "B" ? "ค่าอบรม (รวมยูนิฟอร์ม + Massage Oil 1 เซ็ต)" : "ค่าอบรม", amount: PACKAGES[k].training },
   ];
 }
 
@@ -170,3 +170,39 @@ export const BANKS = ["กสิกรไทย", "ไทยพาณิชย�
 
 export const EXPERIENCE = ["ไม่มี", "1-3 ปี", "> 3 ปี"] as const;
 export const STRENGTHS = ["บุคลิก", "รูปร่าง", "ทักษะนวด", "การสื่อสาร"] as const;
+
+/** ความสามารถพิเศษ (multi-select บังคับ ≥1) — เก็บใน applicants.talents (join/0005) + docs.extra */
+export const TALENTS = ["ทำอาหาร", "เล่นดนตรี / ร้องเพลง", "ถ่ายรูป", "พูดอังกฤษ", "ขับรถ", "ฟิตเนส", "ไกด์", "นวด", "อื่นๆ"] as const;
+
+/** ข้อความ checkbox บังคับ (ack_no_refuse) ตามชีตคุณพล */
+export const ACK_NO_REFUSE_TEXT = "รับทราบเงื่อนไขค่าอบรมและเงินประกัน 1 ปี และกฎการห้ามปฏิเสธงานโดยไม่มีเหตุผล";
+
+/** ทำไมต้อง Join Us? (4 ข้อจากชีต — แสดงก่อน Packages) */
+export const WHY_JOIN = [
+  { t: "รับรายได้สูง คืนทุนไว", d: "1,000–2,000 บาท / การดูแล 1 ครั้ง" },
+  { t: "มีฐานลูกค้ารองรับ", d: "ไม่ต้องหาลูกค้าเอง มีการตลาดล่วงหน้าแล้ว" },
+  { t: "ใช้ความสามารถพิเศษสร้างมูลค่า", d: "ทำอาหาร เล่นดนตรี ฯลฯ" },
+  { t: "อิสระเรื่องเวลา", d: "เลือกเวลาเอง 3–8 ชม. / แพ็กเกจ" },
+];
+
+/** รายได้ต่อการดูแล 1 ครั้ง (ตามชีต) */
+export const INCOME_PER_JOB = { min: 1000, max: 2000 };
+
+/** ค่าธรรมเนียมระบบปกติ / 6 เดือน (ฟรี 6 เดือนแรก) */
+export const SYSTEM_FEE_6M: Record<PackageKey, number> = { A: 3500, B: 5000 };
+
+/** รายได้พิเศษเฉพาะ B — ค่าโปรโมทตัวเอง (รีวิว) */
+export const B_EXTRA_INCOME = "ค่าโปรโมทตัวเอง (รีวิว) เดือนละ [รอกำหนด] (ส่งรายละเอียด ต.ค.)";
+
+/** จุดคืนทุน = ค่าอบรม (เงินประกันได้คืน) ÷ รายได้/ครั้ง → จำนวนนัด (ปัดขึ้น) */
+export function payback(k: PackageKey) {
+  const cost = PACKAGES[k].training;
+  return { cost, min: Math.ceil(cost / INCOME_PER_JOB.max), max: Math.ceil(cost / INCOME_PER_JOB.min) };
+}
+
+/** ทำไมต้องชำระก่อน? */
+export const PAY_FIRST = [
+  { t: "เงินประกัน (Refundable)", d: "คืนเต็มจำนวนเมื่อครบ 1 ปี หากไม่ผิดกฎ เช่น ไม่ปฏิเสธรับลูกค้า" },
+  { t: "ค่าอบรมแลกกับอะไร", d: "หลักสูตร / ยูนิฟอร์ม / ฐานลูกค้า" },
+  { t: "ฟรีค่าธรรมเนียมระบบ 6 เดือน", d: "มูลค่า ฿3,500 (A) / ฿5,000 (B)" },
+];

@@ -3,15 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Logo } from "@/components/ui";
-import { ACTIVITIES, AGE_LIMITS, BRAND, CLOSE_AT, GUARANTEE_REFUND_NOTE, INVITE, JOIN_STEPS, TIMELINE, TIME_SLOTS, ageError, feeBreakdown, EXPERIENCE, FAQ, HERO_IMAGE, PACKAGES, QUOTA, STRENGTHS, TERMS_SUMMARY, type PackageKey } from "@/lib/join/config";
+import { ACTIVITIES, AGE_LIMITS, BRAND, CLOSE_AT, GUARANTEE_REFUND_NOTE, INVITE, JOIN_STEPS, TIMELINE, TIME_SLOTS, ageError, feeBreakdown, EXPERIENCE, FAQ, HERO_IMAGE, PACKAGES, QUOTA, STRENGTHS, TERMS_SUMMARY, TALENTS, ACK_NO_REFUSE_TEXT, WHY_JOIN, PAY_FIRST, SYSTEM_FEE_6M, B_EXTRA_INCOME, INCOME_PER_JOB, payback, type PackageKey } from "@/lib/join/config";
 import { FORM_KEY, ageFrom, emptyForm, resizeImage, type FileField, type JoinForm } from "@/lib/join/form";
 
-const WHY = [
-  { t: "มาตรฐานสูง", d: "ศิลปะการบริการแบบ Butler", icon: "M12 3l2.6 5.6 6 .7-4.5 4 1.3 6L12 16.4 6.6 19.3l1.3-6-4.5-4 6-.7z" },
-  { t: "กลุ่มลูกค้าชัดเจน", d: "สุภาพสตรีและชาวต่างชาติ", icon: "M16 11a4 4 0 1 0-8 0M4 21a8 8 0 0 1 16 0M12 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" },
-  { t: "ความปลอดภัย", d: "ระบบคัดกรองลูกค้าที่รัดกุม", icon: "M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6zM8.5 12l2.5 2.5 4.5-5" },
-  { t: "รายได้คุ้มค่า", d: "รับงานแบบ On-Demand", icon: "M3 17l6-6 4 4 8-8M15 7h6v6" },
+const WHY_ICONS = [
+  "M3 17l6-6 4 4 8-8M15 7h6v6",
+  "M16 11a4 4 0 1 0-8 0M4 21a8 8 0 0 1 16 0M12 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
+  "M12 3l2.6 5.6 6 .7-4.5 4 1.3 6L12 16.4 6.6 19.3l1.3-6-4.5-4 6-.7z",
+  "M12 7v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z",
 ];
+const WHY = WHY_JOIN.map((w, i) => ({ ...w, icon: WHY_ICONS[i] }));
 
 const baht = (n: number) => n.toLocaleString("th-TH");
 
@@ -28,6 +29,7 @@ export default function SalePage() {
   const router = useRouter();
   const [f, setF] = useState<JoinForm>(emptyForm);
   const [errs, setErrs] = useState<Record<string, string>>({});
+  const [compare, setCompare] = useState(false);
   const [faq, setFaq] = useState<number | null>(0);
   const [seats, setSeats] = useState<{ left: number; closed: boolean } | null>(null);
   const [parallax, setParallax] = useState(0);
@@ -85,6 +87,7 @@ export default function SalePage() {
     if (!f.experience) e.experience = "เลือกประสบการณ์";
     if (!f.activities?.length) e.activities = "เลือกอย่างน้อย 1 กิจกรรม";
     if (f.package === "B" && !f.massage_cert) e.massage_cert = "ระบุว่ามีใบรับรองการนวดหรือไม่";
+    if (!f.talents?.length) e.talents = "เลือกความสามารถพิเศษอย่างน้อย 1 ข้อ";
     if (!f.avail_slots?.length) e.avail_slots = "เลือกช่วงเวลาที่สะดวก";
     if (!(+f.avail_days >= 1 && +f.avail_days <= 7)) e.avail_days = "1–7";
     if (!(+f.avail_hours >= 1 && +f.avail_hours <= 24)) e.avail_hours = "1–24";
@@ -133,7 +136,7 @@ export default function SalePage() {
           <div className="relative z-10 mt-auto px-5 pb-8">
             <div className="inline-flex items-center gap-2 rounded-full bg-ink-900/75 backdrop-blur border border-gold-500/50 pl-1.5 pr-3.5 py-1.5">
               <span className="w-6 h-6 rounded-full bg-gold-500 text-[#1a1206] grid place-items-center text-xs">⚡</span>
-              <span className="text-[12px] text-gold-200 leading-tight">รับจำกัด {QUOTA} ท่าน · ถึงสิ้น {closeDate}</span>
+              <span className="text-[12px] text-gold-200 leading-tight"><b className="text-gold-300">รับ {QUOTA} ท่าน</b> · ถึงสิ้น {closeDate}</span>
             </div>
 
             <h1 className="font-display text-[34px] leading-[1.18] font-semibold mt-4 tracking-tight">
@@ -177,25 +180,6 @@ export default function SalePage() {
             </div>
           </section>
 
-          {/* ── 2 · Why choose us ── */}
-          <section className="pt-8 pb-12">
-            <SectionHead kicker="WHY US" title="ทำไมต้องร่วมงานกับเรา" />
-            <div className="mt-6 rounded-[28px] border border-gold-500/25 bg-[linear-gradient(165deg,rgba(212,175,55,.08),rgba(255,255,255,.01)_45%)] px-5">
-              {WHY.map((w, i) => (
-                <div key={w.t} className={`reveal flex items-center gap-4 py-5 ${i ? "border-t border-white/[0.07]" : ""}`} style={{ transitionDelay: `${i * 70}ms` }}>
-                  <span className="font-display text-[28px] font-bold leading-none text-gradient-gold w-10 shrink-0 tabular-nums">0{i + 1}</span>
-                  <span className="flex-1 min-w-0">
-                    <span className="block text-[16px] font-semibold">{w.t}</span>
-                    <span className="block text-[13px] text-ink-300 mt-0.5">{w.d}</span>
-                  </span>
-                  <span className="w-10 h-10 rounded-full border border-gold-500/40 grid place-items-center text-gold-400 shrink-0">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d={w.icon} /></svg>
-                  </span>
-                </div>
-              ))}
-            </div>
-          </section>
-
           {/* ── 2.5 · 5 ขั้นตอน + ไทม์ไลน์ ── */}
           <section className="pb-12">
             <SectionHead kicker="HOW IT WORKS" title="5 ขั้นตอนสู่การรับงาน" />
@@ -224,9 +208,52 @@ export default function SalePage() {
             </div>
           </section>
 
+          {/* ── 2 · Why choose us ── */}
+          <section className="pt-8 pb-12">
+            <SectionHead kicker="WHY US" title="ทำไมต้อง Join Us?" />
+            <div className="mt-6 rounded-[28px] border border-gold-500/25 bg-[linear-gradient(165deg,rgba(212,175,55,.08),rgba(255,255,255,.01)_45%)] px-5">
+              {WHY.map((w, i) => (
+                <div key={w.t} className={`reveal flex items-center gap-4 py-5 ${i ? "border-t border-white/[0.07]" : ""}`} style={{ transitionDelay: `${i * 70}ms` }}>
+                  <span className="font-display text-[28px] font-bold leading-none text-gradient-gold w-10 shrink-0 tabular-nums">0{i + 1}</span>
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-[16px] font-semibold">{w.t}</span>
+                    <span className="block text-[13px] text-ink-300 mt-0.5">{w.d}</span>
+                  </span>
+                  <span className="w-10 h-10 rounded-full border border-gold-500/40 grid place-items-center text-gold-400 shrink-0">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d={w.icon} /></svg>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ── 2.7 · ทำไมต้องชำระก่อน? ── */}
+          <section className="pb-12" id="pay-first">
+            <SectionHead kicker="TRANSPARENCY" title="ทำไมต้องชำระก่อน?" sub="ค่าใช้จ่ายแต่ละส่วนแลกกับอะไร และคืนทุนเมื่อไร" />
+            <div className="mt-5 space-y-2.5">
+              {PAY_FIRST.map((x) => (
+                <div key={x.t} className="reveal rounded-2xl border border-ink-600 bg-white/[0.03] px-4 py-3.5">
+                  <p className="text-[15px] font-semibold text-gold-200">{x.t}</p>
+                  <p className="text-[13px] text-ink-300 mt-0.5">{x.d}</p>
+                </div>
+              ))}
+              <div className="reveal rounded-2xl border border-gold-500/50 bg-gold-500/[0.07] px-4 py-4">
+                <p className="text-[11px] font-semibold tracking-[0.25em] text-gold-400">คำนวณจุดคืนทุนจริง</p>
+                {(Object.keys(PACKAGES) as PackageKey[]).map((k) => {
+                  const pb = payback(k);
+                  return (
+                    <p key={k} className="text-[13.5px] mt-2 leading-relaxed">
+                      <b>แพ็กเกจ {k}:</b> จ่ายจริง ฿{baht(pb.cost)} (ไม่รวมเงินประกันที่ได้คืน) ÷ รายได้ ฿{baht(INCOME_PER_JOB.min)}–{baht(INCOME_PER_JOB.max)}/ครั้ง ≈ <span className="text-gold-300 font-semibold">คืนทุนใน {pb.min}–{pb.max} นัด</span>
+                    </p>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
           {/* ── 3 · Pricing ── */}
           <section className="pb-10" id="packages">
-            <SectionHead kicker="PACKAGES" title="เลือกแพ็กเกจของคุณ" sub="ชำระตอนสมัคร = ค่าการันตีแบรนด์ + ค่าอบรม" />
+            <SectionHead kicker="PACKAGES" title="เลือกแพ็กเกจของคุณ" sub="ชำระตอนสมัคร = เงินประกัน (Refundable) + ค่าอบรม" />
             <div className="flex flex-col gap-4 mt-5" role="radiogroup" aria-label="แพ็กเกจ">
               {(Object.keys(PACKAGES) as PackageKey[]).map((k) => {
                 const p = PACKAGES[k];
@@ -246,12 +273,19 @@ export default function SalePage() {
                           {on && <svg viewBox="0 0 24 24" fill="none" stroke="#1a1206" strokeWidth="3" className="w-4 h-4"><path d="m5 12 5 5 9-10" /></svg>}
                         </span>
                       </div>
-                      <p className="mt-4 flex items-baseline gap-1">
+                      <p className="mt-4 text-[11px] text-ink-300">รวมเริ่มต้น</p>
+                      <p className="mt-0.5 flex items-baseline gap-1">
                         <span className="text-gold-400 text-lg">฿</span>
                         <span className="font-display text-[40px] leading-none font-bold text-gradient-gold">{baht(p.price)}</span>
                       </p>
                       <div className="mt-3 space-y-1 text-[12.5px]">
                         {feeBreakdown(k).map((x) => <p key={x.name} className="flex justify-between gap-3 text-ink-300"><span>{x.name}</span><span className="text-gold-300">฿{baht(x.amount)}</span></p>)}
+                      </div>
+                      <p className="mt-1.5 text-[11.5px] text-ink-400 leading-snug">Refundable – คืนเมื่อครบ 1 ปี หากไม่ผิดกฎ เช่น ไม่ปฏิเสธรับลูกค้า</p>
+                      <div className="mt-3 grid gap-1.5 text-[12.5px]">
+                        <p className="rounded-xl bg-gold-500/10 border border-gold-500/30 px-3 py-2"><b className="text-gold-300">พิเศษ:</b> ฟรีค่าธรรมเนียมระบบ 6 เดือนแรก <span className="text-ink-400">(ปกติ ฿{baht(SYSTEM_FEE_6M[k])} / 6 เดือน)</span></p>
+                        <p className="rounded-xl border border-ink-600 px-3 py-2"><b className="text-gold-300">เวลาให้บริการ:</b> {p.hours} ชม. / งาน</p>
+                        {k === "B" && <p className="rounded-xl border border-ink-600 px-3 py-2"><b className="text-gold-300">รายได้พิเศษ:</b> {B_EXTRA_INCOME}</p>}
                       </div>
                       <div className="h-px bg-ink-700 my-4" />
                       <ul className="space-y-2.5 text-[14px] text-ink-100">
@@ -269,6 +303,25 @@ export default function SalePage() {
                 );
               })}
             </div>
+            <button type="button" onClick={() => setCompare((v) => !v)} aria-expanded={compare} className="mt-4 w-full h-12 rounded-full border border-gold-500/40 text-gold-300 text-[14px] font-medium">
+              {compare ? "ซ่อนตารางเทียบ" : "เทียบแพ็กเกจ A vs B"}
+            </button>
+            {compare && (
+              <div className="mt-3 rounded-2xl border border-ink-600 overflow-hidden text-[12.5px]">
+                <table className="w-full">
+                  <thead className="bg-ink-800 text-gold-300"><tr><th className="text-left px-3 py-2 font-medium"> </th><th className="px-2 py-2">A</th><th className="px-2 py-2">B</th></tr></thead>
+                  <tbody className="[&_td]:px-2 [&_td]:py-2 [&_td]:border-t [&_td]:border-ink-700 [&_td:not(:first-child)]:text-center">
+                    <tr><td className="!px-3 text-ink-300">รวมเริ่มต้น</td><td>฿{baht(PACKAGES.A.price)}</td><td>฿{baht(PACKAGES.B.price)}</td></tr>
+                    <tr><td className="!px-3 text-ink-300">เงินประกัน (คืน 1 ปี)</td><td>฿{baht(PACKAGES.A.guarantee)}</td><td>฿{baht(PACKAGES.B.guarantee)}</td></tr>
+                    <tr><td className="!px-3 text-ink-300">ค่าอบรม</td><td>฿{baht(PACKAGES.A.training)}</td><td>฿{baht(PACKAGES.B.training)}<br /><span className="text-ink-400">+ยูนิฟอร์ม + Oil</span></td></tr>
+                    <tr><td className="!px-3 text-ink-300">ค่าระบบ 6 เดือนแรก</td><td>ฟรี (ปกติ ฿{baht(SYSTEM_FEE_6M.A)})</td><td>ฟรี (ปกติ ฿{baht(SYSTEM_FEE_6M.B)})</td></tr>
+                    <tr><td className="!px-3 text-ink-300">ชม. / งาน</td><td>{PACKAGES.A.hours}</td><td>{PACKAGES.B.hours}</td></tr>
+                    <tr><td className="!px-3 text-ink-300">รายได้พิเศษ (รีวิว)</td><td>–</td><td>[รอกำหนด]</td></tr>
+                    <tr><td className="!px-3 text-ink-300">ทักษะ</td><td>ตามความสามารถพิเศษ</td><td>นวด</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
           </section>
 
           {/* ── 4 · FAQ ── */}
@@ -361,6 +414,12 @@ export default function SalePage() {
                 <Field label="แนะนำตัวสั้นๆ (ไม่บังคับ)"><textarea className="input-dark min-h-24 py-3" maxLength={1000} value={f.intro} onChange={(e) => set("intro", e.target.value)} placeholder="เล่าเกี่ยวกับตัวคุณ หรือเหตุผลที่สนใจ" /></Field>
               </Card>
 
+              <Card title="ความสามารถพิเศษ" err={errs.talents}>
+                <Field label="เลือกได้หลายข้อ (อย่างน้อย 1)">
+                  <Chips options={TALENTS} value={f.talents ?? []} onChange={(v) => set("talents", v)} />
+                </Field>
+              </Card>
+
               <Card title="กิจกรรมและเวลาที่สะดวก">
                 <Field label="กิจกรรมที่ทำได้ (เลือกได้หลายข้อ)" err={errs.activities}>
                   <Chips options={ACTIVITIES} value={f.activities ?? []} onChange={(v) => set("activities", v)} />
@@ -408,7 +467,7 @@ export default function SalePage() {
                   รับทราบว่าการให้บริการอยู่ที่ {f.package ? PACKAGES[f.package].hours : "3–8 (A) / 3–5 (B)"} ชม. แล้วแต่ package
                 </Consent>
                 <Consent checked={!!f.ack_no_refuse} onChange={(v) => set("ack_no_refuse", v)} required>
-                  ไม่ปฏิเสธการรับลูกค้า (เงื่อนไขคืนค่าการันตีเมื่อครบ 1 ปี)
+                  {ACK_NO_REFUSE_TEXT}
                 </Consent>
                 {(errs.ack_hours || errs.ack_no_refuse) && <p data-err="1" className="text-[12px] text-crimson-300 -mt-1">ต้องติ๊กรับทราบเงื่อนไขทั้งสองข้อ</p>}
                 <Consent checked={f.consent_marketing} onChange={(v) => set("consent_marketing", v)}>

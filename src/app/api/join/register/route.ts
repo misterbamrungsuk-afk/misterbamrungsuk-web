@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ACTIVITIES, CLOSE_AT, ageError, EXPERIENCE, PACKAGES, QUOTA, STRENGTHS, TIME_SLOTS, TITLES, type PackageKey } from "@/lib/join/config";
+import { ACTIVITIES, CLOSE_AT, ageError, EXPERIENCE, PACKAGES, QUOTA, STRENGTHS, TALENTS, TIME_SLOTS, TITLES, type PackageKey } from "@/lib/join/config";
 import { countActive, createApplicant, updateApplicant, type DocKind } from "@/lib/join/store";
 import { appendToSheet } from "@/lib/join/sheets";
 import { applicantRegistered, sendAll } from "@/lib/email";
@@ -55,6 +55,7 @@ export async function POST(req: Request) {
   const skills = form.getAll("skills").map(String).filter((x) => oneOf(STRENGTHS, x));
   const method = s("payment_method");
   const activities = form.getAll("activities").map(String).filter((x) => oneOf(ACTIVITIES, x));
+  const talents = form.getAll("talents").map(String).filter((x) => oneOf(TALENTS, x));
   const slots = form.getAll("avail_slots").map(String).filter((x) => oneOf(TIME_SLOTS, x));
   const days = Number(s("avail_days"));
   const hoursPerDay = Number(s("avail_hours"));
@@ -85,6 +86,7 @@ export async function POST(req: Request) {
   if (s("bank_account") && !/^\d{10,12}$/.test(account)) errors.push("bank_account");
   // ข้อมูล Part-Time
   if (!activities.length) errors.push("activities");
+  if (!talents.length) errors.push("talents");
   if (!slots.length) errors.push("avail_slots");
   if (!(Number.isInteger(days) && days >= 1 && days <= 7)) errors.push("avail_days");
   if (!(hoursPerDay >= 1 && hoursPerDay <= 24)) errors.push("avail_hours");
@@ -118,7 +120,7 @@ export async function POST(req: Request) {
         experience: s("experience"), skills, intro: s("intro", 1000),
         consent_marketing: s("consent_marketing") === "true",
         consent_criminal: true,
-        activities, massage_cert: pkg === "B" ? cert === "yes" : null,
+        activities, talents, massage_cert: pkg === "B" ? cert === "yes" : null,
         availability: { slots, days, hours: hoursPerDay },
         ack_hours: true, ack_no_refuse: true,
         phone_verified_at: new Date().toISOString(),

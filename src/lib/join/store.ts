@@ -53,6 +53,8 @@ export interface ApplicantInput {
   availability?: Availability;
   ack_hours?: boolean;
   ack_no_refuse?: boolean;
+  /** ความสามารถพิเศษ (migration join/0005 — ถ้ายังไม่รัน อ่านจาก docs.extra) */
+  talents?: string[];
   /** เวลาที่ยืนยันเบอร์ tel ด้วย OTP (migration join/0004 — ถ้ายังไม่รัน อ่านจาก docs.extra) */
   phone_verified_at?: string | null;
   package: PackageKey;
@@ -80,7 +82,7 @@ export interface Applicant extends ApplicantInput {
 export interface Availability { slots: string[]; days: number | null; hours: number | null }
 
 /** ข้อมูลเสริมที่แพ็กไว้ใน docs.extra ด้วย (ทนได้ถ้ายังไม่รัน migration 0003) */
-export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at">;
+export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents">;
 
 /** รวมคอลัมน์ 0003 กับ docs.extra — คอลัมน์จริงมาก่อน */
 export function extraOf(a: Applicant): Extra {
@@ -94,6 +96,7 @@ export function extraOf(a: Applicant): Extra {
     cohort: a.cohort ?? x.cohort ?? null,
     line_joined: a.line_joined ?? x.line_joined ?? false,
     phone_verified_at: a.phone_verified_at ?? x.phone_verified_at ?? null,
+    talents: a.talents?.length ? a.talents : x.talents ?? [],
   };
 }
 
@@ -147,7 +150,7 @@ export async function createApplicant(input: ApplicantInput, files: Partial<Reco
   }
 
   // แพ็กข้อมูล Part-Time ไว้ใน docs.extra ด้วย → ไม่หายแม้ยังไม่รัน migration 0003 (RPC เดิมไม่รู้จักคีย์ใหม่ใน p ก็ไม่ error)
-  docs.extra = { activities: input.activities ?? [], massage_cert: input.massage_cert ?? null, availability: input.availability, ack_hours: input.ack_hours ?? false, ack_no_refuse: input.ack_no_refuse ?? false, phone_verified_at: input.phone_verified_at ?? null };
+  docs.extra = { activities: input.activities ?? [], massage_cert: input.massage_cert ?? null, availability: input.availability, ack_hours: input.ack_hours ?? false, ack_no_refuse: input.ack_no_refuse ?? false, phone_verified_at: input.phone_verified_at ?? null, talents: input.talents ?? [] };
 
   if (isDemo) {
     const prefix = mbPrefix();
