@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, use, useState } from "react";
+import { Suspense, use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useI18n } from "@/i18n/provider";
@@ -10,6 +10,7 @@ import { BookSteps } from "@/components/book-steps";
 import { DEMO_POSTS } from "@/lib/demo-data";
 import { BLOCKS, MEET_PLACES, blockPrice, isRoomPlace, type BlockHours, type MeetPlaceId } from "@/lib/booking";
 import { usePartnerSpas } from "@/lib/spas";
+import { readPlace } from "@/lib/market/place-pick";
 
 // ขั้นที่ 2-3/4: เลือกบริการ (บล็อก 3/5 ชม.) และสถานที่นัด 7 แบบ
 function BookInner({ id }: { id: string }) {
@@ -28,6 +29,14 @@ function BookInner({ id }: { id: string }) {
   const [note, setNote] = useState("");
   const [spaPick, setSpa] = useState<string>("");
   const spa = spaPick || spas[0]?.id || "";
+  // มาจากปุ่ม "นัดเพื่อนที่นี่" (หน้า /spas/[id] /hotels/[id]) → เลือกสถานที่ให้ (ถ้าไม่ได้ระบุ ?loc)
+  useEffect(() => {
+    if (sp.get("loc")) return;
+    const p = readPlace();
+    if (!p) return;
+    if (p.kind === "spa" && spas.some((s) => s.id === p.id)) { setLoc("spa"); setSpa(p.id); }
+    else if (p.kind === "hotel") { setLoc("hotel"); setAddress((a) => a || `${p.name} · ${p.area}`); }
+  }, [sp, spas]);
 
   if (!post) {
     return (

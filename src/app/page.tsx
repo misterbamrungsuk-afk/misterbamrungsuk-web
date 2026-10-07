@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { listPublished, listVendors } from "@/lib/market/store";
+import { activeBanners, listPublished, listVendors } from "@/lib/market/store";
 import { marketPartners, type MarketPartner } from "@/lib/market/partners";
 import { MarketHeader } from "./products/market-ui";
+import { BannerCarousel } from "./products/banner-carousel";
+import { MarketFooter, TrustBar } from "./products/market-bits";
 import { ProductCard } from "./products/product-card";
 
 export const dynamic = "force-dynamic";
@@ -9,12 +11,13 @@ export const metadata = { title: "Mister Bamrungsuk — Marketplace โรงแ
 
 // หน้าแรก (สาธารณะ): Marketplace — พาร์ทเนอร์โรงแรม / สปา + สินค้าเข้าค่าย
 export default async function MarketHome() {
-  const [products, vendors, partners] = await Promise.all([listPublished(), listVendors(), marketPartners()]);
+  const [products, vendors, partners, banners] = await Promise.all([listPublished(), listVendors(), marketPartners(), activeBanners()]);
   const vname = (id: string) => vendors.find((v) => v.id === id)?.name;
 
   return (
     <main className="min-h-dvh bg-ink-900 text-ink-100">
       <MarketHeader />
+      <BannerCarousel banners={banners} />
 
       {/* Hero */}
       <section className="relative overflow-hidden">
@@ -34,8 +37,10 @@ export default async function MarketHome() {
         </div>
       </section>
 
-      <PartnerRow id="hotels" title="พาร์ทเนอร์โรงแรม" eyebrow="HOTELS" rows={partners.hotels} />
-      <PartnerRow id="spas" title="สปาพาร์ทเนอร์" eyebrow="SPAS" rows={partners.spas} />
+      <TrustBar />
+
+      <PartnerRow id="hotels" title="พาร์ทเนอร์โรงแรม" eyebrow="HOTELS" rows={partners.hotels} base="/hotels" />
+      <PartnerRow id="spas" title="สปาพาร์ทเนอร์" eyebrow="SPAS" rows={partners.spas} base="/spas" />
 
       {/* สินค้า */}
       <section id="products" className="max-w-6xl mx-auto px-4 py-12">
@@ -66,28 +71,26 @@ export default async function MarketHome() {
         </div>
       </section>
 
-      <footer className="border-t border-ink-600 py-8 text-center text-xs text-ink-400 px-4">
-        สินค้าบางรายการจำหน่ายเฉพาะผู้มีอายุ 20 ปีขึ้นไป · © Mister Bamrungsuk
-      </footer>
+      <MarketFooter />
     </main>
   );
 }
 
-function PartnerRow({ id, title, eyebrow, rows }: { id: string; title: string; eyebrow: string; rows: MarketPartner[] }) {
+function PartnerRow({ id, title, eyebrow, rows, base }: { id: string; title: string; eyebrow: string; rows: MarketPartner[]; base: string }) {
   return (
     <section id={id} className="max-w-6xl mx-auto px-4 py-10">
       <p className="text-[11px] font-semibold tracking-[0.3em] text-gold-500">{eyebrow}</p>
-      <h2 className="section-title text-2xl font-semibold mt-1 mb-5">{title}</h2>
+      <div className="flex items-end mb-5"><h2 className="section-title text-2xl font-semibold mt-1">{title}</h2><Link href={base} className="ml-auto text-sm text-gold-300 hover:underline">ดูทั้งหมด →</Link></div>
       <div className="flex gap-4 overflow-x-auto no-scrollbar snap-x pb-2">
         {rows.map((p) => (
-          <article key={p.id} className="glass rounded-3xl p-5 min-w-[240px] sm:min-w-[280px] snap-start flex flex-col gap-3">
+          <Link href={`${base}/${p.id}`} key={p.id} className="glass glass-hover rounded-3xl p-5 min-w-[240px] sm:min-w-[280px] snap-start flex flex-col gap-3">
             <div className="w-12 h-12 rounded-2xl bg-[linear-gradient(135deg,#3a1a1a,#1a1010)] border border-gold-500/40 grid place-items-center font-display text-gold-300 text-lg">{p.name.slice(0, 1)}</div>
             <div>
               <p className="font-semibold leading-snug">{p.name}</p>
               <p className="text-xs text-ink-300 mt-0.5">{p.type} · {p.area}</p>
             </div>
             <span className="self-start inline-flex items-center h-7 px-3 rounded-full border border-gold-500/60 text-gold-300 text-[11px] font-semibold">ทำงานร่วมกับ Mister Bamrungsuk</span>
-          </article>
+          </Link>
         ))}
       </div>
       {rows.some((r) => r.sample) && <p className="text-[11px] text-ink-400 mt-2">* ข้อมูลตัวอย่าง รอรายชื่อพาร์ทเนอร์จริง</p>}

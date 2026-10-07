@@ -54,7 +54,10 @@ export function MarketHeader() {
         <Link href="/" aria-label="หน้าแรก"><Logo size={28} /></Link>
         <span className="hidden sm:inline text-[11px] font-semibold tracking-[0.2em] text-gold-500">MARKETPLACE</span>
         <nav className="ml-auto flex items-center gap-2">
+          <Link href="/hotels" className="hidden md:inline-flex h-9 px-3 items-center text-sm text-ink-300 hover:text-ink-100">โรงแรม</Link>
+          <Link href="/spas" className="hidden md:inline-flex h-9 px-3 items-center text-sm text-ink-300 hover:text-ink-100">สปา</Link>
           <Link href="/products" className="hidden sm:inline-flex h-9 px-3 items-center text-sm text-ink-300 hover:text-ink-100">สินค้า</Link>
+          <Link href="/orders/track" className="hidden sm:inline-flex h-9 px-3 items-center text-sm text-ink-300 hover:text-ink-100">ติดตามคำสั่งซื้อ</Link>
           <Link href="/cart" className="relative h-9 px-4 rounded-full border border-ink-600 inline-flex items-center text-sm hover:border-gold-500">
             ตะกร้า
             {n > 0 && <span className="ml-2 min-w-5 h-5 px-1.5 rounded-full bg-crimson-500 text-white text-[11px] grid place-items-center">{n}</span>}

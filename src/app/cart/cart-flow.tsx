@@ -9,9 +9,11 @@ import { BANK } from "@/lib/join/config";
 import { dataUrlToFile, resizeImage } from "@/lib/join/form";
 import { AGE_NOTICE, GENERAL_WARNING, MAX_QTY, baht, type Product } from "@/lib/market/config";
 import { MarketHeader, readCart, useCart, writeCart } from "../products/market-ui";
+import { DiscreetPromise } from "../products/market-bits";
 
 type P = Product & { vendor_name: string };
-type Placed = { id: string; order_no: string; total: number; token: string };
+type Placed = { id: string; order_no: string; total: number; token: string; track?: string };
+type Price = { subtotal: number; discount: number; code: string | null; promo_error: string | null; shipping_fee: number; shipping_tbd: boolean; free_threshold: number | null; delivery_days: string; total: number };
 const PLACED_KEY = "mb_cart_order";
 
 // ตะกร้า → ที่อยู่ + OTP + ยืนยันอายุ → QR พร้อมเพย์ + แนบสลิป → สำเร็จ
@@ -30,6 +32,9 @@ export function CartFlow() {
   const [slip, setSlip] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [codeInput, setCodeInput] = useState("");
+  const [code, setCode] = useState("");
+  const [price, setPrice] = useState<Price | null>(null);
 
   useEffect(() => {
     fetch("/api/market/products").then((r) => r.json()).then((d: { products?: P[] }) => setProducts(d.products ?? [])).catch(() => setProducts([]));
@@ -41,7 +46,27 @@ export function CartFlow() {
   }, []);
 
   const rows = useMemo(() => lines.map((l) => ({ l, p: products?.find((x) => x.id === l.id) })).filter((r): r is { l: typeof r.l; p: P } => !!r.p), [lines, products]);
-  const total = rows.reduce((s, r) => s + r.p.price * r.l.qty, 0);
+  const subtotal = rows.reduce((s, r) => s + r.p.price * r.l.qty, 0);
+  const lineKey = rows.map((r) => `${r.p.id}:${r.l.qty}`).join(",");
+  // ราคาสุดท้ายคิดฝั่งเซิร์ฟเวอร์ (ส่วนลดโค้ด → ค่าส่งจากยอดหลังส่วนลด)
+  useEffect(() => {
+    if (!lineKey) { setPrice(null); return; }
+    let live = true;
+    fetch("/api/market/promo", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, items: rows.map((r) => ({ id: r.p.id, qty: r.l.qty })) }) })
+      .then((r) => r.json()).then((d: Price) => { if (live) setPrice(d); }).catch(() => {});
+    return () => { live = false; };
+  }, [lineKey, code]); // eslint-disable-line react-hooks/exhaustive-deps
+  const total = price?.total ?? subtotal;
+  const summary = (
+    <div className="glass rounded-2xl p-4 text-sm flex flex-col gap-1.5">
+      <div className="flex justify-between"><span className="text-ink-300">ยอดสินค้า</span><span>฿{baht(subtotal)}</span></div>
+      {!!price?.discount && <div className="flex justify-between text-gold-300"><span>ส่วนลด {price.code}</span><span>−฿{baht(price.discount)}</span></div>}
+      <div className="flex justify-between"><span className="text-ink-300">ค่าจัดส่ง</span><span>{price?.shipping_tbd ? "฿0 [รอกำหนด]" : price?.shipping_fee ? `฿${baht(price.shipping_fee)}` : "ส่งฟรี"}</span></div>
+      {price && !price.shipping_tbd && price.free_threshold != null && price.shipping_fee > 0 && <p className="text-xs text-ink-400">ซื้อครบ ฿{baht(price.free_threshold)} ส่งฟรี</p>}
+      <div className="flex justify-between items-baseline border-t border-ink-600 pt-2 mt-1"><span className="text-ink-300">ยอดชำระ</span><span className="font-display text-2xl font-bold text-gold-300">฿{baht(total)}</span></div>
+      <p className="text-xs text-ink-400">จัดส่งภายในประมาณ {price?.delivery_days || "[รอกำหนด]"} หลังยืนยันการชำระ</p>
+    </div>
+  );
   const setQty = (id: string, qty: number) => writeCart(readCart().map((l) => (l.id === id ? { ...l, qty } : l)).filter((l) => l.qty > 0));
 
   const placeOrder = async () => {
@@ -54,11 +79,11 @@ export function CartFlow() {
     try {
       const res = await fetch("/api/market/orders", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, address, age_confirm: age, turnstile: ts, items: rows.map((r) => ({ id: r.p.id, qty: r.l.qty })) }),
+        body: JSON.stringify({ name, address, age_confirm: age, turnstile: ts, promo_code: code || undefined, items: rows.map((r) => ({ id: r.p.id, qty: r.l.qty })) }),
       });
       const d = (await res.json().catch(() => ({}))) as Partial<Placed> & { ok?: boolean; error?: string };
       if (!res.ok || !d.ok) { setTs(""); setTsKey((k) => k + 1); throw new Error(d.error || "สั่งซื้อไม่สำเร็จ"); }
-      const p = { id: d.id!, order_no: d.order_no!, total: d.total!, token: d.token! };
+      const p = { id: d.id!, order_no: d.order_no!, total: d.total!, token: d.token!, track: d.track };
       setPlaced(p);
       try { sessionStorage.setItem(PLACED_KEY, JSON.stringify(p)); } catch {}
       writeCart([]);
@@ -129,11 +154,15 @@ export function CartFlow() {
                     </li>
                   ))}
                 </ul>
-                <div className="flex justify-between items-baseline mt-5">
-                  <span className="text-ink-300">ยอดรวม</span>
-                  <span className="font-display text-3xl font-bold text-gold-300">฿{baht(total)}</span>
+                <div className="flex gap-2 mt-5">
+                  <input value={codeInput} onChange={(e) => setCodeInput(e.target.value.toUpperCase())} placeholder="โค้ดส่วนลด" aria-label="โค้ดส่วนลด" className="input-dark h-11 flex-1 uppercase tracking-wider" />
+                  {code ? <button type="button" onClick={() => { setCode(""); setCodeInput(""); }} className="btn-ghost h-11 px-4 rounded-full text-sm">ยกเลิกโค้ด</button>
+                    : <button type="button" onClick={() => setCode(codeInput.trim())} className="btn-ghost h-11 px-4 rounded-full text-sm">ใช้โค้ด</button>}
                 </div>
-                <p className="text-xs text-ink-400 mt-1">ร้านค้าจัดส่งเองหลังทีมงานยืนยันการชำระ</p>
+                {code && price?.promo_error && <p className="text-xs text-crimson-300 mt-1">{price.promo_error}</p>}
+                <div className="mt-3">{summary}</div>
+                <DiscreetPromise className="mt-3" />
+                <p className="text-xs text-ink-400 mt-2">ร้านค้าจัดส่งเองหลังทีมงานยืนยันการชำระ · <Link href="/policy/shipping" className="underline">การจัดส่ง</Link> · <Link href="/policy/returns" className="underline">การคืนสินค้า</Link></p>
                 <button type="button" onClick={() => setStep("info")} className="btn-crimson w-full h-14 mt-5 rounded-full font-semibold text-lg">ดำเนินการสั่งซื้อ</button>
               </>
             )}
@@ -154,7 +183,9 @@ export function CartFlow() {
               <span>ข้าพเจ้ายืนยันว่ามีอายุ 20 ปีบริบูรณ์ขึ้นไป และได้อ่านคำเตือนของสินค้าแล้ว <span className="text-ink-400">({AGE_NOTICE})</span></span>
             </label>
             <Turnstile key={tsKey} onToken={setTs} />
-            <div className="flex justify-between items-baseline"><span className="text-ink-300">ยอดชำระ</span><span className="font-display text-2xl font-bold text-gold-300">฿{baht(total)}</span></div>
+            {summary}
+            <DiscreetPromise />
+            <p className="text-xs text-ink-400">การกดยืนยันถือว่ายอมรับ <Link href="/policy/shipping" className="underline">นโยบายการจัดส่ง</Link> · <Link href="/policy/returns" className="underline">นโยบายคืนสินค้า</Link> · <Link href="/policy/privacy-shop" className="underline">นโยบายความเป็นส่วนตัว</Link></p>
             {err && <p role="alert" className="text-sm text-crimson-300">{err}</p>}
             <div className="flex gap-3">
               <button type="button" onClick={() => setStep("cart")} className="btn-ghost h-14 px-5 rounded-full">กลับ</button>
@@ -190,8 +221,13 @@ export function CartFlow() {
             <h1 className="text-2xl font-semibold mt-2">ได้รับคำสั่งซื้อแล้ว</h1>
             <p className="text-ink-300 mt-2">เลขคำสั่งซื้อ</p>
             <p className="font-display text-2xl font-bold text-gold-300">{placed?.order_no}</p>
-            <p className="text-sm text-ink-300 mt-4">ทีมงานจะตรวจสลิปและแจ้งเลขพัสดุทาง SMS/โทรศัพท์ เก็บเลขคำสั่งซื้อไว้ติดต่อทีมงาน</p>
-            <Link href="/" className="btn-ghost inline-flex h-11 px-6 rounded-full items-center mt-6">กลับหน้าแรก</Link>
+            <p className="text-sm text-ink-300 mt-4">ทีมงานจะตรวจสลิปและแจ้งสถานะทาง SMS เมื่อยืนยันแล้วและเมื่อจัดส่ง</p>
+            <DiscreetPromise className="mt-5 text-left" />
+            <div className="flex flex-wrap justify-center gap-3 mt-6">
+              {placed?.track && <Link href={placed.track} className="btn-crimson inline-flex h-11 px-6 rounded-full items-center font-semibold">ติดตามคำสั่งซื้อ</Link>}
+              <Link href="/" className="btn-ghost inline-flex h-11 px-6 rounded-full items-center">กลับหน้าแรก</Link>
+            </div>
+            <p className="text-xs text-ink-400 mt-3">บันทึกลิงก์ติดตามไว้ หรือค้นได้ที่ “ติดตามคำสั่งซื้อ” ด้วยเลขคำสั่งซื้อ + เบอร์โทร</p>
           </section>
         )}
       </div>

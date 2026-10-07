@@ -7,6 +7,7 @@ import { useI18n } from "@/i18n/provider";
 import { baht } from "@/components/ui";
 import { DEMO_POSTS } from "@/lib/demo-data";
 import { ADDRESSES, thaiDate } from "@/lib/booking";
+import { RecommendStrip } from "./recommend-strip";
 
 // จองสำเร็จ — จ่ายเต็มจำนวนแล้ว เงินพักไว้กับเราจนจบนัด
 function SuccessInner() {
@@ -86,6 +87,7 @@ function SuccessInner() {
         <Link href="/escrow/o1" className="h-12 rounded-2xl border border-gold-500 text-gold-300 flex items-center justify-center">{th ? "ดูสถานะเงินที่พักไว้" : "View escrow"}</Link>
         <Link href="/orders" className="h-12 rounded-2xl border border-ink-600 flex items-center justify-center">{th ? "ออเดอร์ของฉัน" : "My orders"}</Link>
       </div>
+      {th && <RecommendStrip />}
     </main>
   );
 }

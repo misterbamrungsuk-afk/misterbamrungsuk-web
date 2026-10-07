@@ -16,6 +16,7 @@ import { DEMO_ME } from "@/lib/demo-data";
 
 type SortKey = "" | "near" | "rating" | "now" | "new";
 import { baht } from "@/components/ui";
+import { PlaceBanner } from "./place-banner";
 
 
 function HomeInner({ posts }: { posts: Post[] }) {
@@ -59,6 +60,7 @@ function HomeInner({ posts }: { posts: Post[] }) {
   return (
     <>
       <TopBar />
+      <PlaceBanner />
 
       {/* ── ทักทาย + แท็บ ── */}
       <section className="px-4 pt-3">
