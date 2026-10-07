@@ -119,7 +119,7 @@ export default function PayPage() {
         <span className="ml-auto text-xs text-ink-300">ขั้นตอน 2/3</span>
       </header>
 
-      <h1 className="font-display text-2xl font-semibold mt-2">ชำระค่าการันตี + ค่าอบรม</h1>
+      <h1 className="font-display text-2xl font-semibold mt-2">ชำระเงินประกัน + ค่าอบรม</h1>
 
       <section className="glass rounded-3xl p-5 mt-5">
         <div className="flex justify-between text-sm"><span className="text-ink-300">ผู้สมัคร</span><span className="truncate ml-3">{f.title}{f.first_name} {f.last_name} ({f.nickname})</span></div>
