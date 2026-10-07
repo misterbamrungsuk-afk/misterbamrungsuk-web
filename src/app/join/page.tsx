@@ -159,7 +159,7 @@ export default function SalePage() {
             </div>
 
             <button onClick={toForm} disabled={closed} className="btn-crimson w-full h-14 mt-5 font-display font-semibold text-[17px] flex items-center justify-center gap-2">
-              {closed ? "ปิดรับสมัครแล้ว" : <>สมัครเป็นพาร์ตเนอร์ <span aria-hidden>→</span></>}
+              {closed ? "ปิดรับสมัครแล้ว" : <>สมัครเป็นพาร์ทเนอร์ <span aria-hidden>→</span></>}
             </button>
             <p className="text-center text-[11px] text-ink-400 mt-3 animate-bounce">เลื่อนดูรายละเอียด ↓</p>
           </div>
