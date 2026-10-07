@@ -50,7 +50,7 @@ export const GUARANTEE_REFUND_NOTE = "Refundable – คืนเมื่อค
 export function feeBreakdown(k: PackageKey) {
   return [
     { name: "เงินประกันมาตรฐานแบรนด์", note: k === "B" ? "(Refundable – คืนเมื่อครบ 1 ปี หากไม่ผิดกฎ)" : "(Refundable – คืนเมื่อครบ 1 ปี หากไม่ผิดกฎ เช่น ไม่ปฏิเสธการรับลูกค้า)", amount: PACKAGES[k].guarantee },
-    { name: k === "B" ? "ค่าอบรมทักษะการนวด" : "ค่าอบรมเข้มข้น", note: k === "B" ? "(รวมยูนิฟอร์มและ Massage Oil 1 เซ็ต ฟรี!)" : "", amount: PACKAGES[k].training },
+    { name: k === "B" ? "คอร์สอบรมทักษะการนวด" : "คอร์สอบรมยกระดับการบริการ", note: k === "B" ? "(รวมยูนิฟอร์มและ Massage Oil 1 เซ็ต ฟรี!)" : "", amount: PACKAGES[k].training },
   ];
 }
 
