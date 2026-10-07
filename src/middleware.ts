@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { ADMIN_COOKIE, canAccess, homeFor, verifySession } from "@/lib/admin-auth";
-import { GATE_COOKIE, gateExempt, gateToken } from "@/lib/site-gate";
+import { GATE_COOKIE, gateExempt, gateToken, marketPublic } from "@/lib/site-gate";
 
 // Auth guard
 // - หน้าแอปทั่วไป: ต้องมี cookie hamoo_session (โหมดจริง: ตรวจ Supabase session; โหมดเดโม: ตั้งตอนกดเข้าสู่ระบบ)
@@ -54,7 +54,7 @@ export async function middleware(request: NextRequest) {
     pathname === "/partner" ||
     pathname.startsWith("/partner/") ||
     // Marketplace หน้าแรก เปิดสาธารณะ
-    pathname === "/" || pathname === "/market" || pathname.startsWith("/market/") || pathname === "/hotels" || pathname === "/spas" ||
+    pathname === "/" || pathname === "/market" || pathname.startsWith("/market/") || marketPublic(pathname) ||
     pathname === "/products" || pathname.startsWith("/products/") || pathname === "/cart" ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||

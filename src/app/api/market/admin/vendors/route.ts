@@ -16,7 +16,8 @@ export async function POST(req: Request) {
     if (!Number.isFinite(gp) || gp < 0 || gp > 100) return NextResponse.json({ ok: false, error: "GP % ต้องอยู่ระหว่าง 0–100" }, { status: 400 });
   }
   try {
-    const v = await upsertVendor({ id: b.id || undefined, name, contact: String(b.contact ?? "").slice(0, 300), gp_pct: gp });
+    const ex = b as { slug?: string; description?: string };
+    const v = await upsertVendor({ id: b.id || undefined, name, contact: String(b.contact ?? "").slice(0, 300), gp_pct: gp, slug: ex.slug, description: ex.description });
     return NextResponse.json({ ok: true, vendor: v });
   } catch (e) {
     return NextResponse.json({ ok: false, error: (e as Error).message }, { status: 400 });

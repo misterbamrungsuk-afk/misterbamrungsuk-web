@@ -7,6 +7,12 @@ export async function gateToken(password: string) {
   return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+/** Marketplace v2 สาธารณะ: โรงแรม/สปา/หน้าร้าน/ติดตามออเดอร์/นโยบาย + พอร์ทัลร้านค้า (มีล็อกอินของตัวเอง) */
+export function marketPublic(p: string) {
+  const under = (b: string) => p === b || p.startsWith(`${b}/`);
+  return under("/hotels") || under("/spas") || under("/shop") || under("/policy") || under("/vendor") || p === "/orders/track";
+}
+
 // หน้าที่เปิดได้โดยไม่ต้องใส่รหัส (หน้ารับสมัครมีผู้สมัครจริงใช้อยู่)
 export function gateExempt(p: string) {
   return (
@@ -16,7 +22,7 @@ export function gateExempt(p: string) {
     p.startsWith("/api/otp/") || // OTP ใช้ในหน้ารับสมัคร /join/pay (มี Turnstile + rate limit)
     p === "/partner" || p.startsWith("/partner/") || p.startsWith("/api/partner/") ||
     // Marketplace หน้าแรก (สาธารณะ)
-    p === "/" || p === "/market" || p.startsWith("/market/") || p === "/hotels" || p === "/spas" ||
+    p === "/" || p === "/market" || p.startsWith("/market/") || marketPublic(p) ||
     p === "/products" || p.startsWith("/products/") || p === "/cart" || p.startsWith("/api/market/") || p === "/api/spas" ||
     p.startsWith("/_next") || p === "/favicon.ico" || p === "/manifest.webmanifest" ||
     p === "/sw.js" || p.startsWith("/pwa-icon") || p.startsWith("/brand")

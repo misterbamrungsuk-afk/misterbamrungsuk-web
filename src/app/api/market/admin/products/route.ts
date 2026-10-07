@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { marketAdmin } from "@/lib/market/admin";
 import { flaggedClaims } from "@/lib/market/config";
-import { getProduct, listVendors, saveFile, saveProduct } from "@/lib/market/store";
+import { getProduct, listCategories, listVendors, saveFile, saveProduct } from "@/lib/market/store";
 
 export const runtime = "nodejs";
 
@@ -34,8 +34,12 @@ export async function POST(req: Request) {
     images.push(path);
   }
   const description = s("description", 4000), warning = s("warning", 1000);
+  const cat = s("category_id", 80);
+  const category_id = cat && (await listCategories()).some((c) => c.id === cat) ? cat : null;
+  const bundle_ids = s("bundle_ids", 2000).split(",").map((x) => x.trim()).filter((x) => x && x !== id).slice(0, 6);
+  const approved = fd.has("approved") ? s("approved") === "1" : prev?.approved ?? true;
   try {
-    const p = await saveProduct({ id, vendor_id, name, description, warning, price, stock, images: images.slice(0, 8), fda_no, published, age_restricted: s("age_restricted") !== "0" });
+    const p = await saveProduct({ id, vendor_id, name, description, warning, price, stock, images: images.slice(0, 8), fda_no, published, age_restricted: s("age_restricted") !== "0", category_id, bundle_ids, approved });
     return NextResponse.json({ ok: true, product: p, flagged: flaggedClaims(`${name} ${description}`) });
   } catch (e) {
     return NextResponse.json({ ok: false, error: (e as Error).message }, { status: 400 });

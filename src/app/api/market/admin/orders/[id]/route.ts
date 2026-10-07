@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { marketAdmin } from "@/lib/market/admin";
-import { decideOrder, type OrderAction } from "@/lib/market/store";
+import { notifyStatus } from "@/lib/market/notify";
+import { decideOrder, getSettings, type OrderAction } from "@/lib/market/store";
 
 export const runtime = "nodejs";
 
@@ -11,10 +12,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const admin = await marketAdmin();
   if (!admin) return NextResponse.json({ ok: false }, { status: 401 });
   const { id } = await params;
-  const b = (await req.json().catch(() => ({}))) as { action?: OrderAction; tracking_no?: string; note?: string };
+  const b = (await req.json().catch(() => ({}))) as { action?: OrderAction; tracking_no?: string; carrier?: string; note?: string; reason?: string };
   if (!b.action || !ACTIONS.includes(b.action)) return NextResponse.json({ ok: false, error: "action ไม่ถูกต้อง" }, { status: 400 });
   try {
-    const order = await decideOrder(id, b.action, admin.email, { tracking_no: b.tracking_no, note: b.note });
+    const order = await decideOrder(id, b.action, admin.email, { tracking_no: b.tracking_no, carrier: b.carrier, note: b.note, reason: b.reason });
+    // SMS ถึงผู้ซื้อเมื่อ "ยืนยันแล้ว" / "จัดส่งแล้ว" (ไม่บล็อก)
+    if (b.action === "confirm" || b.action === "ship") getSettings().then((s) => notifyStatus(order, s)).catch(() => {});
     return NextResponse.json({ ok: true, order });
   } catch (e) {
     return NextResponse.json({ ok: false, error: (e as Error).message }, { status: 400 });

@@ -3,7 +3,7 @@ import { clientIp, rateLimited } from "@/lib/customer/auth";
 import { readPhoneToken } from "@/lib/otp";
 import { TURNSTILE_ERROR, verifyTurnstile } from "@/lib/turnstile";
 import { MAX_QTY, type OrderItem } from "@/lib/market/config";
-import { createOrder, listPublished, orderToken } from "@/lib/market/store";
+import { createOrder, listPublished, orderToken, trackPath } from "@/lib/market/store";
 
 export const runtime = "nodejs";
 
@@ -45,9 +45,13 @@ export async function POST(req: Request) {
   }
 
   try {
-    const o = await createOrder({ buyer_name, phone, address, items, ip });
-    return NextResponse.json({ ok: true, id: o.id, order_no: o.order_no, total: o.total, token: orderToken(o.id) });
+    const o = await createOrder({ buyer_name, phone, address, items, ip, promo_code: str(b.promo_code, 30) || null });
+    return NextResponse.json({
+      ok: true, id: o.id, order_no: o.order_no, total: o.total, token: orderToken(o.id), track: trackPath(o),
+      subtotal: o.subtotal, discount: o.discount, shipping_fee: o.shipping_fee,
+    });
   } catch (e) {
+    if (/โค้ด/.test((e as Error).message)) return bad((e as Error).message);
     console.error("market order", e);
     return bad("บันทึกคำสั่งซื้อไม่สำเร็จ กรุณาลองใหม่", 500);
   }
