@@ -11,6 +11,7 @@ export const ADMIN_TABS = [
   { href: "/admin", label: "รายได้ GP", exact: true },
   { href: "/admin/applicants", label: "ผู้สมัคร Part-Time (/join)" },
   { href: "/admin/partners", label: "พาร์ทเนอร์ / พื้นที่โปรโมท" },
+  { href: "/admin/market", label: "Marketplace สินค้า" },
   { href: "/admin/kyc", label: "คิว KYC", badge: KYC_QUEUE.length },
   { href: "/admin/orders", label: "ตรวจงาน" },
   { href: "/admin/payouts", label: "โอนให้ผู้ให้บริการ", badge: PAYOUTS.filter((p) => !p.hold).length },

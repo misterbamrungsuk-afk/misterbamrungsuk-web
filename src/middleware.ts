@@ -53,6 +53,9 @@ export async function middleware(request: NextRequest) {
     // หน้าขายพื้นที่พาร์ทเนอร์ เปิดสาธารณะ
     pathname === "/partner" ||
     pathname.startsWith("/partner/") ||
+    // Marketplace หน้าแรก เปิดสาธารณะ
+    pathname === "/" || pathname === "/market" || pathname.startsWith("/market/") || pathname === "/hotels" || pathname === "/spas" ||
+    pathname === "/products" || pathname.startsWith("/products/") || pathname === "/cart" ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/auth") ||

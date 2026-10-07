@@ -18,6 +18,7 @@ export const PATH_ROLES: { prefix: string; roles: AdminRole[] }[] = [
   { prefix: "/admin/payouts", roles: ["super", "finance"] },
   { prefix: "/admin/applicants", roles: ["super", "finance"] },
   { prefix: "/admin/partners", roles: ["super", "finance"] },
+  { prefix: "/admin/market", roles: ["super", "finance"] },
   { prefix: "/admin/kyc", roles: ["super", "kyc"] },
   { prefix: "/admin/cs", roles: ["super", "cs"] },
   { prefix: "/admin/reports", roles: ["super", "cs", "kyc"] },

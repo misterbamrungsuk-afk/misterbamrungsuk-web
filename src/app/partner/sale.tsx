@@ -92,10 +92,10 @@ export function PartnerSalePage() {
         <div className="relative max-w-6xl mx-auto px-4 py-16 lg:py-24">
           <p className="text-xs font-semibold tracking-[0.3em] text-gold-500">PARTNER PROGRAM</p>
           <h1 className="mt-3 text-3xl lg:text-5xl font-semibold leading-tight max-w-3xl">
-            Partner ฝั่งสปา <span className="text-gold-500">ทั่วประเทศ</span>
+            Partner สปา · โรงแรม <span className="text-gold-500">ทั่วประเทศ</span>
           </h1>
           <p className="mt-4 text-ink-300 max-w-2xl leading-relaxed">
-            ร่วมเป็นสปาพาร์ทเนอร์ของ Mister Bamrungsuk — มาตรฐานการนวดเดียวกับบำรุงสุข เรารับ booking ช่วยวางราคาขาย และโปรโมทให้ผ่านแพลตฟอร์มและช่องทางของมาดามกอ
+            ร่วมเป็นสปาหรือโรงแรมพาร์ทเนอร์ของ Mister Bamrungsuk (ได้ป้าย “ทำงานร่วมกับ Mister Bamrungsuk” เหมือนกัน) — มาตรฐานการนวดเดียวกับบำรุงสุข เรารับ booking ช่วยวางราคาขาย และโปรโมทให้ผ่านแพลตฟอร์มและช่องทางของมาดามกอ
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <a href="#packages" className="btn-crimson h-12 px-6 rounded-full inline-flex items-center font-semibold">ดูแพ็กเกจพาร์ทเนอร์</a>
