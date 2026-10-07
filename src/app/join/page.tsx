@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Logo } from "@/components/ui";
-import { ACTIVITIES, AGE_LIMITS, BRAND, CLOSE_AT, GUARANTEE_REFUND_NOTE, INVITE, JOIN_STEPS, TIMELINE, TIME_SLOTS, ageError, feeBreakdown, EXPERIENCE, FAQ, HERO_IMAGE, PACKAGES, QUOTA, STRENGTHS, TERMS_SUMMARY, TALENTS, ACK_NO_REFUSE_TEXT, WHY_JOIN, PAY_FIRST, SYSTEM_FEE_6M, B_EXTRA_INCOME, INCOME_PER_JOB, payback, type PackageKey } from "@/lib/join/config";
+import { ACTIVITIES, AGE_LIMITS, BRAND, CLOSE_AT, TIMELINE, TIME_SLOTS, ageError, EXPERIENCE, FAQ, HERO, HERO_IMAGE, PACKAGES, PACKAGE_LINES, LOOKING_FOR, CTA_LABEL, QUOTA, STRENGTHS, TERMS_SUMMARY, TALENTS, ACK_NO_REFUSE_TEXT, WHY_JOIN, type PackageKey } from "@/lib/join/config";
 import { FORM_KEY, ageFrom, emptyForm, resizeImage, type FileField, type JoinForm } from "@/lib/join/form";
 
 const WHY_ICONS = [
@@ -139,11 +139,10 @@ export default function SalePage() {
               <span className="text-[12px] text-gold-200 leading-tight"><b className="text-gold-300">{`รับ ${QUOTA} ท่าน`}</b> · ถึงสิ้น {closeDate}</span>
             </div>
 
-            <h1 className="font-display text-[34px] leading-[1.18] font-semibold mt-4 tracking-tight">
-              ยกระดับอาชีพของคุณ<br />
-              <span className="text-gradient-gold">สู่ผู้ให้บริการ<br />ระดับพรีเมียม</span>
+            <h1 className="font-display text-[30px] leading-[1.22] font-semibold mt-4 tracking-tight">
+              {HERO.headline}
             </h1>
-            <p className="text-[15px] text-ink-200 mt-3 leading-relaxed">ร่วมทีม Part-Time “เพื่อนกินเที่ยว” ระดับพรีเมียม ดูแลลูกค้า VVIP <span className="text-gold-300">(เฉพาะสุภาพสตรี)</span></p>
+            <p className="text-[15px] text-ink-200 mt-3 leading-relaxed">{HERO.sub}</p>
 
             {/* แถบตัวเลขความน่าเชื่อถือ */}
             <div className="grid grid-cols-3 mt-5 rounded-2xl bg-white/[0.06] border border-ink-600 backdrop-blur divide-x divide-white/10">
@@ -160,46 +159,42 @@ export default function SalePage() {
             </div>
 
             <button onClick={toForm} disabled={closed} className="btn-crimson w-full h-14 mt-5 font-display font-semibold text-[17px] flex items-center justify-center gap-2">
-              {closed ? "ปิดรับสมัครแล้ว" : <>สมัครเข้าร่วมโครงการ <span aria-hidden>→</span></>}
+              {closed ? "ปิดรับสมัครแล้ว" : <>สมัครเป็นพาร์ทเนอร์ <span aria-hidden>→</span></>}
             </button>
             <p className="text-center text-[11px] text-ink-400 mt-3 animate-bounce">เลื่อนดูรายละเอียด ↓</p>
           </div>
         </section>
 
         <div className="px-5">
-          {/* ── 1.5 · คำเชิญ (ส่วนหนึ่งของ Hero) ── */}
+          {/* ── 1.5 · จุดเด่นแบบย่อ (ทำไมต้อง Join Us?) ── */}
           <section className="pt-8">
-            <div className="reveal relative rounded-[28px] border border-gold-500/40 bg-[linear-gradient(160deg,rgba(140,20,30,.35),rgba(14,10,10,.9)_65%)] p-5 overflow-hidden">
-              <span className="absolute -right-6 -top-8 font-display text-[120px] leading-none text-gold-500/10 select-none" aria-hidden>“</span>
-              <p className="font-display text-[18px] font-semibold leading-snug text-gold-200">{INVITE.lead}</p>
-              <div className="flex flex-wrap gap-2 mt-4">
-                <span className="h-8 px-3 rounded-full border border-gold-500/40 bg-gold-500/10 text-[13px] text-gold-200 inline-flex items-center">{INVITE.traits.join(" / ")}</span>
-              </div>
-            </div>
-          </section>
-
-          {/* ── 2 · Why choose us ── */}
-          <section className="pt-8 pb-12">
-            <SectionHead kicker="WHY US" title="ทำไมต้อง Join Us?" />
-            <div className="mt-6 rounded-[28px] border border-gold-500/25 bg-[linear-gradient(165deg,rgba(212,175,55,.08),rgba(255,255,255,.01)_45%)] px-5">
-              {WHY.map((w, i) => (
-                <div key={w.t} className={`reveal flex items-center gap-4 py-5 ${i ? "border-t border-white/[0.07]" : ""}`} style={{ transitionDelay: `${i * 70}ms` }}>
-                  <span className="font-display text-[28px] font-bold leading-none text-gradient-gold w-10 shrink-0 tabular-nums">0{i + 1}</span>
-                  <span className="flex-1 min-w-0">
-                    <span className="block text-[16px] font-semibold">{w.t}</span>
-                    <span className="block text-[13px] text-ink-300 mt-0.5">{w.d}</span>
-                  </span>
-                  <span className="w-10 h-10 rounded-full border border-gold-500/40 grid place-items-center text-gold-400 shrink-0">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d={w.icon} /></svg>
-                  </span>
+            <div className="reveal grid grid-cols-2 gap-2">
+              {WHY.map((w) => (
+                <div key={w.t} className="rounded-2xl border border-gold-500/25 bg-white/[0.03] px-3 py-3 flex gap-2.5 items-start">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-gold-400 shrink-0 mt-0.5"><path d={w.icon} /></svg>
+                  <span className="text-[12.5px] font-medium leading-snug">{w.t}</span>
                 </div>
               ))}
             </div>
           </section>
 
-          {/* ── 3 · Pricing ── */}
+          {/* ── 2 · คุณสมบัติที่เรามองหา ── */}
+          <section className="pt-10 pb-12">
+            <SectionHead kicker="WHO WE ARE LOOKING FOR" title="คุณสมบัติที่เรามองหา" />
+            <div className="mt-5 space-y-3">
+              {LOOKING_FOR.map((x, i) => (
+                <div key={x.t} className="reveal rounded-[24px] border border-gold-500/30 bg-[linear-gradient(165deg,rgba(212,175,55,.08),rgba(255,255,255,.01)_50%)] p-5" style={{ transitionDelay: `${i * 70}ms` }}>
+                  <p className="font-display text-[19px] font-semibold text-gradient-gold">{x.t}</p>
+                  <p className="text-[14px] text-ink-200 mt-1.5 leading-relaxed">{x.d}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ── 3 · Packages ── */}
           <section className="pb-10" id="packages">
-            <SectionHead kicker="PACKAGES" title="โครงสร้างราคาและเงินประกัน" />
+            <SectionHead kicker="เลือกระดับความสำเร็จของคุณ" title="การลงทุนเพื่อภาพลักษณ์ และมาตรฐานที่ลูกค้า VIP ไว้วางใจ" />
+            <p className="reveal text-[14px] text-ink-200 mt-3 leading-relaxed">เพื่อรักษามาตรฐานระดับพรีเมียม เราจึงมีระบบ “เงินประกันมาตรฐานแบรนด์” ซึ่งคุณจะ <b className="text-gold-300">ได้รับคืนเต็มจำนวน</b> เมื่อทำงานครบตามกำหนด ถือเป็นการการันตีความมั่นใจทั้งสำหรับคุณและลูกค้า</p>
             <div className="flex flex-col gap-4 mt-5" role="radiogroup" aria-label="แพ็กเกจ">
               {(Object.keys(PACKAGES) as PackageKey[]).map((k) => {
                 const p = PACKAGES[k];
@@ -213,21 +208,21 @@ export default function SalePage() {
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-[11px] font-semibold tracking-[0.2em] text-gold-400">แพ็กเกจ {k}</p>
-                          <p className="font-display text-xl font-semibold mt-1">{p.name}</p>
+                          <p className="font-display text-xl font-semibold mt-1">{p.nameEn}</p>
+                          <p className="text-[13px] text-ink-300 mt-0.5">({p.name})</p>
                         </div>
                         <span className={`mt-1 w-7 h-7 rounded-full border-2 grid place-items-center shrink-0 ${on ? "border-gold-400 bg-gold-500" : "border-ink-500"}`}>
                           {on && <svg viewBox="0 0 24 24" fill="none" stroke="#1a1206" strokeWidth="3" className="w-4 h-4"><path d="m5 12 5 5 9-10" /></svg>}
                         </span>
                       </div>
-                      <p className="mt-4 text-[14px]">รวมเริ่มต้น <span className="font-display text-[32px] leading-none font-bold text-gradient-gold">{baht(p.price)}</span> บาท ประกอบด้วย:</p>
-                      <ul className="mt-3 space-y-2 text-[13.5px] text-ink-100">
-                        {feeBreakdown(k).map((x) => <li key={x.name}><b className="text-gold-300">[{baht(x.amount)} ฿]</b> {x.name}{x.note ? <span className="text-ink-300"> {x.note}</span> : null}</li>)}
+                      <p className="mt-4 text-[14px]">เริ่มต้น <span className="font-display text-[32px] leading-none font-bold text-gradient-gold">{baht(p.price)}</span> บาท</p>
+                      <ul className="mt-3 space-y-2.5 text-[13.5px] text-ink-100">
+                        {PACKAGE_LINES[k].map((x) => (
+                          <li key={x.k} className={x.v.startsWith("ฟรี") ? "rounded-xl bg-gold-500/10 border border-gold-500/30 px-3 py-2" : ""}>
+                            <b className="text-gold-300">{x.k}:</b> {x.v} <span className="text-ink-300">{x.n}</span>
+                          </li>
+                        ))}
                       </ul>
-                      <div className="mt-3 grid gap-1.5 text-[13px]">
-                        <p className="rounded-xl bg-gold-500/10 border border-gold-500/30 px-3 py-2"><b className="text-gold-300">พิเศษ:</b> ฟรี! ค่าธรรมเนียมระบบ 6 เดือนแรก <span className="text-ink-300">(จากปกติ {baht(SYSTEM_FEE_6M[k])} บาท/6 เดือน)</span></p>
-                        {k === "B" && <p className="rounded-xl border border-ink-600 px-3 py-2"><b className="text-gold-300">รายได้พิเศษ:</b> {B_EXTRA_INCOME}</p>}
-                        <p className="rounded-xl border border-ink-600 px-3 py-2">เวลาให้บริการ {p.hours} ชม.</p>
-                      </div>
                       <span className={`mt-5 h-12 grid place-items-center rounded-full font-semibold text-[15px] transition ${on ? "bg-gold-500 text-[#1a1206]" : "border border-white/15 text-ink-100"}`}>
                         {on ? "✓ เลือกแพ็กเกจนี้แล้ว" : "เลือกแพ็กเกจนี้"}
                       </span>
@@ -236,96 +231,20 @@ export default function SalePage() {
                 );
               })}
             </div>
-            <button type="button" onClick={() => setCompare((v) => !v)} aria-expanded={compare} className="mt-4 w-full h-12 rounded-full border border-gold-500/40 text-gold-300 text-[14px] font-medium">
-              {compare ? "ซ่อนตารางเทียบ" : "เทียบแพ็กเกจ A vs B"}
-            </button>
-            {compare && (
-              <div className="mt-3 rounded-2xl border border-ink-600 overflow-hidden text-[12.5px]">
-                <table className="w-full">
-                  <thead className="bg-ink-800 text-gold-300"><tr><th className="text-left px-3 py-2 font-medium"> </th><th className="px-2 py-2">A</th><th className="px-2 py-2">B</th></tr></thead>
-                  <tbody className="[&_td]:px-2 [&_td]:py-2 [&_td]:border-t [&_td]:border-ink-700 [&_td:not(:first-child)]:text-center">
-                    <tr><td className="!px-3 text-ink-300">รวมเริ่มต้น</td><td>฿{baht(PACKAGES.A.price)}</td><td>฿{baht(PACKAGES.B.price)}</td></tr>
-                    <tr><td className="!px-3 text-ink-300">เงินประกัน (คืน 1 ปี)</td><td>฿{baht(PACKAGES.A.guarantee)}</td><td>฿{baht(PACKAGES.B.guarantee)}</td></tr>
-                    <tr><td className="!px-3 text-ink-300">ค่าอบรม</td><td>฿{baht(PACKAGES.A.training)}</td><td>฿{baht(PACKAGES.B.training)}<br /><span className="text-ink-400">+ยูนิฟอร์ม + Oil</span></td></tr>
-                    <tr><td className="!px-3 text-ink-300">ค่าธรรมเนียมระบบ 6 เดือนแรก</td><td>ฟรี (ปกติ ฿{baht(SYSTEM_FEE_6M.A)})</td><td>ฟรี (ปกติ ฿{baht(SYSTEM_FEE_6M.B)})</td></tr>
-                    <tr><td className="!px-3 text-ink-300">ชม. / งาน</td><td>{PACKAGES.A.hours}</td><td>{PACKAGES.B.hours}</td></tr>
-                    <tr><td className="!px-3 text-ink-300">รายได้พิเศษ (รีวิว)</td><td>–</td><td>[รอกำหนด]</td></tr>
-                    <tr><td className="!px-3 text-ink-300">ทักษะ</td><td>ตามความสามารถพิเศษ</td><td>นวด</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            )}
           </section>
 
-          {/* ── 2.7 · ทำไมต้องชำระก่อน? ── */}
-          <section className="pb-12" id="pay-first">
-            <SectionHead kicker="TRANSPARENCY" title="ทำไมต้องชำระก่อน?" sub="ค่าใช้จ่ายแต่ละส่วนแลกกับอะไร และคืนทุนเมื่อไร" />
-            <div className="mt-5 space-y-2.5">
-              {PAY_FIRST.map((x) => (
-                <div key={x.t} className="reveal rounded-2xl border border-ink-600 bg-white/[0.03] px-4 py-3.5">
-                  <p className="text-[15px] font-semibold text-gold-200">{x.t}</p>
-                  <p className="text-[13px] text-ink-300 mt-0.5">{x.d}</p>
-                </div>
-              ))}
-              <div className="reveal rounded-2xl border border-gold-500/50 bg-gold-500/[0.07] px-4 py-4">
-                <p className="text-[11px] font-semibold tracking-[0.25em] text-gold-400">คำนวณจุดคืนทุนจริง</p>
-                {(Object.keys(PACKAGES) as PackageKey[]).map((k) => {
-                  const pb = payback(k);
-                  return (
-                    <p key={k} className="text-[13.5px] mt-2 leading-relaxed">
-                      <b>แพ็กเกจ {k}:</b> จ่ายจริง ฿{baht(pb.cost)} (ไม่รวมเงินประกันที่ได้คืน) ÷ รายได้ ฿{baht(INCOME_PER_JOB.min)}–{baht(INCOME_PER_JOB.max)}/ครั้ง ≈ <span className="text-gold-300 font-semibold">คืนทุนใน {pb.min}–{pb.max} นัด</span>
-                    </p>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-
-          {/* ── 4 · Timeline ── */}
-          <section className="pb-12" id="timeline">
-            <SectionHead kicker="TIMELINE · 2569" title="Timeline" />
-            <ol className="reveal mt-5 rounded-3xl border border-ink-600 bg-ink-800 p-4 space-y-2">
-              {TIMELINE.map((x) => (
-                <li key={x.t} className="flex gap-3 items-start text-[14.5px]"><span className="text-gold-400 mt-0.5" aria-hidden>●</span><span>{x.t} <span className="text-gold-300">{x.d}</span></span></li>
-              ))}
-            </ol>
-          </section>
-
-          {/* ── 2.5 · 5 ขั้นตอน + ไทม์ไลน์ ── */}
+          {/* ── 4 · CTA ── */}
           <section className="pb-12">
-            <SectionHead kicker="HOW IT WORKS" title="5 ขั้นตอนสู่การรับงาน" />
-            <ol className="mt-5 relative">
-              {JOIN_STEPS.map((s, i) => (
-                <li key={s.t} className="reveal flex gap-4 pb-5 last:pb-0 relative">
-                  {i < JOIN_STEPS.length - 1 && <span className="absolute left-[17px] top-9 bottom-0 w-px bg-gold-500/30" aria-hidden />}
-                  <span className="w-9 h-9 rounded-full bg-gradient-to-br from-gold-300 to-gold-500 text-[#1a1206] font-display font-bold grid place-items-center shrink-0">{i + 1}</span>
-                  <span className="pt-1">
-                    <span className="block text-[15px] font-semibold">{s.t}</span>
-                    <span className="block text-[13px] text-ink-300 mt-0.5">{s.d}</span>
-                  </span>
-                </li>
-              ))}
-            </ol>
+            <button onClick={toForm} disabled={closed} className="reveal btn-crimson w-full min-h-14 py-3 px-4 font-display font-semibold text-[16px] leading-snug">
+              {closed ? "ปิดรับสมัครแล้ว" : CTA_LABEL}
+            </button>
+            <p className="text-center text-[12px] text-ink-400 mt-2">กรอกประวัติ · อัปโหลดรูปถ่าย · แนบสลิป</p>
           </section>
 
           {/* ── 4 · FAQ ── */}
           <section className="pb-10">
             <SectionHead kicker="FAQ" title="คำถามที่พบบ่อย" />
             <div className="mt-5 space-y-2.5">
-              <div className="reveal rounded-2xl border border-gold-500/40 bg-gold-500/5 px-4 py-3.5 text-[13.5px] leading-relaxed">
-                <p className="font-medium">คุณสมบัติผู้สมัคร</p>
-                <div className="grid grid-cols-2 gap-2 mt-2 text-[12.5px] text-ink-200">
-                  {[
-                    `อายุ ${AGE_LIMITS.A.min}+ (A ≤ ${AGE_LIMITS.A.max} / B ≤ ${AGE_LIMITS.B.max} ปี)`,
-                    "ใจรักงานบริการ",
-                    "สุภาพ อ่อนน้อม สะอาด",
-                    "ยินยอมตรวจประวัติอาชญากรรม",
-                    "ไม่ปฏิเสธลูกค้า",
-                    "แพ็กเกจ B: มีทักษะนวด",
-                  ].map((q) => <span key={q} className="rounded-xl border border-ink-600 bg-ink-900/50 px-2.5 py-2 flex gap-1.5"><span className="text-gold-400">✓</span>{q}</span>)}
-                </div>
-                <p className="text-[12px] text-ink-400 mt-2">{GUARANTEE_REFUND_NOTE}</p>
-              </div>
               {FAQ.map((x, i) => {
                 const open = faq === i;
                 return (
@@ -342,6 +261,17 @@ export default function SalePage() {
               })}
             </div>
           </section>
+
+          {/* ── 6 · Timeline (ย่อ) ── */}
+          <section className="pb-12" id="timeline">
+            <SectionHead kicker="TIMELINE · 2569" title="Timeline" />
+            <ol className="reveal mt-4 rounded-2xl border border-ink-600 bg-ink-800 px-4 py-3 space-y-1.5">
+              {TIMELINE.map((x) => (
+                <li key={x.t} className="flex justify-between gap-3 text-[13px]"><span>{x.t}</span><span className="text-gold-300 shrink-0">{x.d}</span></li>
+              ))}
+            </ol>
+          </section>
+
 
           {/* ── 5 · Registration form ── */}
           <section ref={formRef} className="pb-10 scroll-mt-3" id="register">
@@ -481,11 +411,11 @@ export default function SalePage() {
         {/* ── แถบจองลอยด้านล่าง ── */}
         <div className={`fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-30 px-4 pb-[max(14px,env(safe-area-inset-bottom))] pt-3 transition-all duration-300 ${showBar && !closed ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"}`}>
           <div className="flex items-center gap-3 rounded-full bg-ink-800/95 backdrop-blur-xl border border-gold-500/30 pl-5 pr-1.5 py-1.5 shadow-[0_12px_32px_rgba(0,0,0,.5)]">
-            <div className="flex-1 min-w-0">
+            <div className="shrink-0 max-w-[38%] min-w-0">
               <p className="text-[11px] text-ink-300 truncate">{sel ? sel.name : `เหลือ ${left} ที่นั่ง`}</p>
               <p className="font-display text-ink-100 text-lg font-bold leading-tight">{sel ? `฿${baht(sel.price)}` : `เริ่ม ฿${baht(PACKAGES.A.price)}`}</p>
             </div>
-            <button onClick={toForm} className="btn-crimson h-12 px-6 font-semibold text-[15px] shrink-0">สมัครเลย</button>
+            <button onClick={toForm} className="btn-crimson min-h-12 py-2 px-4 font-semibold text-[13px] leading-snug flex-1">{CTA_LABEL}</button>
           </div>
         </div>
       </main>
