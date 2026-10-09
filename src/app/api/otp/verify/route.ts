@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { clientIp, rateLimited } from "@/lib/customer/auth";
-import { PHONE_COOKIE, PHONE_TOKEN_MS, normalizePhone, readPhoneToken, signPhoneToken, verifyOtp } from "@/lib/otp";
+import { PHONE_COOKIE, PHONE_TOKEN_MS, normalizePhone, readPhoneToken, otpRequired, signPhoneToken, verifyOtp } from "@/lib/otp";
 
 export const runtime = "nodejs";
 
@@ -29,5 +29,5 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   const m = /(?:^|;\s*)mb_phone_ok=([^;]+)/.exec(req.headers.get("cookie") ?? "");
   const phone = readPhoneToken(m ? decodeURIComponent(m[1]) : undefined);
-  return NextResponse.json({ ok: true, phone: phone ? `0${phone.slice(2)}` : null });
+  return NextResponse.json({ ok: true, phone: phone ? `0${phone.slice(2)}` : null, required: otpRequired() });
 }

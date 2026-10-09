@@ -33,6 +33,7 @@ export default function PayPage() {
   const [ts, setTs] = useState("");
   const [tsKey, setTsKey] = useState(0);
   const [phoneOk, setPhoneOk] = useState(false);
+  const [otpOff, setOtpOff] = useState(false);
 
   useEffect(() => {
     try {
@@ -49,7 +50,8 @@ export default function PayPage() {
   // เบอร์ยืนยัน OTP แล้ว (cookie) และตรงกับใบสมัคร → ไม่ต้องขอซ้ำ
   useEffect(() => {
     if (!f?.tel) return;
-    fetch("/api/otp/verify", { cache: "no-store" }).then((r) => r.json()).then((d: { phone?: string | null }) => {
+    fetch("/api/otp/verify", { cache: "no-store" }).then((r) => r.json()).then((d: { phone?: string | null; required?: boolean }) => {
+      if (d.required === false) { setOtpOff(true); setPhoneOk(true); return; }
       if (d.phone && d.phone === f.tel.replace(/\D/g, "")) setPhoneOk(true);
     }).catch(() => {});
   }, [f?.tel]);

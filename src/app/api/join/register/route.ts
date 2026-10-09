@@ -7,7 +7,7 @@ import { ageFrom } from "@/lib/join/form";
 import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/join/legal";
 import { TURNSTILE_ERROR, verifyTurnstile } from "@/lib/turnstile";
 import { cookies } from "next/headers";
-import { PHONE_COOKIE, normalizePhone, readPhoneToken } from "@/lib/otp";
+import { PHONE_COOKIE, normalizePhone, otpRequired, readPhoneToken } from "@/lib/otp";
 import { verifySlip } from "@/lib/slip2go";
 import { RESUME_COOKIE, RESUME_TTL_MS, signResume } from "@/lib/join/resume";
 
@@ -108,7 +108,7 @@ export async function POST(req: Request) {
 
   // เบอร์ที่ส่งมาต้องตรงกับเบอร์ที่ยืนยัน OTP แล้ว (cookie ลงลายเซ็นจาก /api/otp/verify)
   const verifiedPhone = readPhoneToken((await cookies()).get(PHONE_COOKIE)?.value);
-  if (!verifiedPhone || verifiedPhone !== normalizePhone(tel))
+  if (otpRequired() && (!verifiedPhone || verifiedPhone !== normalizePhone(tel)))
     return NextResponse.json({ ok: false, error: "กรุณายืนยันเบอร์โทรด้วยรหัส OTP ก่อนส่งใบสมัคร", fields: ["tel"], needOtp: true }, { status: 403 });
 
   // ตรวจสลิปกับ Slip2Go — สลิปซ้ำ หรือโอนเข้าบัญชีอื่น ไม่รับ; กรณีอื่นบันทึกผลให้แอดมินตัดสิน
@@ -130,7 +130,7 @@ export async function POST(req: Request) {
         activities, talents, massage_cert: pkg === "B" ? cert === "yes" : null,
         availability: { slots, days, hours: hoursPerDay },
         ack_hours: true, ack_no_refuse: true,
-        phone_verified_at: new Date().toISOString(),
+        phone_verified_at: verifiedPhone && verifiedPhone === normalizePhone(tel) ? new Date().toISOString() : null,
         slip_check: slipCheck,
         // ต่อท้าย "/criminal" ใน consent_version ด้วย — บันทึกความยินยอมได้แม้ยังไม่รัน migration 0002
         consent_version: `privacy-${PRIVACY_VERSION}/terms-${TERMS_VERSION}/criminal`, consented_at: new Date().toISOString(),

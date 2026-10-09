@@ -86,6 +86,7 @@ function ApplyInner() {
   const [step, setStep] = useState<1 | 2>(1);
   const [errs, setErrs] = useState<Record<string, string>>({});
   const [phoneOk, setPhoneOk] = useState(false);
+  const [otpOff, setOtpOff] = useState(false);
 
   // โหลด draft + แพ็กเกจจาก ?pkg=A|B
   useEffect(() => {
@@ -113,10 +114,16 @@ function ApplyInner() {
   useEffect(() => {
     if (!f.tel) return;
     const tel = f.tel.replace(/\D/g, "");
-    fetch("/api/otp/verify", { cache: "no-store" }).then((r) => r.json()).then((d: { phone?: string | null }) => {
+    fetch("/api/otp/verify", { cache: "no-store" }).then((r) => r.json()).then((d: { phone?: string | null; required?: boolean }) => {
+      if (d.required === false) { setOtpOff(true); setPhoneOk(true); return; }
       if (d.phone && d.phone === tel) setPhoneOk(true);
     }).catch(() => {});
   }, [f.tel]);
+
+  // บนเว็บจริงที่ยังไม่มีระบบ SMS → ข้าม OTP (เช็กครั้งแรกตอนเปิดหน้า)
+  useEffect(() => {
+    fetch("/api/otp/verify", { cache: "no-store" }).then((r) => r.json()).then((d: { required?: boolean }) => { if (d.required === false) { setOtpOff(true); setPhoneOk(true); } }).catch(() => {});
+  }, []);
 
   useEffect(() => { window.scrollTo(0, 0); }, [step]);
 
@@ -228,9 +235,9 @@ function ApplyInner() {
                 <Field label="น้ำหนัก (กก.)" err={errs.weight}><input className={inputCls} inputMode="numeric" maxLength={3} value={f.weight} onChange={(e) => set("weight", e.target.value.replace(/\D/g, ""))} /></Field>
               </div>
               <div className="flex flex-col gap-2 min-w-0" data-err={errs.tel ? "1" : undefined}>
-                <span className={labelCls}>เบอร์โทร (ยืนยันด้วย OTP)</span>
-                <OtpStep phone={f.tel} onPhone={(v) => { set("tel", v); setPhoneOk(false); }} verified={phoneOk} onVerified={() => { setPhoneOk(true); setErrs((e) => ({ ...e, tel: "" })); }} inputCls={inputCls} />
-                {phoneOk && <div className="text-[#4ade80] text-[12.5px] font-semibold">ยืนยันแล้ว ✓ เบอร์นี้ผ่านการตรวจสอบ OTP</div>}
+                <span className={labelCls}>{otpOff ? "เบอร์โทร" : "เบอร์โทร (ยืนยันด้วย OTP)"}</span>
+                {otpOff ? <input className={inputCls} inputMode="tel" autoComplete="tel" maxLength={10} placeholder="08x-xxx-xxxx" value={f.tel} onChange={(e) => set("tel", e.target.value.replace(/\D/g, ""))} /> : <OtpStep phone={f.tel} onPhone={(v) => { set("tel", v); setPhoneOk(false); }} verified={phoneOk} onVerified={() => { setPhoneOk(true); setErrs((e) => ({ ...e, tel: "" })); }} inputCls={inputCls} />}
+                {phoneOk && !otpOff && <div className="text-[#4ade80] text-[12.5px] font-semibold">ยืนยันแล้ว ✓ เบอร์นี้ผ่านการตรวจสอบ OTP</div>}
                 {errs.tel && <span className="text-[11.5px] text-[#ef6b7b]">{errs.tel}</span>}
               </div>
               <Field label="LINE ID"><input className={inputCls} placeholder="LINE ID" value={f.line_id} onChange={(e) => set("line_id", e.target.value)} /></Field>
