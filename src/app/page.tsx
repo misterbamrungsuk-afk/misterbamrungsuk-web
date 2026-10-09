@@ -47,19 +47,19 @@ export default function MainPage() {
           </div>
 
           {PATHS.map((p) => (
-            <Link key={p.href} href={p.href} className="no-underline text-[#f6efe4] hover:text-[#f6efe4] px-4 py-[18px] rounded-2xl border border-[#c9a24a] flex items-center gap-3.5" style={{ background: p.bg }}>
-              <span className="shrink-0 w-14 h-14 rounded-full border border-[#c9a24a] grid place-items-center">{p.icon}</span>
+            <Link key={p.href} href={p.href} className="no-underline text-[#f6efe4] hover:text-[#f6efe4] lux-card px-4 py-[18px] rounded-2xl border border-[#c9a24a] flex items-center gap-3.5" style={{ background: p.bg }}>
+              <span className="lux-icon shrink-0 w-14 h-14 rounded-full border border-[#c9a24a] grid place-items-center">{p.icon}</span>
               <span className="flex-1 min-w-0 flex flex-col gap-0.5">
                 <span className="font-lux font-semibold text-[12px] tracking-[2px] text-[#d8b260]">{p.eyebrow}</span>
                 <span className="font-lux font-semibold text-[21px] leading-[1.25]">{p.title}</span>
                 <span className="text-[12px] leading-[1.5] text-[#d8c8b8]">{p.desc}</span>
-                <span className="self-start mt-2 px-3 py-1.5 rounded-lg border border-[#c9a24a] text-[12px] text-[#f6efe4]">{p.cta}</span>
+                <span className="lux-cta self-start mt-2 px-3 py-1.5 rounded-lg border border-[#c9a24a] text-[12px] text-[#f6efe4]">{p.cta}</span>
               </span>
             </Link>
           ))}
         </div>
 
-        <section className="mx-4 mt-[18px] rounded-[14px] border border-[#c9a24a] overflow-hidden flex min-h-[190px]" style={{ background: "linear-gradient(135deg, #2e0c12, #1e080b)" }}>
+        <section className="lux-card group mx-4 mt-[18px] rounded-[14px] border border-[#c9a24a] overflow-hidden flex min-h-[190px]" style={{ background: "linear-gradient(135deg, #2e0c12, #1e080b)" }}>
           <div className="font-lux flex-[1.15] min-w-0 py-4 pr-3 pl-3.5 flex flex-col gap-[5px] justify-center font-semibold">
             <div className="flex items-center gap-2 text-[11px] text-[#d8b260]">สำหรับลูกค้า<span className="flex-1 max-w-[50px] h-px bg-[#c9a24a]" /></div>
             <h2 className="text-[21px] leading-[1.2] text-[#fff6e3] font-semibold">ต้องการใช้บริการ?</h2>
@@ -70,7 +70,7 @@ export default function MainPage() {
               <Link href="/login" className="underline text-[#e6d9cd] hover:text-[#f6efe4]">เข้าสู่ระบบ</Link>
             </p>
           </div>
-          <img src="/brand/spa.jpg" alt="บรรยากาศสปาพาร์ทเนอร์" className="flex-1 min-w-0 w-0 object-cover block" />
+          <img src="/brand/spa.jpg" alt="บรรยากาศสปาพาร์ทเนอร์" className="flex-1 min-w-0 w-0 object-cover block transition-transform duration-500 group-hover:scale-105" />
         </section>
 
         <SiteFooter />

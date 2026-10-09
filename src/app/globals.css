@@ -326,3 +326,16 @@ html { scroll-behavior: smooth; }
   box-shadow: inset 0 1px 0 rgba(255, 250, 230, .6), inset 0 -1px 0 rgba(90, 60, 20, .35), 0 4px 14px rgba(0, 0, 0, .35);
   color: #2a1c0c; font-weight: 600;
 }
+
+/* เอฟเฟกต์ตอนชี้เมาส์ / กด — การ์ดและปุ่มสไตล์ lux */
+.btn-red-lux, .btn-gold-lux { transition: transform .2s ease, filter .2s ease, box-shadow .2s ease; }
+.btn-red-lux:hover { transform: translateY(-2px); filter: brightness(1.12); box-shadow: 0 12px 30px rgba(255,40,70,.6); }
+.btn-gold-lux:hover { transform: translateY(-2px); filter: brightness(1.08); box-shadow: inset 0 1px 0 rgba(255,250,230,.7), 0 10px 26px rgba(240,200,90,.35); }
+.btn-red-lux:active, .btn-gold-lux:active { transform: translateY(0) scale(.98); }
+.lux-card { transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+.lux-card:hover { transform: translateY(-3px); border-color: #ffd76a; box-shadow: 0 0 0 1px rgba(255,215,106,.35), 0 14px 34px rgba(240,200,90,.18); }
+.lux-card:active { transform: translateY(-1px) scale(.99); }
+.lux-card .lux-icon, .lux-card .lux-cta { transition: background .25s ease, color .25s ease, border-color .25s ease, transform .25s ease; }
+.lux-card:hover .lux-icon { background: rgba(240,200,90,.14); border-color: #ffd76a; transform: scale(1.06); }
+.lux-card:hover .lux-cta { background: linear-gradient(100deg,#b8915a 0%,#d9bf8a 22%,#f0e0b4 48%,#dcc390 72%,#b38b55 100%); border-color: #e8d3a0; color: #2a1c0c; }
+@media (prefers-reduced-motion: reduce) { .lux-card, .btn-red-lux, .btn-gold-lux { transition: none; } .lux-card:hover, .btn-red-lux:hover, .btn-gold-lux:hover { transform: none; } }
