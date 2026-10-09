@@ -23,6 +23,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "ระบบขัดข้อง กรุณาลองใหม่" }, { status: 500 });
   }
   }
+  if (!phone) return NextResponse.json({ ok: false, error: "เบอร์มือถือไม่ถูกต้อง" }, { status: 400 });
   const res = NextResponse.json({ ok: true });
   res.cookies.set(PHONE_COOKIE, signPhoneToken(phone), {
     httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: PHONE_TOKEN_MS / 1000,
