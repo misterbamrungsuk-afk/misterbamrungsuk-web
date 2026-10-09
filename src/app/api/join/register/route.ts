@@ -9,6 +9,7 @@ import { TURNSTILE_ERROR, verifyTurnstile } from "@/lib/turnstile";
 import { cookies } from "next/headers";
 import { PHONE_COOKIE, normalizePhone, readPhoneToken } from "@/lib/otp";
 import { verifySlip } from "@/lib/slip2go";
+import { RESUME_COOKIE, RESUME_TTL_MS, signResume } from "@/lib/join/resume";
 
 export const runtime = "nodejs";
 
@@ -143,6 +144,7 @@ export async function POST(req: Request) {
     if (await appendToSheet(row)) await updateApplicant(row.id, { sheet_synced: true });
     const res = NextResponse.json({ ok: true, mb_code: row.mb_code });
     res.cookies.delete(PHONE_COOKIE);
+    res.cookies.set(RESUME_COOKIE, signResume(row.mb_code), { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: RESUME_TTL_MS / 1000 });
     return res;
   } catch (e) {
     console.error("register failed", e);

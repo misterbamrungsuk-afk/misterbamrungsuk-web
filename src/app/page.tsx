@@ -1,99 +1,87 @@
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import { activeBanners, listPublished, listVendors } from "@/lib/market/store";
-import { marketPartners, type MarketPartner } from "@/lib/market/partners";
-import { MarketHeader } from "./products/market-ui";
-import { BannerCarousel } from "./products/banner-carousel";
-import { MarketFooter, TrustBar } from "./products/market-bits";
-import { ProductCard } from "./products/product-card";
+import { HomeSlider } from "./home-slider";
 
-export const dynamic = "force-dynamic";
-export const metadata = { title: "Mister Bamrungsuk — Marketplace โรงแรม · สปา · สินค้า" };
+export const metadata = { title: "Mister Bamrungsuk — เลือกเส้นทางของคุณ" };
 
-// หน้าแรก (สาธารณะ): Marketplace — พาร์ทเนอร์โรงแรม / สปา + สินค้าเข้าค่าย
-export default async function MarketHome() {
-  const [products, vendors, partners, banners] = await Promise.all([listPublished(), listVendors(), marketPartners(), activeBanners()]);
-  const vname = (id: string) => vendors.find((v) => v.id === id)?.name;
+const PATHS = [
+  {
+    href: "/join", eyebrow: "PART-TIME", title: "สมัครร่วมทีม", desc: "ดูรายละเอียดและขั้นตอนการสมัคร", cta: "ดูรายละเอียด →", bg: "linear-gradient(135deg, #3a0d15, #200a0d)",
+    icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#e8c472" strokeWidth="1.4" strokeLinecap="round"><circle cx="12" cy="8" r="3" /><circle cx="5.5" cy="9.5" r="2.2" /><circle cx="18.5" cy="9.5" r="2.2" /><path d="M6.5 19c0-3 2.5-5.5 5.5-5.5s5.5 2.5 5.5 5.5M2 18c0-2.2 1.6-4 3.5-4M22 18c0-2.2-1.6-4-3.5-4" /></svg>,
+  },
+  {
+    href: "/partner", eyebrow: "PARTNER", title: "พาร์ทเนอร์สปาและโรงแรม", desc: "ร่วมเป็นส่วนหนึ่งของเครือข่ายบริการ", cta: "ร่วมเป็นพาร์ทเนอร์ →", bg: "linear-gradient(135deg, #1e1b16, #121010)",
+    icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#e8c472" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M2 8l4-2 4 2M22 8l-4-2-5 2.5-3 3a1.4 1.4 0 0 0 2 2l2.5-2 5 4.5" /><path d="M2 8v7l7 5 2-1M22 8v7l-3 2" /><path d="M8 15l2 1.5M10 13.5l2.5 2" /></svg>,
+  },
+  {
+    href: "/products", eyebrow: "MARKETPLACE", title: "โรงแรม • สปา • สินค้า", desc: "ค้นหาบริการและสินค้าที่คุณสนใจ", cta: "สำรวจ Marketplace →", bg: "linear-gradient(135deg, #3a0d15, #200a0d)",
+    icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#e8c472" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 7h14l-1 14H6L5 7z" /><path d="M9 10V6a3 3 0 0 1 6 0v4" /></svg>,
+  },
+];
 
+// หน้าแรก (ตามบอร์ด Main): เลือกเส้นทาง — สมัครร่วมทีม / พาร์ทเนอร์ / Marketplace + กล่องลูกค้า
+// (Marketplace home เดิมย้ายไป /market)
+export default function MainPage() {
   return (
-    <main className="min-h-dvh bg-ink-900 text-ink-100">
-      <MarketHeader />
-      <BannerCarousel banners={banners} />
+    <main className="min-h-dvh bg-[#0e0a0a]">
+      <div className="font-lux-body mx-auto w-full max-w-[480px] min-h-dvh flex flex-col overflow-hidden text-[#f6efe4] font-semibold" style={{ background: "linear-gradient(180deg, #0e0a0a 40%, #3a0d15 100%)" }}>
+        <header className="flex justify-between items-center px-4 py-3" style={{ background: "linear-gradient(180deg, #050303, #0e0a0a)" }}>
+          <span className="inline-flex items-center gap-2 font-lux font-semibold text-[20px]">
+            <img src="/brand/logo.png" alt="Mister Bamrungsuk" className="w-10 h-10 object-contain" />
+            <span className="text-[#e8c472]">Mister Bamrungsuk</span>
+          </span>
+          <span className="px-3 py-[5px] rounded-full border border-[#f0c75a] text-[10px] tracking-[2.5px] text-[#ffd76a]">PREMIUM</span>
+        </header>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,175,55,0.14),transparent_60%),radial-gradient(ellipse_at_bottom_left,rgba(160,20,30,0.25),transparent_55%)]" />
-        <div className="relative max-w-6xl mx-auto px-4 py-16 lg:py-24">
-          <p className="text-xs font-semibold tracking-[0.3em] text-gold-500">MISTER BAMRUNGSUK</p>
-          <h1 className="mt-3 text-3xl lg:text-5xl font-semibold leading-tight max-w-3xl">
-            เพื่อนกิน เพื่อนเที่ยว <span className="text-gold-500">ระดับพรีเมียม</span>
-          </h1>
-          <p className="mt-4 text-ink-300 max-w-2xl leading-relaxed">
-            โรงแรมและสปาพาร์ทเนอร์ที่ผ่านมาตรฐานบำรุงสุข พร้อมสินค้าคัดสรรที่มีเลข อย. ถูกต้อง — ทั้งหมดในที่เดียว
-          </p>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <Link href="/home" className="btn-crimson h-12 px-6 rounded-full inline-flex items-center font-semibold">หาเพื่อน</Link>
-            <Link href="/join" className="btn-ghost h-12 px-6 rounded-full inline-flex items-center">สมัคร Part-Time</Link>
-          </div>
-        </div>
-      </section>
+        <HomeSlider />
 
-      <TrustBar />
-
-      <PartnerRow id="hotels" title="พาร์ทเนอร์โรงแรม" eyebrow="HOTELS" rows={partners.hotels} base="/hotels" />
-      <PartnerRow id="spas" title="สปาพาร์ทเนอร์" eyebrow="SPAS" rows={partners.spas} base="/spas" />
-
-      {/* สินค้า */}
-      <section id="products" className="max-w-6xl mx-auto px-4 py-12">
-        <div className="flex items-end gap-3 mb-6">
-          <div>
-            <p className="text-[11px] font-semibold tracking-[0.3em] text-gold-500">SHOP</p>
-            <h2 className="section-title text-2xl font-semibold mt-1">สินค้าเข้าค่าย</h2>
-            <p className="text-ink-300 text-sm mt-1">คัดสรรจากร้านค้าพาร์ทเนอร์ ทุกรายการมีเลข อย.</p>
-          </div>
-          <Link href="/products" className="ml-auto text-sm text-gold-300 hover:underline">ดูทั้งหมด →</Link>
-        </div>
-        {products.length ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {products.slice(0, 6).map((p) => <ProductCard key={p.id} p={p} vendor={vname(p.vendor_id)} />)}
-          </div>
-        ) : <p className="text-sm text-ink-300">ยังไม่มีสินค้า</p>}
-      </section>
-
-      {/* CTA พาร์ทเนอร์ */}
-      <section className="max-w-6xl mx-auto px-4 pb-16">
-        <div className="glass rounded-3xl p-6 lg:p-10 flex flex-col lg:flex-row lg:items-center gap-5">
-          <div>
-            <p className="text-[11px] font-semibold tracking-[0.3em] text-gold-500">PARTNER PROGRAM</p>
-            <h2 className="text-2xl font-semibold mt-1">โรงแรม / สปา / ร้านค้า อยากร่วมเป็นพาร์ทเนอร์?</h2>
-            <p className="text-ink-300 text-sm mt-1">รับป้าย “ทำงานร่วมกับ Mister Bamrungsuk” และโปรโมทผ่านแพลตฟอร์ม</p>
-          </div>
-          <Link href="/partner" className="lg:ml-auto btn-crimson h-12 px-6 rounded-full inline-flex items-center justify-center font-semibold shrink-0">สมัครเป็นพาร์ทเนอร์</Link>
-        </div>
-      </section>
-
-      <MarketFooter />
-    </main>
-  );
-}
-
-function PartnerRow({ id, title, eyebrow, rows, base }: { id: string; title: string; eyebrow: string; rows: MarketPartner[]; base: string }) {
-  return (
-    <section id={id} className="max-w-6xl mx-auto px-4 py-10">
-      <p className="text-[11px] font-semibold tracking-[0.3em] text-gold-500">{eyebrow}</p>
-      <div className="flex items-end mb-5"><h2 className="section-title text-2xl font-semibold mt-1">{title}</h2><Link href={base} className="ml-auto text-sm text-gold-300 hover:underline">ดูทั้งหมด →</Link></div>
-      <div className="flex gap-4 overflow-x-auto no-scrollbar snap-x pb-2">
-        {rows.map((p) => (
-          <Link href={`${base}/${p.id}`} key={p.id} className="glass glass-hover rounded-3xl p-5 min-w-[240px] sm:min-w-[280px] snap-start flex flex-col gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-[linear-gradient(135deg,#3a1a1a,#1a1010)] border border-gold-500/40 grid place-items-center font-display text-gold-300 text-lg">{p.name.slice(0, 1)}</div>
-            <div>
-              <p className="font-semibold leading-snug">{p.name}</p>
-              <p className="text-xs text-ink-300 mt-0.5">{p.type} · {p.area}</p>
+        <div className="px-4 pt-[26px] pb-2 flex flex-col gap-4">
+          <div className="text-center">
+            <div className="flex items-center gap-3.5 justify-center">
+              <span className="flex-1 h-px bg-[linear-gradient(90deg,transparent,#c9a24a)]" />
+              <h1 className="font-lux font-semibold text-[25px] text-[#f6efe4]">เลือกเส้นทางของคุณ</h1>
+              <span className="flex-1 h-px bg-[linear-gradient(90deg,#c9a24a,transparent)]" />
             </div>
-            <span className="self-start inline-flex items-center h-7 px-3 rounded-full border border-gold-500/60 text-gold-300 text-[11px] font-semibold">ทำงานร่วมกับ Mister Bamrungsuk</span>
-          </Link>
-        ))}
+            <p className="mt-1 text-[13.5px] text-[#d8c09a]">ร่วมงาน ร่วมธุรกิจ หรือค้นหาบริการ</p>
+          </div>
+
+          {PATHS.map((p) => (
+            <Link key={p.href} href={p.href} className="no-underline text-[#f6efe4] hover:text-[#f6efe4] px-4 py-[18px] rounded-2xl border border-[#c9a24a] flex items-center gap-3.5" style={{ background: p.bg }}>
+              <span className="shrink-0 w-14 h-14 rounded-full border border-[#c9a24a] grid place-items-center">{p.icon}</span>
+              <span className="flex-1 min-w-0 flex flex-col gap-0.5">
+                <span className="font-lux font-semibold text-[12px] tracking-[2px] text-[#d8b260]">{p.eyebrow}</span>
+                <span className="font-lux font-semibold text-[21px] leading-[1.25]">{p.title}</span>
+                <span className="text-[12px] leading-[1.5] text-[#d8c8b8]">{p.desc}</span>
+                <span className="self-start mt-2 px-3 py-1.5 rounded-lg border border-[#c9a24a] text-[12px] text-[#f6efe4]">{p.cta}</span>
+              </span>
+            </Link>
+          ))}
+        </div>
+
+        <section className="mx-4 mt-[18px] rounded-[14px] border border-[#c9a24a] overflow-hidden flex min-h-[190px]" style={{ background: "linear-gradient(135deg, #2e0c12, #1e080b)" }}>
+          <div className="font-lux flex-[1.15] min-w-0 py-4 pr-3 pl-3.5 flex flex-col gap-[5px] justify-center font-semibold">
+            <div className="flex items-center gap-2 text-[11px] text-[#d8b260]">สำหรับลูกค้า<span className="flex-1 max-w-[50px] h-px bg-[#c9a24a]" /></div>
+            <h2 className="text-[21px] leading-[1.2] text-[#fff6e3] font-semibold">ต้องการใช้บริการ?</h2>
+            <p className="text-[11.5px] text-[#e6d9cd]">สมัครสมาชิกเพื่อเริ่มต้นการจอง</p>
+            <Link href="/auth/register" className="btn-gold-lux mt-2 py-2.5 px-1.5 rounded-lg no-underline text-center text-[13.5px] hover:text-[#2a1c0c]">สมัครใช้บริการ →</Link>
+            <p className="mt-1 text-[11px] text-[#e6d9cd]">
+              <Link href="/login" className="underline text-[#e6d9cd] hover:text-[#f6efe4]">มีบัญชีแล้ว?</Link>{" "}
+              <Link href="/login" className="underline text-[#e6d9cd] hover:text-[#f6efe4]">เข้าสู่ระบบ</Link>
+            </p>
+          </div>
+          <img src="/brand/spa.jpg" alt="บรรยากาศสปาพาร์ทเนอร์" className="flex-1 min-w-0 w-0 object-cover block" />
+        </section>
+
+        <footer className="mx-4 mt-[18px] pt-4 pb-[22px] border-t border-[rgba(201,162,74,.45)] flex justify-between items-center">
+          <span className="inline-flex items-center gap-2">
+            <img src="/brand/logo.png" alt="" className="w-[34px] h-[34px] object-contain" />
+            <span className="font-lux font-semibold text-[21px] text-[#e8c472]">Bamrungsuk</span>
+          </span>
+          <span className="text-[11.5px] text-[#d8c8b8]">
+            ติดต่อเรา&nbsp;&nbsp;|&nbsp;&nbsp;<Link href="/join/terms" className="text-[#d8c8b8] hover:text-[#f6efe4]">เงื่อนไขการใช้งาน</Link>
+          </span>
+        </footer>
       </div>
-      {rows.some((r) => r.sample) && <p className="text-[11px] text-ink-400 mt-2">* ข้อมูลตัวอย่าง รอรายชื่อพาร์ทเนอร์จริง</p>}
-    </section>
+    </main>
   );
 }

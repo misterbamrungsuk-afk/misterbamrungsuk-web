@@ -11,10 +11,10 @@ export type CriminalCheck = "pending" | "passed" | "failed";
 export type ApplicantStatus = "pending_slip" | "verified" | "rejected" | "refunded";
 
 /** ไฟล์ที่ผู้สมัครแนบ (other_doc ไม่บังคับ) */
-export const DOC_KINDS = ["photo", "id_card", "bankbook", "other_doc", "cert_doc", "slip"] as const;
+export const DOC_KINDS = ["photo", "id_card", "bankbook", "other_doc", "cert_doc", "slip", "selfie"] as const;
 export type DocKind = (typeof DOC_KINDS)[number];
 export const DOC_LABEL: Record<DocKind, string> = {
-  photo: "รูปถ่าย", id_card: "บัตรประชาชน", bankbook: "สมุดบัญชี", other_doc: "เอกสารอื่นๆ", cert_doc: "ใบรับรองการนวด", slip: "สลิป",
+  photo: "รูปถ่าย", id_card: "บัตรประชาชน", bankbook: "สมุดบัญชี", other_doc: "เอกสารอื่นๆ", cert_doc: "ใบรับรองการนวด", slip: "สลิป", selfie: "เซลฟีถือบัตร",
 };
 
 export interface ApplicantInput {
@@ -79,13 +79,22 @@ export interface Applicant extends ApplicantInput {
   /** รุ่นอบรม + เข้ากลุ่ม LINE (migration 0003) */
   cohort?: string | null;
   line_joined?: boolean;
+  /** KYC (migration join/0006 — ถ้ายังไม่รัน อ่านจาก docs.extra) */
+  kyc_status?: KycStatus;
+  kyc_reason?: KycReason | null;
+  kyc_submitted_at?: string | null;
+  bank_book_path?: string | null;
   created_at: string;
 }
+
+export type KycStatus = "none" | "submitted" | "approved" | "rejected";
+/** เหตุผลรายรายการที่ไม่ผ่าน เช่น { selfie: "รูปมืดเกินไป…" } */
+export type KycReason = Partial<Record<string, string>>;
 
 export interface Availability { slots: string[]; days: number | null; hours: number | null }
 
 /** ข้อมูลเสริมที่แพ็กไว้ใน docs.extra ด้วย (ทนได้ถ้ายังไม่รัน migration 0003) */
-export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents" | "slip_check">;
+export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents" | "slip_check" | "kyc_status" | "kyc_reason" | "kyc_submitted_at" | "bank_book_path"> & { attendance?: Record<string, boolean> };
 
 /** รวมคอลัมน์ 0003 กับ docs.extra — คอลัมน์จริงมาก่อน */
 export function extraOf(a: Applicant): Extra {
@@ -101,6 +110,10 @@ export function extraOf(a: Applicant): Extra {
     phone_verified_at: a.phone_verified_at ?? x.phone_verified_at ?? null,
     talents: a.talents?.length ? a.talents : x.talents ?? [],
     slip_check: x.slip_check ?? null,
+    kyc_status: a.kyc_status && a.kyc_status !== "none" ? a.kyc_status : x.kyc_status ?? a.kyc_status ?? "none",
+    kyc_reason: a.kyc_reason ?? x.kyc_reason ?? null,
+    kyc_submitted_at: a.kyc_submitted_at ?? x.kyc_submitted_at ?? null,
+    bank_book_path: a.bank_book_path ?? x.bank_book_path ?? null,
   };
 }
 
@@ -224,4 +237,92 @@ export async function updateExtra(id: string, patch: Pick<Extra, "cohort" | "lin
   const { data, error } = await db().from("applicants").update({ docs }).eq("id", id).select().single();
   if (error) throw error;
   return data as Applicant;
+}
+
+// ── KYC / บัญชีรับเงิน / เช็กชื่ออบรม (migration join/0006 — ไม่มีคอลัมน์ก็เก็บใน docs.extra) ──
+
+const KYC_EXTRA_KEYS = ["kyc_status", "kyc_reason", "kyc_submitted_at", "bank_book_path"];
+
+/** เขียนคอลัมน์ + docs (path ไฟล์ และ extra สำรอง) — คอลัมน์ 0006 ยังไม่มีก็เขียนเฉพาะคอลัมน์เดิม + docs */
+async function patchApplicant(id: string, cols: Record<string, unknown>, docPaths: Partial<Record<DocKind, string>> = {}): Promise<Applicant | null> {
+  const extraPatch = Object.fromEntries(Object.entries(cols).filter(([k]) => KYC_EXTRA_KEYS.includes(k)));
+  if (isDemo) {
+    const r = demo.rows.find((x) => x.id === id);
+    if (!r) return null;
+    Object.assign(r, cols);
+    r.docs = { ...r.docs, ...docPaths, extra: { ...r.docs.extra, ...extraPatch } };
+    return r;
+  }
+  const { data: cur, error: e1 } = await db().from("applicants").select("docs").eq("id", id).single();
+  if (e1) throw e1;
+  const docs = { ...(cur?.docs ?? {}), ...docPaths, extra: { ...(cur?.docs?.extra ?? {}), ...extraPatch } };
+  const withCols = await db().from("applicants").update({ ...cols, docs }).eq("id", id).select().single();
+  if (!withCols.error) return withCols.data as Applicant;
+  const base = Object.fromEntries(Object.entries(cols).filter(([k]) => !KYC_EXTRA_KEYS.includes(k)));
+  const { data, error } = await db().from("applicants").update({ ...base, docs }).eq("id", id).select().single();
+  if (error) throw error;
+  return data as Applicant;
+}
+
+async function putKycFile(id: string, kind: DocKind, f: File) {
+  const path = `${id}/${kind}-${Date.now()}.${extOf(f)}`;
+  await putFile(path, f);
+  return path;
+}
+
+export async function saveKyc(id: string, files: { id_card?: File; selfie?: File }, address?: string) {
+  const paths: Partial<Record<DocKind, string>> = {};
+  if (files.id_card) paths.id_card = await putKycFile(id, "id_card", files.id_card);
+  if (files.selfie) paths.selfie = await putKycFile(id, "selfie", files.selfie);
+  return patchApplicant(id, address ? { address } : {}, paths);
+}
+
+/** บันทึกบัญชีรับเงิน + ส่ง KYC (kyc_status = submitted) */
+export async function saveBank(id: string, b: { bank: string; bank_account: string; bank_account_name: string; bankbook?: File }) {
+  const paths: Partial<Record<DocKind, string>> = {};
+  if (b.bankbook) paths.bankbook = await putKycFile(id, "bankbook", b.bankbook);
+  const cols: Record<string, unknown> = {
+    bank: b.bank, bank_account: b.bank_account, bank_account_name: b.bank_account_name,
+    kyc_status: "submitted", kyc_reason: null, kyc_submitted_at: new Date().toISOString(),
+  };
+  if (paths.bankbook) cols.bank_book_path = paths.bankbook;
+  return patchApplicant(id, cols, paths);
+}
+
+/** แอดมินตัดสิน KYC */
+export async function setKyc(id: string, status: KycStatus, reason: KycReason | null = null) {
+  return patchApplicant(id, { kyc_status: status, kyc_reason: reason });
+}
+
+async function attendanceFromExtra(id: string): Promise<Record<number, boolean>> {
+  const r = isDemo ? demo.rows.find((x) => x.id === id) : ((await db().from("applicants").select("docs").eq("id", id).maybeSingle()).data as Pick<Applicant, "docs"> | null);
+  const a = r?.docs?.extra?.attendance ?? {};
+  return Object.fromEntries(Object.entries(a).map(([k, v]) => [Number(k), !!v]));
+}
+
+/** ผลเช็กชื่อรายรอบ { [session]: present } */
+export async function getAttendance(id: string): Promise<Record<number, boolean>> {
+  if (isDemo) return attendanceFromExtra(id);
+  const { data, error } = await db().from("cohort_attendance").select("session, present").eq("applicant_id", id);
+  if (error) return attendanceFromExtra(id); // ตารางยังไม่มี (ยังไม่รัน 0006)
+  return Object.fromEntries((data as { session: number; present: boolean }[]).map((x) => [x.session, x.present]));
+}
+
+/** แอดมินเช็กชื่อ */
+export async function markAttendance(id: string, session: number, present: boolean) {
+  if (!isDemo) {
+    const { error } = await db().from("cohort_attendance").upsert({ applicant_id: id, session, present, marked_at: new Date().toISOString() });
+    if (!error) return;
+  }
+  if (isDemo) {
+    const r = demo.rows.find((x) => x.id === id);
+    if (r) r.docs = { ...r.docs, extra: { ...r.docs.extra, attendance: { ...r.docs.extra?.attendance, [session]: present } } };
+    return;
+  }
+  const { data: cur, error: e1 } = await db().from("applicants").select("docs").eq("id", id).single();
+  if (e1) throw e1;
+  const ex = cur?.docs?.extra ?? {};
+  const docs = { ...(cur?.docs ?? {}), extra: { ...ex, attendance: { ...(ex.attendance ?? {}), [session]: present } } };
+  const { error } = await db().from("applicants").update({ docs }).eq("id", id);
+  if (error) throw error;
 }

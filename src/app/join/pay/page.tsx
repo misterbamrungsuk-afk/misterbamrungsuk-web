@@ -1,27 +1,35 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Logo } from "@/components/ui";
-import { BANK, PACKAGES, feeBreakdown } from "@/lib/join/config";
+import { BANK, GUARANTEE_REFUND_NOTE, PACKAGES, type PackageKey } from "@/lib/join/config";
 import { FILE_FIELDS, FORM_KEY, dataUrlToFile, resizeImage, type JoinForm } from "@/lib/join/form";
 import { promptPayPayload } from "@/lib/join/promptpay";
 import QRCode from "qrcode";
 import { Turnstile } from "@/components/turnstile";
 import { OtpStep } from "@/components/otp-step";
 
+// ขั้นที่ 3 / 5 ชำระเงิน (บอร์ด JoinPay) — QR พร้อมเพย์ + แนบสลิป → /api/join/register (ตรวจ Slip2Go) → /join/kyc/[mb]
+const GOLD = "#f0c75a";
+const LINE = "rgba(240,200,90,.38)";
+const H: CSSProperties = { fontFamily: "'Cormorant Garamond', Kanit, sans-serif", fontWeight: 600 };
+const SUB: Record<PackageKey, string> = { A: "(ตามความสามารถพิเศษ)", B: "(สำหรับผู้มีความสามารถด้านการนวด)" };
+const QR_TTL = 900;
+const baht = (n: number) => "฿" + n.toLocaleString("en-US");
+
 export default function PayPage() {
   const router = useRouter();
   const [f, setF] = useState<JoinForm | null>(null);
-  // มีหมายเลขพร้อมเพย์ (หรือรูป QR) → เริ่มที่สแกน QR; ไม่มี → โอนผ่านบัญชีอย่างเดียว
   const hasQr = !!BANK.qrImage || !!promptPayPayload(BANK.promptPayId, 1);
-  const [method, setMethod] = useState<"qr" | "transfer">(hasQr ? "qr" : "transfer");
+  const method: "qr" | "transfer" = hasQr ? "qr" : "transfer";
   const [qr, setQr] = useState("");
+  const [sec, setSec] = useState(QR_TTL);
   const [slip, setSlip] = useState("");
-  const [copied, setCopied] = useState(false);
+  const [slipName, setSlipName] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [slipErr, setSlipErr] = useState("");
   const [ts, setTs] = useState("");
   const [tsKey, setTsKey] = useState(0);
   const [phoneOk, setPhoneOk] = useState(false);
@@ -30,14 +38,15 @@ export default function PayPage() {
     try {
       const saved = sessionStorage.getItem(FORM_KEY);
       const parsed = saved ? (JSON.parse(saved) as JoinForm) : null;
-      if (!parsed?.package || !parsed.accept_terms || !parsed.consent_pdpa) return router.replace("/join#register");
+      if (!parsed?.package) return router.replace("/join#packages");
+      if (!parsed.accept_terms || !parsed.consent_pdpa) return router.replace(`/join/apply?pkg=${parsed.package}&step=2`);
       setF(parsed);
     } catch {
-      router.replace("/join#register");
+      router.replace("/join#packages");
     }
   }, [router]);
 
-  // ยืนยันเบอร์ไว้แล้วใน 30 นาทีนี้ (cookie) และเบอร์ตรงกับใบสมัคร → ไม่ต้องขอ OTP ซ้ำ
+  // เบอร์ยืนยัน OTP แล้ว (cookie) และตรงกับใบสมัคร → ไม่ต้องขอซ้ำ
   useEffect(() => {
     if (!f?.tel) return;
     fetch("/api/otp/verify", { cache: "no-store" }).then((r) => r.json()).then((d: { phone?: string | null }) => {
@@ -45,48 +54,46 @@ export default function PayPage() {
     }).catch(() => {});
   }, [f?.tel]);
 
+  useEffect(() => {
+    if (!f?.package) return;
+    const payload = promptPayPayload(BANK.promptPayId, PACKAGES[f.package].price);
+    if (payload) QRCode.toDataURL(payload, { margin: 1, width: 480, errorCorrectionLevel: "M" }).then(setQr).catch(() => setQr(""));
+  }, [f?.package]);
+
+  useEffect(() => {
+    if (sec <= 0) return;
+    const t = setTimeout(() => setSec((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [sec]);
+
+  if (!f || !f.package) return <main className="min-h-dvh grid place-items-center text-[#cdbfb3] bg-[#0e0a0a]">กำลังโหลด…</main>;
+  const k = f.package;
+  const pkg = PACKAGES[k];
+
   const setTel = (tel: string) => {
-    if (!f) return;
     const next = { ...f, tel };
     setF(next);
     setPhoneOk(false);
     try { sessionStorage.setItem(FORM_KEY, JSON.stringify(next)); } catch {}
   };
 
-  useEffect(() => {
-    if (!f?.package) return;
-    const payload = promptPayPayload(BANK.promptPayId, PACKAGES[f.package].price);
-    if (payload) QRCode.toDataURL(payload, { margin: 1, width: 480, errorCorrectionLevel: "M" }).then(setQr).catch(() => setQr(""));
-  }, [f]);
-
-  if (!f || !f.package) return <main className="min-h-dvh grid place-items-center text-ink-300">กำลังโหลด…</main>;
-  const pkg = PACKAGES[f.package];
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(BANK.accountNo.replace(/\D/g, ""));
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1800);
-    } catch {}
-  };
-
   const onSlip = async (file?: File) => {
-    setErr("");
+    setSlipErr(""); setErr("");
     if (!file) return;
-    if (!file.type.startsWith("image/")) return setErr("รับเฉพาะไฟล์รูปภาพ (JPG/PNG)");
+    if (!file.type.startsWith("image/")) return setSlipErr("รับเฉพาะไฟล์รูปภาพ (JPG/PNG)");
     setSlip(await resizeImage(file, 1400, 0.85));
+    setSlipName(file.name);
   };
 
   const submit = async () => {
+    if (!slip) return setSlipErr("แนบสลิปการโอนก่อน");
     if (!phoneOk) return setErr("ยืนยันเบอร์โทรด้วยรหัส OTP ก่อน");
-    if (!slip) return setErr("แนบสลิปการโอนก่อน");
-    setBusy(true);
-    setErr("");
+    setBusy(true); setErr(""); setSlipErr("");
     try {
       const fd = new FormData();
       const { skills, activities, talents, avail_slots, accept_terms, consent_pdpa, consent_marketing, photo, id_card, bankbook, other_doc, cert_doc, ...rest } = f;
-      Object.entries(rest).forEach(([k, v]) => fd.append(k, String(v)));
-      skills.forEach((s) => fd.append("skills", s));
+      Object.entries(rest).forEach(([key, v]) => fd.append(key, String(v)));
+      (skills ?? []).forEach((s) => fd.append("skills", s));
       (activities ?? []).forEach((s) => fd.append("activities", s));
       (talents ?? []).forEach((s) => fd.append("talents", s));
       (avail_slots ?? []).forEach((s) => fd.append("avail_slots", s));
@@ -96,105 +103,152 @@ export default function PayPage() {
       fd.append("payment_method", method);
       fd.append("turnstile", ts);
       const files = { photo, id_card, bankbook, other_doc, cert_doc };
-      for (const k of FILE_FIELDS) if (files[k]) fd.append(k, await dataUrlToFile(files[k], `${k}.jpg`));
+      for (const key of FILE_FIELDS) if (files[key]) fd.append(key, await dataUrlToFile(files[key], `${key}.jpg`));
       fd.append("slip", await dataUrlToFile(slip, "slip.jpg"));
       const res = await fetch("/api/join/register", { method: "POST", body: fd });
-      const data = await res.json();
+      const data = (await res.json()) as { ok?: boolean; mb_code?: string; error?: string; fields?: string[]; needOtp?: boolean };
       if (data.needOtp) setPhoneOk(false);
-      if (!res.ok || !data.ok) throw new Error(data.error || "ส่งข้อมูลไม่สำเร็จ");
+      if (!res.ok || !data.ok) {
+        const msg = data.error || "ส่งข้อมูลไม่สำเร็จ";
+        if (data.fields?.includes("slip")) { setSlipErr(msg); setSlip(""); setSlipName(""); }
+        else setErr(data.fields?.length && !data.needOtp ? `${msg} — กลับไปแก้ในใบสมัคร (${data.fields.join(", ")})` : msg);
+        throw null;
+      }
       sessionStorage.removeItem(FORM_KEY);
-      router.replace(`/join/done/${data.mb_code}`);
+      router.replace(`/join/kyc/${data.mb_code}`);
     } catch (e) {
-      setErr((e as Error).message);
+      if (e) setErr((e as Error).message || "ส่งข้อมูลไม่สำเร็จ");
       setBusy(false);
-      setTs(""); setTsKey((k) => k + 1);
+      setTs(""); setTsKey((n) => n + 1);
     }
   };
 
+  const items = k === "A"
+    ? [["ค่าการันตี Branding", pkg.guarantee], ["ค่าอบรม", pkg.training]] as const
+    : [["ค่าการันตี Branding", pkg.guarantee], ["ค่าอบรม (รวมยูนิฟอร์ม + น้ำมันนวด)", pkg.training]] as const;
+  const perks = k === "A"
+    ? ["อบรมบุคลิกภาพ มารยาท การดูแลลูกค้า", `ฟรี! ค่าสมาชิกอยู่ในระบบ 6 เดือนแรก (จากปกติ ${pkg.membershipAfter.toLocaleString("en-US")} บาท/6 เดือน)`]
+    : ["อบรมบุคลิกภาพ + มาตรฐานการนวด", "ยูนิฟอร์ม + Massage Oil 1 เซ็ต", `ฟรี! ค่าสมาชิกอยู่ในระบบ 6 เดือนแรก (จากปกติ ${pkg.membershipAfter.toLocaleString("en-US")} บาท/6 เดือน)`];
+  const lastInitial = f.last_name.trim() ? ` ${f.last_name.trim()[0]}.` : "";
+  const summary = [["ผู้สมัคร", `${f.title}${f.first_name}${lastInitial}${f.nickname ? ` (${f.nickname})` : ""}`], ["กลุ่มอบรม", "กลุ่ม 1 · ภายใน 20 พ.ย."]];
+  const mm = String(Math.floor(sec / 60)).padStart(2, "0");
+  const ss = String(sec % 60).padStart(2, "0");
+  const expired = sec === 0;
+  const canSubmit = !!slip && phoneOk && !busy;
+  const mut = "text-[#cdbfb3]";
+
   return (
-    <div className="phone-stage"><main className="phone px-5 pb-10">
-      <header className="flex items-center gap-3 h-16">
-        <Link href="/join#register" aria-label="ย้อนกลับ" className="w-10 h-10 rounded-full border border-ink-600 grid place-items-center text-xl">‹</Link>
-        <Logo size={26} />
-        <span className="ml-auto text-xs text-ink-300">ขั้นตอน 2/3</span>
-      </header>
-
-      <h1 className="font-display text-2xl font-semibold mt-2">ชำระเงินประกัน + ค่าอบรม</h1>
-
-      <section className="glass rounded-3xl p-5 mt-5">
-        <div className="flex justify-between text-sm"><span className="text-ink-300">ผู้สมัคร</span><span className="truncate ml-3">{f.title}{f.first_name} {f.last_name} ({f.nickname})</span></div>
-        <div className="flex justify-between text-sm mt-2"><span className="text-ink-300">แพ็กเกจ {f.package}</span><span>{pkg.name}</span></div>
-        <div className="mt-3 rounded-2xl bg-ink-900/60 px-4 py-3 text-[13px] space-y-1.5">
-          {feeBreakdown(f.package).map((x) => <div key={x.name} className="flex justify-between gap-3"><span className="text-ink-300">{x.name}</span><span className="font-display text-gold-300">฿{x.amount.toLocaleString("th-TH")}</span></div>)}
-          <p className="text-[11.5px] text-ink-400 pt-1">ฟรีค่าธรรมเนียมระบบ 6 เดือนแรก · หลังจากนั้น ฿{pkg.membershipAfter.toLocaleString("th-TH")} / 6 เดือน</p>
+    <div className="min-h-dvh bg-[#0e0a0a]">
+      <main className="mx-auto w-full max-w-[480px] min-h-dvh bg-[#0e0a0a] text-[#f6efe4] pb-8 overflow-x-hidden" style={{ fontFamily: "'IBM Plex Sans Thai', Kanit, sans-serif" }}>
+        <div className="flex items-center gap-3 px-4 pt-4 pb-2">
+          <Link href={`/join/apply?pkg=${k}&step=2`} aria-label="ย้อนกลับ" className="shrink-0 w-11 h-11 rounded-full border border-[rgba(240,200,90,.38)] text-[#f6efe4] grid place-items-center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6" /></svg>
+          </Link>
+          <div className="min-w-0">
+            <div className="text-[11px] tracking-[1px] text-[#f0c75a] font-semibold">ขั้นที่ 3 / 5</div>
+            <div className="text-[18px]" style={H}>ชำระเงิน</div>
+          </div>
         </div>
-        <div className="flex justify-between items-baseline border-t border-ink-600 mt-4 pt-4">
-          <span className="font-medium">ยอดชำระรวม</span>
-          <span className="font-display text-3xl font-bold text-gold-300">฿{pkg.price.toLocaleString("th-TH")}</span>
+        <div className="grid grid-cols-5 gap-1 px-4" aria-label="ขั้นที่ 3 จาก 5">
+          {[1, 2, 3, 4, 5].map((n) => <span key={n} className="h-1 rounded-[2px]" style={{ background: n <= 3 ? GOLD : LINE }} />)}
         </div>
-      </section>
 
-      <div className={`grid gap-2 mt-5 ${hasQr ? "grid-cols-2" : "grid-cols-1"}`} role="radiogroup" aria-label="ช่องทางชำระ">
-        {(hasQr ? ([["qr", "สแกน QR Code"], ["transfer", "โอนผ่านบัญชี"]] as const) : ([["transfer", "โอนผ่านบัญชี"]] as const)).map(([k, l]) => (
-          <button key={k} role="radio" aria-checked={method === k} onClick={() => setMethod(k)}
-            className={`min-h-12 rounded-full border text-sm font-medium ${method === k ? "border-gold-500 bg-gold-500/10 text-gold-300" : "border-ink-600"}`}>{l}</button>
-        ))}
-      </div>
+        <div className="px-4 pt-4 flex flex-col gap-4 min-w-0">
+          <div className="flex items-center justify-between gap-3 px-4 py-[14px] rounded-[16px] border-[1.5px] border-[#f0c75a] bg-[rgba(240,200,90,.14)]">
+            <div className="min-w-0">
+              <div className="text-[11px] tracking-[1.5px] text-[#ffd76a]">แพ็กเกจที่เลือก</div>
+              <div className="text-[17px]" style={H}>เพื่อนกินเที่ยว</div>
+              <div className="text-[11.5px] text-[#cdbfb3] whitespace-nowrap">{SUB[k]}</div>
+            </div>
+            <div className="text-right shrink-0">
+              <div className="text-[20px] text-[#ffd76a]" style={H}>{baht(pkg.price)}</div>
+              <Link href="/join#packages" className="text-[12px] text-[#ffd76a]">เปลี่ยนแพ็กเกจ</Link>
+            </div>
+          </div>
 
-      <section className="glass rounded-3xl p-5 mt-3">
-        {method === "qr" ? (
-          <div className="flex flex-col items-center">
-            <div className="w-full max-w-[280px] rounded-3xl bg-white overflow-hidden text-[#1a1206] shadow-[0_10px_40px_rgba(0,0,0,.4)]">
-              <div className="bg-[#113566] text-white text-center py-2.5 text-[13px] font-semibold tracking-wide">THAI QR PAYMENT · พร้อมเพย์</div>
-              <div className="p-4 flex flex-col items-center">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                {qr ? <img src={qr} alt={`QR พร้อมเพย์ ยอด ${pkg.price} บาท`} className="w-full aspect-square" />
-                  // eslint-disable-next-line @next/next/no-img-element
-                  : BANK.qrImage ? <img src={BANK.qrImage} alt="QR ชำระเงิน" className="w-full aspect-square" />
-                  : <div className="w-full aspect-square grid place-items-center text-sm text-ink-400">กำลังสร้าง QR…</div>}
-                <p className="text-[13px] mt-2 font-medium">{BANK.accountName}</p>
-                <p className="font-display text-2xl font-bold mt-1">฿{pkg.price.toLocaleString("th-TH", { minimumFractionDigits: 2 })}</p>
+          <div className="p-4 min-w-0 rounded-[16px] bg-[#241717] border border-[rgba(240,200,90,.38)] flex flex-col gap-4 text-[13px] leading-[1.5]">
+            <div className="flex flex-col gap-2">
+              {summary.map(([n, v]) => (
+                <div key={n} className="flex justify-between items-baseline gap-4 min-w-0"><span className={`${mut} whitespace-nowrap shrink-0`}>{n}</span><span className="text-right min-w-0 [overflow-wrap:anywhere]">{v}</span></div>
+              ))}
+            </div>
+            <div className="flex flex-col gap-2 min-w-0">
+              <div className={`${mut} text-[12px]`}>รายการ</div>
+              {items.map(([n, v]) => (
+                <div key={n} className="flex justify-between items-baseline gap-4 min-w-0"><span className="min-w-0 [overflow-wrap:anywhere]">{n}</span><span className="whitespace-nowrap shrink-0 text-right">{baht(v)}</span></div>
+              ))}
+            </div>
+            <div className="flex flex-col gap-2 min-w-0">
+              <div className={`${mut} text-[12px]`}>สิ่งที่ได้</div>
+              <ul className="m-0 pl-4 flex flex-col gap-1 list-disc">{perks.map((t) => <li key={t} className="[overflow-wrap:anywhere]">{t}</li>)}</ul>
+            </div>
+            <div className="flex flex-col gap-2 min-w-0">
+              <div className={`${mut} text-[12px]`}>เงินประกัน</div>
+              <div className="[overflow-wrap:anywhere]">{GUARANTEE_REFUND_NOTE}</div>
+            </div>
+            <div className="flex justify-between items-baseline gap-4 border-t border-[rgba(240,200,90,.38)] pt-4">
+              <span className="whitespace-nowrap">ยอดชำระ</span>
+              <span className="text-[24px] text-[#f0c75a] whitespace-nowrap" style={H}>{baht(pkg.price)}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <div className="rounded-[16px] bg-[#241717] border border-[rgba(245,210,110,.85)] p-4 flex flex-col items-center gap-3 w-full min-w-0">
+              {method === "qr" ? (
+                <>
+                  <div className="flex justify-between gap-2 flex-wrap w-full text-[12px]">
+                    <span className="text-[#ffd76a] font-semibold">PromptPay</span>
+                    <span className={mut}>QR หมดอายุใน <b className="text-[14px]" style={{ ...H, color: sec < 120 ? "#ef6b7b" : "#ffd76a" }}>{mm}:{ss}</b></span>
+                  </div>
+                  <div className="self-center p-3 bg-white rounded-[12px] leading-[0]" style={{ opacity: expired ? 0.2 : 1 }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    {qr ? <img src={qr} alt={`QR พร้อมเพย์ ยอด ${pkg.price} บาท`} width={175} height={175} className="w-[175px] h-[175px]" />
+                      // eslint-disable-next-line @next/next/no-img-element
+                      : BANK.qrImage ? <img src={BANK.qrImage} alt="QR ชำระเงิน" width={175} height={175} className="w-[175px] h-[175px]" />
+                      : <div className="w-[175px] h-[175px] grid place-items-center text-[12px] leading-normal text-[#7d6d6a]">กำลังสร้าง QR…</div>}
+                  </div>
+                  <div className={`${mut} text-[12px] text-center [overflow-wrap:anywhere]`}>{BANK.accountName} · บัญชีรับเงิน {BANK.accountNo}</div>
+                  {expired && <button type="button" onClick={() => setSec(QR_TTL)} className="h-12 w-full rounded-[14px] border border-[rgba(240,200,90,.38)] bg-[#241717] text-[#ffd76a] text-[14px] font-semibold">สร้าง QR ใหม่</button>}
+                </>
+              ) : (
+                <div className="w-full flex flex-col gap-2 text-[13px]">
+                  <div className="flex justify-between gap-3"><span className={mut}>ธนาคาร</span><span className="text-right">{BANK.bank}</span></div>
+                  <div className="flex justify-between gap-3"><span className={mut}>ชื่อบัญชี</span><span className="text-right">{BANK.accountName}</span></div>
+                  <div className="flex justify-between gap-3"><span className={mut}>เลขที่บัญชี</span><span className="text-right text-[16px]" style={H}>{BANK.accountNo}</span></div>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <p className="text-[12px] text-[#cdbfb3] mb-[6px]">อัปโหลดสลิปการโอน</p>
+              <label className="w-full min-h-[88px] rounded-[16px] border-[1.5px] border-dashed bg-[#241717] flex items-center justify-center gap-[10px] text-[13px] cursor-pointer px-3 text-center"
+                style={{ borderColor: slipErr ? "#ef6b7b" : slip ? "#4cc283" : LINE, color: slip ? "#7fd6a3" : "#cdbfb3" }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="shrink-0"><path d="M12 16V4M7 9l5-5 5 5" /><path d="M4 16v4h16v-4" /></svg>
+                <span className="min-w-0 [overflow-wrap:anywhere]">{slip ? `${slipName || "slip.jpg"} · แตะเพื่อเปลี่ยน` : "แตะเพื่อเลือกรูปสลิป (JPG/PNG)"}</span>
+                <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => { onSlip(e.target.files?.[0]); e.target.value = ""; }} />
+              </label>
+              {slipErr && <p role="alert" className="text-[12.5px] text-[#ef6b7b] mt-2 leading-relaxed">{slipErr}</p>}
+            </div>
+
+            {!phoneOk && (
+              <div>
+                <p className="text-[12px] text-[#cdbfb3] mb-[6px]">ยืนยันเบอร์มือถือ (OTP) ก่อนส่ง</p>
+                <OtpStep phone={f.tel} onPhone={setTel} verified={phoneOk} onVerified={() => setPhoneOk(true)}
+                  inputCls="h-12 w-full min-w-0 rounded-[12px] border border-[rgba(240,200,90,.38)] bg-[#21191a] px-[14px] text-[14px] text-[#f6efe4]" />
               </div>
-            </div>
-            <p className="text-[13px] text-ink-300 mt-3 text-center leading-relaxed">สแกนด้วยแอปธนาคารใดก็ได้ ยอดเงินขึ้นให้อัตโนมัติ<br />ตรวจชื่อผู้รับให้ตรงก่อนกดยืนยัน แล้วบันทึกสลิปมาแนบด้านล่าง</p>
+            )}
+
+            {err && <p role="alert" className="text-[12.5px] text-[#ef6b7b]">{err}</p>}
+            <Turnstile key={tsKey} onToken={setTs} className="flex justify-center" />
+
+            <button type="button" onClick={submit} disabled={busy}
+              className="btn-red-lux h-[52px] w-full rounded-[14px] border border-[rgba(245,210,110,.85)] text-white text-[15px] shadow-[0_8px_24px_rgba(255,40,70,.45)]"
+              style={{ ...H, background: "linear-gradient(100deg, #7e0a1e 0%, #c8102e 24%, #ff5068 50%, #c8102e 76%, #7e0a1e 100%)", opacity: canSubmit ? 1 : 0.45 }}>
+              {busy ? "กำลังส่งสลิปเพื่อตรวจสอบ…" : "ส่งสลิปเพื่อตรวจสอบ"}
+            </button>
           </div>
-        ) : (
-          <div className="flex flex-col gap-2 text-sm">
-            <div className="flex justify-between gap-3"><span className="text-ink-300">ธนาคาร</span><span className="text-right">{BANK.bank}</span></div>
-            <div className="flex justify-between gap-3"><span className="text-ink-300">ชื่อบัญชี</span><span className="text-right">{BANK.accountName}</span></div>
-            <div className="flex items-center justify-between gap-3 mt-2 rounded-2xl bg-ink-900/60 px-4 py-3">
-              <span className="font-display text-xl tracking-wider">{BANK.accountNo}</span>
-              <button onClick={copy} className="btn-ghost h-10 px-4 text-sm shrink-0">{copied ? "✓ คัดลอกแล้ว" : "คัดลอก"}</button>
-            </div>
-          </div>
-        )}
-      </section>
-
-      <section className="mt-5">
-        <p className="text-sm text-ink-300 mb-2">แนบหลักฐานการโอนเงิน (สลิป)</p>
-        <label className="flex items-center gap-4 rounded-3xl border border-dashed border-ink-500 p-4 cursor-pointer hover:border-gold-500">
-          {slip
-            // eslint-disable-next-line @next/next/no-img-element
-            ? <img src={slip} alt="สลิปที่แนบ" className="w-24 h-32 rounded-xl object-cover" />
-            : <span className="w-24 h-32 rounded-xl bg-ink-800 grid place-items-center text-ink-400 text-3xl">+</span>}
-          <span className="text-sm text-ink-300">{slip ? "แตะเพื่อเปลี่ยนสลิป" : "แตะเพื่อเลือกรูปสลิป"}</span>
-          <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => onSlip(e.target.files?.[0])} />
-        </label>
-      </section>
-
-      <section className="mt-5">
-        <p className="text-sm text-ink-300 mb-2">ยืนยันเบอร์มือถือ (OTP) ก่อนส่งใบสมัคร</p>
-        <OtpStep phone={f.tel} onPhone={setTel} verified={phoneOk} onVerified={() => setPhoneOk(true)}
-          inputCls="h-12 w-full min-w-0 rounded-2xl border border-ink-600 bg-ink-900/60 px-4 text-[15px]" />
-      </section>
-
-      {err && <p role="alert" className="text-sm text-crimson-300 mt-4">{err}</p>}
-
-      <Turnstile key={tsKey} onToken={setTs} className="mt-5 flex justify-center" />
-      <button onClick={submit} disabled={busy || !phoneOk} className="btn-crimson w-full h-14 mt-6 font-display font-semibold text-lg">
-        {busy ? "กำลังส่งข้อมูล…" : "ยืนยันการชำระเงิน"}
-      </button>
-      <p className="text-xs text-ink-400 text-center mt-3">ทีมงานตรวจสลิปภายใน 24 ชม. และแจ้งผลทาง LINE</p>
-    </main></div>
+        </div>
+      </main>
+    </div>
   );
 }
