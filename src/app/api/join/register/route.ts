@@ -8,6 +8,7 @@ import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/join/legal";
 import { TURNSTILE_ERROR, verifyTurnstile } from "@/lib/turnstile";
 import { cookies } from "next/headers";
 import { PHONE_COOKIE, normalizePhone, readPhoneToken } from "@/lib/otp";
+import { verifySlip } from "@/lib/slip2go";
 
 export const runtime = "nodejs";
 
@@ -109,6 +110,10 @@ export async function POST(req: Request) {
   if (!verifiedPhone || verifiedPhone !== normalizePhone(tel))
     return NextResponse.json({ ok: false, error: "กรุณายืนยันเบอร์โทรด้วยรหัส OTP ก่อนส่งใบสมัคร", fields: ["tel"], needOtp: true }, { status: 403 });
 
+  // ตรวจสลิปกับ Slip2Go — สลิปซ้ำ (เคยใช้แล้ว) ไม่รับ; กรณีอื่นบันทึกผลให้แอดมินตัดสิน
+  const slipCheck = await verifySlip(files.slip!, PACKAGES[pkg].price);
+  if (slipCheck?.verdict === "dup") return NextResponse.json({ ok: false, error: "สลิปนี้เคยถูกใช้แล้ว กรุณาแนบสลิปของการโอนครั้งนี้", fields: ["slip"] }, { status: 400 });
+
   try {
     const row = await createApplicant(
       {
@@ -124,6 +129,7 @@ export async function POST(req: Request) {
         availability: { slots, days, hours: hoursPerDay },
         ack_hours: true, ack_no_refuse: true,
         phone_verified_at: new Date().toISOString(),
+        slip_check: slipCheck,
         // ต่อท้าย "/criminal" ใน consent_version ด้วย — บันทึกความยินยอมได้แม้ยังไม่รัน migration 0002
         consent_version: `privacy-${PRIVACY_VERSION}/terms-${TERMS_VERSION}/criminal`, consented_at: new Date().toISOString(),
         package: pkg, amount: PACKAGES[pkg].price, payment_method: method as "qr" | "transfer", ip,

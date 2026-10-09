@@ -16,6 +16,8 @@ const TONE: Record<ApplicantStatus, string> = {
   refunded: "border-ink-500 text-ink-300",
 };
 const file = (p: string) => `/api/admin/applicants/file?path=${encodeURIComponent(p)}`;
+const SLIP_LABEL: Record<string, [string, string]> = { ok: ["✓ ยอดตรง", "text-emerald-400"], amt: ["ยอดไม่ตรง", "text-red-400"], dup: ["สลิปซ้ำ", "text-red-400"], fake: ["ไม่พบรายการ", "text-red-400"], error: ["ตรวจไม่สำเร็จ", "text-amber-300"] };
+
 const DOCS = [["photo", "รูปถ่าย"], ["id_card", "บัตรประชาชน"], ["bankbook", "สมุดบัญชี"], ["other_doc", "เอกสารอื่นๆ"], ["cert_doc", "ใบรับรองนวด"], ["slip", "สลิป"]] as const;
 const name = (r: Applicant) => `${r.title}${r.first_name} ${r.last_name}`;
 const thTime = (iso: string) => new Date(iso).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
@@ -181,6 +183,14 @@ export function ApplicantList({ initial }: { initial: Applicant[] }) {
               <dt className="text-ink-300">แพ็กเกจ</dt><dd>{sel.package} · {PACKAGES[sel.package].name}</dd>
               {feeBreakdown(sel.package).map((x) => <Fragment key={x.name}><dt className="text-ink-300">{x.name}</dt><dd>฿{x.amount.toLocaleString("th-TH")}</dd></Fragment>)}
               <dt className="text-ink-300">ยอดชำระ</dt><dd className="text-gold-300 font-semibold">฿{sel.amount.toLocaleString("th-TH")} ({sel.payment_method === "qr" ? "QR" : "โอนบัญชี"})</dd>
+              <dt className="text-ink-300">Slip2Go</dt>
+              <dd>{sel.slip_check ? (
+                <span className="flex flex-col">
+                  <span className={`font-semibold ${SLIP_LABEL[sel.slip_check.verdict][1]}`}>{SLIP_LABEL[sel.slip_check.verdict][0]}</span>
+                  <span className="text-xs text-ink-300">ยอดโอน {sel.slip_check.amount != null ? "฿" + sel.slip_check.amount.toLocaleString("th-TH") : "-"} · {sel.slip_check.sender ?? "-"} → {sel.slip_check.receiver ?? "-"}</span>
+                  <span className="text-xs text-ink-300 break-all">Ref {sel.slip_check.trans_ref ?? "-"}{sel.slip_check.verdict !== "ok" && sel.slip_check.message ? " · " + sel.slip_check.message : ""}</span>
+                </span>
+              ) : <span className="text-ink-300">ไม่ได้ตรวจ (ตรวจด้วยตา)</span>}</dd>
               <dt className="text-ink-300">สถานะ</dt><dd>{LABEL[sel.status]}</dd>
               <dt className="text-ink-300">สมัครเมื่อ</dt><dd>{thTime(sel.created_at)}</dd>
             </dl>
