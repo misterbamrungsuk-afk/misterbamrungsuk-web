@@ -5,6 +5,11 @@ import { ShopView } from "./shop-view";
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata({ params }: { params: Promise<{ vendorSlug: string }> }) {
+  const v = await getVendorBySlug(decodeURIComponent((await params).vendorSlug));
+  return { title: v ? `${v.name} · ร้านค้า Marketplace · Mister Bamrungsuk` : "ร้านค้า · Mister Bamrungsuk" };
+}
+
 // หน้าร้านค้า — ตามบอร์ด VendorShop.dc.html (สินค้า / เกี่ยวกับร้าน / รีวิว)
 export default async function ShopPage({ params }: { params: Promise<{ vendorSlug: string }> }) {
   const { vendorSlug } = await params;
