@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { CONTROLLER } from "@/lib/join/legal";
 import { BRAND, COHORTS, GUARANTEE_REFUND_NOTE, PACKAGES, TERMS_SUMMARY, feeBreakdown } from "@/lib/join/config";
 import { extraOf, fullName, getByMb } from "@/lib/join/store";
 import { TRAINING } from "@/lib/join/training";
@@ -112,7 +113,7 @@ export default async function DocPage({ params }: { params: Promise<{ mb: string
         <ol className="m-0 pl-5 list-decimal flex flex-col gap-0.5 text-[12.5px]">
           {terms.map((t) => <li key={t}>{t}</li>)}
         </ol>
-        <p className="text-[11.5px] text-[#6b5a50] mt-2">เอกสารนี้ออกโดยระบบเพื่อยืนยันการสมัคร ไม่ใช่ใบกำกับภาษี · รายละเอียดฉบับเต็มดูได้ที่หน้าข้อกำหนดและสัญญาการเข้าร่วมโครงการ</p>
+        <p className="text-[11.5px] text-[#6b5a50] mt-2">ออกโดย {CONTROLLER.name} (ทะเบียนนิติบุคคลเลขที่ {CONTROLLER.regNo}) · {CONTROLLER.address} · โทร {CONTROLLER.phone} · {CONTROLLER.email}<br />เอกสารนี้ออกโดยระบบเพื่อยืนยันการสมัคร ไม่ใช่ใบกำกับภาษี · รายละเอียดฉบับเต็มดูได้ที่หน้าข้อกำหนดและสัญญาการเข้าร่วมโครงการ</p>
 
         <div className="grid grid-cols-2 gap-10 mt-12 text-center text-[12.5px] break-inside-avoid">
           {["ผู้สมัคร", "เจ้าหน้าที่"].map((r) => (

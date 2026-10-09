@@ -7,7 +7,8 @@ import { CONTROLLER } from "@/lib/join/legal";
 const filled = (v: string) => (v && !v.startsWith("[") ? v : "");
 
 export function SiteFooter() {
-  const name = filled(CONTROLLER.name);
+  const name = ""; // ชื่อนิติบุคคลแสดงเฉพาะในเอกสารกฎหมาย
+  const reg = filled(CONTROLLER.regNo);
   const address = filled(CONTROLLER.address);
   const email = filled(CONTROLLER.email);
   const phone = filled(CONTROLLER.phone);
@@ -34,7 +35,7 @@ export function SiteFooter() {
       </nav>
       {(name || address || email || phone) && (
         <address className="not-italic leading-relaxed text-[#a8998c]">
-          {name && <div className="text-[#d8c8b8]">{name}</div>}
+          <div className="text-[#d8c8b8]">Mister Bamrungsuk{reg ? ` · ทะเบียนนิติบุคคลเลขที่ ${reg}` : ""}</div>
           {address && <div>{address}</div>}
           {(email || phone) && <div>{[email, phone].filter(Boolean).join(" · ")}</div>}
         </address>
