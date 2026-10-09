@@ -2,6 +2,9 @@
 import Link from "next/link";
 import { HomeSlider } from "./home-slider";
 import { SiteFooter } from "@/components/site-footer";
+import { getCovers } from "@/lib/covers";
+
+export const revalidate = 60;
 
 export const metadata = { title: "Mister Bamrungsuk — เลือกเส้นทางของคุณ" };
 
@@ -22,7 +25,8 @@ const PATHS = [
 
 // หน้าแรก (ตามบอร์ด Main): เลือกเส้นทาง — สมัครร่วมทีม / พาร์ทเนอร์ / Marketplace + กล่องลูกค้า
 // (Marketplace home เดิมย้ายไป /market)
-export default function MainPage() {
+export default async function MainPage() {
+  const slides = await getCovers("main_slider");
   return (
     <main className="min-h-dvh bg-[#0e0a0a]">
       <div className="font-lux-body mx-auto w-full max-w-[480px] min-h-dvh flex flex-col overflow-hidden text-[#f6efe4] font-semibold" style={{ background: "linear-gradient(180deg, #0e0a0a 40%, #3a0d15 100%)" }}>
@@ -34,7 +38,7 @@ export default function MainPage() {
           <span className="px-3 py-[5px] rounded-full border border-[#f0c75a] text-[10px] tracking-[2.5px] text-[#ffd76a]">PREMIUM</span>
         </header>
 
-        <HomeSlider />
+        <HomeSlider slides={slides} />
 
         <div className="px-4 pt-[26px] pb-2 flex flex-col gap-4">
           <div className="text-center">

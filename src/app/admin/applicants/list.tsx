@@ -2,239 +2,214 @@
 
 import { Fragment, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { COHORTS, PACKAGES, feeBreakdown, lineAddUrl } from "@/lib/join/config";
+import { PACKAGES, QUOTA, feeBreakdown, lineAddUrl, type PackageKey } from "@/lib/join/config";
 import type { Applicant, ApplicantStatus, CriminalCheck } from "@/lib/join/store";
+import { KycPanel } from "../kyc/kyc-panel";
 
-const CRIMINAL_LABEL: Record<CriminalCheck, string> = { pending: "รอตรวจ", passed: "ผ่าน", failed: "ไม่ผ่าน" };
-const criminalConsent = (r: Applicant) => r.consent_criminal ?? r.consent_version.includes("criminal");
-
+// ตามบอร์ด AdminApplicants.dc.html (1280px) — ยอดรวมนับเฉพาะผู้สมัครที่ชำระแล้ว (verified)
+const GOLD = "#f0c75a";
+const LINE_BD = "rgba(240,200,90,.38)";
+const CRIMINAL: Record<CriminalCheck, [string, string]> = { pending: ["รอตรวจ", "#cdbfb3"], passed: ["ผ่าน", "#4ade80"], failed: ["ไม่ผ่าน", "#fca5a5"] };
 const LABEL: Record<ApplicantStatus, string> = { pending_slip: "รอตรวจสลิป", verified: "ชำระแล้ว", rejected: "ปฏิเสธ", refunded: "คืนเงินแล้ว" };
-const TONE: Record<ApplicantStatus, string> = {
-  pending_slip: "border-gold-500 text-gold-300",
-  verified: "border-emerald-500/70 text-emerald-300",
-  rejected: "border-crimson-500 text-crimson-300",
-  refunded: "border-ink-500 text-ink-300",
-};
+const SLIP_LABEL: Record<string, [string, string]> = { ok: ["✓ ยอดตรง", "#4ade80"], acct: ["โอนเข้าบัญชีอื่น", "#fca5a5"], amt: ["ยอดไม่ตรง", "#fca5a5"], dup: ["สลิปซ้ำ", "#fca5a5"], fake: ["ไม่พบรายการ", "#fca5a5"], error: ["ตรวจไม่สำเร็จ", "#eed58a"] };
+const DOCS = [["photo", "รูปถ่าย"], ["slip", "สลิป"], ["id_card", "บัตรประชาชน"], ["selfie", "เซลฟีถือบัตร"], ["bankbook", "สมุดบัญชี"], ["cert_doc", "ใบรับรองนวด"], ["other_doc", "เอกสารอื่นๆ"]] as const;
 const file = (p: string) => `/api/admin/applicants/file?path=${encodeURIComponent(p)}`;
-const SLIP_LABEL: Record<string, [string, string]> = { ok: ["✓ ยอดตรง", "text-emerald-400"], acct: ["โอนเข้าบัญชีอื่น", "text-red-400"], amt: ["ยอดไม่ตรง", "text-red-400"], dup: ["สลิปซ้ำ", "text-red-400"], fake: ["ไม่พบรายการ", "text-red-400"], error: ["ตรวจไม่สำเร็จ", "text-amber-300"] };
-
-const DOCS = [["photo", "รูปถ่าย"], ["id_card", "บัตรประชาชน"], ["bankbook", "สมุดบัญชี"], ["other_doc", "เอกสารอื่นๆ"], ["cert_doc", "ใบรับรองนวด"], ["slip", "สลิป"]] as const;
-const name = (r: Applicant) => `${r.title}${r.first_name} ${r.last_name}`;
+const fmt = (n: number) => "฿" + n.toLocaleString("en-US");
+const fullName = (r: Applicant) => `${r.title}${r.first_name} ${r.last_name}`;
 const thTime = (iso: string) => new Date(iso).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
-const cohortOf = (k?: string | null) => COHORTS.find((c) => c.key === k);
+const ageOf = (b: string | null) => { if (!b) return null; const d = new Date(b); if (isNaN(+d)) return null; const n = new Date(); let a = n.getFullYear() - d.getFullYear(); if (n < new Date(n.getFullYear(), d.getMonth(), d.getDate())) a--; return a; };
 
-type Filter = ApplicantStatus | "" | "no_line" | "no_cohort";
-const FILTERS: [Filter, string][] = [["", "ทั้งหมด"], ["pending_slip", "รอตรวจสลิป"], ["verified", "ชำระแล้ว"], ["no_line", "ยังไม่เข้ากลุ่ม LINE"], ["no_cohort", "ยังไม่จัดรุ่น"], ["rejected", "ปฏิเสธ"], ["refunded", "คืนเงินแล้ว"]];
+type Pkg = "all" | PackageKey;
+type Filter = ApplicantStatus | "all";
+const PKG_TABS: [Pkg, string, string][] = [["all", "ทั้งหมด", "ผู้สมัครทุกแพ็กเกจ"], ["A", "แพ็กเกจ A", PACKAGES.A.name], ["B", "แพ็กเกจ B", PACKAGES.B.name]];
+const PN: Record<Pkg, string> = { all: "ทุกแพ็กเกจ", A: "แพ็กเกจ A", B: "แพ็กเกจ B" };
+const G = (k: PackageKey) => feeBreakdown(k)[0].amount;
+const T = (k: PackageKey) => feeBreakdown(k)[1].amount;
+const GRID = "grid grid-cols-[110px_minmax(0,1.4fr)_100px_90px_120px_100px]";
 
-export function ApplicantList({ initial }: { initial: Applicant[] }) {
+export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial: Applicant[]; cohorts: { key: string; name: string }[]; initialPkg: Pkg; note: string }) {
   const router = useRouter();
   const [rows, setRows] = useState(initial);
-  const [filter, setFilter] = useState<Filter>("");
-  const [cohortSel, setCohortSel] = useState<string>("");
-  const [open, setOpen] = useState<string | null>(null);
-  const [checked, setChecked] = useState<string[]>([]);
+  const [pkg, setPkg] = useState<Pkg>(initialPkg);
+  const [filter, setFilter] = useState<Filter>("verified");
+  const [showDocs, setShowDocs] = useState(false);
   const [msg, setMsg] = useState("");
-
   const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(""), 2500); };
+  const cohortName = (k?: string | null) => cohorts.find((c) => c.key === k)?.name ?? "—";
+
+  const paid = rows.filter((r) => r.status === "verified");
+  const nOf = (k: Pkg, list = paid) => list.filter((r) => k === "all" || r.package === k).length;
+  const nA = nOf("A"), nB = nOf("B");
+  const sumOf = (k: Pkg, f: (p: PackageKey) => number) => (k !== "B" ? nA * f("A") : 0) + (k !== "A" ? nB * f("B") : 0);
+  const fx = (k: Pkg, f: (p: PackageKey) => number) => k === "A" ? `A ${nA}×${fmt(f("A"))}` : k === "B" ? `B ${nB}×${fmt(f("B"))}` : `A ${nA}×${fmt(f("A"))} + B ${nB}×${fmt(f("B"))}`;
+  const notLine = paid.filter((r) => !r.line_joined).length;
+
+  const shown = useMemo(() => rows.filter((r) => (pkg === "all" || r.package === pkg) && (filter === "all" || r.status === filter)), [rows, pkg, filter]);
+  const [open, setOpen] = useState<string | null>(shown[0]?.id ?? null);
+  const sel = rows.find((r) => r.id === open) ?? null;
 
   const patch = async (id: string, body: Record<string, unknown>) => {
     const res = await fetch(`/api/admin/applicants/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-    const data = await res.json().catch(() => ({}));
-    if (data.row) setRows((r) => r.map((x) => (x.id === id ? data.row : x)));
-    return data as { ok?: boolean; row?: Applicant };
+    const data = (await res.json().catch(() => ({}))) as { ok?: boolean; row?: Applicant };
+    if (data.row) setRows((r) => r.map((x) => (x.id === id ? data.row! : x)));
+    return data;
   };
-
   const act = async (id: string, body: { status?: ApplicantStatus; sync?: boolean }) => {
-    const data = await patch(id, body);
-    if (body.sync) {
-      flash(data.ok ? "sync ชีตสำเร็จ" : "sync ชีตไม่สำเร็จ ตรวจการตั้งค่า Google Sheet");
-      if (data.ok) setRows((r) => r.map((x) => (x.id === id ? { ...x, sheet_synced: true } : x)));
-    } else flash(data.row ? `บันทึกสถานะ: ${LABEL[data.row.status]}` : "บันทึกไม่สำเร็จ");
+    const d = await patch(id, body);
+    if (body.sync) { flash(d.ok ? "sync ชีตสำเร็จ" : "sync ชีตไม่สำเร็จ ตรวจการตั้งค่า Google Sheet"); if (d.ok) setRows((r) => r.map((x) => (x.id === id ? { ...x, sheet_synced: true } : x))); }
+    else flash(d.row ? `บันทึกสถานะ: ${LABEL[d.row.status]}` : "บันทึกไม่สำเร็จ");
     router.refresh();
   };
-
-  const assign = async (ids: string[], cohort: string | null) => {
-    const res = await Promise.all(ids.map((id) => patch(id, { cohort })));
-    flash(res.every((d) => d.ok) ? `จัด ${ids.length} คน เข้า${cohort ? cohortOf(cohort)?.name : " (ไม่ระบุรุ่น)"}` : "บันทึกบางรายการไม่สำเร็จ");
-    setChecked([]);
-  };
-  const setLine = async (id: string, v: boolean) => {
-    const d = await patch(id, { line_joined: v });
-    flash(d.ok ? (v ? "บันทึก: เข้ากลุ่ม LINE แล้ว" : "บันทึก: ยังไม่เข้ากลุ่ม") : "บันทึกไม่สำเร็จ");
-    router.refresh();
-  };
-  const sendLineLink = async (r: Applicant) => {
+  const assign = async (id: string, cohort: string | null) => { const d = await patch(id, { cohort }); flash(d.ok ? `จัดเข้า${cohort ? cohortName(cohort) : " (ไม่ระบุกลุ่ม)"}` : "บันทึกไม่สำเร็จ"); };
+  const setLine = async (id: string, v: boolean) => { const d = await patch(id, { line_joined: v }); flash(d.ok ? (v ? "บันทึก: เข้ากลุ่ม LINE แล้ว" : "บันทึก: ยังไม่เข้ากลุ่ม") : "บันทึกไม่สำเร็จ"); router.refresh(); };
+  const copyLine = async (r: Applicant) => {
     const text = `สวัสดีค่ะคุณ${r.nickname} (${r.mb_code}) ลิงก์เข้ากลุ่ม LINE Mister Bamrungsuk: ${lineAddUrl()}`;
-    try { await navigator.clipboard.writeText(text); flash("คัดลอกข้อความลิงก์กลุ่ม LINE แล้ว — วางส่งให้ผู้สมัครได้เลย"); } catch { flash(text); }
+    try { await navigator.clipboard.writeText(text); flash("คัดลอกข้อความลิงก์กลุ่ม LINE แล้ว"); } catch { flash(text); }
   };
-
-  const shown = useMemo(() => rows.filter((r) => {
-    if (cohortSel && r.cohort !== cohortSel) return false;
-    if (filter === "no_line") return r.status === "verified" && !r.line_joined;
-    if (filter === "no_cohort") return r.status === "verified" && !r.cohort;
-    return !filter || r.status === filter;
-  }), [rows, filter, cohortSel]);
-  const sel = rows.find((r) => r.id === open) ?? null;
-  const allOn = shown.length > 0 && shown.every((r) => checked.includes(r.id));
+  const exportCsv = () => {
+    const head = ["รหัส MB", "ชื่อ", "ชื่อเล่น", "แพ็กเกจ", "ยอดชำระ", "สถานะ", "กลุ่ม", "กลุ่ม LINE", "ตรวจประวัติ", "KYC", "โทร", "LINE ID", "อีเมล", "สมัครเมื่อ"];
+    const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const lines = shown.map((r) => [r.mb_code, fullName(r), r.nickname, r.package, r.amount, LABEL[r.status], cohortName(r.cohort), r.line_joined ? "เข้าแล้ว" : "ยังไม่เข้า", CRIMINAL[r.criminal_check ?? "pending"][0], r.kyc_status ?? "none", r.tel, r.line_id, r.email, thTime(r.created_at)].map(esc).join(","));
+    const blob = new Blob(["﻿" + [head.map(esc).join(","), ...lines].join("\r\n")], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `applicants-${pkg}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
 
   return (
-    <section className="mt-6">
-      {/* ── รุ่นอบรม ── */}
-      <div className="rounded-2xl border border-ink-600 bg-ink-800 p-4">
-        <div className="flex items-center gap-2">
-          <p className="text-[11px] font-semibold tracking-[0.2em] text-gold-400">TRAINING COHORT</p>
-          <p className="font-semibold">รุ่นอบรม</p>
-          {cohortSel && <button onClick={() => setCohortSel("")} className="ml-auto text-xs text-ink-300 underline">ดูทุกรุ่น</button>}
+    <div className="flex flex-col lg:flex-row gap-4 items-start">
+      <div className="flex-1 min-w-0 w-full flex flex-col gap-3.5">
+        <div className="flex flex-wrap gap-3 justify-between items-end">
+          <div>
+            <div className="text-[11px] tracking-[2.5px] text-[#f0c75a] font-semibold">APPLICANTS · PAID</div>
+            <h1 className="mt-0.5 font-lux font-bold text-2xl">ผู้สมัครที่ชำระแล้ว</h1>
+          </div>
+          <div className="flex gap-2 items-center">
+            <select value={filter} onChange={(e) => setFilter(e.target.value as Filter)} aria-label="สถานะ" className="h-10 px-3 rounded-full border border-[rgba(240,200,90,.38)] bg-[#0e0a0a] text-[#d3c7bc] text-[13px]">
+              <option value="verified">ชำระแล้ว</option><option value="pending_slip">รอตรวจสลิป</option><option value="rejected">ปฏิเสธ</option><option value="refunded">คืนเงินแล้ว</option><option value="all">ทุกสถานะ</option>
+            </select>
+            <button onClick={exportCsv} className="h-10 px-4 rounded-full border border-[rgba(240,200,90,.38)] text-[#d3c7bc] hover:text-[#f6efe4]">ส่งออกไฟล์ Excel / CSV</button>
+          </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
-          {COHORTS.map((c) => {
-            const n = rows.filter((r) => r.cohort === c.key && r.status !== "rejected" && r.status !== "refunded").length;
-            const pct = Math.min(100, Math.round((n / c.capacity) * 100));
-            const on = cohortSel === c.key;
+        {note && <p className="rounded-xl border border-[rgba(240,200,90,.3)] px-3 py-2 text-xs text-[#cdbfb3]">{note}</p>}
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {PKG_TABS.map(([k, code, name]) => {
+            const on = pkg === k;
             return (
-              <button key={c.key} onClick={() => setCohortSel(on ? "" : c.key)} aria-pressed={on}
-                className={`text-left rounded-xl border p-3 transition ${on ? "border-gold-500 bg-gold-500/10" : "border-ink-600 bg-ink-900/50 hover:border-gold-500/50"}`}>
-                <div className="flex justify-between items-baseline"><span className="font-semibold">{c.name}</span><span className="text-sm text-gold-300 font-display">{n}/{c.capacity}</span></div>
-                <p className="text-xs text-ink-300 mt-0.5">{c.date}</p>
-                <div className="h-1.5 rounded-full bg-ink-700 mt-2 overflow-hidden"><div className={`h-full rounded-full ${pct >= 100 ? "bg-crimson-500" : "bg-gradient-to-r from-gold-400 to-gold-500"}`} style={{ width: `${pct}%` }} /></div>
+              <button key={k} onClick={() => setPkg(k)} aria-pressed={on} className="px-4 py-3.5 rounded-2xl border-[1.5px] text-left flex flex-col gap-1"
+                style={{ borderColor: on ? GOLD : LINE_BD, background: on ? "rgba(240,200,90,.14)" : "#241717", boxShadow: on ? "0 0 0 3px rgba(240,200,90,.15)" : "none" }}>
+                <span className="flex justify-between items-center w-full"><span className="text-[11px] tracking-[1.5px] text-[#f0c75a] font-semibold">{code}</span><span className="text-xs text-[#cdbfb3]">{nOf(k)} คน</span></span>
+                <span className="font-lux font-semibold text-[15px]">{name}</span>
+                <span className="font-lux font-bold text-2xl text-[#ffd76a]">{fmt(sumOf(k, G) + sumOf(k, T))}</span>
               </button>
             );
           })}
         </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 rounded-2xl border border-[rgba(240,200,90,.55)] overflow-hidden" style={{ background: "linear-gradient(160deg, rgba(240,200,90,.1), #241717 60%)" }}>
+          <div className="px-4 py-3"><div className="text-[11.5px] text-[#cdbfb3]">ค่าการันตี Branding · {PN[pkg]}</div><div className="font-lux font-bold text-xl">{fmt(sumOf(pkg, G))}</div><div className="text-[10.5px] text-[#7d6d6a]">{fx(pkg, G)} · คืนเมื่อครบ 1 ปี</div></div>
+          <div className="px-4 py-3 border-l border-[rgba(240,200,90,.25)]"><div className="text-[11.5px] text-[#cdbfb3]">ค่าอบรม · {PN[pkg]}</div><div className="font-lux font-bold text-xl">{fmt(sumOf(pkg, T))}</div><div className="text-[10.5px] text-[#7d6d6a]">{fx(pkg, T)}</div></div>
+          <div className="px-4 py-3 border-l border-[rgba(240,200,90,.25)] bg-[rgba(176,24,44,.12)]"><div className="text-[11.5px] text-[#cdbfb3]">ยอดรวม · {PN[pkg]}</div><div className="font-lux font-bold text-xl text-[#ffd76a]">{fmt(sumOf(pkg, G) + sumOf(pkg, T))}</div><div className="text-[10.5px] text-[#7d6d6a]">{nOf(pkg)} คน</div></div>
+          <div className="px-4 py-3 border-l border-[rgba(240,200,90,.25)]"><div className="text-[11.5px] text-[#cdbfb3]">ยังไม่เข้ากลุ่ม LINE</div><div className="font-lux font-bold text-xl text-[#eed58a]">{notLine} คน</div><div className="text-[10.5px] text-[#7d6d6a]">โควตา {QUOTA} คน</div></div>
+        </div>
+        {msg && <p role="status" className="text-sm text-[#eed58a]">{msg}</p>}
+
+        <div className="rounded-2xl border border-[rgba(240,200,90,.38)] overflow-x-auto text-[13px]">
+          <div className="min-w-[640px]">
+            <div className={`${GRID} px-3.5 py-2.5 bg-[#130e0e] text-[#7d6d6a] text-xs`}><span>รหัส MB</span><span>ชื่อ</span><span>แพ็กเกจ</span><span>กลุ่ม</span><span>กลุ่ม LINE</span><span>ตรวจประวัติ</span></div>
+            {shown.map((r) => {
+              const c = CRIMINAL[r.criminal_check ?? "pending"];
+              return (
+                <button key={r.id} onClick={() => { setOpen(r.id); setShowDocs(false); }} className={`w-full ${GRID} px-3.5 py-[11px] border-t border-[rgba(240,200,90,.38)] text-left items-center`}
+                  style={{ background: open === r.id ? "rgba(240,200,90,.16)" : "transparent" }}>
+                  <span className="text-[#ffd76a]">{r.mb_code}</span>
+                  <span className="truncate pr-2">{r.first_name} {r.last_name}{filter === "all" && r.status !== "verified" ? <span className="text-[11px] text-[#7d6d6a]"> · {LABEL[r.status]}</span> : null}</span>
+                  <span className="text-[#d3c7bc]">{r.package} · {fmt(r.amount)}</span>
+                  <span className="text-[#d3c7bc]">{cohortName(r.cohort)}</span>
+                  <span style={{ color: r.line_joined ? "#4ade80" : "#eed58a" }}>{r.line_joined ? "✓ เข้ากลุ่มแล้ว" : "ยังไม่เข้า"}</span>
+                  <span style={{ color: c[1] }}>{c[0]}</span>
+                </button>
+              );
+            })}
+            {!shown.length && <p className="border-t border-[rgba(240,200,90,.38)] px-4 py-12 text-center text-[#7d6d6a]">ยังไม่มีผู้สมัครในหมวดนี้</p>}
+          </div>
+        </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 mt-5">
-        {FILTERS.map(([s, l]) => (
-          <button key={s || "all"} onClick={() => setFilter(s)} className={`chip h-9 px-3.5 text-sm ${filter === s ? "chip-red" : ""}`}>{l}</button>
-        ))}
-        <a href="/api/admin/applicants/export" className="btn-ghost h-9 px-4 text-sm inline-flex items-center sm:ml-auto">ส่งออก Excel / CSV</a>
-        <a href="/api/admin/backup" className="btn-ghost h-9 px-4 text-sm inline-flex items-center">สำรองข้อมูล</a>
-      </div>
-      {checked.length > 0 && (
-        <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-gold-500/40 bg-gold-500/5 px-3 py-2 text-sm">
-          <span>เลือก {checked.length} คน · จัดเข้า</span>
-          {COHORTS.map((c) => <button key={c.key} onClick={() => assign(checked, c.key)} className="btn-ghost h-8 px-3 text-xs">{c.name}</button>)}
-          <button onClick={() => setChecked([])} className="ml-auto text-xs text-ink-300 underline">ยกเลิก</button>
-        </div>
-      )}
-      {msg && <p role="status" className="mt-3 text-sm text-gold-300">{msg}</p>}
-
-      <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_380px] items-start">
-        {/* ── ตาราง ── */}
-        <div className="rounded-2xl border border-ink-600 bg-ink-800 overflow-x-auto">
-          <table className="w-full text-sm min-w-[720px]">
-            <thead className="text-xs text-ink-300 border-b border-ink-600">
-              <tr>
-                <th className="p-3 w-8"><input type="checkbox" aria-label="เลือกทั้งหมด" className="accent-[#d4af37]" checked={allOn} onChange={(e) => setChecked(e.target.checked ? shown.map((r) => r.id) : [])} /></th>
-                <th className="p-3 text-left">รหัส MB</th><th className="p-3 text-left">ชื่อ</th><th className="p-3 text-left">แพ็กเกจ</th>
-                <th className="p-3 text-left">รุ่นอบรม</th><th className="p-3 text-left">กลุ่ม LINE</th><th className="p-3 text-left">สถานะ</th>
-              </tr>
-            </thead>
-            <tbody>
-              {shown.length === 0 && <tr><td colSpan={7} className="text-center text-ink-300 py-16">ยังไม่มีผู้สมัคร</td></tr>}
-              {shown.map((r) => (
-                <tr key={r.id} onClick={() => setOpen(r.id)} className={`border-b border-ink-700 last:border-0 cursor-pointer ${open === r.id ? "bg-gold-500/10" : "hover:bg-ink-700/40"}`}>
-                  <td className="p-3" onClick={(e) => e.stopPropagation()}><input type="checkbox" aria-label={`เลือก ${r.mb_code}`} className="accent-[#d4af37]" checked={checked.includes(r.id)} onChange={(e) => setChecked((c) => (e.target.checked ? [...c, r.id] : c.filter((x) => x !== r.id)))} /></td>
-                  <td className="p-3 font-display text-gold-300 whitespace-nowrap">{r.mb_code}</td>
-                  <td className="p-3">
-                    <span className="flex items-center gap-2.5 min-w-0">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={r.docs.photo ? file(r.docs.photo) : ""} alt="" className="w-8 h-8 rounded-full object-cover bg-ink-700 shrink-0" />
-                      <span className="min-w-0"><span className="block truncate">{r.nickname}</span><span className="block text-xs text-ink-400 truncate">{name(r)}</span></span>
-                    </span>
-                  </td>
-                  <td className="p-3 whitespace-nowrap">{r.package} · ฿{r.amount.toLocaleString("th-TH")}</td>
-                  <td className="p-3 whitespace-nowrap text-ink-200">{cohortOf(r.cohort) ? `${cohortOf(r.cohort)!.name} · ${cohortOf(r.cohort)!.date}` : <span className="text-ink-400">—</span>}</td>
-                  <td className="p-3 whitespace-nowrap">{r.line_joined ? <span className="text-emerald-300">✓ เข้ากลุ่มแล้ว</span> : <span className="text-crimson-300">ยังไม่เข้า</span>}</td>
-                  <td className="p-3"><span className={`h-6 px-2.5 rounded-full border text-[11px] font-semibold inline-flex items-center whitespace-nowrap ${TONE[r.status]}`}>{LABEL[r.status]}</span></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* ── แผงรายละเอียด ── */}
+      <aside className="w-full lg:w-[300px] shrink-0 p-[18px] rounded-[18px] border border-[rgba(245,210,110,.85)] bg-[#241717] flex flex-col gap-2.5 text-[13px] lg:sticky lg:top-4 max-h-[calc(100dvh-2rem)] overflow-y-auto">
         {sel ? (
-          <aside className="rounded-2xl border border-ink-600 bg-ink-800 p-4 lg:sticky lg:top-4 max-h-[calc(100dvh-2rem)] overflow-y-auto">
-            <div className="flex items-center gap-3">
+          <>
+            <div className="flex gap-3 items-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={sel.docs.photo ? file(sel.docs.photo) : ""} alt="" className="w-14 h-14 rounded-full object-cover bg-ink-700 border border-gold-500/40" />
-              <div className="min-w-0 flex-1">
-                <p className="font-display text-gold-300">{sel.mb_code}</p>
-                <p className="font-semibold truncate">{sel.nickname} · {name(sel)}</p>
-              </div>
-              <button onClick={() => setOpen(null)} aria-label="ปิด" className="w-8 h-8 rounded-full border border-ink-600 text-ink-300">×</button>
+              <img src={sel.docs.photo ? file(sel.docs.photo) : ""} alt="" className="w-14 h-14 rounded-[14px] object-cover bg-[#130e0e]" />
+              <div className="min-w-0"><div className="font-lux font-semibold text-[17px] truncate">{sel.first_name} {sel.last_name}</div><div className="text-[#ffd76a] text-xs">{sel.mb_code} · {sel.package} · {fmt(G(sel.package))} + {fmt(T(sel.package))}</div></div>
             </div>
-
-            <div className="flex flex-wrap gap-2 mt-4">
-              <button onClick={() => sendLineLink(sel)} className="h-9 px-3.5 rounded-full bg-[#06c755] text-white text-sm font-semibold">ส่งลิงก์กลุ่ม LINE</button>
-              <button onClick={() => setLine(sel.id, !sel.line_joined)} className="btn-ghost h-9 px-3.5 text-sm">{sel.line_joined ? "ทำเครื่องหมาย: ยังไม่เข้า" : "✓ เข้ากลุ่มแล้ว"}</button>
+            <Row k="อายุ · ส่วนสูง" v={`${ageOf(sel.birthdate) ?? "-"} ปี · ${sel.height} ซม.`} />
+            <Row k="กิจกรรม" v={sel.activities?.join(" · ") || "-"} />
+            <Row k="เวลาว่าง" v={sel.availability ? `${sel.availability.slots.join("–") || "-"} · ${sel.availability.days ?? "-"} วัน` : "-"} />
+            <Row k="ยอดชำระ" v={`${fmt(sel.amount)} · ${LABEL[sel.status]}`} />
+            <div className="h-px bg-[rgba(240,200,90,.38)]" />
+            <div className="text-[#cdbfb3] text-xs">จัดกลุ่มอบรม</div>
+            <div className="grid grid-cols-3 gap-1.5">
+              {cohorts.map((c) => {
+                const on = sel.cohort === c.key;
+                return <button key={c.key} onClick={() => assign(sel.id, on ? null : c.key)} className="h-[38px] rounded-[10px] border text-[12.5px] font-semibold truncate px-1"
+                  style={{ borderColor: on ? GOLD : LINE_BD, background: on ? GOLD : "transparent", color: on ? "#1a1206" : "#d3c7bc" }}>{c.name}</button>;
+              })}
             </div>
-            <label className="flex items-center gap-2 mt-3 text-sm">
-              <span className="text-ink-300 shrink-0">รุ่นอบรม</span>
-              <select className="input-dark h-10 flex-1" value={sel.cohort ?? ""} onChange={(e) => assign([sel.id], e.target.value || null)}>
-                <option value="">— ยังไม่จัดรุ่น —</option>
-                {COHORTS.map((c) => <option key={c.key} value={c.key}>{c.name} · {c.date}</option>)}
-              </select>
-            </label>
-
-            <p className="text-[11px] font-semibold tracking-[0.2em] text-gold-400 mt-5">ข้อมูลการชำระเงิน</p>
-            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm mt-2">
-              <dt className="text-ink-300">แพ็กเกจ</dt><dd>{sel.package} · {PACKAGES[sel.package].name}</dd>
-              {feeBreakdown(sel.package).map((x) => <Fragment key={x.name}><dt className="text-ink-300">{x.name}</dt><dd>฿{x.amount.toLocaleString("th-TH")}</dd></Fragment>)}
-              <dt className="text-ink-300">ยอดชำระ</dt><dd className="text-gold-300 font-semibold">฿{sel.amount.toLocaleString("th-TH")} ({sel.payment_method === "qr" ? "QR" : "โอนบัญชี"})</dd>
-              <dt className="text-ink-300">Slip2Go</dt>
-              <dd>{sel.slip_check ? (
-                <span className="flex flex-col">
-                  <span className={`font-semibold ${SLIP_LABEL[sel.slip_check.verdict][1]}`}>{SLIP_LABEL[sel.slip_check.verdict][0]}</span>
-                  <span className="text-xs text-ink-300">ยอดโอน {sel.slip_check.amount != null ? "฿" + sel.slip_check.amount.toLocaleString("th-TH") : "-"} · {sel.slip_check.sender ?? "-"} → {sel.slip_check.receiver ?? "-"}</span>
-                  <span className="text-xs text-ink-300 break-all">Ref {sel.slip_check.trans_ref ?? "-"}{sel.slip_check.verdict !== "ok" && sel.slip_check.message ? " · " + sel.slip_check.message : ""}</span>
-                </span>
-              ) : <span className="text-ink-300">ไม่ได้ตรวจ (ตรวจด้วยตา)</span>}</dd>
-              <dt className="text-ink-300">สถานะ</dt><dd>{LABEL[sel.status]}</dd>
-              <dt className="text-ink-300">สมัครเมื่อ</dt><dd>{thTime(sel.created_at)}</dd>
-            </dl>
-
-            <p className="text-[11px] font-semibold tracking-[0.2em] text-gold-400 mt-5">ข้อมูลส่วนตัว</p>
-            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm mt-2">
-              {[
-                ["วันเกิด", sel.birthdate], ["สูง/หนัก", `${sel.height} ซม. / ${sel.weight} กก.`],
-                ["โทร", sel.tel], ["LINE", sel.line_id || "-"], ["อีเมล", sel.email || "-"], ["รหัสไปรษณีย์", sel.zipcode],
-                ["ประสบการณ์", sel.experience], ["จุดเด่น", sel.skills.join(", ") || "-"],
-                ["กิจกรรม", sel.activities?.join(", ") || "-"],
-                ["ความสามารถพิเศษ", sel.talents?.join(", ") || "-"],
-                ["ใบรับรองนวด", sel.massage_cert == null ? "-" : sel.massage_cert ? "มี" : "ไม่มี"],
-                ["เวลาที่สะดวก", sel.availability ? `${sel.availability.slots.join(" / ")} · ${sel.availability.days ?? "-"} วัน/สัปดาห์ · ${sel.availability.hours ?? "-"} ชม./วัน` : "-"],
-                ["รับทราบชั่วโมงงาน", sel.ack_hours ? "✓" : "-"], ["ยอมรับไม่ปฏิเสธลูกค้า", sel.ack_no_refuse ? "✓" : "-"],
-                ["แนะนำตัว", sel.intro || "-"],
-                ["สัญญา", sel.contract_accepted_at ? `ยอมรับ ${thTime(sel.contract_accepted_at)}` : "ยังไม่ยอมรับ"],
-                ["PDPA", `${sel.consent_version} · ${thTime(sel.consented_at)}`], ["รับข่าวสาร", sel.consent_marketing ? "ยินยอม" : "ไม่ยินยอม"],
-                ["ยินยอมตรวจประวัติ", criminalConsent(sel) ? "ยินยอม" : "ไม่มีบันทึก"],
-                ["ผลตรวจประวัติ", CRIMINAL_LABEL[sel.criminal_check ?? "pending"]],
-                ["Google Sheet", sel.sheet_synced ? "sync แล้ว" : "ยังไม่ sync"],
-              ].map(([k, v]) => <Fragment key={k}><dt className="text-ink-300">{k}</dt><dd className="break-words min-w-0">{v}</dd></Fragment>)}
-            </dl>
-
-            <div className="grid grid-cols-3 gap-2 mt-4">
-              {DOCS.filter(([k]) => sel.docs[k]).map(([k, l]) => [l, sel.docs[k]!] as const).map(([l, p]) => (
-                <a key={l} href={file(p)} target="_blank" rel="noopener noreferrer" className="block text-center">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={file(p)} alt={l} className="w-full aspect-[3/4] rounded-xl object-cover bg-ink-700" />
-                  <span className="text-xs text-ink-300">{l}</span>
-                </a>
-              ))}
+            <button onClick={() => setLine(sel.id, !sel.line_joined)} role="switch" aria-checked={!!sel.line_joined} className="flex justify-between items-center h-11 px-3 rounded-xl border border-[rgba(240,200,90,.38)] bg-[#130e0e]">
+              เข้ากลุ่ม LINE แล้ว
+              <span className="w-[42px] h-6 rounded-full relative" style={{ background: sel.line_joined ? "#06c755" : LINE_BD }}><span className="absolute top-[3px] w-[18px] h-[18px] rounded-full bg-white transition-all" style={{ left: sel.line_joined ? 21 : 3 }} /></span>
+            </button>
+            <div className="flex flex-wrap gap-1.5">
+              {sel.status !== "verified" && <button onClick={() => act(sel.id, { status: "verified" })} className="btn-red-lux h-9 px-3.5 rounded-full text-[12.5px]">ยืนยันสลิป</button>}
+              {sel.status === "pending_slip" && <button onClick={() => act(sel.id, { status: "rejected" })} className="h-9 px-3.5 rounded-full border border-[rgba(201,40,61,.6)] text-[#fecaca] text-[12.5px]">ปฏิเสธ</button>}
+              {sel.status === "verified" && <button onClick={() => act(sel.id, { status: "refunded" })} className="h-9 px-3.5 rounded-full border border-[rgba(240,200,90,.38)] text-[#d3c7bc] text-[12.5px]">บันทึกคืนเงิน</button>}
+              {!sel.sheet_synced && <button onClick={() => act(sel.id, { sync: true })} className="h-9 px-3.5 rounded-full border border-[rgba(240,200,90,.38)] text-[#d3c7bc] text-[12.5px]">sync ชีต</button>}
             </div>
-            <div className="flex flex-wrap gap-2 mt-4">
-              {sel.status !== "verified" && <button onClick={() => act(sel.id, { status: "verified" })} className="btn-crimson h-10 px-5 text-sm font-semibold">ยืนยันสลิป</button>}
-              {sel.status === "pending_slip" && <button onClick={() => act(sel.id, { status: "rejected" })} className="btn-ghost h-10 px-4 text-sm">ปฏิเสธ</button>}
-              {sel.status === "verified" && <button onClick={() => act(sel.id, { status: "refunded" })} className="btn-ghost h-10 px-4 text-sm">บันทึกคืนเงิน</button>}
-              {!sel.sheet_synced && <button onClick={() => act(sel.id, { sync: true })} className="btn-ghost h-10 px-4 text-sm">sync ชีต</button>}
-            </div>
-          </aside>
-        ) : (
-          <aside className="hidden lg:block rounded-2xl border border-dashed border-ink-600 p-8 text-center text-sm text-ink-400">เลือกผู้สมัครจากตารางเพื่อดูรายละเอียด</aside>
-        )}
-      </div>
-    </section>
+            <button onClick={() => copyLine(sel)} className="mt-auto h-[46px] rounded-full bg-[#06c755] text-white font-semibold">คัดลอกลิงก์กลุ่ม LINE</button>
+            <button onClick={() => setShowDocs((v) => !v)} aria-expanded={showDocs} className="h-11 rounded-full border border-[rgba(240,200,90,.38)] text-[#d3c7bc]">{showDocs ? "ซ่อนสลิปและเอกสาร" : "ดูสลิปและเอกสาร"}</button>
+
+            {showDocs && (
+              <>
+                <div className="h-px bg-[rgba(240,200,90,.38)]" />
+                <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[12.5px]">
+                  <dt className="text-[#cdbfb3]">แพ็กเกจ</dt><dd>{sel.package} · {PACKAGES[sel.package].name}</dd>
+                  {feeBreakdown(sel.package).map((x) => <Fragment key={x.name}><dt className="text-[#cdbfb3]">{x.name}</dt><dd>{fmt(x.amount)}</dd></Fragment>)}
+                  <dt className="text-[#cdbfb3]">ชำระโดย</dt><dd>{sel.payment_method === "qr" ? "QR" : "โอนบัญชี"}</dd>
+                  <dt className="text-[#cdbfb3]">Slip2Go</dt>
+                  <dd>{sel.slip_check ? <span style={{ color: SLIP_LABEL[sel.slip_check.verdict][1] }}>{SLIP_LABEL[sel.slip_check.verdict][0]} · {sel.slip_check.amount != null ? fmt(sel.slip_check.amount) : "-"}</span> : <span className="text-[#7d6d6a]">ไม่ได้ตรวจ</span>}</dd>
+                  <dt className="text-[#cdbfb3]">โทร</dt><dd>{sel.tel}</dd>
+                  <dt className="text-[#cdbfb3]">LINE</dt><dd className="break-all">{sel.line_id || "-"}</dd>
+                  <dt className="text-[#cdbfb3]">สมัครเมื่อ</dt><dd>{thTime(sel.created_at)}</dd>
+                </dl>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {DOCS.filter(([k]) => sel.docs[k]).map(([k, l]) => (
+                    <a key={k} href={file(sel.docs[k]!)} target="_blank" rel="noopener noreferrer" className="block text-center">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={file(sel.docs[k]!)} alt={l} className="w-full aspect-[3/4] rounded-lg object-cover bg-[#130e0e]" />
+                      <span className="text-[10.5px] text-[#cdbfb3]">{l}</span>
+                    </a>
+                  ))}
+                </div>
+              </>
+            )}
+            {sel.status === "verified" && (
+              <>
+                <div className="h-px bg-[rgba(240,200,90,.38)]" />
+                <KycPanel key={sel.id} row={sel} onSaved={(row) => setRows((rs) => rs.map((x) => (x.id === row.id ? row : x)))} />
+              </>
+            )}
+          </>
+        ) : <p className="py-10 text-center text-[#7d6d6a]">เลือกผู้สมัครจากตารางเพื่อดูรายละเอียด</p>}
+      </aside>
+    </div>
   );
+}
+
+function Row({ k, v }: { k: string; v: string }) {
+  return <div className="flex justify-between gap-3"><span className="text-[#cdbfb3] shrink-0">{k}</span><span className="text-right">{v}</span></div>;
 }

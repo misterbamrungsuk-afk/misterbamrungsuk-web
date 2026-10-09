@@ -31,12 +31,12 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
                 // eslint-disable-next-line @next/next/no-img-element
                 ? <img src={img} alt="" className="absolute inset-0 w-full h-full object-cover" />
                 : <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,175,55,0.25),transparent_60%),linear-gradient(135deg,#2a1014,#0e0a0a)]" />}
-              <div className="absolute inset-0 bg-gradient-to-r from-ink-950/85 via-ink-950/40 to-transparent" />
-              <div className="relative h-full flex flex-col justify-center px-6 lg:px-10 max-w-xl">
+              {b.title && <div className="absolute inset-0 bg-gradient-to-r from-ink-950/85 via-ink-950/40 to-transparent" />}
+              {b.title && <div className="relative h-full flex flex-col justify-center px-6 lg:px-10 max-w-xl">
                 <p className="text-[11px] font-semibold tracking-[0.3em] text-gold-500">PROMOTION</p>
                 <h2 className="text-xl lg:text-3xl font-semibold mt-2 leading-snug">{b.title}</h2>
                 {b.subtitle && <p className="text-sm text-ink-200 mt-2">{b.subtitle}</p>}
-              </div>
+              </div>}
             </div>
           );
           return <div key={b.id} className="snap-start shrink-0 w-full">{b.link ? <Link href={b.link}>{inner}</Link> : inner}</div>;

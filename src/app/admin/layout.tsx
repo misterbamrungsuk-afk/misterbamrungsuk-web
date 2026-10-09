@@ -14,9 +14,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!session) redirect("/admin-login");
 
   return (
-    <div className="min-h-dvh lg:flex">
+    <div className="min-h-dvh lg:flex bg-[#0e0a0a] text-[#f6efe4]">
       <AdminNav email={session.email} role={session.role} />
-      <main className="flex-1 min-w-0 px-4 lg:px-8 py-5 lg:py-7 pb-16 [&_.grid>*]:min-w-0">
+      <main className="flex-1 min-w-0 bg-[#0e0a0a] font-lux-body px-4 lg:px-6 py-5 lg:py-[22px] pb-16 [&_.grid>*]:min-w-0">
         <Suspense><DeniedBanner /></Suspense>
         {children}
       </main>

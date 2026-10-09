@@ -3,25 +3,28 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Logo } from "@/components/ui";
-import { KYC_QUEUE, PAYOUTS, REPORTS, TICKETS } from "@/lib/admin-data";
+import { Fragment } from "react";
+import { PAYOUTS, REPORTS, TICKETS } from "@/lib/admin-data";
 import { ROLE_LABEL, canAccess, type AdminRole } from "@/lib/admin-auth";
 import { ModeSwitch } from "@/components/mode-switch";
 
 export const ADMIN_TABS = [
-  { href: "/admin", label: "รายได้ GP", exact: true },
-  { href: "/admin/applicants", label: "ผู้สมัคร Part-Time (/join)" },
-  { href: "/admin/slips", label: "ตรวจสลิป · Slip2Go" },
-  { href: "/admin/partners", label: "พาร์ทเนอร์ / พื้นที่โปรโมท" },
-  { href: "/admin/market", label: "Marketplace สินค้า" },
-  { href: "/admin/kyc", label: "คิว KYC", badge: KYC_QUEUE.length },
+  { href: "/admin", label: "ภาพรวม / รายได้", exact: true },
   { href: "/admin/orders", label: "ตรวจงาน" },
-  { href: "/admin/payouts", label: "โอนให้ผู้ให้บริการ", badge: PAYOUTS.filter((p) => !p.hold).length },
-  { href: "/admin/reports", label: "รีพอร์ท", badge: REPORTS.length },
-  { href: "/admin/cs", label: "CS tickets", badge: TICKETS.filter((t) => t.status === "new").length },
-  { href: "/admin/members", label: "สมาชิก · 3-strike" },
+  { href: "/admin/applicants", label: "ผู้สมัคร" },
+  { href: "/admin/slips", label: "ตรวจสลิป · Slip2Go" },
+  { href: "/admin/kyc", label: "คิว KYC" },
+  { href: "/admin/cohorts", label: "กลุ่มอบรม / เช็กชื่อ" },
+  { href: "/admin/payouts", label: "โอนให้ Part-Time", badge: PAYOUTS.filter((p) => !p.hold).length },
+  { href: "/admin/partners", label: "พาร์ทเนอร์ / พื้นที่โปรโมท" },
+  { href: "/admin/market", label: "ร้านค้า Marketplace" },
+  { href: "/admin/covers", label: "รูปหน้าปก" },
+  { href: "/admin/members", label: "สมาชิก · ใบเตือน" },
+  { href: "/admin/reports", label: "รายงาน", badge: REPORTS.length },
+  { href: "/admin/cs", label: "เรื่องร้องเรียน", badge: TICKETS.filter((t) => t.status === "new").length },
   { href: "/admin/promos", label: "โปรโมชัน" },
-  { href: "/admin/audit", label: "Audit log · SOS" },
-  { href: "/admin/settings", label: "ตั้งค่าระบบ" },
+  { href: "/admin/audit", label: "บันทึกระบบ · SOS" },
+  { href: "/admin/settings", label: "ตั้งค่าระบบ", divider: true },
 ] as const;
 
 export function AdminNav({ email, role }: { email: string; role: AdminRole }) {
@@ -36,27 +39,35 @@ export function AdminNav({ email, role }: { email: string; role: AdminRole }) {
   return (
     <>
       {/* จอใหญ่: เมนูซ้าย */}
-      <aside className="hidden lg:flex w-60 shrink-0 flex-col gap-1 border-r border-ink-600 px-3 py-6 sticky top-0 h-dvh">
-        <div className="px-2 pb-1"><Logo size={30} /></div>
-        <p className="px-2 pb-3 text-[11px] font-semibold tracking-[0.15em] text-gold-400">ADMIN CONSOLE</p>
-        <div className="pb-4"><ModeSwitch /></div>
-        {tabs.map((t) => (
-          <Link key={t.href} href={t.href}
-            className={`flex items-center gap-2 h-10 px-3 rounded-xl text-sm transition ${isOn(t) ? "bg-ink-700 text-ink-100 shadow-[inset_2px_0_0_var(--color-crimson-500)]" : "text-ink-300 hover:text-ink-100"}`}>
-            <span className="flex-1">{t.label}</span>
-            {"badge" in t && t.badge ? <span className="min-w-5 h-5 px-1.5 rounded-full bg-crimson-500 text-white text-[11px] grid place-items-center">{t.badge}</span> : null}
-          </Link>
-        ))}
-        <div className="mt-auto border-t border-ink-600 pt-3 px-2 flex flex-col gap-1">
-          <p className="text-sm truncate" title={email}>{email}</p>
-          <p className="text-xs text-gold-400">{ROLE_LABEL[role]}</p>
-          <button onClick={logout} className="mt-2 h-10 rounded-xl border border-ink-600 text-sm text-left px-3 hover:border-crimson-500">ออกจากระบบ</button>
-          <Link href="/home" className="h-10 flex items-center px-3 rounded-xl text-sm text-gold-300 hover:bg-ink-800">← กลับหน้าแอป</Link>
+      <nav aria-label="เมนูแอดมิน" className="hidden lg:flex w-[232px] shrink-0 flex-col gap-0.5 border-r border-[rgba(240,200,90,.38)] bg-[#0e0a0a] px-3.5 py-[18px] text-[13px] font-lux-body sticky top-0 h-dvh overflow-y-auto no-scrollbar">
+        <div className="flex items-center gap-2.5 mb-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/logo.png" alt="Mister Bamrungsuk" className="w-[46px] h-[46px] object-contain" />
+          <div className="leading-[1.1] min-w-0">
+            <div className="font-lux font-semibold text-[#f0c75a]">Mister Bamrungsuk</div>
+            <div className="text-[11px] text-[#7d6d6a] truncate">Admin · {role}</div>
+          </div>
         </div>
-      </aside>
+        {tabs.map((t) => (
+          <Fragment key={t.href}>
+            {"divider" in t && t.divider && <div className="h-px shrink-0 bg-[rgba(240,200,90,.38)] my-1.5" />}
+            <Link href={t.href} aria-current={isOn(t) ? "page" : undefined}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-[10px] border transition ${isOn(t) ? "bg-[rgba(176,24,44,.2)] border-[rgba(201,40,61,.55)] text-[#f6efe4]" : "border-transparent text-[#cdbfb3] hover:text-[#f6efe4]"}`}>
+              <span className="flex-1">{t.label}</span>
+              {"badge" in t && t.badge ? <span className="min-w-5 h-5 px-1.5 rounded-full bg-crimson-500 text-white text-[11px] grid place-items-center">{t.badge}</span> : null}
+            </Link>
+          </Fragment>
+        ))}
+        <div className="mt-auto pt-3 flex flex-col gap-1">
+          <div className="pb-2"><ModeSwitch /></div>
+          <p className="px-3 text-xs text-[#cdbfb3] truncate" title={email}>{email} · <span className="text-[#f0c75a]">{ROLE_LABEL[role]}</span></p>
+          <button onClick={logout} className="mt-1 px-3 py-1.5 rounded-[10px] border border-[rgba(240,200,90,.38)] text-left text-[#cdbfb3] hover:border-[rgba(201,40,61,.55)]">ออกจากระบบ</button>
+          <Link href="/home" className="px-3 py-1.5 text-[#ffd76a]">← กลับหน้าแอป</Link>
+        </div>
+      </nav>
 
       {/* มือถือ/แท็บเล็ต: หัว + แท็บเลื่อนแนวนอน */}
-      <header className="lg:hidden sticky top-0 z-30 bg-ink-900/95 backdrop-blur-xl border-b border-ink-600">
+      <header className="lg:hidden sticky top-0 z-30 bg-[#0e0a0a]/95 backdrop-blur-xl border-b border-[rgba(240,200,90,.38)]">
         <div className="flex items-center gap-3 px-4 h-14">
           <Link href="/profile" aria-label="back" className="w-10 h-10 -ml-1 rounded-full border border-ink-600 grid place-items-center text-xl leading-none">‹</Link>
           <Logo size={26} />

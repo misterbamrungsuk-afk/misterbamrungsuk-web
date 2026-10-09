@@ -20,6 +20,8 @@ export const PATH_ROLES: { prefix: string; roles: AdminRole[] }[] = [
   { prefix: "/admin/slips", roles: ["super", "finance"] },
   { prefix: "/admin/partners", roles: ["super", "finance"] },
   { prefix: "/admin/market", roles: ["super", "finance"] },
+  { prefix: "/admin/cohorts", roles: ["super", "finance"] },
+  { prefix: "/admin/covers", roles: ["super"] }, // ยังไม่มีบทบาทฝ่ายการตลาด — เพิ่มที่นี่เมื่อมี
   { prefix: "/admin/kyc", roles: ["super", "kyc"] },
   { prefix: "/admin/cs", roles: ["super", "cs"] },
   { prefix: "/admin/reports", roles: ["super", "cs", "kyc"] },

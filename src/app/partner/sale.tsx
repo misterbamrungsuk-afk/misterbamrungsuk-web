@@ -38,7 +38,7 @@ const priceText = (k: PartnerPackageKey) => {
   return p == null ? "ติดต่อทีมงาน" : `฿${baht(p)}`;
 };
 
-export function PartnerSalePage() {
+export function PartnerSalePage({ hero }: { hero?: string }) {
   const [f, setF] = useState<Form>(EMPTY);
   const [faq, setFaq] = useState<number | null>(0);
   const [err, setErr] = useState("");
@@ -89,7 +89,8 @@ export function PartnerSalePage() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,175,55,0.14),transparent_60%),radial-gradient(ellipse_at_bottom_left,rgba(160,20,30,0.25),transparent_55%)]" />
-        <div className="relative max-w-6xl mx-auto px-4 py-16 lg:py-24">
+        <div className="relative max-w-6xl mx-auto px-4 py-16 lg:py-24 lg:flex lg:items-center lg:gap-10">
+          <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold tracking-[0.3em] text-gold-500">PARTNER PROGRAM</p>
           <h1 className="mt-3 text-3xl lg:text-5xl font-semibold leading-tight max-w-3xl">
             Partner สปา · โรงแรม <span className="text-gold-500">ทั่วประเทศ</span>
@@ -109,6 +110,11 @@ export function PartnerSalePage() {
               </div>
             ))}
           </div>
+          </div>
+          {hero && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={hero} alt="Partner สปา · โรงแรม Mister Bamrungsuk" className="mt-10 lg:mt-0 w-full max-w-md lg:w-[420px] aspect-square object-cover rounded-3xl border border-gold-500/40 shrink-0" />
+          )}
         </div>
       </section>
 
