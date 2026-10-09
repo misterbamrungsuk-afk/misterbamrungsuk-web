@@ -19,7 +19,8 @@ export const DEMO_ADMIN_EMAILS: Record<AdminRole, string> = {
 
 function accounts(): Account[] {
   // แบบง่าย: ADMIN_EMAIL + ADMIN_PASSWORD = บัญชี super 1 บัญชี (ใช้ร่วมกับ ADMIN_ACCOUNTS ได้)
-  const simpleEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  // ไม่ได้ตั้ง ADMIN_EMAIL แต่มี ADMIN_PASSWORD → ใช้อีเมลแอดมินหลักของแบรนด์
+  const simpleEmail = (process.env.ADMIN_EMAIL?.trim() || (process.env.ADMIN_PASSWORD ? "admin@misterbamrungsuk.com" : "")).toLowerCase();
   const simplePw = process.env.ADMIN_PASSWORD;
   const simple: Account[] = simpleEmail && simplePw ? [{ email: simpleEmail, role: "super", plain: simplePw }] : [];
   const raw = process.env.ADMIN_ACCOUNTS?.trim();
@@ -54,4 +55,4 @@ export function checkLogin(email: string, password: string): AdminRole | null {
 }
 
 export const adminLoginEnabled = () => accounts().length > 0;
-export const usingDemoAccounts = () => !process.env.ADMIN_ACCOUNTS?.trim() && !(process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) && isDemo;
+export const usingDemoAccounts = () => !process.env.ADMIN_ACCOUNTS?.trim() && !process.env.ADMIN_PASSWORD && isDemo;
