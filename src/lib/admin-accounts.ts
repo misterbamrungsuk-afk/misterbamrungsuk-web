@@ -18,13 +18,18 @@ export const DEMO_ADMIN_EMAILS: Record<AdminRole, string> = {
 };
 
 function accounts(): Account[] {
+  // แบบง่าย: ADMIN_EMAIL + ADMIN_PASSWORD = บัญชี super 1 บัญชี (ใช้ร่วมกับ ADMIN_ACCOUNTS ได้)
+  const simpleEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const simplePw = process.env.ADMIN_PASSWORD;
+  const simple: Account[] = simpleEmail && simplePw ? [{ email: simpleEmail, role: "super", plain: simplePw }] : [];
   const raw = process.env.ADMIN_ACCOUNTS?.trim();
+  if (simple.length && !raw) return simple;
   if (raw) {
-    return raw.split(";").map((row) => {
+    return simple.concat(raw.split(";").map((row) => {
       const [email, role, sh] = row.split("|").map((x) => x.trim());
       const [salt, hash] = (sh ?? "").split(":");
       return { email: email.toLowerCase(), role: role as AdminRole, salt, hash };
-    }).filter((a) => a.email && ROLES.includes(a.role) && a.salt && a.hash);
+    }).filter((a) => a.email && ROLES.includes(a.role) && a.salt && a.hash));
   }
   if (!isDemo) return []; // โหมดจริงไม่มีบัญชีสาธิต
   const plain = process.env.ADMIN_DEMO_PASSWORD || "mord-demo";
@@ -49,4 +54,4 @@ export function checkLogin(email: string, password: string): AdminRole | null {
 }
 
 export const adminLoginEnabled = () => accounts().length > 0;
-export const usingDemoAccounts = () => !process.env.ADMIN_ACCOUNTS?.trim() && isDemo;
+export const usingDemoAccounts = () => !process.env.ADMIN_ACCOUNTS?.trim() && !(process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) && isDemo;
