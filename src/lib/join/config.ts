@@ -188,7 +188,7 @@ export const EDUCATION = ["ต่ำกว่ามัธยมศึกษา�
 export const MARITAL = ["โสด", "สมรส", "หย่าร้าง", "แยกกันอยู่", "หม้าย"] as const;
 export const BANKS = ["กสิกรไทย", "ไทยพาณิชย์", "กรุงเทพ", "กรุงไทย", "กรุงศรีอยุธยา", "ทหารไทยธนชาต", "ออมสิน", "อื่น ๆ"] as const;
 
-export const EXPERIENCE = ["ไม่มี", "1-3 ปี", "> 3 ปี"] as const;
+export const EXPERIENCE = ["ไม่มี", "1–3 ปี", "มากกว่า 3 ปี"] as const;
 export const STRENGTHS = ["บุคลิก", "รูปร่าง", "ทักษะนวด", "การสื่อสาร"] as const;
 
 /** ความสามารถพิเศษ (multi-select บังคับ ≥1) — เก็บใน applicants.talents (join/0005) + docs.extra */

@@ -339,3 +339,6 @@ html { scroll-behavior: smooth; }
 .lux-card:hover .lux-icon { background: rgba(240,200,90,.14); border-color: #ffd76a; transform: scale(1.06); }
 .lux-card:hover .lux-cta { background: linear-gradient(100deg,#b8915a 0%,#d9bf8a 22%,#f0e0b4 48%,#dcc390 72%,#b38b55 100%); border-color: #e8d3a0; color: #2a1c0c; }
 @media (prefers-reduced-motion: reduce) { .lux-card, .btn-red-lux, .btn-gold-lux { transition: none; } .lux-card:hover, .btn-red-lux:hover, .btn-gold-lux:hover { transform: none; } }
+
+/* ตัวเลขทุกที่ใช้แบบตัวตรงเท่ากัน (Cormorant ค่าเริ่มต้นเป็นเลขแบบหางตก ดูไม่เรียบร้อย) */
+*, *::before, *::after, input, textarea, select, button, ::placeholder { font-variant-numeric: lining-nums; }
