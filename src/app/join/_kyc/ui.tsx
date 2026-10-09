@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SiteHeader } from "@/components/site-header";
 
 // ชิ้นส่วนร่วมของหน้า KYC / บัญชีรับเงิน / ผลตรวจ / อบรม (ตามบอร์ด D2/D3/D5/TrainingCohort)
 export const C = { bg: "#0e0a0a", s1: "#241717", s2: "#21191a", ln: "rgba(240,200,90,.38)", red: "#b0182c", gold: "#f0c75a", goldL: "#ffd76a", tx: "#f6efe4", mut: "#cdbfb3", pink: "#FF8A97" };
@@ -7,6 +8,7 @@ export const RED_GRAD = "linear-gradient(100deg, #7e0a1e 0%, #c8102e 24%, #ff506
 export function Page({ children, padBottom = true }: { children: React.ReactNode; padBottom?: boolean }) {
   return (
     <main className={`mb-page font-lux-body mx-auto w-full max-w-[480px] min-h-dvh relative ${padBottom ? "pb-40" : "pb-8"}`} style={{ background: C.bg, color: C.tx, fontVariantNumeric: "lining-nums" }}>
+      <SiteHeader />
       {children}
     </main>
   );

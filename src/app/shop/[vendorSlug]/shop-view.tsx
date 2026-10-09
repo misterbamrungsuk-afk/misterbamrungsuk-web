@@ -6,6 +6,7 @@ import { MAX_QTY } from "@/lib/market/config";
 import { readCart, writeCart, useCart } from "../../products/market-ui";
 import { Back } from "../../hotels/venue-client";
 import { Bottle, glowOf } from "../../products/m-kit";
+import { SiteHeader } from "@/components/site-header";
 
 type P = { id: string; name: string; price: number; stock: number; img: string; kind: string };
 type R = { id: string; stars: number; text: string; who: string; item: string; at: string };
@@ -46,6 +47,7 @@ export function ShopView({ vendor, products, reviews, avg, count }: { vendor: { 
   return (
     <main className="min-h-dvh bg-[#0e0a0a] text-[#f6efe4] font-lux-body">
       <div className="max-w-[480px] mx-auto">
+        <SiteHeader />
         <div className="relative h-[150px]" style={{ background: "linear-gradient(135deg, #3a1018, #241717 70%)" }}>
           <svg viewBox="0 0 390 150" preserveAspectRatio="xMaxYMid slice" className="absolute inset-0 w-full h-full" aria-hidden="true"><circle cx="330" cy="30" r="80" fill="none" stroke="rgba(212,175,55,.18)" strokeWidth="1.5" /><circle cx="330" cy="30" r="50" fill="none" stroke="rgba(212,175,55,.12)" strokeWidth="1.5" /><path d="M0 120 C100 90 200 140 390 100" stroke="rgba(194,29,51,.35)" strokeWidth="2" fill="none" /></svg>
           <div className="absolute top-4 left-[18px] right-[18px] flex justify-between">

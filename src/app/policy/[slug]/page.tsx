@@ -4,6 +4,7 @@ import { getSettings } from "@/lib/market/store";
 import { POLICY_PAGES, TBD, type PolicySlug } from "@/lib/market/config";
 import { MarketHeader } from "../../products/market-ui";
 import { MarketFooter } from "../../products/market-bits";
+import { SiteHeader } from "@/components/site-header";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,7 @@ export default async function PolicyPage({ params }: { params: Promise<{ slug: s
   const custom = (await getSettings())[meta.key].trim();
   return (
     <main className="min-h-dvh bg-ink-900 text-ink-100">
+      <SiteHeader />
       <MarketHeader />
       <article className="max-w-3xl mx-auto px-4 py-10">
         <p className="text-[11px] font-semibold tracking-[0.3em] text-gold-500">POLICY</p>

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Turnstile } from "@/components/turnstile";
 import { SiteFooter } from "@/components/site-footer";
 import { BRAND } from "@/lib/join/config";
+import { SiteHeader } from "@/components/site-header";
 import {
   BOOKING_COMMISSION, PACKAGE_KEYS, PARTNER_APPLY_TYPES, PARTNER_PACKAGES, SELL_PRICE_NOTE, baht,
   type PartnerPackageKey,
@@ -92,17 +93,11 @@ export function PartnerSalePage({ hero }: { hero?: string }) {
   return (
     <main className="font-lux-body min-h-dvh bg-[#0e0a0a] text-[#f6efe4]">
       <div className="relative mx-auto w-full max-w-[480px] overflow-x-hidden pb-[110px]">
+        <SiteHeader pill="PARTNER" />
         {/* Hero */}
         <div className="relative h-[380px]">
           <img src={hero || "/brand/venue.jpg"} alt="" className="block h-full w-full object-cover" />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(14,10,10,.55),rgba(14,10,10,.2)_40%,#0e0a0a)]" />
-          <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
-            <span className="font-lux inline-flex items-center gap-2 text-[20px] font-semibold">
-              <img src="/brand/logo.png" alt="Mister Bamrungsuk" className="h-10 w-10 object-contain" />
-              <span className="text-[#e8c472]">Mister Bamrungsuk</span>
-            </span>
-            <span className="rounded-full border border-[rgba(212,175,55,.6)] bg-black/40 px-3 py-[5px] text-[10px] tracking-[2.5px] text-[#ffd76a]">PARTNER</span>
-          </div>
           <div className="absolute inset-x-4 bottom-4">
             <div className="text-[11px] font-semibold tracking-[3px] text-[#f0c75a]">สปาทั่วประเทศ · โรงแรม</div>
             <h1 className="font-lux mt-1.5 text-[28px] font-bold leading-[1.2] [text-wrap:balance]">ขายบริการของคุณ<br /><span className="text-[#ffd76a]">ผ่าน Mister Bamrungsuk</span></h1>

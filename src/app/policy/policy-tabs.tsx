@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { LuxHeader } from "../hotels/venue-client";
+import { SiteHeader } from "@/components/site-header";
 
 // นโยบายร้านค้า — ตามบอร์ด Policy.dc.html (ร่าง · ข้อ [รอกำหนด] รอเจ้าของ/ทนายกำหนด)
 type Tab = "returns" | "shipping" | "privacy";
@@ -36,6 +37,7 @@ export function PolicyTabs({ initial }: { initial: Tab }) {
   const [intro, secs] = D[tab];
   return (
     <main className="min-h-dvh bg-[#0e0a0a] text-[#f6efe4] font-lux-body">
+      <SiteHeader />
       <div className="max-w-[480px] mx-auto">
         <LuxHeader back="/market" eyebrow="POLICIES" title="นโยบายร้านค้า" />
         <div className="px-[18px] pt-3.5 pb-6 flex flex-col gap-3">

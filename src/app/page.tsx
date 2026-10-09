@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { HomeSlider } from "./home-slider";
 import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 import { getCovers } from "@/lib/covers";
 
 export const revalidate = 60;
@@ -30,13 +31,7 @@ export default async function MainPage() {
   return (
     <main className="min-h-dvh bg-[#0e0a0a]">
       <div className="font-lux-body mx-auto w-full max-w-[480px] min-h-dvh flex flex-col overflow-hidden text-[#f6efe4] font-semibold" style={{ background: "linear-gradient(180deg, #0e0a0a 40%, #3a0d15 100%)" }}>
-        <header className="flex justify-between items-center px-4 py-3" style={{ background: "linear-gradient(180deg, #050303, #0e0a0a)" }}>
-          <span className="inline-flex items-center gap-2 font-lux font-semibold text-[20px]">
-            <img src="/brand/logo.png" alt="Mister Bamrungsuk" className="w-10 h-10 object-contain" />
-            <span className="text-[#e8c472]">Mister Bamrungsuk</span>
-          </span>
-          <span className="px-3 py-[5px] rounded-full border border-[#f0c75a] text-[10px] tracking-[2.5px] text-[#ffd76a]">PREMIUM</span>
-        </header>
+        <SiteHeader />
 
         <HomeSlider slides={slides} />
 

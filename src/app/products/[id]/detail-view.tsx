@@ -6,6 +6,7 @@ import { AGE_NOTICE, GENERAL_WARNING, MAX_QTY, imageUrl } from "@/lib/market/con
 import { useCart } from "../market-ui";
 import { Bottle, BoxIcon, CartCount, CartIcon, Chip, LINE, RED_GRAD, addToCart, fmt, glowOf, type CardP } from "../m-kit";
 import { ReviewForm } from "../review-form";
+import { SiteHeader } from "@/components/site-header";
 
 type R = { id: string; name: string; stars: number; text: string; created_at: string };
 const card = "p-3.5 rounded-2xl bg-[#241717] border";
@@ -52,6 +53,7 @@ export function ProductDetailView({ p, kind, vendor, bundle, bundleAuto, related
 
   return (
     <main className="font-lux-body w-full max-w-[480px] mx-auto min-h-dvh bg-[#0e0a0a] text-[#f6efe4] relative overflow-x-hidden pb-[100px]">
+      <SiteHeader />
       <div className="relative h-[320px] grid place-items-center overflow-hidden" style={{ background: `radial-gradient(circle at 50% 45%, ${glow}, #0e0a0a 72%)` }}>
         {imgs.length
           // eslint-disable-next-line @next/next/no-img-element

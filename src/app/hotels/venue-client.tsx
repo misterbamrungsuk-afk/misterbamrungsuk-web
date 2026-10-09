@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { savePlace } from "@/lib/market/place-pick";
 import { useRouter } from "next/navigation";
+import { SiteHeader } from "@/components/site-header";
 
 export type VenueCard = { id: string; name: string; province: string; area: string; img: string; tags: string; price: number | null; sample: boolean };
 export type VenueFull = {
@@ -69,6 +70,7 @@ export function VenueListView({ type, items }: { type: "โรงแรม" | "�
   return (
     <main className="min-h-dvh bg-[#0e0a0a] text-[#f6efe4] font-lux-body">
       <div className="max-w-[480px] mx-auto">
+        <SiteHeader />
         <LuxHeader back="/market" eyebrow={hotel ? "HOTEL PARTNERS" : "SPA PARTNERS"} title={hotel ? "โรงแรมพาร์ทเนอร์" : "สปาพาร์ทเนอร์"} />
         <div className="px-[18px] pt-3.5 pb-6 flex flex-col gap-3">
           <div className={HROW} role="group" aria-label="กรองตามจังหวัด">
@@ -157,6 +159,7 @@ export function VenueDetailView({ v }: { v: VenueFull }) {
   return (
     <main className="min-h-dvh bg-[#0e0a0a] text-[#f6efe4] font-lux-body">
       <div className="max-w-[480px] mx-auto pb-[92px]">
+        <SiteHeader />
         <div className="relative h-[270px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={G[g]} alt={`${v.name} ภาพที่ ${g + 1}`} className="absolute inset-0 w-full h-full object-cover" />

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MAX_QTY, baht, imageUrl, type Product } from "@/lib/market/config";
 import { readCart, useCart, writeCart } from "./market-ui";
+import { SiteHeader } from "@/components/site-header";
 
 // ชุด UI มือถือของ Marketplace ตามบอร์ดดีไซน์ (390px, กว้างสุด 480px กลางจอ)
 
@@ -13,7 +14,7 @@ export const fmt = (n: number) => "฿" + baht(n);
 
 export function MShell({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <main className={`font-lux-body w-full max-w-[480px] mx-auto min-h-dvh bg-[#0e0a0a] text-[#f6efe4] relative overflow-x-hidden ${className}`}>{children}</main>
+    <main className={`font-lux-body w-full max-w-[480px] mx-auto min-h-dvh bg-[#0e0a0a] text-[#f6efe4] relative overflow-x-hidden ${className}`}><SiteHeader />{children}</main>
   );
 }
 

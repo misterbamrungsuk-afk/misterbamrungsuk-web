@@ -29,8 +29,6 @@ export default async function PartnerLogin({ searchParams }: { searchParams: Pro
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(14,10,10,.2),#0e0a0a)]" />
         <div className="absolute left-[18px] bottom-2.5">
           <div className="font-lux font-semibold text-[15px] inline-flex items-center gap-1.5">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/logo.png" alt="Mister Bamrungsuk" className="w-10 h-10 object-contain" />
             <span className="text-[#f0c75a]">Partner</span>
           </div>
           <h1 className="font-lux font-semibold text-[26px] text-[#f0c75a] mt-0.5 mb-0">เข้าสู่ระบบพาร์ทเนอร์</h1>

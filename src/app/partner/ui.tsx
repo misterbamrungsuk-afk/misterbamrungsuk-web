@@ -1,4 +1,5 @@
 import type { TimelineStep } from "@/lib/partner/status";
+import { SiteHeader } from "@/components/site-header";
 
 // ชิ้นส่วนร่วมของหน้าพาร์ทเนอร์ตามบอร์ด (PartnerDone / PartnerQC / PartnerLogin)
 export const BD = "border-[rgba(240,200,90,.38)]";
@@ -9,7 +10,7 @@ export const GHOST = `h-12 rounded-[14px] border ${BD} bg-[#241717] text-[#ffd76
 export function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh bg-[#0e0a0a]">
-      <main className="mx-auto max-w-[480px] min-h-dvh pb-6 text-[#f6efe4] font-lux-body [&_a]:text-[#ffd76a]">{children}</main>
+      <main className="mx-auto max-w-[480px] min-h-dvh pb-6 text-[#f6efe4] font-lux-body [&_a]:text-[#ffd76a]"><SiteHeader pill="PARTNER" />{children}</main>
     </div>
   );
 }

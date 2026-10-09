@@ -5,6 +5,7 @@ import { marketPartners } from "@/lib/market/partners";
 import { getCovers } from "@/lib/covers";
 import { SiteFooter } from "@/components/site-footer";
 import { BoxIcon, CartCount, CartIcon, LINE, RED_GRAD } from "../products/m-kit";
+import { SiteHeader } from "@/components/site-header";
 import { MarketBanner, MarketShop } from "./market-client";
 
 export const dynamic = "force-dynamic";
@@ -40,16 +41,13 @@ export default async function MarketHome() {
 
   return (
     <main className="font-lux-body w-full max-w-[480px] mx-auto min-h-dvh bg-[#0e0a0a] text-[#f6efe4] relative overflow-x-hidden pb-[84px]">
+      <SiteHeader right={<div className="flex gap-2 shrink-0">
+            <Link href="/orders/track" aria-label="ติดตามคำสั่งซื้อ" className={circle}><BoxIcon /></Link>
+            <Link href="/cart" aria-label="ตะกร้าสินค้า" className={circle}><CartIcon /><CartCount /></Link>
+          </div>} />
       <div className="relative h-[300px]">
         <img src={hero} alt="" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(14,10,10,.35) 0%, rgba(14,10,10,.6) 55%, #0e0a0a 100%)" }} />
-        <div className="relative flex justify-between items-center px-[18px] py-4">
-          <Link href="/" className="flex items-center gap-2.5"><img src="/brand/logo.png" alt="Mister Bamrungsuk" className="w-[46px] h-[46px] object-contain" /><span className="font-lux font-semibold text-[20px] text-[#e8c472]">Mister Bamrungsuk</span></Link>
-          <div className="flex gap-2">
-            <Link href="/orders/track" aria-label="ติดตามคำสั่งซื้อ" className={circle}><BoxIcon /></Link>
-            <Link href="/cart" aria-label="ตะกร้าสินค้า" className={circle}><CartIcon /><CartCount /></Link>
-          </div>
-        </div>
         <div className="absolute left-[18px] right-[18px] bottom-3.5">
           <p className="text-[10.5px] tracking-[2.5px] text-[#ffd76a] font-semibold">เพื่อนกิน เพื่อนเที่ยว · MARKETPLACE</p>
           <h1 className="mt-1.5 mb-1 font-lux font-bold text-[28px] leading-[1.15]">โรงแรม สปา และของดี<br />ที่เราคัดมาให้</h1>
