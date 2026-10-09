@@ -16,7 +16,7 @@ const TONE: Record<ApplicantStatus, string> = {
   refunded: "border-ink-500 text-ink-300",
 };
 const file = (p: string) => `/api/admin/applicants/file?path=${encodeURIComponent(p)}`;
-const SLIP_LABEL: Record<string, [string, string]> = { ok: ["✓ ยอดตรง", "text-emerald-400"], amt: ["ยอดไม่ตรง", "text-red-400"], dup: ["สลิปซ้ำ", "text-red-400"], fake: ["ไม่พบรายการ", "text-red-400"], error: ["ตรวจไม่สำเร็จ", "text-amber-300"] };
+const SLIP_LABEL: Record<string, [string, string]> = { ok: ["✓ ยอดตรง", "text-emerald-400"], acct: ["โอนเข้าบัญชีอื่น", "text-red-400"], amt: ["ยอดไม่ตรง", "text-red-400"], dup: ["สลิปซ้ำ", "text-red-400"], fake: ["ไม่พบรายการ", "text-red-400"], error: ["ตรวจไม่สำเร็จ", "text-amber-300"] };
 
 const DOCS = [["photo", "รูปถ่าย"], ["id_card", "บัตรประชาชน"], ["bankbook", "สมุดบัญชี"], ["other_doc", "เอกสารอื่นๆ"], ["cert_doc", "ใบรับรองนวด"], ["slip", "สลิป"]] as const;
 const name = (r: Applicant) => `${r.title}${r.first_name} ${r.last_name}`;
