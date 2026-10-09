@@ -8,10 +8,6 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**" },
     ],
   },
-  // ช่วงเปิดรับสมัคร Part-Time: หน้าแรกพาไป sale page /join ก่อน (ชั่วคราว — ลบออกเมื่อจะเปิด Marketplace เป็นหน้าแรก)
-  async redirects() {
-    return [{ source: "/", destination: "/join", permanent: false }];
-  },
 };
 
 export default nextConfig;

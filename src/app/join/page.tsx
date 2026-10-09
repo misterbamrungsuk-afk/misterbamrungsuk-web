@@ -5,6 +5,7 @@
 // (ฟอร์มเดิมสำรองไว้ที่ ./_legacy-form.tsx.txt)
 import { useState } from "react";
 import Link from "next/link";
+import { SiteFooter } from "@/components/site-footer";
 import { FAQ, INVITE, LOOKING_FOR, PACKAGES, SALE_CARDS, TIMELINE, type PackageKey } from "@/lib/join/config";
 
 const fmt = (n: number) => n.toLocaleString("en-US");
@@ -180,6 +181,7 @@ export default function JoinSalePage() {
             })}
           </section>
         </div>
+        <SiteFooter />
       </div>
     </main>
   );

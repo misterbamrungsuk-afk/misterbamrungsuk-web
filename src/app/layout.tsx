@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   applicationName: "Mister Bamrungsuk",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "Mister Bamrungsuk", statusBarStyle: "black-translucent" },
-  icons: { icon: "/pwa-icon/192", apple: "/pwa-icon/180" },
+  icons: { icon: [{ url: "/brand/icon-48.png", sizes: "48x48" }, { url: "/brand/icon-192.png", sizes: "192x192" }], apple: "/brand/icon-180.png" },
   formatDetection: { telephone: false },
 };
 

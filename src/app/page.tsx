@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { HomeSlider } from "./home-slider";
+import { SiteFooter } from "@/components/site-footer";
 
 export const metadata = { title: "Mister Bamrungsuk — เลือกเส้นทางของคุณ" };
 
@@ -72,15 +73,7 @@ export default function MainPage() {
           <img src="/brand/spa.jpg" alt="บรรยากาศสปาพาร์ทเนอร์" className="flex-1 min-w-0 w-0 object-cover block" />
         </section>
 
-        <footer className="mx-4 mt-[18px] pt-4 pb-[22px] border-t border-[rgba(201,162,74,.45)] flex justify-between items-center">
-          <span className="inline-flex items-center gap-2">
-            <img src="/brand/logo.png" alt="" className="w-[34px] h-[34px] object-contain" />
-            <span className="font-lux font-semibold text-[21px] text-[#e8c472]">Bamrungsuk</span>
-          </span>
-          <span className="text-[11.5px] text-[#d8c8b8]">
-            ติดต่อเรา&nbsp;&nbsp;|&nbsp;&nbsp;<Link href="/join/terms" className="text-[#d8c8b8] hover:text-[#f6efe4]">เงื่อนไขการใช้งาน</Link>
-          </span>
-        </footer>
+        <SiteFooter />
       </div>
     </main>
   );
