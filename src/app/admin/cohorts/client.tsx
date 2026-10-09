@@ -9,7 +9,7 @@ const STATUS_LABEL: Record<CohortStatus, string> = { done: "อบรมเส�
 const STATUS_COLOR: Record<CohortStatus, string> = { done: "#7fd6a3", open: "#f0c75a", draft: "#ffd76a" };
 
 const GOLD_BD = "rgba(240,200,90,.38)";
-const HEAD = "'Cormorant Garamond', Kanit";
+const HEAD = "var(--font-cormorant), var(--font-kanit), serif";
 const RED_BTN: React.CSSProperties = {
   minHeight: 44, padding: "0 16px", borderRadius: 12, fontSize: 13, fontWeight: 600,
   border: "1px solid rgba(245,210,110,.85)",
@@ -76,7 +76,7 @@ export function CohortsClient({ initialCohorts, initialMembers }: { initialCohor
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 18, color: "#f6efe4", fontFamily: "'Cormorant Garamond', 'IBM Plex Sans Thai', sans-serif", fontVariantNumeric: "lining-nums" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 18, color: "#f6efe4", fontFamily: "var(--font-cormorant), var(--font-plex), sans-serif", fontVariantNumeric: "lining-nums" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
         <div>
           <div style={{ fontSize: 11, letterSpacing: 2.5, color: "#f0c75a", fontWeight: 600 }}>COHORTS</div>

@@ -131,7 +131,7 @@ export default async function MarketHome() {
 
       <div className="mx-[18px] mt-[22px] pt-4 border-t text-xs text-[#7d6d6a] leading-[1.7]" style={{ borderColor: LINE }}>
         <div className="flex flex-wrap gap-x-3.5 gap-y-1 mb-2 [&_a]:text-[#ffd76a]">
-          <Link href="/policy/returns">นโยบายคืนสินค้า</Link><Link href="/policy/shipping">การจัดส่ง</Link><Link href="/policy/privacy-shop">ความเป็นส่วนตัว</Link><Link href="/orders/track">ติดตามคำสั่งซื้อ</Link>
+          <Link href="/policy/returns">นโยบายคืนสินค้า</Link><Link href="/policy/shipping">การจัดส่ง</Link><Link href="/policy/privacy-shop">ความเป็นส่วนตัว</Link><Link href="/join/terms">ข้อกำหนดการใช้งาน</Link><Link href="/orders/track">ติดตามคำสั่งซื้อ</Link>
         </div>
         ผลิตภัณฑ์เสริมอาหารไม่มีผลในการป้องกันหรือรักษาโรค · จำหน่ายเฉพาะผู้มีอายุ 20 ปีขึ้นไป
       </div>

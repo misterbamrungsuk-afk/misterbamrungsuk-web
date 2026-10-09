@@ -70,7 +70,7 @@ export function BankForm({ mb, t, initial }: { mb: string; t: string; initial: {
             <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => setBankbook(e.target.files?.[0] ?? null)} />
           </label>
         )}
-        <div className="flex gap-3 p-4 rounded-2xl text-[13px] leading-relaxed" style={{ border: "1px solid rgba(245,210,110,.85)", background: C.s1 }}>
+        <div className="flex gap-3 p-4 rounded-2xl text-[13px] leading-[1.6]" style={{ border: "1px solid rgba(245,210,110,.85)", background: C.s1 }}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-[22px] h-[22px] shrink-0" style={{ color: C.gold }}><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z" /></svg>
           รายได้จะเข้ากระเป๋าเงินหลังจบงาน ถอนเข้าบัญชีนี้ได้ทุกเมื่อ (ขั้นต่ำ ฿300)
         </div>

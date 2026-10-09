@@ -32,7 +32,7 @@ export default async function RejectedPage({ params }: { params: Promise<{ mb: s
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: 38, height: 38 }}><path d="M12 8v5M12 16h0" /><circle cx="12" cy="12" r="9" /></svg>
         </div>
         <h1 className="font-lux text-2xl font-semibold mt-4">ต้องแก้ไขเอกสาร</h1>
-        <div className="text-sm leading-relaxed mt-2" style={{ color: C.mut }}>
+        <div className="text-sm leading-[1.6] mt-2" style={{ color: C.mut }}>
           {failed ? `เหลืออีกนิดเดียว! ส่งใหม่แค่ ${failed} รายการ ส่วนอื่นผ่านหมดแล้ว` : "ยังไม่มีรายการที่ต้องแก้ไข"}
         </div>
       </div>

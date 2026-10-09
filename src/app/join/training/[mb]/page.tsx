@@ -40,13 +40,13 @@ export default async function TrainingPage({ params }: { params: Promise<{ mb: s
           const btn = d
             ? { t: "เช็กชื่อแล้ว", bg: "rgba(60,170,110,.12)", bd: "rgba(60,170,110,.5)", fg: "#7fd6a3", sh: "none" }
             : open
-              ? { t: "เช็กชื่อที่สถานที่อบรม", bg: RED_GRAD, bd: "rgba(245,210,110,.85)", fg: "#fff", sh: "0 8px 24px rgba(255,40,70,.45)" }
+              ? { t: "เช็กชื่อ", bg: RED_GRAD, bd: "rgba(245,210,110,.85)", fg: "#fff", sh: "0 8px 24px rgba(255,40,70,.45)" }
               : { t: "ยังไม่เปิด", bg: C.s2, bd: C.ln, fg: "#7d6d6a", sh: "none" };
           return (
             <div key={s.session} className="p-3.5 rounded-2xl flex gap-3 items-center" style={{ background: C.s1, border: `1px solid ${open ? "rgba(212,175,55,.6)" : C.ln}` }}>
               <div className="w-[52px] text-center shrink-0"><div className="font-lux font-semibold text-xl" style={{ color: C.goldL }}>{s.day}</div><div className="text-[11px]" style={{ color: C.mut }}>{s.mon}</div></div>
               <div className="flex-1 flex flex-col gap-0.5 min-w-0"><span className="text-sm font-semibold">{s.title}</span><span className="text-xs" style={{ color: C.mut }}>{s.meta}</span></div>
-              <button type="button" disabled className="min-w-[88px] max-w-[110px] min-h-11 rounded-xl px-2 text-[12.5px] font-semibold leading-tight"
+              <button type="button" disabled className="min-w-[88px] min-h-11 rounded-xl px-2 text-[12.5px] font-semibold leading-tight"
                 style={{ border: `1px solid ${btn.bd}`, background: btn.bg, color: btn.fg, boxShadow: btn.sh }}>{btn.t}</button>
             </div>
           );

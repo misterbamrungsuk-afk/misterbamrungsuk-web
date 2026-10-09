@@ -13,7 +13,7 @@ import { OtpStep } from "@/components/otp-step";
 // ขั้นที่ 3 / 5 ชำระเงิน (บอร์ด JoinPay) — QR พร้อมเพย์ + แนบสลิป → /api/join/register (ตรวจ Slip2Go) → /join/kyc/[mb]
 const GOLD = "#f0c75a";
 const LINE = "rgba(240,200,90,.38)";
-const H: CSSProperties = { fontFamily: "'Cormorant Garamond', Kanit, sans-serif", fontWeight: 600 };
+const H: CSSProperties = { fontFamily: "var(--font-cormorant), var(--font-kanit), sans-serif", fontWeight: 600 };
 const SUB: Record<PackageKey, string> = { A: "(ตามความสามารถพิเศษ)", B: "(สำหรับผู้มีความสามารถด้านการนวด)" };
 const QR_TTL = 900;
 const baht = (n: number) => "฿" + n.toLocaleString("en-US");
@@ -141,7 +141,7 @@ export default function PayPage() {
 
   return (
     <div className="min-h-dvh bg-[#0e0a0a]">
-      <main className="mx-auto w-full max-w-[480px] min-h-dvh bg-[#0e0a0a] text-[#f6efe4] pb-8 overflow-x-hidden" style={{ fontFamily: "'IBM Plex Sans Thai', Kanit, sans-serif" }}>
+      <main className="mx-auto w-full max-w-[480px] min-h-dvh bg-[#0e0a0a] text-[#f6efe4] pb-8 overflow-x-hidden" style={{ fontFamily: "var(--font-cormorant), var(--font-plex), sans-serif" }}>
         <div className="flex items-center gap-3 px-4 pt-4 pb-2">
           <Link href={`/join/apply?pkg=${k}&step=2`} aria-label="ย้อนกลับ" className="shrink-0 w-11 h-11 rounded-full border border-[rgba(240,200,90,.38)] text-[#f6efe4] grid place-items-center">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6" /></svg>

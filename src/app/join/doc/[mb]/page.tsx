@@ -47,7 +47,7 @@ export default async function DocPage({ params }: { params: Promise<{ mb: string
   const h2 = "text-[13px] font-semibold tracking-[1px] text-[#8a6a1f] border-b border-[#e6d8b8] pb-1 mb-2 mt-5";
 
   return (
-    <div className="doc-root min-h-dvh bg-[#e9e4dc] py-6 px-4" style={{ fontFamily: "'IBM Plex Sans Thai', Kanit, sans-serif" }}>
+    <div className="doc-root min-h-dvh bg-[#e9e4dc] py-6 px-4" style={{ fontFamily: "var(--font-plex), Kanit, sans-serif" }}>
       <style>{`
         @page { size: A4; margin: 12mm; }
         @media print {

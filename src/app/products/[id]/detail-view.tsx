@@ -84,7 +84,7 @@ export function ProductDetailView({ p, kind, vendor, bundle, bundleAuto, related
         </div>
         <div className="flex items-baseline gap-2.5">
           <span className="font-lux font-bold text-[28px] text-[#ffd76a]">{fmt(p.price)}</span>
-          <span className="text-xs text-[#7d6d6a]">{out ? "สินค้าหมดชั่วคราว" : `คงเหลือ ${p.stock} ชิ้น`}</span>
+          <span className="text-xs text-[#7d6d6a]">{out ? "สินค้าหมดชั่วคราว" : `รวม VAT · คงเหลือ ${p.stock} ชิ้น`}</span>
         </div>
         <div className={`${card} text-[13px] leading-[1.7] text-[#d3c7bc]`} style={{ borderColor: LINE }}>
           {kind ? `${kind} · ` : ""}มี อย.<br />

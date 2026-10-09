@@ -26,14 +26,14 @@ export function AdminLoginForm({ next }: { next: string }) {
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">
-      <label className="flex flex-col gap-1.5 text-sm text-ink-300">อีเมล
-        <input type="email" required autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} className="input-dark h-12 text-ink-100" />
+      <label className="flex flex-col gap-1.5 text-sm text-[#cdbfb3]">อีเมล
+        <input type="email" required autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} className="h-12 px-4 rounded-xl border border-[rgba(240,200,90,.38)] bg-[#130e0e] text-[#f6efe4] outline-none focus:border-[#f0c75a]" />
       </label>
-      <label className="flex flex-col gap-1.5 text-sm text-ink-300">รหัสผ่าน
-        <input type="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} className="input-dark h-12 text-ink-100" />
+      <label className="flex flex-col gap-1.5 text-sm text-[#cdbfb3]">รหัสผ่าน
+        <input type="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} className="h-12 px-4 rounded-xl border border-[rgba(240,200,90,.38)] bg-[#130e0e] text-[#f6efe4] outline-none focus:border-[#f0c75a]" />
       </label>
-      {err && <p role="alert" className="text-sm text-crimson-200">{err}</p>}
-      <button type="submit" disabled={busy} className="btn-crimson h-12 rounded-2xl font-display font-semibold text-base">{busy ? "กำลังตรวจสอบ…" : "เข้าสู่ระบบ"}</button>
+      {err && <p role="alert" className="text-sm text-[#fca5a5]">{err}</p>}
+      <button type="submit" disabled={busy} className="btn-red-lux h-12 rounded-full font-semibold text-base disabled:opacity-60">{busy ? "กำลังตรวจสอบ…" : "เข้าสู่ระบบ"}</button>
     </form>
   );
 }

@@ -10,7 +10,7 @@ import { OtpStep } from "@/components/otp-step";
 // ใบสมัคร ขั้นที่ 1–2 / 5 (บอร์ด JoinForm + JoinForm2) — draft เก็บใน sessionStorage ด้วย FORM_KEY เดิม ให้ /join/pay อ่านต่อ
 const GOLD = "#f0c75a";
 const LINE = "rgba(240,200,90,.38)";
-const H: CSSProperties = { fontFamily: "'Cormorant Garamond', Kanit, sans-serif", fontWeight: 600 };
+const H: CSSProperties = { fontFamily: "var(--font-cormorant), var(--font-kanit), sans-serif", fontWeight: 600 };
 const SUB: Record<PackageKey, string> = { A: "(ตามความสามารถพิเศษ)", B: "(สำหรับผู้มีความสามารถด้านการนวด)" };
 const baht = (n: number) => "฿" + n.toLocaleString("en-US");
 const inputCls = "w-full min-w-0 h-12 rounded-[12px] border border-[rgba(240,200,90,.38)] bg-[#241717] px-3 text-[14px] text-[#f6efe4] placeholder:text-[#7d6d6a] outline-none focus:border-[#f0c75a]";
@@ -212,7 +212,7 @@ function ApplyInner() {
 
   return (
     <div className="min-h-dvh bg-[#0e0a0a]">
-      <main className="mx-auto w-full max-w-[480px] min-h-dvh bg-[#0e0a0a] text-[#f6efe4] flex flex-col" style={{ fontFamily: "'IBM Plex Sans Thai', Kanit, sans-serif" }}>
+      <main className="mx-auto w-full max-w-[480px] min-h-dvh bg-[#0e0a0a] text-[#f6efe4] flex flex-col" style={{ fontFamily: "var(--font-cormorant), var(--font-plex), var(--font-kanit), sans-serif" }}>
         <div className="flex items-center gap-3 px-4 pt-4 pb-2">
           {step === 1
             ? <Link href="/join#packages" aria-label="ย้อนกลับ" className={backBtn}>{chevron}</Link>

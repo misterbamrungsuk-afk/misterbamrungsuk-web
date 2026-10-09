@@ -72,6 +72,7 @@ export function ShopView({ vendor, products, reviews, avg, count }: { vendor: { 
           <div className="flex flex-wrap gap-2 text-[12px] text-[#cdbfb3]">
             <span>สินค้า {products.length}</span>
             {count > 0 && <><span>·</span><span>★ {avg.toFixed(1)} ({count} รีวิว)</span></>}
+            <span>·</span><span>ผู้ติดตาม [รอกำหนด]</span>
           </div>
           <div className="flex gap-2">
             <button type="button" onClick={toggleFollow} aria-pressed={follow} className={`flex-1 h-11 rounded-xl text-white font-semibold ${follow ? "" : "btn-red-lux"}`} style={follow ? { background: "#2f5e45", border: "1px solid #3f8f63" } : undefined}>{follow ? "ติดตามแล้ว ✓" : "+ ติดตามร้าน"}</button>

@@ -163,7 +163,7 @@ export function TrackView() {
           {order.status === "shipped" && <button type="button" onClick={receive} disabled={busy} className={cta} style={ctaStyle}>{busy ? "กำลังบันทึก…" : "ได้รับสินค้าแล้ว"}</button>}
           {order.status === "done" && order.items[0] && <Link href={`/products/${order.items[0].product_id}#reviews`} className={ghost} style={{ borderColor: LINE }}>เขียนรีวิวสินค้า</Link>}
           <button type="button" onClick={() => { setOrder(null); setLink(null); setErr(""); }} className={ghost} style={{ borderColor: LINE }}>ค้นหาคำสั่งซื้ออื่น</button>
-          <p className="text-[12.5px] text-[#cdbfb3]">มีปัญหากับสินค้า? <Link href="/policy/returns" className="text-[#ffd76a]">นโยบายคืนสินค้า</Link></p>
+          <p className="text-[12.5px] text-[#cdbfb3]">มีปัญหากับสินค้า? <Link href="/policy/returns" className="text-[#ffd76a]">นโยบายคืนสินค้า</Link> · ติดต่อ LINE [รอกำหนด]</p>
         </>
       )}
 

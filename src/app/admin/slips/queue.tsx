@@ -113,7 +113,7 @@ export function SlipQueue({ initial, live }: { initial: Applicant[]; live: boole
                 <button key={r.id} onClick={() => setOpen(r.id)} className={`w-full ${GRID} px-3.5 py-[11px] border-t border-[rgba(240,200,90,.25)] text-left items-center`}
                   style={{ background: open === r.id ? "rgba(240,200,90,.14)" : "transparent" }}>
                   <span className="text-[#ffd76a]">{r.mb_code}</span>
-                  <span className="min-w-0"><span className="block truncate">{r.first_name} {r.last_name}{r.nickname ? ` (${r.nickname})` : ""}</span><span className="block text-[11px] text-[#7d6d6a]">ส่ง {thTime(r.created_at, true)}</span></span>
+                  <span className="min-w-0 pr-2"><span className="block leading-snug">{r.first_name} {r.last_name}{r.nickname ? ` (${r.nickname})` : ""}</span><span className="block text-[11px] text-[#7d6d6a]">ส่ง {thTime(r.created_at, true)}</span></span>
                   <span className="text-[#d3c7bc]">แพ็กเกจ {r.package}</span>
                   <span className="tabular-nums">{fmt(r.amount)}</span>
                   <span><Pill v={verdictOf(r)} /></span>
@@ -126,7 +126,7 @@ export function SlipQueue({ initial, live }: { initial: Applicant[]; live: boole
         </div>
       </div>
 
-      <aside className="w-full lg:w-[340px] shrink-0 p-4 rounded-[18px] border border-[rgba(245,210,110,.85)] bg-[#241717] flex flex-col gap-2.5 text-[13px] lg:sticky lg:top-4 max-h-[calc(100dvh-2rem)] overflow-y-auto">
+      <aside className="w-full lg:w-[340px] shrink-0 p-4 rounded-[18px] border border-[rgba(245,210,110,.85)] bg-[#241717] flex flex-col gap-2.5 text-[13px] lg:sticky lg:top-[22px] lg:min-h-[calc(100dvh-44px)] max-h-[calc(100dvh-44px)] overflow-y-auto">
         {sel ? (
           <>
             <div className="flex justify-between items-center gap-2">

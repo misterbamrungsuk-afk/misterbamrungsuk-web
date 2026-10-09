@@ -18,7 +18,7 @@ export function HomeSlider({ slides }: { slides: string[] }) {
   if (!n) return null;
   return (
     <div className="relative overflow-hidden">
-      <div className="flex transition-transform duration-[450ms] ease-in-out" style={{ width: `${n * 100}%`, transform: `translateX(${(-100 / n) * i}%)` }}>
+      <div className="flex transition-transform duration-[450ms] ease-[ease]" style={{ width: `${n * 100}%`, transform: `translateX(${(-100 / n) * i}%)` }}>
         {SLIDES.map((s) => (
           // eslint-disable-next-line @next/next/no-img-element
           <img key={s.src} src={s.src} alt={s.alt} className="block aspect-[4/3] object-cover" style={{ width: `${100 / n}%` }} />

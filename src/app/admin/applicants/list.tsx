@@ -46,7 +46,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
 
   const shown = useMemo(() => rows.filter((r) => (pkg === "all" || r.package === pkg) && (filter === "all" || r.status === filter)), [rows, pkg, filter]);
   const [open, setOpen] = useState<string | null>(shown[0]?.id ?? null);
-  const sel = rows.find((r) => r.id === open) ?? null;
+  const sel = (shown.find((r) => r.id === open) ?? shown[0] ?? rows.find((r) => r.id === open)) ?? null;
 
   const patch = async (id: string, body: Record<string, unknown>) => {
     const res = await fetch(`/api/admin/applicants/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -124,10 +124,10 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
               const c = CRIMINAL[r.criminal_check ?? "pending"];
               return (
                 <button key={r.id} onClick={() => { setOpen(r.id); setShowDocs(false); }} className={`w-full ${GRID} px-3.5 py-[11px] border-t border-[rgba(240,200,90,.38)] text-left items-center`}
-                  style={{ background: open === r.id ? "rgba(240,200,90,.16)" : "transparent" }}>
+                  style={{ background: sel?.id === r.id ? "rgba(240,200,90,.16)" : "transparent" }}>
                   <span className="text-[#ffd76a]">{r.mb_code}</span>
                   <span className="truncate pr-2">{r.first_name} {r.last_name}{filter === "all" && r.status !== "verified" ? <span className="text-[11px] text-[#7d6d6a]"> · {LABEL[r.status]}</span> : null}</span>
-                  <span className="text-[#d3c7bc]">{r.package} · {fmt(r.amount)}</span>
+                  <span className="text-[#d3c7bc] pr-1">{r.package} · {fmt(G(r.package))} + {fmt(T(r.package))}</span>
                   <span className="text-[#d3c7bc]">{cohortName(r.cohort)}</span>
                   <span style={{ color: r.line_joined ? "#4ade80" : "#eed58a" }}>{r.line_joined ? "✓ เข้ากลุ่มแล้ว" : "ยังไม่เข้า"}</span>
                   <span style={{ color: c[1] }}>{c[0]}</span>
@@ -139,7 +139,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
         </div>
       </div>
 
-      <aside className="w-full lg:w-[300px] shrink-0 p-[18px] rounded-[18px] border border-[rgba(245,210,110,.85)] bg-[#241717] flex flex-col gap-2.5 text-[13px] lg:sticky lg:top-4 max-h-[calc(100dvh-2rem)] overflow-y-auto">
+      <aside className="w-full lg:w-[300px] shrink-0 p-[18px] rounded-[18px] border border-[rgba(245,210,110,.85)] bg-[#241717] flex flex-col gap-2.5 text-[13px] lg:sticky lg:top-[22px] lg:min-h-[calc(100dvh-44px)] max-h-[calc(100dvh-44px)] overflow-y-auto">
         {sel ? (
           <>
             <div className="flex gap-3 items-center">
