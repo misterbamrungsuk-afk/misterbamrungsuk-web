@@ -16,7 +16,7 @@ export const runtime = "nodejs";
 export async function GET(req: Request) {
   if (!(await allowed())) return new Response("unauthorized", { status: 401 });
   const path = new URL(req.url).searchParams.get("path") ?? "";
-  if (!/^[0-9a-f-]{36}\/(photo|id_card|bankbook|other_doc|cert_doc|slip|selfie)(-\d+)?\.(jpg|jpeg|png|webp)$/.test(path)) return new Response("bad path", { status: 400 });
+  if (!/^[0-9a-f-]{36}\/(photo|id_card|bankbook|other_doc|cert_doc|slip|selfie|id_copy)(-\d+)?\.(jpg|jpeg|png|webp)$/.test(path)) return new Response("bad path", { status: 400 });
   const f = await readFile(path);
   if (!f) return new Response("not found", { status: 404 });
   return new Response(new Uint8Array(f.data), { headers: { "Content-Type": f.type, "Cache-Control": "private, no-store" } });

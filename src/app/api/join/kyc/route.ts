@@ -17,14 +17,14 @@ export async function POST(req: Request) {
   const row = await getByMb(mb);
   if (!row) return bad("ไม่พบใบสมัคร", 404);
 
-  const files: { id_card?: File; selfie?: File } = {};
+  const files: { id_card?: File; selfie?: File; id_copy?: File } = {};
   const errors: string[] = [];
-  for (const k of ["id_card", "selfie"] as const) {
+  for (const k of ["id_card", "id_copy", "selfie"] as const) {
     const f = form.get(k);
     if (f instanceof File && f.size > 0) {
       if (!IMAGE_TYPES.includes(f.type) || f.size > MAX_FILE) errors.push(k);
       else files[k] = f;
-    } else if (k === "selfie" || !row.docs.id_card) errors.push(k); // บัตรมีจากใบสมัครแล้วไม่ต้องส่งซ้ำ
+    } else if (k === "selfie" || k === "id_copy" || !row.docs.id_card) errors.push(k); // บัตรมีจากใบสมัครแล้วไม่ต้องส่งซ้ำ
   }
   if (errors.length) return bad("กรุณาแนบรูป JPG/PNG/WEBP ไม่เกิน 5MB", 400, errors);
   const address = String(form.get("address") ?? "").trim().slice(0, 500) || undefined;

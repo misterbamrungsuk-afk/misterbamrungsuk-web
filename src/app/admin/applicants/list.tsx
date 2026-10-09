@@ -12,7 +12,7 @@ const LINE_BD = "rgba(240,200,90,.38)";
 const CRIMINAL: Record<CriminalCheck, [string, string]> = { pending: ["รอตรวจ", "#cdbfb3"], passed: ["ผ่าน", "#4ade80"], failed: ["ไม่ผ่าน", "#fca5a5"] };
 const LABEL: Record<ApplicantStatus, string> = { pending_slip: "รอตรวจสลิป", verified: "ชำระแล้ว", rejected: "ปฏิเสธ", refunded: "คืนเงินแล้ว" };
 const SLIP_LABEL: Record<string, [string, string]> = { ok: ["✓ ยอดตรง", "#4ade80"], acct: ["โอนเข้าบัญชีอื่น", "#fca5a5"], amt: ["ยอดไม่ตรง", "#fca5a5"], dup: ["สลิปซ้ำ", "#fca5a5"], fake: ["ไม่พบรายการ", "#fca5a5"], error: ["ตรวจไม่สำเร็จ", "#eed58a"] };
-const DOCS = [["photo", "รูปถ่าย"], ["slip", "สลิป"], ["id_card", "บัตรประชาชน"], ["selfie", "เซลฟีถือบัตร"], ["bankbook", "สมุดบัญชี"], ["cert_doc", "ใบรับรองนวด"], ["other_doc", "เอกสารอื่นๆ"]] as const;
+const DOCS = [["photo", "รูปถ่าย"], ["slip", "สลิป"], ["id_card", "บัตรประชาชน"], ["id_copy", "สำเนาบัตรเซ็นรับรอง"], ["selfie", "เซลฟีถือบัตร"], ["bankbook", "สมุดบัญชี"], ["cert_doc", "ใบรับรองนวด"], ["other_doc", "เอกสารอื่นๆ"]] as const;
 const file = (p: string) => `/api/admin/applicants/file?path=${encodeURIComponent(p)}`;
 const fmt = (n: number) => "฿" + n.toLocaleString("en-US");
 const fullName = (r: Applicant) => `${r.title}${r.first_name} ${r.last_name}`;
@@ -148,7 +148,8 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
               <div className="min-w-0"><div className="font-lux font-semibold text-[17px] truncate">{sel.first_name} {sel.last_name}</div><div className="text-[#ffd76a] text-xs">{sel.mb_code} · {sel.package} · {fmt(G(sel.package))} + {fmt(T(sel.package))}</div></div>
             </div>
             <Row k="อายุ · ส่วนสูง" v={`${ageOf(sel.birthdate) ?? "-"} ปี · ${sel.height} ซม.`} />
-            <Row k="กิจกรรม" v={sel.activities?.join(" · ") || "-"} />
+            <Row k="ความสามารถพิเศษ" v={[...(sel.talents ?? []).filter((t) => t !== "อื่น ๆ"), ...(sel.talents_other ? [`อื่น ๆ: ${sel.talents_other}`] : [])].join(" · ") || "-"} />
+            <Row k="กิจกรรม" v={[...(sel.activities ?? []).filter((t) => t !== "อื่น ๆ"), ...(sel.activities_other ? [`อื่น ๆ: ${sel.activities_other}`] : [])].join(" · ") || "-"} />
             <Row k="เวลาว่าง" v={sel.availability ? `${sel.availability.slots.join("–") || "-"} · ${sel.availability.days ?? "-"} วัน` : "-"} />
             <Row k="ยอดชำระ" v={`${fmt(sel.amount)} · ${LABEL[sel.status]}`} />
             <div className="h-px bg-[rgba(240,200,90,.38)]" />

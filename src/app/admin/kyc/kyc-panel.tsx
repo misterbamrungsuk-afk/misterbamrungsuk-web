@@ -15,6 +15,7 @@ export const KYC_LABEL: Record<KycStatus, [string, string]> = {
 
 const ITEMS = [
   { key: "id_card", label: "หน้าบัตรประชาชน" },
+  { key: "id_copy", label: "สำเนาบัตรเซ็นรับรอง" },
   { key: "selfie", label: "เซลฟีถือบัตร" },
   { key: "cert_doc", label: "ใบรับรองการนวด", onlyB: true },
   { key: "bank", label: "บัญชีรับเงิน" },
@@ -28,7 +29,7 @@ export function KycPanel({ row, onSaved }: { row: Applicant; onSaved: (row: Appl
   const [msg, setMsg] = useState("");
   const status: KycStatus = row.kyc_status ?? "none";
   const bankbook = row.bank_book_path ?? row.docs.bankbook;
-  const thumbs = ([["บัตรประชาชน", row.docs.id_card], ["เซลฟีถือบัตร", row.docs.selfie], ["สมุดบัญชี", bankbook], ...(row.package === "B" ? [["ใบรับรองนวด", row.docs.cert_doc]] : [])] as [string, string | undefined | null][]);
+  const thumbs = ([["บัตรประชาชน", row.docs.id_card], ["สำเนาบัตรเซ็นรับรอง", row.docs.id_copy], ["เซลฟีถือบัตร", row.docs.selfie], ["สมุดบัญชี", bankbook], ...(row.package === "B" || row.docs.cert_doc ? [["ใบรับรองนวด", row.docs.cert_doc]] : [])] as [string, string | undefined | null][]);
   const items = ITEMS.filter((i) => !("onlyB" in i) || row.package === "B");
 
   const send = async (body: Record<string, unknown>) => {

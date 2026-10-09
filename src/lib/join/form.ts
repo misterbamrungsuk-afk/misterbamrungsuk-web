@@ -48,6 +48,10 @@ export interface JoinForm {
   cert_doc: string;
   /** ความสามารถพิเศษ (TALENTS) — บังคับ ≥1 */
   talents: string[];
+  /** ระบุเมื่อเลือก "อื่น ๆ" ใน talents (≤100) */
+  talents_other: string;
+  /** ระบุเมื่อเลือก "อื่น ๆ" ใน activities (≤100) */
+  activities_other: string;
   /** ช่วงเวลาที่สะดวก (TIME_SLOTS) */
   avail_slots: string[];
   avail_days: string; // 1–7 วัน/สัปดาห์
@@ -68,7 +72,7 @@ export const emptyForm: JoinForm = {
   nationality: "ไทย", ethnicity: "ไทย", religion: "", education: "", marital: "", start_date: "",
   tel: "", line_id: "", email: "", address: "", zipcode: "", bank: "", bank_account: "", bank_account_name: "",
   experience: "", skills: [], intro: "", photo: "", id_card: "", bankbook: "", other_doc: "", accept_terms: false, consent_pdpa: false, consent_criminal: false, consent_marketing: false,
-  activities: [], talents: [], massage_cert: "", cert_doc: "", avail_slots: [], avail_days: "", avail_hours: "", ack_hours: false, ack_no_refuse: false,
+  activities: [], talents: [], talents_other: "", activities_other: "", massage_cert: "", cert_doc: "", avail_slots: [], avail_days: "", avail_hours: "", ack_hours: false, ack_no_refuse: false,
 };
 
 /** อายุเต็มปีจากวันเกิด */

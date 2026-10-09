@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ACTIVITIES, ACK_NO_REFUSE_TEXT, AGE_LIMITS, EXPERIENCE, PACKAGES, TALENTS, TIME_SLOTS, ageError, type PackageKey } from "@/lib/join/config";
+import { ACTIVITIES, ACK_NO_REFUSE_TEXT, AGE_LIMITS, EXPERIENCE, OTHER_MAX, OTHER_OPTION, PACKAGES, TALENTS, TIME_SLOTS, ageError, type PackageKey } from "@/lib/join/config";
 import { FORM_KEY, ageFrom, emptyForm, resizeImage, type FileField, type JoinForm } from "@/lib/join/form";
 import { OtpStep } from "@/components/otp-step";
 
@@ -143,9 +143,12 @@ function ApplyInner() {
   const onFile = async (k: FileField, file?: File) => {
     if (!file) return;
     if (!file.type.startsWith("image/")) return setErrs((e) => ({ ...e, [k]: "รับเฉพาะไฟล์รูปภาพ (JPG/PNG)" }));
-    set(k, await resizeImage(file, k === "id_card" ? 1400 : 1000));
+    if (file.size > 5 * 1024 * 1024) return setErrs((e) => ({ ...e, [k]: "ไฟล์ต้องไม่เกิน 5MB" }));
+    set(k, await resizeImage(file, k === "id_card" || k === "cert_doc" ? 1400 : 1000));
   };
 
+  const talentOther = (f.talents ?? []).includes(OTHER_OPTION);
+  const activityOther = (f.activities ?? []).includes(OTHER_OPTION);
   const v1 = () => {
     const e: Record<string, string> = {};
     if (!f.first_name.trim()) e.first_name = "กรอกชื่อ";
@@ -168,8 +171,11 @@ function ApplyInner() {
   const v2 = () => {
     const e: Record<string, string> = {};
     if (!f.talents?.length) e.talents = "เลือกความสามารถพิเศษอย่างน้อย 1 ข้อ";
+    if (talentOther && !f.talents_other.trim()) e.talents_other = "ระบุความสามารถอื่น ๆ";
     if (!f.activities?.length) e.activities = "เลือกอย่างน้อย 1 กิจกรรม";
+    if (activityOther && !f.activities_other.trim()) e.activities_other = "ระบุกิจกรรมอื่น ๆ";
     if (pkgKey === "B" && !f.massage_cert) e.massage_cert = "ระบุว่ามีใบรับรองการนวดหรือไม่";
+    if (f.massage_cert === "yes" && !f.cert_doc) e.cert_doc = "แนบรูปใบรับรองการนวด";
     if (!f.avail_slots?.length) e.avail_slots = "เลือกช่วงเวลาที่สะดวกอย่างน้อย 1 ช่วง";
     if (!(+f.avail_days >= 1 && +f.avail_days <= 7)) e.avail_days = "1–7 วัน";
     if (!(+f.avail_hours >= 1 && +f.avail_hours <= 24)) e.avail_hours = "ระบุชั่วโมงต่อวัน";
@@ -194,7 +200,8 @@ function ApplyInner() {
     router.push("/join/pay");
   };
 
-  const ok2 = step === 2 && !!f.talents?.length && !!f.activities?.length && !!f.avail_slots?.length && f.ack_hours && f.ack_no_refuse && f.consent_pdpa && (pkgKey !== "B" || !!f.massage_cert);
+  const ok2 = step === 2 && !!f.talents?.length && !!f.activities?.length && !!f.avail_slots?.length && f.ack_hours && f.ack_no_refuse && f.consent_pdpa && (pkgKey !== "B" || !!f.massage_cert)
+    && (!talentOther || !!f.talents_other.trim()) && (!activityOther || !!f.activities_other.trim()) && (f.massage_cert !== "yes" || !!f.cert_doc);
   const blocked = step === 1 ? !phoneOk : !ok2;
   const ctaLabel = step === 1 ? (phoneOk ? "ถัดไป · กิจกรรมและเวลา" : "ยืนยันเบอร์โทรด้วย OTP ก่อน") : ok2 ? "ถัดไป · ชำระเงิน →" : "กรอกข้อมูลให้ครบก่อนไปต่อ";
   const ack3 = f.consent_criminal && f.consent_pdpa;
@@ -289,10 +296,20 @@ function ApplyInner() {
               <div className={sectionH} style={H}>ความสามารถพิเศษ <span className="text-[11.5px] text-[#cdbfb3] font-normal">(เลือกได้หลายข้อ · บังคับ)</span></div>
               <div className="flex flex-wrap gap-2">{TALENTS.map((a) => <Chip key={a} label={a} on={(f.talents ?? []).includes(a)} onClick={() => tog("talents", a)} />)}</div>
               <Err msg={errs.talents} />
+              {talentOther && (
+                <Field label="ระบุความสามารถอื่น ๆ" err={errs.talents_other}>
+                  <input className={inputCls} maxLength={OTHER_MAX} placeholder="เช่น เต้น, แต่งหน้า" value={f.talents_other ?? ""} onChange={(e) => set("talents_other", e.target.value.slice(0, OTHER_MAX))} />
+                </Field>
+              )}
 
               <div className={sectionH} style={H}>กิจกรรมที่รับได้</div>
               <div className="flex flex-wrap gap-2">{ACTIVITIES.map((a) => <Chip key={a} label={a} on={(f.activities ?? []).includes(a)} onClick={() => tog("activities", a)} />)}</div>
               <Err msg={errs.activities} />
+              {activityOther && (
+                <Field label="ระบุกิจกรรมอื่น ๆ" err={errs.activities_other}>
+                  <input className={inputCls} maxLength={OTHER_MAX} placeholder="เช่น ช้อปปิ้ง, คาราโอเกะ" value={f.activities_other ?? ""} onChange={(e) => set("activities_other", e.target.value.slice(0, OTHER_MAX))} />
+                </Field>
+              )}
 
               <div className="p-4 rounded-[16px] border border-[rgba(240,200,90,.38)] bg-[#241717] text-[13px] flex justify-between items-center gap-3">
                 <span className="min-w-0">ใบรับรองการนวด (สำหรับผู้สมัครสายนวด)</span>
@@ -304,6 +321,15 @@ function ApplyInner() {
                 </span>
               </div>
               <Err msg={errs.massage_cert} />
+              {f.massage_cert === "yes" && (
+                <div className="flex flex-col gap-2">
+                  <span className={labelCls}>รูปใบรับรองการนวด (JPG/PNG/WEBP ไม่เกิน 5MB · บังคับ)</span>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Tile label="ใบรับรองการนวด" value={f.cert_doc} onPick={(file) => onFile("cert_doc", file)} />
+                  </div>
+                  <Err msg={errs.cert_doc} />
+                </div>
+              )}
 
               <div className={sectionH} style={H}>เวลาที่สะดวกรับลูกค้า (วันไหน สัปดาห์ละกี่วัน วันละกี่ชั่วโมง)</div>
               <div className="grid grid-cols-4 gap-2">

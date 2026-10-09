@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ACTIVITIES, CLOSE_AT, ageError, EXPERIENCE, PACKAGES, QUOTA, STRENGTHS, TALENTS, TIME_SLOTS, TITLES, type PackageKey } from "@/lib/join/config";
+import { ACTIVITIES, CLOSE_AT, ageError, EXPERIENCE, OTHER_MAX, OTHER_OPTION, PACKAGES, QUOTA, STRENGTHS, TALENTS, TIME_SLOTS, TITLES, type PackageKey } from "@/lib/join/config";
 import { countActive, createApplicant, updateApplicant, type DocKind } from "@/lib/join/store";
 import { appendToSheet } from "@/lib/join/sheets";
 import { applicantRegistered, sendAll } from "@/lib/email";
@@ -58,6 +58,8 @@ export async function POST(req: Request) {
   const method = s("payment_method");
   const activities = form.getAll("activities").map(String).filter((x) => oneOf(ACTIVITIES, x));
   const talents = form.getAll("talents").map(String).filter((x) => oneOf(TALENTS, x));
+  const talentsOther = talents.includes(OTHER_OPTION) ? s("talents_other", OTHER_MAX) : "";
+  const activitiesOther = activities.includes(OTHER_OPTION) ? s("activities_other", OTHER_MAX) : "";
   const slots = form.getAll("avail_slots").map(String).filter((x) => oneOf(TIME_SLOTS, x));
   const days = Number(s("avail_days"));
   const hoursPerDay = Number(s("avail_hours"));
@@ -89,6 +91,8 @@ export async function POST(req: Request) {
   // ข้อมูล Part-Time
   if (!activities.length) errors.push("activities");
   if (!talents.length) errors.push("talents");
+  if (talents.includes(OTHER_OPTION) && !talentsOther) errors.push("talents_other");
+  if (activities.includes(OTHER_OPTION) && !activitiesOther) errors.push("activities_other");
   if (!slots.length) errors.push("avail_slots");
   if (!(Number.isInteger(days) && days >= 1 && days <= 7)) errors.push("avail_days");
   if (!(hoursPerDay >= 1 && hoursPerDay <= 24)) errors.push("avail_hours");
@@ -102,7 +106,7 @@ export async function POST(req: Request) {
     if (f instanceof File && f.size > 0) {
       if (!IMAGE_TYPES.includes(f.type) || f.size > MAX_FILE) errors.push(k);
       else files[k] = f;
-    } else if (REQUIRED_DOCS.includes(k)) errors.push(k);
+    } else if (REQUIRED_DOCS.includes(k) || (k === "cert_doc" && cert === "yes")) errors.push(k);
   }
   if (errors.length) return NextResponse.json({ ok: false, error: "กรอกข้อมูลไม่ครบหรือไม่ถูกต้อง", fields: errors }, { status: 400 });
 
@@ -127,7 +131,7 @@ export async function POST(req: Request) {
         experience: s("experience"), skills, intro: s("intro", 1000),
         consent_marketing: s("consent_marketing") === "true",
         consent_criminal: true,
-        activities, talents, massage_cert: pkg === "B" ? cert === "yes" : null,
+        activities, talents, talents_other: talentsOther, activities_other: activitiesOther, massage_cert: pkg === "B" ? cert === "yes" : null,
         availability: { slots, days, hours: hoursPerDay },
         ack_hours: true, ack_no_refuse: true,
         phone_verified_at: verifiedPhone && verifiedPhone === normalizePhone(tel) ? new Date().toISOString() : null,

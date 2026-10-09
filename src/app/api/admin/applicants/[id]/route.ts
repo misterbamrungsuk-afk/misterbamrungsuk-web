@@ -14,7 +14,7 @@ async function role(): Promise<AdminRole | null> {
 export const runtime = "nodejs";
 
 const STATUSES: ApplicantStatus[] = ["pending_slip", "verified", "rejected", "refunded"];
-const KYC_ITEMS = ["id_card", "selfie", "cert_doc", "bank"] as const;
+const KYC_ITEMS = ["id_card", "id_copy", "selfie", "cert_doc", "bank"] as const;
 
 type Body = {
   status?: ApplicantStatus; sync?: boolean; cohort?: string | null; line_joined?: boolean;

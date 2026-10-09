@@ -92,7 +92,10 @@ export const COHORTS = [
 ] as const;
 
 /** กิจกรรมที่ทำได้ */
-export const ACTIVITIES = ["กิน & เที่ยว", "ช่างภาพ", "ออกกำลัง", "คาเฟ่", "วิดีโอคอล", "ดูหนัง", "นั่งชิล"] as const;
+export const ACTIVITIES = ["กิน & เที่ยว", "ช่างภาพ", "ออกกำลัง", "คาเฟ่", "วิดีโอคอล", "ดูหนัง", "นั่งชิล", "อื่น ๆ"] as const;
+/** ตัวเลือก "อื่น ๆ" ใน TALENTS/ACTIVITIES → ต้องระบุข้อความเพิ่ม (≤ OTHER_MAX ตัวอักษร) */
+export const OTHER_OPTION = "อื่น ๆ";
+export const OTHER_MAX = 100;
 /** ช่วงเวลาที่สะดวก */
 export const TIME_SLOTS = ["เช้า", "บ่าย", "เย็น", "ดึก"] as const;
 

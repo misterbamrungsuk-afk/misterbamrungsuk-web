@@ -87,6 +87,12 @@ export default async function DonePage({ params }: { params: Promise<{ mb: strin
           {PACKAGES[row.package].name}: {fees.map((f) => `${f.name} ${baht(f.amount)}`).join(" + ")} = {baht(total)} · เงินประกัน Refundable – คืนเมื่อครบ 1 ปี หากไม่ผิดกฎ
         </div>
 
+        <div className="rounded-2xl p-4 flex flex-col gap-3 min-w-0" style={{ background: C.s1, border: `1px solid ${C.ln}` }}>
+          <div className="font-lux font-semibold text-[15px]" style={{ color: C.gold }}>เอกสารการสมัคร</div>
+          <p className="text-[13px] leading-relaxed" style={{ color: C.mut }}>ใบยืนยันการสมัครพร้อมรหัส {row.mb_code} รายละเอียดแพ็กเกจ ยอดชำระ และกลุ่มอบรม — บันทึกเป็น PDF หรือพิมพ์เก็บไว้ได้</p>
+          <a href={`/join/doc/${row.mb_code}`} target="_blank" rel="noopener" className="btn-gold-lux h-12 rounded-[14px] grid place-items-center text-sm font-semibold">ดาวน์โหลดใบยืนยันการสมัคร (PDF)</a>
+        </div>
+
         <section className="rounded-2xl p-4 mt-2" style={{ background: C.s1, border: `1px solid ${C.ln}` }}>
           <p className="font-lux font-semibold" style={{ color: C.gold }}>สัญญาการเข้าร่วมโครงการ</p>
           <div className="mt-3 max-h-72 overflow-y-auto pr-1 space-y-3 text-sm leading-relaxed" style={{ color: C.mut }}>

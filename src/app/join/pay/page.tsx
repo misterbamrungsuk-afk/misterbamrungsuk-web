@@ -104,7 +104,7 @@ export default function PayPage() {
       fd.append("consent_marketing", String(consent_marketing));
       fd.append("payment_method", method);
       fd.append("turnstile", ts);
-      const files = { photo, id_card, bankbook, other_doc, cert_doc };
+      const files = { photo, id_card, bankbook, other_doc, cert_doc: rest.massage_cert === "yes" ? cert_doc : "" };
       for (const key of FILE_FIELDS) if (files[key]) fd.append(key, await dataUrlToFile(files[key], `${key}.jpg`));
       fd.append("slip", await dataUrlToFile(slip, "slip.jpg"));
       const res = await fetch("/api/join/register", { method: "POST", body: fd });
