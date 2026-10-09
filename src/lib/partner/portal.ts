@@ -15,10 +15,12 @@ const demo: Demo = (g.__mbPartnerPortal ??= { listings: new Map(), purchases: []
 // ── ไฟล์ ──
 export const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 export const MAX_FILE = 5 * 1024 * 1024;
-const extOf = (f: File) => (f.type === "image/png" ? "png" : f.type === "image/webp" ? "webp" : "jpg");
+/** เอกสาร QC รับ PDF ด้วย */
+export const QC_TYPES = [...IMAGE_TYPES, "application/pdf"];
+const extOf = (f: File) => (f.type === "image/png" ? "png" : f.type === "image/webp" ? "webp" : f.type === "application/pdf" ? "pdf" : "jpg");
 
-/** kind: slips | listing → path `${pid}/${kind}/${uuid}.ext` */
-export async function putPartnerFile(pid: string, kind: "slips" | "listing", file: File): Promise<string> {
+/** kind: slips | listing | qc → path `${pid}/${kind}/${uuid}.ext` */
+export async function putPartnerFile(pid: string, kind: "slips" | "listing" | "qc", file: File): Promise<string> {
   const path = `${pid}/${kind}/${crypto.randomUUID()}.${extOf(file)}`;
   const data = Buffer.from(await file.arrayBuffer());
   if (isDemo) demo.files.set(path, { type: file.type, data });
@@ -36,7 +38,7 @@ export async function readPartnerFile(path: string): Promise<DemoFile | null> {
   return { type: data.type, data: Buffer.from(await data.arrayBuffer()) };
 }
 
-export const PATH_RE = /^([0-9a-f-]{36})\/(slips|listing)\/[0-9a-f-]{36}\.(jpg|png|webp)$/;
+export const PATH_RE = /^([0-9a-f-]{36})\/(slips|listing|qc)\/[0-9a-f-]{36}\.(jpg|png|webp|pdf)$/;
 
 // ── หน้าร้าน ──
 export const emptyListing = (pid: string): Listing => ({

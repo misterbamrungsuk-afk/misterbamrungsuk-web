@@ -1,7 +1,7 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { PARTNER_PACKAGES, type PartnerPackageKey } from "./config";
-import { PARTNER_STATUSES, QC_STATES, type PartnerQc, type PartnerStatus } from "./status";
+import { PARTNER_STATUSES, QC_STATES, type PartnerQc, type PartnerStatus, type QcDocs, type QcStatus } from "./status";
 import type { AccountStatus, ClipStatus } from "./portal-types";
 
 export { PARTNER_STATUSES, QC_STATES, type PartnerQc, type PartnerStatus };
@@ -38,8 +38,12 @@ export interface Partner extends PartnerInput {
   clip_status?: ClipStatus | null;
   clip_note?: string | null;
   platform_pct?: number | null;
+  /** คอลัมน์จาก migration 0005_qc */
+  qc_slot?: string | null;
+  qc_docs?: QcDocs | null;
+  qc_status?: QcStatus | null;
 }
-export type PartnerPatch = Partial<Pick<Partner, "status" | "qc" | "package" | "starts_at" | "ends_at" | "amount" | "notes" | "password_hash" | "account_status" | "clip_status" | "clip_note" | "platform_pct">>;
+export type PartnerPatch = Partial<Pick<Partner, "status" | "qc" | "package" | "starts_at" | "ends_at" | "amount" | "notes" | "password_hash" | "account_status" | "clip_status" | "clip_note" | "platform_pct" | "qc_slot" | "qc_docs" | "qc_status">>;
 
 export const isDemo = !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY;
 let sb: SupabaseClient | null = null;

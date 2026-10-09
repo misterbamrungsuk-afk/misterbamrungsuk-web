@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { PACKAGE_KEYS, type PartnerPackageKey } from "@/lib/partner/config";
 import { PARTNER_STATUSES, QC_STATES, endDateFor, listPartners, updatePartner, type PartnerPatch, type PartnerQc, type PartnerStatus } from "@/lib/partner/store";
 import { allowed } from "../guard";
+import type { QcStatus } from "@/lib/partner/status";
 import { ACCOUNT_STATUSES, CLIP_STATUSES, type AccountStatus, type ClipStatus } from "@/lib/partner/portal-types";
 
 export const runtime = "nodejs";
@@ -60,6 +61,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       if (!Number.isFinite(n) || n < 0 || n > 100) return fail("platform_pct");
       patch.platform_pct = Math.round(n * 100) / 100;
     }
+  }
+  // นัด QC (migration 0005_qc) — passed/failed ซิงก์คอลัมน์ qc เดิมด้วย
+  if (b.qc_status !== undefined) {
+    if (b.qc_status !== null && !["booked", "passed", "failed"].includes(String(b.qc_status))) return fail("qc_status");
+    patch.qc_status = (b.qc_status || null) as QcStatus | null;
+    if (b.qc_status === "passed" || b.qc_status === "failed") patch.qc = b.qc_status;
   }
   if (b.notes !== undefined) patch.notes = typeof b.notes === "string" ? b.notes.slice(0, 2000) : null;
   if (!Object.keys(patch).length) return fail("empty");

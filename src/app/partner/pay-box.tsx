@@ -1,23 +1,32 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { BANK } from "@/lib/join/config";
 import { resizeImage, dataUrlToFile } from "@/lib/join/form";
 import { promptPayPayload } from "@/lib/join/promptpay";
-import { PARTNER_PACKAGES, baht, type PartnerPackageKey } from "@/lib/partner/config";
+import { BOOKING_COMMISSION, PARTNER_PACKAGES, baht, type PartnerPackageKey } from "@/lib/partner/config";
 
-// ชำระค่าแพ็กเกจพาร์ทเนอร์: QR พร้อมเพย์ฝังยอด (เหมือน /join/pay) / โอนผ่านบัญชี + แนบสลิป
+// ชำระค่าแพ็กเกจพาร์ทเนอร์: QR พร้อมเพย์ฝังยอด (หมดอายุ 15 นาที กดสร้างใหม่ได้) + แนบสลิป — ตามบอร์ด PartnerPay.dc.html
 // token = ผู้สมัครใหม่ (ยังไม่ล็อกอิน); ไม่มี token = ใช้เซสชันพาร์ทเนอร์
-export function PartnerPayBox({ pkg, token, onDone }: { pkg: PartnerPackageKey; token?: string; onDone: (invoice: string) => void }) {
+// requireAgree = แสดงช่องยอมรับเงื่อนไข (หน้าสมัคร) · showAmount = แสดงยอดชำระในกล่อง (พอร์ทัล)
+const QR_TTL = 15 * 60;
+const LINE = "rgba(240,200,90,.38)";
+
+export function PartnerPayBox({ pkg, token, onDone, requireAgree = false, showAmount = true }: {
+  pkg: PartnerPackageKey; token?: string; onDone: (invoice: string) => void; requireAgree?: boolean; showAmount?: boolean;
+}) {
   const price = PARTNER_PACKAGES[pkg].price;
-  const hasQr = !!BANK.qrImage || !!promptPayPayload(BANK.promptPayId, 1);
-  const [method, setMethod] = useState<"qr" | "transfer">(hasQr ? "qr" : "transfer");
   const [qr, setQr] = useState("");
+  const [sec, setSec] = useState(QR_TTL);
   const [slip, setSlip] = useState("");
+  const [slipName, setSlipName] = useState("");
+  const [agree, setAgree] = useState(!requireAgree);
   const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [slipErr, setSlipErr] = useState("");
 
   useEffect(() => {
     setQr("");
@@ -26,7 +35,18 @@ export function PartnerPayBox({ pkg, token, onDone }: { pkg: PartnerPackageKey; 
     if (payload) QRCode.toDataURL(payload, { margin: 1, width: 480, errorCorrectionLevel: "M" }).then(setQr).catch(() => setQr(""));
   }, [price]);
 
-  if (price == null) return <p className="text-sm text-ink-300">แพ็กเกจ {PARTNER_PACKAGES[pkg].label} กรุณาติดต่อทีมงานเพื่อเสนอราคา</p>;
+  useEffect(() => {
+    const t = setInterval(() => setSec((s) => (s > 0 ? s - 1 : 0)), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  if (price == null) return <p className="text-sm text-[#cdbfb3]">แพ็กเกจ {PARTNER_PACKAGES[pkg].label} กรุณาติดต่อทีมงานเพื่อเสนอราคา</p>;
+
+  const hasQr = !!qr || !!BANK.qrImage;
+  const expired = sec === 0;
+  const mm = String(Math.floor(sec / 60)).padStart(2, "0");
+  const ss = String(sec % 60).padStart(2, "0");
+  const ok = !!slip && agree && !busy;
 
   const copy = async () => {
     try {
@@ -36,90 +56,103 @@ export function PartnerPayBox({ pkg, token, onDone }: { pkg: PartnerPackageKey; 
     } catch {}
   };
   const onSlip = async (file?: File) => {
+    setSlipErr("");
     setErr("");
     if (!file) return;
-    if (!file.type.startsWith("image/")) return setErr("รับเฉพาะไฟล์รูปภาพ (JPG/PNG)");
+    if (!file.type.startsWith("image/")) return setSlipErr("รับเฉพาะไฟล์รูปภาพ (JPG/PNG)");
+    setSlipName(file.name);
     setSlip(await resizeImage(file, 1400, 0.85));
   };
   const submit = async () => {
-    if (!slip) return setErr("แนบสลิปการโอนก่อน");
+    if (!slip) return setSlipErr("แนบสลิปการโอนก่อน");
+    if (!agree) return setErr("กรุณายอมรับเงื่อนไขพาร์ทเนอร์");
     setBusy(true);
     setErr("");
+    setSlipErr("");
     try {
       const fd = new FormData();
       fd.append("package", pkg);
-      fd.append("method", method);
+      fd.append("method", hasQr ? "qr" : "transfer");
       if (token) fd.append("token", token);
       fd.append("slip", await dataUrlToFile(slip, "slip.jpg"));
       const res = await fetch("/api/partner/purchase", { method: "POST", body: fd });
-      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; invoice_no?: string };
-      if (!res.ok || !data.ok) throw new Error(data.error || "ส่งข้อมูลไม่สำเร็จ");
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; invoice_no?: string; fields?: string[] };
+      if (!res.ok || !data.ok) {
+        const msg = data.error || "ส่งข้อมูลไม่สำเร็จ";
+        if (data.fields?.includes("slip")) setSlipErr(msg); else setErr(msg);
+        return;
+      }
       onDone(data.invoice_no ?? "");
     } catch (e) {
-      setErr((e as Error).message);
+      setErr((e as Error).message || "เชื่อมต่อไม่ได้ กรุณาลองใหม่");
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-baseline">
-        <span className="text-sm text-ink-300">ยอดชำระ · {PARTNER_PACKAGES[pkg].label}</span>
-        <span className="font-display text-3xl font-bold text-gold-300">฿{baht(price)}</span>
-      </div>
+    <div className="flex flex-col gap-3.5">
+      {showAmount && (
+        <div className="flex items-baseline justify-between gap-4">
+          <span className="text-[13px] text-[#cdbfb3]">ยอดชำระ · {PARTNER_PACKAGES[pkg].label}</span>
+          <span className="font-lux text-[24px] font-semibold text-[#f0c75a]">฿{baht(price)}</span>
+        </div>
+      )}
 
-      <div className={`grid gap-2 mt-4 ${hasQr ? "grid-cols-2" : "grid-cols-1"}`} role="radiogroup" aria-label="ช่องทางชำระ">
-        {(hasQr ? ([["qr", "สแกน QR Code"], ["transfer", "โอนผ่านบัญชี"]] as const) : ([["transfer", "โอนผ่านบัญชี"]] as const)).map(([k, l]) => (
-          <button key={k} type="button" role="radio" aria-checked={method === k} onClick={() => setMethod(k)}
-            className={`min-h-12 rounded-full border text-sm font-medium ${method === k ? "border-gold-500 bg-gold-500/10 text-gold-300" : "border-ink-600"}`}>{l}</button>
-        ))}
-      </div>
-
-      <div className="rounded-3xl border border-ink-600 bg-ink-800/60 p-5 mt-3">
-        {method === "qr" ? (
-          <div className="flex flex-col items-center">
-            <div className="w-full max-w-[260px] rounded-3xl bg-white overflow-hidden text-[#1a1206]">
-              <div className="bg-[#113566] text-white text-center py-2.5 text-[13px] font-semibold tracking-wide">THAI QR PAYMENT · พร้อมเพย์</div>
-              <div className="p-4 flex flex-col items-center">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                {qr ? <img src={qr} alt={`QR พร้อมเพย์ ยอด ${price} บาท`} className="w-full aspect-square" />
-                  // eslint-disable-next-line @next/next/no-img-element
-                  : BANK.qrImage ? <img src={BANK.qrImage} alt="QR ชำระเงิน" className="w-full aspect-square" />
-                  : <div className="w-full aspect-square grid place-items-center text-sm text-ink-400">กำลังสร้าง QR…</div>}
-                <p className="text-[13px] mt-2 font-medium">{BANK.accountName}</p>
-                <p className="font-display text-2xl font-bold mt-1">฿{price.toLocaleString("th-TH", { minimumFractionDigits: 2 })}</p>
-              </div>
+      <div className="flex w-full min-w-0 flex-col items-center gap-2 rounded-[18px] border border-[rgba(245,210,110,.85)] bg-[#241717] p-4">
+        {hasQr ? (
+          <>
+            <div className="flex w-full flex-wrap justify-between gap-2 text-[12px]">
+              <span className="font-semibold text-[#ffd76a]">PromptPay</span>
+              <span className="text-[#cdbfb3]">QR หมดอายุใน <b className="font-lux text-[14px]" style={{ color: sec < 120 ? "#ef6b7b" : "#ffd76a" }}>{mm}:{ss}</b></span>
             </div>
-            <p className="text-[13px] text-ink-300 mt-3 text-center leading-relaxed">สแกนด้วยแอปธนาคารใดก็ได้ ยอดเงินขึ้นให้อัตโนมัติ<br />แล้วแคปสลิปมาแนบด้านล่าง</p>
-          </div>
+            <div className="rounded-xl bg-white p-2.5" style={{ opacity: expired ? 0.2 : 1 }}>
+              <img src={qr || BANK.qrImage} alt={`QR พร้อมเพย์ ยอด ${price} บาท`} className="block h-[175px] w-[175px]" />
+            </div>
+            <div className="text-center text-[12px] text-[#cdbfb3] [overflow-wrap:anywhere]">{BANK.accountName} · บัญชีรับเงิน {BANK.accountNo}</div>
+            {expired && (
+              <button type="button" onClick={() => setSec(QR_TTL)} className="h-12 w-full rounded-[14px] border bg-[#241717] text-[14px] font-semibold text-[#ffd76a]" style={{ borderColor: LINE }}>สร้าง QR ใหม่</button>
+            )}
+          </>
         ) : (
-          <div className="flex flex-col gap-2 text-sm">
-            <div className="flex justify-between gap-3"><span className="text-ink-300">ธนาคาร</span><span className="text-right">{BANK.bank}</span></div>
-            <div className="flex justify-between gap-3"><span className="text-ink-300">ชื่อบัญชี</span><span className="text-right">{BANK.accountName}</span></div>
-            <div className="flex items-center justify-between gap-3 mt-2 rounded-2xl bg-ink-900/60 px-4 py-3">
-              <span className="font-display text-xl tracking-wider">{BANK.accountNo}</span>
-              <button type="button" onClick={copy} className="btn-ghost h-10 px-4 text-sm shrink-0">{copied ? "✓ คัดลอกแล้ว" : "คัดลอก"}</button>
+          <div className="flex w-full flex-col gap-2 text-[13px]">
+            <div className="flex justify-between gap-3"><span className="text-[#cdbfb3]">ธนาคาร</span><span className="text-right">{BANK.bank}</span></div>
+            <div className="flex justify-between gap-3"><span className="text-[#cdbfb3]">ชื่อบัญชี</span><span className="text-right">{BANK.accountName}</span></div>
+            <div className="mt-1 flex items-center justify-between gap-3 rounded-xl bg-[#130e0e] px-3.5 py-3">
+              <span className="font-lux text-[18px] tracking-wider">{BANK.accountNo}</span>
+              <button type="button" onClick={copy} className="h-10 shrink-0 rounded-[12px] border px-3.5 text-[13px] text-[#ffd76a]" style={{ borderColor: LINE }}>{copied ? "✓ คัดลอกแล้ว" : "คัดลอก"}</button>
             </div>
           </div>
         )}
       </div>
 
-      <p className="text-sm text-ink-300 mt-5 mb-2">แนบหลักฐานการโอนเงิน (สลิป)</p>
-      <label className="flex items-center gap-4 rounded-3xl border border-dashed border-ink-500 p-4 cursor-pointer hover:border-gold-500">
-        {slip
-          // eslint-disable-next-line @next/next/no-img-element
-          ? <img src={slip} alt="สลิปที่แนบ" className="w-20 h-28 rounded-xl object-cover" />
-          : <span className="w-20 h-28 rounded-xl bg-ink-800 grid place-items-center text-ink-400 text-3xl">+</span>}
-        <span className="text-sm text-ink-300">{slip ? "แตะเพื่อเปลี่ยนสลิป" : "แตะเพื่อเลือกรูปสลิป"}</span>
-        <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => onSlip(e.target.files?.[0])} />
-      </label>
+      <div>
+        <p className="m-0 mb-1.5 text-[12px] text-[#cdbfb3]">อัปโหลดสลิปการโอน</p>
+        <label className="flex min-h-[84px] w-full cursor-pointer items-center justify-center gap-2.5 rounded-[14px] bg-[#241717] px-3 text-[13px]"
+          style={{ border: `1.5px dashed ${slipErr ? "#ef6b7b" : slip ? "#4cc283" : LINE}`, color: slip ? "#7fd6a3" : "#cdbfb3" }}>
+          {slip
+            ? <img src={slip} alt="สลิปที่แนบ" className="h-16 w-12 shrink-0 rounded-md object-cover" />
+            : <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M12 16V4M7 9l5-5 5 5" /><path d="M4 16v4h16v-4" /></svg>}
+          <span className="min-w-0 [overflow-wrap:anywhere]">{slip ? `${slipName || "slip.jpg"} · แตะเพื่อเปลี่ยน` : "แตะเพื่อแนบรูปสลิป (JPG/PNG)"}</span>
+          <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => onSlip(e.target.files?.[0])} />
+        </label>
+        {slipErr && <p role="alert" className="m-0 mt-2 text-[12.5px] leading-[1.5] text-[#ef6b7b]">{slipErr}</p>}
+      </div>
 
-      {err && <p role="alert" className="text-sm text-crimson-300 mt-4">{err}</p>}
-      <button type="button" onClick={submit} disabled={busy} className="btn-crimson w-full h-14 mt-5 font-display font-semibold text-lg">
-        {busy ? "กำลังส่งข้อมูล…" : "ยืนยันการชำระเงิน"}
+      {requireAgree && (
+        <button type="button" role="checkbox" aria-checked={agree} onClick={() => setAgree((a) => !a)}
+          className="flex w-full min-w-0 items-start gap-2.5 border-0 bg-transparent px-0 py-1 text-left text-[13px] leading-[1.5] text-[#f6efe4]">
+          <span className="grid h-[22px] w-[22px] shrink-0 place-items-center rounded-md text-[14px] font-bold text-[#0e0a0a]"
+            style={{ border: `1.5px solid ${agree ? "#f0c75a" : "#5a4a4d"}`, background: agree ? "#f0c75a" : "transparent" }}>{agree ? "✓" : ""}</span>
+          <span className="min-w-0">ยอมรับเงื่อนไขพาร์ทเนอร์ (QC มาตรฐานเดียวกับบำรุงสุข · หัก {BOOKING_COMMISSION}% ต่อ booking)</span>
+        </button>
+      )}
+
+      {err && <p role="alert" className="m-0 text-[13px] text-[#ef6b7b]">{err}</p>}
+      <button type="button" onClick={submit} disabled={!ok}
+        className="btn-red-lux font-lux h-[52px] w-full rounded-[14px] text-[15px] font-semibold text-white" style={{ opacity: ok ? 1 : 0.45 }}>
+        {busy ? "กำลังส่งข้อมูล…" : "ยืนยันการชำระ · ส่งสลิป"}
       </button>
-      <p className="text-xs text-ink-400 text-center mt-3">ทีมงานตรวจสลิปภายใน 24 ชม.</p>
     </div>
   );
 }

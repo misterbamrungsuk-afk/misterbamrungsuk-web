@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Card, Pill } from "../admin-nav";
 import { PACKAGE_KEYS, PARTNER_PACKAGES, baht, type PartnerPackageKey } from "@/lib/partner/config";
 import { ACCOUNT_LABEL, ACCOUNT_STATUSES, CLIP_LABEL, CLIP_STATUSES, PURCHASE_LABEL, fileUrl, type AccountStatus, type ClipStatus, type Purchase } from "@/lib/partner/portal-types";
-import { PARTNER_STATUSES, QC_LABEL, QC_STATES, STATUS_LABEL, daysLeft, type PartnerQc, type PartnerStatus } from "@/lib/partner/status";
+import { PARTNER_STATUSES, QC_LABEL, QC_STATES, STATUS_LABEL, daysLeft, QC_DOC_DEFS, qcSlotLabel, type PartnerQc, type PartnerStatus, type QcDocs, type QcStatus } from "@/lib/partner/status";
 
 // ชนิดฝั่ง client (ตรงกับ Partner ใน store.ts — store เป็น server-only)
 export type PartnerRow = {
@@ -12,6 +12,7 @@ export type PartnerRow = {
   line_id: string; links: string; package: PartnerPackageKey; message: string; status: PartnerStatus; qc: PartnerQc;
   starts_at: string | null; ends_at: string | null; amount: number; notes: string | null; created_at: string;
   account_status?: AccountStatus; clip_status?: ClipStatus | null; clip_note?: string | null; platform_pct?: number | null; has_login?: boolean;
+  qc_slot?: string | null; qc_docs?: QcDocs | null; qc_status?: QcStatus | null;
 };
 
 const TONE: Record<PartnerStatus, "gold" | "red" | "muted" | "green"> = {
@@ -177,6 +178,8 @@ function Detail({ p, purchases, onClose, onSaved, onPurchase }: { p: PartnerRow;
       </dl>
       {p.message && <p className="mt-3 text-sm rounded-xl bg-ink-700 p-3 whitespace-pre-wrap">{p.message}</p>}
 
+      <QcBox p={p} onSaved={(r) => { onSaved(r); setQc(r.qc); }} />
+
       <div className="mt-4 grid grid-cols-2 gap-3">
         <div>
           <label className={lab}>สถานะ</label>
@@ -259,5 +262,49 @@ function Detail({ p, purchases, onClose, onSaved, onPurchase }: { p: PartnerRow;
         )}
       </div>
     </Card>
+  );
+}
+
+/** นัด QC สถานที่ที่พาร์ทเนอร์จองจาก /partner/qc + เอกสาร + ปุ่มผ่าน/ไม่ผ่าน (migration 0005_qc) */
+function QcBox({ p, onSaved }: { p: PartnerRow; onSaved: (r: PartnerRow) => void }) {
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+  const mark = async (qc_status: QcStatus) => {
+    setBusy(true);
+    setMsg("");
+    try {
+      const res = await fetch(`/api/admin/partners/${p.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ qc_status }) });
+      const out = (await res.json().catch(() => ({}))) as { ok?: boolean; row?: PartnerRow; error?: string };
+      if (out.ok && out.row) { onSaved(out.row); setMsg(qc_status === "passed" ? "บันทึก: ผ่าน QC" : "บันทึก: ไม่ผ่าน QC"); }
+      else setMsg(`บันทึกไม่สำเร็จ ${out.error ?? ""}`);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const st = p.qc_status;
+  return (
+    <div className="mt-4 rounded-xl bg-ink-700/60 p-3 text-sm">
+      <div className="flex justify-between gap-2 items-center">
+        <span className="font-semibold">นัด QC สถานที่</span>
+        <Pill tone={st === "passed" ? "green" : st === "failed" ? "red" : st === "booked" ? "gold" : "muted"}>{st === "passed" ? "ผ่าน" : st === "failed" ? "ไม่ผ่าน" : st === "booked" ? "นัดแล้ว" : "ยังไม่นัด"}</Pill>
+      </div>
+      <p className="text-xs text-ink-300 mt-1">{p.qc_slot ? `วัน-เวลา ${qcSlotLabel(p.qc_slot)} (${new Date(p.qc_slot).toLocaleDateString("th-TH", { weekday: "short", year: "2-digit", month: "short", day: "numeric", timeZone: "Asia/Bangkok" })})` : "พาร์ทเนอร์ยังไม่เลือกวันนัด"}</p>
+      <ul className="mt-2 space-y-1 text-xs">
+        {QC_DOC_DEFS.map((d) => {
+          const list = p.qc_docs?.[d.key] ?? [];
+          return (
+            <li key={d.key} className="flex flex-wrap gap-x-2">
+              <span className="text-ink-300">{d.label}:</span>
+              {list.length ? list.map((path, i) => <a key={path} href={fileUrl(path)} target="_blank" rel="noopener noreferrer" className="text-gold-300 underline">ไฟล์ {i + 1}</a>) : <span className="text-ink-300">—</span>}
+            </li>
+          );
+        })}
+      </ul>
+      <div className="grid grid-cols-2 gap-2 mt-2">
+        <button disabled={busy} onClick={() => mark("failed")} className="chip h-9 justify-center">ไม่ผ่าน QC</button>
+        <button disabled={busy} onClick={() => mark("passed")} className="chip chip-red h-9 justify-center">ผ่าน QC</button>
+      </div>
+      {msg && <p className="mt-1 text-xs text-ink-300">{msg}</p>}
+    </div>
   );
 }

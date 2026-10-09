@@ -3,7 +3,8 @@ import { clientIp, rateLimited } from "@/lib/customer/auth";
 import { PACKAGE_KEYS, PARTNER_PACKAGES, type PartnerPackageKey } from "@/lib/partner/config";
 import { currentPartner, verifyApplyToken } from "@/lib/partner/auth";
 import { IMAGE_TYPES, MAX_FILE, createPurchase, putPartnerFile } from "@/lib/partner/portal";
-import { getPartner } from "@/lib/partner/store";
+import { db, getPartner, isDemo } from "@/lib/partner/store";
+import { verifySlip } from "@/lib/slip2go";
 import { notifyPurchase } from "@/lib/partner/notify";
 
 export const runtime = "nodejs";
@@ -30,9 +31,19 @@ export async function POST(req: Request) {
   if (!(slip instanceof File) || !slip.size) return bad("แนบสลิปการโอนก่อน");
   if (!IMAGE_TYPES.includes(slip.type) || slip.size > MAX_FILE) return bad("สลิปต้องเป็นรูป JPG/PNG/WEBP ไม่เกิน 5MB");
 
+  // ตรวจสลิปผ่าน Slip2Go (ไม่มี secret → null ข้าม) — ปฏิเสธสลิปซ้ำ / โอนผิดบัญชี (ข้อความเดียวกับ /api/join/register)
+  const slipCheck = await verifySlip(slip, PARTNER_PACKAGES[pkg].price!);
+  if (slipCheck?.verdict === "dup") return NextResponse.json({ ok: false, error: "สลิปนี้เคยถูกใช้แล้ว กรุณาแนบสลิปของการโอนครั้งนี้", fields: ["slip"] }, { status: 400 });
+  if (slipCheck?.verdict === "acct") return NextResponse.json({ ok: false, error: "สลิปนี้โอนเข้าบัญชีที่ไม่ใช่ของ Mister Bamrungsuk กรุณาโอนผ่าน QR ในหน้านี้ แล้วแนบสลิปใหม่", fields: ["slip"] }, { status: 400 });
+
   try {
     const path = await putPartnerFile(partner.id, "slips", slip);
     const row = await createPurchase(partner.id, pkg, path);
+    // เก็บผลตรวจแยก (คอลัมน์จาก supabase/partner/0004_slip_check.sql) — ยังไม่รัน migration ก็ไม่ทำให้การซื้อล้ม
+    if (slipCheck && !isDemo) {
+      const { error } = await db().from("partner_purchases").update({ slip_check: slipCheck }).eq("id", row.id);
+      if (error) console.error("partner slip_check save", error.message);
+    }
     void notifyPurchase(partner, row);
     return NextResponse.json({ ok: true, invoice_no: row.invoice_no });
   } catch (e) {

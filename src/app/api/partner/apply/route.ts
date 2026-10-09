@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PACKAGE_KEYS, PARTNER_TYPES, type PartnerPackageKey } from "@/lib/partner/config";
+import { PACKAGE_KEYS, PARTNER_APPLY_TYPES, PARTNER_TYPES, type PartnerPackageKey } from "@/lib/partner/config";
 import { createPartner } from "@/lib/partner/store";
 import { notifyAdmin, syncPartnerSheet } from "@/lib/partner/notify";
 import { signApplyToken } from "@/lib/partner/auth";
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     message: str(b.message, 1000),
   };
   if (!input.business_name) return bad("กรอกชื่อธุรกิจ");
-  if (!(PARTNER_TYPES as readonly string[]).includes(input.type)) return bad("เลือกประเภทธุรกิจ");
+  if (!([...PARTNER_TYPES, ...PARTNER_APPLY_TYPES] as readonly string[]).includes(input.type)) return bad("เลือกประเภทธุรกิจ");
   if (!input.province) return bad("กรอกจังหวัด/พื้นที่");
   if (!input.contact_name) return bad("กรอกชื่อผู้ติดต่อ");
   if (!/^\+?\d{9,15}$/.test(input.tel)) return bad("เบอร์โทรไม่ถูกต้อง");

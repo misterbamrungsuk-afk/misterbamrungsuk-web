@@ -4,6 +4,8 @@
 // ─────────────────────────────────────────────────────────────
 
 export const PARTNER_TYPES = ["สปา", "โรงแรม", "นวดเพื่อสุขภาพ", "เวลเนส", "อื่นๆ"] as const;
+/** ประเภทธุรกิจในฟอร์มสมัคร /partner (ตามบอร์ดดีไซน์) — API สมัครรับได้ทั้งชุดนี้และ PARTNER_TYPES เดิม */
+export const PARTNER_APPLY_TYPES = ["เดย์สปา", "สปาเพื่อสุขภาพ", "ร้านนวดเพื่อสุขภาพ", "สปาในโรงแรม", "โรงแรม"] as const;
 
 /** แพ็กเกจพื้นที่โปรโมท — price = null แปลว่า "ติดต่อทีมงาน" (เจ้าของแก้ราคาได้) */
 export const PARTNER_PACKAGES = {
@@ -15,7 +17,7 @@ export const PACKAGE_KEYS = Object.keys(PARTNER_PACKAGES) as PartnerPackageKey[]
 
 /** ได้ทุกแพ็กเกจ */
 export const PACKAGE_INCLUDES = [
-  "คลิปโปรโมท 1 คลิป / แพ็กเกจ ลง IG & FB ของมาดามกอ",
+  "คลิปโปรโมท 1 คลิป / แพ็กเกจ ลง IG & FB ของแบรนด์",
   "การสุ่ม QC มาตรฐาน",
   "โปรโมทผ่านแพลตฟอร์ม",
 ];
