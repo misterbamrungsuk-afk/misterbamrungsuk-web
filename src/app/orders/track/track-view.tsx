@@ -127,11 +127,11 @@ export function TrackView() {
             <input value={no} onChange={(e) => setNo(e.target.value.toUpperCase())} placeholder="เช่น MK261007-0123" className={`${fi} tracking-wider`} style={{ borderColor: no ? "#5a4a3a" : LINE }} />
           </label>
           <div className={`${fl} ${otpSkin}`}>เบอร์มือถือที่ใช้สั่ง
-            {verified ? <p className="!text-[#7fd6a3] text-[13px]">✓ ยืนยันเบอร์ {phone} แล้ว</p> : <OtpStep phone={phone} onPhone={setPhone} verified={verified} onVerified={() => { setVerified(true); loadMine(); }} inputCls={`${fi} flex-1`} />}
+            {verified ? <p className="!text-[#7fd6a3] text-[13px]">✓ ยืนยันเบอร์ {phone} แล้ว</p> : <OtpStep phone={phone} onPhone={setPhone} verified={verified} onVerified={() => { setVerified(true); loadMine(); }} inputCls={`${fi} flex-1 border-[rgba(240,200,90,.38)]`} />}
           </div>
           {err && <p role="alert" className="text-[13px] text-[#ef8a97]">{err}</p>}
           <button type="button" onClick={lookup} disabled={busy} className={cta} style={{ ...ctaStyle, opacity: no.trim() && verified ? 1 : 0.45 }}>{searchLabel}</button>
-          <p className="text-xs text-[#7d6d6a]">ลืมเลขคำสั่งซื้อ? ดูได้ใน SMS ยืนยัน หรือแท็บ “คำสั่งซื้อของฉัน”</p>
+          <p className="text-xs text-[#7d6d6a]">ลืมเลขคำสั่งซื้อ? ดูได้ใน SMS ยืนยัน หรือแท็บ "คำสั่งซื้อของฉัน"</p>
         </>
       )}
 
@@ -171,7 +171,7 @@ export function TrackView() {
         !verified ? (
           <>
             <p className="text-[12.5px] text-[#cdbfb3] leading-relaxed">ยืนยันเบอร์ที่ใช้สั่งซื้อด้วย OTP เพื่อดูคำสั่งซื้อทั้งหมดของเบอร์นี้</p>
-            <div className={otpSkin}><OtpStep phone={phone} onPhone={setPhone} verified={verified} onVerified={() => { setVerified(true); loadMine(); }} inputCls={`${fi} flex-1`} /></div>
+            <div className={otpSkin}><OtpStep phone={phone} onPhone={setPhone} verified={verified} onVerified={() => { setVerified(true); loadMine(); }} inputCls={`${fi} flex-1 border-[rgba(240,200,90,.38)]`} /></div>
           </>
         ) : (
           <>

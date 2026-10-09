@@ -190,7 +190,7 @@ export function ProductDetailView({ p, kind, vendor, bundle, bundleAuto, related
             </div>
           </>
         )}
-        <div className="text-xs text-[#7d6d6a]"><Link href="/policy/returns" className="text-[#ffd76a]">นโยบายคืนสินค้า</Link> · <Link href="/policy/shipping" className="text-[#ffd76a]">การจัดส่ง</Link></div>
+        <div className="text-xs text-[#7d6d6a]"><Link href="/policy/returns" className="text-[#ffd76a]">นโยบายคืนสินค้าและการจัดส่ง</Link></div>
       </div>
 
       {added && <Link href="/cart" role="status" className="fixed z-40 left-1/2 -translate-x-1/2 bottom-24 w-[calc(min(100vw,480px)-36px)] px-3.5 py-3 rounded-xl bg-[#21191a] border border-[#3f8f63] text-[#7fd6a3] text-[13px]">{added} · ไปที่ตะกร้า →</Link>}

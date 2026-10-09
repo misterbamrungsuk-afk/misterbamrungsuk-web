@@ -70,7 +70,7 @@ export function OtpStep({ phone, onPhone, verified, onVerified, inputCls }: {
       <div className="flex gap-2">
         <input type="tel" inputMode="tel" autoComplete="tel" placeholder="เบอร์มือถือ 08x-xxx-xxxx" value={phone} onChange={(e) => { onPhone(e.target.value); setSent(false); }} className={inputCls} />
         <button type="button" onClick={send} disabled={!phoneOk || busy || cool > 0} className="h-12 shrink-0 px-4 rounded-2xl border border-gold-500 text-[#8f5e00] font-semibold text-sm disabled:opacity-50">
-          {cool > 0 ? `${cool} วิ` : sent ? "ส่งใหม่" : "ขอรหัส"}
+          {cool > 0 ? `${cool} วิ` : sent ? "ส่งอีกครั้ง" : "ขอ OTP"}
         </button>
       </div>
       {!sent && <Turnstile key={tsKey} onToken={setTs} />}

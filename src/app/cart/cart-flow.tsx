@@ -177,7 +177,7 @@ export function CartFlow() {
                 <label className={fl}>ที่อยู่<input className={fi} style={bdOf(address)} value={address} onChange={(e) => setAddress(e.target.value)} autoComplete="street-address" placeholder="บ้านเลขที่ ซอย ถนน แขวง" /></label>
                 <label className={fl}>เขต · จังหวัด · รหัสไปรษณีย์<input className={fi} style={bdOf(area)} value={area} onChange={(e) => setArea(e.target.value)} autoComplete="address-level2" placeholder="เขต · จังหวัด · รหัสไปรษณีย์" /></label>
                 <div className={`${fl} ${otpSkin}`}>เบอร์มือถือ (รับ OTP)
-                  {verified ? <p className="!text-[#7fd6a3] text-[13px]">✓ ยืนยันเบอร์ {phone} แล้ว</p> : <OtpStep phone={phone} onPhone={setPhone} verified={verified} onVerified={() => setVerified(true)} inputCls={`${fi} flex-1`} />}
+                  {verified ? <p className="!text-[#7fd6a3] text-[13px]">✓ ยืนยันเบอร์ {phone} แล้ว</p> : <OtpStep phone={phone} onPhone={setPhone} verified={verified} onVerified={() => setVerified(true)} inputCls={`${fi} flex-1 border-[rgba(240,200,90,.38)]`} />}
                 </div>
                 <button type="button" role="checkbox" aria-checked={age} onClick={() => setAge(!age)} className="flex gap-2.5 items-start text-left text-[#d3c7bc] text-[13px] py-1.5 min-h-11">
                   <span className="w-[22px] h-[22px] shrink-0 rounded-md border-[1.5px] grid place-items-center text-white text-sm" style={{ borderColor: age ? "#b0182c" : "#5a4a3a", background: age ? "#b0182c" : "transparent" }}>{age ? "✓" : ""}</span>
@@ -194,7 +194,7 @@ export function CartFlow() {
                 </div>
                 <div className="flex gap-2.5 items-center px-3 py-2.5 rounded-[14px] bg-[#1d1712] border border-[rgba(227,195,92,.35)] text-xs text-[#d3c7bc] leading-normal">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffd76a" strokeWidth="1.6" className="shrink-0" aria-hidden><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z" /><path d="M3 7.5 12 12l9-4.5M12 12v9" /></svg>
-                  <span><b className="text-[#ffd76a]">แพ็กมิดชิด</b> · กล่องสีพื้น ไม่ระบุชื่อสินค้าหรือชื่อร้านบนหน้ากล่อง</span>
+                  <span><b className="text-[#ffd76a]">แพ็กมิดชิด</b> · กล่องสีพื้น ไม่ระบุชื่อสินค้าหรือชื่อร้านบนหน้ากล่อง · ชื่อผู้ส่งบนใบปะหน้า: [รอกำหนด]</span>
                 </div>
                 <div className="rounded-[14px] border border-[#b0182c]/50 bg-[#b0182c]/5 px-3 py-2.5 text-[11.5px] text-[#cdbfb3] leading-relaxed">{GENERAL_WARNING}</div>
                 <div className={`${card} text-[13px] flex flex-col gap-1.5`} style={{ borderColor: LINE }}>
@@ -252,10 +252,10 @@ export function CartFlow() {
       {step === "done" && (
         <div className="px-6 py-10 flex flex-col items-center text-center gap-3">
           <div className="w-[84px] h-[84px] rounded-full border-2 border-[#f0c75a] grid place-items-center text-[#ffd76a]"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="m5 12 5 5 9-10" /></svg></div>
-          <h2 className="font-lux text-2xl">ได้รับคำสั่งซื้อแล้ว</h2>
+          <h2 className="font-lux font-bold text-2xl">ได้รับคำสั่งซื้อแล้ว</h2>
           <div className="text-[13px] text-[#cdbfb3]">เลขคำสั่งซื้อ</div>
           <div className="font-lux text-[22px] tracking-[1px] text-[#ffd76a]">{placed?.order_no}</div>
-          <p className="text-[13px] text-[#d3c7bc] leading-[1.7]">สถานะ: รอตรวจสลิป · เมื่อยืนยันแล้วจะส่งเลขพัสดุไปที่เบอร์ {placed?.phone || phone}<br /><span className="text-[#cdbfb3]">แพ็กมิดชิด · ดูสถานะได้ที่ “ติดตามคำสั่งซื้อ” ด้วยเลขนี้ + เบอร์มือถือ</span></p>
+          <p className="text-[13px] text-[#d3c7bc] leading-[1.7]">สถานะ: รอตรวจสลิป · เมื่อยืนยันแล้วจะส่งเลขพัสดุไปที่เบอร์ {placed?.phone || phone}<br /><span className="text-[#cdbfb3]">แพ็กมิดชิด · ดูสถานะได้ที่ "ติดตามคำสั่งซื้อ" ด้วยเลขนี้ + เบอร์มือถือ</span></p>
           <Link href={placed?.track || "/orders/track"} className={`${cta} mt-4`} style={ctaStyle}>ติดตามคำสั่งซื้อ</Link>
           <Link href="/market" className="w-full h-[52px] rounded-[14px] border bg-[#241717] text-[#ffd76a] font-lux font-semibold grid place-items-center" style={{ borderColor: "rgba(245,210,110,.85)" }}>กลับหน้า Marketplace</Link>
           <Link href="/home" className="text-[13px] p-3 text-[#ffd76a]">ไปหาเพื่อนกิน เพื่อนเที่ยว →</Link>

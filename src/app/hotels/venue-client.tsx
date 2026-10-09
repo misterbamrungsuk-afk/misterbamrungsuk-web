@@ -119,7 +119,8 @@ export function VenueDetailView({ v }: { v: VenueFull }) {
   const router = useRouter();
   const hotel = v.type === "โรงแรม";
   const noun = hotel ? "โรงแรม" : "สปา";
-  const unit = hotel ? " /คืน" : "";
+  // ราคาห้องค้างคืนแสดง "/คืน" ตามบอร์ด — ห้องรายชั่วโมงไม่ต่อท้าย
+  const unitOf = (s: { desc: string }) => (hotel && s.desc === "ค้างคืน" ? " /คืน" : "");
   const [g, setG] = useState(0);
   const [fav, setFav] = useState(false);
   const [svc, setSvc] = useState(0);
@@ -199,7 +200,7 @@ export function VenueDetailView({ v }: { v: VenueFull }) {
                     <span className="flex-1 min-w-0"><span className="block font-semibold text-[14px]">{s.name}</span><span className="block text-[12px] text-[#cdbfb3]">{s.desc}</span></span>
                     <span className="text-right">
                       {s.price < s.base && <span className="block text-[11px] text-[#7d6d6a] line-through">{fmt(s.base)}</span>}
-                      <span className="font-lux font-semibold text-[#ffd76a]">{fmt(s.price)}{unit}</span>
+                      <span className="font-lux font-semibold text-[#ffd76a]">{fmt(s.price)}{unitOf(s)}</span>
                     </span>
                   </button>
                 );
@@ -220,7 +221,7 @@ export function VenueDetailView({ v }: { v: VenueFull }) {
 
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] px-[18px] pt-3 pb-[22px] bg-[#0e0a0a] flex gap-2.5 z-20" style={{ borderTop: `1px solid ${BD}` }}>
         <button type="button" onClick={() => setSheet(true)} className="basis-[132px] shrink-0 h-[52px] rounded-[14px] bg-[#241717] text-[#ffd76a] font-lux font-semibold text-[15px]" style={{ border: "1px solid #f0c75a" }}>ติดต่อ/จอง</button>
-        <button type="button" onClick={meet} className="btn-red-lux flex-1 h-[52px] rounded-[14px] font-lux text-[15px]">นัดเพื่อนที่นี่</button>
+        <button type="button" onClick={meet} className="btn-red-lux flex-1 h-[52px] rounded-[14px] font-lux font-semibold text-white text-[15px]">นัดเพื่อนที่นี่</button>
       </div>
 
       {sheet && (
@@ -230,11 +231,11 @@ export function VenueDetailView({ v }: { v: VenueFull }) {
               <div className="font-lux font-semibold text-[17px] min-w-0">ติดต่อ/จอง · {v.name}</div>
               <button type="button" onClick={() => setSheet(false)} aria-label="ปิด" className="w-11 h-11 shrink-0 rounded-full bg-[#21191a] text-[#f6efe4]" style={{ border: `1px solid ${BD}` }}>✕</button>
             </div>
-            {sv && <div className="text-[12.5px] text-[#cdbfb3]">เลือก: <span className="text-[#f6efe4]">{sv.name}</span> · {fmt(sv.price)}{unit}</div>}
+            {sv && <div className="text-[12.5px] text-[#cdbfb3]">เลือก: <span className="text-[#f6efe4]">{sv.name}</span> · {fmt(sv.price)}{unitOf(sv)}</div>}
             <div className="flex flex-col gap-[5px] text-[12px] text-[#cdbfb3]">วันที่ต้องการ
               <div className={HROW} role="group" aria-label="เลือกวันที่">{dates.map((d) => <button key={d} type="button" onClick={() => setDate(d)} aria-pressed={date === d} className={CHIP} style={chipStyle(date === d)}>{d}</button>)}</div>
             </div>
-            <button type="button" onClick={sendReq} className="btn-red-lux h-[52px] rounded-[14px] font-lux text-[15px] w-full" style={{ opacity: canReq ? 1 : 0.45 }}>
+            <button type="button" onClick={sendReq} className="btn-red-lux h-[52px] rounded-[14px] font-lux font-semibold text-white text-[15px] w-full" style={{ opacity: canReq ? 1 : 0.45 }}>
               {date ? `ส่งคำขอจอง · ${date}` : "เลือกวันที่ก่อน"}
             </button>
             <div className="flex gap-2">

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { MAX_QTY } from "@/lib/market/config";
 import { readCart, writeCart, useCart } from "../../products/market-ui";
 import { Back } from "../../hotels/venue-client";
+import { Bottle, glowOf } from "../../products/m-kit";
 
 type P = { id: string; name: string; price: number; stock: number; img: string; kind: string };
 type R = { id: string; stars: number; text: string; who: string; item: string; at: string };
@@ -16,7 +17,6 @@ const ago = (iso: string) => {
   const d = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
   return d < 1 ? "วันนี้" : d < 7 ? `${d} วันก่อน` : d < 30 ? `${Math.floor(d / 7)} สัปดาห์ก่อน` : `${Math.floor(d / 30)} เดือนก่อน`;
 };
-const FALLBACK = ["/brand/venue.jpg", "/brand/hotel1.jpg", "/brand/hotel2.jpg"];
 const DOCS = (n: number) => [
   ["ทะเบียนพาณิชย์", "✓ ตรวจแล้ว · เลข [รอกำหนด]", "#7fd6a3"],
   ["ใบอนุญาตนำเข้าอาหาร", "✓ ตรวจแล้ว · เลข [รอกำหนด]", "#7fd6a3"],
@@ -84,13 +84,13 @@ export function ShopView({ vendor, products, reviews, avg, count }: { vendor: { 
 
           {tab === "products" && (products.length ? (
             <div className="grid grid-cols-2 gap-2.5">
-              {products.map((p, i) => {
+              {products.map((p) => {
                 const qn = cart.find((l) => l.id === p.id)?.qty ?? 0;
                 return (
                   <div key={p.id} className="lux-card rounded-2xl bg-[#241717] overflow-hidden flex flex-col" style={{ border: `1px solid ${BD}` }}>
-                    <Link href={`/products/${p.id}`} aria-label={p.name} className="relative h-[130px] block bg-[#140f0f]">
+                    <Link href={`/products/${p.id}`} aria-label={p.name} className="relative h-[130px] grid place-items-center overflow-hidden" style={{ background: `radial-gradient(circle at 50% 40%, ${glowOf(p.id)[1]}, #140f0f 70%)` }}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={p.img || FALLBACK[i % 3]} alt="" className="w-full h-full object-cover" />
+                      {p.img ? <img src={p.img} alt="" className="w-full h-full object-cover" /> : <Bottle id={p.id} w={60} h={96} />}
                       <span className="absolute top-2 left-2 px-[7px] py-0.5 rounded-full bg-[#0e0a0a] text-[#7fd6a3] text-[10.5px] font-semibold" style={{ border: "1px solid #3f8f63" }}>มี อย.</span>
                     </Link>
                     <div className="p-2.5 flex flex-col gap-1 flex-1">

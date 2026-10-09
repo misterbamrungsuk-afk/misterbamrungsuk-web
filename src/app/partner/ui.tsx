@@ -2,7 +2,7 @@ import type { TimelineStep } from "@/lib/partner/status";
 
 // ชิ้นส่วนร่วมของหน้าพาร์ทเนอร์ตามบอร์ด (PartnerDone / PartnerQC / PartnerLogin)
 export const BD = "border-[rgba(240,200,90,.38)]";
-export const CARD = `rounded-2xl bg-[#241717] border ${BD} p-4 min-w-0 [overflow-wrap:anywhere]`;
+export const CARD = `rounded-2xl bg-[#241717] border ${BD} p-3.5 min-w-0 [overflow-wrap:anywhere]`;
 export const CTA = "btn-red-lux font-lux h-[52px] rounded-[14px] w-full text-[15px] grid place-items-center disabled:opacity-45";
 export const GHOST = `h-12 rounded-[14px] border ${BD} bg-[#241717] text-[#ffd76a] text-sm font-semibold w-full`;
 

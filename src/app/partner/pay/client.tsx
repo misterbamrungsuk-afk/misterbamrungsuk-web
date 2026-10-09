@@ -7,7 +7,7 @@ import { PartnerPayBox } from "../pay-box";
 
 // หน้าชำระแพ็กเกจหลังสมัคร — ตามบอร์ด PartnerPay.dc.html (เลือกแพ็กเกจ → สรุปยอด → QR + สลิป → รอตรวจ)
 const LINE = "rgba(240,200,90,.38)";
-const PERKS = ["คลิปโปรโมท 1 คลิปลง IG & FB ของแบรนด์", "สุ่ม QC มาตรฐาน", "โปรโมทผ่านแพลตฟอร์ม Mister Bamrungsuk", "ป้าย “ทำงานร่วมกับ Mister Bamrungsuk”"];
+const PERKS = ["คลิปโปรโมท 1 คลิปลง IG & FB ของแบรนด์", "สุ่ม QC มาตรฐาน", "โปรโมทผ่านแพลตฟอร์ม Mister Bamrungsuk", 'ป้าย "ทำงานร่วมกับ Mister Bamrungsuk"'];
 const NEXT = ["QC สถานที่", "ทำสัญญา", "ถ่ายคลิป", "เปิดแสดงบนแพลตฟอร์ม"];
 const price = (k: PartnerPackageKey) => { const p = PARTNER_PACKAGES[k].price; return p == null ? "ติดต่อทีมงาน" : `฿${baht(p)}`; };
 
