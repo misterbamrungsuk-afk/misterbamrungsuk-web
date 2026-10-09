@@ -40,9 +40,9 @@ export function JoinSalePage({ poster }: { poster: string }) {
     <main className="min-h-dvh bg-[#0e0a0a]">
       <div className="mb-page font-lux-body relative mx-auto w-full max-w-[480px] overflow-hidden pb-6">
         <header className="flex justify-between items-center px-4 py-3" style={{ background: "linear-gradient(180deg, #050303, #0e0a0a)" }}>
-          <Link href="/" className="inline-flex items-center gap-2 font-lux font-semibold text-[16px] no-underline">
+          <Link href="/" className="inline-flex items-center gap-2 font-lux font-semibold text-[20px] no-underline">
             <img src="/brand/logo.png" alt="Mister Bamrungsuk" className="w-10 h-10 object-contain" />
-            <span className="text-[#f0c75a]">Mister Bamrungsuk</span>
+            <span className="text-[#e8c472]">Mister Bamrungsuk</span>
           </Link>
           <span className="px-3 py-[5px] rounded-full border border-[#f0c75a] text-[10px] tracking-[2.5px] text-[#ffd76a]">PREMIUM</span>
         </header>

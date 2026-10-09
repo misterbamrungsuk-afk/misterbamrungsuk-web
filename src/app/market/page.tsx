@@ -44,7 +44,7 @@ export default async function MarketHome() {
         <img src={hero} alt="" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(14,10,10,.35) 0%, rgba(14,10,10,.6) 55%, #0e0a0a 100%)" }} />
         <div className="relative flex justify-between items-center px-[18px] py-4">
-          <Link href="/" className="flex items-center gap-2.5"><img src="/brand/logo.png" alt="Mister Bamrungsuk" className="w-[46px] h-[46px] object-contain" /><span className="font-lux font-semibold text-base text-[#f0c75a]">Mister Bamrungsuk</span></Link>
+          <Link href="/" className="flex items-center gap-2.5"><img src="/brand/logo.png" alt="Mister Bamrungsuk" className="w-[46px] h-[46px] object-contain" /><span className="font-lux font-semibold text-[20px] text-[#e8c472]">Mister Bamrungsuk</span></Link>
           <div className="flex gap-2">
             <Link href="/orders/track" aria-label="ติดตามคำสั่งซื้อ" className={circle}><BoxIcon /></Link>
             <Link href="/cart" aria-label="ตะกร้าสินค้า" className={circle}><CartIcon /><CartCount /></Link>
