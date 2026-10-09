@@ -7,8 +7,12 @@ export const runtime = "nodejs";
 // ตรวจรหัส OTP — สำเร็จแล้วตั้ง cookie ยืนยันเบอร์ (30 นาที) ให้ขั้นสมัครใช้
 export async function POST(req: Request) {
   if (rateLimited(`otpv:${clientIp(req)}`, 20, 15 * 60_000)) return NextResponse.json({ ok: false, error: "ลองบ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
-  const b = (await req.json().catch(() => ({}))) as { phone?: string; code?: string };
+  const b = (await req.json().catch(() => ({}))) as { phone?: string; code?: string; skip?: boolean };
   const phone = normalizePhone(String(b.phone ?? ""));
+  // ยังไม่มีระบบ SMS บนเว็บจริง → ยืนยันเบอร์แบบไม่ใช้รหัส (ใช้ได้เฉพาะตอน otpRequired() = false)
+  const skip = b.skip === true && !otpRequired();
+  if (skip && !phone) return NextResponse.json({ ok: false, error: "เบอร์มือถือไม่ถูกต้อง (10 หลัก ขึ้นต้น 06/08/09)" }, { status: 400 });
+  if (!skip) {
   const code = String(b.code ?? "").replace(/\D/g, "");
   if (!phone || code.length !== 6) return NextResponse.json({ ok: false, error: "กรอกรหัส 6 หลัก" }, { status: 400 });
   try {
@@ -17,6 +21,7 @@ export async function POST(req: Request) {
   } catch (e) {
     console.error("otp verify", e);
     return NextResponse.json({ ok: false, error: "ระบบขัดข้อง กรุณาลองใหม่" }, { status: 500 });
+  }
   }
   const res = NextResponse.json({ ok: true });
   res.cookies.set(PHONE_COOKIE, signPhoneToken(phone), {

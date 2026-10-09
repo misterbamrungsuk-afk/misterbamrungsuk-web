@@ -503,3 +503,10 @@ export function checkOrderToken(id: string, token: string) {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 export const trackPath = (o: Pick<Order, "id">) => `/orders/track?id=${o.id}&t=${orderToken(o.id)}`;
+
+/** เก็บผลตรวจสลิป Slip2Go — ไม่ผ่าน q() เพราะถ้ายังไม่รัน 0003_slip_check.sql (ไม่มีคอลัมน์) จะไม่สลับทั้งร้านเป็นโหมดตัวอย่าง */
+export async function saveSlipCheck(id: string, check: unknown): Promise<void> {
+  if (marketDemo()) { const r = mem.orders.find((x) => x.id === id); if (r) r.slip_check = check; return; }
+  const { error } = await db().from("market_orders").update({ slip_check: check }).eq("id", id);
+  if (error) console.warn("[market] slip_check not saved (run supabase/market/0003_slip_check.sql):", error.message);
+}

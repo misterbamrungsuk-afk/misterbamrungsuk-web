@@ -15,6 +15,19 @@ export function OtpStep({ phone, onPhone, verified, onVerified, inputCls }: {
   const [cool, setCool] = useState(0);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
+  const [off, setOff] = useState(false); // เว็บจริงยังไม่มีระบบ SMS → ยืนยันเบอร์โดยไม่ใช้รหัส
+
+  useEffect(() => {
+    fetch("/api/otp/verify", { cache: "no-store" }).then((r) => r.json()).then((d: { required?: boolean }) => setOff(d.required === false)).catch(() => {});
+  }, []);
+
+  const skipVerify = async () => {
+    setBusy(true); setMsg("");
+    const r = await fetch("/api/otp/verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone, skip: true }) }).catch(() => null);
+    const d = (await r?.json().catch(() => ({}))) as { ok?: boolean; error?: string } | undefined;
+    setBusy(false);
+    if (d?.ok) onVerified(); else setMsg(d?.error || "บันทึกเบอร์ไม่สำเร็จ");
+  };
 
   useEffect(() => {
     if (cool <= 0) return;
@@ -43,6 +56,15 @@ export function OtpStep({ phone, onPhone, verified, onVerified, inputCls }: {
   if (verified) return <p className="text-[13px] text-[#8f5e00] px-1">✓ ยืนยันเบอร์ {phone} แล้ว</p>;
 
   const phoneOk = /^0[689]\d{8}$/.test(phone.replace(/\D/g, ""));
+  if (off) return (
+    <div className="flex flex-col gap-2">
+      <div className="flex gap-2">
+        <input type="tel" inputMode="tel" autoComplete="tel" placeholder="เบอร์มือถือ 08x-xxx-xxxx" value={phone} onChange={(e) => onPhone(e.target.value)} className={inputCls} />
+        <button type="button" onClick={skipVerify} disabled={!phoneOk || busy} className="h-12 shrink-0 px-4 rounded-2xl border border-gold-500 text-[#8f5e00] font-semibold text-sm disabled:opacity-50">ใช้เบอร์นี้</button>
+      </div>
+      {msg && <p className="text-[12.5px] text-[#b3122a] px-1" role="alert">{msg}</p>}
+    </div>
+  );
   return (
     <div className="flex flex-col gap-2">
       <div className="flex gap-2">

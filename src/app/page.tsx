@@ -18,7 +18,7 @@ const PATHS = [
     icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#e8c472" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M2 8l4-2 4 2M22 8l-4-2-5 2.5-3 3a1.4 1.4 0 0 0 2 2l2.5-2 5 4.5" /><path d="M2 8v7l7 5 2-1M22 8v7l-3 2" /><path d="M8 15l2 1.5M10 13.5l2.5 2" /></svg>,
   },
   {
-    href: "/products", eyebrow: "MARKETPLACE", title: "โรงแรม • สปา • สินค้า", desc: "ค้นหาบริการและสินค้าที่คุณสนใจ", cta: "สำรวจ Marketplace →", bg: "linear-gradient(135deg, #3a0d15, #200a0d)",
+    href: "/market", eyebrow: "MARKETPLACE", title: "โรงแรม • สปา • สินค้า", desc: "ค้นหาบริการและสินค้าที่คุณสนใจ", cta: "สำรวจ Marketplace →", bg: "linear-gradient(135deg, #3a0d15, #200a0d)",
     icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#e8c472" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 7h14l-1 14H6L5 7z" /><path d="M9 10V6a3 3 0 0 1 6 0v4" /></svg>,
   },
 ];
