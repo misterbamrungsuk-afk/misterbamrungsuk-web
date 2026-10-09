@@ -110,9 +110,10 @@ export async function POST(req: Request) {
   if (!verifiedPhone || verifiedPhone !== normalizePhone(tel))
     return NextResponse.json({ ok: false, error: "กรุณายืนยันเบอร์โทรด้วยรหัส OTP ก่อนส่งใบสมัคร", fields: ["tel"], needOtp: true }, { status: 403 });
 
-  // ตรวจสลิปกับ Slip2Go — สลิปซ้ำ (เคยใช้แล้ว) ไม่รับ; กรณีอื่นบันทึกผลให้แอดมินตัดสิน
+  // ตรวจสลิปกับ Slip2Go — สลิปซ้ำ หรือโอนเข้าบัญชีอื่น ไม่รับ; กรณีอื่นบันทึกผลให้แอดมินตัดสิน
   const slipCheck = await verifySlip(files.slip!, PACKAGES[pkg].price);
   if (slipCheck?.verdict === "dup") return NextResponse.json({ ok: false, error: "สลิปนี้เคยถูกใช้แล้ว กรุณาแนบสลิปของการโอนครั้งนี้", fields: ["slip"] }, { status: 400 });
+  if (slipCheck?.verdict === "acct") return NextResponse.json({ ok: false, error: "สลิปนี้โอนเข้าบัญชีที่ไม่ใช่ของ Mister Bamrungsuk กรุณาโอนผ่าน QR ในหน้านี้ แล้วแนบสลิปใหม่", fields: ["slip"] }, { status: 400 });
 
   try {
     const row = await createApplicant(
