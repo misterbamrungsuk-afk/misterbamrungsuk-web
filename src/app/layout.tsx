@@ -12,7 +12,10 @@ const cormorant = Cormorant_Garamond({ subsets: ["latin"], weight: ["500", "600"
 
 export const metadata: Metadata = {
   title: "Mister Bamrungsuk — เพื่อนกิน เพื่อนเที่ยว ระดับพรีเมียม",
-  description: "นัดเพื่อนกิน เพื่อนเที่ยว ที่ยืนยันตัวตนแล้ว เลือกตามกิจกรรม กิน & เที่ยว คาเฟ่ ดูหนัง ถ่ายรูป ออกกำลัง จองเป็นบล็อก 3 / 5 ชม. จ่ายผ่านแอปอย่างปลอดภัย",
+  description: "เลือกเพื่อนระดับพรีเมียมได้ที่ Mister Bamrungsuk",
+  metadataBase: new URL("https://misterbamrungsuk.com"),
+  openGraph: { siteName: "Mister Bamrungsuk", description: "เลือกเพื่อนระดับพรีเมียมได้ที่ Mister Bamrungsuk", images: [{ url: "/brand/cover.jpg", width: 780, height: 585 }], locale: "th_TH", type: "website" },
+  twitter: { card: "summary_large_image", description: "เลือกเพื่อนระดับพรีเมียมได้ที่ Mister Bamrungsuk", images: ["/brand/cover.jpg"] },
   applicationName: "Mister Bamrungsuk",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "Mister Bamrungsuk", statusBarStyle: "black-translucent" },
