@@ -16,7 +16,7 @@ const ago = (iso: string) => {
   const d = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
   return d < 1 ? "วันนี้" : d < 7 ? `${d} วันก่อน` : d < 30 ? `${Math.floor(d / 7)} สัปดาห์ก่อน` : `${Math.floor(d / 30)} เดือนก่อน`;
 };
-const FALLBACK = ["/brand/spa.jpg", "/brand/cover.jpg", "/brand/cover2.jpg"];
+const FALLBACK = ["/brand/venue.jpg", "/brand/hotel1.jpg", "/brand/hotel2.jpg"];
 const DOCS = (n: number) => [
   ["ทะเบียนพาณิชย์", "✓ ตรวจแล้ว · เลข [รอกำหนด]", "#7fd6a3"],
   ["ใบอนุญาตนำเข้าอาหาร", "✓ ตรวจแล้ว · เลข [รอกำหนด]", "#7fd6a3"],

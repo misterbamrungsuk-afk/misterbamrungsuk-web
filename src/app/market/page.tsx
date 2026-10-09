@@ -10,7 +10,7 @@ import { MarketBanner, MarketShop } from "./market-client";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Mister Bamrungsuk — Marketplace โรงแรม · สปา · สินค้า" };
 
-const FALLBACK = ["/brand/cover.jpg", "/brand/spa.jpg", "/brand/cover2.jpg", "/brand/poster.jpg"];
+const FALLBACK = ["/brand/hotel1.jpg", "/brand/venue.jpg", "/brand/hotel2.jpg", "/brand/venue.jpg"];
 const TRUST = ["ของแท้", "มี อย.", "นำเข้าถูกต้อง", "ร้านตรวจสอบแล้ว"];
 
 // หน้าแรก Marketplace (ตามบอร์ด Market) — hero + แบนเนอร์ + โรงแรม/สปาพาร์ทเนอร์ + สินค้าคัดสรร + สมัครพาร์ทเนอร์
@@ -18,7 +18,7 @@ export default async function MarketHome() {
   const [products, vendors, partners, banners, categories] = await Promise.all([listPublished(), listVendors(), marketPartners(), activeBanners(), listCategories()]);
   // รูปจากแอดมิน "รูปหน้าปก": แบนเนอร์ แทนรูปของแบนเนอร์ตามลำดับ (ข้อความ/ลิงก์คงเดิม) · รูปเกินจำนวนแบนเนอร์ = แบนเนอร์รูปล้วน
   const [heroImgs, bannerImgs] = await Promise.all([getCovers("market_hero"), getCovers("market_banner")]);
-  const hero = heroImgs[0] || "/brand/cover.jpg";
+  const hero = heroImgs[0] || "/brand/venue.jpg";
   const slides = (bannerImgs.length
     ? bannerImgs.map((image, k) => (banners[k] ? { ...banners[k], image } : { id: "cover-" + k, title: "", subtitle: "", image, link: "", sort: k, active: true }))
       .concat(banners.slice(bannerImgs.length))

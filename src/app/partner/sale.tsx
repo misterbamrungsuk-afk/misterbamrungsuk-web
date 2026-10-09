@@ -29,8 +29,8 @@ const CONDS = [
   ["ชำระค่าป้ายแบรนด์", "พาร์ทเนอร์ชำระค่าป้ายแบรนด์ [รอกำหนด]"],
 ];
 const KINDS = [
-  ["/brand/spa.jpg", "สปา", "เดย์สปา · สปาเพื่อสุขภาพ · ทั่วประเทศ"],
-  ["/brand/cover2.jpg", "โรงแรม", "โรงแรม · สปาในโรงแรม"],
+  ["/brand/venue.jpg", "สปา", "เดย์สปา · สปาเพื่อสุขภาพ · ทั่วประเทศ"],
+  ["/brand/hotel1.jpg", "โรงแรม", "โรงแรม · สปาในโรงแรม"],
 ];
 const STEPS = ["ส่งใบสมัคร", "ชำระแพ็กเกจ (QR + สลิป)", "นัด QC สถานที่ · มาตรฐานเทียบเท่า Bamrungsuk", "ทำสัญญา + ป้ายแบรนด์ · ถ่ายคลิปโปรโมท", "เปิดแสดงบนแพลตฟอร์ม"];
 const FAQ = [
@@ -94,7 +94,7 @@ export function PartnerSalePage({ hero }: { hero?: string }) {
       <div className="relative mx-auto w-full max-w-[480px] overflow-x-hidden pb-[110px]">
         {/* Hero */}
         <div className="relative h-[380px]">
-          <img src={hero || "/brand/spa.jpg"} alt="" className="block h-full w-full object-cover" />
+          <img src={hero || "/brand/venue.jpg"} alt="" className="block h-full w-full object-cover" />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(14,10,10,.55),rgba(14,10,10,.2)_40%,#0e0a0a)]" />
           <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
             <span className="font-lux inline-flex items-center gap-1.5 text-[15px] font-semibold">
@@ -182,7 +182,7 @@ export function PartnerSalePage({ hero }: { hero?: string }) {
             <H2>ตัวอย่างการแสดงบนแพลตฟอร์ม</H2>
             <div className="overflow-hidden rounded-[18px] border border-[rgba(245,210,110,.85)] bg-[#241717]">
               <div className="relative h-[150px]">
-                <img src="/brand/cover2.jpg" alt="" className="block h-full w-full object-cover" />
+                <img src="/brand/hotel2.jpg" alt="" className="block h-full w-full object-cover" />
                 <span className="absolute left-2.5 top-2.5 inline-flex items-center gap-1.5 rounded-full border border-[#f0c75a] bg-[rgba(14,10,10,.82)] px-2.5 py-[5px] text-[11px] font-semibold text-[#ffd76a]">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="m5 12 5 5 9-10" /></svg>ทำงานร่วมกับ Mister Bamrungsuk
                 </span>

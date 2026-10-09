@@ -19,7 +19,7 @@ export default async function PartnerLogin({ searchParams }: { searchParams: Pro
   const dest = next?.startsWith("/partner/portal") ? next : "/partner/portal";
   const p = await currentPartner();
   if (p && (p.account_status ?? "pending") !== "pending") redirect(dest);
-  const hero = (await getCovers("partner_hero"))[0] ?? "/brand/spa.jpg";
+  const hero = (await getCovers("partner_hero"))[0] ?? "/brand/venue.jpg";
   const steps = p ? await timelineFor(p) : [];
   return (
     <Shell>

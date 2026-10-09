@@ -4,8 +4,8 @@ import { VenueListView, VenueDetailView, type VenueCard, type VenueFull } from "
 
 // หน้ารายการ / รายละเอียด โรงแรม-สปาพาร์ทเนอร์ — ตามบอร์ด HotelList/SpaList/HotelDetail/SpaDetail (.dc.html)
 const FALLBACK: Record<PartnerKind, string[]> = {
-  "โรงแรม": ["/brand/cover.jpg", "/brand/cover2.jpg", "/brand/spa.jpg"],
-  "สปา": ["/brand/spa.jpg", "/brand/cover2.jpg", "/brand/cover.jpg"],
+  "โรงแรม": ["/brand/hotel1.jpg", "/brand/hotel2.jpg", "/brand/venue.jpg"],
+  "สปา": ["/brand/venue.jpg", "/brand/hotel2.jpg", "/brand/hotel1.jpg"],
 };
 
 const fromPrice = (p: PartnerDetail) => (p.services.length ? Math.min(...p.services.map((s) => s.platform_price ?? s.base_price)) : null);
