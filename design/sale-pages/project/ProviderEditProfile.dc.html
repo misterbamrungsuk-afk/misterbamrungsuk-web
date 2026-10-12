@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>Part-Time · แก้ไขโปรไฟล์</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{font-variant-numeric:lining-nums}
+body{margin:0}
+a{color:#8e6a0d}a:hover{color:#8e6a0d}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #8e6a0d;outline-offset:2px}
+.h{font-family:Kanit;font-weight:600}
+.card{padding:14px;border-radius:16px;background:rgba(252,245,247,.45);border:1px solid rgba(142,107,13,.38)}
+.in{height:48px;border-radius:12px;border:1px solid rgba(142,107,13,.38);background:rgba(252,245,247,.45);color:#170f04;padding:0 14px;font-size:14px;box-sizing:border-box;width:100%;display:flex;align-items:center}
+.cta{height:52px;border-radius:14px;border:1px solid rgba(143,109,10,.85);background:linear-gradient(100deg,#9e1028,#c8102e 50%,#9e1028);box-shadow:0 8px 24px rgba(255,40,70,.45);color:#fff;font-size:15px;font-weight:600;width:100%;font-family:Kanit}
+.ghost{height:48px;border-radius:14px;border:1px solid rgba(142,107,13,.38);background:rgba(252,245,247,.45);color:#8e6a0d;font-size:14px;font-weight:600;width:100%}
+.lbl{font-size:12px;color:#594836;margin:0 0 6px}
+.mut{color:#594836}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: linear-gradient(180deg, #fbf1f3 0%, #faecee 45%, #fbeef0 75%, #fcf2f5 100%); color: #170f04; font-family: 'IBM Plex Sans Thai', sans-serif; position: relative; overflow: hidden">
+  <div style="height: 844px; overflow-y: auto; box-sizing: border-box; padding-bottom: 100px">
+<div style="padding: 12px 14px 0; display: flex; align-items: center; gap: 8px">
+      <a href="ProviderProfile.dc.html" aria-label="ย้อนกลับ" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(142,107,13,.38); background: rgba(252,245,247,.45); color: #8e6a0d; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"></path></svg></a>
+      <div class="h" style="font-size: 17px; color: #8e6a0d">แก้ไขโปรไฟล์สาธารณะ</div>
+    </div>
+    <div style="padding: 12px 18px 0; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 999px; background: rgba(252,245,247,.45); border: 1px solid rgba(142,107,13,.38)">
+        <sc-for list="{{tabs}}" as="t" hint-placeholder-count="2"><button onClick="{{t.pick}}" style="height: 44px; border-radius: 999px; border: 0; background: {{t.bg}}; color: {{t.fg}}; font-size: 13px; font-weight: 600">{{t.label}}</button></sc-for>
+      </div>
+      <sc-if value="{{isEdit}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 16px">
+          <div><p class="lbl">รูปโปรไฟล์ (แตะเพื่อตั้งเป็นรูปหลัก · {{photoCount}})</p>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px">
+              <sc-for list="{{photos}}" as="ph" hint-placeholder-count="5"><button onClick="{{ph.pick}}" style="position: relative; padding: 0; height: 120px; border-radius: 12px; overflow: hidden; border: 2px solid {{ph.bd}}; background: rgba(252,245,247,.45)"><img src="{{ph.src}}" alt="" style="width: 100%; height: 100%; object-fit: cover; display: block"><span style="position: absolute; left: 6px; bottom: 6px; font-size: 10px; padding: 2px 8px; border-radius: 99px; background: #8e6a0d; color: #fcf9f4; opacity: {{ph.tagOp}}">รูปหลัก</span></button></sc-for>
+              <button onClick="{{addPhoto}}" style="height: 120px; border-radius: 12px; border: 1.5px dashed rgba(142,107,13,.38); background: rgba(252,245,247,.45); color: #594836; display: grid; place-items: center; font-size: 12px"><span style="display: flex; flex-direction: column; align-items: center; gap: 4px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"></path></svg>เพิ่มรูป</span></button>
+            </div>
+          </div>
+          <div><p class="lbl">กิจกรรมที่รับ · {{actCount}}</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px">
+              <sc-for list="{{actOn}}" as="a" hint-placeholder-count="4"><button onClick="{{a.remove}}" aria-label="{{a.aria}}" style="min-height: 40px; padding: 0 10px 0 14px; border-radius: 999px; border: 1px solid #8e6a0d; background: rgba(212,175,55,.12); color: #8e6a0d; font-size: 13px; display: flex; align-items: center; gap: 6px">{{a.label}}<span style="font-size: 16px; line-height: 1">×</span></button></sc-for>
+            </div>
+            <div class="in" style="gap: 8px; border-color: #8e6a0d; display: flex; align-items: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c9b8a6" stroke-width="1.8"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg><span style="flex: 1; color: {{qColor}}">{{qText}}</span></div>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; font-size: 11.5px"><span style="color: #594836">ลองพิมพ์:</span><sc-for list="{{qPresets}}" as="k" hint-placeholder-count="6"><button onClick="{{k.pick}}" style="height: 30px; padding: 0 10px; border-radius: 99px; border: 1px solid {{k.bd}}; background: transparent; color: {{k.fg}}; font-size: 11.5px">{{k.label}}</button></sc-for></div>
+            <div style="margin-top: 8px; border-radius: 12px; border: 1px solid rgba(142,107,13,.38); background: rgba(252,245,247,.45); overflow: hidden; display: flex; flex-direction: column">
+              <sc-for list="{{sugg}}" as="g" hint-placeholder-count="4"><button onClick="{{g.add}}" style="min-height: 44px; padding: 0 14px; border: 0; border-bottom: 1px solid rgba(252,245,247,.45); background: transparent; color: #170f04; font-size: 13.5px; display: flex; justify-content: space-between; align-items: center; text-align: left">{{g.label}}<span style="color: #8e6a0d; font-size: 12px">+ เลือก</span></button></sc-for>
+              <sc-if value="{{noSugg}}" hint-placeholder-val="{{ false }}"><div style="padding: 10px 14px; font-size: 12px; color: #594836">ไม่พบในรายการแนะนำ</div></sc-if>
+              <sc-if value="{{showCustom}}" hint-placeholder-val="{{ true }}"><button onClick="{{addCustom}}" style="min-height: 44px; padding: 0 14px; border: 0; background: rgba(142,107,13,.16); color: #8e6a0d; font-size: 13.5px; font-weight: 600; text-align: left">{{customLabel}}</button></sc-if>
+            </div>
+          </div>
+          <div><p class="lbl">สถานที่ที่รับนัด · {{placeCount}}</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              <sc-for list="{{places}}" as="pl" hint-placeholder-count="7"><button onClick="{{pl.toggle}}" aria-pressed="{{pl.on}}" style="min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid {{pl.bd}}; background: {{pl.bg}}; color: {{pl.fg}}; font-size: 13px">{{pl.label}}</button></sc-for>
+            </div>
+            <p class="lbl" style="margin-top: 12px">สปา / สถานที่พาร์ทเนอร์</p>
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <sc-for list="{{pspas}}" as="sp" hint-placeholder-count="3"><button onClick="{{sp.toggle}}" style="min-height: 48px; padding: 0 12px; border-radius: 12px; border: 1px solid {{sp.bd}}; background: rgba(252,245,247,.45); color: #170f04; display: flex; align-items: center; gap: 10px; text-align: left"><span style="width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid #8e6a0d; background: {{sp.box}}; color: #fcf9f4; display: grid; place-items: center; font-size: 12px; font-weight: 700">{{sp.mark}}</span><span style="flex: 1; font-size: 13.5px">{{sp.name}}</span><span style="font-size: 12px; color: #594836">{{sp.area}}</span></button></sc-for>
+            </div>
+          </div>
+          <div class="card" style="display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 14px; display: flex; align-items: center; gap: 6px">ราคา 3 ชม. <span style="height: 18px; padding: 0 6px; border-radius: 6px; background: linear-gradient(135deg, #8e6e0b, #936d1e); color: #fcf9f4; font-family: Kanit; font-weight: 700; font-size: 10px; display: inline-flex; align-items: center">TOP</span></span><span class="h" style="font-size: 19px; color: #8e6a0d">฿10,000</span></div>
+            <div class="mut" style="font-size: 11.5px; display: flex; align-items: center; gap: 6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>กำหนดโดยทีมงานตามระดับ · แก้ไขเองไม่ได้</div>
+          </div>
+          <div class="card" style="display: flex; flex-direction: column; gap: 10px"><span style="font-size: 14px">สกิลพิเศษ (เลือกได้หลายข้อ)</span><div style="display: flex; flex-wrap: wrap; gap: 8px"><sc-for list="{{skillOpts}}" as="k" hint-placeholder-count="8"><button onClick="{{k.toggle}}" aria-pressed="{{k.on}}" style="min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid {{k.border}}; background: {{k.bg}}; color: {{k.fg}}; font-size: 13px">{{k.label}}</button></sc-for></div><span class="mut" style="font-size: 11.5px">แสดงเป็นแท็กบนโปรไฟล์ · ไม่มีค่าบริการเพิ่ม · นวดผ่อนคลายต้องแนบใบรับรอง</span></div>
+          <button class="cta" onClick="{{save}}">{{saveLabel}}</button>
+        </div>
+      </sc-if>
+      <sc-if value="{{isPreview}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div class="mut" style="font-size: 12px">ลูกค้าจะเห็นการ์ดของคุณแบบนี้</div>
+          <div style="border-radius: 18px; overflow: hidden; background: rgba(252,245,247,.45); border: 1px solid rgba(143,109,10,.85)">
+            <img src="{{mainSrc}}" alt="" style="width: 100%; height: 340px; object-fit: cover; display: block">
+            <div style="padding: 14px; display: flex; flex-direction: column; gap: 8px">
+              <div style="display: flex; justify-content: space-between; align-items: baseline"><span style="display: flex; align-items: center; gap: 6px"><span class="h" style="font-size: 20px">ต้น · 29 ปี</span><span style="height: 20px; padding: 0 7px; border-radius: 6px; background: linear-gradient(135deg, #8e6e0b, #936d1e); color: #fcf9f4; font-family: Kanit; font-weight: 700; font-size: 11px; display: inline-flex; align-items: center">TOP</span></span><span style="font-size: 12px; color: #8e6a0d">4.9 · 128 รีวิว</span></div>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{actOn}}" as="a" hint-placeholder-count="3"><span style="font-size: 11px; padding: 4px 10px; border-radius: 99px; border: 1px solid rgba(142,107,13,.38); color: #3b2b19">{{a.label}}</span></sc-for></div>
+              <div style="display: flex; justify-content: space-between; font-size: 13px; padding-top: 8px; border-top: 1px solid rgba(142,107,13,.38)"><span>3 ชม. <b style="color: #8e6a0d">฿10,000</b></span><span class="mut">สายนวด · วัฒนา</span></div>
+              <div class="mut" style="font-size: 12px">{{skillLine}}</div>
+            </div>
+          </div>
+          <a href="ProviderProfile.dc.html" class="ghost" style="display: grid; place-items: center; text-decoration: none">เปิดหน้าโปรไฟล์เต็ม</a>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 76px; border-top: 1px solid rgba(142,107,13,.38); background: rgba(250,246,247,.97); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; text-align: center; font-size: 10.5px; color: #8b7970; z-index: 40">
+    <a href="ProviderProfile.dc.html" aria-current="page" style="color: #8e6a0d; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>หน้าหลัก</a>
+    <a href="ProviderAvailability.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16"></path></svg>ตาราง</a>
+    <a href="ProviderJobboard.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path></svg>งาน</a>
+    <a href="MyEarnings.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2.5"></circle></svg>รายได้</a>
+    <a href="ProviderSettings.dc.html" style="color: inherit; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z"></path></svg>ตั้งค่า</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+const SKILL_OPTS = [['massage', 'นวดผ่อนคลาย (แนบใบรับรอง)'], ['photo', 'ถ่ายรูปเก่ง'], ['eng', 'พูดอังกฤษได้'], ['drive', 'ขับรถพาเที่ยว'], ['fit', 'เต้น / ฟิตเนสโค้ช'], ['cook', 'ทำอาหาร'], ['music', 'เล่นดนตรี / ร้องเพลง'], ['guide', 'ไกด์ท้องถิ่น']];
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { tab: 'edit', main: 0, n: 5, picked: ['กิน & เที่ยว', 'ช่างภาพ', 'คาเฟ่', 'นั่งชิล'], q: 'ดู', places: ['ห้างสรรพสินค้า', 'คาเฟ่ / ร้านอาหาร', 'สปา'], pspa: [0], skills: ['massage', 'photo', 'eng'], saved: false }; }
+  renderVals() {
+    const s = this.state; const IMG = ['/_blob/70a5e5722977bc353c3bbf0074d91e1b', '/_blob/79786960ca80d19869290d60dfd6d623', '/_blob/93954ddef0cf26ffa11b56ba1efe499b', '/_blob/105245fac57da06f6bdaaf158a0d70ef', '/_blob/e0f4665673ba2e9d7d3761cd90c7a974', '/_blob/5fd18745c1aab215dba8f40a31ba08d5'];
+    const fmt = (n) => '฿' + n.toLocaleString('en-US');
+    const set = (o) => this.setState(Object.assign({ saved: false }, o));
+    const SUG = ['กิน & เที่ยว', 'ช่างภาพ', 'ออกกำลัง', 'คาเฟ่', 'วิดีโอคอล', 'ดูหนัง', 'นั่งชิล', 'ช้อปปิ้ง', 'ตีกอล์ฟ', 'คาราโอเกะ', 'ดินเนอร์', 'เที่ยวต่างจังหวัด', 'คอนเสิร์ต', 'ฟิตเนส', 'ว่ายน้ำ', 'เดินเล่นสวน'];
+    const QP = ['', 'ดู', 'ตี', 'คอน', 'เที่ยว', 'โยคะ'];
+    const PLACES = ['นอกสถานที่', 'กลางแจ้ง', 'ห้างสรรพสินค้า', 'คาเฟ่ / ร้านอาหาร', 'คอนโด', 'โรงแรม', 'สปา'];
+    const PSPA = [['Siam Serenity Spa', 'สุขุมวิท 31'], ['Lanna Retreat', 'เชียงใหม่'], ['Baan Suan Spa', 'อารีย์']];
+    const q = s.q; const picked = s.picked;
+    const actVals = {
+      actCount: 'เลือกแล้ว ' + picked.length,
+      actOn: picked.map((label) => ({ label, aria: 'ลบ ' + label, remove: () => set({ picked: picked.filter((x) => x !== label) }) })),
+      qText: q || 'พิมพ์กิจกรรม เช่น ดูหนัง, ตีกอล์ฟ…', qColor: q ? '#170f04' : '#958582',
+      qPresets: QP.map((v) => ({ label: v || 'ล้าง', bd: s.q === v ? '#8e6a0d' : 'rgba(142,107,13,.38)', fg: s.q === v ? '#8e6a0d' : '#594836', pick: () => this.setState({ q: v }) })),
+      sugg: SUG.filter((x) => !picked.includes(x) && (!q || x.includes(q))).slice(0, 6).map((label) => ({ label, add: () => set({ picked: [...picked, label], q: '' }) })),
+      noSugg: !!q && !SUG.some((x) => !picked.includes(x) && x.includes(q)),
+      showCustom: !!q && !SUG.includes(q) && !picked.includes(q),
+      customLabel: '+ เพิ่ม “' + q + '”', addCustom: () => set({ picked: [...picked, q], q: '' }),
+      placeCount: 'เลือกแล้ว ' + s.places.length,
+      places: PLACES.map((label) => { const on = s.places.includes(label); return { label, on: String(on), bd: on ? '#8e6a0d' : 'rgba(142,107,13,.38)', bg: on ? 'rgba(212,175,55,.12)' : 'rgba(252,245,247,.45)', fg: on ? '#8e6a0d' : '#594836', toggle: () => set({ places: on ? s.places.filter((x) => x !== label) : [...s.places, label] }) }; }),
+      pspas: PSPA.map(([name, area], i) => { const on = s.pspa.includes(i); return { name, area, mark: on ? '✓' : '', box: on ? '#8e6a0d' : 'transparent', bd: on ? '#8e6a0d' : 'rgba(142,107,13,.38)', toggle: () => set({ pspa: on ? s.pspa.filter((x) => x !== i) : [...s.pspa, i] }) }; })
+    };
+    return Object.assign(actVals, {
+      tabs: [['edit', 'แก้ไข'], ['preview', 'ดูตัวอย่างการ์ด']].map(([id, label]) => ({ label, bg: s.tab === id ? '#8e6a0d' : 'transparent', fg: s.tab === id ? '#fcf9f4' : '#594836', pick: () => this.setState({ tab: id }) })),
+      isEdit: s.tab === 'edit', isPreview: s.tab === 'preview',
+      photoCount: s.n + '/6 รูป',
+      photos: IMG.slice(0, s.n).map((src, i) => ({ src, bd: i === s.main ? '#8e6a0d' : 'rgba(142,107,13,.38)', tagOp: i === s.main ? '1' : '0', pick: () => set({ main: i }) })),
+      addPhoto: () => set({ n: s.n < 6 ? s.n + 1 : 3 }),
+      skillOpts: SKILL_OPTS.map(([id, label]) => { const on = s.skills.includes(id); return { label, on: String(on), border: on ? '#8e6a0d' : 'rgba(142,107,13,.38)', bg: on ? 'rgba(212,175,55,.12)' : 'transparent', fg: on ? '#8e6a0d' : '#594836', toggle: () => set({ skills: on ? s.skills.filter((x) => x !== id) : s.skills.concat(id) }) }; }),
+      skillLine: s.skills.length ? 'สกิลพิเศษ: ' + SKILL_OPTS.filter(([id]) => s.skills.includes(id)).map(([, l]) => l.replace(' (แนบใบรับรอง)', '')).join(' · ') : 'ยังไม่ได้เลือกสกิลพิเศษ',
+      mainSrc: IMG[s.main], save: () => this.setState({ saved: true }), saveLabel: s.saved ? 'บันทึกแล้ว · ทีมงานจะตรวจรูปให้' : 'บันทึกการเปลี่ยนแปลง'
+    });
+  }
+}
+</script>
+</body>
+</html>

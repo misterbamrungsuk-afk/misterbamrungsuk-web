@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>คำเชิญพิเศษ</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&amp;family=Kanit:wght@500;600&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*,*::before,*::after{box-sizing:border-box;font-variant-numeric:lining-nums}
+a{color:#8e6a0d}a:hover{color:#997000}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #8e6a0d;outline-offset:2px}
+.h{font-family:Kanit,sans-serif;font-weight:600}
+.box{padding:18px;border-radius:16px;background:rgba(252,245,247,.45);min-width:0;overflow-wrap:anywhere}
+.mut{color:#594836}
+.sec{color:#3b2b19}
+.cta{min-height:56px;width:100%;border-radius:16px;background:linear-gradient(100deg,#9e1028,#c8102e 50%,#9e1028);border:1.5px solid #8e6a0d;color:#fff;font-family:Kanit,sans-serif;font-weight:600;font-size:17px;display:grid;place-items:center;text-decoration:none;text-align:center;padding:0 16px}
+.cta:hover{color:#000000}
+.ghost{min-height:48px;width:100%;border-radius:14px;border:1px solid rgba(201,162,74,.55);background:rgba(252,245,247,.45);color:#8e6a0d;font-size:15px;font-weight:600;display:grid;place-items:center;text-decoration:none}
+.lb{display:block;font-size:13px;color:#594836;margin-bottom:6px}
+.in{min-height:48px;width:100%;border-radius:12px;border:1px solid rgba(201,162,74,.28);background:rgba(252,245,247,.55);color:#170f04;padding:0 14px;font-size:15px;display:flex;align-items:center;text-align:left}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1300px; background: linear-gradient(180deg, #fbf1f3 0%, #faecee 45%, #fbeef0 75%, #fcf2f5 100%); color: #170f04; font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 15px; line-height: 1.7; position: relative; overflow: hidden">
+  <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; background: #faf6f7">
+    <a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 8px; font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 20px; text-decoration: none"><img src="logo.png" alt="Mister Bamrungsuk" style="width: 40px; height: 40px; object-fit: contain"><span style="color: #846215">Mister Bamrungsuk</span></a>
+    <span style="flex-shrink: 0; padding: 5px 12px; border-radius: 999px; border: 1px solid #c9a24a; font-size: 10px; letter-spacing: 2.5px; color: #8e6a0d">PREMIUM</span>
+  </div>
+  <div style="padding: 40px 20px 0; display: flex; flex-direction: column; gap: 36px">
+    <section style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 14px">
+      <span style="padding: 6px 16px; border-radius: 999px; border: 1px solid #c9a24a; background: rgba(142,106,13,.14); color: #8e6a0d; font-family: Kanit, sans-serif; font-weight: 600; font-size: 15px">✦ คำเชิญพิเศษ</span>
+      <h1 class="h" style="margin: 0; font-size: 24px; line-height: 1.35; color: #8e6a0d">ยินดีต้อนรับ</h1>
+      <p class="sec" style="margin: 0">คุณได้รับคำเชิญให้ร่วมทีม Mister Bamrungsuk โดยไม่มีค่าใช้จ่ายในการสมัครและค่าอบรม</p>
+      <div class="box" style="padding: 12px 16px; font-size: 14px; color: #8e6a0d">ไม่ต้องชำระเงิน · ข้ามขั้นตอนชำระเงินอัตโนมัติ</div>
+    </section>
+    <section style="display: flex; flex-direction: column; gap: 14px">
+      <h2 class="h" style="margin: 0; font-size: 20px; text-align: center">เลือกสายงาน</h2>
+      <sc-for list="{{tracks}}" as="p" hint-placeholder-count="2">
+        <button type="button" onClick="{{p.pick}}" aria-pressed="{{p.on}}" style="padding: 18px; border-radius: 16px; background: {{p.bg}}; border: 2px solid {{p.border}}; box-shadow: {{p.shadow}}; opacity: {{p.op}}; transition: all .3s ease; display: flex; flex-direction: column; gap: 8px; color: {{p.tx}}; text-align: left; width: 100%">
+          <span style="display: flex; align-items: center; gap: 12px"><span style="flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; border: 2px solid {{p.ring}}; display: grid; place-items: center"><span style="width: 12px; height: 12px; border-radius: 50%; background: {{p.dot}}"></span></span><span style="font-family: Kanit, sans-serif; font-weight: 600; font-size: 18px; line-height: 1.35">{{p.name}}</span></span>
+          <span style="font-size: 14px; color: {{p.sub}}">{{p.desc}}</span>
+        </button>
+      </sc-for>
+    </section>
+    <a href="Join.dc.html#benefits" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px; border-radius: 16px; background: rgba(252,245,247,.45); color: #170f04; text-decoration: none">
+      <span style="display: flex; flex-direction: column"><span class="h" style="font-size: 17px; color: #8e6a0d">รายได้และสิทธิพิเศษ</span><span class="sec" style="font-size: 14px">ดูว่าทำงานแล้วได้เท่าไหร่ต่อครั้ง</span></span>
+      <span aria-hidden="true" style="font-size: 22px; color: #8e6a0d">→</span>
+    </a>
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <a href="JoinForm.dc.html" class="cta">เริ่มกรอกใบสมัคร</a>
+      <p class="mut" style="margin: 0; font-size: 13px; text-align: center">🔒 ลิงก์นี้ส่งให้คุณเป็นการส่วนตัว กรุณาอย่าเผยแพร่</p>
+    </div>
+  </div>
+  <footer style="margin: 40px 20px 0; padding: 18px 0 24px; border-top: 1px solid rgba(201,162,74,.4); display: flex; flex-direction: column; gap: 12px; font-size: 13px; line-height: 1.6; color: #3b2b19">
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px"><span style="display: inline-flex; align-items: center; gap: 8px"><img src="logo.png" alt="" style="width: 34px; height: 34px; object-fit: contain"><span style="font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 21px; color: #846215">Bamrungsuk</span></span><span>ติดต่อเรา</span></div>
+    <div style="display: flex; flex-wrap: wrap; gap: 4px 12px"><span>ข้อกำหนดและเงื่อนไขการใช้งาน</span><span style="color: #8d7975">|</span><span>นโยบายความเป็นส่วนตัว (PDPA)</span></div>
+    <div style="color: #594836"><div style="color: #3b2b19">Mister Bamrungsuk · ทะเบียนนิติบุคคลเลขที่ 0105569040446</div><div>111/384 หมู่บ้านโกลเด้นทาวน์ พหลโยธิน-สะพานใหม่ ซอยพหลโยธิน 54/1 แยก 4 (วัดเกาะ) แขวงคลองถนน เขตสายไหม กรุงเทพมหานคร 10220</div><div>Misterbamrungsuk@gmail.com · 096-004-0231</div></div>
+    <div style="color: #715d57">© 2569 Mister Bamrungsuk สงวนลิขสิทธิ์</div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1300}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { pick: 'B' }; }
+  renderVals() {
+    const s = this.state;
+    const TR = { A: { name: 'เพื่อนกินเที่ยว', desc: 'เวลาการทำงานต่อครั้ง 3–8 ชม.' }, B: { name: 'เพื่อนกินเที่ยวสายนวดผ่อนคลาย', desc: 'เวลาการทำงานต่อครั้ง 3–5 ชม.' } };
+    const TH = {
+      A: { bg: 'linear-gradient(160deg, #f7f6f5 0%, #faf9f9 100%)', tx: '#1c1300', sub: '#4a3c26', ring: '#8e6a0d', bdOn: '#8e6a0d', bdOff: 'rgba(142,107,13,.4)', sh: '0 0 0 3px rgba(142,107,13,.4), 0 18px 36px rgba(251,251,251,.6)' },
+      B: { bg: 'linear-gradient(160deg, #8e6e0b 0%, #866413 50%, #936d1e 100%)', tx: '#fcf9f4', sub: '#faf6ee', ring: '#fcf9f4', bdOn: '#3b2d00', bdOff: 'rgba(153,109,0,.6)', sh: '0 0 0 3px rgba(153,117,0,.55), 0 0 28px rgba(153,105,0,.4), 0 18px 36px rgba(251,251,251,.55)' }
+    };
+    return {
+      tracks: ['B', 'A'].map((k) => { const on = s.pick === k; const T = TH[k]; return Object.assign({}, TR[k], T, { on: String(on), border: on ? T.bdOn : T.bdOff, shadow: on ? T.sh : 'none', op: on ? '1' : '.6', dot: on ? T.ring : 'transparent', pick: () => this.setState({ pick: k }) }); })
+    };
+  }
+}
+</script>
+</body>
+</html>

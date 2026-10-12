@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>Marketplace หน้าแรก</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-variant-numeric:lining-nums}
+a{color:#8e6a0d}a:hover{color:#866913}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid #8e6a0d;outline-offset:2px}
+.card{padding:14px;border-radius:16px;background:#faeef0;border:1px solid rgba(142,107,13,.38)}
+.cta{height:52px;border-radius:14px;border:1px solid rgba(143,109,10,.85);background:linear-gradient(100deg, #f8e5e8 0%, #c8102e 24%, #990015 50%, #c8102e 76%, #f8e5e8 100%);box-shadow:0 8px 24px rgba(255,40,70,.45);color:#fff;font-size:15px;font-weight:600;width:100%;font-family: 'Cormorant Garamond', Kanit;display:grid;place-items:center;text-decoration:none;box-sizing:border-box}
+.ghost{height:48px;border-radius:14px;border:1px solid rgba(142,107,13,.38);background:#faeef0;color:#8e6a0d;font-size:14px;font-weight:600;width:100%;display:grid;place-items:center;text-decoration:none;box-sizing:border-box}
+.fl{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#3b2b19}
+.fi{height:48px;border-radius:14px;background:#faeef0;padding:0 14px;font-size:14px;text-align:left;width:100%;box-sizing:border-box}
+.chip{min-height:40px;padding:0 14px;border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap;flex:0 0 auto}
+.eb{font-size:10.5px;letter-spacing:2.5px;color:#8e6a0d;font-weight:600}
+.h{font-family: 'Cormorant Garamond', Kanit;font-weight:600}
+.mut{color:#3b2b19}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;border:1px solid rgba(212,175,55,.55);background:rgba(142,107,13,.18);color:#8e6a0d;font-size:11px;font-weight:600}
+.hrow{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.sb{width:44px;height:44px;border-radius:12px;border:1px solid rgba(142,107,13,.38);background:#faeef0;color:#8e6a0d;font-size:18px}
+.sec{display:flex;justify-content:space-between;align-items:flex-end;margin:22px 18px 10px}
+.st{font-family: 'Cormorant Garamond', Kanit;font-weight:600;font-size:18px;margin:2px 0 0}
+.row{display:flex;gap:12px;overflow-x:auto;padding:0 18px;scrollbar-width:none}
+.more{font-size:12.5px;color:#8e6a0d;text-decoration:none;min-height:32px;display:inline-flex;align-items:center}
+.ql{min-height:44px;display:grid;place-items:center;border-radius:12px;border:1px solid rgba(142,107,13,.38);background:#faeef0;color:#170f04;font-size:12.5px;font-weight:600;text-decoration:none;text-align:center}
+*{font-variant-numeric:lining-nums}
+</style>
+</helmet>
+<div style="width: 390px; height: 945px; background: linear-gradient(180deg, #fbf1f3 0%, #faecee 45%, #fbeef0 75%, #fcf2f5 100%); color: #170f04; font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 15px; line-height: 1.7; position: relative; overflow: hidden">
+  <header data-brand-bar style="position: relative; z-index: 30; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; height: 64px; box-sizing: border-box; background: #faf6f7"><a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; min-width: 0; font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 20px"><img src="logo.png" alt="Mister Bamrungsuk" style="width: 40px; height: 40px; object-fit: contain; flex: 0 0 40px"><span style="color: #846215; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Mister Bamrungsuk</span></a><div style="display: flex; gap: 8px; flex: 0 0 auto"><a href="OrderTrack.dc.html" aria-label="ติดตามคำสั่งซื้อ" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(27,20,9,.3); background: rgba(251,251,251,.4); display: grid; place-items: center; color: #170f04; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"></path><path d="M3 7.5 12 12l9-4.5M12 12v9"></path></svg></a><a href="Cart.dc.html" aria-label="ตะกร้าสินค้า" style="position: relative; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(27,20,9,.3); background: rgba(251,251,251,.4); display: grid; place-items: center; color: #170f04; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 7h14l-1.5 12h-11z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg><sc-if value="{{hasCart}}" hint-placeholder-val="{{ true }}"><span style="position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #b0182c; color: #fff; font-size: 13px; font-weight: 700; display: grid; place-items: center; border: 1.5px solid #fbf1f3">{{cartCount}}</span></sc-if></a></div></header>
+  <div style="position: absolute; inset: 64px 0 72px 0; overflow-y: auto">
+    <div style="position: relative; height: 300px">
+      <img src="/_blob/fec646b4d31ad694543697fbe3354b27" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+      <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(251,241,243,.35) 0%, rgba(251,241,243,.6) 55%, #fbf1f3 100%)"></div>
+      <div style="position: absolute; left: 18px; right: 18px; bottom: 14px">
+        <div class="eb" style="color: #8e6a0d">เพื่อนกิน เพื่อนเที่ยว</div>
+        <h1 style="margin: 6px 0 4px; font-family: Kanit, sans-serif; font-weight: 600; font-size: 28px; line-height: 1.15">โรงแรม สปา และของดี<br>ที่เราคัดมาให้</h1>
+        <p style="margin: 0 0 12px; font-size: 13px; color: #3b2b19">พาร์ทเนอร์ที่ทำงานร่วมกับ Mister Bamrungsuk</p>
+        <div style="display: flex; gap: 10px">
+          <a href="Main.dc.html" style="flex: 1; height: 48px; border-radius: 14px; border: 1px solid rgba(143,109,10,.85); background: linear-gradient(100deg, #f8e5e8 0%, #c8102e 24%, #990015 50%, #c8102e 76%, #f8e5e8 100%);box-shadow:0 8px 24px rgba(255,40,70,.45); color: #fff; font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 15px; display: grid; place-items: center; text-decoration: none">หาเพื่อน</a>
+          <a href="Join.dc.html" style="flex: 1; height: 48px; border-radius: 14px; border: 1px solid #8e6a0d; background: rgba(251,241,243,.6); color: #8e6a0d; font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 15px; display: grid; place-items: center; text-decoration: none">สมัคร Part-Time</a>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin: 14px 18px 0; position: relative; height: 132px; border-radius: 18px; overflow: hidden; border: 1px solid rgba(142,107,13,.38)" aria-roledescription="carousel" aria-label="โปรโมชัน">
+      <img src="{{bnImg}}" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+      <div style="position: absolute; inset: 0; background: linear-gradient(90deg, rgba(251,241,243,.92) 30%, rgba(251,241,243,.15))"></div>
+      <div style="position: absolute; left: 16px; top: 16px; right: 110px"><div style="font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 17px; line-height: 1.25; margin-top: 2px">{{bnTitle}}</div><div style="font-size: 13px; color: #3b2b19; margin-top: 2px">{{bnSub}}</div></div>
+      <button onClick="{{bnGo}}" style="position: absolute; left: 16px; bottom: 12px; min-height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid #8e6a0d; background: rgba(251,241,243,.6); color: #8e6a0d; font-size: 13px; font-weight: 600">{{bnCta}}</button>
+      <div style="position: absolute; right: 8px; bottom: 6px; display: flex; align-items: center"><button onClick="{{bnPrev}}" aria-label="โปรก่อนหน้า" style="width: 36px; height: 36px; border: 0; background: none; color: #000000; font-size: 18px">‹</button><sc-for list="{{dots}}" as="d" hint-placeholder-count="3"><button onClick="{{d.pick}}" aria-label="{{d.label}}" style="width: 14px; height: 36px; border: 0; background: none; padding: 0; display: grid; place-items: center"><span style="width: {{d.w}}; height: 6px; border-radius: 3px; background: {{d.c}}"></span></button></sc-for><button onClick="{{bnNext}}" aria-label="โปรถัดไป" style="width: 36px; height: 36px; border: 0; background: none; color: #000000; font-size: 18px">›</button></div>
+    </div>
+
+    <div style="margin: 12px 18px 0; display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px">
+      <sc-for list="{{trust}}" as="t" hint-placeholder-count="4"><div style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border-radius: 12px; background: rgba(252,245,247,.45); border: 1px solid rgba(142,107,13,.38); color: #257446; text-align: center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path><path d="m8.5 12 2.5 2.5 4.5-5"></path></svg><span style="font-size: 13px; color: #3b2b19; line-height: 1.25">{{t.t}}</span></div></sc-for>
+    </div>
+    <div style="margin: 8px 18px 0; display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 14px; background: #f9f7f5; border: 1px solid rgba(141,114,24,.35)"><span style="color: #8e6a0d"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"></path><path d="M3 7.5 12 12l9-4.5M12 12v9"></path></svg></span><div style="font-size: 13px; color: #3b2b19; line-height: 1.5"><b style="color: #8e6a0d">แพ็กมิดชิดทุกออเดอร์</b> · กล่องสีพื้น ไม่ระบุชื่อสินค้าหรือชื่อร้านบนหน้ากล่อง</div></div>
+
+    <div style="margin: 14px 18px 0; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px">
+      <a href="HotelList.dc.html" class="ql">โรงแรม</a><a href="SpaList.dc.html" class="ql">สปา</a><a href="ProductList.dc.html" class="ql">สินค้าทั้งหมด</a>
+      <a href="VendorShop.dc.html" class="ql">ร้านแนะนำ</a><a href="OrderTrack.dc.html" class="ql">ติดตามคำสั่งซื้อ</a><a href="Policy.dc.html" class="ql">นโยบายร้าน</a>
+    </div>
+
+    <div class="sec"><div><div class="st">โรงแรมพาร์ทเนอร์</div></div><a href="HotelList.dc.html" class="more">ดูทั้งหมด →</a></div>
+    <div class="row">
+      <sc-for list="{{hotels}}" as="h" hint-placeholder-count="3">
+        <a href="HotelDetail.dc.html" style="flex: 0 0 220px; border-radius: 16px; overflow: hidden; background: rgba(252,245,247,.45); border: 1px solid rgba(142,107,13,.38); text-decoration: none; color: #170f04">
+          <img src="{{h.img}}" alt="{{h.name}}" style="width: 100%; height: 120px; object-fit: cover; display: block">
+          <div style="padding: 10px 12px"><div style="font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 14px">{{h.name}}</div><div style="font-size: 13px; color: #3b2b19">{{h.area}}</div><div style="font-size: 13px; color: #8e6a0d; margin-top: 4px">{{h.note}}</div></div>
+        </a>
+      </sc-for>
+    </div>
+
+    <div class="sec"><div><div class="st">สปาพาร์ทเนอร์</div></div><a href="SpaList.dc.html" class="more">ดูทั้งหมด →</a></div>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 18px">
+      <sc-for list="{{spas}}" as="s" hint-placeholder-count="3">
+        <a href="SpaDetail.dc.html" style="display: flex; gap: 12px; padding: 10px; border-radius: 16px; background: rgba(252,245,247,.45); border: 1px solid rgba(142,107,13,.38); text-decoration: none; color: #170f04">
+          <img src="{{s.img}}" alt="{{s.name}}" style="width: 76px; height: 76px; border-radius: 12px; object-fit: cover; flex: 0 0 76px">
+          <div style="min-width: 0"><div style="font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 14.5px">{{s.name}}</div><div style="font-size: 13px; color: #3b2b19">{{s.area}} · {{s.price}}</div>
+            <div style="margin-top: 6px"><span class="badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m5 12 5 5 9-10"></path></svg>ทำงานร่วมกับ Mister Bamrungsuk</span></div>
+          </div>
+        </a>
+      </sc-for>
+    </div>
+
+    <div class="sec"><div><div class="st">สินค้าคัดสรร</div></div><a href="ProductList.dc.html" class="more">ดูทั้งหมด →</a></div>
+    <div style="padding: 0 18px 10px"><div class="hrow" role="group" aria-label="หมวดหมู่สินค้า"><sc-for list="{{cats}}" as="c" hint-placeholder-count="4"><button onClick="{{c.pick}}" aria-pressed="{{c.sel}}" class="chip" style="border: 1px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}">{{c.label}}</button></sc-for></div></div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 0 18px">
+      <sc-for list="{{products}}" as="p" hint-placeholder-count="4">
+        <div style="border-radius: 16px; background: rgba(252,245,247,.45); border: 1px solid rgba(142,107,13,.38); overflow: hidden; display: flex; flex-direction: column">
+          <a href="ProductDetail.dc.html" aria-label="{{p.name}}" style="position: relative; height: 130px; display: grid; place-items: center; background: radial-gradient(circle at 50% 40%, {{p.glow}}, #f9f7f7 70%); text-decoration: none">
+            <svg width="70" height="110" viewBox="0 0 70 110" aria-hidden="true"><rect x="25" y="4" width="20" height="14" rx="3" fill="#f0c75a"></rect><rect x="22" y="16" width="26" height="6" rx="2" fill="#a8862a"></rect><path d="M14 30c0-5 4-8 9-8h24c5 0 9 3 9 8v68c0 5-4 8-9 8H23c-5 0-9-3-9-8z" fill="{{p.c}}" stroke="#f0c75a" stroke-width="1.2"></path><rect x="20" y="48" width="30" height="34" rx="3" fill="#2a0a10" opacity=".55"></rect><path d="M35 54l4 7h-8z" fill="#f0c75a"></path><rect x="25" y="66" width="20" height="2" fill="#f0c75a"></rect><rect x="28" y="72" width="14" height="2" fill="#e6d6c4"></rect></svg>
+            <span style="position: absolute; top: 8px; left: 8px; padding: 2px 7px; border-radius: 999px; background: #fbf1f3; border: 1px solid #70c094; color: #257446; font-size: 13px; font-weight: 600">{{p.fda}}</span>
+          </a>
+          <div style="padding: 10px; display: flex; flex-direction: column; gap: 4px; flex: 1">
+            <a href="VendorShop.dc.html" style="font-size: 13px; color: #3b2b19; text-decoration: none">{{p.vendor}}</a>
+            <div style="font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 13.5px; line-height: 1.25">{{p.name}}</div>
+            <div style="font-size: 13px; color: #594836">{{p.kind}}</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 6px"><span style="font-family: 'Cormorant Garamond', Kanit; font-weight: 600; color: #8e6a0d">{{p.price}}</span><button onClick="{{p.add}}" aria-label="{{p.addLabel}}" style="height: 36px; min-width: 44px; padding: 0 10px; border-radius: 10px; border: 1px solid {{p.bd}}; background: {{p.bg}}; color: #000000; font-size: 13px; font-weight: 600">{{p.btn}}</button></div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="padding: 10px 18px 0"><a href="ProductList.dc.html" class="ghost">ดูสินค้าทั้งหมด {{catLabel}}</a></div>
+
+    <div style="margin: 22px 18px 0; padding: 18px; border-radius: 18px; border: 1px solid rgba(143,109,10,.85); background: linear-gradient(135deg, #f9f2f3, #faeef0)">
+      
+      <div style="font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 18px; margin: 4px 0">โรงแรม สปา หรือแบรนด์สินค้า<br>อยากร่วมงานกับเรา?</div>
+      <p style="margin: 0 0 12px; font-size: 13px; color: #3b2b19">ลงร้านบน Marketplace รับลูกค้าจากสมาชิกของเรา</p>
+      <a href="Partner.dc.html" style="display: grid; place-items: center; height: 48px; border-radius: 14px; border: 1px solid rgba(143,109,10,.85); background: linear-gradient(100deg, #f8e5e8 0%, #c8102e 24%, #990015 50%, #c8102e 76%, #f8e5e8 100%);box-shadow:0 8px 24px rgba(255,40,70,.45); color: #fff; font-family: 'Cormorant Garamond', Kanit; font-weight: 600; text-decoration: none">สมัครเป็นพาร์ทเนอร์</a>
+      <a href="Partner.dc.html" style="display: block; text-align: center; font-size: 13px; padding: 12px 0 0">เป็นร้านค้าอยู่แล้ว? เข้าพอร์ทัลร้านค้า →</a>
+    </div>
+
+    <div style="margin: 22px 18px 0; padding-top: 16px; border-top: 1px solid rgba(142,107,13,.38); font-size: 13px; color: #594836; line-height: 1.7">
+      <div style="display: flex; flex-wrap: wrap; gap: 4px 14px; margin-bottom: 8px"><a href="Policy.dc.html">นโยบายคืนสินค้า</a><a href="Policy.dc.html">การจัดส่ง</a><a href="Policy.dc.html">ความเป็นส่วนตัว</a><a href="Policy.dc.html">ข้อกำหนดการใช้งาน</a><a href="OrderTrack.dc.html">ติดตามคำสั่งซื้อ</a></div>
+      ผลิตภัณฑ์เสริมอาหารไม่มีผลในการป้องกันหรือรักษาโรค · จำหน่ายเฉพาะผู้มีอายุ 20 ปีขึ้นไป
+    </div>
+    <footer style="margin: 18px 16px 0; padding: 16px 0 22px; border-top: 1px solid rgba(201,162,74,.45); display: flex; flex-direction: column; gap: 12px; font-size: 13px; color: #3b2b19; font-family: 'IBM Plex Sans Thai', sans-serif">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px"><span style="display: inline-flex; align-items: center; gap: 8px"><img src="logo.png" alt="" style="width: 34px; height: 34px; object-fit: contain"><span style="font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 21px; color: #846215">Bamrungsuk</span></span><a href="mailto:Misterbamrungsuk@gmail.com" style="color: #3b2b19; text-decoration: none">ติดต่อเรา</a></div>
+        <nav aria-label="เอกสารทางกฎหมาย" style="display: flex; flex-wrap: wrap; gap: 4px 12px"><a href="#" style="color: #3b2b19; text-decoration: none">ข้อกำหนดและเงื่อนไขการใช้งาน</a><span aria-hidden="true" style="color: #594836">|</span><a href="#" style="color: #3b2b19; text-decoration: none">นโยบายความเป็นส่วนตัว (PDPA)</a></nav>
+        <address style="font-style: normal; line-height: 1.65; color: #594836"><div style="color: #3b2b19">Mister Bamrungsuk · ทะเบียนนิติบุคคลเลขที่ 0105569040446</div><div>111/384 หมู่บ้านโกลเด้นทาวน์ พหลโยธิน-สะพานใหม่ ซอยพหลโยธิน 54/1 แยก 4 (วัดเกาะ) แขวงคลองถนน เขตสายไหม กรุงเทพมหานคร 10220</div><div>Misterbamrungsuk@gmail.com · 096-004-0231</div></address>
+        <div style="color: #594836">© 2569 Mister Bamrungsuk สงวนลิขสิทธิ์</div>
+      </footer>
+  </div>
+  <sc-if value="{{toast}}" hint-placeholder-val="{{ false }}"><div role="status" style="position: absolute; left: 18px; right: 18px; bottom: 84px; padding: 12px 14px; border-radius: 12px; background: rgba(252,245,247,.45); border: 1px solid #70c094; color: #257446; font-size: 13px; z-index: 5">{{toastText}}</div></sc-if>
+  <a href="Cart.dc.html" style="position: absolute; left: 18px; right: 18px; bottom: 14px; height: 52px; border-radius: 14px; border: 1px solid rgba(143,109,10,.85); background: rgba(252,245,247,.45); color: #170f04; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; text-decoration: none; font-size: 14px"><span>ตะกร้า · {{cartCount}} ชิ้น</span><span style="font-family: 'Cormorant Garamond', Kanit; font-weight: 600; color: #8e6a0d">{{cartTotal}} →</span></a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":945}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { cart: {}, toast: '', bn: 0, cat: 'all' }; }
+  renderVals() {
+    const s = this.state;
+    const fmt = (n) => '฿' + n.toLocaleString('en-US');
+    const chip = (on) => ({ sel: on ? 'true' : 'false', bg: on ? '#b0182c' : '#faeef0', fg: on ? '#000000' : '#3b2b19', bd: on ? '#b0182c' : 'rgba(142,107,13,.38)' });
+    const fld = (k, on, val, ph) => { const o = {}; o[k + 'Text'] = on ? val : ph; o[k + 'Fg'] = on ? '#170f04' : '#594836'; o[k + 'Bd'] = on ? '#f1eeea' : 'rgba(142,107,13,.38)'; return o; };
+    const flash = (t, extra) => { this.setState(Object.assign({ toast: t }, extra || {})); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: '' }), 1800); };
+    const H1 = '/_blob/5382038cd17c1a0d503b594a601db919', H2 = '/_blob/a216c3eb60d3f8bb9387430bc004cd1b', V = '/_blob/fec646b4d31ad694543697fbe3354b27';
+    const P = [
+      ['lh', 'คลินิกหมอโส', 'Love Hormone (นำเข้า)', 1290, 'sup', '#f9e9ec', 'rgba(194,29,51,.35)'],
+      ['cl', 'คลินิกหมอโส', 'Collagen Night', 890, 'beauty', '#f2f0f6', 'rgba(85,55,145,.3)'],
+      ['ct', 'คลินิกหมอโส', 'Chamomile Tea Blend', 390, 'sup', '#f9f7f1', 'rgba(122,103,31,.25)'],
+      ['gs', 'Siam Herb', 'Ginseng Gold', 1590, 'sup', '#faf6ee', 'rgba(142,107,13,.65)'],
+      ['vc', 'Siam Herb', 'Vitamin C 1000', 490, 'sup', '#f1f9f7', 'rgba(75,175,135,.28)'],
+      ['fb', 'Siam Herb', 'Fiber Plus', 590, 'sup', '#f5f9f2', 'rgba(115,165,65,.25)'],
+      ['bo', 'Siam Serenity Spa', 'Body Oil ลาเวนเดอร์', 650, 'spa', '#eff2f7', 'rgba(30,56,124,.28)'],
+      ['gb', 'Mister Bamrungsuk', 'ชุดของขวัญ Gold Box', 1990, 'gift', '#faeef0', 'rgba(142,107,13,.65)']
+    ];
+    const K = { sup: ['มี อย.', 'ผลิตภัณฑ์เสริมอาหาร · นำเข้าถูกต้อง'], beauty: ['มี อย.', 'ผลิตภัณฑ์เสริมอาหาร · มี อย.'], spa: ['จดแจ้ง อย.', 'เครื่องสำอาง · จดแจ้งแล้ว'], gift: ['ของแท้', 'ชุดของขวัญ · รายการในชุด [รอกำหนด]'] };
+    const BN = [[H1, 'HOTEL DEAL', 'โรงแรมพาร์ทเนอร์ ราคาสมาชิก', 'ส่วนลด [รอกำหนด]', 'ดูโรงแรม'], [V, 'SPA FOR TWO', 'สปาคู่ ผ่อนคลายวันหยุด', 'เริ่ม ฿990', 'ดูสปา'], [H2, 'FREE SHIPPING', 'ส่งฟรีเมื่อซื้อครบ ฿1,500', 'ค่าตัวอย่าง [รอกำหนด] · โค้ด SHIPFREE', 'ช้อปเลย']];
+    const CATS = [['all', 'ทั้งหมด'], ['sup', 'เสริมอาหาร'], ['beauty', 'ความงาม'], ['spa', 'สปา · ผ่อนคลาย'], ['gift', 'ชุดของขวัญ']];
+    const b = BN[s.bn];
+    const list = P.filter((p) => s.cat === 'all' || p[4] === s.cat).slice(0, 4);
+    const count = Object.values(s.cart).reduce((a, x) => a + x, 0);
+    const total = P.reduce((a, p) => a + (s.cart[p[0]] || 0) * p[3], 0);
+    return {
+      bnImg: b[0], bnEb: b[1], bnTitle: b[2], bnSub: b[3], bnCta: b[4] + ' →',
+      bnGo: () => flash('ไปหน้า ' + b[4] + ' · ลิงก์ตั้งค่าในแอดมิน > การตลาด'),
+      bnPrev: () => this.setState({ bn: (s.bn + BN.length - 1) % BN.length }), bnNext: () => this.setState({ bn: (s.bn + 1) % BN.length }),
+      dots: BN.map((x, i) => ({ label: 'โปรที่ ' + (i + 1), w: i === s.bn ? '14px' : '6px', c: i === s.bn ? '#8e6a0d' : 'rgba(27,20,9,.45)', pick: () => this.setState({ bn: i }) })),
+      trust: ['ของแท้', 'มี อย.', 'นำเข้าถูกต้อง', 'ร้านตรวจสอบแล้ว'].map((t) => ({ t })),
+      hotels: [
+        { img: H1, name: 'The Grand Riverside', area: 'กรุงเทพฯ · เจริญกรุง', note: 'ส่วนลดสมาชิก [รอกำหนด]' },
+        { img: H2, name: 'Lanna Heritage Hotel', area: 'เชียงใหม่ · นิมมาน', note: 'ส่วนลดสมาชิก [รอกำหนด]' },
+        { img: V, name: 'Pattaya Bay Residence', area: 'ชลบุรี · พัทยากลาง', note: 'ส่วนลดสมาชิก [รอกำหนด]' }
+      ],
+      spas: [
+        { img: V, name: 'Siam Serenity Spa', area: 'สุขุมวิท 31', price: 'เริ่ม ฿990' },
+        { img: H2, name: 'Riverside Hotel Spa', area: 'เชียงใหม่', price: 'เริ่ม ฿1,320' },
+        { img: H1, name: 'Lanna Retreat Spa', area: 'เชียงราย', price: 'เริ่ม ฿1,210' }
+      ],
+      cats: CATS.map(([k, label]) => Object.assign({ label, pick: () => this.setState({ cat: k }) }, chip(s.cat === k))),
+      catLabel: s.cat === 'all' ? '' : '· ' + CATS.find((c) => c[0] === s.cat)[1],
+      products: list.map(([id, vendor, name, price, kind, c, glow]) => { const q = s.cart[id] || 0; return { vendor, name, c, glow, fda: K[kind][0], kind: K[kind][1], price: fmt(price),
+        btn: q ? 'ในตะกร้า ' + q : '+ ตะกร้า', addLabel: 'เพิ่ม ' + name + ' ลงตะกร้า', bg: q ? '#e9f4ee' : 'linear-gradient(100deg, #f8e5e8 0%, #c8102e 24%, #990015 50%, #c8102e 76%, #f8e5e8 100%);box-shadow:0 8px 24px rgba(255,40,70,.45)', bd: q ? '#70c094' : 'rgba(143,109,10,.85)',
+        add: () => { const cart = Object.assign({}, s.cart); cart[id] = q + 1; flash('เพิ่ม ' + name + ' ลงตะกร้าแล้ว', { cart }); } }; }),
+      hasCart: count > 0, cartCount: String(count), cartTotal: fmt(total),
+      toast: !!s.toast, toastText: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

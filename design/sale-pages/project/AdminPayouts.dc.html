@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>แอดมิน ค่าตอบแทน</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&amp;family=Kanit:wght@500;600&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*,*::before,*::after{box-sizing:border-box;font-variant-numeric:lining-nums}
+a{color:#8e6a0d}a:hover{color:#997000}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #8e6a0d;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 1280px; height: 820px; background: linear-gradient(180deg, #fcf2f4 0%, #fbf3f5 100%); color: #170f04; font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 14px; line-height: 1.55; display: flex; overflow: hidden">
+  <nav aria-label="เมนูแอดมิน" style="width: 232px; flex: 0 0 232px; border-right: 1px solid rgba(142,106,13,.3); padding: 18px 14px; display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; box-sizing: border-box; font-family: 'IBM Plex Sans Thai', sans-serif; background: #faf6f7">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px"><img src="logo.png" alt="Mister Bamrungsuk" style="width: 46px; height: 46px; object-fit: contain; vertical-align: middle"><div style="line-height: 1.15"><div style="font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 17px; color: #846215">Mister Bamrungsuk</div><div style="font-size: 11px; color: #715d57">Admin · super</div></div></div>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ภาพรวม / รายได้</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ตรวจงาน</a>
+    <a href="AdminApplicants.dc.html" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ผู้สมัคร</a>
+    <a href="AdminSlips.dc.html" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ตรวจสลิป · Slip2Go</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">คิว KYC</a>
+    <a href="AdminCohorts.dc.html" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">กลุ่มอบรม / เช็กชื่อ</a>
+    <a href="AdminProviders.dc.html" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ผู้ให้บริการ & tier</a>
+    <a href="AdminPayouts.dc.html" aria-current="page" style="padding: 6px 12px; border-radius: 10px; background: rgba(200,16,46,.28); border: 1px solid rgba(142,106,13,.6); color: #170f04; text-decoration: none; font-weight: 600">ค่าตอบแทน</a>
+    <a href="AdminInvites.dc.html" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ลิงก์เชิญ</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">โอนให้ Part-Time</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">พาร์ทเนอร์ / พื้นที่โปรโมท</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ร้านค้า Marketplace</a>
+    <a href="AdminCovers.dc.html" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">รูปหน้าปก</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">สมาชิก · ใบเตือน</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">รายงาน</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">เรื่องร้องเรียน</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">โปรโมชัน</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">บันทึกระบบ · SOS</a>
+    <div style="height: 1px; background: rgba(142,106,13,.3); margin: 6px 0"></div>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ตั้งค่าระบบ</a>
+    <div style="margin-top: auto; padding-top: 12px; display: flex; flex-direction: column; gap: 4px"><p style="margin: 0; padding: 0 12px; font-size: 12px; color: #594836">admin@bamrungsuk.co · <span style="color: #8e6a0d">Super admin</span></p><span style="margin-top: 4px; padding: 6px 12px; border-radius: 10px; border: 1px solid rgba(142,106,13,.3); color: #3b2b19">ออกจากระบบ</span><a href="Main.dc.html" style="padding: 6px 12px; color: #8e6a0d; text-decoration: none">← สารบัญทุกหน้า</a></div>
+  </nav>
+  <main style="flex: 1; padding: 22px 24px; display: flex; gap: 18px; min-width: 0">
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end">
+        <div><div style="font-size: 11px; letter-spacing: 2.5px; color: #8e6a0d; font-weight: 600">PAYOUTS</div><h1 style="margin: 2px 0 0; font-family: Kanit, sans-serif; font-weight: 600; font-size: 24px">ค่าตอบแทนผู้ให้บริการ</h1></div>
+        <div style="display: flex; gap: 8px; align-items: center"><select aria-label="เดือน" style="height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid rgba(142,106,13,.3); background: #fcf5f6; color: #170f04; font-size: 14px"><option>ตุลาคม 2569</option><option>กันยายน 2569</option><option>สิงหาคม 2569</option></select><button style="height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid rgba(142,106,13,.4); background: transparent; color: #3b2b19; font-size: 13px">ส่งออก CSV</button></div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+        <div style="padding: 16px; border-radius: 14px; background: #fbf1f3; border: 1px solid rgba(142,106,13,.22); border-color: rgba(142,106,13,.55)"><div style="font-size: 12px; color: #594836">ยอดต้องจ่ายเดือนนี้</div><div style="font-family: Kanit, sans-serif; font-weight: 600; font-size: 26px; color: #8e6a0d">฿{{totalPay}}</div></div>
+        <div style="padding: 16px; border-radius: 14px; background: #fbf1f3; border: 1px solid rgba(142,106,13,.22)"><div style="font-size: 12px; color: #594836">จำนวนผู้ให้บริการ</div><div style="font-family: Kanit, sans-serif; font-weight: 600; font-size: 26px">{{n}} คน</div></div>
+        <div style="padding: 16px; border-radius: 14px; background: #fbf1f3; border: 1px solid rgba(142,106,13,.22)"><div style="font-size: 12px; color: #594836">เฉลี่ย %</div><div style="font-family: Kanit, sans-serif; font-weight: 600; font-size: 26px">{{avg}}</div></div>
+      </div>
+      <div style="border-radius: 14px; background: #fbf1f3; border: 1px solid rgba(142,106,13,.22); overflow: hidden">
+        <div style="display: grid; grid-template-columns: 1.2fr 70px 80px 140px 80px 140px 150px; gap: 8px; padding: 10px 14px; background: #fcf5f6; color: #594836; font-size: 12px"><span>ผู้ให้บริการ</span><span>tier</span><span style="text-align: right">เคส</span><span style="text-align: right">ยอดออร์เดอร์รวม</span><span style="text-align: center">% ขั้น</span><span style="text-align: right">เงินที่ต้องจ่าย</span><span style="text-align: center">สถานะ</span></div>
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+          <div style="display: grid; grid-template-columns: 1.2fr 70px 80px 140px 80px 140px 150px; gap: 8px; padding: 12px 14px; border-top: 1px solid rgba(142,106,13,.15); align-items: center">
+            <span style="display: flex; flex-direction: column; line-height: 1.3"><span style="font-weight: 600">{{r.name}}</span><span style="font-size: 12px; color: #8e6a0d">{{r.mb}}</span></span>
+            <span style="color: #3b2b19">{{r.tier}}</span>
+            <span style="text-align: right">{{r.cases}}</span>
+            <span style="text-align: right; color: #3b2b19">฿{{r.gross}}</span>
+            <span style="text-align: center; font-weight: 600; color: {{r.pctC}}">{{r.pct}}</span>
+            <span style="text-align: right; font-weight: 600">฿{{r.pay}}</span>
+            <span style="text-align: center"><button onClick="{{r.toggle}}" style="height: 30px; padding: 0 14px; border-radius: 999px; border: 1px solid {{r.sbd}}; background: {{r.sbg}}; color: {{r.sfg}}; font-size: 12.5px; font-weight: 600">{{r.status}}</button></span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <aside style="width: 280px; flex-shrink: 0; padding: 18px; border-radius: 16px; border: 1px solid rgba(142,106,13,.55); background: #fbf1f3; display: flex; flex-direction: column; gap: 14px; align-self: flex-start">
+      <div><div style="font-size: 11px; letter-spacing: 2.5px; color: #8e6a0d; font-weight: 600">SETTINGS</div><div style="font-family: Kanit, sans-serif; font-weight: 600; font-size: 18px">ขั้น % ส่วนแบ่ง</div><div style="font-size: 12px; color: #594836">เงื่อนไขเบื้องต้น · นับเคสต่อเดือน</div></div>
+      <sc-for list="{{tiers}}" as="t" hint-placeholder-count="3">
+        <div style="display: grid; grid-template-columns: 1fr 80px; gap: 8px; align-items: center"><span>{{t.label}}</span><span style="display: flex; align-items: center; gap: 4px"><input aria-label="% สำหรับ {{t.label}}" value="{{t.pct}}" style="height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid rgba(142,106,13,.3); background: #fcf5f6; color: #170f04; font-size: 14px; width: 56px; text-align: right"><span style="color: #594836">%</span></span></div>
+      </sc-for>
+      <div style="padding: 10px 12px; border-radius: 10px; background: #fcf5f6; font-size: 12.5px; color: #3b2b19; line-height: 1.6">ต่อเคส: Gold 4,000 / 5,000 / 6,000 · Silver 2,600 / 3,250 / 3,900 บาท</div>
+      <button style="height: 42px; padding: 0 18px; border-radius: 999px; border: 1.5px solid #8e6a0d; background: linear-gradient(100deg, #9e1028, #c8102e 50%, #9e1028); color: #fff; font-weight: 600; font-family: Kanit, sans-serif; font-size: 14px">บันทึกเงื่อนไข</button>
+    </aside>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":820}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { paid: { 0: true, 2: true } }; }
+  renderVals() {
+    const s = this.state;
+    const R = [
+      { mb: 'MB-2610001', name: 'ต้น', tier: 'Gold', price: 10000, cases: 26, show: true, pend: 0, skills: 'นวดผ่อนคลาย · ทำอาหาร', area: 'สุขุมวิท · ทองหล่อ' },
+      { mb: 'MB-2610003', name: 'เจมส์', tier: 'Gold', price: 10000, cases: 14, show: true, pend: 2, skills: 'ถ่ายรูป · คาเฟ่', area: 'สาทร · สีลม' },
+      { mb: 'MB-2610004', name: 'บอส', tier: 'Silver', price: 6500, cases: 12, show: true, pend: 0, skills: 'นวดผ่อนคลาย · ดูหนัง', area: 'อารีย์' },
+      { mb: 'MB-2610005', name: 'ภูมิ', tier: 'Silver', price: 6500, cases: 7, show: false, pend: 1, skills: 'ทำอาหาร · เดินเล่น', area: 'รัชดา' },
+      { mb: 'MB-2610006', name: 'ไนซ์', tier: 'Gold', price: 10000, cases: 21, show: true, pend: 0, skills: 'นวดผ่อนคลาย · ถ่ายรูป', area: 'บางนา' },
+      { mb: 'MB-2610008', name: 'เอก', tier: 'Silver', price: 6500, cases: 3, show: true, pend: 0, skills: 'คาเฟ่ · ดูหนัง', area: 'บางซื่อ' }
+    ];
+    const pctOf = (c) => c >= 25 ? 60 : c > 10 ? 50 : 40;
+    const fmt = (n) => n.toLocaleString('en-US');
+    const rows = R.map((r, i) => { const p = pctOf(r.cases); const gross = r.cases * r.price; const pay = gross * p / 100; const done = !!s.paid[i]; return { ...r, gross: fmt(gross), pct: p + '%', pctC: p === 60 ? '#8e6a0d' : '#3b2b19', pay: fmt(pay), payN: pay, p, status: done ? '✓ จ่ายแล้ว' : 'รอจ่าย', sbd: done ? 'rgba(29,159,77,.5)' : 'rgba(142,106,13,.5)', sbg: done ? 'rgba(29,159,77,.1)' : 'rgba(142,106,13,.12)', sfg: done ? '#08441d' : '#8b6c0e', toggle: () => this.setState({ paid: Object.assign({}, s.paid, { [i]: !done }) }) }; });
+    return {
+      rows, n: rows.length,
+      totalPay: fmt(rows.reduce((a, r) => a + r.payN, 0)),
+      avg: Math.round(rows.reduce((a, r) => a + r.p, 0) / rows.length) + '%',
+      tiers: [['ไม่เกิน 10 เคส', 40], ['11–24 เคส', 50], ['25 เคสขึ้นไป', 60]].map(([label, pct]) => ({ label, pct }))
+    };
+  }
+}
+</script>
+</body>
+</html>

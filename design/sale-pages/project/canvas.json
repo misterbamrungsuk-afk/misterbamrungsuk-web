@@ -1,0 +1,520 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "AdminApplicants.dc.html": {
+      "h": 1080,
+      "is_interactive": true,
+      "title": "Part-Time หลังบ้าน · รายชื่อผู้สมัคร (ทั้งหมด)",
+      "w": 1280,
+      "x": 4700,
+      "y": 0
+    },
+    "AdminApplicantsA.dc.html": {
+      "h": 1080,
+      "is_interactive": true,
+      "title": "Part-Time หลังบ้าน · รายชื่อผู้สมัคร · สาย 1",
+      "w": 1280,
+      "x": 4700,
+      "y": 2140
+    },
+    "AdminApplicantsB.dc.html": {
+      "h": 1080,
+      "is_interactive": true,
+      "title": "Part-Time หลังบ้าน · รายชื่อผู้สมัคร · สาย 2",
+      "w": 1280,
+      "x": 4700,
+      "y": 3340
+    },
+    "AdminCohorts.dc.html": {
+      "h": 820,
+      "is_interactive": true,
+      "title": "Part-Time หลังบ้าน · กลุ่มอบรม",
+      "w": 1280,
+      "x": 4700,
+      "y": 1200
+    },
+    "AdminCovers.dc.html": {
+      "h": 820,
+      "is_interactive": true,
+      "title": "หลังบ้าน · รูปหน้าปก (สไลด์หน้าแรก + โปสเตอร์)",
+      "w": 1280,
+      "x": 4700,
+      "y": 5480
+    },
+    "AdminInvites.dc.html": {
+      "h": 820,
+      "is_interactive": true,
+      "title": "หลังบ้าน · ลิงก์เชิญ",
+      "w": 1280,
+      "x": 4700,
+      "y": 8300
+    },
+    "AdminPayouts.dc.html": {
+      "h": 820,
+      "is_interactive": true,
+      "title": "หลังบ้าน · ค่าตอบแทน",
+      "w": 1280,
+      "x": 4700,
+      "y": 7360
+    },
+    "AdminProviders.dc.html": {
+      "h": 820,
+      "is_interactive": true,
+      "title": "หลังบ้าน · ผู้ให้บริการ & tier",
+      "w": 1280,
+      "x": 4700,
+      "y": 6420
+    },
+    "AdminSlips.dc.html": {
+      "h": 820,
+      "is_interactive": true,
+      "title": "Part-Time หลังบ้าน · ตรวจสลิป (Slip2Go)",
+      "w": 1280,
+      "x": 4700,
+      "y": 4540
+    },
+    "Benefits.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "ดูเพื่อนในระบบ · หน้าโชว์ก่อนสมัคร (แบบหน้าแรกผู้ใช้)",
+      "w": 390,
+      "x": 0,
+      "y": 2900
+    },
+    "Cart.dc.html": {
+      "h": 945,
+      "is_interactive": true,
+      "title": "Marketplace · ตะกร้า → QR + สลิป",
+      "w": 390,
+      "x": 3879,
+      "y": 14503
+    },
+    "D2-KYC2.dc.html": {
+      "h": 1400,
+      "is_interactive": true,
+      "title": "Part-Time · ขั้นที่ 4/5 ยืนยันตัวตน",
+      "w": 390,
+      "x": 2350,
+      "y": 0
+    },
+    "D3-KYC3.dc.html": {
+      "h": 920,
+      "is_interactive": true,
+      "title": "Part-Time · ขั้นที่ 5/5 บัญชีรับเงิน",
+      "w": 390,
+      "x": 2820,
+      "y": 0
+    },
+    "D5-KYCRejected.dc.html": {
+      "h": 970,
+      "is_interactive": true,
+      "title": "Part-Time · กรณีเอกสารไม่ผ่าน",
+      "w": 390,
+      "x": 3760,
+      "y": 0
+    },
+    "HotelDetail.dc.html": {
+      "h": 945,
+      "is_interactive": true,
+      "title": "Marketplace · รายละเอียดโรงแรม",
+      "w": 390,
+      "x": 5289,
+      "y": 14503
+    },
+    "HotelList.dc.html": {
+      "h": 945,
+      "is_interactive": true,
+      "title": "Marketplace · โรงแรมพาร์ทเนอร์ (กรองจังหวัด)",
+      "w": 390,
+      "x": 4819,
+      "y": 14503
+    },
+    "Join.dc.html": {
+      "h": 1960,
+      "is_interactive": true,
+      "title": "Part-Time · Sale Page รับสมัคร",
+      "w": 390,
+      "x": 470,
+      "y": 0
+    },
+    "JoinDone.dc.html": {
+      "h": 1180,
+      "is_interactive": true,
+      "title": "Part-Time · สมัครสำเร็จ รับรหัส MB",
+      "w": 390,
+      "x": 3290,
+      "y": 0
+    },
+    "JoinForm.dc.html": {
+      "h": 1860,
+      "is_interactive": true,
+      "title": "Part-Time · ใบสมัคร ขั้นที่ 1/5 ข้อมูลส่วนตัว",
+      "w": 390,
+      "x": 940,
+      "y": 0
+    },
+    "JoinForm2.dc.html": {
+      "h": 1880,
+      "is_interactive": true,
+      "title": "Part-Time · ใบสมัคร ขั้นที่ 2/5 กิจกรรม · เวลา · ข้อตกลง",
+      "w": 390,
+      "x": 1410,
+      "y": 0
+    },
+    "JoinInvite.dc.html": {
+      "h": 1300,
+      "is_interactive": true,
+      "title": "Part-Time · ลิงก์เชิญพิเศษ (ไม่เสียค่าสมัคร)",
+      "w": 390,
+      "x": 470,
+      "y": 2900
+    },
+    "JoinPay.dc.html": {
+      "h": 1320,
+      "is_interactive": true,
+      "title": "Part-Time · ขั้นที่ 3/5 ชำระเงิน (QR)",
+      "w": 390,
+      "x": 1880,
+      "y": 0
+    },
+    "Main.dc.html": {
+      "h": 1240,
+      "is_interactive": true,
+      "title": "ภาพรวม · Sale Page + Marketplace",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "Market.dc.html": {
+      "h": 945,
+      "is_interactive": true,
+      "title": "Marketplace · หน้าแรก (โรงแรม · สปา · สินค้า)",
+      "w": 390,
+      "x": 2469,
+      "y": 14503
+    },
+    "MyEarnings.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Part-Time · รายได้ของฉัน (ตามระดับ)",
+      "w": 390,
+      "x": 3760,
+      "y": 2900
+    },
+    "OrderTrack.dc.html": {
+      "h": 945,
+      "is_interactive": true,
+      "title": "Marketplace · ติดตามคำสั่งซื้อ",
+      "w": 390,
+      "x": 4349,
+      "y": 14503
+    },
+    "Partner.dc.html": {
+      "h": 5700,
+      "is_interactive": true,
+      "title": "พาร์ทเนอร์ · Sale Page สปา / โรงแรม + ใบสมัคร",
+      "w": 390,
+      "x": -863,
+      "y": 13895
+    },
+    "PartnerDone.dc.html": {
+      "h": 945,
+      "is_interactive": true,
+      "title": "พาร์ทเนอร์ · สมัครสำเร็จ รับรหัส MBP + สถานะ",
+      "w": 390,
+      "x": 157,
+      "y": 13895
+    },
+    "PartnerLogin.dc.html": {
+      "h": 945,
+      "is_interactive": true,
+      "title": "พาร์ทเนอร์ · เข้าสู่ระบบ / รออนุมัติ",
+      "w": 390,
+      "x": 1097,
+      "y": 13895
+    },
+    "PartnerPay.dc.html": {
+      "h": 1860,
+      "is_interactive": true,
+      "title": "พาร์ทเนอร์ · ชำระค่าสมาชิก QR + สลิป",
+      "w": 390,
+      "x": -313,
+      "y": 13895
+    },
+    "PartnerQC.dc.html": {
+      "h": 945,
+      "is_interactive": true,
+      "title": "พาร์ทเนอร์ · นัด QC สถานที่ + เอกสาร",
+      "w": 390,
+      "x": 627,
+      "y": 13895
+    },
+    "Policy.dc.html": {
+      "h": 945,
+      "is_interactive": true,
+      "title": "Marketplace · นโยบาย คืนสินค้า/จัดส่ง/ความเป็นส่วนตัว",
+      "w": 390,
+      "x": 7169,
+      "y": 14503
+    },
+    "ProductDetail.dc.html": {
+      "h": 945,
+      "is_interactive": true,
+      "title": "Marketplace · รายละเอียดสินค้า",
+      "w": 390,
+      "x": 3409,
+      "y": 14503
+    },
+    "ProductList.dc.html": {
+      "h": 945,
+      "is_interactive": true,
+      "title": "Marketplace · สินค้าทั้งหมด (ค้นหา + ตัวกรอง)",
+      "w": 390,
+      "x": 2939,
+      "y": 14503
+    },
+    "ProviderAvailability.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Part-Time · เวลาทำงาน",
+      "w": 390,
+      "x": 1880,
+      "y": 2900
+    },
+    "ProviderEditProfile.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Part-Time · แก้โปรไฟล์สาธารณะ",
+      "w": 390,
+      "x": 1410,
+      "y": 2900
+    },
+    "ProviderJobboard.dc.html": {
+      "h": 920,
+      "is_interactive": true,
+      "title": "Part-Time · ประกาศงาน",
+      "w": 390,
+      "x": 2820,
+      "y": 2900
+    },
+    "ProviderPosts.dc.html": {
+      "h": 1290,
+      "is_interactive": true,
+      "title": "Part-Time · โพสต์",
+      "w": 390,
+      "x": 2350,
+      "y": 2900
+    },
+    "ProviderProfile.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Part-Time · โปรไฟล์ของฉัน",
+      "w": 390,
+      "x": 940,
+      "y": 2900
+    },
+    "ProviderSettings.dc.html": {
+      "h": 1200,
+      "is_interactive": true,
+      "title": "Part-Time · ตั้งค่า",
+      "w": 390,
+      "x": 3290,
+      "y": 2900
+    },
+    "SpaDetail.dc.html": {
+      "h": 945,
+      "is_interactive": true,
+      "title": "Marketplace · รายละเอียดสปา",
+      "w": 390,
+      "x": 6229,
+      "y": 14503
+    },
+    "SpaList.dc.html": {
+      "h": 945,
+      "is_interactive": true,
+      "title": "Marketplace · สปาพาร์ทเนอร์ (กรองจังหวัด)",
+      "w": 390,
+      "x": 5759,
+      "y": 14503
+    },
+    "TrainingCohort.dc.html": {
+      "h": 908,
+      "is_interactive": true,
+      "title": "Part-Time · ตารางอบรม + เช็กชื่อ",
+      "w": 390,
+      "x": 4230,
+      "y": 0
+    },
+    "VendorShop.dc.html": {
+      "h": 945,
+      "is_interactive": true,
+      "title": "Marketplace · หน้าร้าน คลินิกหมอโส",
+      "w": 390,
+      "x": 6699,
+      "y": 14503
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-07T10:00:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "note-2z6w2x": {
+      "bold": false,
+      "kind": "title1",
+      "size": 24,
+      "text": "ต้องมีหน้า profile ให้คนสมัคร ได้ up รูป",
+      "w": 240,
+      "x": 1929,
+      "y": -437
+    },
+    "note-6ohwfl": {
+      "bold": false,
+      "kind": "title1",
+      "size": 24,
+      "text": "หน้าราคาต่อ การใช้บริการอาจต้อง มีเปิดพร้อมกับ sale page รับparttime ไม่งั้น คนมาสมัครจะไม่รู้เลยว่า เขาได้ เท่าไร ต่อการทำงาน",
+      "w": 240,
+      "x": 112,
+      "y": -940
+    },
+    "note-6rdr3p": {
+      "bold": false,
+      "kind": "title1",
+      "size": 128,
+      "text": "เพิ่ม part-time หลังบ้านที่ไม่ต้องจ่ายเงิน ไม่ต้องเสียค่าสมัครเอามาโชว์หน้า page เป็น เหมือน passway กรอกข้อมูลเหมือนกัน แต่ถ้ามาจาก link นี้จะเป็นเด็กพิเศษ",
+      "w": 240,
+      "x": -200,
+      "y": -437
+    },
+    "note-bxboov": {
+      "bold": false,
+      "kind": "title1",
+      "size": 24,
+      "text": "07:44 MDG สิ่งที่ต้องเพิ่มเติมในหน้า สิทธิพิเศษ และ อัตราการให้บริการ ต่อ ครั้ง\n📍ราคาเพื่อนกินเที่ยวปกติ \n 📍ราคาเพื่อนกินเที่ยวสกิลนวด\n📍การแบ่งสัดส่วนรายได้กับ platform ต่อ parttimeแต่ละ tier \n\n\n✅✅สิทธิพิเศษ ในการอยู่ใน platform mister Bamrungsuk \n  -platformที่มีการโปรโมท ตลอดปี \n  -branding ที่น่าเชื่อถือ \n  -กฎเกณฑ์การทำงานที่มีกรอบของกฎหมายนำเพื่อความปลอดภัย\n -เมื่อทำงานครบ ตามจำนวนครั้งต่อเดือน ได้รับสิทธิพิเศษ ต่างต่าง ไม่ว่าจะเป็น การดูแล จากคลีนิคที่เข้าร่วมเป็นพาร์ทเนอร์ /เสื้อผ้า หรือ อื่นอื่น\n  (\\*\\*เป็นการยกตัวอย่างสิทธิพิเศษที่ทางพาร์ทเนอร์ที่จะเข้าร่วมใน platform ตามแต่ตกลงกัน)\n07:46 MDG หน้านี้อาจต้องมาก่อน ช่องการสมัคร อาจเป็น คำเชิญชวนให้คนมาสมัคร ด้วยสิทธิพิเศษ ต่างต่างที่คนมาทำงานกับเราได้รับ\n  ✅ขอหน้า อ่านง่าย โดดเด่น ",
+      "w": 240,
+      "x": 1446,
+      "y": -989
+    },
+    "note-fl3swn": {
+      "color": "red",
+      "kind": "title1",
+      "size": 24,
+      "text": "ลองลดสี background เอาสีสว่างกว่านี้",
+      "w": 240,
+      "x": 1053,
+      "y": -126
+    },
+    "note-p23d5h": {
+      "bold": false,
+      "kind": "title1",
+      "size": 24,
+      "text": "",
+      "w": 240,
+      "x": 2215,
+      "y": -302
+    },
+    "note-r82y1u": {
+      "bold": false,
+      "kind": "title1",
+      "size": 24,
+      "text": "เพิ่มความสว่าง\n",
+      "w": 240,
+      "x": -129,
+      "y": -610
+    },
+    "note-y6jqt1": {
+      "bold": false,
+      "kind": "title1",
+      "size": 24,
+      "text": "📋 การกรอกข้อมูล\nงานเพื่อนกิน • เพื่อนเที่ยว • นวด\n\n\nกรุณากรอกข้อมูลเพื่อให้ทางเราพิจารณาและจัดสรรงานให้เหมาะสมกับความสะดวกของผู้สมัคร\n\n\n1\\. ข้อมูลเบื้องต้น\n\n\n\\* ชื่อเล่น:\n\\* อายุ:\n\\* เบอร์โทรศัพท์ / LINE ID:\n\\* ปัจจุบันพักอาศัยอยู่แถวไหน:\n\n\n2\\. พื้นที่ที่สะดวกรับงาน\nกรุณาระบุเขตหรือพื้นที่ที่สามารถไปรับงานได้\n\n\n☐ กรุงเทพฯ ชั้นใน เช่น สยาม สุขุมวิท อโศก สีลม สาทร\n☐ กรุงเทพฯ ฝั่งตะวันออก เช่น บางนา ศรีนครินทร์ ลาดกระบัง\n☐ กรุงเทพฯ ฝั่งเหนือ เช่น จตุจักร ดอนเมือง รังสิต\n☐ กรุงเทพฯ ฝั่งตะวันตก เช่น ธนบุรี บางแค\n☐ นนทบุรี\n☐ สมุทรปราการ\n☐ ปทุมธานี\n☐ รับงานได้ทั่วกรุงเทพฯ และปริมณฑล\n☐ พื้นที่อื่น ๆ โปรดระบุ: __________\n\n\nพื้นที่ที่ไม่สะดวกรับงาน: __________\n\n\n3\\. วันและเวลาที่สะดวกรับงาน\n\n\n☐ จันทร์\n☐ อังคาร\n☐ พุธ\n☐ พฤหัสบดี\n☐ ศุกร์\n☐ เสาร์\n☐ อาทิตย์\n☐ วันหยุดนักขัตฤกษ์\n\n\nช่วงเวลาที่สะดวก\n\n\n☐ 06:00–12:00 น.\n☐ 12:00–17:00 น.\n☐ 17:00–22:00 น.\n☐ 22:00–02:00 น.\n☐ หลังเลิกงานประจำ\n☐ รับงานได้ทั้งวัน\n☐ สามารถรับงานด่วนได้เป็นบางครั้ง\n\n\nวันที่หรือเวลาที่ไม่สะดวก: __________\n\n\n4\\. ลักษณะการรับงาน\n☐ รับงานล่วงหน้าเท่านั้น\n☐ รับงานล่วงหน้า 1 วัน\n☐ รับงานล่วงหน้า 2–3 วัน\n☐ รับงานด่วนได้ หากมีเวลาว่าง\n☐ รับงานเป็นครั้งคราว\n☐ รับงานประจำตามตารางที่ตกลงกัน\n\n\n\n5\\. ประสบการณ์และเงื่อนไขการทำงานที่ผ่านมา\nมีประสบการณ์:_____________\n\n\n\n6\\. ข้อมูลเพิ่มเติม\nค่าตอบแทนที่คาดหวัง: __________\n\n\nหมายเหตุเพิ่มเติม: __________\n",
+      "w": 240,
+      "x": -1405,
+      "y": 2620
+    },
+    "t1": {
+      "kind": "title1",
+      "maxW": 5500,
+      "text": "Part-Time — Sale Page → ใบสมัคร 1–2 → ชำระ → ยืนยันตัวตน → บัญชี → สำเร็จ · หลังบ้าน",
+      "w": 240,
+      "x": 0,
+      "y": -358
+    },
+    "t2": {
+      "kind": "title1",
+      "maxW": 1800,
+      "text": "พาร์ทเนอร์ — Sale Page → ชำระ QR → สำเร็จ → นัด QC → เข้าสู่ระบบ",
+      "w": 240,
+      "x": -783,
+      "y": 13595
+    },
+    "t3": {
+      "kind": "title1",
+      "maxW": 5000,
+      "text": "Marketplace — หน้าแรก → สินค้า → ตะกร้า → ติดตาม · โรงแรม · สปา · ร้านค้า",
+      "w": 240,
+      "x": 2469,
+      "y": 14203
+    },
+    "t4": {
+      "kind": "title1",
+      "maxW": 4150,
+      "text": "Part-Time — หน้าโชว์ · ลิงก์เชิญ · โปรไฟล์ → แก้โปรไฟล์ → เวลาทำงาน → โพสต์ → ประกาศงาน → ตั้งค่า → รายได้",
+      "w": 240,
+      "x": 0,
+      "y": 2620
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Join.dc.html",
+    "JoinForm.dc.html",
+    "JoinForm2.dc.html",
+    "JoinPay.dc.html",
+    "D2-KYC2.dc.html",
+    "D3-KYC3.dc.html",
+    "JoinDone.dc.html",
+    "D5-KYCRejected.dc.html",
+    "TrainingCohort.dc.html",
+    "AdminApplicants.dc.html",
+    "AdminApplicantsA.dc.html",
+    "AdminApplicantsB.dc.html",
+    "AdminCohorts.dc.html",
+    "AdminSlips.dc.html",
+    "AdminCovers.dc.html",
+    "Partner.dc.html",
+    "PartnerPay.dc.html",
+    "PartnerDone.dc.html",
+    "PartnerQC.dc.html",
+    "PartnerLogin.dc.html",
+    "Market.dc.html",
+    "ProductList.dc.html",
+    "ProductDetail.dc.html",
+    "Cart.dc.html",
+    "OrderTrack.dc.html",
+    "HotelList.dc.html",
+    "HotelDetail.dc.html",
+    "SpaList.dc.html",
+    "SpaDetail.dc.html",
+    "VendorShop.dc.html",
+    "Policy.dc.html",
+    "Benefits.dc.html",
+    "JoinInvite.dc.html",
+    "ProviderProfile.dc.html",
+    "AdminProviders.dc.html",
+    "AdminPayouts.dc.html",
+    "AdminInvites.dc.html",
+    "ProviderEditProfile.dc.html",
+    "ProviderAvailability.dc.html",
+    "ProviderPosts.dc.html",
+    "ProviderJobboard.dc.html",
+    "ProviderSettings.dc.html",
+    "MyEarnings.dc.html"
+  ],
+  "pages": [],
+  "title": "Mister Bamrungsuk — Sale Pages"
+}

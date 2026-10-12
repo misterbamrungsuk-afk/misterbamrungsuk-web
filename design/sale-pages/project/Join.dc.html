@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>รับสมัคร Part-Time</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&amp;family=Kanit:wght@500;600&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*,*::before,*::after{box-sizing:border-box;font-variant-numeric:lining-nums}
+a{color:#8e6a0d}a:hover{color:#997000}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid #8e6a0d;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1960px; background: #faf6ef; color: #2a1a14; font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 15px; line-height: 1.7; overflow: hidden">
+
+  <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #faf6ef">
+    <span style="display: inline-flex; align-items: center; gap: 8px; font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 20px"><img src="logo.png" alt="Mister Bamrungsuk" style="width: 40px; height: 40px; object-fit: contain"><span style="color: #846215">Mister Bamrungsuk</span></span>
+    <span style="padding: 5px 12px; border-radius: 999px; border: 1px solid #c9a24a; font-size: 10px; letter-spacing: 2.5px; color: #8e6a0d">PREMIUM</span>
+  </div>
+
+
+  <div style="padding: 20px 16px 0; display: flex; flex-direction: column; gap: 20px">
+
+    <section style="padding: 18px; border-radius: 18px; background: linear-gradient(150deg, #fff4d6, #fbe7b5); border: 1px solid #e3c271">
+      <div style="font-size: 11px; font-weight: 600; letter-spacing: 2px; color: #8a6516">PART-TIME · รับสมัคร</div>
+      <h1 style="margin: 2px 0 6px; font-family: Kanit, sans-serif; font-weight: 600; font-size: 22px; line-height: 1.3; color: #2a1a14">ร่วมทีม Mister Bamrungsuk</h1>
+      <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #4a3a30">แพลตฟอร์มที่เตรียมฐานลูกค้า Premium ไว้ให้คุณแล้ว มีรายได้เสริม หรือทำเป็นอาชีพก็ได้</p>
+    </section>
+
+    <section style="padding: 16px 18px; border-radius: 16px; background: #ffffff; border: 1px solid #eadfcd">
+      <h2 style="margin: 0 0 8px; font-family: Kanit, sans-serif; font-weight: 600; font-size: 16px; color: #2a1a14">คุณสมบัติที่เรามองหา</h2>
+      <div style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.5; color: #3b2b19">
+        <sc-for list="{{lookingFor}}" as="x" hint-placeholder-count="3">
+          <div style="display: flex; gap: 10px; align-items: flex-start"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a87b1f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 2px"><path d="M5 12l5 5 9-10"/></svg><span>{{x}}</span></div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 14px">
+      <h2 style="margin: 0; font-family: Kanit, sans-serif; font-weight: 600; font-size: 20px; text-align: center">เลือกสายงานที่สมัคร</h2>
+      <sc-for list="{{tracks}}" as="p" hint-placeholder-count="2">
+        <button onClick="{{p.pick}}" aria-pressed="{{p.on}}" style="width: 100%; font: inherit; text-align: left; cursor: pointer; padding: 18px; border-radius: 16px; background: {{p.bg}}; border: 2px solid {{p.border}}; box-shadow: {{p.shadow}}; opacity: {{p.op}}; transform: {{p.tf}}; transition: all .3s ease; display: flex; flex-direction: column; gap: 12px; color: {{p.tx}}">
+          <span style="display: flex; align-items: center; gap: 12px">
+            <span style="flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; border: 2px solid {{p.ring}}; display: grid; place-items: center"><span style="width: 12px; height: 12px; border-radius: 50%; background: {{p.dot}}"></span></span>
+            <span style="font-family: Kanit, sans-serif; font-weight: 600; font-size: 18px; line-height: 1.35">{{p.name}}</span>
+          </span>
+          <span style="font-size: 13px; color: {{p.sub}}">ค่าใช้จ่ายในการสมัคร</span>
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <sc-for list="{{p.lines}}" as="l" hint-placeholder-count="2">
+              <div style="display: flex; justify-content: space-between; gap: 10px"><span style="color: {{p.kc}}">{{l.k}}</span><span style="font-weight: 600">{{l.v}}</span></div>
+            </sc-for>
+          </div>
+          <div style="padding: 12px 14px; border-radius: 12px; background: {{p.boxBg}}; display: flex; flex-direction: column; gap: 4px">
+            <div style="display: flex; justify-content: space-between; gap: 10px"><span style="color: {{p.boxK}}; font-weight: 600">📍 ค่าการันตีแบรนด์</span><span style="font-weight: 600; color: {{p.boxV}}">{{p.guarantee}}</span></div>
+            <div style="font-size: 13px; line-height: 1.6; color: {{p.boxN}}">ค่าประกันการละเมิดต่อแบรนด์และกฎหมาย หากไม่ทำผิดกฎเกณฑ์การทำงานและกฎหมายตลอดสัญญา 1 ปี จะได้รับเงินคืน</div>
+          </div>
+        </button>
+      </sc-for>
+      <a href="#terms" style="align-self: center; font-size: 14px; color: #8a6516">📄 อ่านสัญญา</a>
+      <a href="JoinForm.dc.html" style="margin-top: 6px; min-height: 56px; border-radius: 16px; background: linear-gradient(100deg, #9e1028, #c8102e 50%, #9e1028); border: 1.5px solid #8e6a0d; color: #fff; font-family: Kanit, sans-serif; font-weight: 600; font-size: 18px; text-decoration: none; display: grid; place-items: center">สมัครทันที</a>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 14px">
+      <h2 style="margin: 0; font-family: Kanit, sans-serif; font-weight: 600; font-size: 20px; text-align: center">กำหนดการ</h2>
+      <div style="display: flex; flex-direction: column; padding-left: 4px">
+        <sc-for list="{{timeline}}" as="t" hint-placeholder-count="5">
+          <div style="display: flex; gap: 14px"><span style="display: flex; flex-direction: column; align-items: center"><span style="width: 12px; height: 12px; border-radius: 50%; background: #8e6a0d; margin-top: 7px"></span><span style="flex: 1; width: 2px; background: rgba(142,107,13,.35)"></span></span><span style="padding-bottom: 16px; display: flex; flex-direction: column"><span style="font-size: 13px; color: #8e6a0d">{{t.date}}</span><span>{{t.text}}</span></span></div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column">
+      <h2 style="margin: 0 0 6px; font-family: Kanit, sans-serif; font-weight: 600; font-size: 20px; text-align: center">คำถามที่พบบ่อย</h2>
+      <sc-for list="{{faq}}" as="f" hint-placeholder-count="3">
+        <div style="border-bottom: 1px solid rgba(142,107,13,.25)">
+          <button onClick="{{f.toggle}}" aria-expanded="{{f.open}}" style="width: 100%; min-height: 52px; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 0; background: none; border: none; color: #170f04; font-size: 15px; font-weight: 500; text-align: left">{{f.q}}<span aria-hidden="true" style="color: #8e6a0d; font-size: 20px">{{f.sign}}</span></button>
+          <sc-if value="{{f.isOpen}}" hint-placeholder-val="{{ false }}"><div style="padding: 0 0 14px; font-size: 14px; color: #3b2b19">{{f.a}}</div></sc-if>
+        </div>
+      </sc-for>
+    </section>
+  </div>
+
+  <footer style="margin: 32px 20px 0; padding: 18px 0 24px; border-top: 1px solid rgba(201,162,74,.4); display: flex; flex-direction: column; gap: 12px; font-size: 12px; line-height: 1.6; color: #3b2b19">
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px"><span style="display: inline-flex; align-items: center; gap: 8px"><img src="logo.png" alt="" style="width: 34px; height: 34px; object-fit: contain"><span style="font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 21px; color: #846215">Bamrungsuk</span></span><span>ติดต่อเรา</span></div>
+    <div style="display: flex; flex-wrap: wrap; gap: 4px 12px"><span>ข้อกำหนดและเงื่อนไขการใช้งาน</span><span style="color: #8d7975">|</span><span>นโยบายความเป็นส่วนตัว (PDPA)</span></div>
+    <div style="color: #594836"><div style="color: #3b2b19">Mister Bamrungsuk · ทะเบียนนิติบุคคลเลขที่ 0105569040446</div><div>111/384 หมู่บ้านโกลเด้นทาวน์ พหลโยธิน-สะพานใหม่ ซอยพหลโยธิน 54/1 แยก 4 (วัดเกาะ) แขวงคลองถนน เขตสายไหม กรุงเทพมหานคร 10220</div><div>Misterbamrungsuk@gmail.com · 096-004-0231</div></div>
+    <div style="color: #715d57">© 2569 Mister Bamrungsuk สงวนลิขสิทธิ์</div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1960}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { pick: 'B', faqOpen: { 0: true } }; }
+  renderVals() {
+    const s = this.state;
+    const TR = {
+      A: { name: 'เพื่อนกินเที่ยว', guarantee: '10,000 บาท', lines: [['ค่าอบรม', '3,000 บาท'], ['เวลาการทำงานต่อครั้ง', '3–8 ชม.']] },
+      B: { name: 'เพื่อนกินเที่ยวสายนวดผ่อนคลาย', guarantee: '15,000 บาท', lines: [['ค่าอบรม', '6,000 บาท'], ['เวลาการทำงานต่อครั้ง', '3–5 ชม.']] }
+    };
+    const TH = {
+      A: { bg: '#f3dc9c', tx: '#2a1a14', sub: '#4a3a30', kc: '#4a3a30', ring: '#a87b1f', boxBg: '#ffffff', boxK: '#8a6516', boxV: '#2a1a14', boxN: '#6f5e52', link: '#8a6516', bdOn: '#a87b1f', bdOff: '#d9bb6a', sh: '0 0 0 4px rgba(168,123,31,.18), 0 12px 28px rgba(168,123,31,.25)' },
+      B: { bg: '#f6c9d0', tx: '#2a1a14', sub: '#4a3a30', kc: '#4a3a30', ring: '#b0182c', boxBg: '#ffffff', boxK: '#b0182c', boxV: '#2a1a14', boxN: '#6f5e52', link: '#b0182c', bdOn: '#b0182c', bdOff: '#e59aa6', sh: '0 0 0 4px rgba(176,24,44,.14), 0 12px 28px rgba(176,24,44,.22)' }
+    };
+    const FAQ = [
+      ['ค่าการันตีแบรนด์คืออะไร ได้คืนเมื่อไหร่?', 'เป็นค่าประกันการละเมิดต่อแบรนด์และกฎหมาย ได้รับคืนเต็มจำนวนเมื่อครบสัญญา 1 ปี หากไม่ทำผิดกฎเกณฑ์การทำงานและกฎหมาย'],
+      ['งานนี้ทำอะไรบ้าง?', 'เป็นเพื่อนร่วมกิจกรรมของลูกค้า เช่น ทานข้าว เที่ยว ดูหนัง ถ่ายรูป ไม่มีบริการทางเพศใด ๆ ทั้งสิ้น'],
+      ['ไม่เคยมีประสบการณ์ สมัครได้ไหม?', 'ได้ ทุกคนจะได้อบรมก่อนเริ่มรับงาน'],
+      ['ต้องตรวจประวัติอะไรบ้าง?', 'ยืนยันตัวตนด้วยบัตรประชาชน และยินยอมให้ตรวจประวัติอาชญากรรมก่อนเปิดบัญชี']
+    ];
+    return {
+      lookingFor: ['ผู้ชายอายุ 20–50 ปี ดูแลตัวเองสม่ำเสมอ', 'สุภาพ ใจรักงานบริการ เป็นผู้ฟังที่ดี', 'ไม่ต้องมีประสบการณ์ ถ้านวดเป็นจะมีรายได้มากขึ้น'],
+      tracks: ['B', 'A'].map((k) => { const on = s.pick === k; const T = TH[k]; return { ...TR[k], ...T, lines: TR[k].lines.map(([k2, v]) => ({ k: k2, v })), on: String(on), border: on ? T.bdOn : T.bdOff, shadow: on ? T.sh : 'none', op: on ? '1' : '.55', tf: on ? 'scale(1.02)' : 'scale(.98)', dot: on ? T.ring : 'transparent', pick: () => this.setState({ pick: k }) }; }),
+      timeline: [['20 ต.ค. – 10 พ.ย.', 'เปิดรับสมัคร'], ['ไม่เกินต้น พ.ย.', 'ประกาศกฎเกณฑ์การทำงาน'], ['ภายใน 20 พ.ย.', 'อบรมกลุ่ม 1'], ['30 พ.ย.', 'พร้อมเปิดให้บริการ'], ['30 พ.ย. – ต้น ธ.ค.', 'อบรมกลุ่ม 2']].map(([date, text]) => ({ date, text })),
+      faq: FAQ.map(([q, a], i) => { const o = !!(s.faqOpen || {})[i]; return { q, a, isOpen: o, open: String(o), sign: o ? '−' : '+', toggle: () => this.setState({ faqOpen: Object.assign({}, s.faqOpen, { [i]: !o }) }) }; })
+    };
+  }
+}
+</script>
+</body>
+</html>

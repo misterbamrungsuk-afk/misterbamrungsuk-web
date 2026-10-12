@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>The Grand Riverside</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-variant-numeric:lining-nums}
+a{color:#8e6a0d}a:hover{color:#866913}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid #8e6a0d;outline-offset:2px}
+.card{padding:14px;border-radius:16px;background:#faeef0;border:1px solid rgba(142,107,13,.38)}
+.cta{height:52px;border-radius:14px;border:1px solid rgba(143,109,10,.85);background:linear-gradient(100deg, #f8e5e8 0%, #c8102e 24%, #990015 50%, #c8102e 76%, #f8e5e8 100%);box-shadow:0 8px 24px rgba(255,40,70,.45);color:#fff;font-size:15px;font-weight:600;width:100%;font-family: 'Cormorant Garamond', Kanit;display:grid;place-items:center;text-decoration:none;box-sizing:border-box}
+.ghost{height:48px;border-radius:14px;border:1px solid rgba(142,107,13,.38);background:#faeef0;color:#8e6a0d;font-size:14px;font-weight:600;width:100%;display:grid;place-items:center;text-decoration:none;box-sizing:border-box}
+.fl{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#3b2b19}
+.fi{height:48px;border-radius:14px;background:#faeef0;padding:0 14px;font-size:14px;text-align:left;width:100%;box-sizing:border-box}
+.chip{min-height:40px;padding:0 14px;border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap;flex:0 0 auto}
+.eb{font-size:10.5px;letter-spacing:2.5px;color:#8e6a0d;font-weight:600}
+.h{font-family: 'Cormorant Garamond', Kanit;font-weight:600}
+.mut{color:#3b2b19}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;border:1px solid rgba(212,175,55,.55);background:rgba(142,107,13,.18);color:#8e6a0d;font-size:11px;font-weight:600}
+.hrow{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.sb{width:44px;height:44px;border-radius:12px;border:1px solid rgba(142,107,13,.38);background:#faeef0;color:#8e6a0d;font-size:18px}
+*{font-variant-numeric:lining-nums}
+</style>
+</helmet>
+<div style="width: 390px; height: 945px; background: linear-gradient(180deg, #fbf1f3 0%, #faecee 45%, #fbeef0 75%, #fcf2f5 100%); color: #170f04; font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 15px; line-height: 1.7; position: relative; overflow: hidden">
+  <header data-brand-bar style="position: relative; z-index: 30; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; height: 64px; box-sizing: border-box; background: #faf6f7"><a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; min-width: 0; font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 20px"><img src="logo.png" alt="Mister Bamrungsuk" style="width: 40px; height: 40px; object-fit: contain; flex: 0 0 40px"><span style="color: #846215; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Mister Bamrungsuk</span></a><span style="flex: 0 0 auto; padding: 5px 12px; border-radius: 999px; border: 1px solid #8e6a0d; font-size: 10px; letter-spacing: 2.5px; color: #8e6a0d">PREMIUM</span></header>
+  <div style="position: absolute; inset: 64px 0 92px 0; overflow-y: auto">
+    <div style="position: relative; height: 270px">
+      <img src="{{mainImg}}" alt="{{mainAlt}}" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+      <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(251,241,243,.45), rgba(251,241,243,0) 35%, rgba(251,241,243,.7))"></div>
+      <div style="position: absolute; top: 16px; left: 18px; right: 18px; display: flex; justify-content: space-between">
+        <a href="HotelList.dc.html" aria-label="ย้อนกลับ" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(27,20,9,.3); background: rgba(251,251,251,.45); display: grid; place-items: center; color: #170f04; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"></path></svg></a>
+        <button onClick="{{toggleFav}}" aria-pressed="{{favSel}}" aria-label="บันทึกไว้" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(27,20,9,.3); background: rgba(251,251,251,.45); color: {{favC}}; font-size: 18px">{{favIcon}}</button>
+      </div>
+      <button onClick="{{prev}}" aria-label="ภาพก่อนหน้า" style="position: absolute; left: 10px; top: 112px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(251,251,251,.45); color: #000000; font-size: 18px">‹</button>
+      <button onClick="{{next}}" aria-label="ภาพถัดไป" style="position: absolute; right: 10px; top: 112px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(251,251,251,.45); color: #000000; font-size: 18px">›</button>
+      <span style="position: absolute; right: 14px; bottom: 12px; padding: 3px 9px; border-radius: 999px; background: rgba(251,251,251,.6); font-size: 13px">{{gIdx}}</span>
+    </div>
+    <div style="display: flex; gap: 8px; padding: 10px 18px 0"><sc-for list="{{thumbs}}" as="t" hint-placeholder-count="3"><button onClick="{{t.pick}}" aria-label="{{t.label}}" style="width: 72px; height: 52px; padding: 0; border-radius: 10px; overflow: hidden; border: 2px solid {{t.bd}}; background: rgba(252,245,247,.45)"><img src="{{t.img}}" alt="" style="width: 100%; height: 100%; object-fit: cover; display: block; opacity: {{t.op}}"></button></sc-for></div>
+    <div style="padding: 12px 18px 20px; display: flex; flex-direction: column; gap: 12px">
+      <div><span class="badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m5 12 5 5 9-10"></path></svg>ทำงานร่วมกับ Mister Bamrungsuk</span>
+        <h1 style="margin: 8px 0 2px; font-family: Kanit, sans-serif; font-weight: 600; font-size: 24px">The Grand Riverside</h1>
+        <div style="font-size: 13px; color: #3b2b19">กรุงเทพฯ · เจริญกรุง · ริมแม่น้ำเจ้าพระยา</div>
+      </div>
+      <div class="hrow"><sc-for list="{{facts}}" as="f" hint-placeholder-count="3"><span style="flex: 0 0 auto; padding: 6px 10px; border-radius: 10px; background: rgba(252,245,247,.45); border: 1px solid rgba(142,107,13,.38); font-size: 13px; color: #3b2b19">{{f.t}}</span></sc-for></div>
+      <div style="font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 16px; margin-top: 4px">ห้องพักและราคา</div>
+      <div role="radiogroup" aria-label="ห้องพักและราคา" style="display: flex; flex-direction: column; gap: 8px"><sc-for list="{{svc}}" as="v" hint-placeholder-count="3"><button role="radio" aria-checked="{{v.sel}}" onClick="{{v.pick}}" style="display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 14px; border: 1px solid {{v.bd}}; background: {{v.bg}}; color: #170f04; text-align: left; min-height: 56px"><span style="flex: 0 0 20px; height: 20px; border-radius: 50%; border: 2px solid {{v.dot}}; box-sizing: border-box; background: {{v.fill}}"></span><span style="flex: 1; min-width: 0"><span style="display: block; font-weight: 600; font-size: 14px">{{v.name}}</span><span style="display: block; font-size: 13px; color: #3b2b19">{{v.desc}}</span></span><span class="h" style="color: #8e6a0d">{{v.price}}</span></button></sc-for></div>
+      <div style="font-size: 13px; color: #594836">ราคาตัวอย่าง · ราคาสมาชิก Mister Bamrungsuk [รอกำหนด]</div>
+      <div class="card" style="display: flex; flex-direction: column; gap: 10px">
+        <div style="height: 110px; border-radius: 12px; overflow: hidden; background: rgba(252,245,247,.45)"><svg width="100%" height="110" viewBox="0 0 320 110" preserveAspectRatio="xMidYMid slice" aria-label="แผนที่ตำแหน่ง"><rect width="320" height="110" fill="#1d1717"></rect><path d="M0 70 C80 50 140 95 220 62 S300 40 320 48" stroke="#2c3a4a" stroke-width="18" fill="none"></path><path d="M40 0v110M150 0v110M260 0v110M0 30h320M0 90h320" stroke="#2a2224" stroke-width="5"></path><circle cx="160" cy="52" r="14" fill="#b0182c" opacity=".3"></circle><path d="M160 34c-7 0-12 5-12 12 0 9 12 20 12 20s12-11 12-20c0-7-5-12-12-12z" fill="#c21d33" stroke="#f0c75a"></path><circle cx="160" cy="46" r="4" fill="#fff"></circle></svg></div>
+        <div style="font-size: 13px; color: #3b2b19">99 ถ.เจริญกรุง แขวงบางรัก กรุงเทพฯ [รอกำหนด]</div>
+        <button onClick="{{openMap}}" style="min-height: 44px; border-radius: 12px; border: 1px solid rgba(142,107,13,.38); background: rgba(252,245,247,.45); color: #8e6a0d; font-weight: 600">เปิดใน Google Maps ↗</button>
+      </div>
+      <div style="font-size: 13px; color: #594836; line-height: 1.6">อยากหาเพื่อนไปด้วย? กด "นัดเพื่อนที่นี่" เพื่อเลือก Part-Time และตั้งสถานที่นัดเป็นโรงแรมนี้</div>
+    </div>
+  </div>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 18px 22px; border-top: 1px solid rgba(142,107,13,.38); background: #fbf1f3; display: flex; gap: 10px">
+    <button onClick="{{openSheet}}" style="flex: 0 0 132px; height: 52px; border-radius: 14px; border: 1px solid #8e6a0d; background: rgba(252,245,247,.45); color: #8e6a0d; font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 15px">ติดต่อ/จอง</button>
+    <a href="Market.dc.html" class="cta" style="flex: 1">นัดเพื่อนที่นี่</a>
+  </div>
+  <sc-if value="{{sheet}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: rgba(251,251,251,.6); z-index: 4">
+      <div role="dialog" aria-label="ติดต่อหรือจอง" style="position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 18px 24px; border-radius: 22px 22px 0 0; background: rgba(252,245,247,.45); border-top: 1px solid rgba(142,107,13,.38); display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; justify-content: space-between; align-items: center"><div class="h" style="font-size: 17px">ติดต่อ/จอง · The Grand Riverside</div><button onClick="{{closeSheet}}" aria-label="ปิด" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(142,107,13,.38); background: rgba(252,245,247,.45); color: #170f04">✕</button></div>
+        <div style="font-size: 13px; color: #3b2b19">เลือก: <span style="color: #170f04">{{selName}}</span> · {{selPrice}}</div>
+        <div class="fl">วันที่ต้องการ<div class="hrow" role="group" aria-label="เลือกวันที่"><sc-for list="{{dates}}" as="c" hint-placeholder-count="4"><button onClick="{{c.pick}}" aria-pressed="{{c.sel}}" class="chip" style="border: 1px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}">{{c.label}}</button></sc-for></div></div>
+        <button onClick="{{sendReq}}" class="cta" style="opacity: {{reqOp}}">{{reqLabel}}</button>
+        <div style="display: flex; gap: 8px"><button onClick="{{line}}" class="ghost" style="flex: 1">LINE [รอกำหนด]</button><button onClick="{{call}}" class="ghost" style="flex: 1">โทร [รอกำหนด]</button></div>
+        <div style="font-size: 13px; color: #594836">โรงแรมยืนยันการจองและรับชำระเอง · Mister Bamrungsuk ไม่เก็บเงินในขั้นตอนนี้ [รอกำหนด]</div>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{toast}}" hint-placeholder-val="{{ false }}"><div role="status" style="position: absolute; left: 18px; right: 18px; bottom: 100px; padding: 12px 14px; border-radius: 12px; background: rgba(252,245,247,.45); border: 1px solid #70c094; color: #257446; font-size: 13px; z-index: 5">{{toastText}}</div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":945}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { g: 0, fav: false, svc: null, sheet: false, date: null, sent: false, toast: '' }; }
+  renderVals() {
+    const s = this.state;
+    const fmt = (n) => '฿' + n.toLocaleString('en-US');
+    const chip = (on) => ({ sel: on ? 'true' : 'false', bg: on ? '#b0182c' : '#faeef0', fg: on ? '#000000' : '#3b2b19', bd: on ? '#b0182c' : 'rgba(142,107,13,.38)' });
+    const fld = (k, on, val, ph) => { const o = {}; o[k + 'Text'] = on ? val : ph; o[k + 'Fg'] = on ? '#170f04' : '#594836'; o[k + 'Bd'] = on ? '#f1eeea' : 'rgba(142,107,13,.38)'; return o; };
+    const flash = (t, extra) => { this.setState(Object.assign({ toast: t }, extra || {})); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: '' }), 1800); };
+    const IM = { H1: '/_blob/5382038cd17c1a0d503b594a601db919', H2: '/_blob/a216c3eb60d3f8bb9387430bc004cd1b', V: '/_blob/fec646b4d31ad694543697fbe3354b27' };
+    const G = [IM.H1, IM.H2, IM.V];
+    const S = [
+      ['dl', 'Deluxe River View', '32 ตร.ม. · เตียงคิง · วิวแม่น้ำ', 3200],
+      ['pr', 'Premier Suite', '58 ตร.ม. · ห้องนั่งเล่นแยก', 5900],
+      ['tw', 'Superior Twin', '28 ตร.ม. · 2 เตียง', 2600]
+    ];
+    const FACTS = ['เช็กอิน 14:00 · เช็กเอาต์ 12:00', 'ที่จอดรถ · Wi-Fi ฟรี', 'ส่วนลดสมาชิก [รอกำหนด]'];
+    const DATES = ['วันนี้', 'พรุ่งนี้', 'ส. 21 ก.พ.', 'อา. 22 ก.พ.'];
+    const sv = S.find((x) => x[0] === (s.svc || S[0][0]));
+    const ok = !!s.date;
+    return {
+      mainImg: G[s.g], mainAlt: 'The Grand Riverside ภาพที่ ' + (s.g + 1), gIdx: (s.g + 1) + '/' + G.length,
+      prev: () => this.setState({ g: (s.g + G.length - 1) % G.length }), next: () => this.setState({ g: (s.g + 1) % G.length }),
+      thumbs: G.map((img, i) => ({ img, label: 'ดูภาพที่ ' + (i + 1), bd: i === s.g ? '#8e6a0d' : 'rgba(142,107,13,.38)', op: i === s.g ? '1' : '.6', pick: () => this.setState({ g: i }) })),
+      toggleFav: () => flash(s.fav ? 'นำออกจากที่บันทึกแล้ว' : 'บันทึกโรงแรมนี้แล้ว', { fav: !s.fav }), favSel: s.fav ? 'true' : 'false', favIcon: s.fav ? '♥' : '♡', favC: s.fav ? '#990013' : '#170f04',
+      facts: FACTS.map((t) => ({ t })),
+      svc: S.map(([k, name, desc, price]) => { const on = sv[0] === k; return { name, desc, price: fmt(price) + ' /คืน', sel: on ? 'true' : 'false', bd: on ? '#b0182c' : 'rgba(142,107,13,.38)', bg: on ? 'rgba(176,24,44,.14)' : '#faeef0', dot: on ? '#8e6a0d' : '#f1eeea', fill: on ? '#b0182c' : 'transparent', pick: () => this.setState({ svc: k }) }; }),
+      openMap: () => flash('เปิด Google Maps (จำลอง) · พิกัดจริง [รอกำหนด]'),
+      sheet: s.sheet, openSheet: () => this.setState({ sheet: true, sent: false }), closeSheet: () => this.setState({ sheet: false }),
+      selName: sv[1], selPrice: fmt(sv[3]) + ' /คืน',
+      dates: DATES.map((d) => Object.assign({ label: d, pick: () => this.setState({ date: d }) }, chip(s.date === d))),
+      reqOp: ok ? '1' : '.45', reqLabel: s.sent ? 'ส่งคำขอแล้ว ✓' : ok ? 'ส่งคำขอจอง · ' + s.date : 'เลือกวันที่ก่อน',
+      sendReq: () => { if (ok && !s.sent) flash('ส่งคำขอจองแล้ว · โรงแรมจะติดต่อกลับทาง SMS', { sent: true, sheet: false }); },
+      line: () => flash('เปิด LINE ของโรงแรม (จำลอง) · ID [รอกำหนด]'), call: () => flash('โทรหาโรงแรม (จำลอง) · เบอร์ [รอกำหนด]'),
+      toast: !!s.toast, toastText: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

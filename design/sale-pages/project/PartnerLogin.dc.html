@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>เข้าสู่ระบบพาร์ทเนอร์</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-variant-numeric:lining-nums}
+a{color:#8e6a0d}a:hover{color:#866913}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #8e6a0d;outline-offset:2px}
+.h{font-family: 'Cormorant Garamond', Kanit;font-weight:600}
+.card{padding:14px;border-radius:16px;background:#faeef0;border:1px solid rgba(142,107,13,.38)}
+.in{height:48px;border-radius:12px;border:1px solid rgba(142,107,13,.38);background:#faeef0;color:#170f04;padding:0 14px;font-size:14px;box-sizing:border-box;width:100%;display:flex;align-items:center}
+.cta{height:52px;border-radius:14px;border:1px solid rgba(143,109,10,.85);background:linear-gradient(100deg, #f8e5e8 0%, #c8102e 24%, #990015 50%, #c8102e 76%, #f8e5e8 100%);box-shadow:0 8px 24px rgba(255,40,70,.45);color:#fff;font-size:15px;font-weight:600;width:100%;font-family: 'Cormorant Garamond', Kanit}
+.ghost{height:48px;border-radius:14px;border:1px solid rgba(142,107,13,.38);background:#faeef0;color:#8e6a0d;font-size:14px;font-weight:600;width:100%}
+.lbl{font-size:12px;color:#3b2b19;margin:0 0 6px}
+.mut{color:#3b2b19}
+*{font-variant-numeric:lining-nums}
+</style>
+</helmet>
+<div style="width: 390px; height: 945px; background: linear-gradient(180deg, #fbf1f3 0%, #faecee 45%, #fbeef0 75%, #fcf2f5 100%); color: #170f04; font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 15px; line-height: 1.7; position: relative; overflow: hidden">
+  <header data-brand-bar style="position: relative; z-index: 30; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; height: 64px; box-sizing: border-box; background: #faf6f7"><a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; min-width: 0; font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 20px"><img src="logo.png" alt="Mister Bamrungsuk" style="width: 40px; height: 40px; object-fit: contain; flex: 0 0 40px"><span style="color: #846215; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Mister Bamrungsuk</span></a><span style="flex: 0 0 auto; padding: 5px 12px; border-radius: 999px; border: 1px solid #8e6a0d; font-size: 10px; letter-spacing: 2.5px; color: #8e6a0d">PARTNER</span></header>
+  <div style="height: 780px; overflow-y: auto; box-sizing: border-box; padding-bottom: 24px">
+    <div style="position: relative; height: 300px"><img src="/_blob/fec646b4d31ad694543697fbe3354b27" alt="" style="width: 100%; height: 100%; object-fit: cover; display: block"><div style="position: absolute; inset: 0; background: linear-gradient(180deg,rgba(251,241,243,.2),#fbf1f3)"></div><div style="position: absolute; left: 18px; bottom: 10px"><div class="h" style="font-size: 15px"><span style="color: #8e6a0d">Partner</span></div><h1 class="h" style="margin: 2px 0 0; font-size: 26px; color: #8e6a0d">เข้าสู่ระบบพาร์ทเนอร์</h1></div></div>
+    <div style="padding: 10px 18px 0; display: flex; flex-direction: column; gap: 14px">
+      <sc-if value="{{isForm}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div><p class="lbl">อีเมลธุรกิจ</p><div class="in">owner@siamserenity.co.th</div></div>
+          <div><p class="lbl">รหัสผ่าน</p><div class="in" style="justify-content: space-between"><span>{{pwText}}</span><button onClick="{{togglePw}}" aria-label="แสดงรหัสผ่าน" style="width: 44px; height: 44px; margin-right: -10px; border: 0; background: transparent; color: #3b2b19; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div></div>
+          <sc-if value="{{err}}" hint-placeholder-val="{{ false }}"><div style="font-size: 13px; color: #8a0f1e">อีเมลหรือรหัสผ่านไม่ถูกต้อง (ผิด 1 จาก 5 ครั้ง)</div></sc-if>
+          <button class="cta" onClick="{{login}}">เข้าสู่ระบบ</button>
+          <div style="display: flex; justify-content: space-between; font-size: 13px"><button onClick="{{wrong}}" style="min-height: 44px; border: 0; background: transparent; color: #3b2b19; padding: 0">ลืมรหัสผ่าน?</button><a href="Partner.dc.html" style="min-height: 44px; display: flex; align-items: center">สมัครพาร์ทเนอร์</a></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{isPending}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div class="card" style="border-color: rgba(212,175,55,.5); display: flex; gap: 12px; align-items: flex-start"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#f0c75a" stroke-width="1.8" style="flex: 0 0 26px"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg><div><div class="h" style="font-size: 16px; color: #8e6a0d">บัญชีรอการอนุมัติ</div><div class="mut" style="font-size: 13px; margin-top: 4px">Siam Serenity Spa ส่งใบสมัครเมื่อ 4 ต.ค. 2569 · ทีมงานตรวจภายใน 2 วันทำการ</div></div></div>
+          <sc-for list="{{checks}}" as="c" hint-placeholder-count="6"><div style="display: flex; gap: 10px; align-items: center; font-size: 13px; min-height: 32px"><span style="width: 10px; height: 10px; border-radius: 50%; background: {{c.c}}"></span><span style="flex: 1">{{c.n}}</span><span style="color: {{c.c}}; font-size: 13px">{{c.s}}</span></div></sc-for>
+          <a href="PartnerQC.dc.html" class="cta" style="display: grid; place-items: center; text-decoration: none">นัด QC สถานที่</a>
+          <a href="Partner.dc.html" style="font-size: 13px; text-align: center; padding: 4px">เข้าพอร์ทัลพาร์ทเนอร์ (ระหว่างรออนุมัติ)</a>
+          <button class="ghost" onClick="{{logout}}">ออกจากระบบ</button>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":945}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { step: 'form', pw: false, err: false }; }
+  renderVals() {
+    const s = this.state;
+    return {
+      isForm: s.step === 'form', isPending: s.step === 'pending', err: s.err,
+      pwText: s.pw ? 'Serenity#88' : '•••••••••••', togglePw: () => this.setState({ pw: !s.pw }),
+      login: () => this.setState({ step: 'pending', err: false }),
+      wrong: () => this.setState({ err: true }), logout: () => this.setState({ step: 'form' }),
+      checks: [['ส่งใบสมัคร', 'ผ่าน', '#3db374'], ['ชำระแพ็กเกจ', 'รอตรวจสลิป', '#3db374'], ['นัด QC สถานที่', 'กำลังดำเนินการ', '#8e6a0d'], ['ทำสัญญา + ป้ายแบรนด์', 'รอ', '#3b2b19'], ['ถ่ายคลิปโปรโมท', 'รอ', '#3b2b19'], ['เปิดแสดงบนแพลตฟอร์ม', 'รอ', '#3b2b19']].map(([n, st, c]) => ({ n, s: st, c }))
+    };
+  }
+}
+</script>
+</body>
+</html>

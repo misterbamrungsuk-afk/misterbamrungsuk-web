@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>ติดตามคำสั่งซื้อ</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-variant-numeric:lining-nums}
+a{color:#8e6a0d}a:hover{color:#866913}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid #8e6a0d;outline-offset:2px}
+.card{padding:14px;border-radius:16px;background:#faeef0;border:1px solid rgba(142,107,13,.38)}
+.cta{height:52px;border-radius:14px;border:1px solid rgba(143,109,10,.85);background:linear-gradient(100deg, #f8e5e8 0%, #c8102e 24%, #990015 50%, #c8102e 76%, #f8e5e8 100%);box-shadow:0 8px 24px rgba(255,40,70,.45);color:#fff;font-size:15px;font-weight:600;width:100%;font-family: 'Cormorant Garamond', Kanit;display:grid;place-items:center;text-decoration:none;box-sizing:border-box}
+.ghost{height:48px;border-radius:14px;border:1px solid rgba(142,107,13,.38);background:#faeef0;color:#8e6a0d;font-size:14px;font-weight:600;width:100%;display:grid;place-items:center;text-decoration:none;box-sizing:border-box}
+.fl{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#3b2b19}
+.fi{height:48px;border-radius:14px;background:#faeef0;padding:0 14px;font-size:14px;text-align:left;width:100%;box-sizing:border-box}
+.chip{min-height:40px;padding:0 14px;border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap;flex:0 0 auto}
+.eb{font-size:10.5px;letter-spacing:2.5px;color:#8e6a0d;font-weight:600}
+.h{font-family: 'Cormorant Garamond', Kanit;font-weight:600}
+.mut{color:#3b2b19}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;border:1px solid rgba(212,175,55,.55);background:rgba(142,107,13,.18);color:#8e6a0d;font-size:11px;font-weight:600}
+.hrow{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.sb{width:44px;height:44px;border-radius:12px;border:1px solid rgba(142,107,13,.38);background:#faeef0;color:#8e6a0d;font-size:18px}
+*{font-variant-numeric:lining-nums}
+</style>
+</helmet>
+<div style="width: 390px; height: 945px; background: linear-gradient(180deg, #fbf1f3 0%, #faecee 45%, #fbeef0 75%, #fcf2f5 100%); color: #170f04; font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 15px; line-height: 1.7; position: relative; overflow: hidden">
+  <header data-brand-bar style="position: relative; z-index: 30; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; height: 64px; box-sizing: border-box; background: #faf6f7"><a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; min-width: 0; font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 20px"><img src="logo.png" alt="Mister Bamrungsuk" style="width: 40px; height: 40px; object-fit: contain; flex: 0 0 40px"><span style="color: #846215; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Mister Bamrungsuk</span></a><span style="flex: 0 0 auto; padding: 5px 12px; border-radius: 999px; border: 1px solid #8e6a0d; font-size: 10px; letter-spacing: 2.5px; color: #8e6a0d">PREMIUM</span></header>
+  <div style="display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-bottom: 1px solid rgba(142,107,13,.38); height: 77px; box-sizing: border-box">
+    <a href="Market.dc.html" aria-label="ย้อนกลับ" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(142,107,13,.38); display: grid; place-items: center; color: #170f04; text-decoration: none; flex: 0 0 44px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"></path></svg></a>
+    <div style="flex: 1; min-width: 0"><h1 style="margin: 0; font-family: Kanit, sans-serif; font-weight: 600; font-size: 20px">ติดตามคำสั่งซื้อ</h1></div>
+  </div>
+  <div style="position: absolute; top: 141px; left: 0; right: 0; bottom: 0px; overflow-y: auto; padding: 14px 18px 24px; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box">
+    <div role="tablist" style="display: flex; gap: 4px; padding: 4px; border-radius: 14px; background: rgba(252,245,247,.45); border: 1px solid rgba(142,107,13,.38)"><sc-for list="{{tabs}}" as="t" hint-placeholder-count="2"><button role="tab" aria-selected="{{t.sel}}" onClick="{{t.pick}}" style="flex: 1; min-height: 44px; border-radius: 10px; border: 0; background: {{t.bg}}; color: {{t.fg}}; font-size: 13.5px; font-weight: 600">{{t.label}}</button></sc-for></div>
+
+    <sc-if value="{{showLookup}}" hint-placeholder-val="{{ true }}">
+      <div style="font-size: 13px; color: #3b2b19; line-height: 1.6">กรอกเลขคำสั่งซื้อและเบอร์ที่ใช้สั่ง · ไม่ต้องสมัครสมาชิก</div>
+      <div class="fl">เลขคำสั่งซื้อ<button onClick="{{tap_no}}" aria-label="เลขคำสั่งซื้อ · แตะเพื่อจำลองการพิมพ์" class="fi" style="border: 1px solid {{noBd}}; color: {{noFg}}">{{noText}}</button></div>
+      <div class="fl">เบอร์มือถือที่ใช้สั่ง<div style="display: flex; gap: 8px"><button onClick="{{tap_phone}}" aria-label="เบอร์มือถือ · แตะเพื่อจำลองการพิมพ์" class="fi" style="flex: 1; border: 1px solid {{phoneBd}}; color: {{phoneFg}}">{{phoneText}}</button><button onClick="{{usePhone}}" style="flex: 0 0 104px; height: 48px; border-radius: 14px; border: 1px solid #8e6a0d; background: rgba(252,245,247,.45); color: #8e6a0d; font-size: 13px; font-weight: 600; opacity: {{useBtnOp}}">ใช้เบอร์นี้</button></div><sc-if value="{{phoneOk}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #257446">✓ ใช้เบอร์ 081-234-5678</span></sc-if></div>
+      <button onClick="{{search}}" class="cta" style="opacity: {{searchOp}}">{{searchLabel}}</button>
+      <div style="font-size: 13px; color: #594836">ลืมเลขคำสั่งซื้อ? ดูได้ใน SMS ยืนยัน หรือแท็บ "คำสั่งซื้อของฉัน"</div>
+    </sc-if>
+
+    <sc-if value="{{showResult}}" hint-placeholder-val="{{ false }}">
+      <div class="card" style="display: flex; flex-direction: column; gap: 4px">
+        <div style="display: flex; justify-content: space-between; align-items: center"><span style="font-family: 'Cormorant Garamond', Kanit; font-size: 16px; color: #8e6a0d">{{rNo}}</span><span style="padding: 3px 9px; border-radius: 999px; border: 1px solid {{rStC}}; color: {{rStC}}; font-size: 13px; font-weight: 600">{{rSt}}</span></div>
+        <div style="font-size: 13px; color: #3b2b19">{{rDate}} · {{rItems}}</div>
+        <div style="font-family: 'Cormorant Garamond', Kanit; font-size: 15px">ยอดชำระ {{rAmt}}</div>
+      </div>
+      <div class="card" style="padding: 16px 14px 4px">
+        <sc-for list="{{tl}}" as="e" hint-placeholder-count="4"><div style="display: flex; gap: 12px"><div style="display: flex; flex-direction: column; align-items: center"><span style="width: 24px; height: 24px; border-radius: 50%; border: 2px solid {{e.c}}; background: {{e.bg}}; display: grid; place-items: center; color: #000000; font-size: 13px; box-sizing: border-box">{{e.tick}}</span><span style="width: 2px; flex: 1; min-height: 24px; background: {{e.line}}"></span></div><div style="padding-bottom: 14px; min-width: 0"><div style="font-weight: 600; font-size: 14px; color: {{e.fg}}">{{e.label}}</div><div style="font-size: 13px; color: #3b2b19">{{e.sub}}</div></div></div></sc-for>
+      </div>
+      <sc-if value="{{hasTrack}}" hint-placeholder-val="{{ false }}"><div class="card" style="display: flex; align-items: center; gap: 10px; border-color: #70c094"><div style="flex: 1"><div style="font-size: 13px; color: #3b2b19">Flash Express · เลขพัสดุ</div><div style="font-family: 'Cormorant Garamond', Kanit; font-size: 17px; letter-spacing: 1px">TH0123456789</div></div><button onClick="{{copy}}" style="min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(142,107,13,.38); background: rgba(252,245,247,.45); color: #8e6a0d; font-weight: 600">คัดลอก</button></div></sc-if>
+      <div class="card" style="font-size: 13px; color: #3b2b19; line-height: 1.6; background: #f9f7f5; border-color: rgba(141,114,24,.35)">แพ็กมิดชิด · กล่องสีพื้น ไม่ระบุชื่อสินค้าหรือชื่อร้านบนหน้ากล่อง</div>
+      <sc-if value="{{canConfirm}}" hint-placeholder-val="{{ false }}"><button onClick="{{receive}}" class="cta">ได้รับสินค้าแล้ว</button></sc-if>
+      <div style="display: flex; gap: 8px"><button onClick="{{advance}}" class="ghost" style="flex: 1; color: #3b2b19; font-size: 13px">จำลองสถานะถัดไป</button><button onClick="{{backToSearch}}" class="ghost" style="flex: 1">ค้นหาคำสั่งซื้ออื่น</button></div>
+      <div style="font-size: 13px; color: #3b2b19">มีปัญหากับสินค้า? <a href="Policy.dc.html">นโยบายคืนสินค้า</a> · ติดต่อ LINE [รอกำหนด]</div>
+    </sc-if>
+
+    <sc-if value="{{showMine}}" hint-placeholder-val="{{ false }}">
+      <div class="card" style="display: flex; align-items: center; justify-content: space-between; font-size: 13px"><span style="color: #3b2b19">เบอร์ที่ใช้สั่ง</span><span>081-xxx-5678</span></div>
+      <sc-for list="{{mine}}" as="o" hint-placeholder-count="3">
+        <button onClick="{{o.open}}" class="card" style="display: flex; flex-direction: column; gap: 4px; text-align: left; color: #170f04; width: 100%">
+          <span style="display: flex; justify-content: space-between; width: 100%"><span style="font-family: 'Cormorant Garamond', Kanit; color: #8e6a0d">{{o.no}}</span><span style="font-size: 13px; font-weight: 600; color: {{o.stC}}">{{o.st}}</span></span>
+          <span style="font-size: 13px; color: #3b2b19">{{o.date}} · {{o.items}}</span>
+          <span style="display: flex; justify-content: space-between; width: 100%; font-size: 13px"><span>{{o.amt}}</span><span style="color: #8e6a0d">ดูสถานะ →</span></span>
+        </button>
+      </sc-for>
+      <a href="ProductList.dc.html" class="ghost">เลือกซื้อสินค้าต่อ</a>
+    </sc-if>
+  </div>
+  <sc-if value="{{toast}}" hint-placeholder-val="{{ false }}"><div role="status" style="position: absolute; left: 18px; right: 18px; bottom: 24px; padding: 12px 14px; border-radius: 12px; background: rgba(252,245,247,.45); border: 1px solid #70c094; color: #257446; font-size: 13px; z-index: 5">{{toastText}}</div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":945}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { tab: 'find', no: false, phone: false, phoneOk: false, found: null, prog: { a: 0, b: 2, c: 3 }, toast: '' }; }
+  renderVals() {
+    const s = this.state;
+    const fmt = (n) => '฿' + n.toLocaleString('en-US');
+    const chip = (on) => ({ sel: on ? 'true' : 'false', bg: on ? '#b0182c' : '#faeef0', fg: on ? '#000000' : '#3b2b19', bd: on ? '#b0182c' : 'rgba(142,107,13,.38)' });
+    const fld = (k, on, val, ph) => { const o = {}; o[k + 'Text'] = on ? val : ph; o[k + 'Fg'] = on ? '#170f04' : '#594836'; o[k + 'Bd'] = on ? '#f1eeea' : 'rgba(142,107,13,.38)'; return o; };
+    const flash = (t, extra) => { this.setState(Object.assign({ toast: t }, extra || {})); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: '' }), 1800); };
+    const O = [
+      ['a', 'MB-M-25700214-0031', '14 ก.พ. 2570', 'Love Hormone ×1, Collagen Night ×2', 3070],
+      ['b', 'MB-M-25700210-0022', '10 ก.พ. 2570', 'Vitamin C 1000 ×2', 1030],
+      ['c', 'MB-M-25700203-0011', '3 ก.พ. 2570', 'Ginseng Gold ×1', 1640]
+    ];
+    const ST = [['รอตรวจสลิป', '#8e6a0d', 'แอดมินตรวจสลิปภายใน [รอกำหนด] ชม.'], ['ยืนยันการชำระ', '#257446', 'ร้านกำลังแพ็กสินค้าแบบมิดชิด'], ['จัดส่งแล้ว', '#257446', 'Flash Express · TH0123456789'], ['สำเร็จ', '#257446', 'ได้รับสินค้าเรียบร้อย']];
+    const ready = s.no && s.phone && s.phoneOk;
+    const f = s.found ? O.find((o) => o[0] === s.found) : null;
+    const st = f ? s.prog[f[0]] : 0;
+    const setProg = (k, v) => { const prog = Object.assign({}, s.prog); prog[k] = v; return prog; };
+    return Object.assign({
+      tabs: [['find', 'ค้นหาคำสั่งซื้อ'], ['mine', 'คำสั่งซื้อของฉัน']].map(([k, label]) => ({ label, sel: s.tab === k ? 'true' : 'false', bg: s.tab === k ? '#b0182c' : 'transparent', fg: s.tab === k ? '#000000' : '#3b2b19', pick: () => this.setState({ tab: k, found: k === 'mine' ? null : s.found }) })),
+      showLookup: s.tab === 'find' && !f, showResult: s.tab === 'find' && !!f, showMine: s.tab === 'mine',
+      tap_no: () => this.setState({ no: !s.no }),
+      tap_phone: () => this.setState({ phone: !s.phone, phoneOk: false }),
+      usePhone: () => { if (s.phone) this.setState({ phoneOk: true }); }, useBtnOp: s.phone ? '1' : '.45', phoneOk: s.phoneOk,
+      searchOp: ready ? '1' : '.45', searchLabel: ready ? 'ดูสถานะคำสั่งซื้อ' : !s.no ? 'กรอกเลขคำสั่งซื้อ' : !s.phoneOk ? 'กดใช้เบอร์นี้ก่อน' : 'ดูสถานะคำสั่งซื้อ',
+      search: () => { if (ready) this.setState({ found: 'a' }); },
+      rNo: f ? f[1] : '', rDate: f ? f[2] : '', rItems: f ? f[3] : '', rAmt: f ? fmt(f[4]) : '',
+      rSt: ST[st][0], rStC: ST[st][1],
+      tl: ST.map(([label, c, sub], i) => ({ label, sub: i <= st ? sub : 'รอดำเนินการ', tick: i < st || st === 3 ? '✓' : i === st ? '•' : '',
+        c: i <= st ? c : '#f1eeea', bg: i < st || st === 3 ? '#e9f4ee' : i === st ? '#b0182c' : 'transparent', fg: i <= st ? '#170f04' : '#594836', line: i === 3 ? 'transparent' : i < st ? '#70c094' : 'rgba(142,107,13,.38)' })),
+      hasTrack: st >= 2, canConfirm: st === 2,
+      copy: () => flash('คัดลอกเลขพัสดุ TH0123456789 แล้ว'),
+      receive: () => { if (f) flash('ขอบคุณ · ยืนยันรับสินค้าแล้ว', { prog: setProg(f[0], 3) }); },
+      advance: () => { if (f) this.setState({ prog: setProg(f[0], (st + 1) % 4) }); },
+      backToSearch: () => this.setState({ found: null, no: false, phoneOk: false }),
+      mine: O.map(([k, no, date, items, amt]) => ({ no, date, items, amt: fmt(amt), st: ST[s.prog[k]][0], stC: ST[s.prog[k]][1], open: () => this.setState({ tab: 'find', found: k }) })),
+      toast: !!s.toast, toastText: s.toast
+    }, fld('no', s.no, 'MB-M-25700214-0031', 'แตะเพื่อกรอก เช่น MB-M-2570...'), fld('phone', s.phone, '081-234-5678', 'แตะเพื่อกรอกเบอร์'));
+  }
+}
+</script>
+</body>
+</html>

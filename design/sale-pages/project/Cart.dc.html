@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>ตะกร้าสินค้า</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-variant-numeric:lining-nums}
+a{color:#8e6a0d}a:hover{color:#866913}
+button{font-family:inherit;cursor:pointer}
+button:disabled{cursor:not-allowed}
+button:focus-visible,a:focus-visible{outline:2px solid #8e6a0d;outline-offset:2px}
+.card{padding:14px;border-radius:16px;background:#faeef0;border:1px solid rgba(142,107,13,.38)}
+.sb{width:44px;height:44px;border-radius:12px;border:1px solid rgba(142,107,13,.38);background:#faeef0;color:#8e6a0d;font-size:18px}
+.fl{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#3b2b19}
+.fi{height:48px;border-radius:14px;background:#faeef0;padding:0 14px;font-size:14px;text-align:left;width:100%;box-sizing:border-box}
+.cta{height:52px;border-radius:14px;border:1px solid rgba(143,109,10,.85);background:linear-gradient(100deg, #f8e5e8 0%, #c8102e 24%, #990015 50%, #c8102e 76%, #f8e5e8 100%);box-shadow:0 8px 24px rgba(255,40,70,.45);color:#fff;font-size:15px;font-weight:600;width:100%;font-family: 'Cormorant Garamond', Kanit}
+*{font-variant-numeric:lining-nums}
+</style>
+</helmet>
+<div style="width: 390px; height: 945px; background: linear-gradient(180deg, #fbf1f3 0%, #faecee 45%, #fbeef0 75%, #fcf2f5 100%); color: #170f04; font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 15px; line-height: 1.7; position: relative; overflow: hidden">
+  <header data-brand-bar style="position: relative; z-index: 30; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; height: 64px; box-sizing: border-box; background: #faf6f7"><a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; min-width: 0; font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 20px"><img src="logo.png" alt="Mister Bamrungsuk" style="width: 40px; height: 40px; object-fit: contain; flex: 0 0 40px"><span style="color: #846215; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Mister Bamrungsuk</span></a><span style="flex: 0 0 auto; padding: 5px 12px; border-radius: 999px; border: 1px solid #8e6a0d; font-size: 10px; letter-spacing: 2.5px; color: #8e6a0d">PREMIUM</span></header>
+  <div style="display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-bottom: 1px solid rgba(142,107,13,.38)">
+    <a href="Market.dc.html" aria-label="ย้อนกลับ" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(142,107,13,.38); display: grid; place-items: center; color: #170f04; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"></path></svg></a>
+    <div><div style="font-size: 10.5px; letter-spacing: 2.5px; color: #8e6a0d; font-weight: 600">{{stepEb}}</div><h1 style="margin: 0; font-family: Kanit, sans-serif; font-weight: 600; font-size: 20px">{{stepTitle}}</h1></div>
+  </div>
+
+  <sc-if value="{{isCart}}" hint-placeholder-val="{{ true }}">
+    <div style="position: absolute; top: 141px; left: 0; right: 0; bottom: 92px; overflow-y: auto; padding: 14px 18px; display: flex; flex-direction: column; gap: 12px">
+      <sc-for list="{{items}}" as="it" hint-placeholder-count="2">
+        <div class="card" style="display: flex; gap: 12px; align-items: center; padding: 10px">
+          <div style="width: 64px; height: 64px; border-radius: 12px; background: radial-gradient(circle, {{it.glow}}, #f9f7f7 75%); display: grid; place-items: center; flex: 0 0 64px"><svg width="28" height="44" viewBox="0 0 70 110"><rect x="25" y="4" width="20" height="14" rx="3" fill="#f0c75a"></rect><path d="M14 30c0-5 4-8 9-8h24c5 0 9 3 9 8v68c0 5-4 8-9 8H23c-5 0-9-3-9-8z" fill="{{it.c}}" stroke="#f0c75a" stroke-width="2"></path></svg></div>
+          <div style="flex: 1; min-width: 0"><div style="font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 14px">{{it.name}}</div><div style="font-size: 13px; color: #3b2b19">{{it.vendor}} · มี อย.</div><div style="font-family: 'Cormorant Garamond', Kanit; color: #8e6a0d; margin-top: 2px">{{it.line}}</div></div>
+          <div style="display: flex; align-items: center; gap: 2px"><button onClick="{{it.dec}}" class="sb" aria-label="{{it.decLabel}}">−</button><span style="min-width: 24px; text-align: center; font-family: 'Cormorant Garamond', Kanit">{{it.qty}}</span><button onClick="{{it.inc}}" class="sb" aria-label="{{it.incLabel}}">+</button></div>
+        </div>
+      </sc-for>
+      <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}"><div class="card" style="text-align: center; color: #3b2b19; font-size: 13px">ตะกร้าว่าง · <a href="Market.dc.html">กลับไปเลือกสินค้า</a></div></sc-if>
+      <div class="card" style="display: flex; flex-direction: column; gap: 8px; padding: 12px 14px">
+        <div style="display: flex; justify-content: space-between; font-size: 13px"><span style="color: {{freeC}}">{{freeText}}</span><span style="color: #594836">เกณฑ์ ฿1,500 [รอกำหนด]</span></div>
+        <div style="height: 6px; border-radius: 3px; background: rgba(142,107,13,.38); overflow: hidden"><div style="height: 100%; width: {{freeW}}; background: {{freeBar}}"></div></div>
+        <sc-if value="{{upsell}}" hint-placeholder-val="{{ true }}"><button onClick="{{addUpsell}}" style="display: flex; justify-content: space-between; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 12px; border: 1px dashed #f1eeea; background: rgba(252,245,247,.45); color: #3b2b19; font-size: 13px; text-align: left"><span>+ เพิ่ม Collagen Night (฿890) เพื่อส่งฟรี</span><span style="color: #8e6a0d; font-weight: 600">เพิ่ม</span></button></sc-if>
+      </div>
+
+      <div style="font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 15px; margin-top: 4px">ที่อยู่จัดส่ง</div>
+      <sc-for list="{{fields}}" as="f" hint-placeholder-count="3">
+        <div class="fl">{{f.label}}<button onClick="{{f.tap}}" aria-label="{{f.aria}}" class="fi" style="border: 1px solid {{f.bd}}; color: {{f.fg}}">{{f.text}}</button></div>
+      </sc-for>
+      <div class="fl">เบอร์มือถือ<div style="display: flex; gap: 8px"><button onClick="{{tapPhone}}" aria-label="เบอร์มือถือ · แตะเพื่อจำลองการพิมพ์" class="fi" style="flex: 1; border: 1px solid {{phoneBd}}; color: {{phoneFg}}">{{phoneText}}</button><button onClick="{{usePhone}}" style="flex: 0 0 104px; height: 48px; border-radius: 14px; border: 1px solid #8e6a0d; background: rgba(252,245,247,.45); color: #8e6a0d; font-size: 13px; font-weight: 600; opacity: {{useBtnOp}}">ใช้เบอร์นี้</button></div><sc-if value="{{phoneOk}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #257446">✓ ใช้เบอร์ 081-234-5678</span></sc-if></div>
+      <button onClick="{{toggleAge}}" role="checkbox" aria-checked="{{ageAria}}" style="display: flex; gap: 10px; align-items: flex-start; text-align: left; background: none; border: 0; color: #3b2b19; font-size: 13px; padding: 6px 0; min-height: 44px"><span style="flex: 0 0 22px; height: 22px; border-radius: 6px; border: 1.5px solid {{ageBd}}; background: {{ageBg}}; display: grid; place-items: center; color: #000000; font-size: 14px">{{ageTick}}</span>ฉันมีอายุ 20 ปีขึ้นไป และอ่านคำเตือนของสินค้าแล้ว</button>
+      <div class="fl">โค้ดส่วนลด<div style="display: flex; gap: 8px"><button onClick="{{tapPromo}}" aria-label="โค้ดส่วนลด · แตะเพื่อจำลองการพิมพ์" class="fi" style="flex: 1; border: 1px solid {{promoBd}}; color: {{promoFg}}; letter-spacing: 1px">{{promoText}}</button><button onClick="{{applyPromo}}" style="flex: 0 0 96px; height: 48px; border-radius: 14px; border: 1px solid rgba(142,107,13,.38); background: rgba(252,245,247,.45); color: #8e6a0d; font-size: 13px; font-weight: 600; opacity: {{applyOp}}">{{applyLabel}}</button></div><span style="color: {{promoMsgC}}">{{promoMsg}}</span></div>
+      <div style="display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 14px; background: #f9f7f5; border: 1px solid rgba(141,114,24,.35); font-size: 13px; color: #3b2b19; line-height: 1.5"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f0c75a" stroke-width="1.6" style="flex: 0 0 22px"><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"></path><path d="M3 7.5 12 12l9-4.5M12 12v9"></path></svg><span><b style="color: #8e6a0d">แพ็กมิดชิด</b> · กล่องสีพื้น ไม่ระบุชื่อสินค้าหรือชื่อร้านบนหน้ากล่อง · ชื่อผู้ส่งบนใบปะหน้า: [รอกำหนด]</span></div>
+      <div class="card" style="font-size: 13px; display: flex; flex-direction: column; gap: 6px">
+        <div style="display: flex; justify-content: space-between"><span style="color: #3b2b19">ค่าสินค้า</span><span>{{subtotal}}</span></div>
+        <div style="display: flex; justify-content: space-between"><span style="color: #3b2b19">ค่าจัดส่ง</span><span>{{ship}}</span></div>
+        <sc-if value="{{hasDisc}}" hint-placeholder-val="{{ false }}"><div style="display: flex; justify-content: space-between; color: #257446"><span>ส่วนลด {{discCode}}</span><span>−{{disc}}</span></div></sc-if>
+        <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(142,107,13,.38); padding-top: 6px; font-family: 'Cormorant Garamond', Kanit; font-size: 16px"><span>รวม</span><span style="color: #8e6a0d">{{total}}</span></div>
+      </div>
+      <div style="font-size: 13px; color: #594836; line-height: 1.6">การสั่งซื้อถือว่ายอมรับ <a href="Policy.dc.html">นโยบายคืนสินค้า</a> · <a href="Policy.dc.html">การจัดส่ง</a> · <a href="Policy.dc.html">ความเป็นส่วนตัว</a></div>
+    </div>
+    <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 18px 22px; border-top: 1px solid rgba(142,107,13,.38); background: #fbf1f3"><button onClick="{{goPay}}" class="cta" style="opacity: {{payOp}}">{{payLabel}}</button></div>
+  </sc-if>
+
+  <sc-if value="{{isPay}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; top: 141px; left: 0; right: 0; bottom: 92px; overflow-y: auto; padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; align-items: stretch">
+      <div class="card" style="display: flex; flex-direction: column; align-items: center; gap: 10px">
+        <div style="font-size: 13px; color: #3b2b19">สแกนจ่ายด้วยแอปธนาคาร · พร้อมเพย์</div>
+        <div style="width: 200px; height: 200px; border-radius: 12px; background: #000000; padding: 12px; box-sizing: border-box"><svg viewBox="0 0 21 21" width="176" height="176" shape-rendering="crispEdges"><path fill="#111" d="M0 0h7v7H0zM14 0h7v7h-7zM0 14h7v7H0z"></path><path fill="#fff" d="M1 1h5v5H1zM15 1h5v5h-5zM1 15h5v5H1z"></path><path fill="#111" d="M2 2h3v3H2zM16 2h3v3h-3zM2 16h3v3H2zM8 1h1v2H8zM10 0h2v1h-2zM9 4h3v1H9zM8 8h2v2H8zM11 8h3v1h-3zM14 10h2v2h-2zM17 9h3v1h-3zM8 12h1v3H8zM10 11h2v2h-2zM12 14h3v1h-3zM16 13h2v3h-2zM9 16h2v2H9zM12 17h1v4h-1zM14 18h3v1h-3zM18 17h3v1h-3zM19 19h2v2h-2zM0 9h2v1H0zM3 10h3v1H3zM1 12h2v1H1zM10 19h1v2h-1z"></path></svg></div>
+        <div style="font-family: 'Cormorant Garamond', Kanit; font-size: 22px; color: #8e6a0d">{{total}}</div>
+        <div style="font-size: 13px; color: #594836">บริษัท [ชื่อบริษัท] · พร้อมเพย์ [รอเลข]</div>
+      </div>
+      <div class="fl">แนบสลิปโอนเงิน<button onClick="{{attach}}" style="height: 88px; border-radius: 14px; border: 1.5px dashed {{slipBd}}; background: rgba(252,245,247,.45); color: {{slipFg}}; font-size: 13.5px">{{slipText}}</button></div>
+      <div style="font-size: 13px; color: #594836; line-height: 1.6">แอดมินตรวจสลิปภายใน [รอกำหนด] ชม. แล้วแจ้งเลขพัสดุทาง SMS/LINE</div>
+    </div>
+    <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 18px 22px; border-top: 1px solid rgba(142,107,13,.38); background: #fbf1f3; display: flex; gap: 10px"><button onClick="{{back}}" style="flex: 0 0 100px; height: 52px; border-radius: 14px; border: 1px solid rgba(142,107,13,.38); background: rgba(252,245,247,.45); color: #8e6a0d; font-weight: 600">แก้ไข</button><button onClick="{{submit}}" class="cta" style="opacity: {{submitOp}}">{{submitLabel}}</button></div>
+  </sc-if>
+
+  <sc-if value="{{isDone}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; top: 141px; left: 0; right: 0; bottom: 0; padding: 40px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px">
+      <div style="width: 84px; height: 84px; border-radius: 50%; border: 2px solid #8e6a0d; display: grid; place-items: center; color: #8e6a0d"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 5 5 9-10"></path></svg></div>
+      <h2 style="margin: 0; font-family: Kanit, sans-serif; font-size: 24px">ได้รับคำสั่งซื้อแล้ว</h2>
+      <div style="font-size: 13px; color: #3b2b19">เลขคำสั่งซื้อ</div>
+      <div style="font-family: 'Cormorant Garamond', Kanit; font-size: 22px; letter-spacing: 1px; color: #8e6a0d">MB-M-25700214-0031</div>
+      <p style="margin: 0; font-size: 13px; color: #3b2b19; line-height: 1.7">สถานะ: รอตรวจสลิป · เมื่อยืนยันแล้วจะส่งเลขพัสดุไปที่เบอร์ {{phoneText}}</p>
+      <a href="OrderTrack.dc.html" style="margin-top: 16px; width: 100%; height: 52px; border-radius: 14px; border: 1px solid rgba(143,109,10,.85); background: linear-gradient(100deg, #f8e5e8 0%, #c8102e 24%, #990015 50%, #c8102e 76%, #f8e5e8 100%);box-shadow:0 8px 24px rgba(255,40,70,.45); color: #fff; font-family: 'Cormorant Garamond', Kanit; font-weight: 600; display: grid; place-items: center; text-decoration: none">ติดตามคำสั่งซื้อ</a>
+      <a href="Market.dc.html" style="margin-top: 0; width: 100%; height: 52px; border-radius: 14px; border: 1px solid rgba(143,109,10,.85); background: rgba(252,245,247,.45); color: #8e6a0d; font-family: 'Cormorant Garamond', Kanit; font-weight: 600; display: grid; place-items: center; text-decoration: none">กลับหน้า Marketplace</a>
+      <a href="Main.dc.html" style="font-size: 13px; padding: 12px">ไปหาเพื่อนกิน เพื่อนเที่ยว →</a>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":945}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { step: 'cart', q: { lh: 1 }, promo: 0, applied: null, f: {}, phone: false, phoneOk: false, age: false, slip: false, busy: false }; }
+  renderVals() {
+    const s = this.state;
+    const P = [['lh', 'Love Hormone (นำเข้า)', 'คลินิกหมอโส', 1290, '#f9e9ec', 'rgba(194,29,51,.4)'], ['cl', 'Collagen Night', 'คลินิกหมอโส', 890, '#f2f0f6', 'rgba(85,55,145,.35)']];
+    const fmt = (n) => '฿' + n.toLocaleString('en-US');
+    const setQ = (id, n) => { const q = Object.assign({}, s.q); q[id] = Math.max(0, Math.min(10, n)); this.setState({ q }); };
+    const sub = P.reduce((a, p) => a + (s.q[p[0]] || 0) * p[3], 0);
+    const FREE = 1500, FEE = 50;
+    const ship = sub === 0 || sub >= FREE ? 0 : FEE;
+    const PC = ['', 'MBNEW10', 'WRONG1'];
+    const disc = s.applied === 'MBNEW10' ? Math.min(200, Math.round(sub * 0.1)) : 0;
+    const grand = sub + ship - disc;
+    const F = [['name', 'ชื่อผู้รับ', 'สมชาย ใจดี'], ['addr', 'ที่อยู่', '99/9 ซ.สุขุมวิท 31 แขวงคลองตันเหนือ'], ['zip', 'เขต · จังหวัด · รหัสไปรษณีย์', 'วัฒนา · กรุงเทพฯ · 10110']];
+    const allF = F.every((x) => s.f[x[0]]);
+    const ready = sub > 0 && allF && s.phoneOk && s.age;
+    return {
+      isCart: s.step === 'cart', isPay: s.step === 'pay', isDone: s.step === 'done',
+      stepEb: s.step === 'cart' ? 'ขั้นตอน 1/2' : s.step === 'pay' ? 'ขั้นตอน 2/2' : 'สั่งซื้อสำเร็จ',
+      stepTitle: s.step === 'cart' ? 'ตะกร้าและที่อยู่' : s.step === 'pay' ? 'ชำระเงิน' : 'สำเร็จ',
+      items: P.filter((p) => (s.q[p[0]] || 0) > 0).map(([id, name, vendor, price, c, glow]) => ({ name, vendor, c, glow, qty: String(s.q[id]), line: fmt(price * s.q[id]),
+        decLabel: 'ลดจำนวน ' + name, incLabel: 'เพิ่มจำนวน ' + name, dec: () => setQ(id, s.q[id] - 1), inc: () => setQ(id, s.q[id] + 1) })),
+      empty: sub === 0,
+      fields: F.map(([k, label, val]) => ({ label, aria: label + ' · แตะเพื่อจำลองการพิมพ์', text: s.f[k] ? val : 'แตะเพื่อกรอก' + label, fg: s.f[k] ? '#170f04' : '#594836', bd: s.f[k] ? '#f1eeea' : 'rgba(142,107,13,.38)',
+        tap: () => { const f = Object.assign({}, s.f); f[k] = !f[k]; this.setState({ f }); } })),
+      phoneText: s.phone ? '081-234-5678' : 'แตะเพื่อกรอกเบอร์', phoneFg: s.phone ? '#170f04' : '#594836', phoneBd: s.phone ? '#f1eeea' : 'rgba(142,107,13,.38)',
+      tapPhone: () => this.setState({ phone: !s.phone, phoneOk: false }),
+      usePhone: () => { if (s.phone) this.setState({ phoneOk: true }); }, useBtnOp: s.phone ? '1' : '.45', phoneOk: s.phoneOk,
+      toggleAge: () => this.setState({ age: !s.age }), ageAria: s.age ? 'true' : 'false', ageTick: s.age ? '✓' : '', ageBg: s.age ? '#b0182c' : 'transparent', ageBd: s.age ? '#b0182c' : '#f1eeea',
+      subtotal: fmt(sub), ship: ship ? fmt(ship) : (sub ? 'ฟรี' : fmt(0)), total: fmt(grand),
+      freeText: sub >= FREE ? 'ได้สิทธิ์ส่งฟรีแล้ว ✓' : 'อีก ' + fmt(FREE - sub) + ' ส่งฟรี', freeC: sub >= FREE ? '#257446' : '#3b2b19', freeW: Math.min(100, Math.round(sub / FREE * 100)) + '%', freeBar: sub >= FREE ? '#70c094' : '#8e6a0d',
+      upsell: sub > 0 && sub < FREE && !(s.q.cl > 0), addUpsell: () => setQ('cl', 1),
+      promoText: s.promo ? PC[s.promo] : 'แตะเพื่อกรอกโค้ด', promoFg: s.promo ? '#170f04' : '#594836', promoBd: s.applied ? '#70c094' : s.promo ? '#f1eeea' : 'rgba(142,107,13,.38)',
+      tapPromo: () => this.setState({ promo: (s.promo + 1) % PC.length, applied: null, promoErr: false }),
+      applyOp: s.promo ? '1' : '.45', applyLabel: s.applied ? 'ยกเลิก' : 'ใช้โค้ด',
+      applyPromo: () => { if (s.applied) { this.setState({ applied: null, promoErr: false }); return; } if (!s.promo) return; if (PC[s.promo] === 'MBNEW10') this.setState({ applied: 'MBNEW10', promoErr: false }); else this.setState({ promoErr: true }); },
+      promoMsg: s.applied ? 'ใช้โค้ด MBNEW10 แล้ว · ลด 10% สูงสุด ฿200 (ค่าตัวอย่าง [รอกำหนด])' : s.promoErr ? 'โค้ดนี้ใช้ไม่ได้หรือหมดอายุแล้ว' : 'แตะช่องเพื่อสลับโค้ดตัวอย่าง', promoMsgC: s.applied ? '#257446' : s.promoErr ? '#990000' : '#594836',
+      hasDisc: disc > 0, disc: fmt(disc), discCode: s.applied || '',
+      payOp: ready ? '1' : '.45', payLabel: ready ? 'ไปชำระเงิน · ' + fmt(grand) : !allF ? 'กรอกที่อยู่ให้ครบ' : !s.phoneOk ? 'กดใช้เบอร์นี้ก่อน' : !s.age ? 'ยืนยันอายุ 20+' : 'ตะกร้าว่าง',
+      goPay: () => { if (ready) this.setState({ step: 'pay' }); },
+      back: () => this.setState({ step: 'cart' }),
+      slipText: s.slip ? '✓ slip_20700214.jpg · แตะเพื่อเปลี่ยน' : '+ แตะเพื่อแนบรูปสลิป', slipFg: s.slip ? '#257446' : '#8e6a0d', slipBd: s.slip ? '#70c094' : '#f1eeea',
+      attach: () => this.setState({ slip: !s.slip }),
+      submitOp: s.slip ? '1' : '.45', submitLabel: s.busy ? 'กำลังส่ง...' : 'ส่งสลิป · ยืนยันคำสั่งซื้อ',
+      submit: () => { if (!s.slip || s.busy) return; this.setState({ busy: true }); setTimeout(() => this.setState({ busy: false, step: 'done' }), 800); }
+    };
+  }
+}
+</script>
+</body>
+</html>

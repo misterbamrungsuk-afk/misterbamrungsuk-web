@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>ร้านคลินิกหมอโส</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-variant-numeric:lining-nums}
+a{color:#8e6a0d}a:hover{color:#866913}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid #8e6a0d;outline-offset:2px}
+.card{padding:14px;border-radius:16px;background:#faeef0;border:1px solid rgba(142,107,13,.38)}
+.cta{height:52px;border-radius:14px;border:1px solid rgba(143,109,10,.85);background:linear-gradient(100deg, #f8e5e8 0%, #c8102e 24%, #990015 50%, #c8102e 76%, #f8e5e8 100%);box-shadow:0 8px 24px rgba(255,40,70,.45);color:#fff;font-size:15px;font-weight:600;width:100%;font-family: 'Cormorant Garamond', Kanit;display:grid;place-items:center;text-decoration:none;box-sizing:border-box}
+.ghost{height:48px;border-radius:14px;border:1px solid rgba(142,107,13,.38);background:#faeef0;color:#8e6a0d;font-size:14px;font-weight:600;width:100%;display:grid;place-items:center;text-decoration:none;box-sizing:border-box}
+.fl{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#3b2b19}
+.fi{height:48px;border-radius:14px;background:#faeef0;padding:0 14px;font-size:14px;text-align:left;width:100%;box-sizing:border-box}
+.chip{min-height:40px;padding:0 14px;border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap;flex:0 0 auto}
+.eb{font-size:10.5px;letter-spacing:2.5px;color:#8e6a0d;font-weight:600}
+.h{font-family: 'Cormorant Garamond', Kanit;font-weight:600}
+.mut{color:#3b2b19}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;border:1px solid rgba(212,175,55,.55);background:rgba(142,107,13,.18);color:#8e6a0d;font-size:11px;font-weight:600}
+.hrow{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.sb{width:44px;height:44px;border-radius:12px;border:1px solid rgba(142,107,13,.38);background:#faeef0;color:#8e6a0d;font-size:18px}
+*{font-variant-numeric:lining-nums}
+</style>
+</helmet>
+<div style="width: 390px; height: 945px; background: linear-gradient(180deg, #fbf1f3 0%, #faecee 45%, #fbeef0 75%, #fcf2f5 100%); color: #170f04; font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 15px; line-height: 1.7; position: relative; overflow: hidden">
+  <header data-brand-bar style="position: relative; z-index: 30; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; height: 64px; box-sizing: border-box; background: #faf6f7"><a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; min-width: 0; font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 20px"><img src="logo.png" alt="Mister Bamrungsuk" style="width: 40px; height: 40px; object-fit: contain; flex: 0 0 40px"><span style="color: #846215; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Mister Bamrungsuk</span></a><span style="flex: 0 0 auto; padding: 5px 12px; border-radius: 999px; border: 1px solid #8e6a0d; font-size: 10px; letter-spacing: 2.5px; color: #8e6a0d">PREMIUM</span></header>
+  <div style="position: absolute; inset: 0; overflow-y: auto">
+    <div style="position: relative; height: 150px; background: linear-gradient(135deg, #faeef0, #faeef0 70%)">
+      <svg width="390" height="150" viewBox="0 0 390 150" style="position: absolute; inset: 0" aria-hidden="true"><circle cx="330" cy="30" r="80" fill="none" stroke="rgba(212,175,55,.18)" stroke-width="1.5"></circle><circle cx="330" cy="30" r="50" fill="none" stroke="rgba(212,175,55,.12)" stroke-width="1.5"></circle><path d="M0 120 C100 90 200 140 390 100" stroke="rgba(194,29,51,.35)" stroke-width="2" fill="none"></path></svg>
+      <div style="position: absolute; top: 16px; left: 18px; right: 18px; display: flex; justify-content: space-between">
+        <a href="Market.dc.html" aria-label="ย้อนกลับ" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(27,20,9,.3); background: rgba(251,251,251,.45); display: grid; place-items: center; color: #170f04; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"></path></svg></a>
+        <a href="Cart.dc.html" aria-label="ตะกร้า" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(27,20,9,.3); background: rgba(251,251,251,.45); display: grid; place-items: center; color: #170f04; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 7h14l-1.5 12h-11z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg></a>
+      </div>
+    </div>
+    <div style="padding: 0 18px; margin-top: -36px; position: relative; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; align-items: flex-end; gap: 12px">
+        <div style="width: 76px; height: 76px; border-radius: 20px; border: 2px solid #8e6a0d; background: #fbf1f3; display: grid; place-items: center; font-family: Kanit, sans-serif; font-weight: 600; color: #8e6a0d; font-size: 18px">หมอโส</div>
+        <div style="flex: 1; padding-bottom: 4px"><div class="h" style="font-size: 20px">คลินิกหมอโส</div><span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; border: 1px solid #70c094; color: #257446; font-size: 13px; font-weight: 600"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m5 12 5 5 9-10"></path></svg>ร้านตรวจสอบแล้ว</span></div>
+      </div>
+      <div style="display: flex; gap: 8px; font-size: 13px; color: #3b2b19"><span>สินค้า 3</span><span>·</span><span>★ 4.8 (126 รีวิว)</span><span>·</span><span>ผู้ติดตาม {{followers}}</span></div>
+      <div style="display: flex; gap: 8px"><button onClick="{{toggleFollow}}" aria-pressed="{{followSel}}" style="flex: 1; height: 44px; border-radius: 12px; border: 1px solid {{fBd}}; background: {{fBg}}; color: #000000; font-weight: 600">{{followLabel}}</button><button onClick="{{chat}}" style="flex: 1; height: 44px; border-radius: 12px; border: 1px solid rgba(142,107,13,.38); background: rgba(252,245,247,.45); color: #8e6a0d; font-weight: 600">แชทกับร้าน</button></div>
+      <div role="tablist" style="display: flex; border-bottom: 1px solid rgba(142,107,13,.38)"><sc-for list="{{tabs}}" as="t" hint-placeholder-count="3"><button role="tab" aria-selected="{{t.sel}}" onClick="{{t.pick}}" style="flex: 1; min-height: 46px; border: 0; border-bottom: 2px solid {{t.bd}}; background: none; color: {{t.fg}}; font-size: 13.5px; font-weight: 600">{{t.label}}</button></sc-for></div>
+
+      <sc-if value="{{isProducts}}" hint-placeholder-val="{{ true }}">
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          <sc-for list="{{products}}" as="p" hint-placeholder-count="3">
+            <div style="border-radius: 16px; background: rgba(252,245,247,.45); border: 1px solid rgba(142,107,13,.38); overflow: hidden; display: flex; flex-direction: column">
+          <a href="ProductDetail.dc.html" aria-label="{{p.name}}" style="position: relative; height: 130px; display: grid; place-items: center; background: radial-gradient(circle at 50% 40%, {{p.glow}}, #f9f7f7 70%); text-decoration: none">
+            <svg width="70" height="110" viewBox="0 0 70 110" aria-hidden="true"><rect x="25" y="4" width="20" height="14" rx="3" fill="#f0c75a"></rect><rect x="22" y="16" width="26" height="6" rx="2" fill="#a8862a"></rect><path d="M14 30c0-5 4-8 9-8h24c5 0 9 3 9 8v68c0 5-4 8-9 8H23c-5 0-9-3-9-8z" fill="{{p.c}}" stroke="#f0c75a" stroke-width="1.2"></path><rect x="20" y="48" width="30" height="34" rx="3" fill="#2a0a10" opacity=".55"></rect><path d="M35 54l4 7h-8z" fill="#f0c75a"></path><rect x="25" y="66" width="20" height="2" fill="#f0c75a"></rect><rect x="28" y="72" width="14" height="2" fill="#e6d6c4"></rect></svg>
+            <span style="position: absolute; top: 8px; left: 8px; padding: 2px 7px; border-radius: 999px; background: #fbf1f3; border: 1px solid #70c094; color: #257446; font-size: 13px; font-weight: 600">{{p.fda}}</span>
+          </a>
+          <div style="padding: 10px; display: flex; flex-direction: column; gap: 4px; flex: 1">
+            <a href="VendorShop.dc.html" style="font-size: 13px; color: #3b2b19; text-decoration: none">{{p.vendor}}</a>
+            <div style="font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 13.5px; line-height: 1.25">{{p.name}}</div>
+            <div style="font-size: 13px; color: #594836">{{p.kind}}</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 6px"><span style="font-family: 'Cormorant Garamond', Kanit; font-weight: 600; color: #8e6a0d">{{p.price}}</span><button onClick="{{p.add}}" aria-label="{{p.addLabel}}" style="height: 36px; min-width: 44px; padding: 0 10px; border-radius: 10px; border: 1px solid {{p.bd}}; background: {{p.bg}}; color: #000000; font-size: 13px; font-weight: 600">{{p.btn}}</button></div>
+          </div>
+        </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{isAbout}}" hint-placeholder-val="{{ false }}">
+        <div class="card" style="font-size: 13px; color: #3b2b19; line-height: 1.7">ร้านจำหน่ายผลิตภัณฑ์เสริมอาหารนำเข้าที่มีเลข อย. ทุกรายการ · คำอธิบายร้าน [รอกำหนด]</div>
+        <div class="card" style="display: flex; flex-direction: column; gap: 8px; font-size: 13px">
+          <div class="h" style="font-size: 14px">เอกสารที่ Mister Bamrungsuk ตรวจแล้ว</div>
+          <sc-for list="{{docs}}" as="d" hint-placeholder-count="4"><div style="display: flex; justify-content: space-between; gap: 10px; border-top: 1px solid rgba(142,107,13,.38); padding-top: 8px"><span style="color: #3b2b19">{{d.k}}</span><span style="text-align: right; color: {{d.c}}">{{d.v}}</span></div></sc-for>
+        </div>
+        <div class="card" style="font-size: 13px; color: #3b2b19; line-height: 1.7">ส่งจาก: [รอกำหนด] · จัดส่งภายใน 2–4 วันทำการ · แพ็กมิดชิดทุกออเดอร์<br><a href="Policy.dc.html">นโยบายคืนสินค้าและการจัดส่ง</a></div>
+      </sc-if>
+      <sc-if value="{{isReviews}}" hint-placeholder-val="{{ false }}">
+        <div class="card" style="display: flex; gap: 14px; align-items: center"><div style="text-align: center"><div class="h" style="font-size: 30px; color: #8e6a0d">4.8</div><div style="color: #8e6a0d; font-size: 13px">★★★★★</div><div style="font-size: 13px; color: #3b2b19">126 รีวิว</div></div><div style="flex: 1; font-size: 13px; color: #3b2b19; line-height: 1.6">รีวิวจากผู้ซื้อที่สั่งซื้อจริงเท่านั้น · แอดมินซ่อนรีวิวที่อ้างสรรพคุณทางการแพทย์</div></div>
+        <sc-for list="{{reviews}}" as="r" hint-placeholder-count="3"><div class="card" style="display: flex; flex-direction: column; gap: 4px"><div style="display: flex; justify-content: space-between; font-size: 13px"><span style="color: #8e6a0d">{{r.stars}}</span><span style="color: #594836">{{r.when}}</span></div><div style="font-size: 13px; color: #3b2b19">{{r.text}}</div><div style="font-size: 13px; color: #3b2b19">{{r.who}} · {{r.item}}</div></div></sc-for>
+      </sc-if>
+      <div style="height: 24px"></div>
+    </div>
+  </div>
+  <sc-if value="{{toast}}" hint-placeholder-val="{{ false }}"><div role="status" style="position: absolute; left: 18px; right: 18px; bottom: 24px; padding: 12px 14px; border-radius: 12px; background: rgba(252,245,247,.45); border: 1px solid #70c094; color: #257446; font-size: 13px; z-index: 5">{{toastText}}</div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":945}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { tab: 'products', follow: false, cart: {}, toast: '' }; }
+  renderVals() {
+    const s = this.state;
+    const fmt = (n) => '฿' + n.toLocaleString('en-US');
+    const chip = (on) => ({ sel: on ? 'true' : 'false', bg: on ? '#b0182c' : '#faeef0', fg: on ? '#000000' : '#3b2b19', bd: on ? '#b0182c' : 'rgba(142,107,13,.38)' });
+    const fld = (k, on, val, ph) => { const o = {}; o[k + 'Text'] = on ? val : ph; o[k + 'Fg'] = on ? '#170f04' : '#594836'; o[k + 'Bd'] = on ? '#f1eeea' : 'rgba(142,107,13,.38)'; return o; };
+    const flash = (t, extra) => { this.setState(Object.assign({ toast: t }, extra || {})); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: '' }), 1800); };
+    const K = { sup: ['มี อย.', 'ผลิตภัณฑ์เสริมอาหาร · นำเข้าถูกต้อง'], beauty: ['มี อย.', 'ผลิตภัณฑ์เสริมอาหาร · มี อย.'], spa: ['จดแจ้ง อย.', 'เครื่องสำอาง · จดแจ้งแล้ว'], gift: ['ของแท้', 'ชุดของขวัญ · รายการในชุด [รอกำหนด]'] };
+    const P = [
+      ['lh', 'คลินิกหมอโส', 'Love Hormone (นำเข้า)', 1290, 'sup', '#f9e9ec', 'rgba(194,29,51,.35)'],
+      ['cl', 'คลินิกหมอโส', 'Collagen Night', 890, 'beauty', '#f2f0f6', 'rgba(85,55,145,.3)'],
+      ['ct', 'คลินิกหมอโส', 'Chamomile Tea Blend', 390, 'sup', '#f9f7f1', 'rgba(122,103,31,.25)'],
+      ['gs', 'Siam Herb', 'Ginseng Gold', 1590, 'sup', '#faf6ee', 'rgba(142,107,13,.65)'],
+      ['vc', 'Siam Herb', 'Vitamin C 1000', 490, 'sup', '#f1f9f7', 'rgba(75,175,135,.28)'],
+      ['fb', 'Siam Herb', 'Fiber Plus', 590, 'sup', '#f5f9f2', 'rgba(115,165,65,.25)'],
+      ['bo', 'Siam Serenity Spa', 'Body Oil ลาเวนเดอร์', 650, 'spa', '#eff2f7', 'rgba(30,56,124,.28)'],
+      ['gb', 'Mister Bamrungsuk', 'ชุดของขวัญ Gold Box', 1990, 'gift', '#faeef0', 'rgba(142,107,13,.65)']
+    ].filter((p) => p[1] === 'คลินิกหมอโส');
+    const T = [['products', 'สินค้า'], ['about', 'เกี่ยวกับร้าน'], ['reviews', 'รีวิว']];
+    return {
+      tabs: T.map(([k, label]) => ({ label, sel: s.tab === k ? 'true' : 'false', fg: s.tab === k ? '#170f04' : '#3b2b19', bd: s.tab === k ? '#b0182c' : 'transparent', pick: () => this.setState({ tab: k }) })),
+      isProducts: s.tab === 'products', isAbout: s.tab === 'about', isReviews: s.tab === 'reviews',
+      followers: '[รอกำหนด]', followSel: s.follow ? 'true' : 'false', followLabel: s.follow ? 'ติดตามแล้ว ✓' : '+ ติดตามร้าน',
+      fBg: s.follow ? '#e9f4ee' : 'linear-gradient(100deg, #f8e5e8 0%, #c8102e 24%, #990015 50%, #c8102e 76%, #f8e5e8 100%);box-shadow:0 8px 24px rgba(255,40,70,.45)', fBd: s.follow ? '#70c094' : 'rgba(143,109,10,.85)',
+      toggleFollow: () => this.setState({ follow: !s.follow }),
+      chat: () => flash('แชทกับร้าน (จำลอง) · ช่องทางจริง [รอกำหนด]'),
+      products: P.map(([id, vendor, name, price, kind, c, glow]) => { const qn = s.cart[id] || 0; return { vendor, name, c, glow, fda: K[kind][0], kind: K[kind][1], price: fmt(price),
+        btn: qn ? 'ในตะกร้า ' + qn : '+ ตะกร้า', addLabel: 'เพิ่ม ' + name + ' ลงตะกร้า', bg: qn ? '#e9f4ee' : 'linear-gradient(100deg, #f8e5e8 0%, #c8102e 24%, #990015 50%, #c8102e 76%, #f8e5e8 100%);box-shadow:0 8px 24px rgba(255,40,70,.45)', bd: qn ? '#70c094' : 'rgba(143,109,10,.85)',
+        add: () => { const cart = Object.assign({}, s.cart); cart[id] = qn + 1; flash('เพิ่ม ' + name + ' ลงตะกร้าแล้ว', { cart }); } }; }),
+      docs: [['ทะเบียนพาณิชย์', '✓ ตรวจแล้ว · เลข [รอกำหนด]', '#257446'], ['ใบอนุญาตนำเข้าอาหาร', '✓ ตรวจแล้ว · เลข [รอกำหนด]', '#257446'], ['เลข อย. สินค้าทุกชิ้น', '✓ 3/3 รายการ', '#257446'], ['ที่อยู่ร้าน', '[รอกำหนด]', '#3b2b19']].map(([k, v, c]) => ({ k, v, c })),
+      reviews: [['★★★★★', '2 วันก่อน', 'แพ็กมาดีมาก กล่องเรียบ ไม่มีชื่อสินค้า ส่งไว', 'สมชาย ใ.', 'Love Hormone'], ['★★★★☆', '1 สัปดาห์ก่อน', 'ร้านตอบแชทเร็ว ฉลากภาษาไทยครบ', 'วิภา ส.', 'Collagen Night'], ['★★★★★', '3 สัปดาห์ก่อน', 'รสชาติชาหอม ชงง่าย', 'อนันต์ ก.', 'Chamomile Tea Blend']].map(([stars, when, text, who, item]) => ({ stars, when, text, who, item })),
+      toast: !!s.toast, toastText: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

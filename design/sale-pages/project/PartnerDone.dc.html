@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>พาร์ทเนอร์สมัครสำเร็จ</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-variant-numeric:lining-nums}
+*,*::before,*::after{box-sizing:border-box}
+a{color:#8e6a0d}a:hover{color:#866913}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #8e6a0d;outline-offset:2px}
+.h{font-family: 'Cormorant Garamond', Kanit;font-weight:600}
+.card{padding:16px;min-width:0;overflow-wrap:anywhere;border-radius:16px;background:#faeef0;border:1px solid rgba(142,107,13,.38)}
+.in{height:48px;border-radius:12px;border:1px solid rgba(142,107,13,.38);background:#faeef0;color:#170f04;padding:0 14px;font-size:14px;box-sizing:border-box;width:100%;display:flex;align-items:center}
+.cta{height:52px;border-radius:14px;border:1px solid rgba(143,109,10,.85);background:linear-gradient(100deg, #f8e5e8 0%, #c8102e 24%, #990015 50%, #c8102e 76%, #f8e5e8 100%);box-shadow:0 8px 24px rgba(255,40,70,.45);color:#fff;font-size:15px;font-weight:600;width:100%;font-family: 'Cormorant Garamond', Kanit}
+.ghost{height:48px;border-radius:14px;border:1px solid rgba(142,107,13,.38);background:#faeef0;color:#8e6a0d;font-size:14px;font-weight:600;width:100%}
+.lbl{font-size:12px;color:#3b2b19;margin:0 0 6px}
+.mut{color:#3b2b19}
+*{font-variant-numeric:lining-nums}
+</style>
+</helmet>
+<div style="width: 390px; height: 945px; background: linear-gradient(180deg, #fbf1f3 0%, #faecee 45%, #fbeef0 75%, #fcf2f5 100%); color: #170f04; font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 15px; line-height: 1.7; position: relative; overflow: hidden">
+  <header data-brand-bar style="position: relative; z-index: 30; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; height: 64px; box-sizing: border-box; background: #faf6f7"><a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; min-width: 0; font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 20px"><img src="logo.png" alt="Mister Bamrungsuk" style="width: 40px; height: 40px; object-fit: contain; flex: 0 0 40px"><span style="color: #846215; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Mister Bamrungsuk</span></a><span style="flex: 0 0 auto; padding: 5px 12px; border-radius: 999px; border: 1px solid #8e6a0d; font-size: 10px; letter-spacing: 2.5px; color: #8e6a0d">PARTNER</span></header>
+  <div style="height: 780px; overflow-y: auto; box-sizing: border-box; padding-bottom: 24px">
+    <div style="padding: 24px 16px 0; display: flex; flex-direction: column; gap: 14px">
+      <div style="text-align: center; display: flex; flex-direction: column; align-items: center"><div style="width: 64px; height: 64px; border-radius: 50%; border: 2px solid #8e6a0d; display: grid; place-items: center; color: #8e6a0d"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 5 5 9-10"></path></svg></div><div style="font-size: 11px; letter-spacing: 2.5px; color: #8e6a0d; margin-top: 10px">ยินดีต้อนรับพาร์ทเนอร์ใหม่</div><h1 class="h" style="margin: 4px 0 0; font-size: 24px; color: #8e6a0d">ส่งใบสมัครและสลิปแล้ว</h1><p class="mut" style="margin: 4px 0 0; font-size: 13px">Siam Serenity Spa · ทีมงานตรวจสลิปภายใน 24 ชม.</p></div>
+      <div style="border-radius: 22px; padding: 18px; border: 1px solid rgba(212,175,55,.55); background: linear-gradient(150deg,#f9f4ee,#faeef0 55%,#faf1f3); display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><span style="font-size: 13px; color: #8e6a0d">รหัสพาร์ทเนอร์ของคุณ</span><span style="font-size: 13px; padding: 3px 10px; border-radius: 99px; border: 1px solid #8e6a0d; color: #8e6a0d">แพ็กเกจ 6 เดือน</span></div>
+        <div class="h" style="font-size: 32px; letter-spacing: 3px; color: #170f04">MBP-2610003</div>
+        <button onClick="{{copy}}" style="min-height: 44px; border-radius: 12px; border: 1px solid rgba(142,107,13,.38); background: rgba(251,241,243,.5); color: {{copyFg}}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V4H4v12h4"></path></svg>{{copyLabel}}</button>
+      </div>
+      <div class="card" style="display: flex; flex-direction: column; gap: 0">
+        <div class="h" style="font-size: 15px; color: #8e6a0d; margin-bottom: 8px">สถานะการสมัคร</div>
+        <sc-for list="{{tl}}" as="t" hint-placeholder-count="6">
+          <div style="display: flex; gap: 10px"><div style="display: flex; flex-direction: column; align-items: center; flex-shrink: 0"><span style="width: 20px; height: 20px; border-radius: 50%; background: {{t.dot}}; border: 1.5px solid {{t.bd}}; color: #fbf1f3; display: grid; place-items: center; font-size: 13px; font-weight: 700">{{t.mark}}</span><span style="flex: 1; width: 1px; min-height: 8px; background: {{t.line}}"></span></div><div style="padding-bottom: 8px; min-width: 0"><div style="font-size: 13px; color: {{t.fg}}">{{t.n}}</div><sc-if value="{{t.hasSub}}" hint-placeholder-val="{{ false }}"><div style="font-size: 13px; color: #8e6a0d">{{t.sub}}</div></sc-if></div></div>
+        </sc-for>
+      </div>
+      <button onClick="{{joinLine}}" style="min-height: 52px; border-radius: 14px; border: 0; background: #06c755; color: #000000; font-family: 'Cormorant Garamond', Kanit; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 10px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4C7 4 3 7.2 3 11c0 3.4 3 6.2 7.2 6.9L10 21l3.6-3.1C18 17.4 21 14.5 21 11c0-3.8-4-7-9-7z"></path></svg>{{lineLabel}}</button>
+      <a href="PartnerQC.dc.html" class="cta" style="display: grid; place-items: center; text-decoration: none">นัด QC สถานที่</a>
+      <a href="PartnerLogin.dc.html" style="font-size: 13px; text-align: center; padding: 4px">เข้าสู่ระบบพอร์ทัลพาร์ทเนอร์</a>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":945}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { copied: false, line: false }; }
+  renderVals() {
+    const s = this.state;
+    const T = [['ส่งใบสมัคร', 'done', ''], ['ชำระแพ็กเกจ', 'done', 'รอตรวจสลิป'], ['นัด QC สถานที่', 'next', ''], ['ทำสัญญา + ป้ายแบรนด์', 'todo', ''], ['ถ่ายคลิปโปรโมท', 'todo', ''], ['เปิดแสดงบนแพลตฟอร์ม', 'todo', '']];
+    return {
+      copy: () => this.setState({ copied: true }), copyLabel: s.copied ? 'คัดลอกแล้ว' : 'คัดลอกรหัส', copyFg: s.copied ? '#257446' : '#8e6a0d',
+      joinLine: () => this.setState({ line: true }), lineLabel: s.line ? 'เปิด LINE แล้ว · ทีมพาร์ทเนอร์ MB' : 'ติดต่อทีมพาร์ทเนอร์ทาง LINE',
+      tl: T.map(([n, st, sub], i) => ({ n, sub, hasSub: !!sub,
+        mark: st === 'done' ? '✓' : '',
+        dot: st === 'done' ? '#8e6a0d' : 'transparent', bd: st === 'todo' ? '#594836' : '#8e6a0d',
+        fg: st === 'todo' ? '#3b2b19' : '#170f04', line: i === T.length - 1 ? 'transparent' : 'rgba(142,107,13,.38)' }))
+    };
+  }
+}
+</script>
+</body>
+</html>

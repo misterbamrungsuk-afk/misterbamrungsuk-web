@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>รายละเอียดสินค้า</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-variant-numeric:lining-nums}
+a{color:#8e6a0d}a:hover{color:#866913}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid #8e6a0d;outline-offset:2px}
+.card{padding:14px;border-radius:16px;background:#faeef0;border:1px solid rgba(142,107,13,.38)}
+.cta{height:52px;border-radius:14px;border:1px solid rgba(143,109,10,.85);background:linear-gradient(100deg, #f8e5e8 0%, #c8102e 24%, #990015 50%, #c8102e 76%, #f8e5e8 100%);box-shadow:0 8px 24px rgba(255,40,70,.45);color:#fff;font-size:15px;font-weight:600;width:100%;font-family: 'Cormorant Garamond', Kanit;display:grid;place-items:center;text-decoration:none;box-sizing:border-box}
+.ghost{height:48px;border-radius:14px;border:1px solid rgba(142,107,13,.38);background:#faeef0;color:#8e6a0d;font-size:14px;font-weight:600;width:100%;display:grid;place-items:center;text-decoration:none;box-sizing:border-box}
+.fl{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#3b2b19}
+.fi{height:48px;border-radius:14px;background:#faeef0;padding:0 14px;font-size:14px;text-align:left;width:100%;box-sizing:border-box}
+.chip{min-height:40px;padding:0 14px;border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap;flex:0 0 auto}
+.eb{font-size:10.5px;letter-spacing:2.5px;color:#8e6a0d;font-weight:600}
+.h{font-family: 'Cormorant Garamond', Kanit;font-weight:600}
+.mut{color:#3b2b19}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;border:1px solid rgba(212,175,55,.55);background:rgba(142,107,13,.18);color:#8e6a0d;font-size:11px;font-weight:600}
+.hrow{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.sb{width:44px;height:44px;border-radius:12px;border:1px solid rgba(142,107,13,.38);background:#faeef0;color:#8e6a0d;font-size:18px}
+*{font-variant-numeric:lining-nums}
+</style>
+</helmet>
+<div style="width: 390px; height: 945px; background: linear-gradient(180deg, #fbf1f3 0%, #faecee 45%, #fbeef0 75%, #fcf2f5 100%); color: #170f04; font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 15px; line-height: 1.7; position: relative; overflow: hidden">
+  <header data-brand-bar style="position: relative; z-index: 30; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; height: 64px; box-sizing: border-box; background: #faf6f7"><a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; min-width: 0; font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 20px"><img src="logo.png" alt="Mister Bamrungsuk" style="width: 40px; height: 40px; object-fit: contain; flex: 0 0 40px"><span style="color: #846215; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Mister Bamrungsuk</span></a><span style="flex: 0 0 auto; padding: 5px 12px; border-radius: 999px; border: 1px solid #8e6a0d; font-size: 10px; letter-spacing: 2.5px; color: #8e6a0d">PREMIUM</span></header>
+  <div style="position: absolute; inset: 64px 0 88px 0; overflow-y: auto">
+    <div style="position: relative; height: 320px; background: radial-gradient(circle at 50% 45%, {{glow}}, #fbf1f3 72%); display: grid; place-items: center">
+      <div style="position: absolute; top: 16px; left: 18px; right: 18px; display: flex; justify-content: space-between">
+        <a href="Market.dc.html" aria-label="ย้อนกลับ" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(27,20,9,.3); background: rgba(251,251,251,.4); display: grid; place-items: center; color: #170f04; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"></path></svg></a>
+        <a href="Cart.dc.html" aria-label="ตะกร้า" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(27,20,9,.3); background: rgba(251,251,251,.4); display: grid; place-items: center; color: #170f04; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 7h14l-1.5 12h-11z"></path><path d="M9 7a3 3 0 0 1 6 0"></path></svg></a>
+      </div>
+      <sc-if value="{{viewBottle}}" hint-placeholder-val="{{ true }}">
+        <svg width="130" height="210" viewBox="0 0 70 110" aria-label="ภาพขวดสินค้า"><rect x="25" y="4" width="20" height="14" rx="3" fill="#f0c75a"></rect><rect x="22" y="16" width="26" height="6" rx="2" fill="#a8862a"></rect><path d="M14 30c0-5 4-8 9-8h24c5 0 9 3 9 8v68c0 5-4 8-9 8H23c-5 0-9-3-9-8z" fill="#5a1420" stroke="#f0c75a" stroke-width="1"></path><rect x="20" y="48" width="30" height="34" rx="3" fill="#2a0a10" opacity=".55"></rect><path d="M35 54l4 7h-8z" fill="#f0c75a"></path><rect x="25" y="66" width="20" height="2" fill="#f0c75a"></rect><rect x="28" y="72" width="14" height="2" fill="#e6d6c4"></rect></svg>
+      </sc-if>
+      <sc-if value="{{viewBox}}" hint-placeholder-val="{{ false }}">
+        <svg width="190" height="190" viewBox="0 0 100 100" aria-label="ภาพกล่องสินค้า"><path d="M20 30 50 18l30 12v44L50 86 20 74z" fill="#3a1018" stroke="#f0c75a" stroke-width=".8"></path><path d="M50 42v44M20 30l30 12 30-12" fill="none" stroke="#f0c75a" stroke-width=".8"></path><path d="M30 50l12 5v12l-12-5z" fill="#f0c75a" opacity=".8"></path><path d="M58 54l14-6M58 60l14-6" stroke="#e6d6c4" stroke-width="1.2"></path></svg>
+      </sc-if>
+      <sc-if value="{{viewLabel}}" hint-placeholder-val="{{ false }}">
+        <div style="width: 230px; padding: 16px; border-radius: 12px; background: #170f04; color: #f6f3f3; font-size: 13px; line-height: 1.6"><b style="font-family: 'Cormorant Garamond', Kanit">ฉลากภาษาไทย</b><br>ชื่อ: Love Hormone · ผลิตภัณฑ์เสริมอาหาร<br>เลขสารบบอาหาร: 10-3-XXXXX-X-XXXX<br>ผู้นำเข้า: คลินิกหมอโส [รอข้อมูล]<br>ขนาด 30 แคปซูล</div>
+      </sc-if>
+      <div style="position: absolute; bottom: 12px; display: flex; gap: 8px"><sc-for list="{{thumbs}}" as="t" hint-placeholder-count="3"><button onClick="{{t.pick}}" aria-label="{{t.label}}" style="min-width: 44px; height: 32px; padding: 0 10px; border-radius: 999px; border: 1px solid {{t.bd}}; background: {{t.bg}}; color: {{t.fg}}; font-size: 13px">{{t.label}}</button></sc-for></div>
+    </div>
+    <div style="padding: 4px 18px 18px; display: flex; flex-direction: column; gap: 12px">
+      <div>
+        <a href="VendorShop.dc.html" style="font-size: 13px; color: #3b2b19; text-decoration: none">คลินิกหมอโส ›</a>
+        <h1 style="margin: 2px 0 4px; font-family: Kanit, sans-serif; font-weight: 600; font-size: 24px">Love Hormone (นำเข้า)</h1>
+        <button onClick="{{toReviews}}" style="background: none; border: 0; padding: 0; min-height: 28px; color: #8e6a0d; font-size: 13px">★★★★★ <span style="color: #3b2b19">4.8 · 126 รีวิว</span></button>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px"><span style="padding: 3px 9px; border-radius: 999px; border: 1px solid #70c094; color: #257446; font-size: 13px; font-weight: 600">มี อย.</span><span style="padding: 3px 9px; border-radius: 999px; border: 1px solid rgba(142,107,13,.38); color: #3b2b19; font-size: 13px">นำเข้าถูกต้อง</span><span style="padding: 3px 9px; border-radius: 999px; border: 1px solid rgba(142,107,13,.38); color: #3b2b19; font-size: 13px">30 แคปซูล</span></div>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 10px"><span style="font-family: Kanit, sans-serif; font-weight: 600; font-size: 28px; color: #8e6a0d">฿1,290</span><span style="font-size: 13px; color: #594836">รวม VAT · คงเหลือ 24 ชิ้น</span></div>
+      <div class="card" style="font-size: 13px; line-height: 1.7; color: #3b2b19">ผลิตภัณฑ์เสริมอาหาร · มี อย. · นำเข้าถูกต้อง<br><span style="color: #3b2b19">เลข อย. (สารบบอาหาร)</span> <b style="color: #170f04; font-variant-numeric: lining-nums tabular-nums">10-3-XXXXX-X-XXXX</b> <span style="color: #594836">[รอเลขจริง]</span></div>
+      <div class="card" style="border-color: rgba(141,114,24,.45); background: #f9f7f5; font-size: 13px; line-height: 1.7; color: #3b2b19">
+        <b style="color: #8e6a0d">คำเตือน</b><br>ควรกินอาหารหลากหลาย ครบ 5 หมู่ ในสัดส่วนที่เหมาะสมเป็นประจำ · ไม่มีผลในการป้องกันหรือรักษาโรค · เด็ก สตรีมีครรภ์ หรือผู้มีโรคประจำตัว ควรปรึกษาแพทย์ก่อนรับประทาน · จำหน่ายเฉพาะผู้มีอายุ 20 ปีขึ้นไป
+      </div>
+      <div class="card" style="display: flex; flex-direction: column; gap: 8px; font-size: 13px">
+        <div style="display: flex; justify-content: space-between"><span style="color: #3b2b19">จัดส่งถึง</span><button onClick="{{cycleZone}}" style="background: none; border: 0; color: #8e6a0d; font-size: 13px; min-height: 28px; padding: 0">{{zone}} ▾</button></div>
+        <div style="display: flex; justify-content: space-between"><span style="color: #3b2b19">ได้รับประมาณ</span><span>{{eta}}</span></div>
+        <div style="display: flex; justify-content: space-between"><span style="color: #3b2b19">ค่าส่ง</span><span>฿50 · ส่งฟรีเมื่อครบ ฿1,500 <span style="color: #594836">[รอกำหนด]</span></span></div>
+        <div style="display: flex; gap: 8px; align-items: center; padding-top: 8px; border-top: 1px solid rgba(142,107,13,.38); color: #3b2b19"><span style="color: #8e6a0d"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"></path><path d="M3 7.5 12 12l9-4.5M12 12v9"></path></svg></span>แพ็กมิดชิด · กล่องสีพื้น ไม่ระบุชื่อสินค้าหรือชื่อร้านบนกล่อง</div>
+      </div>
+      <a href="VendorShop.dc.html" class="card" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #170f04"><span style="width: 44px; height: 44px; border-radius: 12px; border: 1.5px solid #8e6a0d; display: grid; place-items: center; font-family: 'Cormorant Garamond', Kanit; font-size: 13px; color: #8e6a0d">หมอโส</span><span style="flex: 1"><span style="display: block; font-weight: 600">คลินิกหมอโส</span><span style="display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: #257446"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m5 12 5 5 9-10"></path></svg>ร้านตรวจสอบแล้ว · สินค้า 3</span></span><span style="color: #8e6a0d; font-size: 13px">ดูร้าน ›</span></a>
+
+      <div style="font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 16px; margin-top: 4px">ซื้อคู่กัน</div>
+      <div class="card" style="display: flex; flex-direction: column; gap: 10px">
+        <sc-for list="{{bundle}}" as="b" hint-placeholder-count="2"><button onClick="{{b.toggle}}" role="checkbox" aria-checked="{{b.sel}}" style="display: flex; align-items: center; gap: 10px; background: none; border: 0; color: #170f04; text-align: left; padding: 0; min-height: 52px"><span style="flex: 0 0 22px; height: 22px; border-radius: 6px; border: 1.5px solid {{b.bd}}; background: {{b.bg}}; display: grid; place-items: center; color: #000000; font-size: 13px">{{b.tick}}</span><span style="width: 44px; height: 52px; border-radius: 10px; background: radial-gradient(circle, {{b.glow}}, #f9f7f7 75%); display: grid; place-items: center; flex: 0 0 44px"><svg width="24" height="38" viewBox="0 0 70 110" aria-hidden="true"><rect x="25" y="4" width="20" height="14" rx="3" fill="#f0c75a"></rect><rect x="22" y="16" width="26" height="6" rx="2" fill="#a8862a"></rect><path d="M14 30c0-5 4-8 9-8h24c5 0 9 3 9 8v68c0 5-4 8-9 8H23c-5 0-9-3-9-8z" fill="{{b.c}}" stroke="#f0c75a" stroke-width="1.2"></path><rect x="20" y="48" width="30" height="34" rx="3" fill="#2a0a10" opacity=".55"></rect><path d="M35 54l4 7h-8z" fill="#f0c75a"></path><rect x="25" y="66" width="20" height="2" fill="#f0c75a"></rect><rect x="28" y="72" width="14" height="2" fill="#e6d6c4"></rect></svg></span><span style="flex: 1; min-width: 0"><span style="display: block; font-size: 13.5px; font-weight: 600">{{b.name}}</span><span style="display: block; font-size: 13px; color: #3b2b19">{{b.note}}</span></span><span class="h" style="color: #8e6a0d">{{b.price}}</span></button></sc-for>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(142,107,13,.38); padding-top: 10px"><span style="font-size: 13px">รวม <span class="h" style="color: #8e6a0d; font-size: 16px">{{bTotal}}</span> <span style="font-size: 13px; color: #257446">{{bSave}}</span></span><button onClick="{{addBundle}}" style="min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(143,109,10,.85); background: linear-gradient(100deg, #f8e5e8 0%, #c8102e 24%, #990015 50%, #c8102e 76%, #f8e5e8 100%);box-shadow:0 8px 24px rgba(255,40,70,.45); color: #fff; font-weight: 600; font-size: 13px">ใส่ตะกร้าทั้งชุด</button></div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 4px"><div style="font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 16px">รีวิวจากผู้ซื้อ</div><span style="font-size: 13px; color: #3b2b19">ผู้ซื้อจริงเท่านั้น</span></div>
+      <div class="card" style="display: flex; gap: 14px; align-items: center">
+        <div style="text-align: center; flex: 0 0 auto"><div class="h" style="font-size: 30px; color: #8e6a0d">4.8</div><div style="color: #8e6a0d; font-size: 13px">★★★★★</div><div style="font-size: 13px; color: #3b2b19">126 รีวิว</div></div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 3px"><sc-for list="{{bars}}" as="r" hint-placeholder-count="5"><div style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #3b2b19"><span style="width: 18px">{{r.n}}★</span><span style="flex: 1; height: 6px; border-radius: 3px; background: rgba(142,107,13,.38); overflow: hidden"><span style="display: block; height: 100%; width: {{r.w}}; background: #8e6a0d"></span></span><span style="width: 26px; text-align: right">{{r.c}}</span></div></sc-for></div>
+      </div>
+      <div class="hrow" role="group" aria-label="กรองรีวิว"><sc-for list="{{rfilter}}" as="c" hint-placeholder-count="4"><button onClick="{{c.pick}}" aria-pressed="{{c.sel}}" class="chip" style="border: 1px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}">{{c.label}}</button></sc-for></div>
+      <sc-for list="{{reviews}}" as="v" hint-placeholder-count="2"><div class="card" style="display: flex; flex-direction: column; gap: 4px"><div style="display: flex; justify-content: space-between; font-size: 13px"><span style="color: #8e6a0d">{{v.stars}}</span><span style="color: #594836">{{v.when}}</span></div><div style="font-size: 13px; color: #3b2b19">{{v.text}}</div><div style="font-size: 13px; color: #3b2b19">{{v.who}} · ซื้อแล้ว</div></div></sc-for>
+      <sc-if value="{{canMore}}" hint-placeholder-val="{{ true }}"><button onClick="{{more}}" class="ghost">ดูรีวิวเพิ่ม</button></sc-if>
+
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 4px"><div style="font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 16px">สินค้าที่เกี่ยวข้อง</div><a href="ProductList.dc.html" style="font-size: 13px; text-decoration: none">ดูทั้งหมด →</a></div>
+      <div class="hrow" style="gap: 10px"><sc-for list="{{related}}" as="p" hint-placeholder-count="3"><a href="ProductDetail.dc.html" style="flex: 0 0 140px; border-radius: 14px; background: rgba(252,245,247,.45); border: 1px solid rgba(142,107,13,.38); overflow: hidden; text-decoration: none; color: #170f04"><span style="height: 96px; display: grid; place-items: center; background: radial-gradient(circle at 50% 40%, {{p.glow}}, #f9f7f7 70%)"><svg width="48" height="76" viewBox="0 0 70 110" aria-hidden="true"><rect x="25" y="4" width="20" height="14" rx="3" fill="#f0c75a"></rect><rect x="22" y="16" width="26" height="6" rx="2" fill="#a8862a"></rect><path d="M14 30c0-5 4-8 9-8h24c5 0 9 3 9 8v68c0 5-4 8-9 8H23c-5 0-9-3-9-8z" fill="{{p.c}}" stroke="#f0c75a" stroke-width="1.2"></path><rect x="20" y="48" width="30" height="34" rx="3" fill="#2a0a10" opacity=".55"></rect><path d="M35 54l4 7h-8z" fill="#f0c75a"></path><rect x="25" y="66" width="20" height="2" fill="#f0c75a"></rect><rect x="28" y="72" width="14" height="2" fill="#e6d6c4"></rect></svg></span><span style="display: block; padding: 8px 10px"><span style="display: block; font-size: 13px; color: #3b2b19">{{p.vendor}}</span><span style="display: block; font-size: 13px; font-weight: 600">{{p.name}}</span><span class="h" style="display: block; color: #8e6a0d; font-size: 13.5px">{{p.price}}</span></span></a></sc-for></div>
+      <div style="font-size: 13px; color: #594836"><a href="Policy.dc.html">นโยบายคืนสินค้าและการจัดส่ง</a></div>
+    </div>
+  </div>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 18px 18px; background: #fbf1f3; border-top: 1px solid rgba(142,107,13,.38); display: flex; gap: 10px; align-items: center">
+    <div style="display: flex; align-items: center; gap: 4px"><button onClick="{{dec}}" class="sb" aria-label="ลดจำนวน">−</button><span aria-live="polite" style="min-width: 32px; text-align: center; font-family: 'Cormorant Garamond', Kanit; font-size: 17px">{{qty}}</span><button onClick="{{inc}}" class="sb" aria-label="เพิ่มจำนวน">+</button></div>
+    <button onClick="{{add}}" style="flex: 1; height: 52px; border-radius: 14px; border: 1px solid {{addBd}}; background: {{addBg}}; color: #000000; font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 15px">{{addLabel}}</button>
+  </div>
+  <sc-if value="{{added}}" hint-placeholder-val="{{ false }}"><a href="Cart.dc.html" role="status" style="position: absolute; left: 18px; right: 18px; bottom: 96px; padding: 12px 14px; border-radius: 12px; background: rgba(252,245,247,.45); border: 1px solid #70c094; color: #257446; font-size: 13px; text-decoration: none">{{addedText}} · ไปที่ตะกร้า →</a></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":945}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { qty: 1, view: 'bottle', added: false, addedText: '', zone: 0, bun: { cl: true }, rf: 'all', more: false }; }
+  renderVals() {
+    const s = this.state;
+    const fmt = (n) => '฿' + n.toLocaleString('en-US');
+    const chip = (on) => ({ sel: on ? 'true' : 'false', bg: on ? '#b0182c' : '#faeef0', fg: on ? '#000000' : '#3b2b19', bd: on ? '#b0182c' : 'rgba(142,107,13,.38)' });
+    const fld = (k, on, val, ph) => { const o = {}; o[k + 'Text'] = on ? val : ph; o[k + 'Fg'] = on ? '#170f04' : '#594836'; o[k + 'Bd'] = on ? '#f1eeea' : 'rgba(142,107,13,.38)'; return o; };
+    const flash = (t, extra) => { this.setState(Object.assign({ toast: t }, extra || {})); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: '' }), 1800); };
+    const V = [['bottle', 'ขวด'], ['box', 'กล่อง'], ['label', 'ฉลาก']];
+    const Z = [['กรุงเทพฯ และปริมณฑล', '1–2 วันทำการหลังยืนยันสลิป'], ['ภาคกลาง / ภาคตะวันออก', '2–3 วันทำการหลังยืนยันสลิป'], ['ภาคเหนือ / อีสาน / ใต้', '2–4 วันทำการหลังยืนยันสลิป']];
+    const B = [['lh', 'Love Hormone (นำเข้า)', 'สินค้านี้', 1290, '#f9e9ec', 'rgba(194,29,51,.35)', true], ['cl', 'Collagen Night', 'คลินิกหมอโส · มี อย.', 890, '#f2f0f6', 'rgba(85,55,145,.3)', false]];
+    const bSel = B.filter((b) => b[6] || s.bun[b[0]]);
+    const bSum = bSel.reduce((a, b) => a + b[3], 0);
+    const bDisc = bSel.length > 1 ? Math.round(bSum * 0.05) : 0;
+    const R = [[5, '2 วันก่อน', 'แพ็กมาดีมาก กล่องเรียบ ไม่มีชื่อสินค้า ส่งไว', 'สมชาย ใ.'], [4, '1 สัปดาห์ก่อน', 'ฉลากภาษาไทยครบ มีเลข อย. ชัดเจน', 'วิภา ส.'], [5, '2 สัปดาห์ก่อน', 'ร้านตอบแชทเร็ว จัดส่งตามเวลา', 'อนันต์ ก.'], [3, '3 สัปดาห์ก่อน', 'ขนส่งช้ากว่าที่แจ้ง 1 วัน แต่ของครบ', 'ศิริ ม.'], [5, '1 เดือนก่อน', 'ซื้อซ้ำรอบที่สอง บรรจุภัณฑ์ดี', 'ธนา ป.']];
+    const rl = R.filter((r) => s.rf === 'all' || (s.rf === '5' && r[0] === 5) || (s.rf === 'low' && r[0] < 5));
+    const shown = s.more ? rl : rl.slice(0, 2);
+    const P = [
+      ['lh', 'คลินิกหมอโส', 'Love Hormone (นำเข้า)', 1290, 'sup', '#f9e9ec', 'rgba(194,29,51,.35)'],
+      ['cl', 'คลินิกหมอโส', 'Collagen Night', 890, 'beauty', '#f2f0f6', 'rgba(85,55,145,.3)'],
+      ['ct', 'คลินิกหมอโส', 'Chamomile Tea Blend', 390, 'sup', '#f9f7f1', 'rgba(122,103,31,.25)'],
+      ['gs', 'Siam Herb', 'Ginseng Gold', 1590, 'sup', '#faf6ee', 'rgba(142,107,13,.65)'],
+      ['vc', 'Siam Herb', 'Vitamin C 1000', 490, 'sup', '#f1f9f7', 'rgba(75,175,135,.28)'],
+      ['fb', 'Siam Herb', 'Fiber Plus', 590, 'sup', '#f5f9f2', 'rgba(115,165,65,.25)'],
+      ['bo', 'Siam Serenity Spa', 'Body Oil ลาเวนเดอร์', 650, 'spa', '#eff2f7', 'rgba(30,56,124,.28)'],
+      ['gb', 'Mister Bamrungsuk', 'ชุดของขวัญ Gold Box', 1990, 'gift', '#faeef0', 'rgba(142,107,13,.65)']
+    ].filter((p) => p[0] !== 'lh').slice(0, 5);
+    return {
+      viewBottle: s.view === 'bottle', viewBox: s.view === 'box', viewLabel: s.view === 'label',
+      glow: 'rgba(194,29,51,.32)',
+      thumbs: V.map(([k, label]) => ({ label, bg: s.view === k ? '#b0182c' : 'rgba(251,251,251,.45)', fg: s.view === k ? '#000000' : '#3b2b19', bd: s.view === k ? '#b0182c' : 'rgba(142,107,13,.38)', pick: () => this.setState({ view: k }) })),
+      toReviews: () => this.setState({ more: true }),
+      zone: Z[s.zone][0], eta: Z[s.zone][1], cycleZone: () => this.setState({ zone: (s.zone + 1) % Z.length }),
+      bundle: B.map(([k, name, note, price, c, glow, fixed]) => { const on = fixed || !!s.bun[k]; return { name, note, c, glow, price: fmt(price), sel: on ? 'true' : 'false', tick: on ? '✓' : '', bg: on ? '#b0182c' : 'transparent', bd: on ? '#b0182c' : '#f1eeea',
+        toggle: () => { if (fixed) return; const bun = Object.assign({}, s.bun); bun[k] = !on; this.setState({ bun }); } }; }),
+      bTotal: fmt(bSum - bDisc), bSave: bDisc ? 'ประหยัด ' + fmt(bDisc) + ' [รอกำหนด]' : '',
+      addBundle: () => this.setState({ added: true, addedText: 'เพิ่ม ' + bSel.length + ' รายการลงตะกร้าแล้ว' }),
+      bars: [[5, 82, 103], [4, 12, 15], [3, 4, 5], [2, 1, 2], [1, 1, 1]].map(([n, w, c]) => ({ n: String(n), w: w + '%', c: String(c) })),
+      rfilter: [['all', 'ทั้งหมด'], ['5', '5 ดาว'], ['low', 'ต่ำกว่า 5 ดาว']].map(([k, label]) => Object.assign({ label, pick: () => this.setState({ rf: k }) }, chip(s.rf === k))),
+      reviews: shown.map(([n, when, text, who]) => ({ when, text, who, stars: '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n) })),
+      canMore: !s.more && rl.length > 2, more: () => this.setState({ more: true }),
+      related: P.map(([id, vendor, name, price, kind, c, glow]) => ({ vendor, name, c, glow, price: fmt(price) })),
+      qty: String(s.qty),
+      dec: () => this.setState({ qty: Math.max(1, s.qty - 1), added: false }),
+      inc: () => this.setState({ qty: Math.min(10, s.qty + 1), added: false }),
+      add: () => this.setState({ added: true, addedText: 'เพิ่มลงตะกร้าแล้ว' }),
+      added: s.added, addedText: s.addedText,
+      addLabel: s.added ? 'อยู่ในตะกร้าแล้ว ✓' : 'ใส่ตะกร้า · ' + fmt(1290 * s.qty),
+      addBg: s.added ? '#e9f4ee' : 'linear-gradient(100deg, #f8e5e8 0%, #c8102e 24%, #990015 50%, #c8102e 76%, #f8e5e8 100%);box-shadow:0 8px 24px rgba(255,40,70,.45)', addBd: s.added ? '#70c094' : 'rgba(143,109,10,.85)'
+    };
+  }
+}
+</script>
+</body>
+</html>

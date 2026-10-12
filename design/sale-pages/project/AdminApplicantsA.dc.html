@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>แอดมิน ผู้สมัคร สายเพื่อนกินเที่ยว</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-variant-numeric:lining-nums}
+a{color:#8e6a0d}a:hover{color:#8b6c0e}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid #8e6a0d;outline-offset:2px}
+*{font-variant-numeric:lining-nums}
+</style>
+</helmet>
+<div style="width: 1280px; height: 1080px; background: linear-gradient(180deg, #fcf2f4 0%, #fbf3f5 100%); color: #170f04; font-family: 'IBM Plex Sans Thai', sans-serif; display: flex; overflow: hidden">
+  <nav aria-label="เมนูแอดมิน" style="width: 232px; flex: 0 0 232px; border-right: 1px solid rgba(142,106,13,.3); padding: 18px 14px; display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; box-sizing: border-box; font-family: 'IBM Plex Sans Thai', sans-serif; background: #faf6f7">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px"><img src="logo.png" alt="Mister Bamrungsuk" style="width: 46px; height: 46px; object-fit: contain; vertical-align: middle"><div style="line-height: 1.15"><div style="font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 17px; color: #846215">Mister Bamrungsuk</div><div style="font-size: 11px; color: #715d57">Admin · super</div></div></div>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ภาพรวม / รายได้</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ตรวจงาน</a>
+    <a href="AdminApplicants.dc.html" aria-current="page" style="padding: 6px 12px; border-radius: 10px; background: rgba(200,16,46,.28); border: 1px solid rgba(142,106,13,.6); color: #170f04; text-decoration: none; font-weight: 600">ผู้สมัคร</a>
+    <a href="AdminSlips.dc.html" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ตรวจสลิป · Slip2Go</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">คิว KYC</a>
+    <a href="AdminCohorts.dc.html" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">กลุ่มอบรม / เช็กชื่อ</a>
+    <a href="AdminProviders.dc.html" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ผู้ให้บริการ & tier</a>
+    <a href="AdminPayouts.dc.html" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ค่าตอบแทน</a>
+    <a href="AdminInvites.dc.html" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ลิงก์เชิญ</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">โอนให้ Part-Time</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">พาร์ทเนอร์ / พื้นที่โปรโมท</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ร้านค้า Marketplace</a>
+    <a href="AdminCovers.dc.html" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">รูปหน้าปก</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">สมาชิก · ใบเตือน</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">รายงาน</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">เรื่องร้องเรียน</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">โปรโมชัน</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">บันทึกระบบ · SOS</a>
+    <div style="height: 1px; background: rgba(142,106,13,.3); margin: 6px 0"></div>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ตั้งค่าระบบ</a>
+    <div style="margin-top: auto; padding-top: 12px; display: flex; flex-direction: column; gap: 4px"><p style="margin: 0; padding: 0 12px; font-size: 12px; color: #594836">admin@bamrungsuk.co · <span style="color: #8e6a0d">Super admin</span></p><span style="margin-top: 4px; padding: 6px 12px; border-radius: 10px; border: 1px solid rgba(142,106,13,.3); color: #3b2b19">ออกจากระบบ</span><a href="Main.dc.html" style="padding: 6px 12px; color: #8e6a0d; text-decoration: none">← สารบัญทุกหน้า</a></div>
+  </nav>
+  <main style="flex: 1; padding: 22px 24px; display: flex; gap: 16px; min-width: 0">
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0; overflow-y: auto; padding-right: 4px">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end">
+        <div><div style="font-size: 11px; letter-spacing: 2.5px; color: #8e6a0d; font-weight: 600">APPLICANTS · PAID</div><h1 style="margin: 2px 0 0; font-family: Kanit, sans-serif; font-weight: 700; font-size: 24px">ผู้สมัครที่ชำระแล้ว</h1></div>
+        <div style="display: flex; gap: 8px; align-items: center"><select aria-label="สถานะ" style="height: 40px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(142,106,13,.3); background: #fbf3f5; color: #3b2b19; font-size: 13px; font-family: inherit"><option>ชำระแล้ว</option><option>รอตรวจสลิป</option><option>ปฏิเสธ</option><option>คืนเงินแล้ว</option><option>ทุกสถานะ</option></select><button style="height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid rgba(142,106,13,.3); background: transparent; color: #3b2b19">ส่งออกไฟล์ Excel / CSV</button></div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+        <sc-for list="{{pkgTabs}}" as="t" hint-placeholder-count="3">
+          <button onClick="{{t.pick}}" style="padding: 14px 16px; border-radius: 16px; border: 1.5px solid {{t.bd}}; background: {{t.bg}}; color: #170f04; text-align: left; display: flex; flex-direction: column; gap: 4px; box-shadow: {{t.shadow}}">
+            <span style="display: flex; justify-content: space-between; align-items: center; width: 100%"><span style="font-size: 11px; letter-spacing: 1.5px; color: #8e6a0d; font-weight: 600">{{t.code}}</span><span style="font-size: 12px; color: #3b2b19"></span></span>
+            <span style="font-family: Kanit, sans-serif; font-weight: 600; font-size: 15px">{{t.name}}</span>
+            <span style="font-family: Kanit, sans-serif; font-weight: 700; font-size: 24px; color: #8e6a0d">{{t.total}}</span>
+          </button>
+        </sc-for>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-radius: 16px; border: 1px solid rgba(142,107,13,.55); background: linear-gradient(160deg, rgba(142,107,13,.1), #fbf1f3 60%); overflow: hidden">
+        <div style="padding: 12px 16px"><div style="font-size: 11.5px; color: #3b2b19">ค่าการันตีแบรนด์ · {{selPkgName}}</div><div style="font-family: Kanit, sans-serif; font-weight: 700; font-size: 20px; color: #170f04">{{sumG}}</div><div style="font-size: 10.5px; color: #715d57">{{fG}} · คืนเมื่อครบ 1 ปี</div></div>
+        <div style="padding: 12px 16px; border-left: 1px solid rgba(142,107,13,.25)"><div style="font-size: 11.5px; color: #3b2b19">ค่าอบรม · {{selPkgName}}</div><div style="font-family: Kanit, sans-serif; font-weight: 700; font-size: 20px; color: #170f04">{{sumT}}</div><div style="font-size: 10.5px; color: #715d57">{{fT}}</div></div>
+        <div style="padding: 12px 16px; border-left: 1px solid rgba(142,107,13,.25); background: rgba(176,24,44,.12)"><div style="font-size: 11.5px; color: #3b2b19">ผู้สมัคร · {{selPkgName}}</div><div style="font-family: Kanit, sans-serif; font-weight: 700; font-size: 20px; color: #8e6a0d">{{nSel}} คน</div><div style="font-size: 10.5px; color: #715d57">ชำระครบแล้ว</div></div>
+        <div style="padding: 12px 16px; border-left: 1px solid rgba(142,107,13,.25)"><div style="font-size: 11.5px; color: #3b2b19">ยังไม่เข้ากลุ่ม LINE</div><div style="font-family: Kanit, sans-serif; font-weight: 700; font-size: 20px; color: #8b6c0e">{{notLine}} คน</div><div style="font-size: 10.5px; color: #715d57">โควตา 50 คน</div></div>
+      </div>
+      <div style="border-radius: 16px; border: 1px solid rgba(142,106,13,.3); overflow: hidden; font-size: 13px">
+        <div style="display: grid; grid-template-columns: 110px minmax(0, 1.4fr) 100px 90px 120px 100px; padding: 10px 14px; background: #fcf5f6; color: #715d57; font-size: 12px"><span>รหัส MB</span><span>ชื่อ</span><span>สายงาน</span><span>กลุ่ม</span><span>กลุ่ม LINE</span><span>ตรวจประวัติ</span></div>
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+          <button onClick="{{r.pick}}" style="width: 100%; display: grid; grid-template-columns: 110px minmax(0, 1.4fr) 100px 90px 120px 100px; padding: 11px 14px; border: none; border-top: 1px solid rgba(142,106,13,.3); background: {{r.bg}}; color: #170f04; text-align: left; font-size: 13px; align-items: center">
+            <span style="color: #8e6a0d">{{r.mb}}</span><span>{{r.name}}</span><span style="color: #3b2b19">{{r.pkg}}</span><span style="color: #3b2b19">{{r.cohort}}</span><span style="color: {{r.lineColor}}">{{r.lineLabel}}</span><span style="color: {{r.checkColor}}">{{r.check}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+    <aside style="width: 300px; padding: 18px; border-radius: 18px; border: 1px solid rgba(143,109,10,.85); background: #fbf1f3; display: flex; flex-direction: column; gap: 10px; font-size: 13px; box-sizing: border-box">
+      <div style="display: flex; gap: 12px; align-items: center"><img src="{{sel.img}}" alt="" style="width: 56px; height: 56px; border-radius: 14px; object-fit: cover"><div><div style="font-family: Kanit, sans-serif; font-weight: 600; font-size: 17px">{{sel.name}}</div><div style="color: #8e6a0d; font-size: 12px">{{sel.mb}} · {{sel.pkg}}</div></div></div>
+      <div style="display: flex; justify-content: space-between"><span style="color: #3b2b19">อายุ · ส่วนสูง</span><span>{{sel.age}}</span></div>
+      <div style="display: flex; justify-content: space-between"><span style="color: #3b2b19">กิจกรรม</span><span style="text-align: right">{{sel.acts}}</span></div>
+      <div style="display: flex; justify-content: space-between"><span style="color: #3b2b19">เวลาว่าง</span><span>{{sel.avail}}</span></div>
+      <div style="display: flex; justify-content: space-between"><span style="color: #3b2b19">ยอดชำระ</span><span>{{sel.paid}}</span></div>
+      <div style="height: 1px; background: rgba(142,106,13,.3)"></div>
+      <div style="color: #3b2b19; font-size: 12px">จัดกลุ่มอบรม</div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px"><sc-for list="{{assign}}" as="a" hint-placeholder-count="3"><button onClick="{{a.pick}}" style="height: 38px; border-radius: 10px; border: 1px solid {{a.border}}; background: {{a.bg}}; color: {{a.fg}}; font-size: 12.5px; font-weight: 600">{{a.label}}</button></sc-for></div>
+      <button onClick="{{toggleLine}}" style="display: flex; justify-content: space-between; align-items: center; height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid rgba(142,106,13,.3); background: #fcf5f6; color: #170f04; font-size: 13px">เข้ากลุ่ม LINE แล้ว<span style="width: 42px; height: 24px; border-radius: 999px; background: {{lineTrack}}; position: relative"><span style="position: absolute; top: 3px; left: {{lineKnob}}; width: 18px; height: 18px; border-radius: 50%; background: #000000"></span></span></button>
+      <div style="height: 1px; background: rgba(142,106,13,.3)"></div>
+      <div style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 11px; letter-spacing: 1.5px; color: #8e6a0d; font-weight: 600">ยืนยันตัวตน · KYC</span><span style="font-size: 12px; color: #8b6c0e">รอตรวจเอกสาร</span></div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px"><div style="text-align: center"><div style="aspect-ratio: 4/3; border-radius: 8px; background: #fcf5f6 url({{sel.img}}) center/cover; border: 1px solid rgba(142,107,13,.25)"></div><span style="font-size: 10.5px; color: #3b2b19">บัตรประชาชน</span></div><div style="text-align: center"><div style="aspect-ratio: 4/3; border-radius: 8px; background: #fcf5f6 url({{sel.img}}) center/cover; border: 1px solid rgba(142,107,13,.25)"></div><span style="font-size: 10.5px; color: #3b2b19">สำเนาบัตรเซ็นรับรอง</span></div><div style="text-align: center"><div style="aspect-ratio: 4/3; border-radius: 8px; background: #fcf5f6 url({{sel.img}}) center/cover; border: 1px solid rgba(142,107,13,.25)"></div><span style="font-size: 10.5px; color: #3b2b19">เซลฟีถือบัตร</span></div><div style="text-align: center"><div style="aspect-ratio: 4/3; border-radius: 8px; border: 1px dashed rgba(142,107,13,.3); background: #fcf5f6; display: grid; place-items: center; font-size: 10px; color: #715d57">ไม่มีไฟล์</div><span style="font-size: 10.5px; color: #715d57">สมุดบัญชี</span></div><div style="text-align: center"><div style="aspect-ratio: 4/3; border-radius: 8px; border: 1px dashed rgba(142,107,13,.3); background: #fcf5f6; display: grid; place-items: center; font-size: 10px; color: #715d57">ไม่มีไฟล์</div><span style="font-size: 10.5px; color: #715d57">ใบรับรองนวด</span></div></div>
+      <div style="display: flex; justify-content: space-between; gap: 12px"><span style="color: #3b2b19">ธนาคาร</span><span>กสิกรไทย</span></div>
+      <div style="display: flex; justify-content: space-between; gap: 12px"><span style="color: #3b2b19">เลขบัญชี</span><span>123-4-56789-0</span></div>
+      <div style="display: flex; justify-content: space-between; gap: 12px"><span style="color: #3b2b19">ชื่อบัญชี</span><span>{{sel.name}}</span></div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px"><button style="height: 40px; border-radius: 999px; border: 1px solid rgba(201,40,61,.6); background: rgba(176,24,44,.15); color: #350101; font-weight: 600">ไม่ผ่าน</button><button style="height: 40px; border-radius: 999px; border: 1px solid rgba(143,109,10,.85); background: linear-gradient(100deg, #f8e5e8 0%, #c8102e 24%, #990015 50%, #c8102e 76%, #f8e5e8 100%); color: #fff; font-weight: 600">อนุมัติเอกสาร</button></div>
+      <button style="margin-top: 6px; height: 46px; border-radius: 999px; border: none; background: #06c755; color: #000000; font-weight: 600">คัดลอกลิงก์กลุ่ม LINE</button>
+      <button style="height: 44px; border-radius: 999px; border: 1px solid rgba(142,106,13,.3); background: transparent; color: #3b2b19">ดูสลิปและเอกสาร</button>
+    </aside>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1080}}'>
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    this.state = { filter: 'all', pkg: 'A', sel: 1, rows: [
+      { mb: 'MB-2610001', name: 'ธนภัทร ใจดี', pkg: 'สายนวด', cohort: 'กลุ่ม 1', line: true, check: 'ผ่าน', img: '/_blob/56b2882b50780e8559bced0bbf41786c', age: '29 ปี · 178 ซม.', acts: 'กิน & เที่ยว · คาเฟ่', avail: 'บ่าย–ดึก · 5 วัน', paid: 'การันตี ฿15,000 · อบรม ฿6,000' },
+      { mb: 'MB-2610003', name: 'ศุภชัย มณีรัตน์', pkg: 'สายเพื่อนกินเที่ยว', cohort: 'กลุ่ม 1', line: false, check: 'รอตรวจ', img: '/_blob/e3e4f265164ba06378c32f7065174221', age: '33 ปี · 181 ซม.', acts: 'ช่างภาพ · คาเฟ่', avail: 'เย็น · 4 วัน', paid: 'การันตี ฿10,000 · อบรม ฿3,000' },
+      { mb: 'MB-2610004', name: 'ภูมิพัฒน์ วงศ์ทอง', pkg: 'สายเพื่อนกินเที่ยว', cohort: 'กลุ่ม 1', line: true, check: 'ผ่าน', img: '/_blob/60d766c929fb80635f6b43fa828e197a', age: '31 ปี · 176 ซม.', acts: 'ออกกำลัง · กิน & เที่ยว', avail: 'เช้า–บ่าย · 6 วัน', paid: 'การันตี ฿10,000 · อบรม ฿3,000' },
+      { mb: 'MB-2610005', name: 'กิตติ ศรีสุข', pkg: 'สายนวด', cohort: 'กลุ่ม 2', line: false, check: 'รอตรวจ', img: '/_blob/2464b014585cc8edfdfae5b52f00ccde', age: '26 ปี · 175 ซม.', acts: 'ดูหนัง · นั่งชิล', avail: 'ดึก · 3 วัน', paid: 'การันตี ฿15,000 · อบรม ฿6,000' },
+      { mb: 'MB-2610006', name: 'ปัณณวัฒน์ แก้วกล้า', pkg: 'สายเพื่อนกินเที่ยว', cohort: 'กลุ่ม 1', line: true, check: 'ผ่าน', img: '/_blob/c67594f5dcc4d9f3055c678d02cbcbea', age: '28 ปี · 180 ซม.', acts: 'กิน & เที่ยว · วิดีโอคอล', avail: 'บ่าย · 5 วัน', paid: 'การันตี ฿10,000 · อบรม ฿3,000' },
+      { mb: 'MB-2610008', name: 'อนาวิล ตั้งใจ', pkg: 'สายเพื่อนกินเที่ยว', cohort: 'กลุ่ม 2', line: false, check: 'รอตรวจ', img: '/_blob/0c08d72b404d946b6a38183efaf61611', age: '30 ปี · 177 ซม.', acts: 'คาเฟ่ · ดูหนัง', avail: 'เย็น–ดึก · 4 วัน', paid: 'การันตี ฿10,000 · อบรม ฿3,000' }
+    ] };
+  }
+  renderVals() {
+    const s = this.state; const gold = '#8e6a0d';
+    const C = [['all', 'ทั้งหมด', 'ผู้สมัครทุกกลุ่ม', 50], ['กลุ่ม 1', 'กลุ่ม 1', 'อบรมแล้ว 15–16 พ.ย. 2569', 25], ['กลุ่ม 2', 'กลุ่ม 2', '21–22 ก.พ. 2570', 25], ['—', 'ยังไม่จัดกลุ่ม', 'รอมอบหมาย', 50]];
+    const pk = (r) => (r.pkg === 'สายนวด' ? 'B' : 'A');
+    const visible = s.rows.map((r, i) => ({ r, i })).filter(({ r }) => (s.filter === 'all' || r.cohort === s.filter) && (s.pkg === 'all' || pk(r) === s.pkg));
+    const fmt = (n) => '฿' + n.toLocaleString('en-US');
+    const PR = { A: [10000, 3000], B: [15000, 6000] };
+    const cnt = (k) => s.rows.filter((r) => k === 'all' || pk(r) === k).length;
+    const nA = cnt('A'), nB = cnt('B');
+    const sumOf = (k, j) => (k !== 'B' ? nA * PR.A[j] : 0) + (k !== 'A' ? nB * PR.B[j] : 0);
+    const fx = (k, j) => k === 'A' ? 'A ' + nA + '×' + fmt(PR.A[j]) : k === 'B' ? 'B ' + nB + '×' + fmt(PR.B[j]) : 'A ' + nA + '×' + fmt(PR.A[j]) + ' + B ' + nB + '×' + fmt(PR.B[j]);
+    const PN = { all: 'ทุกสาย', A: 'สายเพื่อนกินเที่ยว', B: 'สายนวด' };
+    const rate = (k, j) => k === 'all' ? fmt(PR.A[j]) + ' / ' + fmt(PR.B[j]) : fmt(PR[k][j]);
+    const setRow = (i, patch) => { const rows = s.rows.slice(); rows[i] = { ...rows[i], ...patch }; this.setState({ rows }); };
+    const sel = s.rows[s.sel];
+    return {
+      notLine: s.rows.filter((r) => !r.line).length,
+      pkgTabs: [['all', 'ALL', 'ทุกสาย'], ['A', 'TRACK A', 'สายเพื่อนกินเที่ยว'], ['B', 'TRACK B', 'สายนวด']].map(([k, code, name]) => { const on = s.pkg === k; return { code, name, count: cnt(k) + ' คน', total: cnt(k) + ' คน', bd: on ? gold : 'rgba(142,106,13,.3)', bg: on ? 'rgba(142,107,13,.14)' : '#fbf1f3', shadow: on ? '0 0 0 3px rgba(142,107,13,.15)' : 'none', pick: () => this.setState({ pkg: k }) }; }),
+      selPkgName: PN[s.pkg], sumG: rate(s.pkg, 0), sumT: rate(s.pkg, 1), fG: 'ต่อคน', fT: 'ต่อคน', nSel: cnt(s.pkg),
+      cohorts: C.map(([id, name, date, cap]) => { const n = id === 'all' ? s.rows.length : s.rows.filter((r) => r.cohort === id).length; return { name, date, count: n + '/' + cap, pct: Math.round((n / cap) * 100) + '%', border: s.filter === id ? gold : 'rgba(142,106,13,.3)', pick: () => this.setState({ filter: id }) }; }),
+      rows: visible.map(({ r, i }) => ({ ...r, bg: i === s.sel ? 'rgba(142,107,13,.16)' : 'transparent', lineLabel: r.line ? '✓ เข้ากลุ่มแล้ว' : 'ยังไม่เข้า', lineColor: r.line ? '#1d9f4d' : '#8b6c0e', checkColor: r.check === 'ผ่าน' ? '#1d9f4d' : '#3b2b19', pick: () => this.setState({ sel: i }) })),
+      sel,
+      assign: ['กลุ่ม 1', 'กลุ่ม 2', 'กลุ่ม 3'].map((c) => ({ label: c, bg: sel.cohort === c ? gold : 'transparent', fg: sel.cohort === c ? '#fcf9f4' : '#3b2b19', border: sel.cohort === c ? gold : 'rgba(142,106,13,.3)', pick: () => setRow(s.sel, { cohort: c }) })),
+      toggleLine: () => setRow(s.sel, { line: !sel.line }), lineTrack: sel.line ? '#06c755' : 'rgba(142,106,13,.3)', lineKnob: sel.line ? '21px' : '3px'
+    };
+  }
+}
+</script>
+</body>
+</html>

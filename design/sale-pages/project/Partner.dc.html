@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>Partner Program</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-variant-numeric:lining-nums}
+a{color:#8e6a0d}a:hover{color:#866913}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid #8e6a0d;outline-offset:2px}
+*{font-variant-numeric:lining-nums}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 5700px; background: linear-gradient(180deg, #fbf1f3 0%, #faecee 45%, #fbeef0 75%, #fcf2f5 100%); color: #170f04; font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 15px; line-height: 1.7; position: relative; overflow: hidden">
+  <header data-brand-bar style="position: relative; z-index: 30; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; height: 64px; box-sizing: border-box; background: #faf6f7"><a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; min-width: 0; font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 20px"><img src="logo.png" alt="Mister Bamrungsuk" style="width: 40px; height: 40px; object-fit: contain; flex: 0 0 40px"><span style="color: #846215; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Mister Bamrungsuk</span></a><span style="flex: 0 0 auto; padding: 5px 12px; border-radius: 999px; border: 1px solid #8e6a0d; font-size: 10px; letter-spacing: 2.5px; color: #8e6a0d">PARTNER</span></header>
+  <div style="box-sizing: border-box; padding-bottom: 110px">
+    <div style="height: 380px; position: relative">
+      <img src="/_blob/fec646b4d31ad694543697fbe3354b27" alt="" style="width: 100%; height: 100%; object-fit: cover; display: block">
+      <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(251,241,243,.55), rgba(251,241,243,.2) 40%, #fbf1f3)"></div>
+      <div style="position: absolute; left: 16px; right: 16px; bottom: 16px">
+        <div style="font-size: 13px; letter-spacing: 3px; color: #8e6a0d; font-weight: 600">สปาทั่วประเทศ · โรงแรม</div>
+        <h1 style="margin: 6px 0 0; font-family: Kanit, sans-serif; font-weight: 600; font-size: 28px; line-height: 1.2; text-wrap: balance">ขายบริการของคุณ<br><span style="color: #8e6a0d">ผ่าน Mister Bamrungsuk</span></h1>
+        <div style="margin-top: 10px; display: inline-flex; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(212,175,55,.55); background: rgba(251,251,251,.45); font-size: 13px; color: #866913">แพ็กเกจเริ่มต้น <b style="color: #8e6a0d">&nbsp;฿45,000 / 3 เดือน</b></div>
+      </div>
+    </div>
+    <div style="padding: 0 16px; display: flex; flex-direction: column; gap: 22px; min-width: 0">
+      <p style="margin: 0; font-size: 15px; color: #3b2b19; line-height: 1.7">ขายบริการให้ลูกค้าพรีเมียมของเรา เราดูแล QC และรับจองให้ครบ</p>
+
+      <div>
+        <h2 style="margin: 0 0 10px; font-family: Kanit, sans-serif; font-weight: 600; font-size: 19px">ทำไมต้องเป็นพาร์ทเนอร์</h2>
+        <div style="border-radius: 18px; border: 1px solid rgba(142,107,13,.65); background: rgba(252,245,247,.45); padding: 0 14px">
+          <sc-for list="{{why}}" as="w" hint-placeholder-count="4">
+            <div style="display: flex; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid {{w.line}}"><span style="font-family: Kanit, sans-serif; font-weight: 600; font-size: 22px; color: #8e6a0d; width: 30px; flex-shrink: 0">{{w.n}}</span><div style="min-width: 0"><div style="font-size: 14px; font-weight: 600">{{w.t}}</div><div style="font-size: 13px; color: #3b2b19">{{w.d}}</div></div></div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div>
+        <h2 style="margin: 0 0 10px; font-family: Kanit, sans-serif; font-weight: 600; font-size: 19px">เงื่อนไขพาร์ทเนอร์</h2>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <sc-for list="{{conds}}" as="c" hint-placeholder-count="5">
+            <div style="display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(142,107,13,.38); background: rgba(252,245,247,.45)"><span style="flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; border: 1px solid #8e6a0d; color: #8e6a0d; display: grid; place-items: center; font-size: 13px">✓</span><div style="min-width: 0"><div style="font-size: 14px; font-weight: 600; color: #866913">{{c.t}}</div><div style="font-size: 13px; color: #3b2b19; margin-top: 2px">{{c.d}}</div></div></div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div>
+        <h2 style="margin: 0 0 10px; font-family: Kanit, sans-serif; font-weight: 600; font-size: 19px">แพ็กเกจและสิ่งที่ได้รับ</h2>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <sc-for list="{{pkgs}}" as="p" hint-placeholder-count="2">
+            <button onClick="{{p.pick}}" style="padding: 16px; border-radius: 18px; border: 1.5px solid {{p.border}}; background: {{p.bg}}; color: #170f04; text-align: left; display: flex; flex-direction: column; gap: 6px; width: 100%; min-width: 0">
+              <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px"><span style="font-size: 10.5px; letter-spacing: 2px; color: #8e6a0d">{{p.code}}</span><sc-if value="{{p.best}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; padding: 2px 8px; border-radius: 999px; background: #8e6a0d; color: #fbf1f3; font-weight: 600">คุ้มที่สุด</span></sc-if></span>
+              <span style="font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 17px">แพ็กเกจพาร์ทเนอร์ {{p.name}}</span>
+              <span style="font-size: 13px">ค่าแพ็กเกจ <span style="font-family: Kanit, sans-serif; font-weight: 600; font-size: 24px; color: #8e6a0d">{{p.price}}</span> บาท</span>
+              <span style="font-size: 13px; color: #3b2b19; line-height: 1.6"><b style="color: #8e6a0d">[รอกำหนด ฿]</b> ค่าป้ายแบรนด์ (ชำระเพิ่ม)</span>
+              <span style="font-size: 13px; color: #3b2b19; line-height: 1.6"><b style="color: #8e6a0d">[รอกำหนด]%</b> การหักต่อ booking ที่มาจากแพลตฟอร์ม</span>
+              <span style="font-size: 13px; color: #3b2b19; line-height: 1.6"><b style="color: #8e6a0d">[รอกำหนด]</b> ราคาขายต่อบริการ (ช่วย mark up ให้)</span>
+              <span style="font-size: 13px; padding: 8px 10px; border-radius: 10px; background: rgba(142,107,13,.18); border: 1px solid rgba(142,107,13,.65); color: #866913; line-height: 1.7">สิ่งที่ได้รับ: คลิปโปรโมท 1 คลิปลง IG &amp; FB ของแบรนด์ · สุ่ม QC · โปรโมทผ่านแพลตฟอร์ม · ป้าย “ทำงานร่วมกับ Mister Bamrungsuk”</span>
+              <span style="font-size: 13px; color: #3b2b19">ระยะเวลาแสดงบนแพลตฟอร์ม {{p.dur}}</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div>
+        <h2 style="margin: 0 0 10px; font-family: Kanit, sans-serif; font-weight: 600; font-size: 19px">ประเภทพาร์ทเนอร์</h2>
+        <div style="display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px">
+          <sc-for list="{{kinds}}" as="k" hint-placeholder-count="2">
+            <div style="border-radius: 16px; overflow: hidden; border: 1px solid rgba(142,107,13,.38); background: rgba(252,245,247,.45); min-width: 0"><img src="{{k.img}}" alt="" style="width: 100%; height: 110px; object-fit: cover; display: block"><div style="padding: 10px 12px"><div style="font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 15px">{{k.t}}</div><div style="font-size: 13px; color: #3b2b19">{{k.d}}</div></div></div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div>
+        <h2 style="margin: 0 0 10px; font-family: Kanit, sans-serif; font-weight: 600; font-size: 19px">ตัวอย่างการแสดงบนแพลตฟอร์ม</h2>
+        <div style="border-radius: 18px; overflow: hidden; border: 1px solid rgba(143,109,10,.85); background: rgba(252,245,247,.45)">
+          <div style="position: relative; height: 150px"><img src="/_blob/a216c3eb60d3f8bb9387430bc004cd1b" alt="" style="width: 100%; height: 100%; object-fit: cover; display: block"><span style="position: absolute; left: 10px; top: 10px; display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; background: rgba(251,241,243,.82); border: 1px solid #8e6a0d; color: #8e6a0d; font-size: 13px; font-weight: 600"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m5 12 5 5 9-10"></path></svg>ทำงานร่วมกับ Mister Bamrungsuk</span></div>
+          <div style="padding: 12px 14px; display: flex; flex-direction: column; gap: 4px">
+            <div style="display: flex; justify-content: space-between; gap: 8px"><span style="font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 16px">Siam Serenity Spa</span><span style="font-size: 13px; color: #8e6a0d">★ 4.9</span></div>
+            <div style="font-size: 13px; color: #3b2b19">เชียงใหม่ · นิมมานเหมินท์ · ผ่าน QC มาตรฐาน</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px"><span style="font-size: 13px">นวดอโรมา 90 นาที</span><span style="font-family: Kanit, sans-serif; font-weight: 600; color: #8e6a0d">[รอกำหนด]</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h2 style="margin: 0 0 10px; font-family: Kanit, sans-serif; font-weight: 600; font-size: 19px">เริ่มต้นใน 5 ขั้นตอน</h2>
+        <sc-for list="{{steps}}" as="t" hint-placeholder-count="5"><div style="display: flex; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid #faeef0"><span style="flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; border: 1px solid #8e6a0d; color: #8e6a0d; display: grid; place-items: center; font-family: 'Cormorant Garamond', Kanit; font-size: 13px">{{t.n}}</span><span style="font-size: 13.5px; min-width: 0">{{t.text}}</span></div></sc-for>
+      </div>
+
+      <div>
+        <h2 style="margin: 0 0 10px; font-family: Kanit, sans-serif; font-weight: 600; font-size: 19px">คำถามที่พบบ่อย</h2>
+        <sc-for list="{{faq}}" as="f" hint-placeholder-count="4">
+          <div style="border-bottom: 1px solid rgba(142,107,13,.38)">
+            <button onClick="{{f.toggle}}" aria-expanded="{{f.open}}" style="width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 14px 0; background: none; border: none; color: #170f04; font-size: 14px; text-align: left">{{f.q}}<span style="color: #8e6a0d; font-size: 18px; flex-shrink: 0">{{f.sign}}</span></button>
+            <sc-if value="{{f.isOpen}}" hint-placeholder-val="{{ false }}"><div style="padding: 0 0 14px; font-size: 13px; color: #3b2b19; line-height: 1.65">{{f.a}}</div></sc-if>
+          </div>
+        </sc-for>
+      </div>
+
+      <div id="apply" style="padding: 16px; border-radius: 20px; border: 1px solid rgba(143,109,10,.85); background: rgba(252,245,247,.45); display: flex; flex-direction: column; gap: 10px">
+        <sc-if value="{{notSent}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <div style="font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 17px">สมัครเป็นพาร์ทเนอร์</div>
+            <label style="display: flex; flex-direction: column; gap: 5px; font-size: 13px; color: #3b2b19">ชื่อธุรกิจ<button type="button" onClick="{{pname.tap}}" aria-label="ชื่อธุรกิจ · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;height: 46px; border-radius: 12px; border: 1px solid rgba(142,107,13,.38); background: rgba(252,245,247,.45); padding: 0 12px; font-size: 14px; color:{{pname.color}}">{{pname.text}}</button></label>
+            <div style="font-size: 13px; color: #3b2b19">ประเภทธุรกิจ</div>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap"><sc-for list="{{types}}" as="t" hint-placeholder-count="5"><button onClick="{{t.pick}}" style="height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid {{t.border}}; background: {{t.bg}}; color: {{t.fg}}; font-size: 13px; font-weight: 600">{{t.label}}</button></sc-for></div>
+            <label style="display: flex; flex-direction: column; gap: 5px; font-size: 13px; color: #3b2b19">ผู้ติดต่อ<button type="button" onClick="{{pcontact.tap}}" aria-label="ชื่อผู้ติดต่อ · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;height: 46px; border-radius: 12px; border: 1px solid rgba(142,107,13,.38); background: rgba(252,245,247,.45); padding: 0 12px; font-size: 14px; color:{{pcontact.color}}">{{pcontact.text}}</button></label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px"><label style="display: flex; flex-direction: column; min-width: 0; gap: 5px; font-size: 13px; color: #3b2b19">เบอร์โทร<button type="button" onClick="{{ptel.tap}}" aria-label="เบอร์โทร · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;height: 46px; border-radius: 12px; border: 1px solid rgba(142,107,13,.38); background: rgba(252,245,247,.45); padding: 0 12px; font-size: 14px; color:{{ptel.color}}">{{ptel.text}}</button></label><label style="display: flex; flex-direction: column; min-width: 0; gap: 5px; font-size: 13px; color: #3b2b19">LINE ID<button type="button" onClick="{{pline.tap}}" aria-label="LINE ID · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;height: 46px; border-radius: 12px; border: 1px solid rgba(142,107,13,.38); background: rgba(252,245,247,.45); padding: 0 12px; font-size: 14px; color:{{pline.color}}">{{pline.text}}</button></label></div>
+            <label style="display: flex; flex-direction: column; gap: 5px; font-size: 13px; color: #3b2b19">อีเมล<button type="button" onClick="{{pemail.tap}}" aria-label="อีเมล · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;height: 46px; border-radius: 12px; border: 1px solid rgba(142,107,13,.38); background: rgba(252,245,247,.45); padding: 0 12px; font-size: 14px; color:{{pemail.color}}">{{pemail.text}}</button></label>
+            <label style="display: flex; flex-direction: column; gap: 5px; font-size: 13px; color: #3b2b19">จังหวัด / ย่าน<button type="button" onClick="{{parea.tap}}" aria-label="จังหวัด / ย่าน · แตะเพื่อกรอกตัวอย่าง" style="display:flex;align-items:center;justify-content:flex-start;text-align:left;cursor:pointer;box-sizing:border-box;font-family:inherit;overflow:hidden;white-space:nowrap;height: 46px; border-radius: 12px; border: 1px solid rgba(142,107,13,.38); background: rgba(252,245,247,.45); padding: 0 12px; font-size: 14px; color:{{parea.color}}">{{parea.text}}</button></label>
+            <label onClick="{{toggleConsent}}" style="display: flex; gap: 10px; font-size: 13px; line-height: 1.5; color: #3b2b19; cursor: pointer"><span aria-hidden="true" style="flex: 0 0 16px; width: 16px; height: 16px; margin-top: 2px; border-radius: 4px; border: 1px solid #8e6a0d; background: {{consentBg}}; color: #fcf9f4; display: grid; place-items: center; font-size: 13px; font-weight: 700; box-sizing: border-box">{{consentMark}}</span><span>ยินยอมให้ Mister Bamrungsuk เก็บและใช้ข้อมูลข้างต้นเพื่อติดต่อกลับและพิจารณาการเป็นพาร์ทเนอร์ ตาม พ.ร.บ.คุ้มครองข้อมูลส่วนบุคคล (PDPA)</span></label>
+            <button onClick="{{send}}" style="height: 52px; border-radius: 999px; border: 1px solid rgba(143,109,10,.85); background: linear-gradient(100deg, #f8e5e8 0%, #c8102e 24%, #990015 50%, #c8102e 76%, #f8e5e8 100%); border: 1.5px solid #8e6a0d; box-shadow: 0 8px 24px rgba(255,40,70,.45); color: #fff; font-weight: 600; font-size: 15px">ส่งใบสมัคร · {{selName}}</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{sent}}" hint-placeholder-val="{{ false }}">
+          <div style="text-align: center; display: flex; flex-direction: column; gap: 8px; align-items: center; padding: 8px 0">
+            <div style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid #8e6a0d; display: grid; place-items: center; color: #8e6a0d"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 5 5 9-10"></path></svg></div>
+            <div style="font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 18px">ได้รับใบสมัครแล้ว</div>
+            <div style="font-size: 13px; color: #3b2b19">ขั้นต่อไป: ชำระแพ็กเกจ {{selName}} แล้วทีมงานจะติดต่อนัด QC สถานที่</div>
+            <a href="PartnerPay.dc.html" style="height: 52px; width: 100%; box-sizing: border-box; border-radius: 999px; border: 1px solid rgba(143,109,10,.85); background: linear-gradient(100deg, #f8e5e8 0%, #c8102e 24%, #990015 50%, #c8102e 76%, #f8e5e8 100%); border: 1.5px solid #8e6a0d; box-shadow: 0 8px 24px rgba(255,40,70,.45); color: #fff; font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 15px; display: grid; place-items: center; text-decoration: none; margin-top: 4px">ไปชำระแพ็กเกจ</a>
+          </div>
+        </sc-if>
+      </div>
+      <a href="PartnerLogin.dc.html" style="font-size: 13px; text-align: center; padding: 6px">เป็นพาร์ทเนอร์อยู่แล้ว? เข้าสู่ระบบ</a>
+    </div>
+      <footer style="margin: 18px 16px 0; padding: 16px 0 22px; border-top: 1px solid rgba(201,162,74,.45); display: flex; flex-direction: column; gap: 12px; font-size: 13px; color: #3b2b19; font-family: 'IBM Plex Sans Thai', sans-serif">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px"><span style="display: inline-flex; align-items: center; gap: 8px"><img src="logo.png" alt="" style="width: 34px; height: 34px; object-fit: contain"><span style="font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 21px; color: #846215">Bamrungsuk</span></span><a href="mailto:Misterbamrungsuk@gmail.com" style="color: #3b2b19; text-decoration: none">ติดต่อเรา</a></div>
+        <nav aria-label="เอกสารทางกฎหมาย" style="display: flex; flex-wrap: wrap; gap: 4px 12px"><a href="#" style="color: #3b2b19; text-decoration: none">ข้อกำหนดและเงื่อนไขการใช้งาน</a><span aria-hidden="true" style="color: #594836">|</span><a href="#" style="color: #3b2b19; text-decoration: none">นโยบายความเป็นส่วนตัว (PDPA)</a></nav>
+        <address style="font-style: normal; line-height: 1.65; color: #594836"><div style="color: #3b2b19">Mister Bamrungsuk · ทะเบียนนิติบุคคลเลขที่ 0105569040446</div><div>111/384 หมู่บ้านโกลเด้นทาวน์ พหลโยธิน-สะพานใหม่ ซอยพหลโยธิน 54/1 แยก 4 (วัดเกาะ) แขวงคลองถนน เขตสายไหม กรุงเทพมหานคร 10220</div><div>Misterbamrungsuk@gmail.com · 096-004-0231</div></address>
+        <div style="color: #594836">© 2569 Mister Bamrungsuk สงวนลิขสิทธิ์</div>
+      </footer>
+  </div>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 16px 16px; background: rgba(251,241,243,.97); border-top: 1px solid rgba(142,107,13,.38); display: flex; align-items: center; justify-content: space-between; gap: 12px">
+    <div style="min-width: 0"><div style="font-size: 13px; color: #3b2b19">แพ็กเกจ {{selName}}</div><div style="font-family: Kanit, sans-serif; font-weight: 600; font-size: 22px; color: #8e6a0d">{{selPrice}}</div></div>
+    <a href="PartnerPay.dc.html" style="text-decoration: none; display: inline-flex; align-items: center; height: 52px; padding: 0 18px; border-radius: 999px; background: linear-gradient(100deg, #f8e5e8 0%, #c8102e 24%, #990015 50%, #c8102e 76%, #f8e5e8 100%); border: 1.5px solid #8e6a0d; box-shadow: 0 0 0 3px rgba(255,59,85,.18), 0 10px 28px rgba(255,40,70,.45); color: #fff; font-weight: 600; font-size: 14px; white-space: nowrap">{{ctaLabel}}</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":5700}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { pkg: '6m', type: 'เดย์สปา', sent: false, faq: 0, consent: true }; }
+  _baseVals() {
+    const s = this.state; const gold = '#8e6a0d';
+    const P = [['3m', '3 เดือน', '฿45,000', 'แพ็กเกจ 3M', false, '3 เดือน'], ['6m', '6 เดือน', '฿60,000', 'แพ็กเกจ 6M', true, '6 เดือน']];
+    const cur = P.find((x) => x[0] === s.pkg) || P[0];
+    const WHY = [['คลิปโปรโมทโดยทีมแบรนด์', '1 คลิป/แพ็กเกจ ลง IG & FB ของแบรนด์'], ['มีฐานลูกค้าพรีเมียมรองรับ', 'เรารับจองให้ ไม่ต้องหาลูกค้าเอง'], ['ช่วยตั้งราคาขาย (mark up)', 'ตั้งราคาขายบนแพลตฟอร์มให้เหมาะกับตลาดพรีเมียม'], ['ป้ายรับรองแบรนด์', 'ได้ป้าย “ทำงานร่วมกับ Mister Bamrungsuk”']];
+    const COND = [['มาตรฐานการนวดเทียบเท่า Bamrungsuk', 'ผ่านการตรวจมาตรฐานจากทีมงานก่อนเปิดขาย'], ['ยินยอมให้ทีมงาน QC', 'ตรวจก่อนเริ่ม และสุ่ม QC ตลอดระยะแพ็กเกจ'], ['รับจองผ่านแพลตฟอร์ม', 'เราหัก [รอกำหนด]% ต่อ booking ที่มาจากแพลตฟอร์ม'], ['ราคาขายผ่านแพลตฟอร์ม', 'เราช่วย mark up ราคา · ราคาขายต่อบริการ [รอกำหนด]'], ['ชำระค่าป้ายแบรนด์', 'พาร์ทเนอร์ชำระค่าป้ายแบรนด์ [รอกำหนด]']];
+    const FAQ = [['หักค่าธรรมเนียมเท่าไร', 'หัก [รอกำหนด]% ต่อ booking ที่มาจากแพลตฟอร์ม (กำลังสรุปอัตรา)'], ['โรงแรมสมัครได้ไหม', 'ได้ ทั้งโรงแรมที่มีสปาและโรงแรมที่ต้องการขายห้องพัก/แพ็กเกจผ่านแพลตฟอร์ม'], ['QC ตรวจอะไรบ้าง', 'มาตรฐานการนวด ความสะอาด ห้อง/สถานที่ ใบอนุญาต และเอกสาร'], ['ค่าป้ายแบรนด์เท่าไร', 'ค่าป้ายแบรนด์ [รอกำหนด] แจ้งให้ทราบก่อนทำสัญญา']];
+    return {
+      why: WHY.map(([t, d], i) => ({ t, d, n: '0' + (i + 1), line: i ? 'rgba(0,0,0,.07)' : 'transparent' })),
+      conds: COND.map(([t, d]) => ({ t, d })),
+      pkgs: P.map(([id, name, price, code, best, dur]) => ({ name, price, code, best, dur, border: s.pkg === id ? gold : 'rgba(142,107,13,.38)', bg: s.pkg === id ? 'rgba(142,107,13,.16)' : '#faeef0', pick: () => this.setState({ pkg: id }) })),
+      kinds: [['/_blob/5382038cd17c1a0d503b594a601db919', 'สปา', 'เดย์สปา · สปาเพื่อสุขภาพ · ทั่วประเทศ'], ['/_blob/a216c3eb60d3f8bb9387430bc004cd1b', 'โรงแรม', 'โรงแรม · สปาในโรงแรม']].map(([img, t, d]) => ({ img, t, d })),
+      steps: ['ส่งใบสมัคร', 'ชำระแพ็กเกจ (QR + สลิป)', 'นัด QC สถานที่ · มาตรฐานเทียบเท่า Bamrungsuk', 'ทำสัญญา + ป้ายแบรนด์ · ถ่ายคลิปโปรโมท', 'เปิดแสดงบนแพลตฟอร์ม'].map((text, i) => ({ n: i + 1, text })),
+      faq: FAQ.map(([q, a], i) => ({ q, a, isOpen: s.faq === i, open: s.faq === i ? 'true' : 'false', sign: s.faq === i ? '−' : '+', toggle: () => this.setState({ faq: s.faq === i ? -1 : i }) })),
+      types: ['เดย์สปา', 'สปาเพื่อสุขภาพ', 'ร้านนวดเพื่อสุขภาพ', 'สปาในโรงแรม', 'โรงแรม'].map((t) => ({ label: t, bg: s.type === t ? gold : 'transparent', fg: s.type === t ? '#fcf9f4' : '#3b2b19', border: s.type === t ? gold : 'rgba(142,107,13,.38)', pick: () => this.setState({ type: t }) })),
+      selName: cur[1], selPrice: cur[2],
+      ctaLabel: 'สมัคร · ไปชำระแพ็กเกจ',
+      cta: () => this.setState({ sent: true }),
+      send: () => this.setState({ sent: true }), sent: s.sent, notSent: !s.sent,
+      consentBg: s.consent ? '#8e6a0d' : 'transparent', consentMark: s.consent ? '✓' : '', toggleConsent: () => this.setState({ consent: !s.consent })
+    };
+  }
+
+  _fields() { return {"pname":{"v":["Siam Serenity Spa","Lanna Herbal Spa",""],"ph":"ชื่อธุรกิจ","on":"#170f04","mask":false},"pcontact":{"v":["คุณมิ้นท์","คุณเอ",""],"ph":"ชื่อผู้ติดต่อ","on":"#170f04","mask":false},"ptel":{"v":["081-234-1290","089-555-5521",""],"ph":"08x-xxx-xxxx","on":"#170f04","mask":false},"pline":{"v":["@siamserenity","",""],"ph":"(ถ้ามี)","on":"#170f04","mask":false},"pemail":{"v":["owner@siamserenity.co.th","contact@lannaherbal.com",""],"ph":"name@example.com","on":"#170f04","mask":false},"parea":{"v":["เชียงใหม่ · นิมมานเหมินท์","กรุงเทพฯ · อารีย์",""],"ph":"จังหวัด / ย่าน","on":"#170f04","mask":false}}; }
+  fv(k) { const F = this._fields()[k]; const fx = (this.state && this.state.fx) || {}; const v = F.v[(fx[k] || 0) % F.v.length]; return v.indexOf('HOLE:') === 0 ? String((this._hole || {})[v.slice(5)] || '') : v; }
+  renderVals() {
+    const r = this._baseVals(); this._hole = r; const fx = (this.state && this.state.fx) || {}; const F = this._fields();
+    Object.keys(F).forEach((k) => {
+      const v = this.fv(k), c = F[k];
+      const o = { text: v ? (c.mask ? '\u2022'.repeat(v.length) : v) : c.ph, color: v ? c.on : '#594836', tap: () => this.setState({ fx: Object.assign({}, fx, { [k]: ((fx[k] || 0) + 1) % c.v.length }) }) };
+      for (let i = 0; i < 6; i++) o['d' + i] = v[i] || '\u2013';
+      r[k] = o;
+    });
+    return r;
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>ยืนยันตัวตน</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&amp;family=Kanit:wght@500;600&amp;family=Itim&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*,*::before,*::after{box-sizing:border-box;font-variant-numeric:lining-nums}
+a{color:#8e6a0d}a:hover{color:#997000}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #8e6a0d;outline-offset:2px}
+.h{font-family:Kanit,sans-serif;font-weight:600}
+.box{padding:18px;border-radius:16px;background:rgba(252,245,247,.45);min-width:0;overflow-wrap:anywhere}
+.mut{color:#594836}
+.sec{color:#3b2b19}
+.cta{min-height:56px;width:100%;border-radius:16px;background:linear-gradient(100deg,#9e1028,#c8102e 50%,#9e1028);border:1.5px solid #8e6a0d;color:#fff;font-family:Kanit,sans-serif;font-weight:600;font-size:17px;display:grid;place-items:center;text-decoration:none;text-align:center;padding:0 16px}
+.cta:hover{color:#000000}
+.ghost{min-height:48px;width:100%;border-radius:14px;border:1px solid rgba(201,162,74,.55);background:rgba(252,245,247,.45);color:#8e6a0d;font-size:15px;font-weight:600;display:grid;place-items:center;text-decoration:none}
+.lb{display:block;font-size:13px;color:#594836;margin-bottom:6px}
+.in{min-height:48px;width:100%;border-radius:12px;border:1px solid rgba(201,162,74,.28);background:rgba(252,245,247,.55);color:#170f04;padding:0 14px;font-size:15px;display:flex;align-items:center;text-align:left}
+</style>
+</helmet>
+<div style="width: 390px; height: 1400px; background: linear-gradient(180deg, #fbf1f3 0%, #faecee 45%, #fbeef0 75%, #fcf2f5 100%); color: #170f04; font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 15px; line-height: 1.7; position: relative; overflow: hidden">
+  <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; background: #faf6f7">
+    <a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 8px; font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 20px; text-decoration: none"><img src="logo.png" alt="Mister Bamrungsuk" style="width: 40px; height: 40px; object-fit: contain"><span style="color: #846215">Mister Bamrungsuk</span></a>
+    <span style="flex-shrink: 0; padding: 5px 12px; border-radius: 999px; border: 1px solid #c9a24a; font-size: 10px; letter-spacing: 2.5px; color: #8e6a0d">PREMIUM</span>
+  </div>
+  <div style="display: flex; align-items: center; gap: 12px; padding: 20px 20px 10px"><a href="JoinPay.dc.html" aria-label="ย้อนกลับ" style="flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; background: rgba(252,245,247,.45); color: #170f04; display: grid; place-items: center; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"></path></svg></a><div style="min-width: 0"><div style="font-size: 13px; color: #8e6a0d">ขั้นที่ 4 / 5</div><div class="h" style="font-size: 20px; line-height: 1.35">ยืนยันตัวตน</div></div></div>
+  <div style="display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 4px; padding: 0 20px"><span style="height: 4px; border-radius: 2px; background: #8e6a0d"></span><span style="height: 4px; border-radius: 2px; background: #8e6a0d"></span><span style="height: 4px; border-radius: 2px; background: #8e6a0d"></span><span style="height: 4px; border-radius: 2px; background: #8e6a0d"></span><span style="height: 4px; border-radius: 2px; background: rgba(142,107,13,.25)"></span></div>
+  <div style="padding: 24px 20px 0; display: flex; flex-direction: column; gap: 20px">
+    <div class="box" style="border: 1px solid #c9a24a; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px"><b class="h" style="font-size: 17px">1. หน้าบัตรประชาชน</b><span style="font-size: 13px; color: #8e6a0d; white-space: nowrap">✓ อัปโหลดแล้ว</span></div>
+      <div style="height: 120px; border-radius: 12px; background: rgba(252,245,247,.55); display: grid; place-items: center; color: #594836; font-size: 13px">[ภาพบัตร · เลขบัตรถูกปิดบางส่วน]</div>
+    </div>
+    <div class="box" style="display: flex; flex-direction: column; gap: 12px">
+      <b class="h" style="font-size: 17px">2. เซลฟีถือบัตรคู่กับใบหน้า</b>
+      <div style="height: 150px; border-radius: 12px; background: rgba(252,245,247,.55); border: 1px dashed rgba(201,162,74,.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #594836"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span style="font-size: 14px">แตะเพื่อถ่ายรูป</span></div>
+    </div>
+    <div class="box" style="display: flex; flex-direction: column; gap: 12px">
+      <b class="h" style="font-size: 17px">3. สำเนาบัตรประชาชน (เซ็นรับรอง)</b>
+      <ol class="sec" style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; line-height: 1.6"><li>ถ่ายเอกสารหน้าบัตรลงกระดาษ A4</li><li>เขียนกำกับ <b style="color: #170f04">“ใช้สำหรับสมัคร Part-Time กับ Mister Bamrungsuk เท่านั้น”</b></li><li>ลงวันที่ ลงชื่อ และเขียน <b style="color: #170f04">“รับรองสำเนาถูกต้อง”</b></li><li>ถ่ายรูปให้เห็นข้อความครบ แล้วอัปโหลด</li></ol>
+      <div aria-label="ตัวอย่างการเขียนรับรองสำเนา" style="border-radius: 12px; padding: 12px; font-size: 13px; line-height: 1.6; background: #170f04; color: #f6f3f3"><div style="font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #8a6a1f">ตัวอย่างสิ่งที่ต้องเขียน</div><div style="border-radius: 8px; border: 1px dashed #856e46; padding: 8px 12px; display: flex; flex-direction: column; gap: 4px"><div style="height: 40px; border-radius: 6px; display: grid; place-items: center; font-size: 13px; background: #322a1b; color: #a59585">[ สำเนาหน้าบัตรประชาชน ]</div><div style="font-family: 'Itim', 'Sriracha', cursive; color: #1d3fa8; font-size: 14px; line-height: 1.5">ใช้สำหรับสมัคร Part-Time กับ Mister Bamrungsuk เท่านั้น<br>รับรองสำเนาถูกต้อง<br>ลงชื่อ ......(ลายมือชื่อ)...... วันที่ 9 ต.ค. 2569</div></div></div>
+      <div style="height: 140px; border-radius: 12px; background: rgba(252,245,247,.55); border: 1px dashed rgba(201,162,74,.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #594836"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span style="font-size: 14px">แตะเพื่อถ่ายรูป / อัปโหลด</span></div>
+    </div>
+    <div class="mut" style="font-size: 14px; display: flex; flex-direction: column; gap: 6px"><span>• ให้เห็นหน้าและบัตรชัด ๆ ถอดแว่นกันแดดและหมวกก่อนถ่าย</span><span>• ข้อมูลถูกเข้ารหัส ใช้ยืนยันตัวตนเท่านั้น (PDPA)</span></div>
+  </div>
+  <a href="D3-KYC3.dc.html" class="cta" style="position: absolute; left: 20px; right: 20px; bottom: 28px; width: auto">ถัดไป · บัญชีรับเงิน</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1400}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

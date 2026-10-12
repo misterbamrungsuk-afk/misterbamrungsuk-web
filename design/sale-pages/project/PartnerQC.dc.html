@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>นัด QC สถานที่</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-variant-numeric:lining-nums}
+*,*::before,*::after{box-sizing:border-box}
+a{color:#8e6a0d}a:hover{color:#866913}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #8e6a0d;outline-offset:2px}
+.h{font-family: 'Cormorant Garamond', Kanit;font-weight:600}
+.card{padding:16px;min-width:0;overflow-wrap:anywhere;border-radius:16px;background:#faeef0;border:1px solid rgba(142,107,13,.38)}
+.in{height:48px;border-radius:12px;border:1px solid rgba(142,107,13,.38);background:#faeef0;color:#170f04;padding:0 14px;font-size:14px;box-sizing:border-box;width:100%;display:flex;align-items:center}
+.cta{height:52px;border-radius:14px;border:1px solid rgba(143,109,10,.85);background:linear-gradient(100deg, #f8e5e8 0%, #c8102e 24%, #990015 50%, #c8102e 76%, #f8e5e8 100%);box-shadow:0 8px 24px rgba(255,40,70,.45);color:#fff;font-size:15px;font-weight:600;width:100%;font-family: 'Cormorant Garamond', Kanit}
+.ghost{height:48px;border-radius:14px;border:1px solid rgba(142,107,13,.38);background:#faeef0;color:#8e6a0d;font-size:14px;font-weight:600;width:100%}
+.lbl{font-size:12px;color:#3b2b19;margin:0 0 6px}
+.mut{color:#3b2b19}
+*{font-variant-numeric:lining-nums}
+</style>
+</helmet>
+<div style="width: 390px; height: 945px; background: linear-gradient(180deg, #fbf1f3 0%, #faecee 45%, #fbeef0 75%, #fcf2f5 100%); color: #170f04; font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 15px; line-height: 1.7; position: relative; overflow: hidden">
+  <header data-brand-bar style="position: relative; z-index: 30; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; height: 64px; box-sizing: border-box; background: #faf6f7"><a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; min-width: 0; font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 20px"><img src="logo.png" alt="Mister Bamrungsuk" style="width: 40px; height: 40px; object-fit: contain; flex: 0 0 40px"><span style="color: #846215; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Mister Bamrungsuk</span></a><span style="flex: 0 0 auto; padding: 5px 12px; border-radius: 999px; border: 1px solid #8e6a0d; font-size: 10px; letter-spacing: 2.5px; color: #8e6a0d">PARTNER</span></header>
+  <div style="height: 780px; overflow-y: auto; box-sizing: border-box; padding-bottom: 24px; width: 388px">
+    <div style="padding: 12px 16px 0; display: flex; align-items: center; gap: 8px">
+      <a href="PartnerDone.dc.html" aria-label="ย้อนกลับ" style="flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(142,107,13,.38); background: rgba(252,245,247,.45); color: #8e6a0d; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"></path></svg></a>
+      <div class="h" style="font-size: 17px; color: #8e6a0d">นัด QC สถานที่ · MBP-2610003</div>
+    </div>
+    <div style="padding: 12px 16px 0; display: flex; flex-direction: column; gap: 14px">
+      <sc-if value="{{picking}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <div class="card" style="display: flex; flex-direction: column; gap: 10px">
+            <div class="h" style="font-size: 15px">เลือกวัน</div>
+            <div style="display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px">
+              <sc-for list="{{days}}" as="d" hint-placeholder-count="10"><button onClick="{{d.pick}}" style="min-height: 58px; border-radius: 12px; border: 1px solid {{d.bd}}; background: {{d.bg}}; color: #170f04; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0"><span class="h" style="font-size: 18px; color: #8e6a0d">{{d.day}}</span><span class="mut" style="font-size: 13px">{{d.wd}}</span></button></sc-for>
+            </div>
+            <div class="h" style="font-size: 15px">เลือกเวลา</div>
+            <div style="display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px">
+              <sc-for list="{{times}}" as="t" hint-placeholder-count="3"><button onClick="{{t.pick}}" style="min-height: 44px; border-radius: 12px; border: 1px solid {{t.bd}}; background: {{t.bg}}; color: {{t.fg}}; font-size: 13px; font-weight: 600">{{t.t}}</button></sc-for>
+            </div>
+          </div>
+          <div class="card" style="display: flex; flex-direction: column; gap: 8px">
+            <div class="h" style="font-size: 15px">สิ่งที่ทีม QC ตรวจ</div>
+            <sc-for list="{{checks}}" as="c" hint-placeholder-count="5"><div style="display: flex; gap: 10px; align-items: center; font-size: 13px"><span style="flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; border: 1px solid #8e6a0d; color: #8e6a0d; display: grid; place-items: center; font-size: 13px">{{c.n}}</span><span style="min-width: 0">{{c.t}}</span></div></sc-for>
+          </div>
+          <div class="card" style="display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; justify-content: space-between"><span class="h" style="font-size: 15px">เอกสารที่ต้องเตรียม</span><span style="font-size: 13px; color: #8e6a0d">{{docCount}}</span></div>
+            <sc-for list="{{docs}}" as="x" hint-placeholder-count="3"><button onClick="{{x.tap}}" style="min-height: 48px; border-radius: 12px; border: 1px dashed {{x.bd}}; background: rgba(252,245,247,.45); color: {{x.fg}}; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 12px; font-size: 13px; text-align: left"><span style="min-width: 0">{{x.n}}</span><span style="flex-shrink: 0; font-size: 13px">{{x.st}}</span></button></sc-for>
+          </div>
+          <button class="cta" onClick="{{confirm}}" disabled="{{dis}}" style="opacity: {{op}}">ยืนยันนัด QC · {{slotLabel}}</button>
+        </div>
+      </sc-if>
+      <sc-if value="{{confirmed}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center; padding-top: 10px">
+          <div style="width: 76px; height: 76px; border-radius: 50%; border: 2px solid #3db374; display: grid; place-items: center; color: #257446"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 5 5 9-10"></path></svg></div>
+          <div class="h" style="font-size: 20px; color: #8e6a0d">ยืนยันนัด QC แล้ว</div>
+          <div class="card" style="width: 100%; text-align: left; display: flex; flex-direction: column; gap: 8px; font-size: 13px">
+            <div style="display: flex; justify-content: space-between"><span class="mut">วัน-เวลา</span><span>{{slotLabel}}</span></div>
+            <div style="display: flex; justify-content: space-between"><span class="mut">สถานที่</span><span>Siam Serenity Spa</span></div>
+            <div style="display: flex; justify-content: space-between"><span class="mut">เอกสาร</span><span>{{docCount}}</span></div>
+          </div>
+          <p class="mut" style="margin: 0; font-size: 13px">ทีม QC จะโทรยืนยันก่อนเข้า 1 วัน · หลังผ่าน QC ทำสัญญา + ป้ายแบรนด์</p>
+          <button class="ghost" onClick="{{edit}}">เปลี่ยนวันนัด</button>
+        </div>
+      </sc-if>
+      <a href="PartnerLogin.dc.html" style="font-size: 13px; text-align: center; padding: 4px">เข้าสู่ระบบพอร์ทัลพาร์ทเนอร์</a>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":945}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { day: 0, time: -1, docs: [true, false, false], done: false }; }
+  renderVals() {
+    const s = this.state; const gold = '#8e6a0d';
+    const D = [['20', 'อ. ต.ค.'], ['21', 'พ. ต.ค.'], ['22', 'พฤ. ต.ค.'], ['23', 'ศ. ต.ค.'], ['24', 'ส. ต.ค.'], ['26', 'จ. ต.ค.'], ['27', 'อ. ต.ค.'], ['28', 'พ. ต.ค.'], ['29', 'พฤ. ต.ค.'], ['30', 'ศ. ต.ค.']];
+    const T = ['10:00', '13:00', '15:30'];
+    const DOC = ['ใบอนุญาตสถานประกอบการ', 'รูปสถานที่', 'ราคาบริการ'];
+    const nDoc = s.docs.filter(Boolean).length; const ok = s.time >= 0;
+    const slot = D[s.day][0] + ' ' + D[s.day][1].split(' ')[1] + ' · ' + (ok ? T[s.time] : 'เลือกเวลา');
+    return {
+      picking: !s.done, confirmed: s.done,
+      days: D.map(([day, wd], i) => ({ day, wd, bd: s.day === i ? gold : 'rgba(142,107,13,.38)', bg: s.day === i ? 'rgba(142,107,13,.18)' : '#faeef0', pick: () => this.setState({ day: i }) })),
+      times: T.map((t, i) => ({ t, bd: s.time === i ? gold : 'rgba(142,107,13,.38)', bg: s.time === i ? gold : '#faeef0', fg: s.time === i ? '#fbf1f3' : '#170f04', pick: () => this.setState({ time: i }) })),
+      checks: ['มาตรฐานการนวด (เทียบเท่า Bamrungsuk)', 'ความสะอาด', 'ห้อง / สถานที่', 'ใบอนุญาต', 'เอกสาร'].map((t, i) => ({ t, n: String(i + 1) })),
+      docs: DOC.map((n, i) => ({ n, st: s.docs[i] ? '✓ อัปโหลดแล้ว' : 'แตะเพื่ออัปโหลด', bd: s.docs[i] ? '#3db374' : '#594836', fg: s.docs[i] ? '#257446' : '#3b2b19', tap: () => { const docs = s.docs.slice(); docs[i] = !docs[i]; this.setState({ docs }); } })),
+      docCount: nDoc + ' / 3 รายการ', slotLabel: slot,
+      dis: !ok, op: ok ? '1' : '.45', confirm: () => { if (ok) this.setState({ done: true }); },
+      edit: () => this.setState({ done: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

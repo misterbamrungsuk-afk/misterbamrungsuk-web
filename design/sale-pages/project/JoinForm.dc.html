@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>สมัคร · ข้อมูลเบื้องต้น</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&amp;family=Kanit:wght@500;600&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*,*::before,*::after{box-sizing:border-box;font-variant-numeric:lining-nums}
+a{color:#8e6a0d}a:hover{color:#997000}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #8e6a0d;outline-offset:2px}
+.h{font-family:Kanit,sans-serif;font-weight:600}
+.box{padding:18px;border-radius:16px;background:rgba(252,245,247,.45);min-width:0;overflow-wrap:anywhere}
+.mut{color:#594836}
+.sec{color:#3b2b19}
+.cta{min-height:56px;width:100%;border-radius:16px;background:linear-gradient(100deg,#9e1028,#c8102e 50%,#9e1028);border:1.5px solid #8e6a0d;color:#fff;font-family:Kanit,sans-serif;font-weight:600;font-size:17px;display:grid;place-items:center;text-decoration:none;text-align:center;padding:0 16px}
+.cta:hover{color:#000000}
+.ghost{min-height:48px;width:100%;border-radius:14px;border:1px solid rgba(201,162,74,.55);background:rgba(252,245,247,.45);color:#8e6a0d;font-size:15px;font-weight:600;display:grid;place-items:center;text-decoration:none}
+.lb{display:block;font-size:13px;color:#594836;margin-bottom:6px}
+.in{min-height:48px;width:100%;border-radius:12px;border:1px solid rgba(201,162,74,.28);background:rgba(252,245,247,.55);color:#170f04;padding:0 14px;font-size:15px;display:flex;align-items:center;text-align:left}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1860px; background: linear-gradient(180deg, #fbf1f3 0%, #faecee 45%, #fbeef0 75%, #fcf2f5 100%); color: #170f04; font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 15px; line-height: 1.7; position: relative; overflow: hidden">
+  <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; background: #faf6f7">
+    <a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 8px; font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 20px; text-decoration: none"><img src="logo.png" alt="Mister Bamrungsuk" style="width: 40px; height: 40px; object-fit: contain"><span style="color: #846215">Mister Bamrungsuk</span></a>
+    <span style="flex-shrink: 0; padding: 5px 12px; border-radius: 999px; border: 1px solid #c9a24a; font-size: 10px; letter-spacing: 2.5px; color: #8e6a0d">PREMIUM</span>
+  </div>
+  <div style="display: flex; align-items: center; gap: 12px; padding: 20px 20px 10px"><a href="Join.dc.html" aria-label="ย้อนกลับ" style="flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; background: rgba(252,245,247,.45); color: #170f04; display: grid; place-items: center; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"></path></svg></a><div style="min-width: 0"><div style="font-size: 13px; color: #8e6a0d">ขั้นที่ 1 / 5</div><div class="h" style="font-size: 20px; line-height: 1.35">ข้อมูลผู้สมัคร</div></div></div>
+  <div style="display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 4px; padding: 0 20px"><span style="height: 4px; border-radius: 2px; background: #8e6a0d"></span><span style="height: 4px; border-radius: 2px; background: rgba(142,107,13,.25)"></span><span style="height: 4px; border-radius: 2px; background: rgba(142,107,13,.25)"></span><span style="height: 4px; border-radius: 2px; background: rgba(142,107,13,.25)"></span><span style="height: 4px; border-radius: 2px; background: rgba(142,107,13,.25)"></span></div>
+  <div style="padding: 24px 20px 0; display: flex; flex-direction: column; gap: 6px">
+    <h1 class="h" style="margin: 0; font-size: 20px; line-height: 1.4; color: #8e6a0d">📋 กรอกข้อมูล</h1>
+    
+  </div>
+  <div style="padding: 24px 20px 40px; display: flex; flex-direction: column; gap: 36px">
+    <div class="box" style="border: 1px solid #c9a24a; display: flex; align-items: center; justify-content: space-between; gap: 12px"><div style="min-width: 0"><div class="mut" style="font-size: 13px">สายที่สมัคร</div><div class="h" style="font-size: 17px; line-height: 1.4">{{trackName}}</div></div><a href="Join.dc.html" style="flex-shrink: 0; font-size: 14px">เปลี่ยน</a></div>
+    <section style="display: flex; flex-direction: column; gap: 14px">
+      <div><h2 class="h" style="margin: 0; font-size: 18px; line-height: 1.4">1. ข้อมูลเบื้องต้น</h2></div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px"><div><span class="lb">ชื่อจริง</span><button type="button" class="in" onClick="{{first.tap}}" aria-label="ชื่อจริง · แตะเพื่อกรอกตัวอย่าง" style="color: {{first.color}}; overflow: hidden; white-space: nowrap">{{first.text}}</button></div><div><span class="lb">นามสกุล</span><button type="button" class="in" onClick="{{last.tap}}" aria-label="นามสกุล · แตะเพื่อกรอกตัวอย่าง" style="color: {{last.color}}; overflow: hidden; white-space: nowrap">{{last.text}}</button></div></div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px"><div><span class="lb">ชื่อเล่น</span><button type="button" class="in" onClick="{{nick.tap}}" aria-label="ชื่อเล่น · แตะเพื่อกรอกตัวอย่าง" style="color: {{nick.color}}; overflow: hidden; white-space: nowrap">{{nick.text}}</button></div><div><span class="lb">วันเกิด</span><button type="button" class="in" onClick="{{dob.tap}}" aria-label="วันเกิด · แตะเพื่อกรอกตัวอย่าง" style="color: {{dob.color}}; overflow: hidden; white-space: nowrap">{{dob.text}}</button></div></div>
+      <div class="mut" style="font-size: 13px; margin-top: -6px">รับสมัครอายุ 20–50 ปี</div>
+      <div><span class="lb">เบอร์โทรศัพท์</span><button type="button" class="in" onClick="{{phone.tap}}" aria-label="เบอร์โทรศัพท์ · แตะเพื่อกรอกตัวอย่าง" style="color: {{phone.color}}; overflow: hidden; white-space: nowrap">{{phone.text}}</button></div>
+      <div><span class="lb">LINE ID</span><button type="button" class="in" onClick="{{line.tap}}" aria-label="LINE ID · แตะเพื่อกรอกตัวอย่าง" style="color: {{line.color}}; overflow: hidden; white-space: nowrap">{{line.text}}</button></div>
+      <div><span class="lb">ปัจจุบันพักอาศัยอยู่แถวไหน</span><button type="button" class="in" onClick="{{home.tap}}" aria-label="ปัจจุบันพักอาศัยอยู่แถวไหน · แตะเพื่อกรอกตัวอย่าง" style="color: {{home.color}}; overflow: hidden; white-space: nowrap">{{home.text}}</button></div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px"><button type="button" onClick="{{upFace.tap}}" style="min-height: 110px; border-radius: 14px; border: 1.5px dashed {{upFace.bd}}; background: rgba(252,245,247,.45); color: {{upFace.fg}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 10px 6px; font-size: 13px; line-height: 1.4; text-align: center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg><span>รูปหน้าตรง</span><span style="font-size: 13px">{{upFace.st}}</span></button><button type="button" onClick="{{upBody.tap}}" style="min-height: 110px; border-radius: 14px; border: 1.5px dashed {{upBody.bd}}; background: rgba(252,245,247,.45); color: {{upBody.fg}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 10px 6px; font-size: 13px; line-height: 1.4; text-align: center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg><span>รูปเต็มตัว</span><span style="font-size: 13px">{{upBody.st}}</span></button><button type="button" onClick="{{upId.tap}}" style="min-height: 110px; border-radius: 14px; border: 1.5px dashed {{upId.bd}}; background: rgba(252,245,247,.45); color: {{upId.fg}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 10px 6px; font-size: 13px; line-height: 1.4; text-align: center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg><span>รูปบัตรประชาชน</span><span style="font-size: 13px">{{upId.st}}</span></button></div>
+    </section>
+    <section style="display: flex; flex-direction: column; gap: 14px">
+      <div><h2 class="h" style="margin: 0; font-size: 18px; line-height: 1.4">2. พื้นที่ที่สะดวกรับงาน</h2><div class="mut" style="font-size: 13px">เลือกได้มากกว่า 1 ข้อ</div></div>
+      <sc-if value="{{hasPicked}}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{picked}}" as="c" hint-placeholder-count="2"><button type="button" onClick="{{c.del}}" aria-label="ลบ {{c.t}}" style="min-height: 36px; padding: 6px 10px 6px 12px; border-radius: 10px; border: 1px solid #a87b1f; background: #f3dc9c; color: #2a1a14; font-size: 13px; line-height: 1.3; display: inline-flex; align-items: center; gap: 6px">📍 {{c.t}}<span aria-hidden="true" style="font-size: 15px; color: #8a6516">×</span></button></sc-for></div></sc-if>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+        <label style="display: flex; flex-direction: column; gap: 4px; min-width: 0"><span style="font-size: 12.5px; color: #6f5e52">ภูมิภาค</span><select onChange="{{onR}}" value="{{onRV}}" disabled="{{offR}}" style="min-height: 46px; width: 100%; padding: 0 12px; border-radius: 12px; border: 1px solid #e3d5bd; background: #ffffff; color: #2a1a14; font: inherit; font-size: 14.5px"><sc-for list="{{oR}}" as="o" hint-placeholder-count="3"><option value="{{o.v}}">{{o.t}}</option></sc-for></select></label>
+        <label style="display: flex; flex-direction: column; gap: 4px; min-width: 0"><span style="font-size: 12.5px; color: #6f5e52">จังหวัด</span><select onChange="{{onP}}" value="{{onPV}}" disabled="{{offP}}" style="min-height: 46px; width: 100%; padding: 0 12px; border-radius: 12px; border: 1px solid #e3d5bd; background: #ffffff; color: #2a1a14; font: inherit; font-size: 14.5px"><sc-for list="{{oP}}" as="o" hint-placeholder-count="3"><option value="{{o.v}}">{{o.t}}</option></sc-for></select></label>
+        <label style="display: flex; flex-direction: column; gap: 4px; min-width: 0"><span style="font-size: 12.5px; color: #6f5e52">{{dLabel}}</span><select onChange="{{onD}}" value="{{onDV}}" disabled="{{offD}}" style="min-height: 46px; width: 100%; padding: 0 12px; border-radius: 12px; border: 1px solid #e3d5bd; background: #ffffff; color: #2a1a14; font: inherit; font-size: 14.5px"><sc-for list="{{oD}}" as="o" hint-placeholder-count="3"><option value="{{o.v}}">{{o.t}}</option></sc-for></select></label>
+        <label style="display: flex; flex-direction: column; gap: 4px; min-width: 0"><span style="font-size: 12.5px; color: #6f5e52">{{tLabel}}</span><select onChange="{{onT}}" value="{{onTV}}" disabled="{{offT}}" style="min-height: 46px; width: 100%; padding: 0 12px; border-radius: 12px; border: 1px solid #e3d5bd; background: #ffffff; color: #2a1a14; font: inherit; font-size: 14.5px"><sc-for list="{{oT}}" as="o" hint-placeholder-count="3"><option value="{{o.v}}">{{o.t}}</option></sc-for></select></label>
+      </div>
+      <button type="button" onClick="{{add}}" disabled="{{noAdd}}" style="min-height: 44px; border-radius: 12px; border: 1.5px solid #a87b1f; background: #fff8e6; color: #8a6516; font-weight: 600; font-size: 14px; opacity: {{addOp}}">+ เพิ่มพื้นที่นี้</button>
+      <div><span class="lb">พื้นที่ที่ไม่สะดวกรับงาน</span><button type="button" class="in" onClick="{{noArea.tap}}" aria-label="พื้นที่ที่ไม่สะดวกรับงาน · แตะเพื่อกรอกตัวอย่าง" style="color: {{noArea.color}}; overflow: hidden; white-space: nowrap">{{noArea.text}}</button></div>
+    </section>
+    <a href="JoinForm2.dc.html" class="cta">ถัดไป · วันเวลาและประสบการณ์</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1860}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { pick: 'B', sel: {}, loc: { r: 'กรุงเทพฯ และปริมณฑล', p: 'กรุงเทพมหานคร', d: 'วัฒนา', t: '' }, picked: ['กรุงเทพมหานคร › ปทุมวัน', 'นนทบุรี › ปากเกร็ด'], ck: {}, up: { upFace: true } }; }
+
+  _chips(key, list) {
+    const sel = (this.state.sel && this.state.sel[key]) || [];
+    return list.map((t) => { const on = sel.indexOf(t) >= 0; return { t, on: String(on), mark: on ? '✓ ' : '', bd: on ? '#c9a24a' : 'rgba(201,162,74,.25)', bg: on ? 'rgba(142,106,13,.16)' : 'rgba(252,245,247,.45)', fg: on ? '#8e6a0d' : '#3b2b19',
+      tap: () => { const cur = Object.assign({}, this.state.sel); const a = (cur[key] || []).slice(); const i = a.indexOf(t); if (i >= 0) a.splice(i, 1); else a.push(t); cur[key] = a; this.setState({ sel: cur }); } }; });
+  }
+  _has(key, t) { return ((this.state.sel && this.state.sel[key]) || []).indexOf(t) >= 0; }
+  _check(key) { const on = !!(this.state.ck && this.state.ck[key]); return { on: String(on), box: on ? '#8e6a0d' : 'transparent', bd: on ? '#8e6a0d' : 'rgba(201,162,74,.6)', mark: on ? '✓' : '', tap: () => this.setState({ ck: Object.assign({}, this.state.ck, { [key]: !on }) }) }; }
+  _up(key) { const on = !!(this.state.up && this.state.up[key]); return { st: on ? '✓ แนบแล้ว' : 'แตะเพื่อแนบ', bd: on ? '#c9a24a' : 'rgba(201,162,74,.4)', fg: on ? '#8e6a0d' : '#594836', tap: () => this.setState({ up: Object.assign({}, this.state.up, { [key]: !on }) }) }; }
+  _fields() { return {"first":{"v":["พงศกร",""],"ph":"ชื่อจริง"},"last":{"v":["รุ่งเรือง",""],"ph":"นามสกุล"},"nick":{"v":["ต้น",""],"ph":"ชื่อเล่น"},"dob":{"v":["12/04/2538",""],"ph":"วว/ดด/ปปปป"},"phone":{"v":["081-234-5678",""],"ph":"08x-xxx-xxxx"},"line":{"v":["ton.pongsakorn",""],"ph":"LINE ID"},"home":{"v":["ลาดพร้าว 71",""],"ph":"เช่น ลาดพร้าว, บางนา"},"areaOther":{"v":["","ชลบุรี (พัทยา)"],"ph":"ระบุพื้นที่"},"noArea":{"v":["","ฝั่งธนบุรีช่วงเย็น"],"ph":"เช่น ไม่รับงานต่างจังหวัด"}}; }
+  _fx(r) {
+    const fx = (this.state && this.state.fx) || {}; const F = this._fields();
+    Object.keys(F).forEach((k) => { const c = F[k]; const v = c.v[(fx[k] || 0) % c.v.length]; r[k] = { text: v || c.ph, color: v ? '#170f04' : '#8d7975', tap: () => this.setState({ fx: Object.assign({}, fx, { [k]: ((fx[k] || 0) + 1) % c.v.length }) }) }; });
+    return r;
+  }
+  _loc() {
+    const R = {
+      'กรุงเทพฯ และปริมณฑล': ['กรุงเทพมหานคร', 'นนทบุรี', 'ปทุมธานี', 'สมุทรปราการ', 'สมุทรสาคร', 'นครปฐม'],
+      'ภาคกลาง': ['พระนครศรีอยุธยา', 'ลพบุรี', 'สระบุรี', 'ราชบุรี', 'กาญจนบุรี', 'เพชรบุรี', 'ประจวบคีรีขันธ์'],
+      'ภาคตะวันออก': ['ชลบุรี', 'ระยอง', 'จันทบุรี', 'ตราด', 'ฉะเชิงเทรา'],
+      'ภาคเหนือ': ['เชียงใหม่', 'เชียงราย', 'ลำปาง', 'พิษณุโลก', 'น่าน'],
+      'ภาคตะวันออกเฉียงเหนือ': ['นครราชสีมา', 'ขอนแก่น', 'อุดรธานี', 'อุบลราชธานี'],
+      'ภาคใต้': ['ภูเก็ต', 'สุราษฎร์ธานี', 'กระบี่', 'สงขลา']
+    };
+    const D = {
+      'กรุงเทพมหานคร': ['ปทุมวัน', 'วัฒนา', 'คลองเตย', 'บางรัก', 'สาทร', 'จตุจักร', 'ห้วยขวาง', 'ลาดพร้าว', 'บางนา', 'ธนบุรี'],
+      'นนทบุรี': ['เมืองนนทบุรี', 'ปากเกร็ด', 'บางใหญ่', 'บางบัวทอง'],
+      'ปทุมธานี': ['เมืองปทุมธานี', 'คลองหลวง', 'ธัญบุรี', 'ลำลูกกา'],
+      'สมุทรปราการ': ['เมืองสมุทรปราการ', 'บางพลี', 'พระประแดง'],
+      'ชลบุรี': ['เมืองชลบุรี', 'บางละมุง (พัทยา)', 'ศรีราชา', 'สัตหีบ'],
+      'เชียงใหม่': ['เมืองเชียงใหม่', 'หางดง', 'สันทราย', 'แม่ริม'],
+      'ภูเก็ต': ['เมืองภูเก็ต', 'กะทู้', 'ถลาง']
+    };
+    const T = {
+      'ปทุมวัน': ['ลุมพินี', 'ปทุมวัน', 'วังใหม่', 'รองเมือง'], 'วัฒนา': ['คลองเตยเหนือ', 'คลองตันเหนือ', 'พระโขนงเหนือ'],
+      'คลองเตย': ['คลองเตย', 'คลองตัน', 'พระโขนง'], 'บางรัก': ['สีลม', 'สุริยวงศ์', 'บางรัก', 'มหาพฤฒาราม', 'สี่พระยา'],
+      'สาทร': ['ทุ่งมหาเมฆ', 'ยานนาวา', 'ทุ่งวัดดอน'], 'จตุจักร': ['ลาดยาว', 'จอมพล', 'จันทรเกษม', 'เสนานิคม', 'จตุจักร'],
+      'ห้วยขวาง': ['ห้วยขวาง', 'บางกะปิ', 'สามเสนนอก'], 'ลาดพร้าว': ['ลาดพร้าว', 'จรเข้บัว'], 'บางนา': ['บางนาเหนือ', 'บางนาใต้'],
+      'เมืองนนทบุรี': ['บางกระสอ', 'ตลาดขวัญ', 'บางเขน', 'ท่าทราย'], 'ปากเกร็ด': ['ปากเกร็ด', 'บางตลาด', 'คลองเกลือ', 'บ้านใหม่'],
+      'บางละมุง (พัทยา)': ['หนองปรือ', 'นาเกลือ', 'บางละมุง'], 'เมืองเชียงใหม่': ['ศรีภูมิ', 'ช้างคลาน', 'สุเทพ', 'ช้างเผือก'],
+      'กะทู้': ['ป่าตอง', 'กะทู้', 'กมลา']
+    };
+    const L = this.state.loc || {}; const bkk = L.p === 'กรุงเทพมหานคร';
+    const set = (o) => this.setState({ loc: Object.assign({}, L, o) });
+    const opt = (ph, xs) => [{ v: '', t: ph }].concat(xs.map((x) => ({ v: x, t: x })));
+    const pl = L.r ? R[L.r] : []; const dl = (L.p && D[L.p]) || []; const tl = (L.d && T[L.d]) || [];
+    let cur = '';
+    if (L.r) cur = L.r; if (L.p) cur = L.p; if (L.d) cur = L.p + ' › ' + L.d; if (L.t) cur = L.p + ' › ' + L.d + ' › ' + L.t;
+    const picked = this.state.picked || []; const ok = !!cur && picked.indexOf(cur) < 0;
+    const val = (e) => (e && e.target ? e.target.value : '');
+    return {
+      oR: opt('เลือกภูมิภาค', Object.keys(R)), oP: opt(pl.length ? 'ทั้งภูมิภาค' : '—', pl), oD: opt(dl.length ? 'ทั้งจังหวัด' : '—', dl), oT: opt(tl.length ? (bkk ? 'ทั้งเขต' : 'ทั้งอำเภอ') : '—', tl),
+      onRV: L.r || '', onPV: L.p || '', onDV: L.d || '', onTV: L.t || '',
+      offR: false, offP: !pl.length, offD: !dl.length, offT: !tl.length,
+      onR: (e) => set({ r: val(e), p: '', d: '', t: '' }), onP: (e) => set({ p: val(e), d: '', t: '' }), onD: (e) => set({ d: val(e), t: '' }), onT: (e) => set({ t: val(e) }),
+      dLabel: bkk ? 'เขต' : 'อำเภอ', tLabel: bkk ? 'แขวง' : 'ตำบล', noAdd: !ok, addOp: ok ? '1' : '.45',
+      add: () => { if (ok) this.setState({ picked: picked.concat([cur]) }); },
+      hasPicked: picked.length > 0, picked: picked.map((t) => ({ t, del: () => this.setState({ picked: picked.filter((x) => x !== t) }) }))
+    };
+  }
+  renderVals() {
+    return this._fx({
+      trackName: this.state.pick === 'A' ? 'เพื่อนกินเที่ยว' : 'เพื่อนกินเที่ยวสายนวดผ่อนคลาย',
+      ...this._loc(),
+      upFace: this._up('upFace'), upBody: this._up('upBody'), upId: this._up('upId')
+    });
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>Sale Pages ภาพรวม</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&amp;family=Kanit:wght@500;600&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*,*::before,*::after{box-sizing:border-box;font-variant-numeric:lining-nums}
+a{color:#f0c75a}a:hover{color:#ffe08a}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #f0c75a;outline-offset:2px}
+.h{font-family:Kanit,sans-serif;font-weight:600}
+.box{padding:18px;border-radius:16px;background:rgba(20,6,9,.45);min-width:0;overflow-wrap:anywhere}
+.mut{color:#6f5e52}
+.sec{color:#e6d6c4}
+.cta{min-height:56px;width:100%;border-radius:16px;background:linear-gradient(100deg,#9e1028,#c8102e 50%,#9e1028);border:1.5px solid #f0c75a;color:#fff;font-family:Kanit,sans-serif;font-weight:600;font-size:17px;display:grid;place-items:center;text-decoration:none;text-align:center;padding:0 16px}
+.cta:hover{color:#fff}
+.ghost{min-height:48px;width:100%;border-radius:14px;border:1px solid rgba(201,162,74,.55);background:rgba(20,6,9,.45);color:#f0c75a;font-size:15px;font-weight:600;display:grid;place-items:center;text-decoration:none}
+.lb{display:block;font-size:13px;color:#c9b8a6;margin-bottom:6px}
+.in{min-height:48px;width:100%;border-radius:12px;border:1px solid rgba(201,162,74,.28);background:rgba(20,6,9,.55);color:#fbf3e8;padding:0 14px;font-size:15px;display:flex;align-items:center;text-align:left}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1240px; background: #faf6ef; color: #2a1a14; font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 15px; line-height: 1.6; overflow: hidden">
+  <div style="display: flex; align-items: center; padding: 12px 16px">
+    <a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 8px; font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 20px; text-decoration: none"><img src="logo.png" alt="Mister Bamrungsuk" style="width: 38px; height: 38px; object-fit: contain"><span style="color: #8a6516">Mister Bamrungsuk</span></a>
+  </div>
+  <div style="position: relative; overflow: hidden">
+    <div style="display: flex; width: 200%; transform: translateX({{slideX}}); transition: transform .45s ease">
+      <img src="cover.jpg" alt="ประกาศรับสมัคร Part-time Mister Bamrungsuk · รายได้สูง บริการลูกค้าระดับ VVIP" style="width: 50%; aspect-ratio: 1445 / 1089; object-fit: cover; display: block">
+      <img src="cover2.jpg" alt="ประกาศรับสมัคร Part-time Mister Bamrungsuk · รายได้สูง พบลูกค้าระดับ VVIP พัฒนาทักษะงานบริการ" style="width: 50%; aspect-ratio: 1445 / 1089; object-fit: cover; display: block">
+    </div>
+  </div>
+  <div style="display: flex; justify-content: center; gap: 6px; padding: 10px 0 0"><sc-for list="{{dots}}" as="d" hint-placeholder-count="2"><button onClick="{{d.go}}" aria-label="{{d.label}}" style="width: {{d.w}}; height: 6px; border-radius: 3px; border: none; padding: 0; background: {{d.bg}}"></button></sc-for></div>
+  <div style="padding: 24px 16px 0; display: flex; flex-direction: column; gap: 12px">
+    <div style="margin-bottom: 4px"><h1 class="h" style="margin: 0; font-size: 22px; line-height: 1.3; color: #2a1a14">เลือกเส้นทางของคุณ</h1><p class="mut" style="margin: 2px 0 0; font-size: 14px">ร่วมงาน ร่วมธุรกิจ หรือค้นหาบริการ</p></div>
+    <a href="Join.dc.html" style="text-decoration: none; color: #2a1a14; padding: 18px; border-radius: 18px; background: linear-gradient(150deg, #fff4d6, #fbe7b5); border: 1px solid #e3c271; box-shadow: 0 6px 18px rgba(138,101,22,.12); display: flex; flex-direction: column; gap: 14px">
+      <span style="display: flex; align-items: center; gap: 12px"><span style="flex-shrink: 0; width: 44px; height: 44px; border-radius: 12px; background: #ffffff; display: grid; place-items: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a87b1f" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="8" r="3"/><circle cx="5.5" cy="9.5" r="2.2"/><circle cx="18.5" cy="9.5" r="2.2"/><path d="M6.5 19c0-3 2.5-5.5 5.5-5.5s5.5 2.5 5.5 5.5M2 18c0-2.2 1.6-4 3.5-4M22 18c0-2.2-1.6-4-3.5-4"/></svg></span><span style="min-width: 0"><span class="h" style="display: block; font-size: 18px; line-height: 1.3">สมัครร่วมทีม Part-Time</span><span class="mut" style="display: block; font-size: 13.5px">ดูรายละเอียดและขั้นตอนการสมัคร</span></span></span>
+      <span class="cta" style="min-height: 48px; font-size: 16px; border-radius: 12px">ดูรายละเอียด</span>
+    </a>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+      <a href="Partner.dc.html" style="text-decoration: none; color: #2a1a14; padding: 16px 14px; border-radius: 16px; background: #ffffff; border: 1px solid #eadfcd; box-shadow: 0 4px 12px rgba(60,30,10,.06); display: flex; flex-direction: column; gap: 10px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a87b1f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8l4-2 4 2M22 8l-4-2-5 2.5-3 3a1.4 1.4 0 0 0 2 2l2.5-2 5 4.5"/><path d="M2 8v7l7 5 2-1M22 8v7l-3 2"/></svg>
+        <span><span class="h" style="display: block; font-size: 15.5px; line-height: 1.3">พาร์ทเนอร์สปาและโรงแรม</span><span class="mut" style="display: block; font-size: 12.5px; line-height: 1.5; margin-top: 2px">ร่วมเป็นส่วนหนึ่งของเครือข่ายบริการ</span></span>
+        <span style="margin-top: auto; font-size: 13px; font-weight: 600; color: #8a6516">ร่วมเป็นพาร์ทเนอร์ ›</span>
+      </a>
+      <a href="Market.dc.html" style="text-decoration: none; color: #2a1a14; padding: 16px 14px; border-radius: 16px; background: #ffffff; border: 1px solid #eadfcd; box-shadow: 0 4px 12px rgba(60,30,10,.06); display: flex; flex-direction: column; gap: 10px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a87b1f" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14l-1 14H6L5 7z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></svg>
+        <span><span class="h" style="display: block; font-size: 15.5px; line-height: 1.3">โรงแรม • สปา • สินค้า</span><span class="mut" style="display: block; font-size: 12.5px; line-height: 1.5; margin-top: 2px">ค้นหาบริการและสินค้าที่คุณสนใจ</span></span>
+        <span style="margin-top: auto; font-size: 13px; font-weight: 600; color: #8a6516">สำรวจ Marketplace ›</span>
+      </a>
+    </div>
+  </div>
+  <div style="margin: 28px 16px 0; padding: 18px; border-radius: 16px; background: #ffffff; border: 1px solid #eadfcd; display: flex; align-items: center; justify-content: space-between; gap: 12px">
+    <div style="min-width: 0"><div class="h" style="font-size: 17px; line-height: 1.3">ต้องการใช้บริการ?</div><div class="mut" style="font-size: 13px; line-height: 1.5">สมัครสมาชิกเพื่อเริ่มจอง<br>มีบัญชีแล้ว? <a href="#" style="color: #8a6516">เข้าสู่ระบบ</a></div></div>
+    <a href="#" style="flex-shrink: 0; min-height: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid #b0182c; color: #b0182c; font-weight: 600; font-size: 14px; display: grid; place-items: center; text-decoration: none">สมัครใช้บริการ</a>
+  </div>
+  <footer style="margin: 32px 16px 0; padding: 18px 0 24px; border-top: 1px solid #eadfcd; display: flex; flex-direction: column; gap: 10px; font-size: 12.5px; line-height: 1.6; color: #6f5e52">
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px"><span style="display: inline-flex; align-items: center; gap: 8px"><img src="logo.png" alt="" style="width: 30px; height: 30px; object-fit: contain"><span style="font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 19px; color: #8a6516">Bamrungsuk</span></span><span style="color: #2a1a14; font-weight: 600">ติดต่อเรา</span></div>
+    <div style="display: flex; flex-wrap: wrap; gap: 4px 12px; color: #4a3a30"><span>ข้อกำหนดและเงื่อนไขการใช้งาน</span><span style="color: #6e5e5a">|</span><span>นโยบายความเป็นส่วนตัว (PDPA)</span></div>
+    <div><div>Mister Bamrungsuk · ทะเบียนนิติบุคคลเลขที่ 0105569040446</div><div>111/384 หมู่บ้านโกลเด้นทาวน์ พหลโยธิน-สะพานใหม่ ซอยพหลโยธิน 54/1 แยก 4 (วัดเกาะ) แขวงคลองถนน เขตสายไหม กรุงเทพมหานคร 10220</div><div>Misterbamrungsuk@gmail.com · 096-004-0231</div></div>
+    <div style="color: #8a7a6e">© 2569 Mister Bamrungsuk สงวนลิขสิทธิ์</div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1240}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { i: 0 }; }
+  renderVals() {
+    const n = 2, i = this.state.i, go = (k) => this.setState({ i: (k + n) % n });
+    return { slideX: (-50 * i) + "%", prev: () => go(i - 1), next: () => go(i + 1), dots: [0, 1].map((k) => ({ label: "ภาพที่ " + (k + 1), w: k === i ? "22px" : "8px", bg: k === i ? "#b8862b" : "rgba(60,30,10,.2)", go: () => go(k) })) };
+  }
+}
+</script>
+</body>
+</html>

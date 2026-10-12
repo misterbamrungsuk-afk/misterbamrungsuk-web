@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>ชำระแพ็กเกจพาร์ทเนอร์</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=Kanit:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-variant-numeric:lining-nums}
+a{color:#8e6a0d}a:hover{color:#866913}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #8e6a0d;outline-offset:2px}
+.h{font-family: 'Cormorant Garamond', Kanit;font-weight:600}
+.card{padding:14px;border-radius:16px;background:#faeef0;border:1px solid rgba(142,107,13,.38)}
+.in{height:48px;border-radius:12px;border:1px solid rgba(142,107,13,.38);background:#faeef0;color:#170f04;padding:0 14px;font-size:14px;box-sizing:border-box;width:100%;display:flex;align-items:center}
+.cta{height:52px;border-radius:14px;border:1px solid rgba(143,109,10,.85);background:linear-gradient(100deg, #f8e5e8 0%, #c8102e 24%, #990015 50%, #c8102e 76%, #f8e5e8 100%);box-shadow:0 8px 24px rgba(255,40,70,.45);color:#fff;font-size:15px;font-weight:600;width:100%;font-family: 'Cormorant Garamond', Kanit}
+.ghost{height:48px;border-radius:14px;border:1px solid rgba(142,107,13,.38);background:#faeef0;color:#8e6a0d;font-size:14px;font-weight:600;width:100%}
+.lbl{font-size:12px;color:#3b2b19;margin:0 0 6px}
+.mut{color:#3b2b19}
+*{font-variant-numeric:lining-nums}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1860px; background: linear-gradient(180deg, #fbf1f3 0%, #faecee 45%, #fbeef0 75%, #fcf2f5 100%); color: #170f04; font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 15px; line-height: 1.7; position: relative; overflow: hidden">
+  <header data-brand-bar style="position: relative; z-index: 30; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; height: 64px; box-sizing: border-box; background: #faf6f7"><a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; min-width: 0; font-family: 'Cormorant Garamond', Kanit; font-weight: 600; font-size: 20px"><img src="logo.png" alt="Mister Bamrungsuk" style="width: 40px; height: 40px; object-fit: contain; flex: 0 0 40px"><span style="color: #846215; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Mister Bamrungsuk</span></a><span style="flex: 0 0 auto; padding: 5px 12px; border-radius: 999px; border: 1px solid #8e6a0d; font-size: 10px; letter-spacing: 2.5px; color: #8e6a0d">PARTNER</span></header>
+  <div style="box-sizing: border-box; padding-bottom: 32px">
+<div style="padding: 16px 16px 0; display: flex; align-items: center; gap: 8px">
+      <a href="Partner.dc.html" aria-label="ย้อนกลับ" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(142,107,13,.38); background: rgba(252,245,247,.45); color: #8e6a0d; display: grid; place-items: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"></path></svg></a>
+      <div class="h" style="font-size: 17px; color: #8e6a0d">ชำระแพ็กเกจพาร์ทเนอร์</div>
+    </div>
+    <div style="padding: 16px 16px 0; display: flex; flex-direction: column; gap: 16px; min-width: 0">
+      <div style="display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 8px">
+        <sc-for list="{{pkgs}}" as="k" hint-placeholder-count="2"><button onClick="{{k.pick}}" style="min-height: 84px; border-radius: 14px; border: 1px solid {{k.bd}}; background: {{k.bg}}; color: #170f04; text-align: center; padding: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 0; width: 100%; overflow-wrap: anywhere"><sc-if value="{{k.best}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; line-height: 1.3; padding: 2px 8px; border-radius: 999px; background: #8e6a0d; color: #fbf1f3; font-weight: 600">คุ้มที่สุด</span></sc-if><span style="font-size: 13px; line-height: 1.4; color: #3b2b19">{{k.name}}</span><span class="h" style="font-size: 18px; color: #8e6a0d">{{k.price}}</span></button></sc-for>
+      </div>
+      <div class="card" style="display: flex; flex-direction: column; gap: 16px; font-size: 13px; line-height: 1.5">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <sc-for list="{{summary}}" as="l" hint-placeholder-count="2"><div style="display: flex; justify-content: space-between; align-items: baseline; gap: 16px; min-width: 0"><span class="mut" style="white-space: nowrap; flex-shrink: 0">{{l.n}}</span><span style="text-align: right; min-width: 0; overflow-wrap: anywhere">{{l.v}}</span></div></sc-for>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
+          <div class="mut" style="font-size: 13px; white-space: nowrap">รายการ</div>
+          <sc-for list="{{items}}" as="i" hint-placeholder-count="2"><div style="display: flex; justify-content: space-between; align-items: baseline; gap: 16px; min-width: 0"><span style="min-width: 0; overflow-wrap: anywhere">{{i.n}}</span><span style="white-space: nowrap; flex-shrink: 0; text-align: right">{{i.v}}</span></div></sc-for>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
+          <div class="mut" style="font-size: 13px; white-space: nowrap">สิ่งที่ได้</div>
+          <ul style="margin: 0; padding-left: 16px; display: flex; flex-direction: column; gap: 4px">
+            <sc-for list="{{perks}}" as="pk" hint-placeholder-count="3"><li style="overflow-wrap: anywhere">{{pk.t}}</li></sc-for>
+          </ul>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
+          <div class="mut" style="font-size: 13px; white-space: nowrap">การหักต่อ booking</div>
+          <div style="overflow-wrap: anywhere">{{deposit}}</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 16px; border-top: 1px solid rgba(142,107,13,.38); padding-top: 16px"><span style="white-space: nowrap">ยอดชำระ</span><span class="h" style="font-size: 24px; color: #8e6a0d; text-align: right; white-space: nowrap">{{total}}</span></div>
+      </div>
+      <sc-if value="{{paying}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <div style="border-radius: 18px; background: rgba(252,245,247,.45); border: 1px solid rgba(143,109,10,.85); padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; min-width: 0">
+            <div style="display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; width: 100%; font-size: 13px"><span style="color: #8e6a0d; font-weight: 600">PromptPay</span><span class="mut">QR หมดอายุใน <b style="color: {{cdColor}}; font-family: 'Cormorant Garamond', Kanit; font-size: 14px">{{countdown}}</b></span></div>
+            <div style="padding: 10px; background: #000000; border-radius: 12px; opacity: {{qrOp}}"><svg width="175" height="175" viewBox="0 0 175 175" role="img" aria-label="QR PromptPay"><rect width="175" height="175" fill="#fff"></rect><g fill="#2a0a10"><rect x="56" y="0" width="7" height="7"></rect><rect x="63" y="0" width="7" height="7"></rect><rect x="77" y="0" width="7" height="7"></rect><rect x="91" y="0" width="7" height="7"></rect><rect x="98" y="0" width="7" height="7"></rect><rect x="112" y="0" width="7" height="7"></rect><rect x="56" y="7" width="7" height="7"></rect><rect x="63" y="7" width="7" height="7"></rect><rect x="70" y="7" width="7" height="7"></rect><rect x="77" y="7" width="7" height="7"></rect><rect x="91" y="7" width="7" height="7"></rect><rect x="98" y="7" width="7" height="7"></rect><rect x="63" y="14" width="7" height="7"></rect><rect x="77" y="14" width="7" height="7"></rect><rect x="91" y="14" width="7" height="7"></rect><rect x="98" y="14" width="7" height="7"></rect><rect x="105" y="14" width="7" height="7"></rect><rect x="112" y="14" width="7" height="7"></rect><rect x="63" y="21" width="7" height="7"></rect><rect x="84" y="21" width="7" height="7"></rect><rect x="98" y="21" width="7" height="7"></rect><rect x="105" y="21" width="7" height="7"></rect><rect x="112" y="21" width="7" height="7"></rect><rect x="63" y="28" width="7" height="7"></rect><rect x="70" y="28" width="7" height="7"></rect><rect x="84" y="28" width="7" height="7"></rect><rect x="91" y="28" width="7" height="7"></rect><rect x="112" y="28" width="7" height="7"></rect><rect x="84" y="35" width="7" height="7"></rect><rect x="98" y="35" width="7" height="7"></rect><rect x="105" y="35" width="7" height="7"></rect><rect x="56" y="42" width="7" height="7"></rect><rect x="70" y="42" width="7" height="7"></rect><rect x="105" y="42" width="7" height="7"></rect><rect x="70" y="49" width="7" height="7"></rect><rect x="91" y="49" width="7" height="7"></rect><rect x="105" y="49" width="7" height="7"></rect><rect x="21" y="56" width="7" height="7"></rect><rect x="28" y="56" width="7" height="7"></rect><rect x="42" y="56" width="7" height="7"></rect><rect x="49" y="56" width="7" height="7"></rect><rect x="56" y="56" width="7" height="7"></rect><rect x="63" y="56" width="7" height="7"></rect><rect x="70" y="56" width="7" height="7"></rect><rect x="84" y="56" width="7" height="7"></rect><rect x="91" y="56" width="7" height="7"></rect><rect x="98" y="56" width="7" height="7"></rect><rect x="112" y="56" width="7" height="7"></rect><rect x="119" y="56" width="7" height="7"></rect><rect x="154" y="56" width="7" height="7"></rect><rect x="161" y="56" width="7" height="7"></rect><rect x="168" y="56" width="7" height="7"></rect><rect x="14" y="63" width="7" height="7"></rect><rect x="21" y="63" width="7" height="7"></rect><rect x="28" y="63" width="7" height="7"></rect><rect x="35" y="63" width="7" height="7"></rect><rect x="56" y="63" width="7" height="7"></rect><rect x="63" y="63" width="7" height="7"></rect><rect x="70" y="63" width="7" height="7"></rect><rect x="77" y="63" width="7" height="7"></rect><rect x="126" y="63" width="7" height="7"></rect><rect x="161" y="63" width="7" height="7"></rect><rect x="168" y="63" width="7" height="7"></rect><rect x="0" y="70" width="7" height="7"></rect><rect x="14" y="70" width="7" height="7"></rect><rect x="21" y="70" width="7" height="7"></rect><rect x="28" y="70" width="7" height="7"></rect><rect x="35" y="70" width="7" height="7"></rect><rect x="42" y="70" width="7" height="7"></rect><rect x="49" y="70" width="7" height="7"></rect><rect x="56" y="70" width="7" height="7"></rect><rect x="63" y="70" width="7" height="7"></rect><rect x="105" y="70" width="7" height="7"></rect><rect x="112" y="70" width="7" height="7"></rect><rect x="119" y="70" width="7" height="7"></rect><rect x="140" y="70" width="7" height="7"></rect><rect x="147" y="70" width="7" height="7"></rect><rect x="154" y="70" width="7" height="7"></rect><rect x="161" y="70" width="7" height="7"></rect><rect x="168" y="70" width="7" height="7"></rect><rect x="14" y="77" width="7" height="7"></rect><rect x="28" y="77" width="7" height="7"></rect><rect x="35" y="77" width="7" height="7"></rect><rect x="42" y="77" width="7" height="7"></rect><rect x="49" y="77" width="7" height="7"></rect><rect x="63" y="77" width="7" height="7"></rect><rect x="105" y="77" width="7" height="7"></rect><rect x="126" y="77" width="7" height="7"></rect><rect x="140" y="77" width="7" height="7"></rect><rect x="0" y="84" width="7" height="7"></rect><rect x="7" y="84" width="7" height="7"></rect><rect x="14" y="84" width="7" height="7"></rect><rect x="42" y="84" width="7" height="7"></rect><rect x="49" y="84" width="7" height="7"></rect><rect x="133" y="84" width="7" height="7"></rect><rect x="147" y="84" width="7" height="7"></rect><rect x="154" y="84" width="7" height="7"></rect><rect x="161" y="84" width="7" height="7"></rect><rect x="168" y="84" width="7" height="7"></rect><rect x="0" y="91" width="7" height="7"></rect><rect x="21" y="91" width="7" height="7"></rect><rect x="49" y="91" width="7" height="7"></rect><rect x="56" y="91" width="7" height="7"></rect><rect x="63" y="91" width="7" height="7"></rect><rect x="105" y="91" width="7" height="7"></rect><rect x="112" y="91" width="7" height="7"></rect><rect x="140" y="91" width="7" height="7"></rect><rect x="161" y="91" width="7" height="7"></rect><rect x="21" y="98" width="7" height="7"></rect><rect x="28" y="98" width="7" height="7"></rect><rect x="42" y="98" width="7" height="7"></rect><rect x="63" y="98" width="7" height="7"></rect><rect x="105" y="98" width="7" height="7"></rect><rect x="126" y="98" width="7" height="7"></rect><rect x="133" y="98" width="7" height="7"></rect><rect x="140" y="98" width="7" height="7"></rect><rect x="161" y="98" width="7" height="7"></rect><rect x="14" y="105" width="7" height="7"></rect><rect x="28" y="105" width="7" height="7"></rect><rect x="35" y="105" width="7" height="7"></rect><rect x="70" y="105" width="7" height="7"></rect><rect x="91" y="105" width="7" height="7"></rect><rect x="98" y="105" width="7" height="7"></rect><rect x="105" y="105" width="7" height="7"></rect><rect x="112" y="105" width="7" height="7"></rect><rect x="126" y="105" width="7" height="7"></rect><rect x="133" y="105" width="7" height="7"></rect><rect x="140" y="105" width="7" height="7"></rect><rect x="154" y="105" width="7" height="7"></rect><rect x="161" y="105" width="7" height="7"></rect><rect x="7" y="112" width="7" height="7"></rect><rect x="42" y="112" width="7" height="7"></rect><rect x="49" y="112" width="7" height="7"></rect><rect x="56" y="112" width="7" height="7"></rect><rect x="63" y="112" width="7" height="7"></rect><rect x="77" y="112" width="7" height="7"></rect><rect x="84" y="112" width="7" height="7"></rect><rect x="105" y="112" width="7" height="7"></rect><rect x="133" y="112" width="7" height="7"></rect><rect x="147" y="112" width="7" height="7"></rect><rect x="154" y="112" width="7" height="7"></rect><rect x="77" y="119" width="7" height="7"></rect><rect x="112" y="119" width="7" height="7"></rect><rect x="126" y="119" width="7" height="7"></rect><rect x="161" y="119" width="7" height="7"></rect><rect x="70" y="126" width="7" height="7"></rect><rect x="77" y="126" width="7" height="7"></rect><rect x="84" y="126" width="7" height="7"></rect><rect x="91" y="126" width="7" height="7"></rect><rect x="98" y="126" width="7" height="7"></rect><rect x="105" y="126" width="7" height="7"></rect><rect x="133" y="126" width="7" height="7"></rect><rect x="154" y="126" width="7" height="7"></rect><rect x="56" y="133" width="7" height="7"></rect><rect x="70" y="133" width="7" height="7"></rect><rect x="98" y="133" width="7" height="7"></rect><rect x="105" y="133" width="7" height="7"></rect><rect x="119" y="133" width="7" height="7"></rect><rect x="126" y="133" width="7" height="7"></rect><rect x="133" y="133" width="7" height="7"></rect><rect x="147" y="133" width="7" height="7"></rect><rect x="161" y="133" width="7" height="7"></rect><rect x="168" y="133" width="7" height="7"></rect><rect x="56" y="140" width="7" height="7"></rect><rect x="77" y="140" width="7" height="7"></rect><rect x="105" y="140" width="7" height="7"></rect><rect x="112" y="140" width="7" height="7"></rect><rect x="119" y="140" width="7" height="7"></rect><rect x="133" y="140" width="7" height="7"></rect><rect x="140" y="140" width="7" height="7"></rect><rect x="147" y="140" width="7" height="7"></rect><rect x="168" y="140" width="7" height="7"></rect><rect x="56" y="147" width="7" height="7"></rect><rect x="84" y="147" width="7" height="7"></rect><rect x="91" y="147" width="7" height="7"></rect><rect x="105" y="147" width="7" height="7"></rect><rect x="112" y="147" width="7" height="7"></rect><rect x="140" y="147" width="7" height="7"></rect><rect x="154" y="147" width="7" height="7"></rect><rect x="168" y="147" width="7" height="7"></rect><rect x="56" y="154" width="7" height="7"></rect><rect x="77" y="154" width="7" height="7"></rect><rect x="84" y="154" width="7" height="7"></rect><rect x="98" y="154" width="7" height="7"></rect><rect x="105" y="154" width="7" height="7"></rect><rect x="112" y="154" width="7" height="7"></rect><rect x="119" y="154" width="7" height="7"></rect><rect x="126" y="154" width="7" height="7"></rect><rect x="133" y="154" width="7" height="7"></rect><rect x="140" y="154" width="7" height="7"></rect><rect x="154" y="154" width="7" height="7"></rect><rect x="168" y="154" width="7" height="7"></rect><rect x="56" y="161" width="7" height="7"></rect><rect x="63" y="161" width="7" height="7"></rect><rect x="70" y="161" width="7" height="7"></rect><rect x="77" y="161" width="7" height="7"></rect><rect x="98" y="161" width="7" height="7"></rect><rect x="105" y="161" width="7" height="7"></rect><rect x="119" y="161" width="7" height="7"></rect><rect x="133" y="161" width="7" height="7"></rect><rect x="154" y="161" width="7" height="7"></rect><rect x="63" y="168" width="7" height="7"></rect><rect x="91" y="168" width="7" height="7"></rect><rect x="98" y="168" width="7" height="7"></rect><rect x="105" y="168" width="7" height="7"></rect><rect x="112" y="168" width="7" height="7"></rect><rect x="119" y="168" width="7" height="7"></rect><rect x="133" y="168" width="7" height="7"></rect><rect x="140" y="168" width="7" height="7"></rect><rect x="147" y="168" width="7" height="7"></rect></g><rect x="0" y="0" width="49" height="49" fill="#2a0a10"></rect><rect x="7" y="7" width="35" height="35" fill="#fff"></rect><rect x="14" y="14" width="21" height="21" fill="#2a0a10"></rect><rect x="126" y="0" width="49" height="49" fill="#2a0a10"></rect><rect x="133" y="7" width="35" height="35" fill="#fff"></rect><rect x="140" y="14" width="21" height="21" fill="#2a0a10"></rect><rect x="0" y="126" width="49" height="49" fill="#2a0a10"></rect><rect x="7" y="133" width="35" height="35" fill="#fff"></rect><rect x="14" y="140" width="21" height="21" fill="#2a0a10"></rect><rect x="70" y="70" width="35" height="35" rx="4" fill="#8f1424"></rect><text x="87.5" y="91" text-anchor="middle" font-family="Kanit" font-size="11" font-weight="700" fill="#f0c75a">MB</text></svg></div>
+            <div style="font-size: 13px; text-align: center; overflow-wrap: anywhere" class="mut">บจก. บำรุงสุข ดิจิทัล · บัญชีรับเงิน 0-1055-69012-34-5</div>
+            <sc-if value="{{expired}}" hint-placeholder-val="{{ false }}"><button class="ghost" onClick="{{refresh}}">สร้าง QR ใหม่</button></sc-if>
+          </div>
+          <div>
+            <p class="lbl">อัปโหลดสลิปการโอน</p>
+            <button onClick="{{upload}}" style="width: 100%; min-height: 84px; border-radius: 14px; border: 1.5px dashed {{slipBd}}; background: rgba(252,245,247,.45); color: {{slipFg}}; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 13px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 16V4M7 9l5-5 5 5"></path><path d="M4 16v4h16v-4"></path></svg>{{slipLabel}}</button>
+          </div>
+          <button onClick="{{toggleAgree}}" role="checkbox" aria-checked="{{agreeAria}}" style="display: flex; align-items: flex-start; gap: 10px; text-align: left; background: none; border: 0; padding: 4px 0; color: #170f04; font-size: 13px; line-height: 1.5; width: 100%; min-width: 0"><span style="flex-shrink: 0; width: 22px; height: 22px; border-radius: 6px; border: 1.5px solid {{agreeBd}}; background: {{agreeBg}}; color: #fbf1f3; display: grid; place-items: center; font-size: 14px; font-weight: 700">{{agreeMark}}</span><span style="min-width: 0; overflow-wrap: anywhere">ยอมรับเงื่อนไขพาร์ทเนอร์ (QC มาตรฐานเดียวกับบำรุงสุข · หัก [รอกำหนด]% ต่อ booking)</span></button>
+          <button class="cta" onClick="{{submit}}" disabled="{{submitDis}}" style="opacity: {{submitOp}}">ยืนยันการชำระ · ส่งสลิป</button>
+        </div>
+      </sc-if>
+      <sc-if value="{{pending}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center; padding-top: 6px">
+          <div style="width: 84px; height: 84px; border-radius: 50%; border: 2px solid #8e6a0d; display: grid; place-items: center; color: #8e6a0d"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></div>
+          <div class="h" style="font-size: 20px; color: #8e6a0d">ได้รับสลิปแล้ว</div>
+          <p class="mut" style="margin: 0; font-size: 13px">ทีมงานตรวจภายใน 24 ชม. แล้วติดต่อนัด QC สถานที่</p>
+          <div class="card" style="width: 100%; box-sizing: border-box; text-align: left; display: flex; flex-direction: column; gap: 10px">
+            <div class="mut" style="font-size: 13px">ขั้นตอนถัดไป</div>
+            <sc-for list="{{steps}}" as="st" hint-placeholder-count="4"><div style="display: flex; align-items: center; gap: 10px; font-size: 13px; min-width: 0"><span style="flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(143,109,10,.85); color: #8e6a0d; display: grid; place-items: center; font-family: 'Cormorant Garamond', Kanit; font-size: 13px">{{st.n}}</span><span style="min-width: 0; overflow-wrap: anywhere">{{st.t}}</span></div></sc-for>
+          </div>
+          <a href="PartnerDone.dc.html" class="cta" style="display: grid; place-items: center; text-decoration: none">ดูสถานะการสมัคร</a>
+          <a href="PartnerLogin.dc.html" style="font-size: 13px; padding: 8px">ตั้งรหัสผ่าน / เข้าสู่ระบบพอร์ทัล</a>
+          <button class="ghost" onClick="{{back}}">ส่งสลิปใหม่</button>
+          <a href="Partner.dc.html" style="font-size: 13px; padding: 8px">กลับหน้าพาร์ทเนอร์</a>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1860}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { pkg: '6m', sec: 900, slip: false, agree: false, step: 'pay' }; this.t = setInterval(() => { if (this.state.sec > 0 && this.state.step === 'pay') this.setState({ sec: this.state.sec - 1 }); }, 1000); }
+  renderVals() {
+    const s = this.state; const P = { '3m': 45000, '6m': 60000 }; const N = { '3m': '3 เดือน', '6m': '6 เดือน' };
+    const fmt = (n) => '฿' + n.toLocaleString('en-US');
+    const mm = String(Math.floor(s.sec / 60)).padStart(2, '0'); const ss = String(s.sec % 60).padStart(2, '0');
+    const ok = s.slip && s.agree;
+    return {
+      pkgs: ['3m', '6m'].map((id) => ({ name: 'แพ็กเกจ ' + N[id], price: fmt(P[id]), best: id === '6m', bd: s.pkg === id ? '#8e6a0d' : 'rgba(142,107,13,.38)', bg: s.pkg === id ? 'rgba(142,107,13,.16)' : '#faeef0', pick: () => this.setState({ pkg: id }) })),
+      summary: [['ธุรกิจ', 'Siam Serenity Spa'], ['ประเภท', 'สปา'], ['แพ็กเกจ', N[s.pkg]]].map(([n, v]) => ({ n, v })),
+      items: [['แพ็กเกจพาร์ทเนอร์ ' + N[s.pkg], fmt(P[s.pkg])], ['ค่าป้ายแบรนด์', '[รอกำหนด]']].map(([n, v]) => ({ n, v })),
+      perks: ['คลิปโปรโมท 1 คลิปลง IG & FB ของแบรนด์', 'สุ่ม QC มาตรฐาน', 'โปรโมทผ่านแพลตฟอร์ม Mister Bamrungsuk', 'ป้าย "ทำงานร่วมกับ Mister Bamrungsuk"'].map((t) => ({ t })),
+      deposit: 'หัก [รอกำหนด]% ต่อ booking ที่มาจากแพลตฟอร์ม',
+      total: fmt(P[s.pkg]),
+      paying: s.step === 'pay', pending: s.step === 'pending',
+      countdown: mm + ':' + ss, cdColor: s.sec < 120 ? '#8a0f1e' : '#8e6a0d', expired: s.sec === 0, qrOp: s.sec === 0 ? '.2' : '1',
+      refresh: () => this.setState({ sec: 900 }),
+      upload: () => this.setState({ slip: !s.slip }),
+      slipLabel: s.slip ? 'slip_scb_partner.jpg · แตะเพื่อเปลี่ยน' : 'แตะเพื่อแนบรูปสลิป (JPG/PNG)',
+      slipBd: s.slip ? '#3db374' : 'rgba(142,107,13,.38)', slipFg: s.slip ? '#257446' : '#3b2b19',
+      toggleAgree: () => this.setState({ agree: !s.agree }), agreeAria: s.agree ? 'true' : 'false',
+      agreeBd: s.agree ? '#8e6a0d' : '#594836', agreeBg: s.agree ? '#8e6a0d' : 'transparent', agreeMark: s.agree ? '✓' : '',
+      submitDis: !ok, submitOp: ok ? '1' : '.45', submit: () => { if (ok) this.setState({ step: 'pending' }); },
+      steps: ['QC สถานที่', 'ทำสัญญา', 'ถ่ายคลิป', 'เปิดแสดงบนแพลตฟอร์ม'].map((t, i) => ({ n: String(i + 1), t })),
+      back: () => this.setState({ step: 'pay', slip: false, agree: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

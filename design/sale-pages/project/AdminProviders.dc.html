@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>แอดมิน ผู้ให้บริการ</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&amp;family=Kanit:wght@500;600&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+*,*::before,*::after{box-sizing:border-box;font-variant-numeric:lining-nums}
+a{color:#8e6a0d}a:hover{color:#997000}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #8e6a0d;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 1280px; height: 820px; background: linear-gradient(180deg, #fcf2f4 0%, #fbf3f5 100%); color: #170f04; font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 14px; line-height: 1.55; display: flex; overflow: hidden">
+  <nav aria-label="เมนูแอดมิน" style="width: 232px; flex: 0 0 232px; border-right: 1px solid rgba(142,106,13,.3); padding: 18px 14px; display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; box-sizing: border-box; font-family: 'IBM Plex Sans Thai', sans-serif; background: #faf6f7">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px"><img src="logo.png" alt="Mister Bamrungsuk" style="width: 46px; height: 46px; object-fit: contain; vertical-align: middle"><div style="line-height: 1.15"><div style="font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 17px; color: #846215">Mister Bamrungsuk</div><div style="font-size: 11px; color: #715d57">Admin · super</div></div></div>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ภาพรวม / รายได้</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ตรวจงาน</a>
+    <a href="AdminApplicants.dc.html" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ผู้สมัคร</a>
+    <a href="AdminSlips.dc.html" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ตรวจสลิป · Slip2Go</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">คิว KYC</a>
+    <a href="AdminCohorts.dc.html" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">กลุ่มอบรม / เช็กชื่อ</a>
+    <a href="AdminProviders.dc.html" aria-current="page" style="padding: 6px 12px; border-radius: 10px; background: rgba(200,16,46,.28); border: 1px solid rgba(142,106,13,.6); color: #170f04; text-decoration: none; font-weight: 600">ผู้ให้บริการ & tier</a>
+    <a href="AdminPayouts.dc.html" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ค่าตอบแทน</a>
+    <a href="AdminInvites.dc.html" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ลิงก์เชิญ</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">โอนให้ Part-Time</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">พาร์ทเนอร์ / พื้นที่โปรโมท</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ร้านค้า Marketplace</a>
+    <a href="AdminCovers.dc.html" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">รูปหน้าปก</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">สมาชิก · ใบเตือน</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">รายงาน</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">เรื่องร้องเรียน</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">โปรโมชัน</a>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">บันทึกระบบ · SOS</a>
+    <div style="height: 1px; background: rgba(142,106,13,.3); margin: 6px 0"></div>
+    <a href="#" style="padding: 6px 12px; border-radius: 10px; border: 1px solid transparent; color: #3b2b19; text-decoration: none">ตั้งค่าระบบ</a>
+    <div style="margin-top: auto; padding-top: 12px; display: flex; flex-direction: column; gap: 4px"><p style="margin: 0; padding: 0 12px; font-size: 12px; color: #594836">admin@bamrungsuk.co · <span style="color: #8e6a0d">Super admin</span></p><span style="margin-top: 4px; padding: 6px 12px; border-radius: 10px; border: 1px solid rgba(142,106,13,.3); color: #3b2b19">ออกจากระบบ</span><a href="Main.dc.html" style="padding: 6px 12px; color: #8e6a0d; text-decoration: none">← สารบัญทุกหน้า</a></div>
+  </nav>
+  <main style="flex: 1; padding: 22px 24px; display: flex; gap: 18px; min-width: 0">
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end">
+        <div><div style="font-size: 11px; letter-spacing: 2.5px; color: #8e6a0d; font-weight: 600">PROVIDERS · TIER</div><h1 style="margin: 2px 0 0; font-family: Kanit, sans-serif; font-weight: 600; font-size: 24px">ผู้ให้บริการ & tier</h1></div>
+        <div style="display: flex; gap: 8px">
+          <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3"><button onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="height: 38px; padding: 0 16px; border-radius: 999px; border: 1px solid {{t.bd}}; background: {{t.bg}}; color: {{t.fg}}; font-size: 13px; font-weight: 600">{{t.label}}</button></sc-for>
+        </div>
+      </div>
+      <p style="margin: 0; font-size: 13px; color: #594836">Gold แสดงต่อลูกค้าเป็นป้าย <span style="padding: 0 7px; border-radius: 5px; background: linear-gradient(100deg, #8e6e0b, #97711b); color: #fcf9f4; font-family: Kanit, sans-serif; font-weight: 600; font-size: 10.5px; letter-spacing: 1px">TOP</span> · Silver ไม่มีป้าย · ราคาเป็นราคาลูกค้าต่อ 3 ชม.</p>
+      <div style="border-radius: 14px; background: #fbf1f3; border: 1px solid rgba(142,106,13,.22); overflow: hidden">
+        <div style="display: grid; grid-template-columns: 56px 1fr 110px 110px 120px 90px 80px 90px 100px; gap: 8px; padding: 10px 14px; background: #fcf5f6; color: #594836; font-size: 12px; align-items: center"><span>รูป</span><span>ชื่อเล่น</span><span>รหัส MB</span><span>tier</span><span>ราคา 3 ชม.</span><span>เคสเดือนนี้</span><span>% ปัจจุบัน</span><span>แสดง</span><span>รูปรออนุมัติ</span></div>
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+          <div style="display: grid; grid-template-columns: 56px 1fr 110px 110px 120px 90px 80px 90px 100px; gap: 8px; padding: 10px 14px; border-top: 1px solid rgba(142,106,13,.15); background: {{r.bg}}; align-items: center">
+            <div style="width: 40px; height: 48px; border-radius: 8px; border: 1px dashed rgba(142,106,13,.4); background: rgba(142,106,13,.06); display: grid; place-items: center; font-size: 10px; color: #715d57">[รูป]</div>
+            <button onClick="{{r.pick}}" style="display: flex; align-items: center; gap: 8px; padding: 0; border: none; background: none; color: #170f04; font-size: 15px; font-weight: 600; text-align: left">{{r.name}}<sc-if value="{{r.gold}}" hint-placeholder-val="{{ true }}"><span style="padding: 0 7px; border-radius: 5px; background: linear-gradient(100deg, #8e6e0b, #97711b); color: #fcf9f4; font-family: Kanit, sans-serif; font-weight: 600; font-size: 10.5px; letter-spacing: 1px">TOP</span></sc-if></button>
+            <span style="color: #8e6a0d; font-size: 13px">{{r.mb}}</span>
+            <select aria-label="tier ของ {{r.name}}" onChange="{{r.setTier}}" style="height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid rgba(142,106,13,.3); background: #fcf5f6; color: #170f04; font-size: 14px; height: 34px"><option selected="{{r.isGold}}">Gold</option><option selected="{{r.isSilver}}">Silver</option></select>
+            <input aria-label="ราคา 3 ชม. ของ {{r.name}}" value="{{r.priceTxt}}" style="height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid rgba(142,106,13,.3); background: #fcf5f6; color: #170f04; font-size: 14px; height: 34px; width: 100%; text-align: right">
+            <span style="text-align: center; font-weight: 600">{{r.cases}}</span>
+            <span style="text-align: center; color: {{r.pctC}}; font-weight: 600">{{r.pct}}</span>
+            <span><button onClick="{{r.toggle}}" aria-pressed="{{r.showOn}}" aria-label="แสดงบนแพลตฟอร์ม" style="width: 42px; height: 24px; padding: 0; border-radius: 999px; border: none; background: {{r.track}}; position: relative; flex-shrink: 0"><span style="position: absolute; top: 3px; left: {{r.knob}}; width: 18px; height: 18px; border-radius: 50%; background: #000000"></span></button></span>
+            <span><sc-if value="{{r.hasPend}}" hint-placeholder-val="{{ false }}"><span style="padding: 2px 10px; border-radius: 999px; background: rgba(142,106,13,.16); color: #8b6c0e; font-size: 12px">{{r.pend}} รูป</span></sc-if><sc-if value="{{r.noPend}}" hint-placeholder-val="{{ true }}"><span style="color: #715d57">—</span></sc-if></span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <aside style="width: 300px; flex-shrink: 0; padding: 18px; border-radius: 16px; border: 1px solid rgba(142,106,13,.55); background: #fbf1f3; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; gap: 12px; align-items: center"><div style="width: 60px; height: 72px; border-radius: 12px; border: 1px dashed rgba(142,106,13,.4); background: rgba(142,106,13,.06); display: grid; place-items: center; font-size: 11px; color: #715d57">[รูปปก]</div><div><div style="font-family: Kanit, sans-serif; font-weight: 600; font-size: 19px">{{sel.name}}</div><div style="color: #8e6a0d; font-size: 12px">{{sel.mb}}</div></div></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 12px; color: #594836">tier</span><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px"><sc-for list="{{tierBtns}}" as="b" hint-placeholder-count="2"><button onClick="{{b.pick}}" aria-pressed="{{b.on}}" style="height: 38px; border-radius: 10px; border: 1px solid {{b.bd}}; background: {{b.bg}}; color: {{b.fg}}; font-weight: 600">{{b.label}}</button></sc-for></div></div>
+      <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 12px; color: #594836">ราคาลูกค้า / 3 ชม. (บาท)</span><input value="{{sel.priceTxt}}" style="height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid rgba(142,106,13,.3); background: #fcf5f6; color: #170f04; font-size: 14px; text-align: right"></label>
+      <div style="display: flex; justify-content: space-between"><span style="color: #594836">ความสามารถ</span><span>{{sel.skills}}</span></div>
+      <div style="display: flex; justify-content: space-between"><span style="color: #594836">พื้นที่</span><span>{{sel.area}}</span></div>
+      <div style="display: flex; justify-content: space-between"><span style="color: #594836">เคสเดือนนี้</span><span>{{sel.cases}} เคส · {{sel.pct}}</span></div>
+      <div style="height: 1px; background: rgba(142,106,13,.25)"></div>
+      <div style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 12px; color: #594836">รูปรออนุมัติ</span><span style="font-size: 12px; color: #8b6c0e">{{sel.pend}} รูป</span></div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px"><sc-for list="{{selPhotos}}" as="p" hint-placeholder-count="3"><div style="aspect-ratio: 3/4; border-radius: 8px; border: 1px dashed rgba(142,106,13,.4); background: rgba(142,106,13,.06); display: grid; place-items: center; font-size: 10.5px; color: #715d57">[รูป {{p}}]</div></sc-for></div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px"><button style="height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid rgba(142,106,13,.4); background: transparent; color: #3b2b19; font-size: 13px">ไม่อนุมัติรูป</button><button style="height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid rgba(142,106,13,.4); background: transparent; color: #3b2b19; font-size: 13px; border-color: #8e6a0d; color: #8e6a0d">อนุมัติรูป</button></div>
+      <button style="height: 42px; padding: 0 18px; border-radius: 999px; border: 1.5px solid #8e6a0d; background: linear-gradient(100deg, #9e1028, #c8102e 50%, #9e1028); color: #fff; font-weight: 600; font-family: Kanit, sans-serif; font-size: 14px; margin-top: auto">บันทึก</button>
+    </aside>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":820}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { tab: 'all', sel: 0, rows: [
+      { mb: 'MB-2610001', name: 'ต้น', tier: 'Gold', price: 10000, cases: 26, show: true, pend: 0, skills: 'นวดผ่อนคลาย · ทำอาหาร', area: 'สุขุมวิท · ทองหล่อ' },
+      { mb: 'MB-2610003', name: 'เจมส์', tier: 'Gold', price: 10000, cases: 14, show: true, pend: 2, skills: 'ถ่ายรูป · คาเฟ่', area: 'สาทร · สีลม' },
+      { mb: 'MB-2610004', name: 'บอส', tier: 'Silver', price: 6500, cases: 12, show: true, pend: 0, skills: 'นวดผ่อนคลาย · ดูหนัง', area: 'อารีย์' },
+      { mb: 'MB-2610005', name: 'ภูมิ', tier: 'Silver', price: 6500, cases: 7, show: false, pend: 1, skills: 'ทำอาหาร · เดินเล่น', area: 'รัชดา' },
+      { mb: 'MB-2610006', name: 'ไนซ์', tier: 'Gold', price: 10000, cases: 21, show: true, pend: 0, skills: 'นวดผ่อนคลาย · ถ่ายรูป', area: 'บางนา' },
+      { mb: 'MB-2610008', name: 'เอก', tier: 'Silver', price: 6500, cases: 3, show: true, pend: 0, skills: 'คาเฟ่ · ดูหนัง', area: 'บางซื่อ' }
+    ] }; }
+  renderVals() {
+    const s = this.state;
+    const pctOf = (c) => c >= 25 ? '60%' : c > 10 ? '50%' : '40%';
+    const PRICE = { Gold: 10000, Silver: 6500 };
+    const setRow = (i, patch) => { const rows = s.rows.slice(); rows[i] = { ...rows[i], ...patch }; this.setState({ rows }); };
+    const fmt = (n) => n.toLocaleString('en-US');
+    const vis = s.rows.map((r, i) => ({ r, i })).filter(({ r }) => s.tab === 'all' || r.tier === s.tab).sort((a, b) => (a.r.tier === 'Gold' ? 0 : 1) - (b.r.tier === 'Gold' ? 0 : 1));
+    const sr = s.rows[s.sel];
+    return {
+      tabs: [['all', 'ทั้งหมด'], ['Gold', 'Gold'], ['Silver', 'Silver']].map(([k, label]) => { const on = s.tab === k; return { label, on: String(on), bd: on ? '#8e6a0d' : 'rgba(142,106,13,.3)', bg: on ? '#8e6a0d' : 'transparent', fg: on ? '#fcf9f4' : '#3b2b19', pick: () => this.setState({ tab: k }) }; }),
+      rows: vis.map(({ r, i }) => { const p = pctOf(r.cases); return { ...r, gold: r.tier === 'Gold', isGold: r.tier === 'Gold', isSilver: r.tier === 'Silver', priceTxt: fmt(r.price), pct: p, pctC: p === '60%' ? '#8e6a0d' : '#3b2b19', showOn: String(r.show), track: r.show ? '#c8102e' : 'rgba(0,0,0,.18)', knob: r.show ? '21px' : '3px', toggle: () => setRow(i, { show: !r.show }), setTier: (e) => setRow(i, { tier: e.target.value, price: PRICE[e.target.value] }), hasPend: r.pend > 0, noPend: r.pend === 0, bg: i === s.sel ? 'rgba(142,106,13,.1)' : 'transparent', pick: () => this.setState({ sel: i }) }; }),
+      sel: { ...sr, priceTxt: fmt(sr.price), pct: pctOf(sr.cases) },
+      selPhotos: sr.pend > 0 ? Array.from({ length: sr.pend }, (_, k) => k + 1) : [],
+      tierBtns: ['Gold', 'Silver'].map((t) => { const on = sr.tier === t; return { label: t, on: String(on), bd: on ? '#8e6a0d' : 'rgba(142,106,13,.3)', bg: on ? 'rgba(142,106,13,.18)' : 'transparent', fg: on ? '#8e6a0d' : '#3b2b19', pick: () => setRow(s.sel, { tier: t, price: PRICE[t] }) }; })
+    };
+  }
+}
+</script>
+</body>
+</html>
