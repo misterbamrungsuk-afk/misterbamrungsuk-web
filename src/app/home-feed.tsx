@@ -67,7 +67,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE }: { showEarning
   const card = (p: P, i = 0) => (
     <Link key={p.id} href={`/p/${p.id}`} style={{ order: i * 2 }} className="block rounded-[18px] overflow-hidden bg-[#251d1b] text-inherit hover:text-inherit">
       <div className="relative h-[176px] md:h-auto md:aspect-[4/5] lg:aspect-square">
-        <img src={p.img} alt={p.nick} loading="lazy" className="w-full h-full object-cover block" />
+        <img src={p.img} alt={p.nick} loading="lazy" className="w-full h-full object-cover block" style={p.pos ? { objectPosition: p.pos } : undefined} />
         <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(251,251,251,0) 55%, rgba(42,33,30,0.85))" }} />
         {p.top && <div className="absolute top-2 left-2 flex"><span style={{ display: "inline-flex", alignItems: "center", height: 18, padding: "0 7px", borderRadius: 4, background: "linear-gradient(135deg, #fff1c9 0%, #e8c472 45%, #a8781f 100%)", color: "#1b130b", fontWeight: 700, fontSize: 9.5, letterSpacing: ".2em", boxShadow: "inset 0 0 0 1px rgba(255,241,201,.5), 0 2px 6px rgba(0,0,0,.35)" }}>TOP</span></div>}
         <div className="absolute left-[10px] bottom-2 text-[13px] font-light text-[#f3ead9]">{p.prov ? `${p.area} · ${p.prov}` : p.area}</div>

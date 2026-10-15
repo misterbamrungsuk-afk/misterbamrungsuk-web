@@ -11,6 +11,8 @@ export type Person = {
   price?: number;
   /** จำนวนรูป (คนจริง) */
   photos?: number;
+  /** ตำแหน่งรูปหลักในกรอบ (CSS object-position) ที่ Part-Time ปรับเอง */
+  pos?: string;
 };
 
 const P = (id: string, nick: string, age: number, img: string, top: boolean, rating: string, area: string, acts: Act[], free: number, bio: string, extra: Partial<Person> = {}): Person => {

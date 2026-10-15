@@ -128,6 +128,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true });
     }
 
+    // ตำแหน่งรูปหลักบนการ์ด (ลากปรับในหน้า "ดูตัวอย่างการ์ด")
+    if (step === "photo_pos") {
+      const path = s("path", 300), pos = s("pos", 20);
+      const own = [...(x.photos ?? []), ...(row.docs.photo ? [row.docs.photo] : [])];
+      if (!own.includes(path)) return bad("ไม่พบรูปนี้", 400);
+      const m = /^(\d{1,3})% (\d{1,3})%$/.exec(pos);
+      if (!m || +m[1] > 100 || +m[2] > 100) return bad("ตำแหน่งไม่ถูกต้อง", 400);
+      await saveProfile(row.id, { photo_pos: { ...(x.photo_pos ?? {}), [path]: pos } });
+      return NextResponse.json({ ok: true });
+    }
+
     if (step === "card") {
       await saveProfile(row.id, {
         card: { activities: uniq(form.getAll("activities"), 20, 40), places: uniq(form.getAll("places"), 10, 40), partner_spas: uniq(form.getAll("partner_spas"), 10, 60), skills: uniq(form.getAll("skills"), 10, 40) },

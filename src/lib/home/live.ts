@@ -19,6 +19,8 @@ export function isLive(a: Applicant) {
 
 /** รูปที่เปิดสาธารณะได้ (เรียงตามรูปโปรไฟล์ · รูปแรก = รูปหลัก) */
 export const photoPaths = (a: Applicant) => { const x = extraOf(a); return x.photos?.length ? x.photos : a.docs.photo ? [a.docs.photo] : []; };
+/** ตำแหน่งรูปหลักที่ Part-Time ปรับไว้ (ไม่ได้ปรับ = กลาง) */
+export const mainPos = (a: Applicant) => { const p = photoPaths(a)[0]; return (p && extraOf(a).photo_pos?.[p]) || undefined; };
 
 export async function getLiveApplicants() {
   const rows = await listApplicants("verified").catch(() => [] as Applicant[]);
@@ -40,7 +42,7 @@ export async function getLivePeople(): Promise<Person[]> {
       // แสดงระดับเขต/อำเภอ (ไม่ลงถึงแขวง) · จังหวัดแสดงเมื่อไม่ใช่กรุงเทพฯ
       area: area[1] || area[0] || "กรุงเทพฯ", prov: area[0] && area[0] !== "กรุงเทพฯ" ? area[0] : undefined,
       acts: acts.length ? acts : ["eat"], free: 0, bio: x.listing?.title || a.intro || "Part-Time ที่ผ่านการอบรมมาตรฐาน Mister Bamrungsuk",
-      review: ["", ""], real: true, price: top ? svc.top : svc.silver, photos: Math.min(9, photoPaths(a).length),
+      review: ["", ""], real: true, price: top ? svc.top : svc.silver, photos: Math.min(9, photoPaths(a).length), pos: mainPos(a),
     } satisfies Person;
   });
 }

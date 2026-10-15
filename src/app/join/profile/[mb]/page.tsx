@@ -22,6 +22,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
   const fileUrl = (p: string) => `/api/join/file?mb=${mb}&path=${encodeURIComponent(p)}${t ? `&t=${encodeURIComponent(t)}` : ""}`;
   const photos = (x.photos ?? []).map(fileUrl);
   const main = photos[0] ?? (row.docs.photo ? fileUrl(row.docs.photo) : "");
+  const mainPath = x.photos?.[0] ?? row.docs.photo ?? "";
   const kyc = x.kyc_status ?? "none";
   // รายการที่ทีมงานตีกลับ → แจ้งบนโปรไฟล์ + ขั้นที่เกี่ยวข้องยังไม่ครบ
   const fixes = kyc === "rejected" ? Object.keys(x.kyc_reason ?? {}) : [];
@@ -33,7 +34,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
     mb, t: t ?? "", nickname: row.nickname, fullName: `${row.first_name} ${row.last_name}`,
     statusLine: x.invite ? `คำเชิญพิเศษ · ไม่เก็บค่าการันตี · ${row.status === "verified" ? "ชำระค่าอบรมแล้ว" : "ส่งสลิปแล้ว · รอทีมงานตรวจ"}` : `สมัครปกติ · ${row.status === "verified" ? "ชำระค่าการันตีแล้ว" : "ส่งสลิปแล้ว · รอทีมงานตรวจ"}`,
     track: row.package === "B" ? "เพื่อนกินเที่ยว · นวด" : "เพื่อนกินเที่ยว", trackShort: row.package === "B" ? "สายนวด" : "สายกินเที่ยว",
-    main, photos, age: row.birthdate ? ageFrom(row.birthdate) : null, area: (x.areas ?? [])[0]?.split(" › ").pop() ?? "",
+    main, mainPath, pos: (mainPath && x.photo_pos?.[mainPath]) || "50% 50%", photos, age: row.birthdate ? ageFrom(row.birthdate) : null, area: (x.areas ?? [])[0]?.split(" › ").pop() ?? "",
     price: x.tier === "top" ? svc.top : svc.silver, tier: x.tier === "top" ? "top" : "silver", verified: row.status === "verified",
     steps: [
       { t: "ชำระเงิน", sub: bad("slip") ? "สลิปต้องส่งใหม่" : row.status === "verified" ? "ตรวจสลิปแล้ว" : "ส่งสลิปแล้ว · รอทีมงานตรวจ", ok: !bad("slip"), href: bad("slip") ? "rejected" : "" },

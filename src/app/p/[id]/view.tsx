@@ -26,7 +26,7 @@ export function ProfileView({ p }: { p: Person }) {
       <div className="mx-auto w-full max-w-[1120px] lg:grid lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)] lg:gap-10 lg:px-8 lg:pt-8" style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}>
         {/* รูป */}
         <div className="relative h-[380px] md:h-[520px] lg:h-[640px] lg:sticky lg:top-8 lg:rounded-[28px] lg:overflow-hidden">
-          <img src={pics[pic] ?? p.img} alt={p.nick} className="w-full h-full object-cover block" />
+          <img src={pics[pic] ?? p.img} alt={p.nick} className="w-full h-full object-cover block" style={pic === 0 && p.pos ? { objectPosition: p.pos } : undefined} />
           <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(23,18,17,.35) 0%, rgba(23,18,17,0) 30%, rgba(23,18,17,0) 60%, #171211 100%)" }} />
           <Link href="/" aria-label="ย้อนกลับ" className={`absolute top-[14px] left-[14px] ${round} text-[#f3ead9] hover:text-[#f3ead9]`} style={glass}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>

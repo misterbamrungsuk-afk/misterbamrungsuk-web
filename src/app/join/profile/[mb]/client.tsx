@@ -3,7 +3,7 @@
 
 // โปรไฟล์ของฉัน — ถอดตามบอร์ด ProviderEditProfile
 // ปุ่มงาน / ตาราง / รีวิว / ถอนเงิน / ตั้งค่า → หน้าย่อยใต้ /join/profile/[mb]/ (สถานะว่างตามจริงจนกว่าจะเริ่มรับงาน)
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { PtNav } from "./_ptnav";
 import { useRouter } from "next/navigation";
@@ -11,7 +11,7 @@ import type { ProfileCard } from "@/lib/join/store";
 
 export type HubData = {
   mb: string; t: string; nickname: string; fullName: string; statusLine: string; track: string; trackShort: string;
-  main: string; photos: string[]; age: number | null; area: string; price: number; tier: "top" | "silver"; verified: boolean;
+  main: string; mainPath: string; pos: string; photos: string[]; age: number | null; area: string; price: number; tier: "top" | "silver"; verified: boolean;
   fixes: number;
   steps: { t: string; sub: string; ok: boolean; href: "" | "form" | "form2" | "kyc" | "rejected" }[];
   contractDone: boolean; card: ProfileCard;
@@ -84,7 +84,7 @@ export function ProfileHub({ d }: { d: HubData }) {
             {/* หัวโปรไฟล์ */}
             <div className="flex gap-4 items-start">
               <Link href={`/join/profile/${d.mb}/photos${q}`} aria-label="เพิ่ม/จัดการรูปโปรไฟล์" className="shrink-0 relative block w-[132px]">
-                {d.main ? <img src={d.main} alt="รูปโปรไฟล์" className="w-[132px] aspect-[3/4] object-cover rounded-[14px] block bg-[#251d1b]" /> : <div className="w-[132px] aspect-[3/4] rounded-[14px] bg-[#251d1b]" />}
+                {d.main ? <img src={d.main} alt="รูปโปรไฟล์" className="w-[132px] aspect-[3/4] object-cover rounded-[14px] block bg-[#251d1b]" style={{ objectPosition: d.pos }} /> : <div className="w-[132px] aspect-[3/4] rounded-[14px] bg-[#251d1b]" />}
                 <span className="absolute left-1.5 right-1.5 bottom-1.5 min-h-8 rounded-[10px] text-[13px] font-semibold text-[#e8c472] grid place-items-center" style={{ background: "rgba(23,18,17,0.85)" }}>+ เพิ่มรูป</span>
               </Link>
               <div className="min-w-0 flex flex-col gap-1.5 pt-1">
@@ -178,7 +178,7 @@ export function ProfileHub({ d }: { d: HubData }) {
                   <div className="grid grid-cols-3 gap-2">
                     {d.photos.map((src, i) => (
                       <button key={src} type="button" onClick={() => setMain(i)} aria-label={i === 0 ? "รูปหลัก" : `ตั้งรูปที่ ${i + 1} เป็นรูปหลัก`} className="relative p-0 h-[120px] rounded-xl overflow-hidden" style={{ background: "rgba(232,196,114,0.16)" }}>
-                        <img src={src} alt="" className="w-full h-full object-cover block" />
+                        <img src={src} alt="" className="w-full h-full object-cover block" style={i === 0 ? { objectPosition: d.pos } : undefined} />
                         <span className="absolute left-1.5 bottom-1.5 text-[10px] rounded-full bg-[#e8c472] text-[#1b130b] font-light" style={{ padding: "2px 8px", opacity: i === 0 ? 1 : 0 }}>รูปหลัก</span>
                       </button>
                     ))}
@@ -248,7 +248,7 @@ export function ProfileHub({ d }: { d: HubData }) {
               <div className="flex flex-col gap-4">
                 <div className="text-[13px] font-light">ลูกค้าจะเห็นการ์ดของคุณแบบนี้</div>
                 <div className="rounded-[18px] overflow-hidden bg-[#2c1a1f]">
-                  {d.main ? <img src={d.main} alt="" className="w-full h-[340px] object-cover block" /> : <div className="w-full h-[340px] bg-[#251d1b]" />}
+                  {d.main ? <PosPhoto key={d.mainPath} d={d} /> : <div className="w-full h-[340px] bg-[#251d1b]" />}
                   <div className="flex flex-col gap-2" style={{ padding: 14 }}>
                     <div className="flex justify-between items-baseline">
                       <span className="flex items-center gap-1.5"><span className="font-semibold text-[20px]">{d.nickname}{d.age ? ` · ${d.age} ปี` : ""}</span><TierBadge tier={d.tier} /></span>
@@ -267,6 +267,49 @@ export function ProfileHub({ d }: { d: HubData }) {
 
       </div>
       <PtNav c={{ mb: d.mb, q }} active="home" />
+    </div>
+  );
+}
+
+/** รูปหลักบนการ์ดตัวอย่าง — ลากเพื่อเลื่อนตำแหน่งรูปในกรอบ (object-position) แล้วบันทึก → ลูกค้าเห็นตำแหน่งเดียวกันทุกหน้า */
+function PosPhoto({ d }: { d: HubData }) {
+  const router = useRouter();
+  const parse = (p: string) => { const m = /^(\d+)% (\d+)%$/.exec(p); return m ? [+m[1], +m[2]] : [50, 50]; };
+  const [pos, setPos] = useState(() => parse(d.pos));
+  const [state, setState] = useState<"" | "busy" | "ok" | "err">("");
+  const drag = useRef<{ x: number; y: number; px: number; py: number; w: number; h: number } | null>(null);
+  const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(n)));
+  const changed = `${pos[0]}% ${pos[1]}%` !== d.pos;
+  const nudge = (dx: number, dy: number) => { setPos(([x, y]) => [clamp(x + dx), clamp(y + dy)]); setState(""); };
+  const save = async () => {
+    setState("busy");
+    const fd = new FormData();
+    fd.set("mb", d.mb); if (d.t) fd.set("t", d.t); fd.set("step", "photo_pos"); fd.set("path", d.mainPath); fd.set("pos", `${pos[0]}% ${pos[1]}%`);
+    const res = await fetch("/api/join/profile", { method: "POST", body: fd }).catch(() => null);
+    setState(res?.ok ? "ok" : "err");
+    if (res?.ok) router.refresh();
+  };
+  return (
+    <div className="relative">
+      <img src={d.main} alt="" draggable={false} className="w-full h-[340px] object-cover block select-none touch-none cursor-grab active:cursor-grabbing"
+        style={{ objectPosition: `${pos[0]}% ${pos[1]}%` }}
+        onPointerDown={(e) => { (e.target as HTMLElement).setPointerCapture(e.pointerId); const r = e.currentTarget.getBoundingClientRect(); drag.current = { x: e.clientX, y: e.clientY, px: pos[0], py: pos[1], w: r.width, h: r.height }; }}
+        onPointerMove={(e) => { const g = drag.current; if (!g) return; setPos([clamp(g.px - ((e.clientX - g.x) / g.w) * 150), clamp(g.py - ((e.clientY - g.y) / g.h) * 150)]); setState(""); }}
+        onPointerUp={() => { drag.current = null; }} onPointerCancel={() => { drag.current = null; }} />
+      <div className="absolute top-2.5 inset-x-2.5 flex justify-between items-center gap-2 pointer-events-none">
+        <span className="rounded-full text-[12px] text-[#f3ead9] font-light" style={{ padding: "4px 10px", background: "rgba(23,18,17,.72)" }}>ลากรูปเพื่อเลื่อนตำแหน่ง</span>
+        <span className="flex gap-1 pointer-events-auto">
+          {([["ขึ้น", 0, -8, "M12 19V5M5 12l7-7 7 7"], ["ลง", 0, 8, "M12 5v14M5 12l7 7 7-7"]] as const).map(([l, dx, dy, p]) => (
+            <button key={l} type="button" aria-label={`เลื่อนรูป${l}`} onClick={() => nudge(dx, dy)} className="w-9 h-9 rounded-full grid place-items-center text-[#f3ead9]" style={{ background: "rgba(23,18,17,.72)" }}><Ico d={p} size={16} /></button>
+          ))}
+        </span>
+      </div>
+      {(changed || state) && (
+        <div className="absolute bottom-2.5 inset-x-2.5 flex gap-2">
+          <button type="button" onClick={() => { setPos(parse(d.pos)); setState(""); }} className="h-10 px-4 rounded-full text-[13px] text-[#f3ead9]" style={{ background: "rgba(23,18,17,.8)" }}>ยกเลิก</button>
+          <button type="button" onClick={save} disabled={state === "busy" || (!changed && state === "ok")} className="flex-1 h-10 rounded-full bg-[#e8c472] text-[#1b130b] text-[14px] font-semibold">{state === "busy" ? "กำลังบันทึก…" : state === "ok" && !changed ? "บันทึกตำแหน่งแล้ว ✓" : state === "err" ? "ไม่สำเร็จ · ลองอีกครั้ง" : "บันทึกตำแหน่งรูป"}</button>
+        </div>
+      )}
     </div>
   );
 }

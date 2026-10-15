@@ -8,7 +8,7 @@ import Link from "next/link";
 import type { LayerGroup, Map as LMap } from "leaflet";
 import type { Act } from "@/lib/home/people";
 
-export type MapPerson = { id: string; nick: string; age: number; img: string; rating: string; top: boolean; acts: Act[]; area: string; price: number; free: number; lat: number; lng: number; real: boolean };
+export type MapPerson = { id: string; nick: string; age: number; img: string; pos?: string; rating: string; top: boolean; acts: Act[]; area: string; price: number; free: number; lat: number; lng: number; real: boolean };
 export type MapVenue = { id: string; name: string; area: string; lat: number; lng: number; sample?: boolean };
 
 const ACTS: [Act, string][] = [["eat", "กิน & เที่ยว"], ["massage", "นวดผ่อนคลาย"], ["cafe", "คาเฟ่"], ["photo", "ถ่ายรูป"], ["movie", "ดูหนัง"], ["gym", "ออกกำลัง"], ["chill", "นั่งชิล"]];
@@ -56,7 +56,7 @@ export function MapView({ people, venues, sample }: { people: MapPerson[]; venue
       for (const p of ps) {
         const on = sel?.kind === "p" && sel.id === p.id;
         const icon = L.divIcon({ className: "hamoo-pin", iconSize: [58, 70], iconAnchor: [29, 58],
-          html: `<div class="mbp${on ? " on" : ""}"><span class="ring"><img src="${esc(p.img)}" alt=""/></span><span class="tag">${esc(p.nick)}</span></div>` });
+          html: `<div class="mbp${on ? " on" : ""}"><span class="ring"><img src="${esc(p.img)}" alt=""${p.pos ? ` style="object-position:${esc(p.pos)}"` : ""}/></span><span class="tag">${esc(p.nick)}</span></div>` });
         L.marker([p.lat, p.lng], { icon, riseOnHover: true, zIndexOffset: on ? 1000 : 0 }).on("click", (e) => { L.DomEvent.stopPropagation(e); setSel({ kind: "p", id: p.id }); }).addTo(layer.current);
       }
       for (const v of vs) {
@@ -135,7 +135,7 @@ export function MapView({ people, venues, sample }: { people: MapPerson[]; venue
         {sp ? (
           <div className="mx-3 max-w-[560px] md:mx-auto rounded-[22px] p-4 flex flex-col gap-3" style={{ ...glass, background: "rgba(33,26,24,.96)" }}>
             <div className="flex gap-3">
-              <img src={sp.img} alt={sp.nick} className="w-[84px] h-[104px] rounded-2xl object-cover shrink-0" />
+              <img src={sp.img} alt={sp.nick} className="w-[84px] h-[104px] rounded-2xl object-cover shrink-0" style={sp.pos ? { objectPosition: sp.pos } : undefined} />
               <div className="min-w-0 flex-1 flex flex-col gap-1">
                 <div className="flex justify-between items-center gap-2"><b className="text-[18px] font-semibold">{sp.nick}{sp.age ? `, ${sp.age}` : ""}</b><span className="text-[13px] text-[#e8c472]">★ {sp.rating}</span></div>
                 <div className="text-[12.5px] font-light text-[#d9c9b4]">{sp.area} · {sp.real ? "เปิดให้จองเร็ว ๆ นี้" : sp.free ? `ว่างในอีก ${sp.free} นาที` : "ว่างตอนนี้"}</div>
@@ -158,7 +158,7 @@ export function MapView({ people, venues, sample }: { people: MapPerson[]; venue
             {ps.length === 0 && vs.length === 0 && <div className="mx-auto rounded-2xl px-4 py-3 text-[13px] font-light" style={glass}>ไม่พบในย่านนี้ ลองค้นหาย่านอื่นหรือเอาตัวกรองออก</div>}
             {ps.map((p) => (
               <button key={p.id} type="button" onClick={() => focus(p.lat, p.lng, { kind: "p", id: p.id })} className="shrink-0 w-[220px] rounded-2xl flex gap-2.5 p-2 text-left text-[#f3ead9]" style={{ ...glass, background: "rgba(33,26,24,.94)" }}>
-                <img src={p.img} alt="" className="w-[64px] h-[80px] rounded-xl object-cover shrink-0" />
+                <img src={p.img} alt="" className="w-[64px] h-[80px] rounded-xl object-cover shrink-0" style={p.pos ? { objectPosition: p.pos } : undefined} />
                 <span className="min-w-0 flex flex-col gap-0.5"><b className="font-semibold text-[14px] truncate">{p.nick}{p.age ? `, ${p.age}` : ""}</b><span className="text-[11.5px] font-light text-[#d9c9b4] truncate">★ {p.rating} · {p.area}</span><span className="text-[13px] font-semibold text-[#e8c472] mt-auto">{baht(p.price)}<span className="text-[10.5px] font-light text-[#b5a596]"> / 3 ชม.</span></span></span>
               </button>
             ))}
