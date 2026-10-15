@@ -11,7 +11,7 @@ const ITEMS: { key: string; label: string; onlyB?: boolean; doc?: "cert_doc" }[]
   { key: "id_card", label: "หน้าบัตรประชาชน" },
   { key: "id_copy", label: "สำเนาบัตรประชาชน (เซ็นรับรองสำเนา)" },
   { key: "selfie", label: "เซลฟีถือบัตร" },
-  { key: "cert_doc", label: "ใบรับรองการนวด (สำหรับแพ็กเกจ B)", onlyB: true },
+  { key: "cert_doc", label: "ใบรับรองการนวด (สำหรับสาย B)", onlyB: true },
   { key: "bank", label: "บัญชีรับเงิน" },
 ];
 

@@ -106,7 +106,7 @@ export function SlipQueue({ initial, live }: { initial: Applicant[]; live: boole
         {msg && <p role="status" className="text-sm text-[#eed58a]">{msg}</p>}
         <div className="rounded-2xl border border-[rgba(240,200,90,.38)] overflow-x-auto text-[13px]">
           <div className="min-w-[660px]">
-            <div className={`${GRID} px-3.5 py-2.5 bg-[#130e0e] text-[#7d6d6a] text-xs`}><span>รหัส MB</span><span>ผู้ส่งสลิป</span><span>แพ็กเกจ</span><span>ยอดที่ต้องจ่าย</span><span>ผล Slip2Go</span><span>สถานะแอดมิน</span></div>
+            <div className={`${GRID} px-3.5 py-2.5 bg-[#130e0e] text-[#7d6d6a] text-xs`}><span>รหัส MB</span><span>ผู้ส่งสลิป</span><span>สายงาน</span><span>ยอดที่ต้องจ่าย</span><span>ผล Slip2Go</span><span>สถานะแอดมิน</span></div>
             {shown.map((r) => {
               const st = statusOf(r);
               return (
@@ -114,7 +114,7 @@ export function SlipQueue({ initial, live }: { initial: Applicant[]; live: boole
                   style={{ background: open === r.id ? "rgba(240,200,90,.14)" : "transparent" }}>
                   <span className="text-[#ffd76a]">{r.mb_code}</span>
                   <span className="min-w-0 pr-2"><span className="block leading-snug">{r.first_name} {r.last_name}{r.nickname ? ` (${r.nickname})` : ""}</span><span className="block text-[11px] text-[#7d6d6a]">ส่ง {thTime(r.created_at, true)}</span></span>
-                  <span className="text-[#d3c7bc]">แพ็กเกจ {r.package}</span>
+                  <span className="text-[#d3c7bc]">สาย {r.package}</span>
                   <span className="tabular-nums">{fmt(r.amount)}</span>
                   <span><Pill v={verdictOf(r)} /></span>
                   <span style={{ color: st[1] }}>{st[0]}</span>
@@ -130,7 +130,7 @@ export function SlipQueue({ initial, live }: { initial: Applicant[]; live: boole
         {sel ? (
           <>
             <div className="flex justify-between items-center gap-2">
-              <div className="min-w-0"><div className="font-lux font-semibold text-[17px] truncate">{sel.first_name} {sel.last_name}</div><div className="text-[#ffd76a] text-xs">{sel.mb_code} · แพ็กเกจ {sel.package}</div></div>
+              <div className="min-w-0"><div className="font-lux font-semibold text-[17px] truncate">{sel.first_name} {sel.last_name}</div><div className="text-[#ffd76a] text-xs">{sel.mb_code} · สาย {sel.package}</div></div>
               <Pill v={v} />
             </div>
             <a href={file(sel.docs.slip!)} target="_blank" rel="noopener noreferrer" className="block rounded-xl border border-dashed border-[rgba(240,200,90,.4)] bg-[#130e0e] overflow-hidden">

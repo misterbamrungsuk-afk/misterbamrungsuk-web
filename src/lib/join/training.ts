@@ -10,8 +10,8 @@ export const TRAINING = {
 
 export const TRAINING_SESSIONS = [
   { session: 1, day: "15", mon: "พ.ย.", title: "ปฐมนิเทศ & มารยาทบริการ", meta: "09:00–12:00 · MB Studio ทองหล่อ" },
-  { session: 2, day: "15", mon: "พ.ย.", title: "บุคลิกภาพ & การดูแลลูกค้า Premium", meta: "13:00–17:00 · MB Studio ทองหล่อ" },
+  { session: 2, day: "15", mon: "พ.ย.", title: "บุคลิกภาพ & การดูแลลูกค้า", meta: "13:00–17:00 · MB Studio ทองหล่อ" },
   { session: 3, day: "16", mon: "พ.ย.", title: "ความปลอดภัย & SOS", meta: "09:00–11:00 · MB Studio ทองหล่อ" },
-  { session: 4, day: "16", mon: "พ.ย.", title: "มาตรฐานการนวด (แพ็กเกจ B)", meta: "11:00–14:00 · MB Studio ทองหล่อ" },
+  { session: 4, day: "16", mon: "พ.ย.", title: "มาตรฐานการนวด (สาย B)", meta: "11:00–14:00 · MB Studio ทองหล่อ" },
   { session: 5, day: "16", mon: "พ.ย.", title: "ทดสอบ & ถ่ายรูปโปรไฟล์", meta: "14:30–17:00 · MB Studio ทองหล่อ" },
 ] as const;

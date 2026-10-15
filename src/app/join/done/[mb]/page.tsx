@@ -89,7 +89,7 @@ export default async function DonePage({ params }: { params: Promise<{ mb: strin
 
         <div className="rounded-2xl p-4 flex flex-col gap-3 min-w-0" style={{ background: C.s1, border: `1px solid ${C.ln}` }}>
           <div className="font-lux font-semibold text-[15px]" style={{ color: C.gold }}>เอกสารการสมัคร</div>
-          <p className="text-[13px] leading-relaxed" style={{ color: C.mut }}>ใบยืนยันการสมัครพร้อมรหัส {row.mb_code} รายละเอียดแพ็กเกจ ยอดชำระ และกลุ่มอบรม — บันทึกเป็น PDF หรือพิมพ์เก็บไว้ได้</p>
+          <p className="text-[13px] leading-relaxed" style={{ color: C.mut }}>ใบยืนยันการสมัครพร้อมรหัส {row.mb_code} รายละเอียดสายงาน ยอดชำระ และกลุ่มอบรม — บันทึกเป็น PDF หรือพิมพ์เก็บไว้ได้</p>
           <a href={`/join/doc/${row.mb_code}`} target="_blank" rel="noopener" className="btn-gold-lux h-12 rounded-[14px] grid place-items-center text-sm font-semibold">ดาวน์โหลดใบยืนยันการสมัคร (PDF)</a>
         </div>
 

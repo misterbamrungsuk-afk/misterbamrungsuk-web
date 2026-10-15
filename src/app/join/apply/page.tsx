@@ -89,7 +89,7 @@ function ApplyInner() {
   const [phoneOk, setPhoneOk] = useState(false);
   const [otpOff, setOtpOff] = useState(false);
 
-  // โหลด draft + แพ็กเกจจาก ?pkg=A|B
+  // โหลด draft + สายงานจาก ?pkg=A|B
   useEffect(() => {
     let draft: JoinForm = emptyForm;
     try {
@@ -285,13 +285,13 @@ function ApplyInner() {
             <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between gap-3 px-4 py-[14px] rounded-[16px] border-[1.5px] border-[#f0c75a] bg-[rgba(240,200,90,.14)]">
                 <div className="min-w-0">
-                  <div className="text-[11px] tracking-[1.5px] text-[#ffd76a]">แพ็กเกจที่สมัคร</div>
+                  <div className="text-[11px] tracking-[1.5px] text-[#ffd76a]">สายงานที่สมัคร</div>
                   <div className="text-[17px]" style={H}>เพื่อนกินเที่ยว</div>
                   <div className="text-[11.5px] text-[#cdbfb3] whitespace-nowrap">{SUB[pkgKey]}</div>
                 </div>
                 <div className="text-right shrink-0">
                   <div className="text-[20px] text-[#ffd76a]" style={{ ...H, fontWeight: 700 }}>{baht(pkg.price)}</div>
-                  <Link href="/join#packages" className="text-[12px] text-[#ffd76a]">เปลี่ยนแพ็กเกจ</Link>
+                  <Link href="/join#packages" className="text-[12px] text-[#ffd76a]">เปลี่ยนสายงาน</Link>
                 </div>
               </div>
 

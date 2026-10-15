@@ -87,8 +87,8 @@ export default async function DocPage({ params }: { params: Promise<{ mb: string
           {info.map(([k, v]) => <tr key={k}><th className={th}>{k}</th><td className={td}>{v}</td></tr>)}
         </tbody></table>
 
-        <h2 className={h2}>แพ็กเกจและค่าใช้จ่าย</h2>
-        <div className="font-semibold mb-1">{PACKAGES[row.package].name} <span className="font-normal text-[#6b5a50]">(แพ็กเกจ {row.package})</span></div>
+        <h2 className={h2}>สายงานและค่าใช้จ่าย</h2>
+        <div className="font-semibold mb-1">{PACKAGES[row.package].name} <span className="font-normal text-[#6b5a50]">(สาย {row.package})</span></div>
         <table className="w-full border-collapse">
           <tbody>
             {fees.map((f) => (

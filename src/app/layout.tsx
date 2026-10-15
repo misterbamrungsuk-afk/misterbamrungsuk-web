@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, IBM_Plex_Sans_Thai, Kanit } from "next/font/google";
+import { Archivo_Black, Cormorant_Garamond, IBM_Plex_Sans_Thai, Kanit, Noto_Sans_Thai } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/i18n/provider";
 import { PwaRegister } from "@/components/pwa-register";
@@ -8,6 +8,8 @@ import { CookieConsent } from "@/components/cookie-consent";
 
 const plex = IBM_Plex_Sans_Thai({ subsets: ["thai", "latin"], weight: ["400", "500", "600", "700"], variable: "--font-plex" });
 const kanit = Kanit({ subsets: ["thai", "latin"], weight: ["500", "600", "700", "800"], variable: "--font-kanit" });
+const noto = Noto_Sans_Thai({ subsets: ["thai", "latin"], weight: ["100", "300", "400", "600", "700"], variable: "--font-noto" });
+const archivo = Archivo_Black({ subsets: ["latin"], weight: "400", variable: "--font-archivo" });
 const cormorant = Cormorant_Garamond({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-cormorant" });
 
 export const metadata: Metadata = {
@@ -26,14 +28,13 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
   viewportFit: "cover",
   themeColor: "#0e0a0a",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="th" className={`${plex.variable} ${kanit.variable} ${cormorant.variable}`}>
+    <html lang="th" className={`${plex.variable} ${kanit.variable} ${cormorant.variable} ${noto.variable} ${archivo.variable}`}>
       <body>
         <I18nProvider>{children}</I18nProvider>
         <PwaRegister />

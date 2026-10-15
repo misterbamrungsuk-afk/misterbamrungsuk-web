@@ -36,13 +36,13 @@ export function KycQueue({ initial }: { initial: Applicant[] }) {
         </div>
         <div className="rounded-2xl border border-[rgba(240,200,90,.38)] overflow-x-auto text-[13px]">
           <div className="min-w-[560px]">
-            <div className="grid grid-cols-[110px_minmax(0,1.4fr)_90px_130px_140px] px-3.5 py-2.5 bg-[#130e0e] text-[#7d6d6a] text-xs"><span>รหัส MB</span><span>ชื่อ</span><span>แพ็กเกจ</span><span>ส่งเอกสารเมื่อ</span><span>สถานะ KYC</span></div>
+            <div className="grid grid-cols-[110px_minmax(0,1.4fr)_90px_130px_140px] px-3.5 py-2.5 bg-[#130e0e] text-[#7d6d6a] text-xs"><span>รหัส MB</span><span>ชื่อ</span><span>สายงาน</span><span>ส่งเอกสารเมื่อ</span><span>สถานะ KYC</span></div>
             {shown.map((r) => (
               <button key={r.id} onClick={() => setOpen(r.id)} className="w-full grid grid-cols-[110px_minmax(0,1.4fr)_90px_130px_140px] px-3.5 py-[11px] border-t border-[rgba(240,200,90,.38)] text-left items-center"
                 style={{ background: open === r.id ? "rgba(240,200,90,.16)" : "transparent" }}>
                 <span className="text-[#ffd76a]">{r.mb_code}</span>
                 <span className="truncate">{r.first_name} {r.last_name} ({r.nickname})</span>
-                <span className="text-[#d3c7bc]">แพ็กเกจ {r.package}</span>
+                <span className="text-[#d3c7bc]">สาย {r.package}</span>
                 <span className="text-[#d3c7bc]">{thTime(r.kyc_submitted_at)}</span>
                 <span style={{ color: KYC_LABEL[r.kyc_status ?? "none"][1] }}>{KYC_LABEL[r.kyc_status ?? "none"][0]}</span>
               </button>
@@ -57,7 +57,7 @@ export function KycQueue({ initial }: { initial: Applicant[] }) {
             <div className="flex gap-3 items-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={sel.docs.photo ? file(sel.docs.photo) : ""} alt="" className="w-14 h-14 rounded-[14px] object-cover bg-[#130e0e]" />
-              <div className="min-w-0"><div className="font-lux font-semibold text-[17px] truncate">{sel.first_name} {sel.last_name}</div><div className="text-[#ffd76a] text-xs">{sel.mb_code} · แพ็กเกจ {sel.package}</div></div>
+              <div className="min-w-0"><div className="font-lux font-semibold text-[17px] truncate">{sel.first_name} {sel.last_name}</div><div className="text-[#ffd76a] text-xs">{sel.mb_code} · สาย {sel.package}</div></div>
             </div>
             <div className="h-px bg-[rgba(240,200,90,.38)]" />
             <KycPanel key={sel.id} row={sel} onSaved={(row) => { setRows((rs) => rs.map((x) => (x.id === row.id ? row : x))); router.refresh(); }} />

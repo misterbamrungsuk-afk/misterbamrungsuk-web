@@ -21,8 +21,8 @@ const ageOf = (b: string | null) => { if (!b) return null; const d = new Date(b)
 
 type Pkg = "all" | PackageKey;
 type Filter = ApplicantStatus | "all";
-const PKG_TABS: [Pkg, string, string][] = [["all", "ทั้งหมด", "ผู้สมัครทุกแพ็กเกจ"], ["A", "แพ็กเกจ A", PACKAGES.A.name], ["B", "แพ็กเกจ B", PACKAGES.B.name]];
-const PN: Record<Pkg, string> = { all: "ทุกแพ็กเกจ", A: "แพ็กเกจ A", B: "แพ็กเกจ B" };
+const PKG_TABS: [Pkg, string, string][] = [["all", "ทั้งหมด", "ผู้สมัครทุกสาย"], ["A", "สาย A", PACKAGES.A.name], ["B", "สาย B", PACKAGES.B.name]];
+const PN: Record<Pkg, string> = { all: "ทุกสาย", A: "สาย A", B: "สาย B" };
 const G = (k: PackageKey) => feeBreakdown(k)[0].amount;
 const T = (k: PackageKey) => feeBreakdown(k)[1].amount;
 const GRID = "grid grid-cols-[110px_minmax(0,1.4fr)_100px_90px_120px_100px]";
@@ -67,7 +67,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
     try { await navigator.clipboard.writeText(text); flash("คัดลอกข้อความลิงก์กลุ่ม LINE แล้ว"); } catch { flash(text); }
   };
   const exportCsv = () => {
-    const head = ["รหัส MB", "ชื่อ", "ชื่อเล่น", "แพ็กเกจ", "ยอดชำระ", "สถานะ", "กลุ่ม", "กลุ่ม LINE", "ตรวจประวัติ", "KYC", "โทร", "LINE ID", "อีเมล", "สมัครเมื่อ"];
+    const head = ["รหัส MB", "ชื่อ", "ชื่อเล่น", "สายงาน", "ยอดชำระ", "สถานะ", "กลุ่ม", "กลุ่ม LINE", "ตรวจประวัติ", "KYC", "โทร", "LINE ID", "อีเมล", "สมัครเมื่อ"];
     const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
     const lines = shown.map((r) => [r.mb_code, fullName(r), r.nickname, r.package, r.amount, LABEL[r.status], cohortName(r.cohort), r.line_joined ? "เข้าแล้ว" : "ยังไม่เข้า", CRIMINAL[r.criminal_check ?? "pending"][0], r.kyc_status ?? "none", r.tel, r.line_id, r.email, thTime(r.created_at)].map(esc).join(","));
     const blob = new Blob(["﻿" + [head.map(esc).join(","), ...lines].join("\r\n")], { type: "text/csv;charset=utf-8" });
@@ -119,7 +119,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
 
         <div className="rounded-2xl border border-[rgba(240,200,90,.38)] overflow-x-auto text-[13px]">
           <div className="min-w-[640px]">
-            <div className={`${GRID} px-3.5 py-2.5 bg-[#130e0e] text-[#7d6d6a] text-xs`}><span>รหัส MB</span><span>ชื่อ</span><span>แพ็กเกจ</span><span>กลุ่ม</span><span>กลุ่ม LINE</span><span>ตรวจประวัติ</span></div>
+            <div className={`${GRID} px-3.5 py-2.5 bg-[#130e0e] text-[#7d6d6a] text-xs`}><span>รหัส MB</span><span>ชื่อ</span><span>สายงาน</span><span>กลุ่ม</span><span>กลุ่ม LINE</span><span>ตรวจประวัติ</span></div>
             {shown.map((r) => {
               const c = CRIMINAL[r.criminal_check ?? "pending"];
               return (
@@ -178,7 +178,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
               <>
                 <div className="h-px bg-[rgba(240,200,90,.38)]" />
                 <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[12.5px]">
-                  <dt className="text-[#cdbfb3]">แพ็กเกจ</dt><dd>{sel.package} · {PACKAGES[sel.package].name}</dd>
+                  <dt className="text-[#cdbfb3]">สายงาน</dt><dd>{sel.package} · {PACKAGES[sel.package].name}</dd>
                   {feeBreakdown(sel.package).map((x) => <Fragment key={x.name}><dt className="text-[#cdbfb3]">{x.name}</dt><dd>{fmt(x.amount)}</dd></Fragment>)}
                   <dt className="text-[#cdbfb3]">ชำระโดย</dt><dd>{sel.payment_method === "qr" ? "QR" : "โอนบัญชี"}</dd>
                   <dt className="text-[#cdbfb3]">Slip2Go</dt>

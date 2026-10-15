@@ -42,7 +42,7 @@ export interface JoinForm {
   consent_criminal: boolean;
   /** กิจกรรมที่ทำได้ (ACTIVITIES) */
   activities: string[];
-  /** แพ็กเกจ B: มีใบรับรองการนวดไหม ("yes" / "no" / "") */
+  /** สาย B: มีใบรับรองการนวดไหม ("yes" / "no" / "") */
   massage_cert: "" | "yes" | "no";
   /** ไฟล์ใบรับรองการนวด (ไม่บังคับ) */
   cert_doc: string;
@@ -56,7 +56,7 @@ export interface JoinForm {
   avail_slots: string[];
   avail_days: string; // 1–7 วัน/สัปดาห์
   avail_hours: string; // ชม./วัน
-  /** รับทราบชั่วโมงงานตามแพ็กเกจ */
+  /** รับทราบชั่วโมงงานตามสายงาน */
   ack_hours: boolean;
   /** ยอมรับเงื่อนไขไม่ปฏิเสธลูกค้า + การคืนค่าการันตี */
   ack_no_refuse: boolean;

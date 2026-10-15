@@ -6,7 +6,7 @@ import { ApplicantList } from "./list";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "ผู้สมัคร · แอดมิน Mister Bamrungsuk" };
 
-// ผู้สมัคร Part-Time จากหน้า /join — ตามบอร์ด AdminApplicants (?pkg=A|B เลือกแท็บแพ็กเกจไว้ก่อน)
+// ผู้สมัคร Part-Time จากหน้า /join — ตามบอร์ด AdminApplicants (?pkg=A|B เลือกแท็บสายงานไว้ก่อน)
 export default async function ApplicantsPage({ searchParams }: { searchParams: Promise<{ pkg?: string }> }) {
   const { pkg } = await searchParams;
   const rows = (await listApplicants()).map((r) => ({ ...r, ...extraOf(r) }));

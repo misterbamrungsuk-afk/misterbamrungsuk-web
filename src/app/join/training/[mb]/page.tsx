@@ -32,7 +32,7 @@ export default async function TrainingPage({ params }: { params: Promise<{ mb: s
           <div className="h-2 rounded-full mt-2.5 overflow-hidden" style={{ background: C.s2 }}>
             <div className="h-full" style={{ width: `${(done / total) * 100}%`, background: "linear-gradient(90deg,#f0c75a,#ffd76a)" }} />
           </div>
-          <div className="text-[11.5px] mt-1.5" style={{ color: C.mut }}>เข้าครบ {TRAINING.requiredCore} รอบหลักก็เริ่มรับงานได้ · รอบมาตรฐานการนวดสำหรับแพ็กเกจ B · {row.mb_code}</div>
+          <div className="text-[11.5px] mt-1.5" style={{ color: C.mut }}>เข้าครบ {TRAINING.requiredCore} รอบหลักก็เริ่มรับงานได้ · รอบมาตรฐานการนวดสำหรับสาย B · {row.mb_code}</div>
         </div>
         {TRAINING_SESSIONS.map((s) => {
           const d = !!att[s.session];

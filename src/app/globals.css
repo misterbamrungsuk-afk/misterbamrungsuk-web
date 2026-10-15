@@ -32,6 +32,23 @@
   --font-sans: var(--font-plex), "IBM Plex Sans Thai", "Noto Sans Thai", ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-kanit), "Kanit", var(--font-plex), sans-serif;
 
+
+  /* ── v7 (canvas "sale page and register" · DS-Tokens) ── */
+  --color-mb-bg: #171211;
+  --color-mb-surface: #211a18;
+  --color-mb-surface2: #251d1b;
+  --color-mb-surface3: #2c1a1f;
+  --color-mb-gold: #e8c472;
+  --color-mb-ink: #1b130b;
+  --color-mb-text: #f3ead9;
+  --color-mb-text2: #d9c9b4;
+  --color-mb-text3: #b5a596;
+  --color-mb-ok: #7fd6a3;
+  --color-mb-err: #ff8a9a;
+  --color-mb-sos: #c9283d;
+  --font-mb: var(--font-noto), "Noto Sans Thai", ui-sans-serif, system-ui, sans-serif;
+  --font-brand: var(--font-archivo), "Archivo Black", var(--font-noto), sans-serif;
+
   --shadow-glow-red: 0 0 24px rgba(229, 72, 77, 0.35), 0 0 64px rgba(229, 72, 77, 0.12);
   --shadow-glow-gold: 0 0 20px rgba(212, 175, 55, 0.28);
   --shadow-card: 0 1px 2px rgba(16,16,24,.04), 0 8px 24px rgba(16,16,24,.06);
@@ -342,3 +359,16 @@ html { scroll-behavior: smooth; }
 
 /* ตัวเลขทุกที่ใช้แบบตัวตรงเท่ากัน (Cormorant ค่าเริ่มต้นเป็นเลขแบบหางตก ดูไม่เรียบร้อย) */
 *, *::before, *::after, input, textarea, select, button, ::placeholder { font-variant-numeric: lining-nums; }
+
+/* ── v7 page shell (หน้า sale/join ชุดใหม่ ตามบอร์ด DS-*) ── */
+.mb-v7 { background: var(--color-mb-bg); color: var(--color-mb-text); font-family: var(--font-mb); font-weight: 100; font-variant-numeric: lining-nums; line-height: 1.6; }
+.mb-v7 button, .mb-v7 input, .mb-v7 select, .mb-v7 textarea, .mb-v7 label { font-family: inherit; }
+.mb-v7 a:focus-visible, .mb-v7 button:focus-visible, .mb-v7 input:focus-visible, .mb-v7 select:focus-visible, .mb-v7 textarea:focus-visible { outline: 2px solid var(--color-mb-gold); outline-offset: 2px; }
+.mb-v7 .mb-s { font-size: 13px; font-weight: 300; color: var(--color-mb-text2); line-height: 1.6; }
+.mb-v7 .mb-xs { font-size: 12px; font-weight: 300; color: var(--color-mb-text3); }
+.mb-v7 .mb-h { font-weight: 600; line-height: 1.35; text-wrap: balance; margin: 0; }
+.mb-v7 .mb-lbl { display: block; font-size: 13px; font-weight: 300; color: var(--color-mb-text2); margin-bottom: 6px; }
+.mb-v7 .mb-in { min-height: 48px; width: 100%; border-radius: 12px; background: var(--color-mb-surface2); color: var(--color-mb-text); padding: 0 14px; font-size: 16px; border: 1px solid transparent; }
+.mb-v7 .mb-in:focus { border-color: var(--color-mb-gold); outline: none; }
+.mb-v7 .mb-in::placeholder { color: var(--color-mb-text3); }
+.mb-v7 h1, .mb-v7 h2, .mb-v7 h3, .mb-v7 h4 { font-family: var(--font-mb); }

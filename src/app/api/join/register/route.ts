@@ -80,7 +80,7 @@ export async function POST(req: Request) {
   // ฟิลด์ Sheet3 (เก็บตอนอบรม) — ถ้าส่งมาต้องอยู่ในรายการที่กำหนด
   if (s("consent_criminal") !== "true") errors.push("consent_criminal");
   if (s("title") && !oneOf(TITLES, s("title"))) errors.push("title");
-  // อายุตามแพ็กเกจ: ขั้นต่ำ 20, A ≤ 50, B ≤ 45 — วันเกิดบังคับ
+  // อายุตามสายงาน: 20–50 ปีทั้งสองสาย (AGE_LIMITS) — วันเกิดบังคับ
   if (!isDate(s("birthdate"))) errors.push("birthdate");
   else if (pkg in PACKAGES) {
     const ageErr = ageError(pkg, ageFrom(s("birthdate")));

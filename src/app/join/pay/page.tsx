@@ -130,8 +130,8 @@ export default function PayPage() {
     ? [["ค่าการันตี Branding", pkg.guarantee], ["ค่าอบรม", pkg.training]] as const
     : [["ค่าการันตี Branding", pkg.guarantee], ["ค่าอบรม (รวมยูนิฟอร์ม + น้ำมันนวด)", pkg.training]] as const;
   const perks = k === "A"
-    ? ["อบรมบุคลิกภาพ มารยาท การดูแลลูกค้า", `ฟรี! ค่าสมาชิกอยู่ในระบบ 6 เดือนแรก (จากปกติ ${pkg.membershipAfter.toLocaleString("en-US")} บาท/6 เดือน)`]
-    : ["อบรมบุคลิกภาพ + มาตรฐานการนวด", "ยูนิฟอร์ม + Massage Oil 1 เซ็ต", `ฟรี! ค่าสมาชิกอยู่ในระบบ 6 เดือนแรก (จากปกติ ${pkg.membershipAfter.toLocaleString("en-US")} บาท/6 เดือน)`];
+    ? ["อบรมบุคลิกภาพ มารยาท การดูแลลูกค้า"]
+    : ["อบรมบุคลิกภาพ + มาตรฐานการนวด", "ยูนิฟอร์ม + Massage Oil 1 เซ็ต"];
   const lastInitial = f.last_name.trim() ? ` ${f.last_name.trim()[0]}.` : "";
   const summary = [["ผู้สมัคร", `${f.title}${f.first_name}${lastInitial}${f.nickname ? ` (${f.nickname})` : ""}`], ["กลุ่มอบรม", "กลุ่ม 1 · ภายใน 20 พ.ย."]];
   const mm = String(Math.floor(sec / 60)).padStart(2, "0");
@@ -160,13 +160,13 @@ export default function PayPage() {
         <div className="px-4 pt-4 flex flex-col gap-4 min-w-0">
           <div className="flex items-center justify-between gap-3 px-4 py-[14px] rounded-[16px] border-[1.5px] border-[#f0c75a] bg-[rgba(240,200,90,.14)]">
             <div className="min-w-0">
-              <div className="text-[11px] tracking-[1.5px] text-[#ffd76a]">แพ็กเกจที่เลือก</div>
+              <div className="text-[11px] tracking-[1.5px] text-[#ffd76a]">สายงานที่เลือก</div>
               <div className="text-[17px]" style={H}>เพื่อนกินเที่ยว</div>
               <div className="text-[11.5px] text-[#cdbfb3] whitespace-nowrap">{SUB[k]}</div>
             </div>
             <div className="text-right shrink-0">
               <div className="text-[20px] text-[#ffd76a]" style={H}>{baht(pkg.price)}</div>
-              <Link href="/join#packages" className="text-[12px] text-[#ffd76a]">เปลี่ยนแพ็กเกจ</Link>
+              <Link href="/join#packages" className="text-[12px] text-[#ffd76a]">เปลี่ยนสายงาน</Link>
             </div>
           </div>
 
