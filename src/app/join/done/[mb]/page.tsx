@@ -1,9 +1,10 @@
 import Link from "next/link";
+import { canResume } from "@/lib/join/resume";
 import { notFound } from "next/navigation";
 import { CONTRACT, PACKAGES, feeBreakdown, lineAddUrl } from "@/lib/join/config";
 import { extraOf, getByMb } from "@/lib/join/store";
 import { TRAINING, TRAINING_SESSIONS } from "@/lib/join/training";
-import { C, Page } from "../../_kyc/ui";
+import { C, Page, Forbidden } from "../../_kyc/ui";
 import { ContractAccept, CopyButton } from "./client";
 
 export const dynamic = "force-dynamic";
@@ -11,9 +12,13 @@ export const metadata = { title: "สมัครสำเร็จ — Mister B
 
 const baht = (n: number) => `฿${n.toLocaleString("th-TH")}`;
 
-export default async function DonePage({ params }: { params: Promise<{ mb: string }> }) {
+export default async function DonePage({ params, searchParams }: { params: Promise<{ mb: string }>; searchParams: Promise<{ t?: string }> }) {
   const { mb } = await params;
-  const row = /^MB-\d{7,}$/.test(mb) ? await getByMb(mb) : null;
+  const { t } = await searchParams;
+  // ข้อมูลส่วนตัว: ต้องมี cookie mb_resume หรือ ?t= ของรหัสนี้ (ตรวจก่อนค้นฐานข้อมูล ไม่บอกว่ารหัสมีจริงไหม)
+  if (!/^MB-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
+  const q = t ? `?t=${encodeURIComponent(t)}` : "";
+  const row = await getByMb(mb);
   if (!row) notFound();
 
   const x = extraOf(row);
@@ -45,7 +50,7 @@ export default async function DonePage({ params }: { params: Promise<{ mb: strin
         </div>
 
         {kyc === "rejected" && (
-          <Link href={`/join/rejected/${row.mb_code}`} className="rounded-2xl p-4 flex items-center gap-3 text-sm"
+          <Link href={`/join/rejected/${row.mb_code}${q}`} className="rounded-2xl p-4 flex items-center gap-3 text-sm"
             style={{ border: `1px solid ${C.red}`, background: "rgba(224,36,60,.08)", color: C.tx }}>
             <span className="text-lg font-bold" style={{ color: C.pink }}>!</span>
             <span className="flex-1">เอกสารยืนยันตัวตนไม่ผ่าน — แตะเพื่อดูรายการที่ต้องส่งใหม่</span>
@@ -53,7 +58,7 @@ export default async function DonePage({ params }: { params: Promise<{ mb: strin
           </Link>
         )}
         {kyc === "none" && (
-          <Link href={`/join/kyc/${row.mb_code}`} className="rounded-2xl p-4 flex items-center gap-3 text-sm" style={{ border: `1px solid ${C.gold}`, background: "rgba(212,175,55,.05)", color: C.tx }}>
+          <Link href={`/join/kyc/${row.mb_code}${q}`} className="rounded-2xl p-4 flex items-center gap-3 text-sm" style={{ border: `1px solid ${C.gold}`, background: "rgba(212,175,55,.05)", color: C.tx }}>
             <span className="flex-1">ยืนยันตัวตนและบัญชีรับเงินให้เสร็จ (ขั้นที่ 4–5)</span><span style={{ color: C.goldL }}>›</span>
           </Link>
         )}
@@ -80,7 +85,7 @@ export default async function DonePage({ params }: { params: Promise<{ mb: strin
               <span className="whitespace-nowrap shrink-0" style={{ color: C.mut }}>{n}</span><span className="text-right min-w-0">{v}</span>
             </div>
           ))}
-          <Link href={`/join/training/${row.mb_code}`} className="h-12 rounded-[14px] grid place-items-center text-sm font-semibold" style={{ border: `1px solid ${C.ln}`, background: C.s1, color: C.goldL }}>ดูตารางอบรม</Link>
+          <Link href={`/join/training/${row.mb_code}${q}`} className="h-12 rounded-[14px] grid place-items-center text-sm font-semibold" style={{ border: `1px solid ${C.ln}`, background: C.s1, color: C.goldL }}>ดูตารางอบรม</Link>
         </div>
 
         <div className="text-xs leading-relaxed text-center" style={{ color: C.mut }}>
@@ -90,7 +95,7 @@ export default async function DonePage({ params }: { params: Promise<{ mb: strin
         <div className="rounded-2xl p-4 flex flex-col gap-3 min-w-0" style={{ background: C.s1, border: `1px solid ${C.ln}` }}>
           <div className="font-lux font-semibold text-[15px]" style={{ color: C.gold }}>เอกสารการสมัคร</div>
           <p className="text-[13px] leading-relaxed" style={{ color: C.mut }}>ใบยืนยันการสมัครพร้อมรหัส {row.mb_code} รายละเอียดสายงาน ยอดชำระ และกลุ่มอบรม — บันทึกเป็น PDF หรือพิมพ์เก็บไว้ได้</p>
-          <a href={`/join/doc/${row.mb_code}`} target="_blank" rel="noopener" className="btn-gold-lux h-12 rounded-[14px] grid place-items-center text-sm font-semibold">ดาวน์โหลดใบยืนยันการสมัคร (PDF)</a>
+          <a href={`/join/doc/${row.mb_code}${q}`} target="_blank" rel="noopener" className="btn-gold-lux h-12 rounded-[14px] grid place-items-center text-sm font-semibold">ดาวน์โหลดใบยืนยันการสมัคร (PDF)</a>
         </div>
 
         <section className="rounded-2xl p-4 mt-2" style={{ background: C.s1, border: `1px solid ${C.ln}` }}>
@@ -98,7 +103,7 @@ export default async function DonePage({ params }: { params: Promise<{ mb: strin
           <div className="mt-3 max-h-72 overflow-y-auto pr-1 space-y-3 text-sm leading-relaxed" style={{ color: C.mut }}>
             {CONTRACT.map((c) => <div key={c.h}><p className="font-medium" style={{ color: C.tx }}>{c.h}</p><p>{c.p}</p></div>)}
           </div>
-          <ContractAccept mb={row.mb_code} acceptedAt={row.contract_accepted_at} />
+          <ContractAccept mb={row.mb_code} t={t ?? ""} acceptedAt={row.contract_accepted_at} />
         </section>
       </div>
     </Page>

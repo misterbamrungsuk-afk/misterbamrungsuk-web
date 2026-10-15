@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { canResume } from "@/lib/join/resume";
 import { notFound } from "next/navigation";
 import { lineAddUrl } from "@/lib/join/config";
 import { extraOf, getByMb } from "@/lib/join/store";
-import { BottomBar, C, Page, ctaStyle } from "../../_kyc/ui";
+import { BottomBar, C, Page, ctaStyle, Forbidden } from "../../_kyc/ui";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "ต้องแก้ไขเอกสาร — Mister Bamrungsuk" };
@@ -15,9 +16,13 @@ const ITEMS: { key: string; label: string; onlyB?: boolean; doc?: "cert_doc" }[]
   { key: "bank", label: "บัญชีรับเงิน" },
 ];
 
-export default async function RejectedPage({ params }: { params: Promise<{ mb: string }> }) {
+export default async function RejectedPage({ params, searchParams }: { params: Promise<{ mb: string }>; searchParams: Promise<{ t?: string }> }) {
   const { mb } = await params;
-  const row = /^MB-\d{7,}$/.test(mb) ? await getByMb(mb) : null;
+  const { t } = await searchParams;
+  // ข้อมูลส่วนตัว: ต้องมี cookie mb_resume หรือ ?t= ของรหัสนี้ (ตรวจก่อนค้นฐานข้อมูล ไม่บอกว่ารหัสมีจริงไหม)
+  if (!/^MB-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
+  const q = t ? `?t=${encodeURIComponent(t)}` : "";
+  const row = await getByMb(mb);
   if (!row) notFound();
   const reason = extraOf(row).kyc_reason ?? {};
   const items = ITEMS.filter((i) => !i.onlyB || row.package === "B");
@@ -49,7 +54,7 @@ export default async function RejectedPage({ params }: { params: Promise<{ mb: s
         ))}
       </div>
       <BottomBar>
-        <Link href={`/join/kyc/${row.mb_code}`} className="btn-red-lux font-lux" style={ctaStyle}>ถ่ายรูปใหม่</Link>
+        <Link href={`/join/kyc/${row.mb_code}${q}`} className="btn-red-lux font-lux" style={ctaStyle}>ถ่ายรูปใหม่</Link>
         <a href={lineAddUrl()} target="_blank" rel="noopener noreferrer" className="text-center text-[13px]" style={{ color: C.mut }}>สอบถามแอดมิน</a>
       </BottomBar>
     </Page>

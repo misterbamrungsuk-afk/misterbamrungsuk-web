@@ -42,7 +42,13 @@ export function normalizePhone(raw: string): string | null {
   return /^0[689]\d{8}$/.test(local) ? `66${local.slice(1)}` : null;
 }
 
-const secret = () => process.env.ADMIN_SESSION_SECRET || "hamoo-demo-secret";
+// โหมดจริงห้ามใช้ secret สำรอง (ปลอมโทเคนได้) — ไม่ตั้ง ADMIN_SESSION_SECRET = ล้มทันที
+const secret = () => {
+  const v = process.env.ADMIN_SESSION_SECRET;
+  if (v) return v;
+  if (process.env.NODE_ENV === "production" && process.env.VERCEL_ENV) throw new Error("ADMIN_SESSION_SECRET is not set");
+  return "hamoo-demo-secret";
+};
 const hashCode = (phone: string, code: string) => createHmac("sha256", secret()).update(`otp:${phone}:${code}`).digest("hex");
 
 type Row = { id: string; phone: string; ip: string; code_hash: string; attempts: number; expires_at: string; verified_at: string | null; created_at: string };

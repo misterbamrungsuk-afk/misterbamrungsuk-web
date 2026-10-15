@@ -1,15 +1,20 @@
 import Link from "next/link";
+import { canResume } from "@/lib/join/resume";
 import { notFound } from "next/navigation";
 import { extraOf, getAttendance, getByMb } from "@/lib/join/store";
 import { TRAINING, TRAINING_SESSIONS } from "@/lib/join/training";
-import { C, Page, RED_GRAD } from "../../_kyc/ui";
+import { C, Page, RED_GRAD, Forbidden } from "../../_kyc/ui";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "ตารางอบรม — Mister Bamrungsuk" };
 
-export default async function TrainingPage({ params }: { params: Promise<{ mb: string }> }) {
+export default async function TrainingPage({ params, searchParams }: { params: Promise<{ mb: string }>; searchParams: Promise<{ t?: string }> }) {
   const { mb } = await params;
-  const row = /^MB-\d{7,}$/.test(mb) ? await getByMb(mb) : null;
+  const { t } = await searchParams;
+  // ข้อมูลส่วนตัว: ต้องมี cookie mb_resume หรือ ?t= ของรหัสนี้ (ตรวจก่อนค้นฐานข้อมูล ไม่บอกว่ารหัสมีจริงไหม)
+  if (!/^MB-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
+  const q = t ? `?t=${encodeURIComponent(t)}` : "";
+  const row = await getByMb(mb);
   if (!row) notFound();
   const att = await getAttendance(row.id);
   const cohort = extraOf(row).cohort;
@@ -21,7 +26,7 @@ export default async function TrainingPage({ params }: { params: Promise<{ mb: s
   return (
     <Page padBottom={false}>
       <div className="px-3.5 pt-3 flex items-center gap-2">
-        <Link href={`/join/done/${row.mb_code}`} aria-label="ย้อนกลับ" className="w-11 h-11 rounded-full grid place-items-center shrink-0" style={{ border: `1px solid ${C.ln}`, background: C.s1, color: C.goldL }}>
+        <Link href={`/join/done/${row.mb_code}${q}`} aria-label="ย้อนกลับ" className="w-11 h-11 rounded-full grid place-items-center shrink-0" style={{ border: `1px solid ${C.ln}`, background: C.s1, color: C.goldL }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m15 5-7 7 7 7" /></svg>
         </Link>
         <div className="font-lux font-semibold text-[17px]" style={{ color: C.gold }}>ตารางอบรม {group} · {TRAINING.dates}</div>

@@ -13,14 +13,14 @@ export function CopyCode({ code }: { code: string }) {
   );
 }
 
-export function ContractAccept({ mb, acceptedAt }: { mb: string; acceptedAt: string | null }) {
+export function ContractAccept({ mb, t, acceptedAt }: { mb: string; t: string; acceptedAt: string | null }) {
   const [at, setAt] = useState(acceptedAt);
   const [check, setCheck] = useState(false);
   const [busy, setBusy] = useState(false);
   if (at) return <p className="mt-4 text-sm text-gold-300">✓ ยอมรับสัญญาแล้วเมื่อ {new Date(at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}</p>;
   const accept = async () => {
     setBusy(true);
-    const res = await fetch("/api/join/contract", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mb }) }).catch(() => null);
+    const res = await fetch("/api/join/contract", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mb, t }) }).catch(() => null);
     const data = res?.ok ? await res.json() : null;
     if (data?.at) setAt(data.at);
     setBusy(false);

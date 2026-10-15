@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import { Forbidden } from "../../_kyc/ui";
+import { canResume } from "@/lib/join/resume";
 import { CONTROLLER } from "@/lib/join/legal";
 import { BRAND, COHORTS, GUARANTEE_REFUND_NOTE, PACKAGES, TERMS_SUMMARY, feeBreakdown } from "@/lib/join/config";
 import { extraOf, fullName, getByMb } from "@/lib/join/store";
@@ -15,9 +17,13 @@ const thDate = (d: Date) => d.toLocaleDateString("th-TH-u-ca-buddhist", { day: "
 const KYC_TEXT = { none: "ยังไม่ได้ยืนยันตัวตน", submitted: "ส่งเอกสารแล้ว · รอตรวจสอบ", approved: "ยืนยันตัวตนผ่านแล้ว", rejected: "เอกสารต้องแก้ไข" } as const;
 const PAY_TEXT = { pending_slip: "ชำระแล้ว · รอตรวจสลิป", verified: "ชำระเงินแล้ว (ตรวจสอบแล้ว)", rejected: "ไม่อนุมัติ", refunded: "คืนเงินแล้ว" } as const;
 
-export default async function DocPage({ params }: { params: Promise<{ mb: string }> }) {
+export default async function DocPage({ params, searchParams }: { params: Promise<{ mb: string }>; searchParams: Promise<{ t?: string }> }) {
   const { mb } = await params;
-  const row = /^MB-\d{7,}$/.test(mb) ? await getByMb(mb) : null;
+  const { t } = await searchParams;
+  // ข้อมูลส่วนตัว: ต้องมี cookie mb_resume หรือ ?t= ของรหัสนี้ (ตรวจก่อนค้นฐานข้อมูล ไม่บอกว่ารหัสมีจริงไหม)
+  if (!/^MB-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
+  const q = t ? `?t=${encodeURIComponent(t)}` : "";
+  const row = await getByMb(mb);
   if (!row) notFound();
 
   const x = extraOf(row);
@@ -61,7 +67,7 @@ export default async function DocPage({ params }: { params: Promise<{ mb: string
       `}</style>
 
       <div className="no-print mx-auto max-w-[210mm] flex justify-between items-center gap-3 mb-4 flex-wrap">
-        <a href={`/join/done/${row.mb_code}`} className="text-[13px] text-[#5a4a40] underline underline-offset-2">← กลับหน้าสมัครสำเร็จ</a>
+        <a href={`/join/done/${row.mb_code}${q}`} className="text-[13px] text-[#5a4a40] underline underline-offset-2">← กลับหน้าสมัครสำเร็จ</a>
         <PrintButton />
       </div>
 
