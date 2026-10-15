@@ -386,3 +386,20 @@ html { scroll-behavior: smooth; }
 .jf-lb { color: #b5a596; }
 .jf1 .jf-lb { color: #f3ead9; margin-bottom: 4px !important; }
 .jf1 .jf-in { min-height: 42px; }
+
+/* จอคอม (≥1024px): พื้นเรืองทอง/ไวน์จาง ๆ หลังคอลัมน์กลาง + แผงกลางมีกรอบ — มือถือไม่เปลี่ยน */
+@media (min-width: 1024px) {
+  .mb-v7 { isolation: isolate; }
+  .mb-v7::before {
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(900px 520px at 8% -6%, rgba(232, 196, 114, 0.10), transparent 70%),
+      radial-gradient(760px 560px at 102% 104%, rgba(160, 40, 60, 0.13), transparent 70%);
+  }
+  .mb-panel {
+    margin-top: 32px; margin-bottom: 40px; border-radius: 28px;
+    background: rgba(28, 22, 21, 0.72); border: 1px solid rgba(243, 234, 217, 0.07);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+  }
+}
+@media (min-width: 1024px) { .mb-v7 { --pt-on: rgba(232, 196, 114, 0.12); } }

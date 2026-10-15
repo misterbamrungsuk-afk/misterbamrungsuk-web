@@ -10,7 +10,7 @@ export function Page({ children, padBottom = true }: { children: React.ReactNode
   return (
     <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9", fontSize: 15, lineHeight: 1.7 }}>
       <BrandHeader tone="bar" small />
-      <main className={`mx-auto w-full max-w-[720px] relative ${padBottom ? "pb-10" : "pb-8"}`}>{children}</main>
+      <main className={`mb-panel mx-auto w-full max-w-[720px] relative ${padBottom ? "pb-10" : "pb-8"}`}>{children}</main>
     </div>
   );
 }

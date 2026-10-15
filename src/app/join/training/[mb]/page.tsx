@@ -24,7 +24,7 @@ export default async function TrainingPage({ params, searchParams }: { params: P
   const next = TRAINING_SESSIONS.find((s) => !att[s.session])?.session;
 
   return (
-    <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9", lineHeight: "normal" }}><div className="mx-auto max-w-[720px] pb-6">
+    <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9", lineHeight: "normal" }}><div className="mb-panel mx-auto max-w-[720px] pb-6">
       <div className="px-3.5 pt-3 flex items-center gap-2">
         <Link href={`/join/done/${row.mb_code}${q}`} aria-label="ย้อนกลับ" className="w-11 h-11 rounded-full grid place-items-center shrink-0" style={{ border: `1px solid ${C.ln}`, background: C.s1, color: C.goldL }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m15 5-7 7 7 7" /></svg>

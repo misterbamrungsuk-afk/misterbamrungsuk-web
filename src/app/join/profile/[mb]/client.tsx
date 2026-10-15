@@ -5,6 +5,7 @@
 // ปุ่มงาน / ตาราง / รีวิว / ถอนเงิน / ตั้งค่า → หน้าย่อยใต้ /join/profile/[mb]/ (สถานะว่างตามจริงจนกว่าจะเริ่มรับงาน)
 import { useState } from "react";
 import Link from "next/link";
+import { PtNav } from "./_ptnav";
 import { useRouter } from "next/navigation";
 import type { ProfileCard } from "@/lib/join/store";
 
@@ -71,7 +72,7 @@ export function ProfileHub({ d }: { d: HubData }) {
 
   return (
     <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9", lineHeight: "normal" }}>
-      <div className="mx-auto w-full max-w-[1000px]" style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}>
+      <div className="lg:pl-[104px]"><div className="mx-auto w-full max-w-[1000px] pb-[calc(100px+env(safe-area-inset-bottom))] lg:pb-12 lg:pt-4">
         <div className="flex items-center gap-2" style={{ padding: "12px 14px 0" }}>
           <Link href="/work-with-us" aria-label="ย้อนกลับ" className="w-11 h-11 rounded-full bg-[#251d1b] text-[#e8c472] grid place-items-center hover:text-[#e8c472]"><Ico d="m15 5-7 7 7 7" /></Link>
           <div className="font-semibold text-[17px] text-[#e8c472]">โปรไฟล์ของฉัน</div>
@@ -255,14 +256,8 @@ export function ProfileHub({ d }: { d: HubData }) {
         </div>
       </div>
 
-      <nav aria-label="เมนู Part Time" className="fixed bottom-0 inset-x-0 z-40 mx-auto max-w-[640px] grid grid-cols-5 items-center text-center font-light text-[#b5a596] border-t border-[rgba(243,234,217,0.07)] bg-[#251d1b] md:rounded-t-2xl"
-        style={{ height: "calc(76px + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", fontSize: 10.5 }}>
-        <Link href={`/join/profile/${d.mb}${q}`} aria-current="page" className="flex flex-col items-center gap-[3px] text-[#e8c472] hover:text-[#e8c472]"><Ico d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />หน้าหลัก</Link>
-        <Link href={`/join/profile/${d.mb}/schedule${q}`} className="flex flex-col items-center gap-[3px] text-inherit hover:text-[#f3ead9]"><Ico><rect x="4" y="5" width="16" height="16" rx="2" /><path d="M8 3v4M16 3v4M4 10h16" /></Ico>ตาราง</Link>
-        <Link href={`/join/profile/${d.mb}/jobs${q}`} className="flex flex-col items-center gap-[3px] text-inherit hover:text-[#f3ead9]"><Ico><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" /></Ico>งาน</Link>
-        <Link href={`/join/profile/${d.mb}/earnings${q}`} className="flex flex-col items-center gap-[3px] text-inherit hover:text-[#f3ead9]"><Ico><rect x="2" y="6" width="20" height="12" rx="2" /><circle cx="12" cy="12" r="2.5" /></Ico>รายได้</Link>
-        <Link href={`/join/profile/${d.mb}/settings${q}`} className="flex flex-col items-center gap-[3px] text-inherit hover:text-[#f3ead9]"><Ico><circle cx="12" cy="12" r="3" /><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z" /></Ico>ตั้งค่า</Link>
-      </nav>
+      </div>
+      <PtNav c={{ mb: d.mb, q }} active="home" />
     </div>
   );
 }

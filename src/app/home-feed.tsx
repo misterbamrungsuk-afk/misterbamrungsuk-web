@@ -70,9 +70,9 @@ export function HomeFeed({ showEarnings = true }: { showEarnings?: boolean }) {
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF((x) => ({ ...x, [k]: e.target.value }));
   const clear = () => { setActs([]); setF({ reg: "", prov: "", spot: "", type: "", tier: "", act: "", aMin: "25", aMax: "50" }); };
 
-  const card = (p: P) => (
-    <Link key={p.name} href="/login" className="block rounded-[18px] overflow-hidden bg-[#251d1b] text-inherit hover:text-inherit">
-      <div className="relative h-[176px] md:h-auto md:aspect-[4/5]">
+  const card = (p: P, i = 0) => (
+    <Link key={p.name} href="/login" style={{ order: i * 2 }} className="block rounded-[18px] overflow-hidden bg-[#251d1b] text-inherit hover:text-inherit">
+      <div className="relative h-[176px] md:h-auto md:aspect-[4/5] lg:aspect-square">
         <img src={p.img} alt={p.name} loading="lazy" className="w-full h-full object-cover block" />
         <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(251,251,251,0) 55%, rgba(42,33,30,0.85))" }} />
         {p.top && <div className="absolute top-2 left-2 flex"><span style={{ display: "inline-flex", alignItems: "center", height: 18, padding: "0 7px", borderRadius: 4, background: "linear-gradient(135deg, #fff1c9 0%, #e8c472 45%, #a8781f 100%)", color: "#1b130b", fontWeight: 700, fontSize: 9.5, letterSpacing: ".2em", boxShadow: "inset 0 0 0 1px rgba(255,241,201,.5), 0 2px 6px rgba(0,0,0,.35)" }}>TOP</span></div>}
@@ -95,6 +95,14 @@ export function HomeFeed({ showEarnings = true }: { showEarnings?: boolean }) {
             <img src="/brand/logo.png" alt="" width={38} height={38} className="w-[38px] h-[38px] object-contain" />
             <span className="font-brand text-[11px] md:text-[14px] text-[#e8c472] whitespace-nowrap">Mister Bamrungsuk</span>
           </Link>
+          <nav aria-label="เมนูหลัก (จอคอม)" className="hidden md:flex items-center gap-1 ml-auto mr-3 text-[14px] font-light">
+            <Link href="/" aria-current="page" className="px-3 min-h-10 inline-flex items-center rounded-full text-[#e8c472] hover:text-[#e8c472]">ดูเพื่อน</Link>
+            <Link href={showEarnings ? "/join/earnings" : "/join"} className="px-3 min-h-10 inline-flex items-center rounded-full text-[#d9c9b4] hover:text-[#f3ead9]">รายได้</Link>
+            <Link href="/policy" className="px-3 min-h-10 inline-flex items-center rounded-full text-[#d9c9b4] hover:text-[#f3ead9]">กฎเกณฑ์</Link>
+            <Link href="/work-with-us" className="px-3 min-h-10 inline-flex items-center rounded-full text-[#d9c9b4] hover:text-[#f3ead9]">ร่วมทีม</Link>
+            <Link href="/join" className="ml-2 px-5 min-h-10 inline-flex items-center rounded-full bg-[#e8c472] text-[#1b130b] font-semibold hover:text-[#1b130b]">สมัครทันที</Link>
+            <Link href="/login" className="px-3 min-h-10 inline-flex items-center rounded-full text-[#d9c9b4] hover:text-[#f3ead9]">เข้าสู่ระบบ</Link>
+          </nav>
           <Link href="/login" aria-label="การแจ้งเตือน" className="relative grid place-items-center w-11 h-11 rounded-full text-[#f3ead9] hover:text-[#f3ead9]" style={{ background: "rgba(232,196,114,0.16)" }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10 21h4" /></svg>
             <span className="absolute w-2 h-2 rounded-full bg-[#c9283d]" style={{ top: 9, right: 10 }} />
@@ -150,7 +158,7 @@ export function HomeFeed({ showEarnings = true }: { showEarnings?: boolean }) {
             const on = acts.includes(a.id);
             return (
               <button key={a.id} type="button" aria-pressed={on} onClick={() => setActs((x) => (on ? x.filter((y) => y !== a.id) : [...x, a.id]))}
-                className="flex flex-col items-center justify-center gap-[5px] rounded-2xl font-light md:flex-1" style={{ flex: "0 0 70px", minWidth: 70, height: 72, fontSize: 10.5, background: on ? "rgba(232,196,114,0.16)" : "rgba(42,33,30,0.9)", color: on ? GOLD : "#f3ead9" }}>
+                className="flex flex-col items-center justify-center gap-[5px] rounded-2xl font-light flex-[0_0_70px] md:flex-1 md:text-[13px]!" style={{ minWidth: 70, height: 72, fontSize: 10.5, background: on ? "rgba(232,196,114,0.16)" : "rgba(42,33,30,0.9)", color: on ? GOLD : "#f3ead9" }}>
                 <Svg d={a.icon} size={22} sw={1.6} />{a.label}
               </button>
             );
@@ -171,9 +179,9 @@ export function HomeFeed({ showEarnings = true }: { showEarnings?: boolean }) {
         </div>
 
         {list.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" style={{ padding: "0 18px" }}>
-            {list.slice(0, 4).map(card)}
-            <Link href="/spas" className="col-span-full relative grid gap-3 items-center p-[10px] rounded-2xl bg-[#241c29] text-[#f3ead9] hover:text-[#f3ead9]" style={{ gridTemplateColumns: "112px 1fr" }}>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4" style={{ padding: "0 18px" }}>
+            {list.map((x, i) => card(x, i))}
+            <Link href="/spas" style={{ gridTemplateColumns: "112px 1fr" }} className="order-[7] md:order-[999] col-span-full relative grid gap-3 items-center p-[10px] rounded-2xl bg-[#241c29] text-[#f3ead9] hover:text-[#f3ead9]">
               <img src="/brand/home/ad-spa.jpg" alt="" className="w-[112px] h-[84px] rounded-[10px] object-cover block" />
               <span className="flex flex-col gap-0.5 min-w-0 font-normal">
                 <span className="text-[10.5px] text-[#b5a596] font-light">โฆษณา</span>
@@ -182,7 +190,6 @@ export function HomeFeed({ showEarnings = true }: { showEarnings?: boolean }) {
                 <span className="text-[13.5px] text-[#e8c472] font-semibold">ดูรายละเอียด ›</span>
               </span>
             </Link>
-            {list.slice(4).map(card)}
           </div>
         ) : (
           <div className="rounded-2xl text-center text-[13px] font-light bg-[#2c1a1f]" style={{ margin: "0 18px", padding: 24 }}>ยังไม่เจอเพื่อนที่ตรงใจ ลองเลือกกิจกรรมให้น้อยลงดูนะคะ</div>
@@ -204,7 +211,7 @@ export function HomeFeed({ showEarnings = true }: { showEarnings?: boolean }) {
       </div>
 
       {/* เมนูล่าง */}
-      <nav aria-label="เมนูหลัก" className="fixed bottom-0 inset-x-0 z-40 mx-auto max-w-[640px] grid grid-cols-5 items-center text-center font-light text-[#b5a596] border-t border-[rgba(243,234,217,0.07)] bg-[#251d1b] md:rounded-t-2xl"
+      <nav aria-label="เมนูหลัก" className="md:hidden fixed bottom-0 inset-x-0 z-40 mx-auto max-w-[640px] grid grid-cols-5 items-center text-center font-light text-[#b5a596] border-t border-[rgba(243,234,217,0.07)] bg-[#251d1b] md:rounded-t-2xl"
         style={{ height: "calc(64px + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", fontSize: 10.5 }}>
         <Link href="/" aria-current="page" className="flex flex-col items-center gap-[3px] text-[#e8c472] hover:text-[#e8c472]"><Svg d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />ดูเพื่อน</Link>
         <Link href={showEarnings ? "/join/earnings" : "/join"} className="flex flex-col items-center gap-[3px] text-inherit hover:text-[#f3ead9]"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2" /><circle cx="12" cy="12" r="2.5" /></svg>รายได้</Link>

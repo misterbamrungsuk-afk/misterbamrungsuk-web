@@ -16,7 +16,7 @@ const PATHS = [
 
 export default function WorkWithUsPage() {
   return (
-    <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9", fontSize: 15, lineHeight: 1.65 }}>
+    <div className="mb-v7 min-h-dvh flex flex-col" style={{ background: "#171211", color: "#f3ead9", fontSize: 15, lineHeight: 1.65 }}>
       <header className="border-b border-[rgba(243,234,217,0.07)]">
         <div className="mx-auto max-w-[1200px] flex items-center justify-between" style={{ padding: "12px 16px" }}>
           <Link href="/" className="inline-flex items-center gap-2"><img src="/brand/logo.png" alt="Mister Bamrungsuk" width={38} height={38} className="w-[38px] h-[38px] object-contain" /><span className="font-brand text-[11px] md:text-[14px] text-[#e8c472]">Mister Bamrungsuk</span></Link>
@@ -24,18 +24,18 @@ export default function WorkWithUsPage() {
         </div>
       </header>
 
-      <section className="mx-auto max-w-[1200px] flex flex-col gap-4" style={{ padding: "32px 16px 0" }}>
-        <div className="mb-1"><h1 className="m-0 font-semibold text-[30px] md:text-[38px] leading-[1.25] tracking-[-.01em]">ร่วมงานกับเรา</h1></div>
+      <section className="mx-auto w-full max-w-[1200px] flex flex-col gap-4 lg:flex-1 lg:justify-center lg:gap-8" style={{ padding: "32px 16px 0" }}>
+        <div className="mb-1"><h1 className="m-0 font-semibold text-[30px] md:text-[38px] lg:text-[44px] leading-[1.25] tracking-[-.01em]">ร่วมงานกับเรา</h1></div>
         <div className="grid gap-4 lg:grid-cols-3">
           {PATHS.map((p) => (
-            <Link key={p.href} href={p.href} className="relative overflow-hidden grid items-center gap-3 rounded-2xl text-[#f3ead9] hover:text-[#f3ead9]" style={{ gridTemplateColumns: "minmax(0,1fr) auto", padding: "22px 20px", background: p.bg }}>
+            <Link key={p.href} href={p.href} className="relative overflow-hidden grid items-center gap-3 rounded-2xl text-[#f3ead9] hover:text-[#f3ead9] lg:flex lg:flex-col-reverse lg:items-start lg:justify-end lg:gap-6 lg:min-h-[300px] lg:!p-8 lg:rounded-3xl transition-transform lg:hover:-translate-y-1" style={{ gridTemplateColumns: "minmax(0,1fr) auto", padding: "22px 20px", background: p.bg }}>
               <span className="min-w-0">
                 <span className="text-[12px] tracking-[.24em] text-[#e8c472] uppercase font-semibold">{p.tag}</span>
-                <span className="block font-semibold text-[18px] leading-[1.35] mt-1">{p.title}</span>
-                <span className="block text-[14px] text-[#bfae9f] mt-1">{p.sub}</span>
-                <span className="mt-4 inline-flex items-center min-h-[42px] px-5 rounded-full bg-[#e8c472] text-[#1b130b] text-[14px] font-semibold">{p.go}</span>
+                <span className="block font-semibold text-[18px] lg:text-[24px] leading-[1.35] mt-1">{p.title}</span>
+                <span className="block text-[14px] lg:text-[16px] text-[#bfae9f] mt-1">{p.sub}</span>
+                <span className="mt-4 lg:mt-6 inline-flex items-center min-h-[42px] px-5 rounded-full bg-[#e8c472] text-[#1b130b] text-[14px] font-semibold">{p.go}</span>
               </span>
-              <span aria-hidden="true" className="w-[72px] h-[72px] rounded-full grid place-items-center text-[#e8c472]" style={{ background: "rgba(232,196,114,.06)" }}>
+              <span aria-hidden="true" className="w-[72px] h-[72px] lg:w-[84px] lg:h-[84px] rounded-full grid place-items-center text-[#e8c472]" style={{ background: "rgba(232,196,114,.06)" }}>
                 <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d={p.d} /></svg>
               </span>
             </Link>
@@ -43,7 +43,7 @@ export default function WorkWithUsPage() {
         </div>
       </section>
 
-      <footer className="mx-auto max-w-[1200px]" style={{ padding: "0 16px" }}>
+      <footer className="mx-auto w-full max-w-[1200px]" style={{ padding: "0 16px" }}>
         <div className="flex flex-col border-t border-[rgba(243,234,217,0.07)] text-[#b5a596]" style={{ marginTop: 32, padding: "18px 0 24px", gap: 13, fontSize: 13.5, lineHeight: 1.6 }}>
           <div className="flex justify-between items-center gap-3">
             <span className="inline-flex items-center gap-2"><img src="/brand/logo.png" alt="" width={30} height={30} className="w-[30px] h-[30px] object-contain" /><span className="font-brand text-[19px] text-[#e8c472]">Bamrungsuk</span></span>

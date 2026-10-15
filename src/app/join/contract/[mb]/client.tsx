@@ -44,7 +44,7 @@ export function ContractForm({ mb, t, accepted }: { mb: string; t: string; accep
           <h1 className="m-0 flex-1 font-semibold text-[18px]">สัญญาและข้อตกลง</h1>
         </div>
       </header>
-      <main className="mx-auto max-w-[720px] flex flex-col gap-4" style={{ padding: "20px 16px 160px" }}>
+      <main className="mb-panel mx-auto max-w-[720px] flex flex-col gap-4" style={{ padding: "20px 16px 160px" }}>
         <p className="m-0 text-[13px] font-light text-[#d9c9b4] leading-[1.6]">อ่านแล้วติ๊กยอมรับทั้ง 3 ข้อ</p>
         <div className="rounded-2xl bg-[#211a18] text-[13px] font-light text-[#d9c9b4] overflow-y-auto" style={{ padding: 16, height: 260, lineHeight: 1.75 }} tabIndex={0} aria-label="สัญญาความร่วมมือ">
           <b className="font-semibold text-[#f3ead9]">สัญญาความร่วมมือ Part Time (v1.0)</b>

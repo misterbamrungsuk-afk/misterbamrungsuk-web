@@ -35,7 +35,7 @@ export default async function DonePage({ params, searchParams }: { params: Promi
 
   return (
     <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9", lineHeight: "normal" }}>
-      <div className="mx-auto max-w-[720px] flex flex-col gap-4" style={{ padding: "24px 16px 32px" }}>
+      <div className="mb-panel mx-auto max-w-[720px] flex flex-col gap-4" style={{ padding: "24px 16px 32px" }}>
         <div className="text-center">
           <div className="text-[12px] tracking-[2.5px] text-[#e8c472] font-light">ยินดีต้อนรับ Part-Time ใหม่</div>
           <h1 className="font-semibold text-[26px] text-[#e8c472]" style={{ margin: "8px 0 0" }}>ส่งใบสมัครเรียบร้อย</h1>

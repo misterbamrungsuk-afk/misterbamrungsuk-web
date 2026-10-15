@@ -1,7 +1,6 @@
 const en = {
   brandTagline: "Premium dining & outing companions",
   brandSub: "Verified companions. Book and pay securely in the app.",
-  loginWithGoogle: "Sign in with Google",
   loginHint: "Sign in required · every companion is ID-verified",
   demoBadge: "Demo mode",
   nav: { home: "Home", jobs: "Jobs", chat: "Chat", favorites: "Favorites", profile: "Profile" },
