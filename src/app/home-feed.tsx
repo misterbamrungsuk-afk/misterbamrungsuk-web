@@ -5,7 +5,6 @@
 // มือถือ = ตามบอร์ด 390 · md การ์ด 3 คอลัมน์ · lg 4 คอลัมน์ · แอปลูกค้ายังไม่เปิด: การ์ดเพื่อนพาไปหน้าเข้าสู่ระบบ
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { DEMO_MEMBERS } from "@/lib/demo-data";
 
 const GOLD = "#e8c472";
 const ACTS = [
@@ -18,15 +17,15 @@ const ACTS = [
   { id: "chill", label: "นั่งชิล", icon: "M6 4h12v6a6 6 0 0 1-12 0zM9 20h6M12 16v4" },
 ] as const;
 type Act = (typeof ACTS)[number]["id"];
-const av = (id: string) => DEMO_MEMBERS.find((m) => m.id === id)?.avatar ?? "";
+// รูปเพื่อนตัวอย่าง = รูป AI ชุดเดียวกับบน canvas (public/home)
 type P = { name: string; img: string; top: boolean; rating: string; area: string; prov?: string; acts: Act[]; free: number };
 const PEOPLE: P[] = [
-  { name: "ต้น, 29", img: av("u1"), top: true, rating: "5.0", area: "วัฒนา", acts: ["eat", "massage", "cafe"], free: 0 },
-  { name: "ภูมิ, 31", img: av("u3"), top: true, rating: "4.9", area: "ทองหล่อ", acts: ["massage", "gym", "eat"], free: 20 },
-  { name: "เบนซ์, 26", img: av("u7"), top: true, rating: "4.9", area: "สาทร", acts: ["massage", "photo", "cafe"], free: 0 },
-  { name: "กอล์ฟ, 33", img: av("u2"), top: false, rating: "4.8", area: "อารีย์", acts: ["cafe", "photo", "chill"], free: 45 },
-  { name: "นนท์, 27", img: av("u4"), top: false, rating: "4.8", area: "นิมมาน", prov: "เชียงใหม่", acts: ["movie", "chill", "eat"], free: 0 },
-  { name: "ปั้น, 28", img: av("u8"), top: false, rating: "4.7", area: "พัทยา", prov: "ชลบุรี", acts: ["eat", "massage", "movie"], free: 30 },
+  { name: "ต้น, 29", img: "/brand/home/p-ton.jpg", top: true, rating: "5.0", area: "วัฒนา", acts: ["eat", "massage", "cafe"], free: 0 },
+  { name: "ภูมิ, 31", img: "/brand/home/p-phum.jpg", top: true, rating: "4.9", area: "ทองหล่อ", acts: ["massage", "gym", "eat"], free: 20 },
+  { name: "เบนซ์, 26", img: "/brand/home/p-benz.jpg", top: true, rating: "4.9", area: "สาทร", acts: ["massage", "photo", "cafe"], free: 0 },
+  { name: "กอล์ฟ, 33", img: "/brand/home/p-golf.jpg", top: false, rating: "4.8", area: "อารีย์", acts: ["cafe", "photo", "chill"], free: 45 },
+  { name: "นนท์, 27", img: "/brand/home/p-non.jpg", top: false, rating: "4.8", area: "นิมมาน", prov: "เชียงใหม่", acts: ["movie", "chill", "eat"], free: 0 },
+  { name: "ปั้น, 28", img: "/brand/home/p-pan.jpg", top: false, rating: "4.7", area: "พัทยา", prov: "ชลบุรี", acts: ["eat", "massage", "movie"], free: 30 },
 ];
 const PROV: Record<string, string> = { "กรุงเทพฯ": "bkk", "นนทบุรี": "bkk", "ปทุมธานี": "bkk", "สมุทรปราการ": "bkk", "สมุทรสาคร": "bkk", "นครปฐม": "bkk", "กำแพงเพชร": "north", "ชัยนาท": "bkk", "นครนายก": "bkk", "นครสวรรค์": "north", "พระนครศรีอยุธยา": "bkk", "พิจิตร": "north", "พิษณุโลก": "north", "เพชรบูรณ์": "north", "ลพบุรี": "bkk", "สมุทรสงคราม": "bkk", "สิงห์บุรี": "bkk", "สุโขทัย": "north", "สุพรรณบุรี": "bkk", "สระบุรี": "bkk", "อ่างทอง": "bkk", "อุทัยธานี": "north", "เชียงราย": "north", "เชียงใหม่": "north", "น่าน": "north", "พะเยา": "north", "แพร่": "north", "แม่ฮ่องสอน": "north", "ลำปาง": "north", "ลำพูน": "north", "อุตรดิตถ์": "north", "กาฬสินธุ์": "ne", "ขอนแก่น": "ne", "ชัยภูมิ": "ne", "นครพนม": "ne", "นครราชสีมา": "ne", "บึงกาฬ": "ne", "บุรีรัมย์": "ne", "มหาสารคาม": "ne", "มุกดาหาร": "ne", "ยโสธร": "ne", "ร้อยเอ็ด": "ne", "เลย": "ne", "ศรีสะเกษ": "ne", "สกลนคร": "ne", "สุรินทร์": "ne", "หนองคาย": "ne", "หนองบัวลำภู": "ne", "อำนาจเจริญ": "ne", "อุดรธานี": "ne", "อุบลราชธานี": "ne", "จันทบุรี": "bkk", "ฉะเชิงเทรา": "bkk", "ชลบุรี": "bkk", "ตราด": "bkk", "ปราจีนบุรี": "bkk", "ระยอง": "bkk", "สระแก้ว": "bkk", "กาญจนบุรี": "bkk", "ตาก": "north", "ประจวบคีรีขันธ์": "bkk", "เพชรบุรี": "bkk", "ราชบุรี": "bkk", "กระบี่": "south", "ชุมพร": "south", "ตรัง": "south", "นครศรีธรรมราช": "south", "นราธิวาส": "south", "ปัตตานี": "south", "พังงา": "south", "พัทลุง": "south", "ภูเก็ต": "south", "ระนอง": "south", "สตูล": "south", "สงขลา": "south", "สุราษฎร์ธานี": "south", "ยะลา": "south" };
 const REG = [["", "ทุกภาค"], ["bkk", "กรุงเทพฯ และภาคกลาง"], ["north", "ภาคเหนือ"], ["ne", "ภาคตะวันออกเฉียงเหนือ"], ["south", "ภาคใต้"]];
@@ -37,7 +36,7 @@ const labelOf = (id: Act) => ACTS.find((a) => a.id === id)?.label ?? "";
 const provOf = (p: P) => p.prov || "กรุงเทพฯ";
 const ageOf = (p: P) => +p.name.split(",")[1];
 
-const AD = { img: "/brand/spa.jpg", kind: "สปาพาร์ทเนอร์ · สีลม", name: "บำรุงสุข สปา", offer: "สมาชิกลด 20%" };
+const AD = { img: "/brand/home/ad-spa.jpg", kind: "สปาพาร์ทเนอร์ · สีลม", name: "บำรุงสุข สปา", offer: "สมาชิกลด 20%" };
 const sel: React.CSSProperties = { height: 50, width: "100%", borderRadius: 12, background: "rgba(0,0,0,0.3)", color: "#fff7e8", colorScheme: "dark", fontSize: 15, padding: "0 14px" };
 const Svg = ({ d, size = 20, sw = 1.8 }: { d: string; size?: number; sw?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
@@ -175,7 +174,7 @@ export function HomeFeed() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" style={{ padding: "0 18px" }}>
             {list.slice(0, 4).map(card)}
             <Link href="/spas" className="col-span-full relative grid gap-3 items-center p-[10px] rounded-2xl bg-[#241c29] text-[#f3ead9] hover:text-[#f3ead9]" style={{ gridTemplateColumns: "112px 1fr" }}>
-              <img src="/brand/hotel1.jpg" alt="" className="w-[112px] h-[84px] rounded-[10px] object-cover block" />
+              <img src="/brand/home/ad-spa.jpg" alt="" className="w-[112px] h-[84px] rounded-[10px] object-cover block" />
               <span className="flex flex-col gap-0.5 min-w-0 font-normal">
                 <span className="text-[10.5px] text-[#b5a596] font-light">โฆษณา</span>
                 <span className="font-semibold text-[15px]">The Sathorn Retreat</span>
@@ -192,7 +191,7 @@ export function HomeFeed() {
         {/* โฆษณาท้ายหน้า */}
         <div className="flex flex-col gap-2" style={{ margin: "22px 18px 0" }}>
           <Link href="/market" className="relative block rounded-2xl overflow-hidden aspect-[16/7] md:aspect-[16/4]">
-            <img src="/brand/venue.jpg" alt="" className="w-full h-full object-cover block" />
+            <img src="/brand/home/ad-oil.jpg" alt="" className="w-full h-full object-cover block" />
             <span className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(20,16,15,.88) 0%, rgba(20,16,15,0) 70%)" }} />
             <span className="absolute top-[10px] left-3 text-[10.5px] font-light text-white rounded-full" style={{ padding: "2px 8px", background: "rgba(20,16,15,.7)" }}>โฆษณา</span>
             <span className="absolute flex flex-col text-[#f3ead9]" style={{ left: 14, bottom: 14 }}>

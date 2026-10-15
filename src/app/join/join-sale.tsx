@@ -38,7 +38,7 @@ export function JoinSalePage({ seats }: { seats: Seats }) {
       </div>
 
       <div className="mx-auto max-w-[1200px] flex flex-col" style={{ padding: "20px 16px 0", gap: 26 }}>
-        <section className="md:py-16 md:px-10" style={{ padding: "40px 22px 34px", borderRadius: 18, background: "linear-gradient(180deg, rgba(79,22,34,.82), rgba(42,13,19,.96)), url(/brand/extra.jpg) 72% center/cover" }}>
+        <section className="md:py-16 md:px-10" style={{ padding: "40px 22px 34px", borderRadius: 18, background: "linear-gradient(180deg, rgba(79,22,34,.82), rgba(42,13,19,.96)), url(/brand/home/join-hero.jpg) 72% center/cover" }}>
           <div className="text-[11px] font-semibold tracking-[2px] text-[#e8c472]">PART TIME</div>
           <h1 className="font-semibold text-[30px] md:text-[40px] leading-[1.25] text-[#f3ead9]" style={{ margin: "10px 0 6px" }}>เพื่อนกินเที่ยว Mister Bamrungsuk</h1>
           <p className="m-0 text-[15px] text-[#e6d6c4]">งานพาร์ทไทม์ เลือกวันเวลาเอง</p>
