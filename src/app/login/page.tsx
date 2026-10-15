@@ -1,22 +1,29 @@
 "use client";
 
+// บอร์ด C-Login — รูปเต็มบน · โลโก้ (กดกลับหน้าแรก) · หัวข้อ · Google · อีเมล (กดเปิดฟอร์ม) · การ์ดสมัคร Part-Time
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useI18n, LangToggle } from "@/i18n/provider";
-import { Logo } from "@/components/ui";
 import { hasSupabase } from "@/lib/supabase";
 import { isDemo } from "@/lib/data";
+import { lineAddUrl } from "@/lib/join/config";
 
-const inputCls = "h-12 w-full rounded-2xl border border-gold-500/45 bg-white px-4 text-[15px] outline-none focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20";
+const GOLD = "#e8c472";
+const field = "h-12 w-full rounded-[14px] border border-[rgba(243,234,217,0.07)] bg-[#211a18] px-[14px] text-[14px] text-[#f3ead9] outline-none focus:border-[#e8c472] placeholder:text-[#b5a596]";
 
 export default function LoginPage() {
-  const { t } = useI18n();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [forgot, setForgot] = useState(false);
+  const nextUrl = () => {
+    const n = new URLSearchParams(window.location.search).get("next") || "/home";
+    return n.startsWith("/") && !n.startsWith("//") ? n : "/home";
+  };
 
   async function emailLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -26,92 +33,88 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
       const out = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
       if (!out.ok) throw new Error(out.error || "เข้าสู่ระบบไม่สำเร็จ");
-      const next = new URLSearchParams(window.location.search).get("next") || "/home";
-      router.push(next.startsWith("/") && !next.startsWith("//") ? next : "/home");
+      router.push(nextUrl());
     } catch (err) {
       setError(err instanceof Error ? err.message : "เข้าสู่ระบบไม่สำเร็จ");
       setBusy(false);
     }
   }
 
-  async function login() {
+  async function google() {
     if (isDemo || !hasSupabase) {
       // โหมดสาธิต — ตั้ง session cookie แล้วเข้าชมระบบด้วยบัญชีตัวอย่าง
       setLoading(true);
       document.cookie = "hamoo_session=demo; path=/; max-age=604800";
-      const next = new URLSearchParams(window.location.search).get("next") || "/home";
-      setTimeout(() => router.push(next), 600);
+      setTimeout(() => router.push(nextUrl()), 600);
       return;
     }
+    setLoading(true);
     const { supabaseBrowser } = await import("@/lib/supabase");
     const supabase = supabaseBrowser();
-    if (!supabase) return;
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${location.origin}/auth/callback?next=/home` },
-    });
+    if (!supabase) { setLoading(false); return; }
+    await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${location.origin}/auth/callback?next=/home` } });
   }
 
-  return (
-    <main className="app-frame relative overflow-hidden bg-ink-950">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="https://images.unsplash.com/photo-1615269143162-592b3882fcbe?auto=format&fit=crop&w=900&q=70" alt="" className="absolute inset-x-0 top-0 h-[66dvh] w-full object-cover" />
-      <div className="absolute inset-x-0 top-0 h-[66dvh] bg-gradient-to-b from-transparent via-ink-950/55 to-ink-950" />
+  const ok = !!email.trim() && password.length > 0;
 
-      <div className="relative z-10 flex items-center justify-between px-6 pt-6">
-        <Logo size={30} />
-        <LangToggle />
+  return (
+    <main className="mb-v7 relative min-h-dvh overflow-hidden md:grid md:grid-cols-2" style={{ background: "#171211", color: "#f3ead9", lineHeight: "normal" }}>
+      {/* รูปบน (มือถือ) / ครึ่งซ้าย (จอคอม) */}
+      <div className="absolute inset-x-0 top-0 h-[470px] md:relative md:h-auto md:min-h-dvh" aria-hidden="true">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/brand/home/login-hero.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 md:hidden" style={{ background: "linear-gradient(180deg, rgba(23,18,17,.15) 0%, rgba(23,18,17,.5) 45%, #171211 100%)" }} />
+        <div className="absolute inset-0 hidden md:block" style={{ background: "linear-gradient(90deg, rgba(23,18,17,0) 55%, #171211 100%)" }} />
       </div>
 
-      <section className="relative z-10 px-6 pb-9 pt-[34dvh] flex flex-col gap-5 animate-rise">
-        <div>
-          <p className="text-[12px] font-semibold tracking-[0.2em] text-[#8f5e00] flex items-center gap-2"><span className="w-6 h-px bg-[#b8860b]" />PREMIUM COMPANIONS</p>
-          <h1 className="font-display text-[30px] leading-tight font-bold mt-1.5"><span className="whitespace-nowrap">ผ่อนคลายแบบมืออาชีพ</span><br /><span className="bg-gradient-to-r from-[#b8860b] via-[#e0a400] to-[#9a6b00] bg-clip-text text-transparent">ถึงที่ของคุณ</span></h1>
-          <p className="text-ink-200 text-[15px] mt-2.5 leading-relaxed">{t.brandSub}</p>
+      <div className="relative z-10 flex flex-col min-h-dvh md:min-h-0 md:justify-center mx-auto w-full max-w-[480px]">
+        <div className="flex items-center md:absolute md:top-0 md:left-0" style={{ padding: "16px 20px" }}>
+          <Link href="/" aria-label="Mister Bamrungsuk · หน้าแรก" className="flex items-center gap-[10px] hover:text-inherit">
+            <img src="/brand/logo.png" alt="" width={46} height={46} className="w-[46px] h-[46px] object-contain" />
+            <span className="font-brand text-[16px] text-[#e8c472]">Mister Bamrungsuk</span>
+          </Link>
         </div>
 
-        <button
-          onClick={login}
-          disabled={loading}
-          className="h-14 w-full rounded-full text-white font-semibold flex items-center justify-center gap-3 bg-[linear-gradient(180deg,#c8142a,#8f0d1d)] border border-gold-500/70 shadow-[0_10px_24px_rgba(143,13,29,.32),inset_0_1px_0_rgba(255,220,140,.35)] transition active:scale-[.98] disabled:opacity-60"
-        >
-          {!loading && (
-            <span className="w-8 h-8 rounded-full bg-white grid place-items-center"><svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C41.4 35.4 44 30.1 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg></span>
-          )}
-          {loading ? "…" : t.loginWithGoogle}
-        </button>
+        <div className="flex-1 md:flex-none" />
+        <section className="flex flex-col gap-[14px]" style={{ padding: "24px 20px calc(26px + env(safe-area-inset-bottom))" }}>
+          <div className="flex items-center gap-2 text-[12px] font-semibold text-[#e8c472]" style={{ letterSpacing: 3 }}><span className="w-[22px] h-px bg-[#e8c472]" />MISTER BAMRUNGSUK</div>
+          <h1 className="m-0 font-bold text-[32px] leading-[1.15]" style={{ textWrap: "balance" }}>เพื่อนกิน เพื่อนเที่ยว<span className="block mt-[37px] text-[#e8c472]">ในแบบของคุณ</span></h1>
+          <p className="m-0 text-[14px] text-[#d9c9b4] leading-[1.6]" style={{ textShadow: "0 1px 8px rgba(0,0,0,.6)" }}>เพื่อนทุกคนผ่านการยืนยันตัวตน จ่ายปลอดภัย เงินพักไว้กับเราจนจบนัด</p>
 
-        <div className="flex items-center gap-3 text-[12px] text-ink-400"><span className="flex-1 h-px bg-gold-500/35" />หรือ<span className="flex-1 h-px bg-gold-500/35" /></div>
-
-        <form onSubmit={emailLogin} className="flex flex-col gap-2.5">
-          <input type="email" required autoComplete="email" placeholder="อีเมล" value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} />
-          <input type="password" required autoComplete="current-password" placeholder="รหัสผ่าน" value={password} onChange={(e) => setPassword(e.target.value)} className={inputCls} />
-          {error && <p className="text-[12.5px] text-[#b3122a]" role="alert">{error}</p>}
-          <button type="submit" disabled={busy} className="h-12 w-full rounded-full font-semibold border border-gold-500/70 bg-[linear-gradient(180deg,#fffdf6,#fff)] text-[#3a2a06] shadow-[0_6px_18px_rgba(120,80,0,.08)] transition active:scale-[.98] disabled:opacity-60">
-            {busy ? "…" : "เข้าสู่ระบบด้วยอีเมล"}
+          <button type="button" onClick={google} disabled={loading} className="h-[54px] rounded-full bg-[#e8c472] text-[#1b130b] font-semibold text-[15px] flex items-center justify-center gap-[10px] disabled:opacity-60" style={{ border: `1.5px solid ${GOLD}` }}>
+            <span className="w-[30px] h-[30px] rounded-full bg-white grid place-items-center" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C41.4 35.4 44 30.1 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
+            </span>
+            {loading ? "กำลังเข้าสู่ระบบ…" : "เข้าสู่ระบบด้วย Google"}
           </button>
-          <a href="/auth/register" className="text-[13px] text-ink-200 self-center">ยังไม่มีบัญชี? <span className="font-semibold text-[#8f5e00]">สมัครสมาชิก</span></a>
-        </form>
 
-        <p className="flex items-center gap-2 text-[13px] text-ink-300">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-5 h-5 text-gold-600 shrink-0"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
-          {t.loginHint}
-        </p>
+          <div className="flex items-center gap-[10px] text-[12px] text-[#b5a596] font-light"><span className="flex-1 h-px" style={{ background: "rgba(232,196,114,0.14)" }} />หรือ<span className="flex-1 h-px" style={{ background: "rgba(232,196,114,0.14)" }} /></div>
 
-        {(isDemo || !hasSupabase) && (
-          <p className="self-start text-[11.5px] text-ink-400">{t.demoBadge} — ข้อมูลจำลอง ไม่ต้องตั้งค่า</p>
-        )}
-        <a href="/join" className="flex items-center gap-3 rounded-2xl border border-gold-500/45 bg-[linear-gradient(180deg,#fffdf6,#fff)] shadow-[0_6px_18px_rgba(120,80,0,.08)] px-4 py-3">
-          <span className="w-10 h-10 rounded-xl bg-gold-500 text-[#1a1206] grid place-items-center font-display font-bold shrink-0">MB</span>
-          <span className="flex-1 min-w-0">
-            <span className="block text-sm font-semibold">สมัครเป็น Part-Time เพื่อนกินเที่ยวพรีเมียม</span>
-            <span className="block text-xs text-ink-300">รับจำกัด 50 ท่าน · อบรม 2 วัน</span>
-          </span>
-          <span className="w-8 h-8 rounded-full bg-[#141210] text-[#f3d27a] grid place-items-center text-sm" aria-hidden>→</span>
-        </a>
-        <a href="/welcome" className="text-ink-200 text-sm font-medium self-start py-2">รู้จักเราก่อน / About us →</a>
-        <p className="text-ink-400 text-xs">© 2026 Mister Bamrungsuk · สำหรับผู้มีอายุ 18 ปีขึ้นไป · ไม่มีบริการทางเพศ</p>
-      </section>
+          {form ? (
+            <form onSubmit={emailLogin} className="flex flex-col gap-[10px]">
+              <label className="flex flex-col gap-[5px] text-[12px] text-[#d9c9b4] font-light">อีเมล
+                <input type="email" required autoFocus autoComplete="email" inputMode="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className={field} /></label>
+              <label className="flex flex-col gap-[5px] text-[12px] text-[#d9c9b4] font-light">รหัสผ่าน
+                <input type="password" required autoComplete="current-password" placeholder="อย่างน้อย 8 ตัวอักษร" value={password} onChange={(e) => setPassword(e.target.value)} className={field} /></label>
+              <button type="button" onClick={() => setForgot(!forgot)} aria-expanded={forgot} className="self-end min-h-8 text-[13px] text-[#e8c472] font-light">ลืมรหัสผ่าน?</button>
+              {forgot && <p className="m-0 rounded-[14px] bg-[#211a18] text-[13px] font-light text-[#d9c9b4]" style={{ padding: "10px 14px" }}>ติดต่อแอดมินทาง <a href={lineAddUrl()} target="_blank" rel="noopener noreferrer" className="text-[#e8c472]">LINE</a> เพื่อตั้งรหัสผ่านใหม่</p>}
+              {error && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{error}</p>}
+              <button type="submit" disabled={!ok || busy} className="h-[50px] rounded-full font-semibold text-[#e8c472] disabled:opacity-45" style={{ border: `1px solid ${GOLD}` }}>{busy ? "กำลังเข้าสู่ระบบ…" : "เข้าสู่ระบบ"}</button>
+              <Link href="/auth/register" className="self-center min-h-10 flex items-center text-[13px] text-[#d9c9b4] font-light">ยังไม่มีบัญชี?&nbsp;<span className="text-[#e8c472]">สมัครสมาชิก</span></Link>
+            </form>
+          ) : (
+            <button type="button" onClick={() => setForm(true)} className="h-[50px] rounded-full bg-transparent text-[#f3ead9] font-semibold" style={{ border: "1px solid rgba(243,234,217,0.07)" }}>เข้าสู่ระบบด้วยอีเมล</button>
+          )}
+
+          <Link href="/join" className="flex items-center gap-3 rounded-[18px] bg-[#211a18] text-inherit hover:text-inherit" style={{ padding: "12px 14px", border: "1px solid rgba(212,175,55,.4)" }}>
+            <img src="/brand/logo.png" alt="" width={44} height={44} className="w-11 h-11 object-contain" />
+            <span className="flex-1"><span className="block font-semibold text-[14px]">สมัครเป็น Part-Time</span><span className="block text-[12px] text-[#d9c9b4] font-light">เปิดรับ 20 ต.ค. – 10 พ.ย. · จำกัด 50 ท่าน</span></span>
+            <span className="text-[#e8c472]" aria-hidden="true">→</span>
+          </Link>
+          {(isDemo || !hasSupabase) && <p className="m-0 text-[11.5px] text-[#b5a596] text-center font-light">โหมดสาธิต — ข้อมูลจำลอง</p>}
+          <div className="text-[12px] text-[#b5a596] text-center font-light">สำหรับผู้มีอายุ 20 ปีขึ้นไป · ไม่มีบริการทางเพศ</div>
+        </section>
+      </div>
     </main>
   );
 }

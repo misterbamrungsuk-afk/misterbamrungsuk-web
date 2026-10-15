@@ -34,7 +34,7 @@ export default function OnboardingPage() {
       }}
     >
       <div className="flex items-center justify-between h-16">
-        <Logo size={26} />
+        <Link href="/" aria-label="หน้าแรก"><Logo size={26} /></Link>
         <Link href="/home" className="text-sm text-ink-300 px-3 h-10 inline-flex items-center">{th ? "ข้าม" : "Skip"}</Link>
       </div>
       <div key={i} className="flex-1 flex flex-col items-center justify-center text-center animate-rise">

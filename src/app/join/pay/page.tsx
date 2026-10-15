@@ -123,7 +123,7 @@ function PayInner() {
 
   return (
     <div className="mb-v7 min-h-dvh relative" style={{ background: "#171211", color: "#f3ead9", fontSize: 15, lineHeight: 1.7 }}>
-      <BrandHeader tone="bar" href="/work-with-us" small />
+      <BrandHeader tone="bar" small />
       <div className="mx-auto w-full max-w-[1000px]">
         <div className="flex items-center gap-3" style={{ padding: "20px 20px 10px" }}>
           <Link href="/join" aria-label="ย้อนกลับ" className="shrink-0 w-11 h-11 rounded-full bg-[#251d1b] text-[#f3ead9] grid place-items-center hover:text-[#f3ead9]">

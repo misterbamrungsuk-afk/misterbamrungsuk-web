@@ -48,7 +48,7 @@ export default function RegisterPage() {
       <div className="absolute inset-x-0 top-0 h-[40dvh] bg-gradient-to-b from-transparent via-ink-950/55 to-ink-950" />
 
       <div className="relative z-10 flex items-center justify-between px-6 pt-6">
-        <Logo size={30} />
+        <a href="/" aria-label="หน้าแรก"><Logo size={30} /></a>
         <LangToggle />
       </div>
 

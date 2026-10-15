@@ -33,7 +33,7 @@ export function JoinSalePage({ seats, showEarnings = true }: { seats: Seats; sho
     <div className="mb-v7 min-h-dvh overflow-hidden" style={{ background: "#171211", color: "#f3ead9", fontSize: 15, lineHeight: 1.7 }}>
       <div className="border-b border-[rgba(243,234,217,0.07)]" style={{ background: "#171211" }}>
         <div className="mx-auto max-w-[1200px] flex justify-between items-center" style={{ padding: "12px 16px" }}>
-          <span className="inline-flex items-center gap-2 font-brand text-[11px] md:text-[14px]"><img src="/brand/logo.png" alt="Mister Bamrungsuk" width={40} height={40} className="w-10 h-10 object-contain" /><span className="text-[#e8c472]">Mister Bamrungsuk</span></span>
+          <Link href="/" aria-label="Mister Bamrungsuk · หน้าแรก" className="inline-flex items-center gap-2 font-brand text-[11px] md:text-[14px]"><img src="/brand/logo.png" alt="" width={40} height={40} className="w-10 h-10 object-contain" /><span className="text-[#e8c472]">Mister Bamrungsuk</span></Link>
         </div>
       </div>
 

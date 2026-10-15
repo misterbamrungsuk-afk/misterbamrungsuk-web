@@ -91,10 +91,10 @@ export function HomeFeed({ showEarnings = true }: { showEarnings?: boolean }) {
       <div className="mx-auto w-full max-w-[1200px] md:px-4" style={{ paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}>
         {/* หัว */}
         <div className="flex items-center justify-between" style={{ padding: "14px 18px 8px" }}>
-          <div className="flex items-center gap-[10px]">
-            <img src="/brand/logo.png" alt="Mister Bamrungsuk" width={38} height={38} className="w-[38px] h-[38px] object-contain" />
+          <Link href="/" aria-label="Mister Bamrungsuk · หน้าแรก" className="flex items-center gap-[10px] hover:text-inherit">
+            <img src="/brand/logo.png" alt="" width={38} height={38} className="w-[38px] h-[38px] object-contain" />
             <span className="font-brand text-[11px] md:text-[14px] text-[#e8c472] whitespace-nowrap">Mister Bamrungsuk</span>
-          </div>
+          </Link>
           <Link href="/login" aria-label="การแจ้งเตือน" className="relative grid place-items-center w-11 h-11 rounded-full text-[#f3ead9] hover:text-[#f3ead9]" style={{ background: "rgba(232,196,114,0.16)" }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10 21h4" /></svg>
             <span className="absolute w-2 h-2 rounded-full bg-[#c9283d]" style={{ top: 9, right: 10 }} />

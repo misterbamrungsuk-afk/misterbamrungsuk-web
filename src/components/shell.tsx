@@ -97,7 +97,7 @@ export function TopBar({ title, back, right, notis = 0 }: { title?: ReactNode; b
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><path d="M15 5l-7 7 7 7" strokeLinecap="round"/></svg>
           </Link>
         ) : (
-          <Logo size={30} />
+          <Link href="/" aria-label="หน้าแรก"><Logo size={30} /></Link>
         )}
         <div className="flex-1 min-w-0">
           {typeof title === "string" ? <h1 className="font-semibold truncate">{title}</h1> : title}

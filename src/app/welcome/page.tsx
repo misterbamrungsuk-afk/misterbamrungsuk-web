@@ -25,7 +25,7 @@ export default function WelcomePage() {
     <main className="min-h-dvh bg-ink-950 text-ink-100 overflow-x-hidden">
       <header className="sticky top-0 z-20 bg-ink-950/80 backdrop-blur border-b border-ink-600">
         <div className="mx-auto max-w-6xl px-4 h-16 flex items-center justify-between gap-3">
-          <Logo size={24} />
+          <Link href="/" aria-label="หน้าแรก"><Logo size={24} /></Link>
           <nav className="hidden md:flex gap-6 text-sm text-ink-300">
             <a href="#how" className="hover:text-gold-300">{th ? "วิธีใช้งาน" : "How it works"}</a>
             <a href="#safety" className="hover:text-gold-300">{th ? "ความปลอดภัย" : "Safety"}</a>

@@ -174,7 +174,7 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0 }: { mb: string; 
 
   return (
     <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9", fontSize: 15, lineHeight: 1.7 }}>
-      <BrandHeader tone="bar" href="/work-with-us" small />
+      <BrandHeader tone="bar" small />
       <div className="mx-auto w-full max-w-[720px]">
         {step === 1 ? (
           <>
