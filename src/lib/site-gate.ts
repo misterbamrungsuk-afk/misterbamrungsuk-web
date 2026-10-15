@@ -22,7 +22,7 @@ export function gateExempt(p: string) {
     p.startsWith("/api/otp/") || // OTP ใช้ในหน้ารับสมัคร /join/pay (มี Turnstile + rate limit)
     p === "/partner" || p.startsWith("/partner/") || p.startsWith("/api/partner/") ||
     // Marketplace หน้าแรก (สาธารณะ)
-    p === "/" || p === "/market" || p.startsWith("/market/") || marketPublic(p) ||
+    p === "/" || p === "/work-with-us" || p === "/market" || p.startsWith("/market/") || marketPublic(p) ||
     p === "/products" || p.startsWith("/products/") || p === "/cart" || p.startsWith("/api/market/") || p === "/api/spas" ||
     p.startsWith("/_next") || p === "/favicon.ico" || p === "/manifest.webmanifest" ||
     p === "/sw.js" || p.startsWith("/pwa-icon") || p.startsWith("/brand")

@@ -1,145 +1,144 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-// หน้า sale รับสมัคร Part-Time (ตามบอร์ด Join บน canvas "sale page and register")
-// มือถือ = คอลัมน์เดียว · md = การ์ด 2 สายวางคู่ · lg = hero แบ่งซ้ายข้อความ / ขวาโปสเตอร์
+// หน้ารับสมัคร Part Time — ถอดตามบอร์ด Join ("Part Time · หน้ารับสมัคร") ตรงตัวที่มือถือ
+// md+: การ์ด 2 สายวางคู่ · สิ่งที่คุณได้รับ 4 คอลัมน์ · คุณสมบัติ + กำหนดการวางคู่
 import { useState } from "react";
-import { Badge, Button, Container, Icon, Shell } from "@/components/mb/ui";
-import { EARNINGS, FAQ, LOOKING_FOR, PACKAGES, PERKS, SALE_CARDS, TIMELINE, type PackageKey } from "@/lib/join/config";
+import Link from "next/link";
+import { CONTROLLER } from "@/lib/join/legal";
+import { LOOKING_FOR, PERKS, type PackageKey } from "@/lib/join/config";
 
-const fmt = (n: number) => n.toLocaleString("en-US");
-
-const THEME: Record<PackageKey, { bg: string; sh: string; kc: string }> = {
-  A: { bg: "linear-gradient(160deg, #4a3a22, #2c2216)", sh: "0 0 0 4px rgba(168,123,31,.18), 0 12px 28px rgba(168,123,31,.25)", kc: "#e6d6c4" },
-  B: { bg: "linear-gradient(160deg, #6a1a28, #3a0d16)", sh: "0 0 0 4px rgba(232,196,114,.18), 0 14px 32px rgba(200,16,46,.35)", kc: "#f0d6d0" },
+const TR: Record<PackageKey, { name2: string; guarantee: string; lines: [string, string][]; bg: string; kc: string; sh: string }> = {
+  A: { name2: "ตามความสามารถพิเศษ", guarantee: "10,000 บาท", lines: [["ค่าอบรม", "3,000 บาท"], ["การให้บริการต่อครั้ง", "3–8 ชม."]],
+    bg: "linear-gradient(160deg, #4a3a22, #2c2216)", kc: "#e6d6c4", sh: "0 0 0 4px rgba(168,123,31,.18), 0 12px 28px rgba(168,123,31,.25)" },
+  B: { name2: "ที่มีความสามารถในการนวด", guarantee: "15,000 บาท", lines: [["ค่าอบรม", "6,000 บาท"], ["รับฟรี", "Uniform + Oil นวด 1 ชุด"], ["การให้บริการต่อครั้ง", "3–5 ชม."]],
+    bg: "linear-gradient(160deg, #6a1a28, #3a0d16)", kc: "#f0d6d0", sh: "0 0 0 4px rgba(232,196,114,.18), 0 14px 32px rgba(200,16,46,.35)" },
 };
-const ORDER: PackageKey[] = ["B", "A"];
+const TIMELINE: [string, string][] = [["20 ต.ค. – 10 พ.ย.", "เปิดรับสมัคร"], ["ไม่เกินต้น พ.ย.", "ประกาศกฎเกณฑ์การทำงาน"], ["ภายใน 20 พ.ย.", "อบรมกลุ่ม 1"], ["30 พ.ย.", "พร้อมเปิดให้บริการ"], ["30 พ.ย. – ต้น ธ.ค.", "อบรมกลุ่ม 2"]];
+const FAQ: [string, string][] = [
+  ["ค่าการันตี Branding คืออะไร ได้คืนเมื่อไหร่?", "ได้รับคืนเต็มจำนวนเมื่อครบ 1 ปี ถ้าไม่ทำผิดกฎบริษัทและกฎหมาย เช่น ไม่ปฏิเสธการรับลูกค้าในวันเวลาที่แจ้งไว้"],
+  ["งานนี้ทำอะไรบ้าง?", "เป็นเพื่อนร่วมกิจกรรมของลูกค้า เช่น ทานข้าว เที่ยว ดูหนัง ถ่ายรูป ไม่มีบริการทางเพศใด ๆ ทั้งสิ้น"],
+  ["ไม่เคยมีประสบการณ์ สมัครได้ไหม?", "ได้ ทุกคนจะได้อบรมก่อนเริ่มรับงาน"],
+  ["ต้องตรวจประวัติอะไรบ้าง?", "ยืนยันตัวตนด้วยบัตรประชาชน และยินยอมให้ตรวจประวัติอาชญากรรมก่อนเปิดบัญชี"],
+];
 
 export type Seats = { left: number; quota: number; cohort: string; closed: boolean };
+const h2: React.CSSProperties = { margin: 0, fontWeight: 600, fontSize: 20 };
 
-export function JoinSalePage({ poster, seats }: { poster: string; seats: Seats }) {
+export function JoinSalePage({ seats }: { seats: Seats }) {
   const [pick, setPick] = useState<PackageKey>("B");
-  const h2 = "mb-h text-[20px] md:text-[24px]";
+  const [open, setOpen] = useState<Record<number, boolean>>({ 0: true });
 
   return (
-    <Shell>
-      <Container className="pt-5 md:pt-8 flex flex-col gap-7 md:gap-10">
-        {/* Hero */}
-        <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_390px] lg:items-stretch">
-          <div className="rounded-[18px] px-[22px] pt-10 pb-[34px] md:px-10 md:py-14 flex flex-col justify-center"
-            style={{ background: `linear-gradient(180deg, rgba(79,22,34,.82), rgba(42,13,19,.96)), url(/brand/extra.jpg) 60% 30%/cover` }}>
-            <div className="text-[11px] font-semibold tracking-[2px] text-mb-gold">PART TIME</div>
-            <h1 className="mb-h mt-2.5 mb-1.5 text-[30px] leading-[1.25] md:text-[40px]">เพื่อนกินเที่ยว Mister Bamrungsuk</h1>
-            <p className="m-0 text-[15px] md:text-[17px] text-[#e6d6c4]">งานพาร์ทไทม์ เลือกวันเวลาเอง</p>
-            <div className="hidden lg:flex gap-3 mt-8 max-w-[420px]">
-              <Button href="#packages">เลือกสายงานและสมัคร</Button>
-              {EARNINGS.show && <Button href="/join/earnings" variant="secondary">ดูรายได้</Button>}
-            </div>
-          </div>
-          <img src={poster} alt="โปสเตอร์รับสมัคร Part Time Mister Bamrungsuk รอบ 20 ต.ค. – 10 พ.ย." className="hidden lg:block w-full aspect-[3/4] object-cover rounded-[18px]" />
+    <div className="mb-v7 min-h-dvh overflow-hidden" style={{ background: "#171211", color: "#f3ead9", fontSize: 15, lineHeight: 1.7 }}>
+      <div className="border-b border-[rgba(243,234,217,0.07)]" style={{ background: "#171211" }}>
+        <div className="mx-auto max-w-[1200px] flex justify-between items-center" style={{ padding: "12px 16px" }}>
+          <span className="inline-flex items-center gap-2 font-brand text-[11px] md:text-[14px]"><img src="/brand/logo.png" alt="Mister Bamrungsuk" width={40} height={40} className="w-10 h-10 object-contain" /><span className="text-[#e8c472]">Mister Bamrungsuk</span></span>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-[1200px] flex flex-col" style={{ padding: "20px 16px 0", gap: 26 }}>
+        <section className="md:py-16 md:px-10" style={{ padding: "40px 22px 34px", borderRadius: 18, background: "linear-gradient(180deg, rgba(79,22,34,.82), rgba(42,13,19,.96)), url(/brand/extra.jpg) 72% center/cover" }}>
+          <div className="text-[11px] font-semibold tracking-[2px] text-[#e8c472]">PART TIME</div>
+          <h1 className="font-semibold text-[30px] md:text-[40px] leading-[1.25] text-[#f3ead9]" style={{ margin: "10px 0 6px" }}>เพื่อนกินเที่ยว Mister Bamrungsuk</h1>
+          <p className="m-0 text-[15px] text-[#e6d6c4]">งานพาร์ทไทม์ เลือกวันเวลาเอง</p>
         </section>
 
-        {/* เลือกสายงาน */}
-        <section id="packages" className="scroll-mt-4 flex flex-col gap-[18px]">
-          <h2 className={`${h2} hidden md:block`}>เลือกสายงาน</h2>
-          <div className="grid gap-[18px] md:grid-cols-2 md:gap-5" role="radiogroup" aria-label="เลือกสายงาน">
-            {ORDER.map((k) => {
-              const on = pick === k, P = PACKAGES[k], T = THEME[k];
+        <section className="flex flex-col" style={{ gap: 18 }}>
+          <div className="grid gap-[18px] md:grid-cols-2 md:gap-6" role="radiogroup" aria-label="เลือกสายงาน">
+            {(["B", "A"] as PackageKey[]).map((k) => {
+              const on = pick === k, T = TR[k];
               return (
-                <button key={k} type="button" role="radio" aria-checked={on} onClick={() => setPick(k)}
-                  className="w-full text-left p-[18px] md:p-6 rounded-2xl flex flex-col gap-4 text-[#fff8ea] transition-all duration-300"
-                  style={{ background: T.bg, boxShadow: on ? T.sh : "none", opacity: on ? 1 : 0.8, transform: on ? "none" : "scale(.98)" }}>
+                <button key={k} type="button" role="radio" aria-checked={on} onClick={() => setPick(k)} className="w-full text-left flex flex-col"
+                  style={{ padding: 18, borderRadius: 16, gap: 16, background: T.bg, boxShadow: on ? T.sh : "none", opacity: on ? 1 : 0.8, transform: on ? "scale(1.02)" : "scale(.98)", transition: "all .3s ease", color: "#fff8ea" }}>
                   <span className="flex items-center gap-3">
-                    <span className="shrink-0 w-6 h-6 rounded-full grid place-items-center bg-[rgba(243,234,217,0.08)]"><span className="w-3 h-3 rounded-full" style={{ background: on ? "#e8c472" : "transparent" }} /></span>
-                    <span className="flex flex-col gap-0.5 min-w-0">
-                      <span className="font-semibold text-[18px] leading-[1.35]">{P.short}</span>
-                      <span className="font-normal text-[15px] leading-[1.4] opacity-85">{P.track}</span>
-                    </span>
+                    <span className="shrink-0 w-6 h-6 rounded-full grid place-items-center" style={{ background: "rgba(243,234,217,0.08)" }}><span className="w-3 h-3 rounded-full" style={{ background: on ? "#e8c472" : "transparent" }} /></span>
+                    <span className="flex flex-col min-w-0" style={{ gap: 2 }}><span className="font-semibold text-[18px] leading-[1.35]">เพื่อนกินเที่ยว</span><span className="font-medium text-[15px] leading-[1.4]" style={{ opacity: 0.85 }}>{T.name2}</span></span>
                   </span>
                   <span className="flex flex-col gap-1.5">
-                    {SALE_CARDS[k].lines.map((l) => (
-                      <span key={l.k} className="flex justify-between gap-2.5"><span className="whitespace-nowrap shrink-0" style={{ color: T.kc }}>{l.k}</span><span className="font-semibold text-right min-w-0">{l.v}</span></span>
-                    ))}
+                    {T.lines.map(([kk, v]) => <span key={kk} className="flex justify-between gap-[10px] text-[#fff7e8]"><span className="whitespace-nowrap shrink-0" style={{ color: T.kc }}>{kk}</span><span className="font-semibold text-right min-w-0">{v}</span></span>)}
                   </span>
-                  <span className="px-3.5 py-3 rounded-xl bg-[rgba(0,0,0,.32)] flex flex-col gap-1">
-                    <span className="flex justify-between gap-2.5"><span className="text-mb-gold font-semibold">ค่าการันตี Branding</span><span className="font-bold text-[17px] text-[#fff1c9]">{fmt(P.guarantee)} บาท</span></span>
-                    <span className="text-[13px] leading-relaxed font-light">รับคืนเมื่อครบ 1 ปี ถ้าไม่ทำผิดกฎบริษัทและกฎหมาย (เช่น ไม่ปฏิเสธการรับลูกค้า)</span>
-                  </span>
-                  <span className="flex justify-between items-baseline border-t border-[rgba(243,234,217,0.12)] pt-3 text-[14px]">
-                    <span className="font-light">ยอดชำระตอนสมัคร</span><span className="font-semibold text-[16px] text-mb-gold">{fmt(P.price)} บาท</span>
+                  <span className="flex flex-col gap-1 rounded-xl" style={{ padding: "12px 14px", background: "rgba(0,0,0,.32)" }}>
+                    <span className="flex justify-between gap-[10px] text-[#fff7e8]"><span className="text-[#e8c472] font-semibold">ค่าการันตี Branding</span><span className="font-bold text-[17px] text-[#fff1c9]">{T.guarantee}</span></span>
+                    <span className="text-[13px] leading-[1.6] text-[#fff7e8] font-light">รับคืนเมื่อครบ 1 ปี ถ้าไม่ทำผิดกฎบริษัทและกฎหมาย <br />(เช่น ไม่ปฏิเสธการรับลูกค้า)</span>
                   </span>
                 </button>
               );
             })}
           </div>
-
-          <div className="w-full max-w-[560px] mx-auto flex flex-col gap-[18px]">
-            <a href="/join/terms" className="self-center min-h-11 inline-flex items-center text-[14px] text-mb-gold hover:underline">อ่านสัญญา</a>
-            <div className="flex justify-between items-center gap-3 px-3.5 py-2.5 rounded-xl bg-[rgba(232,196,114,0.10)] text-[13px] font-light" aria-live="polite">
+          <div className="w-full max-w-[560px] mx-auto flex flex-col" style={{ gap: 18 }}>
+            <Link href="/join/terms" className="self-center text-[14px] text-[#e8c472]">อ่านสัญญา</Link>
+            <div className="flex justify-between items-center rounded-xl text-[13px] font-light" style={{ padding: "10px 14px", background: "rgba(232,196,114,0.10)" }}>
               <span>{seats.closed ? "ปิดรับสมัครรอบนี้แล้ว" : `กลุ่มอบรมถัดไป · ${seats.cohort}`}</span>
-              <span className="text-mb-gold font-semibold">{seats.closed ? "เต็ม" : `เหลือ ${seats.left} / ${seats.quota} ที่`}</span>
+              <span className="text-[#e8c472] font-semibold">{seats.closed ? "เต็มแล้ว" : `เหลือ ${seats.left} / ${seats.quota} ที่`}</span>
             </div>
-            {EARNINGS.show && <Button href="/join/earnings" variant="secondary">ดูรายได้และส่วนแบ่ง · คำนวณรายได้ต่อเดือน</Button>}
+            <Link href="/join/earnings" className="min-h-12 rounded-[14px] text-[#e8c472] font-semibold grid place-items-center text-center hover:text-[#e8c472]" style={{ background: "rgba(232,196,114,0.16)" }}>ดูรายได้และส่วนแบ่ง · คำนวณรายได้ต่อเดือน</Link>
             {seats.closed
-              ? <Button disabled className="min-h-14 text-[18px] rounded-2xl mt-1.5">ปิดรับสมัครแล้ว</Button>
-              : <Button href={`/join/apply?pkg=${pick}`} className="min-h-14 text-[18px] rounded-2xl mt-1.5">สมัครสาย{pick === "B" ? "นวด" : "กินเที่ยว"} · {fmt(PACKAGES[pick].price)} บาท</Button>}
-            <Button href="/join/showcase" variant="text" block={false} className="self-center">ดูตัวอย่างแอปที่ลูกค้าเห็น ›</Button>
+              ? <span aria-disabled="true" className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center" style={{ marginTop: 6, opacity: 0.45 }}>ปิดรับสมัครแล้ว</span>
+              : <Link href={`/join/apply?pkg=${pick}`} className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center hover:text-[#1b130b]" style={{ marginTop: 6 }}>สมัครและรับรหัสสมัคร</Link>}
           </div>
         </section>
 
-        {/* สิ่งที่คุณได้รับ */}
-        <section className="flex flex-col gap-3.5">
-          <h2 className={h2}>สิ่งที่คุณได้รับ</h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 md:gap-4">
+        <section className="flex flex-col gap-[14px]">
+          <h2 style={h2}>สิ่งที่คุณได้รับ</h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-[10px]">
             {PERKS.map((k) => (
-              <div key={k.t} className="p-3.5 md:p-5 rounded-[14px] bg-mb-surface2 flex flex-col gap-2">
-                <Icon d={k.icon} size={22} className="text-mb-gold" />
-                <span className="font-semibold text-[14.5px] leading-[1.4]">{k.t}</span>
-                <span className="text-[13.5px] leading-normal text-mb-text2 font-light">{k.d}</span>
+              <div key={k.t} className="flex flex-col gap-2 rounded-[14px] bg-[#251d1b]" style={{ padding: 14 }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e8c472" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={k.icon} /></svg>
+                <span className="font-semibold leading-[1.4]" style={{ fontSize: 14.5 }}>{k.t}</span>
+                <span className="leading-[1.5] text-[#d9c9b4]" style={{ fontSize: 13.5 }}>{k.d}</span>
               </div>
             ))}
           </div>
         </section>
 
-        <div className="grid gap-7 lg:grid-cols-2 lg:gap-10 lg:items-start">
-          {/* คุณสมบัติ */}
-          <section className="px-5 py-[18px] md:p-7 rounded-2xl bg-mb-surface3">
-            <h2 className="mb-h text-[16px] md:text-[20px] mb-2">คุณสมบัติที่เรามองหา</h2>
-            <ul className="m-0 p-0 list-none flex flex-col gap-1.5 text-[14px] md:text-[15px] leading-normal">
+        <div className="grid gap-[26px] md:grid-cols-2 md:items-start">
+          <section className="rounded-2xl bg-[#2c1a1f]" style={{ padding: "18px 20px" }}>
+            <h2 className="font-semibold text-[16px] text-[#f3ead9]" style={{ margin: "0 0 8px" }}>คุณสมบัติที่เรามองหา</h2>
+            <div className="flex flex-col gap-1.5 text-[14px] leading-[1.5]">
               {LOOKING_FOR.map((x) => (
-                <li key={x} className="flex gap-2.5 items-start"><Icon d="M5 12l5 5 9-10" size={18} stroke={2.2} className="text-mb-gold mt-0.5" /><span>{x}</span></li>
+                <div key={x} className="flex gap-[10px] items-start"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e8c472" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 mt-0.5"><path d="M5 12l5 5 9-10" /></svg><span>{x}</span></div>
               ))}
-            </ul>
+            </div>
           </section>
 
-          {/* กำหนดการ */}
-          <section className="flex flex-col gap-[18px]">
-            <h2 className={`${h2} text-center lg:text-left`}>กำหนดการ</h2>
-            <ol className="m-0 pl-1 list-none flex flex-col">
-              {TIMELINE.map((t, i) => (
-                <li key={t.t} className="flex gap-3.5">
-                  <span className="flex flex-col items-center"><span className="w-3 h-3 rounded-full bg-mb-gold mt-[7px]" />{i < TIMELINE.length - 1 && <span className="flex-1 w-0.5 bg-[rgba(232,196,114,0.35)]" />}</span>
-                  <span className="pb-4 flex flex-col"><span className="text-[13px] text-mb-gold font-light">{t.d}</span><span>{t.t}</span></span>
-                </li>
+          <section className="flex flex-col" style={{ gap: 18 }}>
+            <h2 className="text-center md:text-left" style={h2}>กำหนดการ</h2>
+            <div className="flex flex-col pl-1">
+              {TIMELINE.map(([date, text]) => (
+                <div key={text} className="flex gap-[14px]">
+                  <span className="flex flex-col items-center"><span className="w-3 h-3 rounded-full bg-[#e8c472]" style={{ marginTop: 7 }} /><span className="flex-1 w-0.5" style={{ background: "rgba(232,196,114,0.35)" }} /></span>
+                  <span className="flex flex-col pb-4"><span className="text-[13px] text-[#e8c472] font-light">{date}</span><span>{text}</span></span>
+                </div>
               ))}
-            </ol>
+            </div>
           </section>
         </div>
 
-        {/* FAQ */}
-        <section className="w-full max-w-[720px] mx-auto flex flex-col">
-          <h2 className={`${h2} text-center mb-1.5`}>คำถามที่พบบ่อย</h2>
-          {FAQ.map((f, i) => (
-            <details key={f.q} open={i === 0} className="group border-b border-[rgba(243,234,217,0.07)]">
-              <summary className="list-none [&::-webkit-details-marker]:hidden cursor-pointer min-h-[52px] flex justify-between items-center gap-2.5 py-3 text-[15px] font-normal">
-                {f.q}<span aria-hidden className="text-mb-gold text-[20px] group-open:hidden">+</span><span aria-hidden className="text-mb-gold text-[20px] hidden group-open:inline">−</span>
-              </summary>
-              <div className="pb-3.5 text-[14px] font-light">{f.a}</div>
-            </details>
-          ))}
-          <div className="mt-6 flex justify-center"><Badge tone="gold">รับจำนวนจำกัด {seats.quota} ที่ · สมัคร 20 ต.ค. – 10 พ.ย.</Badge></div>
+        <section className="flex flex-col w-full max-w-[720px] mx-auto">
+          <h2 className="text-center" style={{ ...h2, margin: "0 0 6px" }}>คำถามที่พบบ่อย</h2>
+          {FAQ.map(([q, a], i) => {
+            const o = !!open[i];
+            return (
+              <div key={q} className="border-b border-[rgba(243,234,217,0.07)]">
+                <button type="button" aria-expanded={o} onClick={() => setOpen((x) => ({ ...x, [i]: !o }))} className="w-full min-h-[52px] flex justify-between items-center gap-[10px] bg-transparent text-[#f3ead9] text-[15px] font-medium text-left" style={{ padding: "12px 0" }}>
+                  {q}<span aria-hidden="true" className="text-[#e8c472] text-[20px]">{o ? "−" : "+"}</span>
+                </button>
+                {o && <div className="text-[14px]" style={{ padding: "0 0 14px" }}>{a}</div>}
+              </div>
+            );
+          })}
         </section>
-      </Container>
-    </Shell>
+      </div>
+
+      <footer className="mx-auto max-w-[1200px]" style={{ padding: "0 20px" }}>
+        <div className="flex flex-col border-t border-[rgba(243,234,217,0.07)] text-[13px] leading-[1.6] font-light" style={{ marginTop: 32, padding: "18px 0 24px", gap: 16 }}>
+          <div className="flex justify-between items-center gap-3"><span className="inline-flex items-center gap-2"><img src="/brand/logo.png" alt="" width={34} height={34} className="w-[34px] h-[34px] object-contain" /><span className="font-brand text-[21px] text-[#e8c472]">Bamrungsuk</span></span><span>ติดต่อเรา</span></div>
+          <div className="flex flex-wrap" style={{ gap: "4px 12px" }}><Link href="/join/terms" className="text-[#f3ead9] hover:underline">ข้อกำหนดและเงื่อนไขการใช้งาน</Link><span className="text-[#b5a596]">|</span><Link href="/join/privacy" className="text-[#f3ead9] hover:underline">นโยบายความเป็นส่วนตัว (PDPA)</Link></div>
+          <div className="select-all">{CONTROLLER.email} · {CONTROLLER.phone}</div>
+          <div className="text-[#b5a596]">© 2569 Mister Bamrungsuk สงวนลิขสิทธิ์</div>
+        </div>
+      </footer>
+    </div>
   );
 }

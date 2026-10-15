@@ -2,7 +2,7 @@
 
 // ตัวคำนวณรายได้ (บอร์ด JoinEarnings) · มือถือ = คอลัมน์เดียว + ปุ่มติดล่าง · lg = ตัวเลือกซ้าย / ผลลัพธ์ขวาแบบ sticky
 import { useState } from "react";
-import { Button, Card, Chip, Container, Icon, Row, Shell, StickyAction, StickySpacer, baht } from "@/components/mb/ui";
+import { BrandHeader, Button, Card, Chip, Container, Icon, Row, Shell, StickyAction, StickySpacer, baht } from "@/components/mb/ui";
 import { EARNINGS, sharePct, type EarnSvc, type EarnTier } from "@/lib/join/config";
 
 const SVCS = Object.entries(EARNINGS.price3h) as [EarnSvc, (typeof EARNINGS.price3h)[EarnSvc]][];
@@ -19,13 +19,13 @@ export function EarningsCalc() {
 
   const actions = (
     <>
-      <Button href="/join#packages">สมัครเข้าอบรม</Button>
-      <Button href="/join/showcase" variant="text">ดูตัวอย่างแอปที่ลูกค้าเห็น</Button>
+      <Button href={`/join/apply?pkg=${svc === "massage" ? "B" : "A"}`}>สมัครเข้าอบรม</Button>
+      <Button href="/" variant="text">ดูตัวอย่างแอปที่ลูกค้าเห็น</Button>
     </>
   );
 
   return (
-    <Shell>
+    <Shell header={<BrandHeader tone="bar" />} footer={false}>
       <Container className="pt-5 md:pt-8">
         <Button href="/join" variant="text" block={false} className="!px-0 -ml-0.5"><Icon d="m15 18-6-6 6-6" /> กลับหน้ารับสมัคร</Button>
         <div className="mt-2 mb-5 md:mb-8">

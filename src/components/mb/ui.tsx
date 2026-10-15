@@ -26,9 +26,10 @@ export function Container({ children, className, narrow }: Children & { classNam
 }
 
 /** แถบแบรนด์ด้านบน: โลโก้ + Mister Bamrungsuk (Archivo Black) · ไม่มีป้าย PREMIUM */
-export function BrandHeader({ right, href = "/" }: { right?: React.ReactNode; href?: string }) {
+export function BrandHeader({ right, href = "/", tone = "plain" }: { right?: React.ReactNode; href?: string; tone?: "plain" | "bar" }) {
+  // plain = พื้น #171211 มีเส้นล่าง (Join/Main) · bar = พื้น #251d1b (ฟอร์ม/รายได้/KYC)
   return (
-    <header className="border-b border-[rgba(243,234,217,0.07)] bg-mb-bg">
+    <header className={tone === "bar" ? "bg-mb-surface2" : "border-b border-[rgba(243,234,217,0.07)] bg-mb-bg"}>
       <div className="mx-auto max-w-[1200px] flex items-center justify-between gap-3 px-4 md:px-8 h-16">
         <Link href={href} className="inline-flex items-center gap-2 min-w-0 text-mb-gold hover:text-mb-gold">
           <img src="/brand/logo.png" alt="Mister Bamrungsuk" width={40} height={40} className="w-10 h-10 object-contain shrink-0" />

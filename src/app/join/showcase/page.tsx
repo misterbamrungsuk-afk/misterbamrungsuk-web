@@ -1,8 +1,6 @@
-import { Showcase } from "./showcase";
+import { redirect } from "next/navigation";
 
-export const metadata = { title: "ตัวอย่างแอปที่ลูกค้าเห็น — Mister Bamrungsuk" };
-
-// หน้าแรกของแอปลูกค้า (ตามบอร์ด Benefits) สำหรับผู้สมัครดูว่าโปรไฟล์จะไปอยู่ตรงไหน — ข้อมูลตัวอย่าง ไม่มีการจองจริง
+// หน้าแรก (/) คือบอร์ด Benefits แล้ว — เส้นทางเดิมพาไปที่นั่น
 export default function ShowcasePage() {
-  return <Showcase />;
+  redirect("/");
 }
