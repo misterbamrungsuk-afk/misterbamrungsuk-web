@@ -35,7 +35,7 @@ export default async function TrainingPage({ params, searchParams }: { params: P
         <div className="p-3.5 rounded-2xl" style={{ background: C.s1, border: `1px solid ${C.ln}` }}>
           <div className="flex justify-between text-[13px]"><span>เข้าร่วมแล้ว</span><span className="font-lux font-semibold" style={{ color: C.goldL }}>{done} / {total} รอบ</span></div>
           <div className="h-2 rounded-full mt-2.5 overflow-hidden" style={{ background: C.s2 }}>
-            <div className="h-full" style={{ width: `${(done / total) * 100}%`, background: "linear-gradient(90deg,#f0c75a,#ffd76a)" }} />
+            <div className="h-full" style={{ width: `${(done / total) * 100}%`, background: "linear-gradient(90deg,#e8c472,#e8c472)" }} />
           </div>
           <div className="text-[11.5px] mt-1.5" style={{ color: C.mut }}>เข้าครบ {TRAINING.requiredCore} รอบหลักก็เริ่มรับงานได้ · รอบมาตรฐานการนวดสำหรับสาย B · {row.mb_code}</div>
         </div>
@@ -45,8 +45,8 @@ export default async function TrainingPage({ params, searchParams }: { params: P
           const btn = d
             ? { t: "เช็กชื่อแล้ว", bg: "rgba(60,170,110,.12)", bd: "rgba(60,170,110,.5)", fg: "#7fd6a3", sh: "none" }
             : open
-              ? { t: "เช็กชื่อ", bg: RED_GRAD, bd: "rgba(245,210,110,.85)", fg: "#fff", sh: "0 8px 24px rgba(255,40,70,.45)" }
-              : { t: "ยังไม่เปิด", bg: C.s2, bd: C.ln, fg: "#7d6d6a", sh: "none" };
+              ? { t: "เช็กชื่อ", bg: RED_GRAD, bd: "transparent", fg: "#1b130b", sh: "none" }
+              : { t: "ยังไม่เปิด", bg: C.s2, bd: C.ln, fg: "#b5a596", sh: "none" };
           return (
             <div key={s.session} className="p-3.5 rounded-2xl flex gap-3 items-center" style={{ background: C.s1, border: `1px solid ${open ? "rgba(212,175,55,.6)" : C.ln}` }}>
               <div className="w-[52px] text-center shrink-0"><div className="font-lux font-semibold text-xl" style={{ color: C.goldL }}>{s.day}</div><div className="text-[11px]" style={{ color: C.mut }}>{s.mon}</div></div>

@@ -95,7 +95,7 @@ export function KycForm({ mb, t, hasIdCard }: { mb: string; t: string; hasIdCard
             <li>ลงวันที่ และลงลายมือชื่อ พร้อมเขียน <b style={{ color: C.tx }}>“รับรองสำเนาถูกต้อง”</b></li>
             <li>ถ่ายรูปหรือสแกนให้เห็นข้อความครบ แล้วอัปโหลดด้านล่าง</li>
           </ol>
-          <div className="rounded-xl p-3 text-[12px] leading-[1.6]" style={{ background: "#f6efe4", color: "#2a1d1d" }} aria-label="ตัวอย่างการเขียนรับรองสำเนา">
+          <div className="rounded-xl p-3 text-[12px] leading-[1.6]" style={{ background: "#f3ead9", color: "#211a18" }} aria-label="ตัวอย่างการเขียนรับรองสำเนา">
             <div className="text-[10.5px] tracking-[1px] font-semibold mb-1.5" style={{ color: "#8a6a1f" }}>ตัวอย่างสิ่งที่ต้องเขียน</div>
             <div className="rounded-lg border border-dashed px-3 py-2 flex flex-col gap-1" style={{ borderColor: "#b9a27a" }}>
               <div className="h-10 rounded-md grid place-items-center text-[10.5px]" style={{ background: "#e4dccd", color: "#7a6a5a" }}>[ สำเนาหน้าบัตรประชาชน ]</div>

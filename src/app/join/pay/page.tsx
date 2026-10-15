@@ -9,12 +9,12 @@ import { promptPayPayload } from "@/lib/join/promptpay";
 import QRCode from "qrcode";
 import { Turnstile } from "@/components/turnstile";
 import { OtpStep } from "@/components/otp-step";
-import { SiteHeader } from "@/components/site-header";
+import { BrandHeader } from "@/components/mb/ui";
 
 // ขั้นที่ 3 / 5 ชำระเงิน (บอร์ด JoinPay) — QR พร้อมเพย์ + แนบสลิป → /api/join/register (ตรวจ Slip2Go) → /join/kyc/[mb]
-const GOLD = "#f0c75a";
-const LINE = "rgba(240,200,90,.38)";
-const H: CSSProperties = { fontFamily: "var(--font-cormorant), var(--font-kanit), sans-serif", fontWeight: 600 };
+const GOLD = "#e8c472";
+const LINE = "rgba(243,234,217,.14)";
+const H: CSSProperties = { fontFamily: "var(--font-mb)", fontWeight: 600 };
 const SUB: Record<PackageKey, string> = { A: "(ตามความสามารถพิเศษ)", B: "(สำหรับผู้มีความสามารถด้านการนวด)" };
 const QR_TTL = 900;
 const baht = (n: number) => "฿" + n.toLocaleString("en-US");
@@ -69,7 +69,7 @@ export default function PayPage() {
     return () => clearTimeout(t);
   }, [sec]);
 
-  if (!f || !f.package) return <main className="min-h-dvh grid place-items-center text-[#cdbfb3] bg-[#0e0a0a]">กำลังโหลด…</main>;
+  if (!f || !f.package) return <main className="mb-v7 min-h-dvh grid place-items-center text-[#d9c9b4]">กำลังโหลด…</main>;
   const k = f.package;
   const pkg = PACKAGES[k];
 
@@ -138,18 +138,19 @@ export default function PayPage() {
   const ss = String(sec % 60).padStart(2, "0");
   const expired = sec === 0;
   const canSubmit = !!slip && phoneOk && !busy;
-  const mut = "text-[#cdbfb3]";
+  const mut = "text-[#d9c9b4]";
 
   return (
-    <div className="min-h-dvh bg-[#0e0a0a]">
-      <main className="mx-auto w-full max-w-[480px] min-h-dvh bg-[#0e0a0a] text-[#f6efe4] pb-8 overflow-x-hidden" style={{ fontFamily: "var(--font-cormorant), var(--font-plex), sans-serif" }}>
-        <SiteHeader />
+    <div className="min-h-dvh bg-[#171211]">
+      <main className="mb-v7 min-h-dvh md:bg-[#0f0b0a] pb-8 overflow-x-hidden">
+        <BrandHeader />
+        <div className="mx-auto w-full max-w-[640px] md:mt-6 md:rounded-[20px] md:pb-8 bg-[#171211] flex flex-col flex-1">
         <div className="flex items-center gap-3 px-4 pt-4 pb-2">
-          <Link href={`/join/apply?pkg=${k}&step=2`} aria-label="ย้อนกลับ" className="shrink-0 w-11 h-11 rounded-full border border-[rgba(240,200,90,.38)] text-[#f6efe4] grid place-items-center">
+          <Link href={`/join/apply?pkg=${k}&step=2`} aria-label="ย้อนกลับ" className="shrink-0 w-11 h-11 rounded-full border border-[rgba(243,234,217,.14)] text-[#f3ead9] grid place-items-center">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6" /></svg>
           </Link>
           <div className="min-w-0">
-            <div className="text-[11px] tracking-[1px] text-[#f0c75a] font-semibold">ขั้นที่ 3 / 5</div>
+            <div className="text-[11px] tracking-[1px] text-[#e8c472] font-semibold">ขั้นที่ 3 / 5</div>
             <div className="text-[18px]" style={H}>ชำระเงิน</div>
           </div>
         </div>
@@ -158,19 +159,19 @@ export default function PayPage() {
         </div>
 
         <div className="px-4 pt-4 flex flex-col gap-4 min-w-0">
-          <div className="flex items-center justify-between gap-3 px-4 py-[14px] rounded-[16px] border-[1.5px] border-[#f0c75a] bg-[rgba(240,200,90,.14)]">
+          <div className="flex items-center justify-between gap-3 px-4 py-[14px] rounded-[16px] border-[1.5px] border-[#e8c472] bg-[rgba(240,200,90,.14)]">
             <div className="min-w-0">
-              <div className="text-[11px] tracking-[1.5px] text-[#ffd76a]">สายงานที่เลือก</div>
+              <div className="text-[11px] tracking-[1.5px] text-[#e8c472]">สายงานที่เลือก</div>
               <div className="text-[17px]" style={H}>เพื่อนกินเที่ยว</div>
-              <div className="text-[11.5px] text-[#cdbfb3] whitespace-nowrap">{SUB[k]}</div>
+              <div className="text-[11.5px] text-[#d9c9b4] whitespace-nowrap">{SUB[k]}</div>
             </div>
             <div className="text-right shrink-0">
-              <div className="text-[20px] text-[#ffd76a]" style={H}>{baht(pkg.price)}</div>
-              <Link href="/join#packages" className="text-[12px] text-[#ffd76a]">เปลี่ยนสายงาน</Link>
+              <div className="text-[20px] text-[#e8c472]" style={H}>{baht(pkg.price)}</div>
+              <Link href="/join#packages" className="text-[12px] text-[#e8c472]">เปลี่ยนสายงาน</Link>
             </div>
           </div>
 
-          <div className="p-4 min-w-0 rounded-[16px] bg-[#241717] border border-[rgba(240,200,90,.38)] flex flex-col gap-4 text-[13px] leading-[1.5]">
+          <div className="p-4 min-w-0 rounded-[16px] bg-[#211a18] border border-[rgba(243,234,217,.14)] flex flex-col gap-4 text-[13px] leading-[1.5]">
             <div className="flex flex-col gap-2">
               {summary.map(([n, v]) => (
                 <div key={n} className="flex justify-between items-baseline gap-4 min-w-0"><span className={`${mut} whitespace-nowrap shrink-0`}>{n}</span><span className="text-right min-w-0 [overflow-wrap:anywhere]">{v}</span></div>
@@ -190,29 +191,29 @@ export default function PayPage() {
               <div className={`${mut} text-[12px]`}>เงินประกัน</div>
               <div className="[overflow-wrap:anywhere]">{GUARANTEE_REFUND_NOTE}</div>
             </div>
-            <div className="flex justify-between items-baseline gap-4 border-t border-[rgba(240,200,90,.38)] pt-4">
+            <div className="flex justify-between items-baseline gap-4 border-t border-[rgba(243,234,217,.14)] pt-4">
               <span className="whitespace-nowrap">ยอดชำระ</span>
-              <span className="text-[24px] text-[#f0c75a] whitespace-nowrap" style={H}>{baht(pkg.price)}</span>
+              <span className="text-[24px] text-[#e8c472] whitespace-nowrap" style={H}>{baht(pkg.price)}</span>
             </div>
           </div>
 
           <div className="flex flex-col gap-4">
-            <div className="rounded-[16px] bg-[#241717] border border-[rgba(245,210,110,.85)] p-4 flex flex-col items-center gap-3 w-full min-w-0">
+            <div className="rounded-[16px] bg-[#211a18] border border-[rgba(245,210,110,.85)] p-4 flex flex-col items-center gap-3 w-full min-w-0">
               {method === "qr" ? (
                 <>
                   <div className="flex justify-between gap-2 flex-wrap w-full text-[12px]">
-                    <span className="text-[#ffd76a] font-semibold">PromptPay</span>
-                    <span className={mut}>QR หมดอายุใน <b className="text-[14px]" style={{ ...H, color: sec < 120 ? "#ef6b7b" : "#ffd76a" }}>{mm}:{ss}</b></span>
+                    <span className="text-[#e8c472] font-semibold">PromptPay</span>
+                    <span className={mut}>QR หมดอายุใน <b className="text-[14px]" style={{ ...H, color: sec < 120 ? "#ff8a9a" : "#e8c472" }}>{mm}:{ss}</b></span>
                   </div>
                   <div className="self-center p-3 bg-white rounded-[12px] leading-[0]" style={{ opacity: expired ? 0.2 : 1 }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     {qr ? <img src={qr} alt={`QR พร้อมเพย์ ยอด ${pkg.price} บาท`} width={175} height={175} className="w-[175px] h-[175px]" />
                       // eslint-disable-next-line @next/next/no-img-element
                       : BANK.qrImage ? <img src={BANK.qrImage} alt="QR ชำระเงิน" width={175} height={175} className="w-[175px] h-[175px]" />
-                      : <div className="w-[175px] h-[175px] grid place-items-center text-[12px] leading-normal text-[#7d6d6a]">กำลังสร้าง QR…</div>}
+                      : <div className="w-[175px] h-[175px] grid place-items-center text-[12px] leading-normal text-[#b5a596]">กำลังสร้าง QR…</div>}
                   </div>
                   <div className={`${mut} text-[12px] text-center [overflow-wrap:anywhere]`}>{BANK.accountName} · บัญชีรับเงิน {BANK.accountNo}</div>
-                  {expired && <button type="button" onClick={() => setSec(QR_TTL)} className="h-12 w-full rounded-[14px] border border-[rgba(240,200,90,.38)] bg-[#241717] text-[#ffd76a] text-[14px] font-semibold">สร้าง QR ใหม่</button>}
+                  {expired && <button type="button" onClick={() => setSec(QR_TTL)} className="h-12 w-full rounded-[14px] border border-[rgba(243,234,217,.14)] bg-[#211a18] text-[#e8c472] text-[14px] font-semibold">สร้าง QR ใหม่</button>}
                 </>
               ) : (
                 <div className="w-full flex flex-col gap-2 text-[13px]">
@@ -224,34 +225,35 @@ export default function PayPage() {
             </div>
 
             <div>
-              <p className="text-[12px] text-[#cdbfb3] mb-[6px]">อัปโหลดสลิปการโอน</p>
-              <label className="w-full min-h-[88px] rounded-[16px] border-[1.5px] border-dashed bg-[#241717] flex items-center justify-center gap-[10px] text-[13px] cursor-pointer px-3 text-center"
-                style={{ borderColor: slipErr ? "#ef6b7b" : slip ? "#4cc283" : LINE, color: slip ? "#7fd6a3" : "#cdbfb3" }}>
+              <p className="text-[12px] text-[#d9c9b4] mb-[6px]">อัปโหลดสลิปการโอน</p>
+              <label className="w-full min-h-[88px] rounded-[16px] border-[1.5px] border-dashed bg-[#211a18] flex items-center justify-center gap-[10px] text-[13px] cursor-pointer px-3 text-center"
+                style={{ borderColor: slipErr ? "#ff8a9a" : slip ? "#7fd6a3" : LINE, color: slip ? "#7fd6a3" : "#d9c9b4" }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className="shrink-0"><path d="M12 16V4M7 9l5-5 5 5" /><path d="M4 16v4h16v-4" /></svg>
                 <span className="min-w-0 [overflow-wrap:anywhere]">{slip ? `${slipName || "slip.jpg"} · แตะเพื่อเปลี่ยน` : "แตะเพื่อเลือกรูปสลิป (JPG/PNG)"}</span>
                 <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => { onSlip(e.target.files?.[0]); e.target.value = ""; }} />
               </label>
-              {slipErr && <p role="alert" className="text-[12.5px] text-[#ef6b7b] mt-2 leading-relaxed">{slipErr}</p>}
+              {slipErr && <p role="alert" className="text-[12.5px] text-[#ff8a9a] mt-2 leading-relaxed">{slipErr}</p>}
             </div>
 
             {!phoneOk && (
               <div>
-                <p className="text-[12px] text-[#cdbfb3] mb-[6px]">ยืนยันเบอร์มือถือ (OTP) ก่อนส่ง</p>
+                <p className="text-[12px] text-[#d9c9b4] mb-[6px]">ยืนยันเบอร์มือถือ (OTP) ก่อนส่ง</p>
                 <OtpStep phone={f.tel} onPhone={setTel} verified={phoneOk} onVerified={() => setPhoneOk(true)}
-                  inputCls="h-12 w-full min-w-0 rounded-[12px] border border-[rgba(240,200,90,.38)] bg-[#21191a] px-[14px] text-[14px] text-[#f6efe4]" />
+                  inputCls="h-12 w-full min-w-0 rounded-[12px] border border-[rgba(243,234,217,.14)] bg-[#211a18] px-[14px] text-[14px] text-[#f3ead9]" />
               </div>
             )}
 
-            {err && <p role="alert" className="text-[12.5px] text-[#ef6b7b]">{err}</p>}
+            {err && <p role="alert" className="text-[12.5px] text-[#ff8a9a]">{err}</p>}
             <Turnstile key={tsKey} onToken={setTs} className="flex justify-center" />
 
             <button type="button" onClick={submit} disabled={busy}
-              className="btn-red-lux h-[52px] w-full rounded-[14px] border border-[rgba(245,210,110,.85)] text-white text-[15px] shadow-[0_8px_24px_rgba(255,40,70,.45)]"
-              style={{ ...H, background: "linear-gradient(100deg, #7e0a1e 0%, #c8102e 24%, #ff5068 50%, #c8102e 76%, #7e0a1e 100%)", opacity: canSubmit ? 1 : 0.45 }}>
+              className="btn-red-lux h-[52px] w-full rounded-[14px] border border-[rgba(245,210,110,.85)] text-white text-[15px] "
+              style={{ ...H, background: "#e8c472", opacity: canSubmit ? 1 : 0.45 }}>
               {busy ? "กำลังส่งสลิปเพื่อตรวจสอบ…" : "ส่งสลิปเพื่อตรวจสอบ"}
             </button>
           </div>
         </div>
+      </div>
       </main>
     </div>
   );

@@ -361,7 +361,7 @@ html { scroll-behavior: smooth; }
 *, *::before, *::after, input, textarea, select, button, ::placeholder { font-variant-numeric: lining-nums; }
 
 /* ── v7 page shell (หน้า sale/join ชุดใหม่ ตามบอร์ด DS-*) ── */
-.mb-v7 { background: var(--color-mb-bg); color: var(--color-mb-text); font-family: var(--font-mb); font-weight: 100; font-variant-numeric: lining-nums; line-height: 1.6; }
+@layer components { .mb-v7 { background: var(--color-mb-bg); color: var(--color-mb-text); font-family: var(--font-mb); font-weight: 100; font-variant-numeric: lining-nums; line-height: 1.6; } }
 .mb-v7 button, .mb-v7 input, .mb-v7 select, .mb-v7 textarea, .mb-v7 label { font-family: inherit; }
 .mb-v7 a:focus-visible, .mb-v7 button:focus-visible, .mb-v7 input:focus-visible, .mb-v7 select:focus-visible, .mb-v7 textarea:focus-visible { outline: 2px solid var(--color-mb-gold); outline-offset: 2px; }
 .mb-v7 .mb-s { font-size: 13px; font-weight: 300; color: var(--color-mb-text2); line-height: 1.6; }
@@ -372,3 +372,11 @@ html { scroll-behavior: smooth; }
 .mb-v7 .mb-in:focus { border-color: var(--color-mb-gold); outline: none; }
 .mb-v7 .mb-in::placeholder { color: var(--color-mb-text3); }
 .mb-v7 h1, .mb-v7 h2, .mb-v7 h3, .mb-v7 h4 { font-family: var(--font-mb); }
+
+/* v7 overrides: หน้าเดิมใน flow สมัครที่ครอบด้วย .mb-v7 ใช้ปุ่ม/ฟอนต์ชุดใหม่ */
+.mb-v7 .font-lux, .mb-v7 .font-lux-body, .mb-v7 .font-display { font-family: var(--font-mb); }
+.mb-v7 .btn-red-lux, .mb-v7 .btn-gold-lux, .mb-v7 .btn-crimson { background: var(--color-mb-gold) !important; color: var(--color-mb-ink) !important; border: 0 !important; box-shadow: none !important; border-radius: 14px !important; font-weight: 600; }
+.mb-v7 .btn-red-lux:hover, .mb-v7 .btn-gold-lux:hover, .mb-v7 .btn-crimson:hover { transform: none; filter: brightness(1.05); }
+.mb-v7 .text-gradient-gold { background: none; -webkit-text-fill-color: var(--color-mb-gold); color: var(--color-mb-gold); }
+.mb-v7 input:not([type=checkbox]):not([type=radio]):not([type=file]), .mb-v7 select, .mb-v7 textarea { font-size: max(16px, 1em); }
+.mb-v7 input[type=checkbox], .mb-v7 input[type=radio] { accent-color: var(--color-mb-gold); }

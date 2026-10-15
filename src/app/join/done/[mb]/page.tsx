@@ -45,7 +45,7 @@ export default async function DonePage({ params, searchParams }: { params: Promi
         <div className="text-center">
           <div className="text-[11px] tracking-[2.5px]" style={{ color: C.gold }}>ยินดีต้อนรับ Part-Time ใหม่</div>
           <h1 className="font-lux font-semibold text-[26px] mt-2.5" style={{ color: C.gold }}>สมัครสำเร็จ</h1>
-          <p className="mt-2 text-[13px]" style={{ color: "#d3c7bc" }}>{sub}</p>
+          <p className="mt-2 text-[13px]" style={{ color: "#d9c9b4" }}>{sub}</p>
           <p className="mt-1 text-[13px]" style={{ color: C.mut }}>ยินดีต้อนรับสู่ Mister Bamrungsuk คุณ{row.nickname || row.first_name}</p>
         </div>
 
@@ -63,7 +63,7 @@ export default async function DonePage({ params, searchParams }: { params: Promi
           </Link>
         )}
 
-        <div className="rounded-[18px] p-4 flex flex-col gap-3" style={{ border: "1px solid rgba(212,175,55,.55)", background: "linear-gradient(150deg,#3a2614,#241717 55%,#2a0f15)" }}>
+        <div className="rounded-[18px] p-4 flex flex-col gap-3" style={{ border: "1px solid rgba(212,175,55,.55)", background: "linear-gradient(150deg,#3a2614,#211a18 55%,#2a0f15)" }}>
           <div className="flex justify-between items-center">
             <span className="text-xs" style={{ color: C.goldL }}>รหัส Part-Time ของคุณ</span>
             <span className="text-[11px] px-2.5 py-[3px] rounded-full" style={{ border: `1px solid ${C.gold}`, color: C.gold }}>{row.package === "B" ? "สายนวด" : "สายความสามารถพิเศษ"}</span>

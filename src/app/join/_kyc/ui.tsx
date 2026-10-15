@@ -1,32 +1,35 @@
 import Link from "next/link";
-import { SiteHeader } from "@/components/site-header";
+import { BrandHeader } from "@/components/mb/ui";
 
-// ชิ้นส่วนร่วมของหน้า KYC / บัญชีรับเงิน / ผลตรวจ / อบรม (ตามบอร์ด D2/D3/D5/TrainingCohort)
-export const C = { bg: "#0e0a0a", s1: "#241717", s2: "#21191a", ln: "rgba(240,200,90,.38)", red: "#b0182c", gold: "#f0c75a", goldL: "#ffd76a", tx: "#f6efe4", mut: "#cdbfb3", pink: "#FF8A97" };
-export const RED_GRAD = "linear-gradient(100deg, #7e0a1e 0%, #c8102e 24%, #ff5068 50%, #c8102e 76%, #7e0a1e 100%)";
+// ชิ้นส่วนร่วมของหน้า KYC / บัญชีรับเงิน / ผลตรวจ / อบรม / สมัครสำเร็จ (v7 · บอร์ด D2/D3/D5/P-Done/P-Training)
+// มือถือเต็มจอ · md ขึ้นไปเป็นคอลัมน์กลางกว้าง 640px บนพื้นเข้ม
+export const C = { bg: "#171211", s1: "#211a18", s2: "#251d1b", ln: "rgba(243,234,217,.14)", red: "#e8c472", gold: "#e8c472", goldL: "#e8c472", tx: "#f3ead9", mut: "#d9c9b4", pink: "#ff8a9a" };
+export const RED_GRAD = "#e8c472";
 
 export function Page({ children, padBottom = true }: { children: React.ReactNode; padBottom?: boolean }) {
   return (
-    <main className={`mb-page font-lux-body mx-auto w-full max-w-[480px] min-h-dvh relative ${padBottom ? "pb-40" : "pb-8"}`} style={{ background: C.bg, color: C.tx, fontVariantNumeric: "lining-nums" }}>
-      <SiteHeader />
-      {children}
-    </main>
+    <div className="mb-v7 min-h-dvh md:bg-[#0f0b0a]">
+      <BrandHeader />
+      <main className={`mb-v7 mx-auto w-full max-w-[640px] relative md:mt-6 md:rounded-[20px] ${padBottom ? "pb-40 md:pb-12" : "pb-8"}`}>
+        {children}
+      </main>
+    </div>
   );
 }
 
 export function StepHeader({ step, title, back }: { step: number; title: string; back: string }) {
   return (
     <>
-      <div className="flex items-center gap-3 px-4 pt-4 pb-2">
-        <Link href={back} aria-label="ย้อนกลับ" className="shrink-0 w-11 h-11 rounded-full grid place-items-center" style={{ border: `1px solid ${C.ln}`, color: C.tx }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6" /></svg>
+      <div className="flex items-center gap-3 px-4 md:px-6 pt-4 pb-2">
+        <Link href={back} aria-label="ย้อนกลับ" className="shrink-0 w-11 h-11 rounded-full grid place-items-center bg-[#251d1b] text-[#f3ead9] hover:text-[#f3ead9]">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
         </Link>
         <div className="min-w-0">
-          <div className="text-[11px] tracking-[1px] font-semibold" style={{ color: C.gold }}>ขั้นที่ {step} / 5</div>
-          <div className="font-lux font-semibold text-lg">{title}</div>
+          <div className="text-[12px] font-semibold text-[#e8c472]">ขั้นที่ {step} / 5</div>
+          <h1 className="font-semibold text-lg leading-snug m-0">{title}</h1>
         </div>
       </div>
-      <div className="grid grid-cols-5 gap-1 px-4">
+      <div className="grid grid-cols-5 gap-1 px-4 md:px-6" aria-hidden="true">
         {[1, 2, 3, 4, 5].map((i) => <span key={i} className="h-1 rounded-[2px]" style={{ background: i <= step ? C.gold : C.ln }} />)}
       </div>
     </>
@@ -37,20 +40,24 @@ export function Forbidden() {
   return (
     <Page padBottom={false}>
       <div className="px-4 pt-24 text-center flex flex-col items-center gap-3">
-        <h1 className="font-lux text-2xl font-semibold">ลิงก์หมดอายุหรือไม่มีสิทธิ์</h1>
-        <p className="text-sm" style={{ color: C.mut }}>กรุณาเปิดจากลิงก์ที่ได้รับหลังสมัคร หรือติดต่อแอดมินทาง LINE</p>
+        <h1 className="text-2xl font-semibold">ลิงก์หมดอายุหรือไม่มีสิทธิ์</h1>
+        <p className="text-sm font-light" style={{ color: C.mut }}>กรุณาเปิดจากลิงก์ที่ได้รับหลังสมัคร หรือติดต่อแอดมินทาง LINE</p>
       </div>
     </Page>
   );
 }
 
-/** แถบปุ่มล่างจอ (ตรึงไว้ เหมือนบอร์ดที่วาง absolute bottom:24px) */
+/** แถบปุ่มล่างจอ: มือถือติดล่าง (safe-area) · md ขึ้นไปอยู่ท้ายเนื้อหา */
 export function BottomBar({ children }: { children: React.ReactNode }) {
-  return <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[448px] flex flex-col gap-3 z-10">{children}</div>;
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-40 px-4 pt-3 pb-[calc(16px+env(safe-area-inset-bottom))] bg-[linear-gradient(180deg,rgba(23,18,17,0),#171211_30%)] md:static md:z-auto md:bg-none md:px-6 md:pt-6 md:pb-0">
+      <div className="mx-auto max-w-[608px] flex flex-col gap-3">{children}</div>
+    </div>
+  );
 }
 
 export const ctaStyle: React.CSSProperties = {
-  height: 56, borderRadius: 999, border: "1px solid rgba(245,210,110,.85)", background: RED_GRAD,
-  boxShadow: "0 8px 24px rgba(255,40,70,.45)", color: "#fff", fontWeight: 600, fontSize: 17,
+  minHeight: 52, borderRadius: 14, border: 0, background: "#e8c472",
+  color: "#1b130b", fontWeight: 600, fontSize: 16,
   display: "flex", alignItems: "center", justifyContent: "center", width: "100%",
 };
