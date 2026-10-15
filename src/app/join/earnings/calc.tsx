@@ -2,18 +2,22 @@
 
 // ตัวคำนวณรายได้ (บอร์ด JoinEarnings) · มือถือ = คอลัมน์เดียว + ปุ่มติดล่าง · lg = ตัวเลือกซ้าย / ผลลัพธ์ขวาแบบ sticky
 import { Fragment, useState } from "react";
-import { BrandHeader, Button, Card, Chip, Container, Icon, Row, Shell, StickyAction, StickySpacer, baht } from "@/components/mb/ui";
-import { EARNINGS, sharePct, type EarnSvc, type EarnTier } from "@/lib/join/config";
+import { BrandHeader, Button, Card, Chip, Container, Icon, Shell, StickyAction, StickySpacer, baht } from "@/components/mb/ui";
+import { EARNINGS, type EarnSvc, type EarnTier } from "@/lib/join/config";
+import { pctFor, tierLabel } from "@/lib/join/earnings-shared";
+import type { EarningsSettings } from "@/lib/join/earnings-settings";
 
-const SVCS = Object.entries(EARNINGS.price3h) as [EarnSvc, (typeof EARNINGS.price3h)[EarnSvc]][];
+// ตัวเลขทั้งหมดมาจากหน้าแอดมิน "ราคาและส่วนแบ่ง" (cfg)
+const SVC_LABEL: Record<EarnSvc, string> = { eat: "เพื่อนกินเที่ยว", massage: "เพื่อนกินเที่ยว · นวด" };
 const TIERS: [EarnTier, string][] = [["top", "TOP"], ["silver", "Silver"]];
 
-export function EarningsCalc() {
+export function EarningsCalc({ cfg }: { cfg: Omit<EarningsSettings, "history"> }) {
+  const SVCS = (["eat", "massage"] as EarnSvc[]).map((k) => [k, { label: SVC_LABEL[k], ...cfg.price3h[k] }] as const);
   const [svc, setSvc] = useState<EarnSvc>("massage");
   const [tier, setTier] = useState<EarnTier>("top");
   const [cases, setCases] = useState<number>(15);
-  const price = EARNINGS.price3h[svc][tier];
-  const pct = sharePct(cases);
+  const price = cfg.price3h[svc][tier];
+  const pct = pctFor(cfg.tiers, cases);
   const perCase = (price * pct) / 100;
   const monthly = cases * perCase;
 
@@ -60,20 +64,20 @@ export function EarningsCalc() {
                 <span className="mb-xs">สายงาน</span><span className="mb-xs">TOP</span><span className="mb-xs">Silver</span>
                 {SVCS.map(([k, v]) => <Fragment key={k}><span>{v.label}</span><span>{baht(v.top)}</span><span>{baht(v.silver)}</span></Fragment>)}
               </div>
-              <div className="mb-xs mt-2">{`5 ชม. = ×${EARNINGS.fiveHourMultiplier} · ทิปจากลูกค้าได้เต็ม ${EARNINGS.tipPct}%`}</div>
+              <div className="mb-xs mt-2">{`5 ชม. = ×${cfg.fiveHourMultiplier} · ทิปจากลูกค้าได้เต็ม ${cfg.tipPct}%`}</div>
             </Card>
 
             <Card>
               <div className="font-semibold mb-2">ส่วนแบ่งของคุณ (นับนัดในเดือน)</div>
-              {EARNINGS.tiers.map((t) => (
-                <div key={t.label} className="flex justify-between items-center gap-3 py-2 border-t border-[rgba(243,234,217,0.07)]"><span>{t.label}</span><b className="font-semibold" style={{ color: t.pct === pct ? "#e8c472" : "#f3ead9" }}>{`${t.pct}%`}</b></div>
+              {cfg.tiers.map((t) => (
+                <div key={t.min} className="flex justify-between items-center gap-3 py-2 border-t border-[rgba(243,234,217,0.07)]"><span>{tierLabel(t)}</span><b className="font-semibold" style={{ color: t.pct === pct ? "#e8c472" : "#f3ead9" }}>{`${t.pct}%`}</b></div>
               ))}
               <div className="mb-xs">ทำนัดมากขึ้น ส่วนแบ่งขยับขึ้นทั้งเดือน · ส่วนที่เหลือเป็นค่าแพลตฟอร์ม การตลาด ประกัน และทีมดูแลความปลอดภัย</div>
             </Card>
 
             <Card className="flex flex-col gap-2">
               <div className="font-semibold">ได้เงินเมื่อไร</div>
-              <div className="mb-s">• ลูกค้าจ่ายเข้าระบบก่อนนัด เงินพักไว้กับเรา<br />{`• ${EARNINGS.payout}`}<br />• ลูกค้าไม่มาตามนัด คุณยังได้ส่วนของคุณเต็ม<br />• ดูรายได้และถอนเงินในแอปได้ทุกวัน</div>
+              <div className="mb-s">• ลูกค้าจ่ายเข้าระบบก่อนนัด เงินพักไว้กับเรา<br />{`• จบนัดแล้วโอนส่วนของคุณ${cfg.payout}`}<br />{cfg.noShow.includes("เต็ม") ? "• ลูกค้าไม่มาตามนัด คุณยังได้ส่วนของคุณเต็ม" : `• ลูกค้าไม่มาตามนัด: ${cfg.noShow}`}<br />• ดูรายได้และถอนเงินในแอปได้ทุกวัน</div>
             </Card>
             <p className="mb-xs m-0">ตัวเลขเป็นการประมาณ ขึ้นกับจำนวนนัดจริงและระดับที่ได้รับ · ราคาและส่วนแบ่งตามประกาศล่าสุดของแพลตฟอร์ม</p>
           </div>

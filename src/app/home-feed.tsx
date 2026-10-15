@@ -42,7 +42,7 @@ const Svg = ({ d, size = 20, sw = 1.8 }: { d: string; size?: number; sw?: number
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
 );
 
-export function HomeFeed() {
+export function HomeFeed({ showEarnings = true }: { showEarnings?: boolean }) {
   const [acts, setActs] = useState<Act[]>([]);
   const [sort, setSort] = useState<Sort>("top");
   const [ad, setAd] = useState(false);
@@ -207,7 +207,7 @@ export function HomeFeed() {
       <nav aria-label="เมนูหลัก" className="fixed bottom-0 inset-x-0 z-40 mx-auto max-w-[640px] grid grid-cols-5 items-center text-center font-light text-[#b5a596] border-t border-[rgba(243,234,217,0.07)] bg-[#251d1b] md:rounded-t-2xl"
         style={{ height: "calc(64px + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", fontSize: 10.5 }}>
         <Link href="/" aria-current="page" className="flex flex-col items-center gap-[3px] text-[#e8c472] hover:text-[#e8c472]"><Svg d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />ดูเพื่อน</Link>
-        <Link href="/join/earnings" className="flex flex-col items-center gap-[3px] text-inherit hover:text-[#f3ead9]"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2" /><circle cx="12" cy="12" r="2.5" /></svg>รายได้</Link>
+        <Link href={showEarnings ? "/join/earnings" : "/join"} className="flex flex-col items-center gap-[3px] text-inherit hover:text-[#f3ead9]"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2" /><circle cx="12" cy="12" r="2.5" /></svg>รายได้</Link>
         <div><Link href="/join" aria-label="สมัครทันที" className="mx-auto grid place-items-center w-[50px] h-[50px] rounded-2xl bg-[#e8c472] text-[#1b130b] hover:text-[#1b130b]"><Svg d="M12 5v14M5 12h14" size={22} sw={2.2} /></Link></div>
         <Link href="/policy" className="flex flex-col items-center gap-[3px] text-inherit hover:text-[#f3ead9]"><Svg d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3z" />กฎเกณฑ์</Link>
         <Link href="/join" className="flex flex-col items-center gap-[3px] text-inherit hover:text-[#f3ead9]"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21c1-4 4-6 8-6s7 2 8 6" /></svg>ร่วมทีม</Link>

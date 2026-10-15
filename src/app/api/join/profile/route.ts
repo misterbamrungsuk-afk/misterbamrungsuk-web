@@ -78,6 +78,30 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true });
     }
 
+    // ตั้งค่า (ข้อความตอบกลับอัตโนมัติ + ข้อความสำเร็จรูป)
+    if (step === "settings") {
+      const quick = uniq(form.getAll("quick_replies"), 12, 60);
+      await saveProfile(row.id, { pt_settings: { auto_reply_on: s("auto_reply_on") === "true", auto_reply: s("auto_reply", 300), quick_replies: quick } });
+      return NextResponse.json({ ok: true });
+    }
+    // ประกาศ "วันนี้ว่าง" — สร้าง/แก้ หรือปิด
+    if (step === "post") {
+      if (s("close") === "true") {
+        const cur = x.post;
+        await saveProfile(row.id, { post: cur ? { ...cur, open: false } : null });
+        return NextResponse.json({ ok: true });
+      }
+      const text = s("text", 160), time = s("time", 40), zone = s("zone", 80);
+      if (!text || !time || !zone) return bad("กรอกกิจกรรม เวลา และโซนให้ครบ", 400, ["text", "time", "zone"]);
+      await saveProfile(row.id, { post: { text, time, zone, open: true, created_at: new Date().toISOString() } });
+      return NextResponse.json({ ok: true });
+    }
+    // ขอลบบัญชีและข้อมูล (PDPA) — แอดมินดำเนินการและติดต่อกลับ
+    if (step === "delete_request") {
+      await saveProfile(row.id, { delete_requested_at: new Date().toISOString() });
+      return NextResponse.json({ ok: true });
+    }
+
     if (step === "card") {
       await saveProfile(row.id, {
         card: { activities: uniq(form.getAll("activities"), 20, 40), places: uniq(form.getAll("places"), 10, 40), partner_spas: uniq(form.getAll("partner_spas"), 10, 60), skills: uniq(form.getAll("skills"), 10, 40) },

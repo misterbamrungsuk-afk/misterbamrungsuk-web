@@ -3,7 +3,10 @@
 import { Fragment, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PACKAGES, QUOTA, feeBreakdown, lineAddUrl, type PackageKey } from "@/lib/join/config";
-import type { Applicant, ApplicantStatus, CriminalCheck } from "@/lib/join/store";
+import type { Applicant as ApplicantBase, ApplicantStatus, CriminalCheck, Extra } from "@/lib/join/store";
+
+/** แถวที่หน้า page ส่งมา = คอลัมน์ + docs.extra (extraOf) */
+type Applicant = ApplicantBase & Extra;
 import { KycPanel } from "../kyc/kyc-panel";
 
 // ตามบอร์ด AdminApplicants.dc.html (1280px) — ยอดรวมนับเฉพาะผู้สมัครที่ชำระแล้ว (verified)
@@ -60,6 +63,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
     else flash(d.row ? `บันทึกสถานะ: ${LABEL[d.row.status]}` : "บันทึกไม่สำเร็จ");
     router.refresh();
   };
+  const setTier = async (id: string, tier: "top" | "silver") => { const d = await patch(id, { tier }); flash(d.ok ? `ตั้งระดับ ${tier === "top" ? "TOP" : "Silver"} แล้ว` : "บันทึกไม่สำเร็จ"); };
   const assign = async (id: string, cohort: string | null) => { const d = await patch(id, { cohort }); flash(d.ok ? `จัดเข้า${cohort ? cohortName(cohort) : " (ไม่ระบุกลุ่ม)"}` : "บันทึกไม่สำเร็จ"); };
   const setLine = async (id: string, v: boolean) => { const d = await patch(id, { line_joined: v }); flash(d.ok ? (v ? "บันทึก: เข้ากลุ่ม LINE แล้ว" : "บันทึก: ยังไม่เข้ากลุ่ม") : "บันทึกไม่สำเร็จ"); router.refresh(); };
   const copyLine = async (r: Applicant) => {
@@ -144,8 +148,12 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
           <>
             <div className="flex gap-3 items-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={sel.docs.photo ? file(sel.docs.photo) : ""} alt="" className="w-14 h-14 rounded-[14px] object-cover bg-[#130e0e]" />
+              <img src={sel.photos?.[0] ? file(sel.photos[0]) : sel.docs.photo ? file(sel.docs.photo) : ""} alt="" className="w-14 h-14 rounded-[14px] object-cover bg-[#130e0e]" />
               <div className="min-w-0"><div className="font-lux font-semibold text-[17px] truncate">{sel.first_name} {sel.last_name}</div><div className="text-[#ffd76a] text-xs">{sel.mb_code} · {sel.package} · {fmt(G(sel.package))} + {fmt(T(sel.package))}</div></div>
+            </div>
+            <Progress r={sel} />
+            <div className="flex justify-between items-center gap-2"><span className="text-[#cdbfb3]">ระดับ (หลังอบรม)</span>
+              <span className="flex gap-1">{(["silver", "top"] as const).map((t) => { const on = (sel.tier ?? "silver") === t; return <button key={t} onClick={() => setTier(sel.id, t)} aria-pressed={on} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={{ borderColor: on ? GOLD : LINE_BD, background: on ? GOLD : "transparent", color: on ? "#1a1206" : "#d3c7bc" }}>{t === "top" ? "TOP" : "Silver"}</button>; })}</span>
             </div>
             <Row k="อายุ · ชื่อเล่น" v={`${ageOf(sel.birthdate) ?? "-"} ปี · ${sel.nickname || "-"}`} />
             <Row k="พักอาศัยแถว" v={sel.address || "-"} />
@@ -154,6 +162,11 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
             <Row k="เวลาว่าง" v={sel.availability ? `${(sel.availability.week_days ?? []).join(" ") || `${sel.availability.days ?? "-"} วัน`} · ${sel.availability.slots.join(" + ") || "-"} · ${sel.availability.hours_band ?? `${sel.availability.hours ?? "-"} ชม.`}` : "-"} />
             {sel.experience && <Row k="ประสบการณ์" v={sel.experience} />}
             {sel.intro && <Row k="หมายเหตุ" v={sel.intro} />}
+            {sel.card && (sel.card.activities.length + sel.card.places.length + sel.card.skills.length > 0) && <>
+              <Row k="กิจกรรมที่รับ" v={sel.card.activities.join(" · ") || "-"} />
+              <Row k="สถานที่รับนัด" v={[...sel.card.places, ...sel.card.partner_spas].join(" · ") || "-"} />
+              <Row k="สกิลพิเศษ" v={sel.card.skills.map((s) => SKILL_TH[s] ?? s).join(" · ") || "-"} />
+            </>}
             <Row k="ยอดชำระ" v={`${fmt(sel.amount)} · ${LABEL[sel.status]}`} />
             <div className="h-px bg-[rgba(240,200,90,.38)]" />
             <div className="text-[#cdbfb3] text-xs">จัดกลุ่มอบรม</div>
@@ -190,6 +203,13 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
                   <dt className="text-[#cdbfb3]">LINE</dt><dd className="break-all">{sel.line_id || "-"}</dd>
                   <dt className="text-[#cdbfb3]">สมัครเมื่อ</dt><dd>{thTime(sel.created_at)}</dd>
                 </dl>
+                {sel.bank_consents && <p className="text-[11.5px] text-[#cdbfb3]">ยินยอมข้อกำหนด · PDPA · แสดงโปรไฟล์ เมื่อ {thTime(sel.bank_consents.at)}</p>}
+                {sel.delete_requested_at && <p className="text-[12.5px] rounded-lg px-3 py-2 text-[#ff8a9a] bg-[rgba(255,138,154,0.1)]">⚠ ผู้สมัครขอลบบัญชีและข้อมูล (PDPA) เมื่อ {thTime(sel.delete_requested_at)} · ติดต่อยืนยันภายใน 30 วัน</p>}
+                {sel.post && <p className="text-[12.5px] text-[#cdbfb3]">ประกาศ “วันนี้ว่าง” {sel.post.open ? "(เปิด)" : "(ปิดแล้ว)"}: {sel.post.text} · {sel.post.time} · {sel.post.zone}</p>}
+                {(sel.photos?.length ?? 0) > 0 && <>
+                  <div className="text-[#cdbfb3] text-xs">รูปโปรไฟล์ {sel.photos!.length}/9 (รูปแรก = รูปหลัก)</div>
+                  <div className="grid grid-cols-3 gap-1.5">{sel.photos!.map((p, i) => <a key={p} href={file(p)} target="_blank" rel="noopener noreferrer" className="block text-center">{/* eslint-disable-next-line @next/next/no-img-element */}<img src={file(p)} alt={`รูปโปรไฟล์ ${i + 1}`} className="w-full aspect-[3/4] rounded-lg object-cover bg-[#130e0e]" /></a>)}</div>
+                </>}
                 <div className="grid grid-cols-3 gap-1.5">
                   {DOCS.filter(([k]) => sel.docs[k]).map(([k, l]) => (
                     <a key={k} href={file(sel.docs[k]!)} target="_blank" rel="noopener noreferrer" className="block text-center">
@@ -210,6 +230,20 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
           </>
         ) : <p className="py-10 text-center text-[#7d6d6a]">เลือกผู้สมัครจากตารางเพื่อดูรายละเอียด</p>}
       </aside>
+    </div>
+  );
+}
+
+const SKILL_TH: Record<string, string> = { massage: "นวดผ่อนคลาย", photo: "ถ่ายรูปเก่ง", eng: "พูดอังกฤษได้", drive: "ขับรถพาเที่ยว", fit: "เต้น / ฟิตเนสโค้ช", cook: "ทำอาหาร", music: "เล่นดนตรี / ร้องเพลง", guide: "ไกด์ท้องถิ่น" };
+
+/** ความคืบหน้าใบสมัคร (ตรงกับหน้า "โปรไฟล์ของฉัน" ของผู้สมัคร) */
+function Progress({ r }: { r: Applicant }) {
+  const done = new Set(r.form_done ?? []);
+  const kyc = r.kyc_status ?? "none";
+  const steps: [string, boolean][] = [["ชำระ", true], ["ข้อมูล", done.has(1)], ["วันเวลา", done.has(2)], ["KYC", kyc !== "none"], ["สัญญา", !!r.contract_accepted_at]];
+  return (
+    <div className="flex flex-wrap gap-1">
+      {steps.map(([t, ok]) => <span key={t} className="text-[11.5px] px-2 py-0.5 rounded-full border" style={{ borderColor: ok ? "rgba(74,222,128,.5)" : LINE_BD, color: ok ? "#4ade80" : "#7d6d6a" }}>{ok ? "✓ " : ""}{t}</span>)}
     </div>
   );
 }

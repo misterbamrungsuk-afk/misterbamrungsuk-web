@@ -25,7 +25,7 @@ const FAQ: [string, string][] = [
 export type Seats = { left: number; quota: number; cohort: string; closed: boolean };
 const h2: React.CSSProperties = { margin: 0, fontWeight: 600, fontSize: 20 };
 
-export function JoinSalePage({ seats }: { seats: Seats }) {
+export function JoinSalePage({ seats, showEarnings = true }: { seats: Seats; showEarnings?: boolean }) {
   const [pick, setPick] = useState<PackageKey>("B");
   const [open, setOpen] = useState<Record<number, boolean>>({ 0: true });
 
@@ -72,7 +72,7 @@ export function JoinSalePage({ seats }: { seats: Seats }) {
               <span>{seats.closed ? "ปิดรับสมัครรอบนี้แล้ว" : `กลุ่มอบรมถัดไป · ${seats.cohort}`}</span>
               <span className="text-[#e8c472] font-semibold">{seats.closed ? "เต็มแล้ว" : `เหลือ ${seats.left} / ${seats.quota} ที่`}</span>
             </div>
-            <Link href="/join/earnings" className="min-h-12 rounded-[14px] text-[#e8c472] font-semibold grid place-items-center text-center hover:text-[#e8c472]" style={{ background: "rgba(232,196,114,0.16)" }}>ดูรายได้และส่วนแบ่ง · คำนวณรายได้ต่อเดือน</Link>
+            {showEarnings && <Link href="/join/earnings" className="min-h-12 rounded-[14px] text-[#e8c472] font-semibold grid place-items-center text-center hover:text-[#e8c472]" style={{ background: "rgba(232,196,114,0.16)" }}>ดูรายได้และส่วนแบ่ง · คำนวณรายได้ต่อเดือน</Link>}
             {seats.closed
               ? <span aria-disabled="true" className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center" style={{ marginTop: 6, opacity: 0.45 }}>ปิดรับสมัครแล้ว</span>
               : <Link href={`/join/pay?pkg=${pick}`} className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center hover:text-[#1b130b]" style={{ marginTop: 6 }}>ชำระเงินและรับรหัสสมัคร</Link>}

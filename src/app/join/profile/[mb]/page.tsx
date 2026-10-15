@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { canResume } from "@/lib/join/resume";
 import { extraOf, getByMb } from "@/lib/join/store";
-import { EARNINGS } from "@/lib/join/config";
+import { getEarnings } from "@/lib/join/earnings-settings";
 import { ageFrom } from "@/lib/join/form";
 import { Forbidden } from "../../_kyc/ui";
 import { ProfileHub, type HubData } from "./client";
@@ -22,14 +22,15 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
   const photos = (x.photos ?? []).map(fileUrl);
   const main = photos[0] ?? (row.docs.photo ? fileUrl(row.docs.photo) : "");
   const kyc = x.kyc_status ?? "none";
-  const svc = row.package === "B" ? EARNINGS.price3h.massage : EARNINGS.price3h.eat;
+  const cfg = await getEarnings();
+  const svc = row.package === "B" ? cfg.price3h.massage : cfg.price3h.eat;
 
   const data: HubData = {
     mb, t: t ?? "", nickname: row.nickname, fullName: `${row.first_name} ${row.last_name}`,
     statusLine: `สมัครปกติ · ${row.status === "verified" ? "ชำระค่าการันตีแล้ว" : "ส่งสลิปแล้ว · รอทีมงานตรวจ"}`,
     track: row.package === "B" ? "เพื่อนกินเที่ยว · นวด" : "เพื่อนกินเที่ยว", trackShort: row.package === "B" ? "สายนวด" : "สายกินเที่ยว",
     main, photos, age: row.birthdate ? ageFrom(row.birthdate) : null, area: (x.areas ?? [])[0]?.split(" › ").pop() ?? "",
-    price: svc.silver, verified: row.status === "verified",
+    price: x.tier === "top" ? svc.top : svc.silver, tier: x.tier === "top" ? "top" : "silver", verified: row.status === "verified",
     steps: [
       { t: "ชำระเงิน", sub: row.status === "verified" ? "ตรวจสลิปแล้ว" : "ส่งสลิปแล้ว · รอทีมงานตรวจ", ok: true, href: "" },
       { t: "ข้อมูลส่วนตัว", sub: "ชื่อ เบอร์โทร LINE ที่พัก", ok: done.has(1), href: "form" },

@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 // โปรไฟล์ของฉัน — ถอดตามบอร์ด ProviderEditProfile
-// ส่วนที่ยังไม่เปิด (งาน / รีวิว / ถอนเงิน / ตั้งค่า) แสดงสถานะว่างตามจริง เพราะยังไม่เริ่มรับงานจนกว่าจะผ่านอบรม
+// ปุ่มงาน / ตาราง / รีวิว / ถอนเงิน / ตั้งค่า → หน้าย่อยใต้ /join/profile/[mb]/ (สถานะว่างตามจริงจนกว่าจะเริ่มรับงาน)
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -10,7 +10,7 @@ import type { ProfileCard } from "@/lib/join/store";
 
 export type HubData = {
   mb: string; t: string; nickname: string; fullName: string; statusLine: string; track: string; trackShort: string;
-  main: string; photos: string[]; age: number | null; area: string; price: number; verified: boolean;
+  main: string; photos: string[]; age: number | null; area: string; price: number; tier: "top" | "silver"; verified: boolean;
   steps: { t: string; sub: string; ok: boolean; href: "" | "form" | "form2" | "kyc" | "rejected" }[];
   contractDone: boolean; card: ProfileCard;
 };
@@ -98,19 +98,19 @@ export function ProfileHub({ d }: { d: HubData }) {
             </div>
 
             <div className="grid grid-cols-2 gap-[10px]">
-              <div className="rounded-2xl bg-[#211a18] flex flex-col gap-0.5" style={{ padding: 14 }}><span className="text-[12px] font-light text-[#b5a596]">งานถัดไป</span><span className="font-semibold">ยังไม่มีงาน</span><span className="text-[12px] font-light text-[#d9c9b4]">เริ่มรับงานหลังอบรม</span></div>
-              <div className="rounded-2xl bg-[#211a18] flex flex-col gap-0.5" style={{ padding: 14 }}><span className="text-[12px] font-light text-[#b5a596]">รีวิวของฉัน</span><span className="font-semibold text-[#e8c472]">—</span><span className="text-[12px] font-light text-[#d9c9b4]">ยังไม่มีรีวิว</span></div>
+              <Link href={`/join/profile/${d.mb}/schedule${q}`} className="rounded-2xl bg-[#211a18] flex flex-col gap-0.5 hover:text-inherit" style={{ padding: 14 }}><span className="text-[12px] font-light text-[#b5a596]">งานถัดไป</span><span className="font-semibold">ยังไม่มีงาน</span><span className="text-[12px] font-light text-[#d9c9b4]">เริ่มรับงานหลังอบรม</span></Link>
+              <Link href={`/join/profile/${d.mb}/reviews${q}`} className="rounded-2xl bg-[#211a18] flex flex-col gap-0.5 hover:text-inherit" style={{ padding: 14 }}><span className="text-[12px] font-light text-[#b5a596]">รีวิวของฉัน</span><span className="font-semibold text-[#e8c472]">—</span><span className="text-[12px] font-light text-[#d9c9b4]">ยังไม่มีรีวิว</span></Link>
             </div>
 
             {/* กระเป๋าเงิน */}
             <div className="flex flex-col gap-3 rounded-[18px]" style={{ padding: 16, background: "linear-gradient(150deg, #3a2a17 0%, #251d1b 70%)", boxShadow: "0 10px 24px rgba(0,0,0,0.35)" }}>
               <div className="flex justify-between items-center gap-2">
                 <span className="flex items-center gap-2 text-[14px] font-semibold text-[#e8c472]"><Ico><path d="M3 7a2 2 0 0 1 2-2h13v4" /><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z" /><circle cx="16" cy="14.5" r="1.3" /></Ico>กระเป๋าเงิน</span>
-                <Link href="/join/earnings" className="text-[13px] text-[#e8c472] font-light">เช็คเรทรายได้ ›</Link>
+                <Link href={`/join/profile/${d.mb}/earnings${q}`} className="text-[13px] text-[#e8c472] font-light">เช็คเรทรายได้ ›</Link>
               </div>
               <div><div className="text-[13px] text-[#d9c9b4] font-light">ยอดใช้ได้</div><div className="font-semibold text-[32px] leading-[1.15]">{baht(0)}</div><div className="text-[13px] text-[#d9c9b4] mt-0.5 font-light">รอถอน {baht(0)} · รายได้เดือนนี้ {baht(0)}</div></div>
               <div className="grid grid-cols-2 gap-2">
-                <button type="button" disabled className="min-h-11 rounded-xl text-[14px] font-semibold" style={{ background: "rgba(243,234,217,0.1)", opacity: 0.5 }}>ถอนเงิน</button>
+                <Link href={`/join/profile/${d.mb}/withdraw${q}`} className="min-h-11 rounded-xl text-[14px] font-semibold grid place-items-center text-[#f3ead9] hover:text-[#f3ead9]" style={{ background: "rgba(243,234,217,0.1)" }}>ถอนเงิน</Link>
                 <button type="button" onClick={() => setPromoOpen(!promoOpen)} aria-expanded={promoOpen} className="min-h-11 rounded-xl bg-[#e8c472] text-[#1b130b] text-[14px] font-semibold">{promoOpen ? "ปิด" : "โปรโมทโปรไฟล์"}</button>
               </div>
               {promoOpen && (
@@ -219,7 +219,7 @@ export function ProfileHub({ d }: { d: HubData }) {
                 </div>
 
                 <div className="flex flex-col gap-2 rounded-2xl bg-[#241c29]" style={{ padding: 14 }}>
-                  <div className="flex justify-between items-center"><span className="text-[14px] flex items-center gap-1.5">ราคา 3 ชม. <span className="inline-flex items-center h-[18px] px-[7px] rounded text-[9.5px] font-bold tracking-[.2em] text-[#1b130b]" style={{ background: "linear-gradient(135deg, #f3ead9 0%, #b5a596 100%)" }}>SILVER</span></span><span className="font-semibold text-[19px] text-[#e8c472]">{baht(d.price)}</span></div>
+                  <div className="flex justify-between items-center"><span className="text-[14px] flex items-center gap-1.5">ราคา 3 ชม. <TierBadge tier={d.tier} /></span><span className="font-semibold text-[19px] text-[#e8c472]">{baht(d.price)}</span></div>
                   <div className="text-[13px] flex items-center gap-1.5 font-light"><Ico size={14}><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></Ico>กำหนดโดยทีมงานตามระดับ · แก้ไขเองไม่ได้</div>
                 </div>
 
@@ -241,7 +241,7 @@ export function ProfileHub({ d }: { d: HubData }) {
                   {d.main ? <img src={d.main} alt="" className="w-full h-[340px] object-cover block" /> : <div className="w-full h-[340px] bg-[#251d1b]" />}
                   <div className="flex flex-col gap-2" style={{ padding: 14 }}>
                     <div className="flex justify-between items-baseline">
-                      <span className="flex items-center gap-1.5"><span className="font-semibold text-[20px]">{d.nickname}{d.age ? ` · ${d.age} ปี` : ""}</span><span className="inline-flex items-center h-[18px] px-[7px] rounded text-[9.5px] font-bold tracking-[.2em] text-[#1b130b]" style={{ background: "linear-gradient(135deg, #f3ead9 0%, #b5a596 100%)" }}>SILVER</span></span>
+                      <span className="flex items-center gap-1.5"><span className="font-semibold text-[20px]">{d.nickname}{d.age ? ` · ${d.age} ปี` : ""}</span><TierBadge tier={d.tier} /></span>
                       <span className="text-[13px] text-[#e8c472] font-light">ยังไม่มีรีวิว</span>
                     </div>
                     <div className="flex flex-wrap gap-1.5">{picked.map((a) => <span key={a} className="text-[13px] rounded-full font-light" style={{ padding: "4px 10px", background: "rgba(243,234,217,0.07)" }}>{a}</span>)}</div>
@@ -258,11 +258,16 @@ export function ProfileHub({ d }: { d: HubData }) {
       <nav aria-label="เมนู Part Time" className="fixed bottom-0 inset-x-0 z-40 mx-auto max-w-[640px] grid grid-cols-5 items-center text-center font-light text-[#b5a596] border-t border-[rgba(243,234,217,0.07)] bg-[#251d1b] md:rounded-t-2xl"
         style={{ height: "calc(76px + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", fontSize: 10.5 }}>
         <Link href={`/join/profile/${d.mb}${q}`} aria-current="page" className="flex flex-col items-center gap-[3px] text-[#e8c472] hover:text-[#e8c472]"><Ico d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />หน้าหลัก</Link>
-        <Link href={`/join/training/${d.mb}${q}`} className="flex flex-col items-center gap-[3px] text-inherit hover:text-[#f3ead9]"><Ico><rect x="4" y="5" width="16" height="16" rx="2" /><path d="M8 3v4M16 3v4M4 10h16" /></Ico>ตาราง</Link>
-        <span aria-disabled="true" title="เปิดหลังผ่านอบรม" className="flex flex-col items-center gap-[3px] opacity-50"><Ico><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" /></Ico>งาน</span>
-        <Link href="/join/earnings" className="flex flex-col items-center gap-[3px] text-inherit hover:text-[#f3ead9]"><Ico><rect x="2" y="6" width="20" height="12" rx="2" /><circle cx="12" cy="12" r="2.5" /></Ico>รายได้</Link>
-        <span aria-disabled="true" title="เปิดหลังผ่านอบรม" className="flex flex-col items-center gap-[3px] opacity-50"><Ico><circle cx="12" cy="12" r="3" /><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z" /></Ico>ตั้งค่า</span>
+        <Link href={`/join/profile/${d.mb}/schedule${q}`} className="flex flex-col items-center gap-[3px] text-inherit hover:text-[#f3ead9]"><Ico><rect x="4" y="5" width="16" height="16" rx="2" /><path d="M8 3v4M16 3v4M4 10h16" /></Ico>ตาราง</Link>
+        <Link href={`/join/profile/${d.mb}/jobs${q}`} className="flex flex-col items-center gap-[3px] text-inherit hover:text-[#f3ead9]"><Ico><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" /></Ico>งาน</Link>
+        <Link href={`/join/profile/${d.mb}/earnings${q}`} className="flex flex-col items-center gap-[3px] text-inherit hover:text-[#f3ead9]"><Ico><rect x="2" y="6" width="20" height="12" rx="2" /><circle cx="12" cy="12" r="2.5" /></Ico>รายได้</Link>
+        <Link href={`/join/profile/${d.mb}/settings${q}`} className="flex flex-col items-center gap-[3px] text-inherit hover:text-[#f3ead9]"><Ico><circle cx="12" cy="12" r="3" /><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z" /></Ico>ตั้งค่า</Link>
       </nav>
     </div>
   );
+}
+
+/** ป้ายระดับ: TOP = ทอง (ตามบอร์ด) · Silver = เงิน */
+function TierBadge({ tier }: { tier: "top" | "silver" }) {
+  return <span className="inline-flex items-center h-[18px] px-[7px] rounded text-[9.5px] font-bold tracking-[.2em] text-[#1b130b]" style={{ background: tier === "top" ? "linear-gradient(135deg, #fff1c9 0%, #e8c472 45%, #a8781f 100%)" : "linear-gradient(135deg, #f3ead9 0%, #b5a596 100%)", boxShadow: "inset 0 0 0 1px rgba(255,241,201,.5), 0 2px 6px rgba(0,0,0,.35)" }}>{tier === "top" ? "TOP" : "SILVER"}</span>;
 }

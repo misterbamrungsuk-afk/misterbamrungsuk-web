@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { extraOf, listApplicants, setKyc, updateApplicant, updateExtra, type ApplicantStatus, type KycReason } from "@/lib/join/store";
+import { extraOf, listApplicants, setKyc, setTier, updateApplicant, updateExtra, type ApplicantStatus, type KycReason } from "@/lib/join/store";
 import { listCohorts } from "@/lib/join/cohorts";
 import { appendToSheet } from "@/lib/join/sheets";
 
@@ -18,6 +18,7 @@ const KYC_ITEMS = ["id_card", "id_copy", "selfie", "cert_doc", "bank"] as const;
 
 type Body = {
   status?: ApplicantStatus; sync?: boolean; cohort?: string | null; line_joined?: boolean;
+  tier?: "top" | "silver";
   kyc_status?: "approved" | "rejected"; kyc_reason?: Partial<Record<(typeof KYC_ITEMS)[number], string>> | null;
 };
 
@@ -46,6 +47,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
 
   if (!canAccess(r, "/admin/applicants")) return NextResponse.json({ ok: false }, { status: 401 });
+  // ระดับ TOP / Silver (หลังอบรม) → ราคาบนการ์ดโปรไฟล์ผู้สมัคร
+  if (body.tier !== undefined) {
+    if (body.tier !== "top" && body.tier !== "silver") return NextResponse.json({ ok: false }, { status: 400 });
+    const row = await setTier(id, body.tier);
+    return row ? NextResponse.json({ ok: true, row: { ...row, ...extraOf(row) } }) : NextResponse.json({ ok: false }, { status: 404 });
+  }
   // จัดกลุ่มอบรม / สถานะกลุ่ม LINE
   if (body.cohort !== undefined || body.line_joined !== undefined) {
     if (body.cohort != null && !(await listCohorts()).some((c) => c.key === body.cohort)) return NextResponse.json({ ok: false }, { status: 400 });
