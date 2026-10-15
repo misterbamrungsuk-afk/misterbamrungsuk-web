@@ -1,0 +1,31 @@
+/* eslint-disable @next/next/no-img-element */
+import Link from "next/link";
+import { CLOSE_AT, QUOTA } from "@/lib/join/config";
+import { findInvite } from "@/lib/join/invites";
+import { countActive } from "@/lib/join/store";
+import { JoinSalePage } from "../../join-sale";
+
+export const dynamic = "force-dynamic";
+export const metadata = { title: "คำเชิญพิเศษ · Part-Time — Mister Bamrungsuk", robots: { index: false } };
+
+// บอร์ด JoinInvite — ลิงก์เชิญ /join/i/[รหัส] · ไม่เก็บค่าการันตี จ่ายเฉพาะค่าอบรม · ลิงก์ใช้ไม่ได้ → แจ้งเหตุผล + ไปหน้าสมัครปกติ
+export default async function InvitePage({ params }: { params: Promise<{ code: string }> }) {
+  const code = (await params).code.toUpperCase();
+  const { state } = await findInvite(code);
+  if (state !== "ok") {
+    const why = state === "full" ? "ลิงก์เชิญนี้มีผู้ใช้ครบจำนวนแล้ว" : state === "expired" ? "ลิงก์เชิญนี้หมดอายุแล้ว" : state === "off" ? "ลิงก์เชิญนี้ถูกปิดแล้ว" : "ไม่พบลิงก์เชิญนี้";
+    return (
+      <main className="mb-v7 min-h-dvh grid place-items-center text-center" style={{ background: "#171211", color: "#f3ead9", padding: 24 }}>
+        <div className="flex flex-col items-center gap-3 max-w-[420px]">
+          <img src="/brand/logo.png" alt="Mister Bamrungsuk" width={64} height={64} className="w-16 h-16 object-contain" />
+          <h1 className="m-0 text-[22px] font-semibold">{why}</h1>
+          <p className="m-0 text-[14px] font-light text-[#d9c9b4]">ติดต่อผู้ที่ส่งลิงก์ให้คุณเพื่อขอลิงก์ใหม่ หรือสมัครแบบปกติได้ที่หน้ารับสมัคร</p>
+          <Link href="/join" className="mt-2 min-h-12 px-6 rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold grid place-items-center hover:text-[#1b130b]">ไปหน้ารับสมัคร</Link>
+        </div>
+      </main>
+    );
+  }
+  const active = await countActive().catch(() => 0);
+  const closed = active >= QUOTA || Date.now() > Date.parse(CLOSE_AT);
+  return <JoinSalePage seats={{ left: Math.max(0, QUOTA - active), quota: QUOTA, cohort: "", closed }} invite={code} />;
+}

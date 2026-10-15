@@ -66,6 +66,8 @@ export interface ApplicantInput {
   no_area?: string;
   /** ผลตรวจสลิปจาก Slip2Go (เก็บใน docs.extra) */
   slip_check?: SlipCheck | null;
+  /** รหัสลิงก์เชิญ (ไม่เก็บค่าการันตี · เก็บใน docs.extra) */
+  invite?: string | null;
   package: PackageKey;
   amount: number;
   payment_method: "qr" | "transfer";
@@ -110,7 +112,7 @@ export interface PtSettings { auto_reply_on: boolean; auto_reply: string; quick_
 export interface PtListing { title: string; rules: string; hidden: boolean; updated_at: string }
 export interface PtPost { text: string; time: string; zone: string; open: boolean; created_at: string }
 
-export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents" | "talents_other" | "activities_other" | "areas" | "no_area" | "slip_check" | "kyc_status" | "kyc_reason" | "kyc_submitted_at" | "bank_book_path"> & { attendance?: Record<string, boolean>; photos?: string[]; card?: ProfileCard | null; form_done?: number[]; tier?: "top" | "silver"; pt_settings?: PtSettings | null; post?: PtPost | null; listing?: PtListing | null; delete_requested_at?: string | null; bank_consents?: { terms: boolean; pdpa: boolean; profile: boolean; at: string } | null };
+export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents" | "talents_other" | "activities_other" | "areas" | "no_area" | "slip_check" | "invite" | "kyc_status" | "kyc_reason" | "kyc_submitted_at" | "bank_book_path"> & { attendance?: Record<string, boolean>; photos?: string[]; card?: ProfileCard | null; form_done?: number[]; tier?: "top" | "silver"; pt_settings?: PtSettings | null; post?: PtPost | null; listing?: PtListing | null; delete_requested_at?: string | null; bank_consents?: { terms: boolean; pdpa: boolean; profile: boolean; at: string } | null };
 
 /** รวมคอลัมน์ 0003 กับ docs.extra — คอลัมน์จริงมาก่อน */
 export function extraOf(a: Applicant): Extra {
@@ -139,6 +141,7 @@ export function extraOf(a: Applicant): Extra {
     delete_requested_at: x.delete_requested_at ?? null,
     bank_consents: x.bank_consents ?? null,
     slip_check: x.slip_check ?? null,
+    invite: x.invite ?? null,
     kyc_status: a.kyc_status && a.kyc_status !== "none" ? a.kyc_status : x.kyc_status ?? a.kyc_status ?? "none",
     kyc_reason: a.kyc_reason ?? x.kyc_reason ?? null,
     kyc_submitted_at: a.kyc_submitted_at ?? x.kyc_submitted_at ?? null,
@@ -196,7 +199,7 @@ export async function createApplicant(input: ApplicantInput, files: Partial<Reco
   }
 
   // แพ็กข้อมูล Part-Time ไว้ใน docs.extra ด้วย → ไม่หายแม้ยังไม่รัน migration 0003 (RPC เดิมไม่รู้จักคีย์ใหม่ใน p ก็ไม่ error)
-  docs.extra = { activities: input.activities ?? [], massage_cert: input.massage_cert ?? null, availability: input.availability, ack_hours: input.ack_hours ?? false, ack_no_refuse: input.ack_no_refuse ?? false, phone_verified_at: input.phone_verified_at ?? null, talents: input.talents ?? [], talents_other: input.talents_other ?? "", activities_other: input.activities_other ?? "", areas: input.areas ?? [], no_area: input.no_area ?? "", slip_check: input.slip_check ?? null };
+  docs.extra = { activities: input.activities ?? [], massage_cert: input.massage_cert ?? null, availability: input.availability, ack_hours: input.ack_hours ?? false, ack_no_refuse: input.ack_no_refuse ?? false, phone_verified_at: input.phone_verified_at ?? null, talents: input.talents ?? [], talents_other: input.talents_other ?? "", activities_other: input.activities_other ?? "", areas: input.areas ?? [], no_area: input.no_area ?? "", slip_check: input.slip_check ?? null, invite: input.invite ?? null };
 
   if (isDemo) {
     const prefix = mbPrefix();

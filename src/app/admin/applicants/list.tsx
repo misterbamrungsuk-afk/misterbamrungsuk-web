@@ -152,6 +152,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
               <div className="min-w-0"><div className="font-lux font-semibold text-[17px] truncate">{sel.first_name} {sel.last_name}</div><div className="text-[#ffd76a] text-xs">{sel.mb_code} · {sel.package} · {fmt(G(sel.package))} + {fmt(T(sel.package))}</div></div>
             </div>
             <Progress r={sel} />
+            {sel.invite && <p className="text-[12.5px] text-[#e8c472] m-0">✦ สมัครผ่านลิงก์เชิญ ({sel.invite}) · ไม่เก็บค่าการันตี · ยอดที่ต้องได้รับ = ค่าอบรม</p>}
             <div className="flex justify-between items-center gap-2"><span className="text-[#cdbfb3]">ระดับ (หลังอบรม)</span>
               <span className="flex gap-1">{(["silver", "top"] as const).map((t) => { const on = (sel.tier ?? "silver") === t; return <button key={t} onClick={() => setTier(sel.id, t)} aria-pressed={on} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={{ borderColor: on ? GOLD : LINE_BD, background: on ? GOLD : "transparent", color: on ? "#1a1206" : "#d3c7bc" }}>{t === "top" ? "TOP" : "Silver"}</button>; })}</span>
             </div>

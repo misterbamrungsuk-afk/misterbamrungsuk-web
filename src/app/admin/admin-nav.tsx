@@ -16,6 +16,7 @@ export const ADMIN_TABS = [
   { href: "/admin/kyc", label: "คิว KYC" },
   { href: "/admin/cohorts", label: "กลุ่มอบรม / เช็กชื่อ" },
   { href: "/admin/earnings", label: "ราคาและส่วนแบ่ง" },
+  { href: "/admin/invites", label: "ลิงก์เชิญ" },
   { href: "/admin/payouts", label: "โอนให้ Part-Time", badge: PAYOUTS.filter((p) => !p.hold).length },
   { href: "/admin/partners", label: "พาร์ทเนอร์ / พื้นที่โปรโมท" },
   { href: "/admin/market", label: "ร้านค้า Marketplace" },

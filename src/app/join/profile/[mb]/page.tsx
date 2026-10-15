@@ -27,7 +27,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
 
   const data: HubData = {
     mb, t: t ?? "", nickname: row.nickname, fullName: `${row.first_name} ${row.last_name}`,
-    statusLine: `สมัครปกติ · ${row.status === "verified" ? "ชำระค่าการันตีแล้ว" : "ส่งสลิปแล้ว · รอทีมงานตรวจ"}`,
+    statusLine: x.invite ? `คำเชิญพิเศษ · ไม่เก็บค่าการันตี · ${row.status === "verified" ? "ชำระค่าอบรมแล้ว" : "ส่งสลิปแล้ว · รอทีมงานตรวจ"}` : `สมัครปกติ · ${row.status === "verified" ? "ชำระค่าการันตีแล้ว" : "ส่งสลิปแล้ว · รอทีมงานตรวจ"}`,
     track: row.package === "B" ? "เพื่อนกินเที่ยว · นวด" : "เพื่อนกินเที่ยว", trackShort: row.package === "B" ? "สายนวด" : "สายกินเที่ยว",
     main, photos, age: row.birthdate ? ageFrom(row.birthdate) : null, area: (x.areas ?? [])[0]?.split(" › ").pop() ?? "",
     price: x.tier === "top" ? svc.top : svc.silver, tier: x.tier === "top" ? "top" : "silver", verified: row.status === "verified",

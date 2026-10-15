@@ -15,6 +15,7 @@ const TR: Record<PackageKey, { name2: string; guarantee: string; lines: [string,
     bg: "linear-gradient(160deg, #6a1a28, #3a0d16)", kc: "#f0d6d0", sh: "0 0 0 4px rgba(232,196,114,.18), 0 14px 32px rgba(200,16,46,.35)" },
 };
 const TIMELINE: [string, string][] = [["20 ต.ค. – 10 พ.ย.", "เปิดรับสมัคร"], ["ไม่เกินต้น พ.ย.", "ประกาศกฎเกณฑ์การทำงาน"], ["ภายใน 20 พ.ย.", "อบรมกลุ่ม 1"], ["30 พ.ย.", "พร้อมเปิดให้บริการ"], ["30 พ.ย. – ต้น ธ.ค.", "อบรมกลุ่ม 2"]];
+const FAQ_INVITE: [string, string] = ["คำเชิญพิเศษต่างจากสมัครปกติอย่างไร?", "ผู้ได้รับคำเชิญไม่ต้องชำระค่าการันตี Branding จ่ายแค่ค่าอบรม ขั้นตอนอื่นเหมือนสมัครปกติ"];
 const FAQ: [string, string][] = [
   ["ค่าการันตี Branding คืออะไร ได้คืนเมื่อไหร่?", "ได้รับคืนเต็มจำนวนเมื่อครบ 1 ปี ถ้าไม่ทำผิดกฎบริษัทและกฎหมาย เช่น ไม่ปฏิเสธการรับลูกค้าในวันเวลาที่แจ้งไว้"],
   ["งานนี้ทำอะไรบ้าง?", "เป็นเพื่อนร่วมกิจกรรมของลูกค้า เช่น ทานข้าว เที่ยว ดูหนัง ถ่ายรูป ไม่มีบริการทางเพศใด ๆ ทั้งสิ้น"],
@@ -25,7 +26,9 @@ const FAQ: [string, string][] = [
 export type Seats = { left: number; quota: number; cohort: string; closed: boolean };
 const h2: React.CSSProperties = { margin: 0, fontWeight: 600, fontSize: 20 };
 
-export function JoinSalePage({ seats, showEarnings = true }: { seats: Seats; showEarnings?: boolean }) {
+/** invite = รหัสลิงก์เชิญ (บอร์ด JoinInvite): ไม่มีกล่องค่าการันตี · ไม่มีแถบที่นั่ง · ปุ่ม "เริ่มสร้างโปรไฟล์" */
+export function JoinSalePage({ seats, showEarnings = true, invite }: { seats: Seats; showEarnings?: boolean; invite?: string }) {
+  const faq = invite ? [FAQ_INVITE, ...FAQ.slice(1)] : FAQ;
   const [pick, setPick] = useState<PackageKey>("B");
   const [open, setOpen] = useState<Record<number, boolean>>({ 0: true });
 
@@ -39,9 +42,9 @@ export function JoinSalePage({ seats, showEarnings = true }: { seats: Seats; sho
 
       <div className="mx-auto max-w-[1200px] flex flex-col" style={{ padding: "20px 16px 0", gap: 26 }}>
         <section className="md:py-16 md:px-10" style={{ padding: "40px 22px 34px", borderRadius: 18, background: "linear-gradient(180deg, rgba(79,22,34,.82), rgba(42,13,19,.96)), url(/brand/home/join-hero.jpg) 72% center/cover" }}>
-          <div className="text-[11px] font-semibold tracking-[2px] text-[#e8c472]">PART TIME</div>
+          <div className="text-[11px] font-semibold tracking-[2px] text-[#e8c472]">{invite ? "✦ คำเชิญพิเศษ · PART TIME" : "PART TIME"}</div>
           <h1 className="font-semibold text-[30px] md:text-[40px] leading-[1.25] text-[#f3ead9]" style={{ margin: "10px 0 6px" }}>เพื่อนกินเที่ยว Mister Bamrungsuk</h1>
-          <p className="m-0 text-[15px] text-[#e6d6c4]">งานพาร์ทไทม์ เลือกวันเวลาเอง</p>
+          <p className="m-0 text-[15px] text-[#e6d6c4]">งานพาร์ทไทม์ เลือกวันเวลาเอง{invite ? " · ผู้ได้รับคำเชิญไม่เก็บค่าการันตี" : ""}</p>
         </section>
 
         <section className="flex flex-col" style={{ gap: 18 }}>
@@ -58,24 +61,25 @@ export function JoinSalePage({ seats, showEarnings = true }: { seats: Seats; sho
                   <span className="flex flex-col gap-1.5">
                     {T.lines.map(([kk, v]) => <span key={kk} className="flex justify-between gap-[10px] text-[#fff7e8]"><span className="whitespace-nowrap shrink-0" style={{ color: T.kc }}>{kk}</span><span className="font-semibold text-right min-w-0">{v}</span></span>)}
                   </span>
-                  <span className="flex flex-col gap-1 rounded-xl" style={{ padding: "12px 14px", background: "rgba(0,0,0,.32)" }}>
+                  {!invite && <span className="flex flex-col gap-1 rounded-xl" style={{ padding: "12px 14px", background: "rgba(0,0,0,.32)" }}>
                     <span className="flex justify-between gap-[10px] text-[#fff7e8]"><span className="text-[#e8c472] font-semibold">ค่าการันตี Branding</span><span className="font-bold text-[17px] text-[#fff1c9]">{T.guarantee}</span></span>
                     <span className="text-[13px] leading-[1.6] text-[#fff7e8] font-light">รับคืนเมื่อครบ 1 ปี ถ้าไม่ทำผิดกฎบริษัทและกฎหมาย <br />(เช่น ไม่ปฏิเสธการรับลูกค้า)</span>
-                  </span>
+                  </span>}
                 </button>
               );
             })}
           </div>
           <div className="w-full max-w-[560px] mx-auto flex flex-col" style={{ gap: 18 }}>
             <Link href="/join/terms" className="self-center text-[14px] text-[#e8c472]">อ่านสัญญา</Link>
-            <div className="flex justify-between items-center rounded-xl text-[13px] font-light" style={{ padding: "10px 14px", background: "rgba(232,196,114,0.10)" }}>
+            {!invite && <div className="flex justify-between items-center rounded-xl text-[13px] font-light" style={{ padding: "10px 14px", background: "rgba(232,196,114,0.10)" }}>
               <span>{seats.closed ? "ปิดรับสมัครรอบนี้แล้ว" : `กลุ่มอบรมถัดไป · ${seats.cohort}`}</span>
               <span className="text-[#e8c472] font-semibold">{seats.closed ? "เต็มแล้ว" : `เหลือ ${seats.left} / ${seats.quota} ที่`}</span>
-            </div>
-            {showEarnings && <Link href="/join/earnings" className="min-h-12 rounded-[14px] text-[#e8c472] font-semibold grid place-items-center text-center hover:text-[#e8c472]" style={{ background: "rgba(232,196,114,0.16)" }}>ดูรายได้และส่วนแบ่ง · คำนวณรายได้ต่อเดือน</Link>}
+            </div>}
+            {showEarnings && !invite && <Link href="/join/earnings" className="min-h-12 rounded-[14px] text-[#e8c472] font-semibold grid place-items-center text-center hover:text-[#e8c472]" style={{ background: "rgba(232,196,114,0.16)" }}>ดูรายได้และส่วนแบ่ง · คำนวณรายได้ต่อเดือน</Link>}
             {seats.closed
               ? <span aria-disabled="true" className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center" style={{ marginTop: 6, opacity: 0.45 }}>ปิดรับสมัครแล้ว</span>
-              : <Link href={`/join/pay?pkg=${pick}`} className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center hover:text-[#1b130b]" style={{ marginTop: 6 }}>ชำระเงินและรับรหัสสมัคร</Link>}
+              : <Link href={invite ? `/join/pay?pkg=${pick}&invite=${invite}` : `/join/pay?pkg=${pick}`} className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center hover:text-[#1b130b]" style={{ marginTop: 6 }}>{invite ? "เริ่มสร้างโปรไฟล์" : "ชำระเงินและรับรหัสสมัคร"}</Link>}
+            {invite && <p className="m-0 text-[13px] text-center text-[#b5a596] font-light">ลิงก์ส่วนตัว กรุณาอย่าเผยแพร่</p>}
           </div>
         </section>
 
@@ -117,7 +121,7 @@ export function JoinSalePage({ seats, showEarnings = true }: { seats: Seats; sho
 
         <section className="flex flex-col w-full max-w-[720px] mx-auto">
           <h2 className="text-center" style={{ ...h2, margin: "0 0 6px" }}>คำถามที่พบบ่อย</h2>
-          {FAQ.map(([q, a], i) => {
+          {faq.map(([q, a], i) => {
             const o = !!open[i];
             return (
               <div key={q} className="border-b border-[rgba(243,234,217,0.07)]">

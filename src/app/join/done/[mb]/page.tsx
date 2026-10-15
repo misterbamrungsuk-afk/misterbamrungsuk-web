@@ -29,7 +29,9 @@ export default async function DonePage({ params, searchParams }: { params: Promi
   const P = PACKAGES[row.package];
   const group = x.cohort ? `กลุ่ม ${x.cohort}` : TRAINING.group;
   const info: [string, string][] = [["วันอบรม", TRAINING.window], ["สถานที่", TRAINING.venue], ["จำนวนรอบ", `${TRAINING_SESSIONS.length} รอบ · เช็กชื่อทุกรอบ`], ["เปิดให้บริการ", TRAINING.openService]];
-  const fee = row.package === "B"
+  const fee = x.invite
+    ? `สมัครผ่านลิงก์เชิญ · ชำระเฉพาะค่าอบรม ${baht(P.training)} ไม่เก็บค่าการันตี`
+    : row.package === "B"
     ? `เพื่อนกินเที่ยว (สำหรับผู้มีความสามารถด้านการนวด): ค่าการันตี Branding ${baht(P.guarantee)} + ค่าอบรม (รวมยูนิฟอร์ม + น้ำมันนวด) ${baht(P.training)} = ${baht(P.price)}`
     : `เพื่อนกินเที่ยว (ตามความสามารถพิเศษ): ค่าการันตี Branding ${baht(P.guarantee)} + ค่าอบรม ${baht(P.training)} = ${baht(P.price)}`;
 
@@ -61,7 +63,7 @@ export default async function DonePage({ params, searchParams }: { params: Promi
           </div>
         </div>
         <Link href={`/join/profile/${row.mb_code}${q}`} className="min-h-[52px] rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold text-[15px] grid place-items-center hover:text-[#1b130b]">ไปที่โปรไฟล์ของฉัน</Link>
-        <div className="text-[12px] leading-[1.6] text-center font-light text-[#d9c9b4]">{`${fee} · เงินประกัน Refundable – คืนเมื่อครบ 1 ปี หากไม่ผิดกฎ`}</div>
+        <div className="text-[12px] leading-[1.6] text-center font-light text-[#d9c9b4]">{x.invite ? fee : `${fee} · เงินประกัน Refundable – คืนเมื่อครบ 1 ปี หากไม่ผิดกฎ`}</div>
       </div>
     </div>
   );

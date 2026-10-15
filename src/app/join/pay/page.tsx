@@ -17,6 +17,7 @@ import { BrandHeader } from "@/components/mb/ui";
 const GOLD = "#e8c472";
 const QR_TTL = 900;
 const PKG_KEY = "mb_join_pkg";
+const INV_KEY = "mb_join_invite";
 const box: CSSProperties = { padding: 20, borderRadius: 16, minWidth: 0, overflowWrap: "anywhere" };
 const cta = "min-h-14 w-full rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[17px] grid place-items-center text-center px-4";
 const ghost = "min-h-12 w-full rounded-[14px] text-[#e8c472] text-[15px] font-semibold grid place-items-center";
@@ -40,12 +41,21 @@ function PayInner() {
   const [ts, setTs] = useState("");
   const [tsKey, setTsKey] = useState(0);
   const [done, setDone] = useState("");
+  // ลิงก์เชิญ: null = สมัครปกติ · "…" = รหัสที่ตรวจแล้วใช้ได้ · inviteErr = ลิงก์ใช้ไม่ได้
+  const [invite, setInvite] = useState<string | null>(null);
+  const [inviteErr, setInviteErr] = useState("");
 
   useEffect(() => {
     const q = params.get("pkg");
     let pkg: string | null = q;
     try { if (q === "A" || q === "B") sessionStorage.setItem(PKG_KEY, q); else pkg = sessionStorage.getItem(PKG_KEY); } catch {}
     if (pkg === "A" || pkg === "B") setK(pkg); else router.replace("/join");
+    let code = (params.get("invite") ?? "").toUpperCase();
+    try { if (code) sessionStorage.setItem(INV_KEY, code); else code = sessionStorage.getItem(INV_KEY) ?? ""; } catch {}
+    if (code) fetch(`/api/join/invite?code=${encodeURIComponent(code)}`, { cache: "no-store" }).then((r) => r.json()).then((d: { ok?: boolean; state?: string }) => {
+      if (d.ok) setInvite(code);
+      else { setInviteErr(d.state === "full" ? "ลิงก์เชิญนี้มีผู้ใช้ครบจำนวนแล้ว" : d.state === "expired" ? "ลิงก์เชิญนี้หมดอายุแล้ว" : "ลิงก์เชิญนี้ใช้ไม่ได้"); try { sessionStorage.removeItem(INV_KEY); } catch {} }
+    }).catch(() => {});
   }, [params, router]);
 
   useEffect(() => {
@@ -62,9 +72,9 @@ function PayInner() {
 
   useEffect(() => {
     if (!k) return;
-    const payload = promptPayPayload(BANK.promptPayId, PACKAGES[k].price);
+    const payload = promptPayPayload(BANK.promptPayId, invite ? PACKAGES[k].training : PACKAGES[k].price);
     if (payload) QRCode.toDataURL(payload, { margin: 1, width: 480, errorCorrectionLevel: "M" }).then(setQr).catch(() => setQr(""));
-  }, [k, sec === QR_TTL]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [k, invite, sec === QR_TTL]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (sec <= 0 || done) return;
@@ -74,6 +84,7 @@ function PayInner() {
 
   if (!k) return <main className="mb-v7 min-h-dvh grid place-items-center text-[#d9c9b4]">กำลังโหลด…</main>;
   const pkg = PACKAGES[k];
+  const amount = invite ? pkg.training : pkg.price;
   const setW = (key: keyof typeof who, v: string) => { setWho((w) => ({ ...w, [key]: v })); setErr(""); };
 
   const onSlip = async (file?: File) => {
@@ -97,6 +108,7 @@ function PayInner() {
       fd.append("nickname", who.nickname.trim()); fd.append("tel", who.tel);
       fd.append("accept_terms", "true"); fd.append("consent_pdpa", "true"); fd.append("turnstile", ts);
       fd.append("slip", await dataUrlToFile(slip, "slip.jpg"));
+      if (invite) fd.append("invite", invite);
       const res = await fetch("/api/join/register", { method: "POST", body: fd });
       const data = (await res.json()) as { ok?: boolean; mb_code?: string; error?: string; fields?: string[]; needOtp?: boolean };
       if (!res.ok || !data.ok || !data.mb_code) {
@@ -105,7 +117,7 @@ function PayInner() {
         setErr(data.error || "ส่งข้อมูลไม่สำเร็จ");
         throw null;
       }
-      try { sessionStorage.removeItem(PKG_KEY); } catch {}
+      try { sessionStorage.removeItem(PKG_KEY); sessionStorage.removeItem(INV_KEY); } catch {}
       setDone(data.mb_code);
     } catch (e) {
       if (e) setErr((e as Error).message || "ส่งข้อมูลไม่สำเร็จ");
@@ -115,7 +127,8 @@ function PayInner() {
 
   const lastInitial = who.last_name.trim() ? ` ${who.last_name.trim()[0]}.` : "";
   const summary: [string, string][] = [["ผู้สมัคร", who.first_name.trim() ? `นาย${who.first_name.trim()}${lastInitial}${who.nickname.trim() ? ` (${who.nickname.trim()})` : ""}` : "—"], ["กลุ่มอบรม", "กลุ่ม 1 · ภายใน 20 พ.ย."]];
-  const items: [string, number][] = k === "A" ? [["ค่าอบรม", pkg.training], ["ค่าการันตี Branding", pkg.guarantee]] : [["ค่าอบรม (รับ Uniform + Oil นวด ฟรี)", pkg.training], ["ค่าการันตี Branding", pkg.guarantee]];
+  const allItems: [string, number][] = k === "A" ? [["ค่าอบรม", pkg.training], ["ค่าการันตี Branding", pkg.guarantee]] : [["ค่าอบรม (รับ Uniform + Oil นวด ฟรี)", pkg.training], ["ค่าการันตี Branding", pkg.guarantee]];
+  const items = allItems.filter(([n]) => !invite || !n.startsWith("ค่าการันตี"));
   const perks = k === "A" ? ["อบรมบุคลิกภาพ มารยาท การดูแลลูกค้า"] : ["อบรมบุคลิกภาพ + มาตรฐานการนวด", "Uniform + Oil นวด 1 ชุด ฟรี"];
   const mm = String(Math.floor(sec / 60)).padStart(2, "0"), ss = String(sec % 60).padStart(2, "0");
   const expired = sec === 0;
@@ -126,12 +139,13 @@ function PayInner() {
       <BrandHeader tone="bar" small />
       <div className="mb-panel mx-auto w-full max-w-[1000px]">
         <div className="flex items-center gap-3" style={{ padding: "20px 20px 10px" }}>
-          <Link href="/join" aria-label="ย้อนกลับ" className="shrink-0 w-11 h-11 rounded-full bg-[#251d1b] text-[#f3ead9] grid place-items-center hover:text-[#f3ead9]">
+          <Link href={invite ? `/join/i/${invite}` : "/join"} aria-label="ย้อนกลับ" className="shrink-0 w-11 h-11 rounded-full bg-[#251d1b] text-[#f3ead9] grid place-items-center hover:text-[#f3ead9]">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
           </Link>
-          <div className="min-w-0"><div className="text-[13px] text-[#e8c472] font-light">ก่อนกรอกใบสมัคร</div><div className="font-semibold text-[20px] leading-[1.35]">ชำระเงิน</div></div>
+          <div className="min-w-0"><div className="text-[13px] text-[#e8c472] font-light">{invite ? "✦ คำเชิญพิเศษ" : "ก่อนกรอกใบสมัคร"}</div><div className="font-semibold text-[20px] leading-[1.35]">{invite ? "ชำระค่าอบรม" : "ชำระเงิน"}</div></div>
         </div>
 
+        {inviteErr && <p role="alert" className="m-0 mx-5 mt-2 rounded-xl text-[13.5px] text-[#ff8a9a]" style={{ padding: "10px 14px", background: "rgba(255,138,154,0.1)" }}>{inviteErr} · ยอดด้านล่างเป็นราคาสมัครปกติ</p>}
         <div className="grid min-w-0 md:grid-cols-2 md:items-start" style={{ padding: "24px 20px 40px", gap: 31 }}>
           <div className="flex flex-col min-w-0" style={{ gap: 31 }}>
             <div className="flex flex-col gap-3 bg-[#251d1b]" style={box}>
@@ -150,7 +164,7 @@ function PayInner() {
               {summary.map(([n, v]) => <div key={n} className="flex justify-between gap-4 min-w-0"><span className="whitespace-nowrap shrink-0">{n}</span><span className="text-right min-w-0">{v}</span></div>)}
               <div style={{ height: 1, background: "rgba(243,234,217,0.07)", margin: "4px 0" }} />
               {items.map(([n, v]) => <div key={n} className="flex justify-between items-baseline gap-4 min-w-0"><span className="min-w-0">{n}</span><span className="whitespace-nowrap shrink-0 font-semibold text-[18px] text-[#e8c472]">{baht(v)}</span></div>)}
-              <div className="text-[13px] font-light">ค่าการันตี Branding รับคืนเมื่อครบ 1 ปี ถ้าไม่ทำผิดกฎบริษัทและกฎหมาย (เช่น ไม่ปฏิเสธการรับลูกค้า)</div>
+              <div className="text-[13px] font-light">{invite ? "ผู้ได้รับคำเชิญ ไม่ต้องชำระค่าการันตี Branding" : "ค่าการันตี Branding รับคืนเมื่อครบ 1 ปี ถ้าไม่ทำผิดกฎบริษัทและกฎหมาย (เช่น ไม่ปฏิเสธการรับลูกค้า)"}</div>
             </div>
             <div className="flex flex-col gap-2 bg-[#2c1a1f]" style={box}>
               <div className="font-semibold text-[17px]">สิ่งที่ได้</div>
@@ -163,7 +177,7 @@ function PayInner() {
               <div className="flex justify-between gap-2 flex-wrap w-full text-[14px]"><span className="text-[#e8c472] font-semibold">PromptPay</span><span>QR หมดอายุใน <b style={{ color: sec < 120 ? "#ff8a9a" : GOLD }}>{mm}:{ss}</b></span></div>
               <div className="rounded-xl" style={{ padding: 12, background: "#000", lineHeight: 0, opacity: expired ? 0.2 : 1 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                {qr ? <img src={qr} alt={`QR พร้อมเพย์ ยอด ${baht(pkg.price)}`} width={175} height={175} className="w-[175px] h-[175px] block bg-white" /> : <div className="w-[175px] h-[175px] bg-white" />}
+                {qr ? <img src={qr} alt={`QR พร้อมเพย์ ยอด ${baht(amount)}`} width={175} height={175} className="w-[175px] h-[175px] block bg-white" /> : <div className="w-[175px] h-[175px] bg-white" />}
               </div>
               <div className="text-[13px] text-center font-light">{`${BANK.accountName} · ${BANK.accountNo}`}</div>
               {expired && <button type="button" onClick={() => setSec(QR_TTL)} className={ghost} style={{ background: "rgba(232,196,114,0.16)" }}>สร้าง QR ใหม่</button>}
