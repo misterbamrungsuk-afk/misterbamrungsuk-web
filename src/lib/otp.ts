@@ -46,7 +46,7 @@ export function normalizePhone(raw: string): string | null {
 const secret = () => {
   const v = process.env.ADMIN_SESSION_SECRET;
   if (v) return v;
-  if (process.env.NODE_ENV === "production" && process.env.VERCEL_ENV) throw new Error("ADMIN_SESSION_SECRET is not set");
+  if (process.env.VERCEL_ENV === "production") throw new Error("ADMIN_SESSION_SECRET is not set");
   return "hamoo-demo-secret";
 };
 const hashCode = (phone: string, code: string) => createHmac("sha256", secret()).update(`otp:${phone}:${code}`).digest("hex");

@@ -11,7 +11,7 @@ export const RESUME_TTL_MS = 30 * 24 * 3600_000;
 const secret = () => {
   const v = process.env.ADMIN_SESSION_SECRET;
   if (v) return v;
-  if (process.env.NODE_ENV === "production" && process.env.VERCEL_ENV) throw new Error("ADMIN_SESSION_SECRET is not set");
+  if (process.env.VERCEL_ENV === "production") throw new Error("ADMIN_SESSION_SECRET is not set");
   return "hamoo-demo-secret";
 };
 const sign = (body: string) => createHmac("sha256", secret()).update(`resume:${body}`).digest("base64url");
