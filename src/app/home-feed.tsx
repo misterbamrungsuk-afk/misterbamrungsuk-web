@@ -2,9 +2,10 @@
 /* eslint-disable @next/next/no-img-element */
 
 // หน้าแรก · ดูเพื่อนในระบบ (บอร์ด Benefits + ป๊อปอัป BenefitsPopup) — ถอดตามบอร์ด
-// มือถือ = ตามบอร์ด 390 · md การ์ด 3 คอลัมน์ · lg 4 คอลัมน์ · แอปลูกค้ายังไม่เปิด: การ์ดเพื่อนพาไปหน้าเข้าสู่ระบบ
+// มือถือ = ตามบอร์ด 390 · md+ การ์ด 3 คอลัมน์ · กดการ์ด → โปรไฟล์ตัวอย่าง /p/[id] (บอร์ด C-Profile) → แชทตัวอย่าง (บอร์ด C-ChatRoom)
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { PEOPLE, priceOf, type Person } from "@/lib/home/people";
 
 const GOLD = "#e8c472";
 const ACTS = [
@@ -17,24 +18,16 @@ const ACTS = [
   { id: "chill", label: "นั่งชิล", icon: "M6 4h12v6a6 6 0 0 1-12 0zM9 20h6M12 16v4" },
 ] as const;
 type Act = (typeof ACTS)[number]["id"];
-// รูปเพื่อนตัวอย่าง = รูป AI ชุดเดียวกับบน canvas (public/home)
-type P = { name: string; img: string; top: boolean; rating: string; area: string; prov?: string; acts: Act[]; free: number };
-const PEOPLE: P[] = [
-  { name: "ต้น, 29", img: "/brand/home/p-ton.jpg", top: true, rating: "5.0", area: "วัฒนา", acts: ["eat", "massage", "cafe"], free: 0 },
-  { name: "ภูมิ, 31", img: "/brand/home/p-phum.jpg", top: true, rating: "4.9", area: "ทองหล่อ", acts: ["massage", "gym", "eat"], free: 20 },
-  { name: "เบนซ์, 26", img: "/brand/home/p-benz.jpg", top: true, rating: "4.9", area: "สาทร", acts: ["massage", "photo", "cafe"], free: 0 },
-  { name: "กอล์ฟ, 33", img: "/brand/home/p-golf.jpg", top: false, rating: "4.8", area: "อารีย์", acts: ["cafe", "photo", "chill"], free: 45 },
-  { name: "นนท์, 27", img: "/brand/home/p-non.jpg", top: false, rating: "4.8", area: "นิมมาน", prov: "เชียงใหม่", acts: ["movie", "chill", "eat"], free: 0 },
-  { name: "ปั้น, 28", img: "/brand/home/p-pan.jpg", top: false, rating: "4.7", area: "พัทยา", prov: "ชลบุรี", acts: ["eat", "massage", "movie"], free: 30 },
-];
+// เพื่อนตัวอย่าง 20 คน (รูป AI ชุดเดียวกับ canvas) — กดการ์ดดูโปรไฟล์ /p/[id] และตัวอย่างแชท
+type P = Person;
 const PROV: Record<string, string> = { "กรุงเทพฯ": "bkk", "นนทบุรี": "bkk", "ปทุมธานี": "bkk", "สมุทรปราการ": "bkk", "สมุทรสาคร": "bkk", "นครปฐม": "bkk", "กำแพงเพชร": "north", "ชัยนาท": "bkk", "นครนายก": "bkk", "นครสวรรค์": "north", "พระนครศรีอยุธยา": "bkk", "พิจิตร": "north", "พิษณุโลก": "north", "เพชรบูรณ์": "north", "ลพบุรี": "bkk", "สมุทรสงคราม": "bkk", "สิงห์บุรี": "bkk", "สุโขทัย": "north", "สุพรรณบุรี": "bkk", "สระบุรี": "bkk", "อ่างทอง": "bkk", "อุทัยธานี": "north", "เชียงราย": "north", "เชียงใหม่": "north", "น่าน": "north", "พะเยา": "north", "แพร่": "north", "แม่ฮ่องสอน": "north", "ลำปาง": "north", "ลำพูน": "north", "อุตรดิตถ์": "north", "กาฬสินธุ์": "ne", "ขอนแก่น": "ne", "ชัยภูมิ": "ne", "นครพนม": "ne", "นครราชสีมา": "ne", "บึงกาฬ": "ne", "บุรีรัมย์": "ne", "มหาสารคาม": "ne", "มุกดาหาร": "ne", "ยโสธร": "ne", "ร้อยเอ็ด": "ne", "เลย": "ne", "ศรีสะเกษ": "ne", "สกลนคร": "ne", "สุรินทร์": "ne", "หนองคาย": "ne", "หนองบัวลำภู": "ne", "อำนาจเจริญ": "ne", "อุดรธานี": "ne", "อุบลราชธานี": "ne", "จันทบุรี": "bkk", "ฉะเชิงเทรา": "bkk", "ชลบุรี": "bkk", "ตราด": "bkk", "ปราจีนบุรี": "bkk", "ระยอง": "bkk", "สระแก้ว": "bkk", "กาญจนบุรี": "bkk", "ตาก": "north", "ประจวบคีรีขันธ์": "bkk", "เพชรบุรี": "bkk", "ราชบุรี": "bkk", "กระบี่": "south", "ชุมพร": "south", "ตรัง": "south", "นครศรีธรรมราช": "south", "นราธิวาส": "south", "ปัตตานี": "south", "พังงา": "south", "พัทลุง": "south", "ภูเก็ต": "south", "ระนอง": "south", "สตูล": "south", "สงขลา": "south", "สุราษฎร์ธานี": "south", "ยะลา": "south" };
 const REG = [["", "ทุกภาค"], ["bkk", "กรุงเทพฯ และภาคกลาง"], ["north", "ภาคเหนือ"], ["ne", "ภาคตะวันออกเฉียงเหนือ"], ["south", "ภาคใต้"]];
 const SORTS = [["top", "แนะนำ · TOP ก่อน"], ["rate", "คะแนนสูงสุด"], ["now", "ว่างตอนนี้"], ["price", "ราคา"]] as const;
 type Sort = (typeof SORTS)[number][0];
-const price = (p: P) => (p.top ? 10000 : 6500);
+const price = priceOf;
 const labelOf = (id: Act) => ACTS.find((a) => a.id === id)?.label ?? "";
 const provOf = (p: P) => p.prov || "กรุงเทพฯ";
-const ageOf = (p: P) => +p.name.split(",")[1];
+const ageOf = (p: P) => p.age;
 
 const AD = { img: "/brand/home/ad-spa.jpg", kind: "สปาพาร์ทเนอร์ · สีลม", name: "บำรุงสุข สปา", offer: "สมาชิกลด 20%" };
 const sel: React.CSSProperties = { height: 50, width: "100%", borderRadius: 12, background: "rgba(0,0,0,0.3)", color: "#fff7e8", colorScheme: "dark", fontSize: 15, padding: "0 14px" };
@@ -71,15 +64,15 @@ export function HomeFeed({ showEarnings = true }: { showEarnings?: boolean }) {
   const clear = () => { setActs([]); setF({ reg: "", prov: "", spot: "", type: "", tier: "", act: "", aMin: "25", aMax: "50" }); };
 
   const card = (p: P, i = 0) => (
-    <Link key={p.name} href="/login" style={{ order: i * 2 }} className="block rounded-[18px] overflow-hidden bg-[#251d1b] text-inherit hover:text-inherit">
+    <Link key={p.id} href={`/p/${p.id}`} style={{ order: i * 2 }} className="block rounded-[18px] overflow-hidden bg-[#251d1b] text-inherit hover:text-inherit">
       <div className="relative h-[176px] md:h-auto md:aspect-[4/5] lg:aspect-square">
-        <img src={p.img} alt={p.name} loading="lazy" className="w-full h-full object-cover block" />
+        <img src={p.img} alt={p.nick} loading="lazy" className="w-full h-full object-cover block" />
         <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(251,251,251,0) 55%, rgba(42,33,30,0.85))" }} />
         {p.top && <div className="absolute top-2 left-2 flex"><span style={{ display: "inline-flex", alignItems: "center", height: 18, padding: "0 7px", borderRadius: 4, background: "linear-gradient(135deg, #fff1c9 0%, #e8c472 45%, #a8781f 100%)", color: "#1b130b", fontWeight: 700, fontSize: 9.5, letterSpacing: ".2em", boxShadow: "inset 0 0 0 1px rgba(255,241,201,.5), 0 2px 6px rgba(0,0,0,.35)" }}>TOP</span></div>}
         <div className="absolute left-[10px] bottom-2 text-[13px] font-light text-[#f3ead9]">{p.prov ? `${p.area} · ${p.prov}` : p.area}</div>
       </div>
       <div style={{ padding: "9px 10px 11px" }}>
-        <div className="flex justify-between items-center"><span className="font-semibold text-[15px]">{p.name}</span><span className="text-[13px] text-[#e8c472] font-normal">★ {p.rating}</span></div>
+        <div className="flex justify-between items-center"><span className="font-semibold text-[15px]">{p.nick}, {p.age}</span><span className="text-[13px] text-[#e8c472] font-normal">★ {p.rating}</span></div>
         <div className="text-[13px] mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis font-thin">{p.acts.map(labelOf).join(" · ")}</div>
         <div className="font-semibold text-[#e8c472] mt-1.5 text-[15px]">฿{price(p).toLocaleString("en-US")} <span className="font-thin text-[10.5px] text-[#b5a596]">/ 3 ชม.</span></div>
       </div>
@@ -181,7 +174,7 @@ export function HomeFeed({ showEarnings = true }: { showEarnings?: boolean }) {
         {list.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4" style={{ padding: "0 18px" }}>
             {list.map((x, i) => card(x, i))}
-            <Link href="/spas" style={{ gridTemplateColumns: "112px 1fr" }} className="order-[7] md:order-[999] col-span-full relative grid gap-3 items-center p-[10px] rounded-2xl bg-[#241c29] text-[#f3ead9] hover:text-[#f3ead9]">
+            <Link href="/spas" style={{ gridTemplateColumns: "112px 1fr" }} className="order-[7] md:order-[11] col-span-full relative grid gap-3 items-center p-[10px] rounded-2xl bg-[#241c29] text-[#f3ead9] hover:text-[#f3ead9]">
               <img src="/brand/home/ad-spa.jpg" alt="" className="w-[112px] h-[84px] rounded-[10px] object-cover block" />
               <span className="flex flex-col gap-0.5 min-w-0 font-normal">
                 <span className="text-[10.5px] text-[#b5a596] font-light">โฆษณา</span>
