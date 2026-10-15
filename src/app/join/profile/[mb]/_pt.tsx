@@ -65,3 +65,14 @@ export function PtPage({ children }: { children: React.ReactNode }) {
 }
 
 export const baht = (n: number) => "฿" + Math.round(n).toLocaleString("en-US");
+
+const BANK_LOGO: Record<string, string> = { KBank: "#138f2d", SCB: "#4e2a84", BBL: "#1e4598", KTB: "#1ba5e1", BAY: "#c9a000", ttb: "#0050f0", GSB: "#eb198d", UOB: "#0b3b8c", "พร้อมเพย์": "#113566" };
+/** บัญชีรับเงินจากใบสมัคร → แถวบัญชีแบบบอร์ด (ตัวย่อธนาคาร · สี · เลขปิดกลาง) */
+export function acctOf(row: Applicant) {
+  const no = (row.bank_account ?? "").replace(/\D/g, "");
+  if (!no || !row.bank) return null;
+  const abbr = /\(([^)]+)\)/.exec(row.bank)?.[1] ?? (row.bank.startsWith("พร้อมเพย์") ? "พร้อมเพย์" : "");
+  const short = abbr === "พร้อมเพย์" ? "PP" : abbr === "KBank" ? "K" : abbr ? (abbr.length > 4 ? abbr.slice(0, 3) : abbr) : row.bank.slice(0, 1);
+  const name = row.bank.replace(/\s*\([^)]*\)/, "");
+  return { short, logo: BANK_LOGO[abbr] ?? "#3a2e2a", name, no: `••• •• ${no.slice(-4)} · ${row.bank_account_name}`, tail: `••${no.slice(-4)}` };
+}
