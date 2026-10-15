@@ -139,7 +139,7 @@ export function ProfileHub({ d }: { d: HubData }) {
               <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(243,234,217,0.12)" }}><div className="h-full bg-[#e8c472]" style={{ width: `${(nDone / 4) * 100}%` }} /></div>
               {allDone
                 ? <Link href={d.contractDone ? `/join/done/${d.mb}${q}` : `/join/contract/${d.mb}${q}`} className="min-h-[52px] rounded-[14px] bg-[#e8c472] text-[#1b130b] text-[15px] font-semibold grid place-items-center hover:text-[#1b130b]">{d.contractDone ? "ดูใบสมัครที่ส่งแล้ว" : "อ่านสัญญาและส่งใบสมัคร"}</Link>
-                : <Link href={href.form} className="min-h-[52px] rounded-[14px] bg-[#e8c472] text-[#1b130b] text-[15px] font-semibold grid place-items-center hover:text-[#1b130b]">แก้ไขเพิ่มเติมข้อมูล · ใบสมัคร 1/4</Link>}
+                : (() => { const i = d.steps.findIndex((st) => !st.ok && st.href); const nx = d.steps[i]; return <Link href={nx?.href ? href[nx.href] : href.form} className="min-h-[52px] rounded-[14px] bg-[#e8c472] text-[#1b130b] text-[15px] font-semibold grid place-items-center hover:text-[#1b130b]">{`กรอกต่อ · ใบสมัคร ${Math.max(1, i + 1)}/4`}</Link>; })()}
               {d.steps.map((st) => {
                 const inner = (
                   <>

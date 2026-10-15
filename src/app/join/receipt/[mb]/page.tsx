@@ -70,7 +70,7 @@ export default async function ReceiptPage({ params, searchParams }: { params: Pr
       {!paid ? (
         <div className="mx-auto max-w-[520px] bg-white rounded-2xl text-center text-[#1d1414] shadow-[0_6px_30px_rgba(0,0,0,.18)]" style={{ padding: "36px 24px" }}>
           <div className="text-[20px] font-semibold">{row.status === "pending_slip" ? "ใบเสร็จจะออกหลังทีมงานตรวจสลิป" : row.status === "refunded" ? "รายการนี้คืนเงินแล้ว" : "รายการนี้ไม่ได้รับการอนุมัติ"}</div>
-          <p className="text-[14px] text-[#6b5a50] mt-2 mb-0">{row.status === "pending_slip" ? "ทีมงานตรวจสลิปภายใน 2 ชม. (09:00–22:00) · เมื่อตรวจแล้วกลับมาที่หน้านี้เพื่อพิมพ์หรือบันทึกใบเสร็จได้ทันที" : "ติดต่อทีมงานทาง LINE หากมีข้อสงสัย"}</p>
+          <p className="text-[14px] text-[#6b5a50] mt-2 mb-0">{row.status === "pending_slip" ? "ทีมงานตรวจสลิปภายใน 2 ชม. (09:00–22:00) · เมื่อตรวจแล้วกลับมาที่หน้านี้เพื่อดาวน์โหลดใบเสร็จ (PDF) ได้ทันที" : "ติดต่อทีมงานทาง LINE หากมีข้อสงสัย"}</p>
           <div className="mt-4 text-[13px] text-[#6b5a50]">รหัสผู้สมัคร <b className="text-[#7e0a1e] tracking-[1px]">{row.mb_code}</b></div>
         </div>
       ) : (
