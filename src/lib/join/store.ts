@@ -14,7 +14,7 @@ export type ApplicantStatus = "pending_slip" | "verified" | "rejected" | "refund
 export const DOC_KINDS = ["photo", "id_card", "bankbook", "other_doc", "cert_doc", "slip", "selfie", "id_copy"] as const;
 export type DocKind = (typeof DOC_KINDS)[number];
 export const DOC_LABEL: Record<DocKind, string> = {
-  photo: "รูปถ่าย", id_card: "บัตรประชาชน", bankbook: "สมุดบัญชี", other_doc: "เอกสารอื่นๆ", cert_doc: "ใบรับรองการนวด", slip: "สลิป", selfie: "เซลฟีถือบัตร", id_copy: "สำเนาบัตรเซ็นรับรอง",
+  photo: "รูปถ่าย", id_card: "บัตรประชาชน", bankbook: "สมุดบัญชี", other_doc: "รูปเต็มตัว", cert_doc: "ใบรับรองการนวด", slip: "สลิป", selfie: "เซลฟีถือบัตร", id_copy: "สำเนาบัตรเซ็นรับรอง",
 };
 
 export interface ApplicantInput {
@@ -61,6 +61,9 @@ export interface ApplicantInput {
   activities_other?: string;
   /** เวลาที่ยืนยันเบอร์ tel ด้วย OTP (migration join/0004 — ถ้ายังไม่รัน อ่านจาก docs.extra) */
   phone_verified_at?: string | null;
+  /** พื้นที่ที่สะดวก / ไม่สะดวกรับงาน (บอร์ด JoinForm · เก็บใน docs.extra) */
+  areas?: string[];
+  no_area?: string;
   /** ผลตรวจสลิปจาก Slip2Go (เก็บใน docs.extra) */
   slip_check?: SlipCheck | null;
   package: PackageKey;
@@ -94,10 +97,11 @@ export type KycStatus = "none" | "submitted" | "approved" | "rejected";
 /** เหตุผลรายรายการที่ไม่ผ่าน เช่น { selfie: "รูปมืดเกินไป…" } */
 export type KycReason = Partial<Record<string, string>>;
 
-export interface Availability { slots: string[]; days: number | null; hours: number | null }
+/** slots = ช่วงเวลา (กลางวัน/กลางคืน) · days = จำนวนวัน/สัปดาห์ · hours = ชม./วัน (ค่าสูงสุดของช่วง) · week_days/hours_band = ตามที่ผู้สมัครเลือกจริง (บอร์ด JoinForm2) */
+export interface Availability { slots: string[]; days: number | null; hours: number | null; week_days?: string[]; hours_band?: string }
 
 /** ข้อมูลเสริมที่แพ็กไว้ใน docs.extra ด้วย (ทนได้ถ้ายังไม่รัน migration 0003) */
-export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents" | "talents_other" | "activities_other" | "slip_check" | "kyc_status" | "kyc_reason" | "kyc_submitted_at" | "bank_book_path"> & { attendance?: Record<string, boolean> };
+export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents" | "talents_other" | "activities_other" | "areas" | "no_area" | "slip_check" | "kyc_status" | "kyc_reason" | "kyc_submitted_at" | "bank_book_path"> & { attendance?: Record<string, boolean> };
 
 /** รวมคอลัมน์ 0003 กับ docs.extra — คอลัมน์จริงมาก่อน */
 export function extraOf(a: Applicant): Extra {
@@ -114,6 +118,8 @@ export function extraOf(a: Applicant): Extra {
     talents: a.talents?.length ? a.talents : x.talents ?? [],
     talents_other: a.talents_other || x.talents_other || "",
     activities_other: a.activities_other || x.activities_other || "",
+    areas: x.areas ?? [],
+    no_area: x.no_area ?? "",
     slip_check: x.slip_check ?? null,
     kyc_status: a.kyc_status && a.kyc_status !== "none" ? a.kyc_status : x.kyc_status ?? a.kyc_status ?? "none",
     kyc_reason: a.kyc_reason ?? x.kyc_reason ?? null,
@@ -172,7 +178,7 @@ export async function createApplicant(input: ApplicantInput, files: Partial<Reco
   }
 
   // แพ็กข้อมูล Part-Time ไว้ใน docs.extra ด้วย → ไม่หายแม้ยังไม่รัน migration 0003 (RPC เดิมไม่รู้จักคีย์ใหม่ใน p ก็ไม่ error)
-  docs.extra = { activities: input.activities ?? [], massage_cert: input.massage_cert ?? null, availability: input.availability, ack_hours: input.ack_hours ?? false, ack_no_refuse: input.ack_no_refuse ?? false, phone_verified_at: input.phone_verified_at ?? null, talents: input.talents ?? [], talents_other: input.talents_other ?? "", activities_other: input.activities_other ?? "", slip_check: input.slip_check ?? null };
+  docs.extra = { activities: input.activities ?? [], massage_cert: input.massage_cert ?? null, availability: input.availability, ack_hours: input.ack_hours ?? false, ack_no_refuse: input.ack_no_refuse ?? false, phone_verified_at: input.phone_verified_at ?? null, talents: input.talents ?? [], talents_other: input.talents_other ?? "", activities_other: input.activities_other ?? "", areas: input.areas ?? [], no_area: input.no_area ?? "", slip_check: input.slip_check ?? null };
 
   if (isDemo) {
     const prefix = mbPrefix();
@@ -247,10 +253,13 @@ export async function updateExtra(id: string, patch: Pick<Extra, "cohort" | "lin
 // ── KYC / บัญชีรับเงิน / เช็กชื่ออบรม (migration join/0006 — ไม่มีคอลัมน์ก็เก็บใน docs.extra) ──
 
 const KYC_EXTRA_KEYS = ["kyc_status", "kyc_reason", "kyc_submitted_at", "bank_book_path"];
+/** เก็บใน docs.extra อย่างเดียว (ไม่มีคอลัมน์) */
+const EXTRA_ONLY_KEYS = ["bank_consents"];
 
 /** เขียนคอลัมน์ + docs (path ไฟล์ และ extra สำรอง) — คอลัมน์ 0006 ยังไม่มีก็เขียนเฉพาะคอลัมน์เดิม + docs */
-async function patchApplicant(id: string, cols: Record<string, unknown>, docPaths: Partial<Record<DocKind, string>> = {}): Promise<Applicant | null> {
-  const extraPatch = Object.fromEntries(Object.entries(cols).filter(([k]) => KYC_EXTRA_KEYS.includes(k)));
+async function patchApplicant(id: string, allCols: Record<string, unknown>, docPaths: Partial<Record<DocKind, string>> = {}): Promise<Applicant | null> {
+  const extraPatch = Object.fromEntries(Object.entries(allCols).filter(([k]) => KYC_EXTRA_KEYS.includes(k) || EXTRA_ONLY_KEYS.includes(k)));
+  const cols = Object.fromEntries(Object.entries(allCols).filter(([k]) => !EXTRA_ONLY_KEYS.includes(k)));
   if (isDemo) {
     const r = demo.rows.find((x) => x.id === id);
     if (!r) return null;
@@ -284,7 +293,7 @@ export async function saveKyc(id: string, files: { id_card?: File; selfie?: File
 }
 
 /** บันทึกบัญชีรับเงิน + ส่ง KYC (kyc_status = submitted) */
-export async function saveBank(id: string, b: { bank: string; bank_account: string; bank_account_name: string; bankbook?: File }) {
+export async function saveBank(id: string, b: { bank: string; bank_account: string; bank_account_name: string; bankbook?: File; consents?: { terms: boolean; pdpa: boolean; profile: boolean; at: string } }) {
   const paths: Partial<Record<DocKind, string>> = {};
   if (b.bankbook) paths.bankbook = await putKycFile(id, "bankbook", b.bankbook);
   const cols: Record<string, unknown> = {
@@ -292,6 +301,7 @@ export async function saveBank(id: string, b: { bank: string; bank_account: stri
     kyc_status: "submitted", kyc_reason: null, kyc_submitted_at: new Date().toISOString(),
   };
   if (paths.bankbook) cols.bank_book_path = paths.bankbook;
+  if (b.consents) cols.bank_consents = b.consents;
   return patchApplicant(id, cols, paths);
 }
 

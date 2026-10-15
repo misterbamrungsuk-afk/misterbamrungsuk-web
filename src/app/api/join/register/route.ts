@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ACTIVITIES, CLOSE_AT, ageError, EXPERIENCE, OTHER_MAX, OTHER_OPTION, PACKAGES, QUOTA, STRENGTHS, TALENTS, TIME_SLOTS, TITLES, type PackageKey } from "@/lib/join/config";
+import { CLOSE_AT, ageError, PACKAGES, QUOTA, type PackageKey } from "@/lib/join/config";
 import { countActive, createApplicant, updateApplicant, type DocKind } from "@/lib/join/store";
 import { appendToSheet } from "@/lib/join/sheets";
 import { applicantRegistered, sendAll } from "@/lib/email";
@@ -15,7 +15,11 @@ export const runtime = "nodejs";
 
 const MAX_FILE = 5 * 1024 * 1024;
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const REQUIRED_DOCS: DocKind[] = ["photo", "id_card", "slip"];
+// ใบสมัครตามบอร์ด JoinForm: รูปหน้าตรง + รูปเต็มตัว (other_doc) + สลิป · บัตรประชาชนย้ายไปขั้นยืนยันตัวตน (/api/join/kyc)
+const REQUIRED_DOCS: DocKind[] = ["photo", "other_doc", "slip"];
+const WEEK_DAYS = ["จ", "อ", "พ", "พฤ", "ศ", "ส", "อา"];
+const PERIODS = ["กลางวัน", "กลางคืน"];
+const HOUR_BANDS: Record<string, number> = { "3–4 ชม.": 4, "5–6 ชม.": 6, "7–8 ชม.": 8, "มากกว่า 8 ชม.": 10 };
 
 // กันยิงรัว: 5 ครั้ง / 10 นาที / IP (ในหน่วยความจำ — หลายเครื่องต้องย้ายไป Redis)
 const hits = new Map<string, number[]>();
@@ -28,7 +32,6 @@ function limited(ip: string) {
 }
 
 const bad = (error: string, status = 400) => NextResponse.json({ ok: false, error }, { status });
-const oneOf = (list: readonly string[], v: string) => list.includes(v);
 const isDate = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v));
 
 
@@ -49,54 +52,29 @@ export async function POST(req: Request) {
   if (!(await verifyTurnstile(s("turnstile", 2048), ip))) return bad(TURNSTILE_ERROR, 403);
 
   const pkg = s("package") as PackageKey;
-  const height = Number(s("height"));
-  const weight = Number(s("weight"));
   const tel = s("tel").replace(/[-\s]/g, "");
-  const account = s("bank_account").replace(/[-\s]/g, "");
-  const email = s("email").toLowerCase();
-  const skills = form.getAll("skills").map(String).filter((x) => oneOf(STRENGTHS, x));
-  const method = s("payment_method");
-  const activities = form.getAll("activities").map(String).filter((x) => oneOf(ACTIVITIES, x));
-  const talents = form.getAll("talents").map(String).filter((x) => oneOf(TALENTS, x));
-  const talentsOther = talents.includes(OTHER_OPTION) ? s("talents_other", OTHER_MAX) : "";
-  const activitiesOther = activities.includes(OTHER_OPTION) ? s("activities_other", OTHER_MAX) : "";
-  const slots = form.getAll("avail_slots").map(String).filter((x) => oneOf(TIME_SLOTS, x));
-  const days = Number(s("avail_days"));
-  const hoursPerDay = Number(s("avail_hours"));
+  const weekDays = [...new Set(form.getAll("week_days").map(String))].filter((x) => WEEK_DAYS.includes(x));
+  const periods = [...new Set(form.getAll("periods").map(String))].filter((x) => PERIODS.includes(x));
+  const hoursBand = s("hours_band");
+  const areas = [...new Set(form.getAll("areas").map((x) => String(x).trim().slice(0, 120)))].filter(Boolean).slice(0, 20);
   const cert = s("massage_cert");
 
   const errors: string[] = [];
   if (!(pkg in PACKAGES)) errors.push("package");
-  for (const k of ["first_name", "last_name", "nickname"]) if (!s(k)) errors.push(k);
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) errors.push("email");
+  for (const k of ["first_name", "last_name", "nickname", "line_id", "address"]) if (!s(k)) errors.push(k);
   if (!/^0\d{9}$/.test(tel)) errors.push("tel");
-  if (!/^\d{5}$/.test(s("zipcode"))) errors.push("zipcode");
-  if (!(height >= 140 && height <= 220)) errors.push("height");
-  if (!(weight >= 35 && weight <= 200)) errors.push("weight");
-  if (!oneOf(EXPERIENCE, s("experience"))) errors.push("experience");
   if (s("accept_terms") !== "true") errors.push("accept_terms");
   if (s("consent_pdpa") !== "true") errors.push("consent_pdpa");
-  if (method !== "qr" && method !== "transfer") errors.push("payment_method");
-  // ฟิลด์ Sheet3 (เก็บตอนอบรม) — ถ้าส่งมาต้องอยู่ในรายการที่กำหนด
-  if (s("consent_criminal") !== "true") errors.push("consent_criminal");
-  if (s("title") && !oneOf(TITLES, s("title"))) errors.push("title");
-  // อายุตามสายงาน: 20–50 ปีทั้งสองสาย (AGE_LIMITS) — วันเกิดบังคับ
+  // อายุ 20–50 ปี (AGE_LIMITS) — วันเกิดบังคับ
   if (!isDate(s("birthdate"))) errors.push("birthdate");
   else if (pkg in PACKAGES) {
     const ageErr = ageError(pkg, ageFrom(s("birthdate")));
     if (ageErr) return NextResponse.json({ ok: false, error: ageErr, fields: ["birthdate"] }, { status: 400 });
   }
-  if (s("start_date") && !isDate(s("start_date"))) errors.push("start_date");
-  if (s("bank_account") && !/^\d{10,12}$/.test(account)) errors.push("bank_account");
-  // ข้อมูล Part-Time
-  if (!activities.length) errors.push("activities");
-  if (!talents.length) errors.push("talents");
-  if (talents.includes(OTHER_OPTION) && !talentsOther) errors.push("talents_other");
-  if (activities.includes(OTHER_OPTION) && !activitiesOther) errors.push("activities_other");
-  if (!slots.length) errors.push("avail_slots");
-  if (!(Number.isInteger(days) && days >= 1 && days <= 7)) errors.push("avail_days");
-  if (!(hoursPerDay >= 1 && hoursPerDay <= 24)) errors.push("avail_hours");
-  if (pkg === "B" && cert !== "yes" && cert !== "no") errors.push("massage_cert");
+  if (!areas.length) errors.push("areas");
+  if (!weekDays.length) errors.push("week_days");
+  if (!periods.length) errors.push("periods");
+  if (!(hoursBand in HOUR_BANDS)) errors.push("hours_band");
   if (s("ack_hours") !== "true") errors.push("ack_hours");
   if (s("ack_no_refuse") !== "true") errors.push("ack_no_refuse");
 
@@ -106,7 +84,7 @@ export async function POST(req: Request) {
     if (f instanceof File && f.size > 0) {
       if (!IMAGE_TYPES.includes(f.type) || f.size > MAX_FILE) errors.push(k);
       else files[k] = f;
-    } else if (REQUIRED_DOCS.includes(k) || (k === "cert_doc" && cert === "yes")) errors.push(k);
+    } else if (REQUIRED_DOCS.includes(k)) errors.push(k);
   }
   if (errors.length) return NextResponse.json({ ok: false, error: "กรอกข้อมูลไม่ครบหรือไม่ถูกต้อง", fields: errors }, { status: 400 });
 
@@ -123,22 +101,24 @@ export async function POST(req: Request) {
   try {
     const row = await createApplicant(
       {
-        title: s("title"), first_name: s("first_name"), last_name: s("last_name"), nickname: s("nickname"),
-        birthdate: s("birthdate") || null, weight, height, nationality: s("nationality"), ethnicity: s("ethnicity"),
-        religion: s("religion"), education: s("education"), marital: s("marital"), start_date: s("start_date") || null,
-        tel, line_id: s("line_id"), email, address: s("address", 500), zipcode: s("zipcode"),
-        bank: s("bank"), bank_account: account, bank_account_name: s("bank_account_name"),
-        experience: s("experience"), skills, intro: s("intro", 1000),
-        consent_marketing: s("consent_marketing") === "true",
-        consent_criminal: true,
-        activities, talents, talents_other: talentsOther, activities_other: activitiesOther, massage_cert: pkg === "B" ? cert === "yes" : null,
-        availability: { slots, days, hours: hoursPerDay },
+        // คอลัมน์ NOT NULL ที่ใบสมัครชุดใหม่ไม่ถาม → ค่าว่าง (ไม่ต้องแก้ฐานข้อมูล)
+        title: "นาย", first_name: s("first_name"), last_name: s("last_name"), nickname: s("nickname"),
+        birthdate: s("birthdate"), weight: 0, height: 0, nationality: "ไทย", ethnicity: "ไทย",
+        religion: "", education: "", marital: "", start_date: null,
+        tel, line_id: s("line_id", 60), email: "", address: s("address", 300), zipcode: "",
+        bank: "", bank_account: "", bank_account_name: "",
+        experience: s("experience", 500), skills: [], intro: s("intro", 300),
+        consent_marketing: false,
+        consent_criminal: false,
+        activities: [], talents: [], talents_other: "", activities_other: "", massage_cert: pkg === "B" ? cert === "yes" : null,
+        areas, no_area: s("no_area", 300),
+        availability: { slots: periods, days: weekDays.length, hours: HOUR_BANDS[hoursBand], week_days: weekDays, hours_band: hoursBand },
         ack_hours: true, ack_no_refuse: true,
         phone_verified_at: verifiedPhone && verifiedPhone === normalizePhone(tel) ? new Date().toISOString() : null,
         slip_check: slipCheck,
         // ต่อท้าย "/criminal" ใน consent_version ด้วย — บันทึกความยินยอมได้แม้ยังไม่รัน migration 0002
-        consent_version: `privacy-${PRIVACY_VERSION}/terms-${TERMS_VERSION}/criminal`, consented_at: new Date().toISOString(),
-        package: pkg, amount: PACKAGES[pkg].price, payment_method: method as "qr" | "transfer", ip,
+        consent_version: `privacy-${PRIVACY_VERSION}/terms-${TERMS_VERSION}`, consented_at: new Date().toISOString(),
+        package: pkg, amount: PACKAGES[pkg].price, payment_method: "qr", ip,
       },
       files,
     );

@@ -33,10 +33,13 @@ export async function POST(req: Request) {
     if (!IMAGE_TYPES.includes(f.type) || f.size > MAX_FILE) errors.push("bankbook");
     else bankbook = f;
   }
+  // บอร์ด D3: รูปหน้าสมุดบัญชีบังคับ (บัญชีธนาคาร) + ยินยอม 3 ข้อ
+  if (!promptpay && !bankbook && !row.docs.bankbook) errors.push("bankbook");
+  for (const k of ["ck_terms", "ck_pdpa", "ck_profile"]) if (s(k) !== "true") errors.push(k);
   if (errors.length) return bad("กรอกข้อมูลไม่ครบหรือไม่ถูกต้อง", 400, errors);
 
   try {
-    await saveBank(row.id, { bank, bank_account: account, bank_account_name: name, bankbook });
+    await saveBank(row.id, { bank, bank_account: account, bank_account_name: name, bankbook, consents: { terms: true, pdpa: true, profile: true, at: new Date().toISOString() } });
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error("bank failed", e);

@@ -69,7 +69,7 @@ export const COLUMNS = [
   "ระดับการศึกษา", "วันที่สะดวกเริ่มงาน", "สถานภาพ", "เบอร์ที่ติดต่อได้", "ID LINE", "email ส่วนตัว",
   "ธนาคาร", "เลขที่บัญชี", "ชื่อตามสมุดบัญชี", "ที่อยู่ในการจัดส่งเอกสาร", "รหัสไปรษณีย์",
   "ประสบการณ์", "จุดเด่น", "แนะนำตัว", "ช่องทางชำระ", "เอกสารที่แนบ", "ยินยอม PDPA (เวอร์ชัน)", "รับข่าวสาร",
-  "กิจกรรม", "ใบรับรองนวด", "เวลาที่สะดวก", "รุ่นอบรม", "กลุ่ม LINE",
+  "กิจกรรม", "ใบรับรองนวด", "เวลาที่สะดวก", "รุ่นอบรม", "กลุ่ม LINE", "พื้นที่ที่สะดวก", "พื้นที่ที่ไม่สะดวก",
 ];
 
 export function applicantRow(a: Applicant): (string | number)[] {
@@ -83,8 +83,9 @@ export function applicantRow(a: Applicant): (string | number)[] {
     a.consent_version, a.consent_marketing ? "ยินยอม" : "ไม่ยินยอม",
     ...((x) => [
       (x.activities ?? []).join(", "), x.massage_cert == null ? "-" : x.massage_cert ? "มี" : "ไม่มี",
-      x.availability ? `${x.availability.slots.join("/")} · ${x.availability.days ?? "-"} วัน/สัปดาห์ · ${x.availability.hours ?? "-"} ชม./วัน` : "-",
+      x.availability ? `${(x.availability.week_days ?? []).join(" ") || `${x.availability.days ?? "-"} วัน/สัปดาห์`} · ${x.availability.slots.join("/")} · ${x.availability.hours_band ?? `${x.availability.hours ?? "-"} ชม./วัน`}` : "-",
       x.cohort ? `รุ่น ${x.cohort}` : "-", x.line_joined ? "เข้าแล้ว" : "ยังไม่เข้า",
+      (x.areas ?? []).join(", ") || "-", x.no_area || "-",
     ])(extraOf(a)),
   ];
 }

@@ -16,7 +16,7 @@ export default async function KycPage({ params, searchParams }: { params: Promis
   if (!row) notFound();
   return (
     <Page>
-      <StepHeader step={4} title="ยืนยันตัวตน" back="/join/pay" />
+      <StepHeader title="ยืนยันตัวตน" back="/join" />
       <KycForm mb={mb} t={t ?? ""} hasIdCard={!!row.docs.id_card} />
     </Page>
   );

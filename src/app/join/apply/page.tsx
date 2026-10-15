@@ -1,80 +1,73 @@
 "use client";
 
+// ใบสมัคร ขั้น 1 (บอร์ด JoinForm "ข้อมูลผู้สมัคร") + ขั้น 2 (บอร์ด JoinForm2 "วันเวลาและประสบการณ์") — ถอดตามบอร์ด
+// draft เก็บใน sessionStorage (FORM_KEY) ให้ /join/pay อ่านต่อ · md+ เนื้อหากว้างสุด 720 กลางจอ
 import { Suspense, useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ACTIVITIES, ACK_NO_REFUSE_TEXT, AGE_LIMITS, EXPERIENCE, OTHER_MAX, OTHER_OPTION, PACKAGES, TALENTS, TIME_SLOTS, ageError, type PackageKey } from "@/lib/join/config";
-import { FORM_KEY, ageFrom, emptyForm, resizeImage, type FileField, type JoinForm } from "@/lib/join/form";
+import { ageError } from "@/lib/join/config";
+import { FORM_KEY, ageFrom, emptyForm, resizeImage, type JoinForm } from "@/lib/join/form";
 import { OtpStep } from "@/components/otp-step";
 import { BrandHeader } from "@/components/mb/ui";
 
-// ใบสมัคร ขั้นที่ 1–2 / 5 (บอร์ด JoinForm + JoinForm2) — draft เก็บใน sessionStorage ด้วย FORM_KEY เดิม ให้ /join/pay อ่านต่อ
 const GOLD = "#e8c472";
-const LINE = "rgba(243,234,217,.14)";
-const H: CSSProperties = { fontFamily: "var(--font-mb)", fontWeight: 600 };
-const SUB: Record<PackageKey, string> = { A: "(ตามความสามารถพิเศษ)", B: "(สำหรับผู้มีความสามารถด้านการนวด)" };
-const baht = (n: number) => "฿" + n.toLocaleString("en-US");
-const inputCls = "w-full min-w-0 h-12 rounded-[12px] border border-[rgba(243,234,217,.14)] bg-[#211a18] px-3 text-[14px] text-[#f3ead9] placeholder:text-[#b5a596] outline-none focus:border-[#e8c472]";
-const labelCls = "block h-[18px] leading-[18px] text-[12px] text-[#d9c9b4] whitespace-nowrap overflow-hidden text-ellipsis";
+const TRACK = { A: "เพื่อนกินเที่ยว — ตามความสามารถพิเศษ", B: "เพื่อนกินเที่ยว — ที่มีความสามารถในการนวด" } as const;
+const inCls = "w-full min-h-12 rounded-xl bg-[#251d1b] text-[#f3ead9] px-[14px] text-[15px] placeholder:text-[#b5a596] outline-none border border-transparent focus:border-[#e8c472]";
+const lb: CSSProperties = { display: "block", fontSize: 13, color: "#b5a596", marginBottom: 6 };
+const h2: CSSProperties = { margin: 0, fontSize: 18, lineHeight: 1.4, fontWeight: 600 };
+const cta = "min-h-14 w-full rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[17px] grid place-items-center text-center px-4 transition";
 
-function Field({ label, err, children }: { label: string; err?: string; children: ReactNode }) {
-  return (
-    <label className="flex flex-col gap-2 min-w-0" data-err={err ? "1" : undefined}>
-      <span className={labelCls}>{label}</span>
-      {children}
-      {err && <span className="text-[11.5px] text-[#ff8a9a]">{err}</span>}
-    </label>
-  );
-}
+// พื้นที่ (ข้อมูลตามบอร์ด JoinForm)
+const R: Record<string, string[]> = {
+  "กรุงเทพฯ และปริมณฑล": ["กรุงเทพมหานคร", "นนทบุรี", "ปทุมธานี", "สมุทรปราการ", "สมุทรสาคร", "นครปฐม"],
+  "ภาคกลาง": ["พระนครศรีอยุธยา", "ลพบุรี", "สระบุรี", "ราชบุรี", "กาญจนบุรี", "เพชรบุรี", "ประจวบคีรีขันธ์"],
+  "ภาคตะวันออก": ["ชลบุรี", "ระยอง", "จันทบุรี", "ตราด", "ฉะเชิงเทรา"],
+  "ภาคเหนือ": ["เชียงใหม่", "เชียงราย", "ลำปาง", "พิษณุโลก", "น่าน"],
+  "ภาคตะวันออกเฉียงเหนือ": ["นครราชสีมา", "ขอนแก่น", "อุดรธานี", "อุบลราชธานี"],
+  "ภาคใต้": ["ภูเก็ต", "สุราษฎร์ธานี", "กระบี่", "สงขลา"],
+};
+const D: Record<string, string[]> = {
+  "กรุงเทพมหานคร": ["ปทุมวัน", "วัฒนา", "คลองเตย", "บางรัก", "สาทร", "จตุจักร", "ห้วยขวาง", "ลาดพร้าว", "บางนา", "ธนบุรี"],
+  "นนทบุรี": ["เมืองนนทบุรี", "ปากเกร็ด", "บางใหญ่", "บางบัวทอง"],
+  "ปทุมธานี": ["เมืองปทุมธานี", "คลองหลวง", "ธัญบุรี", "ลำลูกกา"],
+  "สมุทรปราการ": ["เมืองสมุทรปราการ", "บางพลี", "พระประแดง"],
+  "ชลบุรี": ["เมืองชลบุรี", "บางละมุง (พัทยา)", "ศรีราชา", "สัตหีบ"],
+  "เชียงใหม่": ["เมืองเชียงใหม่", "หางดง", "สันทราย", "แม่ริม"],
+  "ภูเก็ต": ["เมืองภูเก็ต", "กะทู้", "ถลาง"],
+};
+const T: Record<string, string[]> = {
+  "ปทุมวัน": ["ลุมพินี", "ปทุมวัน", "วังใหม่", "รองเมือง"], "วัฒนา": ["คลองเตยเหนือ", "คลองตันเหนือ", "พระโขนงเหนือ"],
+  "คลองเตย": ["คลองเตย", "คลองตัน", "พระโขนง"], "บางรัก": ["สีลม", "สุริยวงศ์", "บางรัก", "มหาพฤฒาราม", "สี่พระยา"],
+  "สาทร": ["ทุ่งมหาเมฆ", "ยานนาวา", "ทุ่งวัดดอน"], "จตุจักร": ["ลาดยาว", "จอมพล", "จันทรเกษม", "เสนานิคม", "จตุจักร"],
+  "ห้วยขวาง": ["ห้วยขวาง", "บางกะปิ", "สามเสนนอก"], "ลาดพร้าว": ["ลาดพร้าว", "จรเข้บัว"], "บางนา": ["บางนาเหนือ", "บางนาใต้"],
+  "เมืองนนทบุรี": ["บางกระสอ", "ตลาดขวัญ", "บางเขน", "ท่าทราย"], "ปากเกร็ด": ["ปากเกร็ด", "บางตลาด", "คลองเกลือ", "บ้านใหม่"],
+  "บางละมุง (พัทยา)": ["หนองปรือ", "นาเกลือ", "บางละมุง"], "เมืองเชียงใหม่": ["ศรีภูมิ", "ช้างคลาน", "สุเทพ", "ช้างเผือก"],
+  "กะทู้": ["ป่าตอง", "กะทู้", "กมลา"],
+};
+// วัน (สีประจำวันตามบอร์ด JoinForm2)
+const DAYS: [string, string, string, string][] = [["จ", "จันทร์", "#f2c230", "#1b130b"], ["อ", "อังคาร", "#f06aa8", "#1b130b"], ["พ", "พุธ", "#3fae5a", "#fff"], ["พฤ", "พฤหัสบดี", "#f08a24", "#1b130b"], ["ศ", "ศุกร์", "#3b82f6", "#fff"], ["ส", "เสาร์", "#8b5cf6", "#fff"], ["อา", "อาทิตย์", "#e03131", "#fff"]];
+const PERIODS = [
+  { id: "กลางวัน", h: "06:00–18:00", on: "#f2c230", fg: "#1b130b", icon: "M12 4V2M12 22v-2M4.9 4.9L3.5 3.5M20.5 20.5l-1.4-1.4M4 12H2M22 12h-2M4.9 19.1l-1.4 1.4M20.5 3.5l-1.4 1.4M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z" },
+  { id: "กลางคืน", h: "18:00–02:00", on: "#e03131", fg: "#fff", icon: "M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" },
+];
+const HOURS = ["3–4 ชม.", "5–6 ชม.", "7–8 ชม.", "มากกว่า 8 ชม."];
 
 function Err({ msg }: { msg?: string }) {
-  return msg ? <p data-err="1" className="text-[11.5px] text-[#ff8a9a] -mt-1">{msg}</p> : null;
+  return msg ? <p data-err="1" className="m-0 mt-1.5 text-[12.5px] text-[#ff8a9a]">{msg}</p> : null;
 }
-
-function Tile({ label, value, onPick }: { label: string; value: string; onPick: (f?: File) => void }) {
-  return (
-    <label className="h-[104px] rounded-[12px] border border-dashed border-[#4a3a3d] flex flex-col items-center justify-center gap-1 text-[12px] text-[#d9c9b4] text-center min-w-0 cursor-pointer overflow-hidden relative">
-      {value ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={value} alt={label} className="absolute inset-0 w-full h-full object-cover" />
-      ) : (
-        <><span className="text-[20px] leading-none text-[#e8c472]">+</span>{label}</>
-      )}
-      <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => onPick(e.target.files?.[0])} />
-    </label>
-  );
+function Field({ label, err, children }: { label: string; err?: string; children: ReactNode }) {
+  return <label className="block min-w-0"><span style={lb}>{label}</span>{children}<Err msg={err} /></label>;
 }
-
-function Chip({ on, label, onClick }: { on: boolean; label: string; onClick: () => void }) {
+function Upload({ label, done, onPick, err }: { label: string; done: boolean; onPick: (f?: File) => void; err?: string }) {
   return (
-    <button type="button" onClick={onClick} aria-pressed={on}
-      className="h-9 px-[13px] rounded-full border text-[12.5px] font-semibold"
-      style={{ borderColor: on ? GOLD : LINE, background: on ? GOLD : "transparent", color: on ? "#1a1206" : "#d9c9b4" }}>
-      {(on ? "✓ " : "") + label}
-    </button>
-  );
-}
-
-function Stepper({ label, value, unit, onDown, onUp }: { label: string; value: string; unit: string; onDown: () => void; onUp: () => void }) {
-  return (
-    <div className="flex flex-col gap-2 min-w-0">
-      <span className={labelCls}>{label}</span>
-      <div className="flex items-center justify-between h-12 rounded-[12px] border border-[rgba(243,234,217,.14)] bg-[#211a18] px-2">
-        <button type="button" onClick={onDown} aria-label={`ลด${unit}`} className="w-8 h-8 rounded-[8px] bg-[#211a18] text-[#f3ead9]">−</button>
-        <span className="text-[14px] whitespace-nowrap">{value || "–"} {unit}</span>
-        <button type="button" onClick={onUp} aria-label={`เพิ่ม${unit}`} className="w-8 h-8 rounded-[8px] bg-[#211a18] text-[#f3ead9]">+</button>
-      </div>
-    </div>
-  );
-}
-
-function Check({ on, onClick, children }: { on: boolean; onClick: () => void; children: ReactNode }) {
-  return (
-    <div className="flex gap-[10px] items-start text-[12.5px] leading-[1.55] text-[#d9c9b4] py-[2px]">
-      <button type="button" role="checkbox" aria-checked={on} onClick={onClick}
-        className="flex-[0_0_20px] h-5 rounded-[6px] border-[1.5px] border-[#e8c472] grid place-items-center font-bold text-[12px] text-[#1a1206]"
-        style={{ background: on ? GOLD : "transparent" }}>{on ? "✓" : ""}</button>
-      <span onClick={onClick} className="cursor-pointer">{children}</span>
+    <div className="min-w-0">
+      <label className="flex flex-col items-center justify-center gap-1.5 text-center font-light cursor-pointer rounded-[14px]"
+        style={{ minHeight: 84, padding: "10px 6px", fontSize: 13, lineHeight: 1.4, background: "rgba(232,196,114,0.16)", color: done ? GOLD : "#f3ead9" }}>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
+        <span>{label}</span><span className="text-[13px] font-light">{done ? "✓ แนบแล้ว" : "แตะเพื่อแนบ"}</span>
+        <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => onPick(e.target.files?.[0])} />
+      </label>
+      <Err msg={err} />
     </div>
   );
 }
@@ -88,30 +81,20 @@ function ApplyInner() {
   const [errs, setErrs] = useState<Record<string, string>>({});
   const [phoneOk, setPhoneOk] = useState(false);
   const [otpOff, setOtpOff] = useState(false);
+  const [loc, setLoc] = useState({ r: "", p: "", d: "", t: "" });
 
-  // โหลด draft + สายงานจาก ?pkg=A|B
   useEffect(() => {
     let draft: JoinForm = emptyForm;
-    try {
-      const saved = sessionStorage.getItem(FORM_KEY);
-      if (saved) draft = { ...emptyForm, ...JSON.parse(saved) };
-    } catch {}
+    try { const saved = sessionStorage.getItem(FORM_KEY); if (saved) draft = { ...emptyForm, ...JSON.parse(saved) }; } catch {}
     const q = params.get("pkg");
-    const pkg = q === "A" || q === "B" ? q : draft.package;
-    if (!pkg) { router.replace("/join#packages"); return; }
-    const max = pkg === "A" ? 8 : 5;
-    setF({ ...draft, package: pkg, avail_days: draft.avail_days || "5", avail_hours: String(Math.min(max, Math.max(3, +draft.avail_hours || 3))) });
+    const pkg = q === "A" || q === "B" ? q : draft.package || "B";
+    setF({ ...draft, package: pkg });
     if (params.get("step") === "2") setStep(2);
     setReady(true);
-  }, [params, router]);
+  }, [params]);
 
-  // บันทึก draft ทุกครั้งที่แก้
-  useEffect(() => {
-    if (!ready) return;
-    try { sessionStorage.setItem(FORM_KEY, JSON.stringify(f)); } catch {}
-  }, [f, ready]);
+  useEffect(() => { if (ready) try { sessionStorage.setItem(FORM_KEY, JSON.stringify(f)); } catch {} }, [f, ready]);
 
-  // OTP ที่ยืนยันไว้แล้ว (cookie 30 นาที) และเบอร์ตรง
   useEffect(() => {
     if (!f.tel) return;
     const tel = f.tel.replace(/\D/g, "");
@@ -120,260 +103,232 @@ function ApplyInner() {
       if (d.phone && d.phone === tel) setPhoneOk(true);
     }).catch(() => {});
   }, [f.tel]);
-
-  // บนเว็บจริงที่ยังไม่มีระบบ SMS → ข้าม OTP (เช็กครั้งแรกตอนเปิดหน้า)
   useEffect(() => {
     fetch("/api/otp/verify", { cache: "no-store" }).then((r) => r.json()).then((d: { required?: boolean }) => { if (d.required === false) { setOtpOff(true); setPhoneOk(true); } }).catch(() => {});
   }, []);
-
   useEffect(() => { window.scrollTo(0, 0); }, [step]);
 
   if (!ready || !f.package) return <main className="mb-v7 min-h-dvh grid place-items-center text-[#d9c9b4]">กำลังโหลด…</main>;
-  const pkgKey = f.package;
-  const pkg = PACKAGES[pkgKey];
-  const maxH = pkgKey === "A" ? 8 : 5;
+  const pkg = f.package;
 
-  const set = <K extends keyof JoinForm>(k: K, v: JoinForm[K]) => {
-    setF((p) => ({ ...p, [k]: v }));
+  const set = <K extends keyof JoinForm>(k: K, v: JoinForm[K]) => { setF((p) => ({ ...p, [k]: v })); setErrs((e) => ({ ...e, [k]: "" })); };
+  const tog = (k: "week_days" | "periods", v: string) => {
+    setF((p) => { const a = p[k] ?? []; return { ...p, [k]: a.includes(v) ? a.filter((x) => x !== v) : [...a, v] }; });
     setErrs((e) => ({ ...e, [k]: "" }));
   };
-  const tog = (k: "activities" | "talents" | "avail_slots", v: string) => {
-    const arr = (f[k] ?? []) as string[];
-    set(k, arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
-  };
-  const onFile = async (k: FileField, file?: File) => {
+  const onFile = async (k: "photo" | "other_doc" | "cert_doc", file?: File) => {
     if (!file) return;
     if (!file.type.startsWith("image/")) return setErrs((e) => ({ ...e, [k]: "รับเฉพาะไฟล์รูปภาพ (JPG/PNG)" }));
-    if (file.size > 5 * 1024 * 1024) return setErrs((e) => ({ ...e, [k]: "ไฟล์ต้องไม่เกิน 5MB" }));
-    set(k, await resizeImage(file, k === "id_card" || k === "cert_doc" ? 1400 : 1000));
+    if (file.size > 10 * 1024 * 1024) return setErrs((e) => ({ ...e, [k]: "ไฟล์ต้องไม่เกิน 10MB" }));
+    set(k, await resizeImage(file, k === "cert_doc" ? 1400 : 1000));
   };
 
-  const talentOther = (f.talents ?? []).includes(OTHER_OPTION);
-  const activityOther = (f.activities ?? []).includes(OTHER_OPTION);
+  // พื้นที่
+  const bkk = loc.p === "กรุงเทพมหานคร";
+  const pl = loc.r ? R[loc.r] : [], dl = (loc.p && D[loc.p]) || [], tl = (loc.d && T[loc.d]) || [];
+  let cur = loc.r;
+  if (loc.p) cur = loc.p; if (loc.d) cur = `${loc.p} › ${loc.d}`; if (loc.t) cur = `${loc.p} › ${loc.d} › ${loc.t}`;
+  const canAdd = !!cur && !f.areas.includes(cur);
+  const selSt: CSSProperties = { minHeight: 42, width: "100%", padding: "0 12px", borderRadius: 12, background: "#251d1b", color: "#f3ead9", fontSize: 14.5 };
+  const pickSel = (label: string, value: string, opts: string[], ph: string, on: (v: string) => void) => (
+    <label className="flex flex-col gap-1 min-w-0"><span style={{ fontSize: 13.5, color: "#b5a596" }}>{label}</span>
+      <select value={value} disabled={!opts.length} onChange={(e) => on(e.target.value)} style={{ ...selSt, opacity: opts.length ? 1 : 0.5 }}>
+        <option value="">{opts.length ? ph : "—"}</option>{opts.map((x) => <option key={x} value={x}>{x}</option>)}
+      </select>
+    </label>
+  );
+
   const v1 = () => {
     const e: Record<string, string> = {};
-    if (!f.first_name.trim()) e.first_name = "กรอกชื่อ";
+    if (!f.first_name.trim()) e.first_name = "กรอกชื่อจริง";
     if (!f.last_name.trim()) e.last_name = "กรอกนามสกุล";
     if (!f.nickname.trim()) e.nickname = "กรอกชื่อเล่น";
-    if (!f.birthdate) e.birthdate = "กรอกวันเกิด";
-    else { const ae = ageError(pkgKey, ageFrom(f.birthdate)); if (ae) e.birthdate = ae; }
-    if (!(+f.height >= 140 && +f.height <= 220)) e.height = "ส่วนสูง 140–220 ซม.";
-    if (!(+f.weight >= 35 && +f.weight <= 200)) e.weight = "น้ำหนัก 35–200 กก.";
-    if (!/^0\d{9}$/.test(f.tel.replace(/[-\s]/g, ""))) e.tel = "เบอร์โทร 10 หลัก ขึ้นต้นด้วย 0";
-    else if (!phoneOk) e.tel = "ยืนยันเบอร์โทรด้วยรหัส OTP ก่อน";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.trim())) e.email = "รูปแบบอีเมลไม่ถูกต้อง";
-    if (!/^\d{5}$/.test(f.zipcode)) e.zipcode = "รหัสไปรษณีย์ 5 หลัก";
-    if (!f.experience) e.experience = "เลือกประสบการณ์";
+    if (!f.birthdate) e.birthdate = "กรอกวันเกิด"; else { const ae = ageError(pkg, ageFrom(f.birthdate)); if (ae) e.birthdate = ae; }
+    if (!/^0\d{9}$/.test(f.tel.replace(/[-\s]/g, ""))) e.tel = "เบอร์โทร 10 หลัก ขึ้นต้นด้วย 0"; else if (!phoneOk) e.tel = "ยืนยันเบอร์โทรด้วยรหัส OTP ก่อน";
+    if (!f.line_id.trim()) e.line_id = "กรอก LINE ID";
+    if (!f.address.trim()) e.address = "บอกย่านที่พักอาศัย";
     if (!f.photo) e.photo = "แนบรูปหน้าตรง";
     if (!f.other_doc) e.other_doc = "แนบรูปเต็มตัว";
-    if (!f.id_card) e.id_card = "แนบรูปบัตรประชาชน";
+    if (!f.areas.length) e.areas = "เพิ่มพื้นที่ที่สะดวกอย่างน้อย 1 พื้นที่";
     return e;
   };
   const v2 = () => {
     const e: Record<string, string> = {};
-    if (!f.talents?.length) e.talents = "เลือกความสามารถพิเศษอย่างน้อย 1 ข้อ";
-    if (talentOther && !f.talents_other.trim()) e.talents_other = "ระบุความสามารถอื่น ๆ";
-    if (!f.activities?.length) e.activities = "เลือกอย่างน้อย 1 กิจกรรม";
-    if (activityOther && !f.activities_other.trim()) e.activities_other = "ระบุกิจกรรมอื่น ๆ";
-    if (pkgKey === "B" && !f.massage_cert) e.massage_cert = "ระบุว่ามีใบรับรองการนวดหรือไม่";
-    if (f.massage_cert === "yes" && !f.cert_doc) e.cert_doc = "แนบรูปใบรับรองการนวด";
-    if (!f.avail_slots?.length) e.avail_slots = "เลือกช่วงเวลาที่สะดวกอย่างน้อย 1 ช่วง";
-    if (!(+f.avail_days >= 1 && +f.avail_days <= 7)) e.avail_days = "1–7 วัน";
-    if (!(+f.avail_hours >= 1 && +f.avail_hours <= 24)) e.avail_hours = "ระบุชั่วโมงต่อวัน";
-    if (!f.ack_hours || !f.ack_no_refuse || !f.accept_terms || !f.consent_criminal || !f.consent_pdpa) e.acks = "ต้องติ๊กรับทราบเงื่อนไขทั้ง 3 ข้อ";
+    if (!f.week_days.length) e.week_days = "เลือกวันที่สะดวกอย่างน้อย 1 วัน";
+    if (!f.periods.length) e.periods = "เลือกช่วงเวลา";
+    if (!f.hours_band) e.hours_band = "เลือกจำนวนชั่วโมงต่อวัน";
+    if (!f.ack_hours || !f.ack_no_refuse) e.acks = "ติ๊กรับทราบเงื่อนไขทั้ง 2 ข้อ";
     return e;
   };
-
-  const showErrs = (e: Record<string, string>) => {
-    setErrs(e);
-    setTimeout(() => document.querySelector("[data-err='1']")?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
-  };
+  const showErrs = (e: Record<string, string>) => { setErrs(e); setTimeout(() => document.querySelector("[data-err='1']")?.scrollIntoView({ behavior: "smooth", block: "center" }), 50); };
   const next = () => {
-    if (step === 1) {
-      const e = v1();
-      if (Object.keys(e).length) return showErrs(e);
-      setErrs({}); setStep(2);
-      return;
-    }
-    const e = v2();
+    const e = step === 1 ? v1() : v2();
     if (Object.keys(e).length) return showErrs(e);
+    setErrs({});
+    if (step === 1) return setStep(2);
     try { sessionStorage.setItem(FORM_KEY, JSON.stringify(f)); } catch { return showErrs({ photo: "ไฟล์รูปใหญ่เกินไป กรุณาเลือกรูปอื่น" }); }
     router.push("/join/pay");
   };
 
-  const ok2 = step === 2 && !!f.talents?.length && !!f.activities?.length && !!f.avail_slots?.length && f.ack_hours && f.ack_no_refuse && f.consent_pdpa && (pkgKey !== "B" || !!f.massage_cert)
-    && (!talentOther || !!f.talents_other.trim()) && (!activityOther || !!f.activities_other.trim()) && (f.massage_cert !== "yes" || !!f.cert_doc);
-  const blocked = step === 1 ? !phoneOk : !ok2;
-  const ctaLabel = step === 1 ? (phoneOk ? "ถัดไป · กิจกรรมและเวลา" : "ยืนยันเบอร์โทรด้วย OTP ก่อน") : ok2 ? "ถัดไป · ชำระเงิน →" : "กรอกข้อมูลให้ครบก่อนไปต่อ";
-  const ack3 = f.consent_criminal && f.consent_pdpa;
-
-  const backBtn = "shrink-0 w-11 h-11 rounded-full border border-[rgba(243,234,217,.14)] text-[#f3ead9] grid place-items-center bg-transparent";
-  const chevron = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6" /></svg>;
-  const sectionH = "text-[15px] text-[#e8c472]";
+  const back = (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+  );
+  const backCls = "shrink-0 w-11 h-11 rounded-full bg-[#251d1b] text-[#f3ead9] grid place-items-center hover:text-[#f3ead9]";
 
   return (
-    <div className="min-h-dvh bg-[#171211]">
-      <main className="mb-v7 min-h-dvh md:bg-[#0f0b0a] flex flex-col overflow-x-hidden">
-        <BrandHeader />
-        <div className="mx-auto w-full max-w-[640px] md:mt-6 md:rounded-[20px] md:pb-8 bg-[#171211] flex flex-col flex-1">
-        <div className="flex items-center gap-3 px-4 pt-4 pb-2">
-          {step === 1
-            ? <Link href="/join#packages" aria-label="ย้อนกลับ" className={backBtn}>{chevron}</Link>
-            : <button type="button" onClick={() => setStep(1)} aria-label="ย้อนกลับ" className={backBtn}>{chevron}</button>}
-          <div className="min-w-0">
-            <div className="text-[11px] tracking-[1px] text-[#e8c472] font-semibold">ขั้นที่ {step} / 5</div>
-            <div className="text-[18px]" style={H}>{step === 1 ? "ข้อมูลส่วนตัว" : "กิจกรรม · เวลา · ข้อตกลง"}</div>
-          </div>
-        </div>
-        <div className="grid grid-cols-5 gap-1 px-4" aria-label={`ขั้นที่ ${step} จาก 5`}>
-          {[1, 2, 3, 4, 5].map((n) => <span key={n} className="h-1 rounded-[2px]" style={{ background: n <= step ? GOLD : LINE }} />)}
-        </div>
-
-        <div className="flex-1 px-4 pt-4 pb-[120px] flex flex-col gap-4">
-          {step === 1 ? (
-            <>
-              <div className="grid grid-cols-2 gap-3 items-start">
-                <Field label="ชื่อ" err={errs.first_name}><input className={inputCls} placeholder="ชื่อจริง" autoComplete="given-name" value={f.first_name} onChange={(e) => set("first_name", e.target.value)} /></Field>
-                <Field label="นามสกุล" err={errs.last_name}><input className={inputCls} placeholder="นามสกุล" autoComplete="family-name" value={f.last_name} onChange={(e) => set("last_name", e.target.value)} /></Field>
-              </div>
-              <div className="grid grid-cols-2 gap-3 items-start">
-                <Field label="ชื่อเล่น" err={errs.nickname}><input className={inputCls} placeholder="ชื่อเล่น" value={f.nickname} onChange={(e) => set("nickname", e.target.value)} /></Field>
-                <Field label={`วันเกิด · อายุ ${AGE_LIMITS[pkgKey].min}–${AGE_LIMITS[pkgKey].max}`} err={errs.birthdate}><input className={inputCls + " [color-scheme:dark]"} type="date" autoComplete="bday" value={f.birthdate} onChange={(e) => set("birthdate", e.target.value)} /></Field>
-              </div>
-              <div className="grid grid-cols-2 gap-3 items-start">
-                <Field label="ส่วนสูง (ซม.)" err={errs.height}><input className={inputCls} inputMode="numeric" maxLength={3} value={f.height} onChange={(e) => set("height", e.target.value.replace(/\D/g, ""))} /></Field>
-                <Field label="น้ำหนัก (กก.)" err={errs.weight}><input className={inputCls} inputMode="numeric" maxLength={3} value={f.weight} onChange={(e) => set("weight", e.target.value.replace(/\D/g, ""))} /></Field>
-              </div>
-              <div className="flex flex-col gap-2 min-w-0" data-err={errs.tel ? "1" : undefined}>
-                <span className={labelCls}>{otpOff ? "เบอร์โทร" : "เบอร์โทร (ยืนยันด้วย OTP)"}</span>
-                {otpOff ? <input className={inputCls} inputMode="tel" autoComplete="tel" maxLength={10} placeholder="08x-xxx-xxxx" value={f.tel} onChange={(e) => set("tel", e.target.value.replace(/\D/g, ""))} /> : <OtpStep phone={f.tel} onPhone={(v) => { set("tel", v); setPhoneOk(false); }} verified={phoneOk} onVerified={() => { setPhoneOk(true); setErrs((e) => ({ ...e, tel: "" })); }} inputCls={inputCls} />}
-                {phoneOk && !otpOff && <div className="text-[#7fd6a3] text-[12.5px] font-semibold">ยืนยันแล้ว ✓ เบอร์นี้ผ่านการตรวจสอบ OTP</div>}
-                {errs.tel && <span className="text-[11.5px] text-[#ff8a9a]">{errs.tel}</span>}
-              </div>
-              <Field label="LINE ID"><input className={inputCls} placeholder="LINE ID" value={f.line_id} onChange={(e) => set("line_id", e.target.value)} /></Field>
-              <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-3 items-start">
-                <Field label="อีเมล" err={errs.email}><input className={inputCls} type="email" inputMode="email" autoComplete="email" placeholder="name@email.com" value={f.email} onChange={(e) => set("email", e.target.value)} /></Field>
-                <Field label="รหัสไปรษณีย์" err={errs.zipcode}><input className={inputCls} inputMode="numeric" maxLength={5} autoComplete="postal-code" value={f.zipcode} onChange={(e) => set("zipcode", e.target.value.replace(/\D/g, ""))} /></Field>
-              </div>
-              <div className="flex flex-col gap-2" data-err={errs.experience ? "1" : undefined}>
-                <span className={labelCls}>ประสบการณ์งานบริการ</span>
-                <div className="grid grid-cols-3 gap-2">
-                  {EXPERIENCE.map((x) => {
-                    const on = f.experience === x;
-                    return <button key={x} type="button" aria-pressed={on} onClick={() => set("experience", x)} className="h-12 rounded-[12px] border text-[12.5px]" style={{ borderColor: on ? GOLD : LINE, color: on ? "#e8c472" : "#d9c9b4", background: on ? "rgba(240,200,90,.14)" : "transparent" }}>{x}</button>;
-                  })}
-                </div>
-                {errs.experience && <span className="text-[11.5px] text-[#ff8a9a]">{errs.experience}</span>}
-              </div>
-              <div className="flex flex-col gap-2">
-                <span className={labelCls}>รูปโปรไฟล์ (2 รูป)</span>
-                <div className="grid grid-cols-2 gap-3">
-                  <Tile label="รูปหน้าตรง" value={f.photo} onPick={(file) => onFile("photo", file)} />
-                  <Tile label="รูปเต็มตัว" value={f.other_doc} onPick={(file) => onFile("other_doc", file)} />
-                </div>
-                <Err msg={errs.photo || errs.other_doc} />
-              </div>
-              <div className="flex flex-col gap-2">
-                <span className={labelCls}>รูปบัตรประชาชน</span>
-                <div className="grid grid-cols-2 gap-3">
-                  <Tile label="บัตรประชาชน" value={f.id_card} onPick={(file) => onFile("id_card", file)} />
-                </div>
-                <Err msg={errs.id_card} />
-                <span className="text-[11px] leading-4 text-[#b5a596]">เซลฟีถือบัตร จะขอในขั้นยืนยันตัวตนหลังชำระเงิน</span>
-              </div>
-            </>
-          ) : (
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between gap-3 px-4 py-[14px] rounded-[16px] border-[1.5px] border-[#e8c472] bg-[rgba(240,200,90,.14)]">
-                <div className="min-w-0">
-                  <div className="text-[11px] tracking-[1.5px] text-[#e8c472]">สายงานที่สมัคร</div>
-                  <div className="text-[17px]" style={H}>เพื่อนกินเที่ยว</div>
-                  <div className="text-[11.5px] text-[#d9c9b4] whitespace-nowrap">{SUB[pkgKey]}</div>
-                </div>
-                <div className="text-right shrink-0">
-                  <div className="text-[20px] text-[#e8c472]" style={{ ...H, fontWeight: 700 }}>{baht(pkg.price)}</div>
-                  <Link href="/join#packages" className="text-[12px] text-[#e8c472]">เปลี่ยนสายงาน</Link>
-                </div>
-              </div>
-
-              <div className={sectionH} style={H}>ความสามารถพิเศษ <span className="text-[11.5px] text-[#d9c9b4] font-normal">(เลือกได้หลายข้อ · บังคับ)</span></div>
-              <div className="flex flex-wrap gap-2">{TALENTS.map((a) => <Chip key={a} label={a} on={(f.talents ?? []).includes(a)} onClick={() => tog("talents", a)} />)}</div>
-              <Err msg={errs.talents} />
-              {talentOther && (
-                <Field label="ระบุความสามารถอื่น ๆ" err={errs.talents_other}>
-                  <input className={inputCls} maxLength={OTHER_MAX} placeholder="เช่น เต้น, แต่งหน้า" value={f.talents_other ?? ""} onChange={(e) => set("talents_other", e.target.value.slice(0, OTHER_MAX))} />
-                </Field>
-              )}
-
-              <div className={sectionH} style={H}>กิจกรรมที่รับได้</div>
-              <div className="flex flex-wrap gap-2">{ACTIVITIES.map((a) => <Chip key={a} label={a} on={(f.activities ?? []).includes(a)} onClick={() => tog("activities", a)} />)}</div>
-              <Err msg={errs.activities} />
-              {activityOther && (
-                <Field label="ระบุกิจกรรมอื่น ๆ" err={errs.activities_other}>
-                  <input className={inputCls} maxLength={OTHER_MAX} placeholder="เช่น ช้อปปิ้ง, คาราโอเกะ" value={f.activities_other ?? ""} onChange={(e) => set("activities_other", e.target.value.slice(0, OTHER_MAX))} />
-                </Field>
-              )}
-
-              <div className="p-4 rounded-[16px] border border-[rgba(243,234,217,.14)] bg-[#211a18] text-[13px] flex justify-between items-center gap-3">
-                <span className="min-w-0">ใบรับรองการนวด (สำหรับผู้สมัครสายนวด)</span>
-                <span className="flex gap-2 shrink-0">
-                  {(["yes", "no"] as const).map((v) => {
-                    const on = f.massage_cert === v;
-                    return <button key={v} type="button" aria-pressed={on} onClick={() => set("massage_cert", v)} className="h-[34px] px-3 rounded-full border bg-transparent" style={{ borderColor: on ? GOLD : LINE, color: on ? "#e8c472" : "#d9c9b4" }}>{v === "yes" ? "มี" : "ไม่มี"}</button>;
-                  })}
-                </span>
-              </div>
-              <Err msg={errs.massage_cert} />
-              {f.massage_cert === "yes" && (
-                <div className="flex flex-col gap-2">
-                  <span className={labelCls}>รูปใบรับรองการนวด (JPG/PNG/WEBP ไม่เกิน 5MB · บังคับ)</span>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Tile label="ใบรับรองการนวด" value={f.cert_doc} onPick={(file) => onFile("cert_doc", file)} />
-                  </div>
-                  <Err msg={errs.cert_doc} />
-                </div>
-              )}
-
-              <div className={sectionH} style={H}>เวลาที่สะดวกรับลูกค้า (วันไหน สัปดาห์ละกี่วัน วันละกี่ชั่วโมง)</div>
-              <div className="grid grid-cols-4 gap-2">
-                {TIME_SLOTS.map((t) => {
-                  const on = (f.avail_slots ?? []).includes(t);
-                  return <button key={t} type="button" aria-pressed={on} onClick={() => tog("avail_slots", t)} className="h-12 rounded-[12px] border bg-transparent text-[12.5px]" style={{ borderColor: on ? GOLD : LINE, color: on ? "#e8c472" : "#d9c9b4" }}>{t}</button>;
-                })}
-              </div>
-              <Err msg={errs.avail_slots} />
-              <div className="grid grid-cols-2 gap-3 items-start">
-                <Stepper label="กี่วันต่อสัปดาห์" value={f.avail_days} unit="วัน"
-                  onDown={() => set("avail_days", String(Math.max(1, (+f.avail_days || 1) - 1)))}
-                  onUp={() => set("avail_days", String(Math.min(7, (+f.avail_days || 0) + 1)))} />
-                <Stepper label={`กี่ชม.ต่อวัน · งานละ 3–${maxH} ชม.`} value={f.avail_hours} unit="ชม."
-                  onDown={() => set("avail_hours", String(Math.max(3, (+f.avail_hours || 3) - 1)))}
-                  onUp={() => set("avail_hours", String(Math.min(maxH, (+f.avail_hours || 2) + 1)))} />
-              </div>
-
-              <Check on={!!f.ack_hours} onClick={() => set("ack_hours", !f.ack_hours)}>
-                {pkgKey === "A" ? "รับทราบว่างานแต่ละครั้งใช้เวลา 3–8 ชม. (เพื่อนกินเที่ยว)" : "รับทราบว่างานแต่ละครั้งใช้เวลา 3–5 ชม. (เพื่อนกินเที่ยว สายนวด)"}
-              </Check>
-              <Check on={!!f.ack_no_refuse && f.accept_terms} onClick={() => { const v = !(f.ack_no_refuse && f.accept_terms); setF((p) => ({ ...p, ack_no_refuse: v, accept_terms: v })); setErrs((e) => ({ ...e, acks: "" })); }}>
-                {ACK_NO_REFUSE_TEXT} (<a href="/join/terms" target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} className="underline underline-offset-2">อ่านข้อกำหนด</a>)
-              </Check>
-              <Check on={ack3} onClick={() => { const v = !ack3; setF((p) => ({ ...p, consent_criminal: v, consent_pdpa: v })); setErrs((e) => ({ ...e, acks: "" })); }}>
-                ยินยอมให้ตรวจประวัติอาชญากรรม และยอมรับ<a href="/join/privacy" target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} className="underline underline-offset-2">นโยบายความเป็นส่วนตัว (PDPA)</a>
-              </Check>
-              <Err msg={errs.acks} />
+    <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9", fontSize: 15, lineHeight: 1.7 }}>
+      <BrandHeader tone="bar" href="/work-with-us" />
+      <div className="mx-auto w-full max-w-[720px]">
+        {step === 1 ? (
+          <>
+            <div className="flex items-center gap-3" style={{ padding: "12px 16px 4px" }}>
+              <Link href="/join" aria-label="ย้อนกลับ" className={backCls}>{back}</Link>
+              <div className="min-w-0 font-semibold text-[20px] leading-[1.35]">ข้อมูลผู้สมัคร</div>
             </div>
-          )}
-        </div>
+            <div className="flex flex-col gap-1" style={{ padding: "12px 16px 0" }}>
+              <h1 className="m-0 font-semibold text-[20px] leading-[1.4] text-[#e8c472]">กรอกข้อมูล</h1>
+            </div>
+            <div className="flex flex-col" style={{ padding: "12px 16px 28px", gap: 22 }}>
+              <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#251d1b]" style={{ padding: 20 }}>
+                <div className="min-w-0"><div className="text-[13px] font-light text-[#b5a596]">สายที่สมัคร</div><div className="font-semibold text-[17px] leading-[1.4]">{TRACK[pkg]}</div></div>
+                <Link href="/join" className="shrink-0 text-[14px] text-[#e8c472]">เปลี่ยน</Link>
+              </div>
 
-        <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[640px] px-4 pt-3 pb-[calc(16px+env(safe-area-inset-bottom))] bg-[rgba(23,18,17,.97)] border-t border-[rgba(243,234,217,.14)] z-20">
-          <button type="button" onClick={next} aria-disabled={blocked}
-            className="btn-red-lux w-full h-14 rounded-full border-[1.5px] border-[#e8c472] text-white font-semibold text-[15px] "
-            style={{ background: "#e8c472", opacity: blocked ? 0.45 : 1 }}>
-            {ctaLabel}
-          </button>
-        </div>
+              <section className="flex flex-col" style={{ gap: 10 }}>
+                <h2 style={h2}>ข้อมูลเบื้องต้น</h2>
+                <div className="grid grid-cols-2 gap-[10px]">
+                  <Field label="ชื่อจริง" err={errs.first_name}><input className={inCls} autoComplete="given-name" placeholder="ชื่อจริง" value={f.first_name} onChange={(e) => set("first_name", e.target.value)} /></Field>
+                  <Field label="นามสกุล" err={errs.last_name}><input className={inCls} autoComplete="family-name" placeholder="นามสกุล" value={f.last_name} onChange={(e) => set("last_name", e.target.value)} /></Field>
+                </div>
+                <div className="grid grid-cols-2 gap-[10px]">
+                  <Field label="ชื่อเล่น" err={errs.nickname}><input className={inCls} placeholder="ชื่อเล่น" value={f.nickname} onChange={(e) => set("nickname", e.target.value)} /></Field>
+                  <Field label="วันเกิด" err={errs.birthdate}><input type="date" className={inCls} style={{ colorScheme: "dark" }} value={f.birthdate} onChange={(e) => set("birthdate", e.target.value)} /></Field>
+                </div>
+                <div className="text-[13px] font-light text-[#b5a596]" style={{ marginTop: -4 }}>รับสมัครอายุ 20–50 ปี</div>
+                <div>
+                  <span style={lb}>เบอร์โทรศัพท์</span>
+                  {otpOff
+                    ? <input className={inCls} inputMode="tel" autoComplete="tel" maxLength={10} placeholder="08x-xxx-xxxx" value={f.tel} onChange={(e) => set("tel", e.target.value.replace(/\D/g, ""))} />
+                    : <OtpStep phone={f.tel} onPhone={(v) => { set("tel", v); setPhoneOk(false); }} verified={phoneOk} onVerified={() => { setPhoneOk(true); setErrs((e) => ({ ...e, tel: "" })); }} inputCls={inCls} />}
+                  {phoneOk && !otpOff && <div className="mt-1.5 text-[#7fd6a3] text-[13px]">✓ ยืนยันเบอร์แล้ว</div>}
+                  <Err msg={errs.tel} />
+                </div>
+                <Field label="LINE ID" err={errs.line_id}><input className={inCls} placeholder="LINE ID" value={f.line_id} onChange={(e) => set("line_id", e.target.value)} /></Field>
+                <Field label="ปัจจุบันพักอาศัยอยู่แถวไหน" err={errs.address}><input className={inCls} placeholder="เช่น ลาดพร้าว, บางนา" value={f.address} onChange={(e) => set("address", e.target.value)} /></Field>
+                <div className="grid grid-cols-2 gap-[10px]">
+                  <Upload label="รูปหน้าตรง" done={!!f.photo} onPick={(x) => onFile("photo", x)} err={errs.photo} />
+                  <Upload label="รูปเต็มตัว" done={!!f.other_doc} onPick={(x) => onFile("other_doc", x)} err={errs.other_doc} />
+                </div>
+              </section>
+
+              <section className="flex flex-col" style={{ gap: 10 }}>
+                <div><h2 style={h2}>พื้นที่ที่สะดวกรับงาน</h2><div className="text-[13px] font-light text-[#b5a596]">เลือกได้มากกว่า 1 ข้อ</div></div>
+                {f.areas.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {f.areas.map((a) => (
+                      <button key={a} type="button" onClick={() => set("areas", f.areas.filter((x) => x !== a))} aria-label={`ลบ ${a}`} className="inline-flex items-center gap-1.5 font-light text-[13px] leading-[1.3] rounded-[10px] bg-[#2a211f] text-[#f3ead9]" style={{ minHeight: 36, padding: "6px 10px 6px 12px" }}>
+                        {a}<span aria-hidden="true" className="text-[15px] text-[#e8c472]">×</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <div className="grid grid-cols-2 gap-[10px]">
+                  {pickSel("ภูมิภาค", loc.r, Object.keys(R), "เลือกภูมิภาค", (v) => setLoc({ r: v, p: "", d: "", t: "" }))}
+                  {pickSel("จังหวัด", loc.p, pl, "ทั้งภูมิภาค", (v) => setLoc((l) => ({ ...l, p: v, d: "", t: "" })))}
+                  {pickSel(bkk ? "เขต" : "อำเภอ", loc.d, dl, "ทั้งจังหวัด", (v) => setLoc((l) => ({ ...l, d: v, t: "" })))}
+                  {pickSel(bkk ? "แขวง" : "ตำบล", loc.t, tl, bkk ? "ทั้งเขต" : "ทั้งอำเภอ", (v) => setLoc((l) => ({ ...l, t: v })))}
+                </div>
+                <button type="button" disabled={!canAdd} onClick={() => { if (canAdd) set("areas", [...f.areas, cur]); }} className="min-h-11 rounded-xl bg-[#2a211f] text-[#e8c472] font-semibold text-[14px]" style={{ opacity: canAdd ? 1 : 0.45 }}>+ เพิ่มพื้นที่นี้</button>
+                <Err msg={errs.areas} />
+                <Field label="พื้นที่ที่ไม่สะดวกรับงาน"><input className={inCls} placeholder="เช่น ไม่รับงานต่างจังหวัด" value={f.no_area} onChange={(e) => set("no_area", e.target.value)} /></Field>
+              </section>
+
+              <button type="button" onClick={next} className={cta}>ถัดไป · วันเวลาและประสบการณ์</button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-3" style={{ padding: "20px 20px 10px" }}>
+              <button type="button" onClick={() => setStep(1)} aria-label="ย้อนกลับ" className={backCls}>{back}</button>
+              <div className="min-w-0 font-semibold text-[20px] leading-[1.35]">วันเวลาและประสบการณ์</div>
+            </div>
+            <div className="flex flex-col" style={{ padding: "24px 20px 40px", gap: 24 }}>
+              <section className="flex flex-col" style={{ gap: 10 }}>
+                <div><h2 style={h2}>วันและเวลาที่สะดวก</h2><div className="text-[13px] font-light text-[#b5a596]">แตะเลือกได้หลายวัน</div></div>
+                <div className="grid grid-cols-7 gap-1.5 md:max-w-[420px]">
+                  {DAYS.map(([t, full, col, ink]) => {
+                    const on = f.week_days.includes(t);
+                    return <button key={t} type="button" aria-pressed={on} aria-label={full} onClick={() => tog("week_days", t)} className="rounded-full font-bold text-[14px] p-0" style={{ aspectRatio: "1", minHeight: 44, background: on ? col : "transparent", color: on ? ink : col, boxShadow: on ? `0 4px 12px ${col}66` : "none", transition: "all .2s ease" }}>{t}</button>;
+                  })}
+                </div>
+                <Err msg={errs.week_days} />
+                <div className="flex flex-col gap-1.5">
+                  <span style={{ fontSize: 13.5, color: "#b5a596" }}>ช่วงเวลา · เลือกได้ทั้งสองช่วง</span>
+                  <div className="grid grid-cols-2 gap-[10px]">
+                    {PERIODS.map((p) => {
+                      const on = f.periods.includes(p.id);
+                      return (
+                        <button key={p.id} type="button" aria-pressed={on} onClick={() => tog("periods", p.id)} className="flex items-center gap-[10px] text-left rounded-[14px]" style={{ minHeight: 64, padding: "10px 12px", background: on ? p.on : "transparent", color: on ? p.fg : "#f3ead9", boxShadow: on ? "0 6px 14px rgba(0,0,0,0.25)" : "none", transition: "all .2s ease" }}>
+                          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={p.icon} /></svg>
+                          <span className="flex flex-col leading-[1.3]"><span className="font-bold text-[15px]">{p.id}</span><span className="text-[13px] font-light" style={{ opacity: 0.85 }}>{p.h}</span></span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <Err msg={errs.periods} />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <span style={{ fontSize: 13.5, color: "#b5a596" }}>รับลูกค้าได้กี่ชั่วโมงต่อวัน</span>
+                  <div className="flex flex-wrap gap-2">
+                    {HOURS.map((t) => {
+                      const on = f.hours_band === t;
+                      return <button key={t} type="button" aria-pressed={on} onClick={() => set("hours_band", t)} className="rounded-full text-[14px] font-semibold" style={{ minHeight: 44, padding: "8px 14px", background: on ? GOLD : "transparent", color: on ? "#1b130b" : "#f3ead9" }}>{t}</button>;
+                    })}
+                  </div>
+                  <Err msg={errs.hours_band} />
+                </div>
+                <div className="rounded-xl text-[14px]" style={{ padding: "10px 14px", background: "rgba(232,196,114,0.08)" }}>
+                  รับลูกค้าได้สัปดาห์ละ <b className="text-[#e8c472]">{f.week_days.length} วัน</b> · {f.periods.join(" + ") || "ยังไม่เลือกช่วงเวลา"}
+                </div>
+              </section>
+
+              <section className="flex flex-col" style={{ gap: 10 }}>
+                <h2 style={h2}>ประสบการณ์</h2>
+                <label className="block"><span style={lb}>ประสบการณ์ด้านงานบริการ / การนวด (ถ้ามี)</span>
+                  <textarea rows={3} maxLength={500} placeholder="เช่น เคยทำงานโรงแรม 2 ปี, นวดแผนไทยได้" value={f.experience} onChange={(e) => set("experience", e.target.value)} className="w-full rounded-xl bg-[#251d1b] text-[#f3ead9] text-[15px] leading-[1.6] outline-none border border-transparent focus:border-[#e8c472] placeholder:text-[#b5a596]" style={{ padding: "12px 14px", resize: "vertical" }} />
+                </label>
+                {pkg === "B" && (
+                  <div className="flex flex-col gap-1.5">
+                    <span style={{ ...lb, margin: 0 }}>ใบรับรองการนวด (สายนวด · ไม่บังคับ)</span>
+                    <Upload label="แนบใบรับรอง" done={!!f.cert_doc} onPick={(x) => onFile("cert_doc", x)} err={errs.cert_doc} />
+                  </div>
+                )}
+              </section>
+
+              <section className="flex flex-col" style={{ gap: 10 }}>
+                <h2 style={h2}>ข้อมูลเพิ่มเติม</h2>
+                <Field label="หมายเหตุเพิ่มเติม"><input className={inCls} maxLength={300} placeholder="สิ่งที่อยากให้ทีมงานทราบ" value={f.intro} onChange={(e) => set("intro", e.target.value)} /></Field>
+              </section>
+
+              <section className="flex flex-col gap-1.5">
+                <h2 style={h2}>รับทราบเงื่อนไขการรับงาน</h2>
+                {([["ack_hours", `รับทราบว่าการให้บริการต่อครั้งอยู่ที่ ${pkg === "A" ? "3–8" : "3–5"} ชม. แล้วแต่ที่ลูกค้าจอง`], ["ack_no_refuse", "รับทราบว่าจะไม่ปฏิเสธการรับลูกค้าในวันเวลาที่แจ้งไว้ (เงื่อนไขการรับคืนค่าการันตี Branding)"]] as const).map(([k, t]) => {
+                  const on = f[k];
+                  return (
+                    <button key={k} type="button" role="checkbox" aria-checked={on} onClick={() => set(k, !on)} className="flex gap-3 items-start text-left bg-transparent w-full text-[#f3ead9]" style={{ padding: "6px 0", fontSize: 14.5, lineHeight: 1.6, minHeight: 44 }}>
+                      <span className="shrink-0 grid place-items-center rounded-md font-bold text-[13px] text-[#1b130b]" style={{ width: 22, height: 22, marginTop: 2, background: on ? GOLD : "transparent", boxShadow: on ? "none" : "inset 0 0 0 1.5px rgba(232,196,114,0.6)" }}>{on ? "✓" : ""}</span>
+                      <span>{t}</span>
+                    </button>
+                  );
+                })}
+                <Err msg={errs.acks} />
+              </section>
+
+              <button type="button" onClick={next} className={cta}>ถัดไป · ชำระเงิน</button>
+            </div>
+          </>
+        )}
       </div>
-      </main>
     </div>
   );
 }

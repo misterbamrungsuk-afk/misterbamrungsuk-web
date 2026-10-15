@@ -60,6 +60,16 @@ export interface JoinForm {
   ack_hours: boolean;
   /** ยอมรับเงื่อนไขไม่ปฏิเสธลูกค้า + การคืนค่าการันตี */
   ack_no_refuse: boolean;
+  /** พื้นที่ที่สะดวกรับงาน เช่น "กรุงเทพมหานคร › ปทุมวัน" (บอร์ด JoinForm) */
+  areas: string[];
+  /** พื้นที่ที่ไม่สะดวกรับงาน */
+  no_area: string;
+  /** วันที่สะดวก จ อ พ พฤ ศ ส อา (บอร์ด JoinForm2) */
+  week_days: string[];
+  /** ช่วงเวลา: กลางวัน / กลางคืน */
+  periods: string[];
+  /** ชั่วโมงต่อวัน เช่น "5–6 ชม." */
+  hours_band: string;
   /** ยินยอมรับข่าวสาร — ไม่บังคับ */
   consent_marketing: boolean;
 }
@@ -73,6 +83,7 @@ export const emptyForm: JoinForm = {
   tel: "", line_id: "", email: "", address: "", zipcode: "", bank: "", bank_account: "", bank_account_name: "",
   experience: "", skills: [], intro: "", photo: "", id_card: "", bankbook: "", other_doc: "", accept_terms: false, consent_pdpa: false, consent_criminal: false, consent_marketing: false,
   activities: [], talents: [], talents_other: "", activities_other: "", massage_cert: "", cert_doc: "", avail_slots: [], avail_days: "", avail_hours: "", ack_hours: false, ack_no_refuse: false,
+  areas: [], no_area: "", week_days: [], periods: [], hours_band: "",
 };
 
 /** อายุเต็มปีจากวันเกิด */
