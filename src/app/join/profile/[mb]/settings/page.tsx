@@ -63,7 +63,7 @@ export default async function SettingsPage({ params, searchParams }: { params: P
             <div className="text-[17px] font-medium">ยอดจองล่าสุด</div>
             <div className="text-[14px] font-light text-[#b5a596]">ยังไม่มีการจอง · ลูกค้าชำระแล้ว เงินพักไว้กับเราจนจบนัด</div>
           </div>
-          <AccountLinks mb={c.mb} t={c.t} reviewsHref={ptHref(c, "reviews")} deleteRequested={c.x.delete_requested_at ?? null} />
+          <AccountLinks mb={c.mb} t={c.t} reviewsHref={ptHref(c, "reviews")} quickHref={ptHref(c, "quick-replies")} strikesHref={ptHref(c, "strikes")} deleteRequested={c.x.delete_requested_at ?? null} />
         </div>
       </div>
       <PtNav c={c} active="settings" />

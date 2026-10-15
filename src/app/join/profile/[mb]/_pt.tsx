@@ -53,3 +53,16 @@ export function acctOf(row: Applicant) {
   const name = row.bank.replace(/\s*\([^)]*\)/, "");
   return { short, logo: BANK_LOGO[abbr] ?? "#3a2e2a", name, no: `••• •• ${no.slice(-4)} · ${row.bank_account_name}`, tail: `••${no.slice(-4)}` };
 }
+
+/** หัวแบบแถบ 68px พื้น #251d1b (บอร์ด P-Reviews / P-QuickReplies / P-PostCreate) */
+export function PtBarHead({ back, title, right }: { back: string; title: string; right?: React.ReactNode }) {
+  return (
+    <header className="flex items-center gap-3 h-[68px] bg-[#251d1b] lg:rounded-b-2xl" style={{ padding: "12px 16px" }}>
+      <Link href={back} aria-label="ย้อนกลับ" className="w-11 h-11 rounded-full bg-[#211a18] text-[#f3ead9] grid place-items-center shrink-0 hover:text-[#f3ead9]">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+      </Link>
+      <h1 className="m-0 flex-1 text-[18px] font-semibold">{title}</h1>
+      {right}
+    </header>
+  );
+}

@@ -167,7 +167,7 @@ export function SettingsForm({ mb, t, init }: { mb: string; t: string; init: PtS
     const err = await post(mb, t, "settings", (fd) => { fd.set("auto_reply_on", String(on)); fd.set("auto_reply", text); quick.forEach((q) => fd.append("quick_replies", q)); });
     setSt(err ?? "ok"); if (!err) setDirty(false);
   };
-  const addOne = () => { const v = add.trim(); if (v && !quick.includes(v) && quick.length < 12) setQuick([...quick, v]); setAdd(""); setAdding(false); ch(); };
+  const addOne = () => { const v = add.trim(); if (v && !quick.includes(v) && quick.length < 10) setQuick([...quick, v]); setAdd(""); setAdding(false); ch(); };
   return (
     <div id="pt-auto-reply" className="rounded-[20px] bg-[#272013] flex flex-col gap-3" style={{ padding: 16 }}>
       <div className="flex items-center justify-between">
@@ -190,7 +190,7 @@ export function SettingsForm({ mb, t, init }: { mb: string; t: string; init: PtS
               <input autoFocus aria-label="ข้อความสำเร็จรูปใหม่" value={add} maxLength={60} onChange={(e) => setAdd(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") addOne(); if (e.key === "Escape") setAdding(false); }} className="w-36 bg-transparent text-[13px] outline-none text-[#f3ead9]" />
               <button type="button" onClick={addOne} className="h-7 px-2 text-[13px] text-[#e8c472]">เพิ่ม</button>
             </span>
-          : quick.length < 12 && <button type="button" onClick={() => setAdding(true)} className="h-[34px] rounded-[10px] text-[13px] text-[#e8c472]" style={{ padding: "0 12px", background: "rgba(243,234,217,0.07)" }}>+ เพิ่ม</button>}
+          : quick.length < 10 && <button type="button" onClick={() => setAdding(true)} className="h-[34px] rounded-[10px] text-[13px] text-[#e8c472]" style={{ padding: "0 12px", background: "rgba(243,234,217,0.07)" }}>+ เพิ่ม</button>}
       </div>
       {(dirty || st) && (
         <button type="button" onClick={save} disabled={st === "busy" || !dirty} className="h-[46px] rounded-[14px] bg-[#e8c472] text-[#1b130b] text-[15px] font-semibold disabled:opacity-70">{st === "busy" ? "กำลังบันทึก…" : st === "ok" ? "✓ บันทึกแล้ว" : "บันทึก"}</button>
@@ -201,7 +201,7 @@ export function SettingsForm({ mb, t, init }: { mb: string; t: string; init: PtS
 }
 
 /** แถวลิงก์ท้ายหน้าตั้งค่า (บอร์ด): ออกจากระบบ · ข้อความตอบกลับเร็ว · รีวิวของฉัน · ลบบัญชี (PDPA) — ลบบัญชีต้องยืนยันในหน้า */
-export function AccountLinks({ mb, t, reviewsHref, deleteRequested }: { mb: string; t: string; reviewsHref: string; deleteRequested: string | null }) {
+export function AccountLinks({ mb, t, reviewsHref, quickHref, strikesHref, deleteRequested }: { mb: string; t: string; reviewsHref: string; quickHref: string; strikesHref: string; deleteRequested: string | null }) {
   const router = useRouter();
   const [ask, setAsk] = useState(false);
   const [reqAt, setReqAt] = useState(deleteRequested);
@@ -216,7 +216,8 @@ export function AccountLinks({ mb, t, reviewsHref, deleteRequested }: { mb: stri
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap justify-center gap-x-[18px] text-[13px] font-light" style={{ padding: "4px 0 8px" }}>
         <button type="button" onClick={logout} className="min-h-11 text-[#d9c9b4]">ออกจากระบบ</button>
-        <button type="button" onClick={() => document.getElementById("pt-auto-reply")?.scrollIntoView({ behavior: "smooth", block: "center" })} className="min-h-11 text-[#e8c472]">ข้อความตอบกลับเร็ว</button>
+        <Link href={quickHref} className="min-h-11 flex items-center text-[#e8c472]">ข้อความตอบกลับเร็ว</Link>
+        <Link href={strikesHref} className="min-h-11 flex items-center text-[#e8c472]">สถานะบัญชี</Link>
         <Link href={reviewsHref} className="min-h-11 flex items-center text-[#e8c472]">รีวิวของฉัน</Link>
         {!reqAt && <button type="button" onClick={() => setAsk(true)} className="min-h-11 text-[#ff8a9a]">ลบบัญชี (PDPA)</button>}
       </div>

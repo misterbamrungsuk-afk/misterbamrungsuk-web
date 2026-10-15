@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEarnings } from "@/lib/join/earnings-settings";
 import { TRAINING } from "@/lib/join/training";
@@ -32,6 +33,10 @@ export default async function JobsPage({ params, searchParams }: { params: Promi
         <div className="min-w-0">
           <div className="flex justify-between items-baseline" style={{ padding: "4px 0 10px" }}><h2 className="m-0 text-[18px] font-medium">คนที่สนใจ</h2><span className="text-[13px] text-[#e8c472] font-light">0 คน</span></div>
           <div className="rounded-[20px] bg-[#272013] text-[14px] font-light text-[#d9c9b4]" style={{ padding: "16px 14px" }}>ยังไม่มีคนสนใจ · ลูกค้าจะเห็นประกาศเมื่อเปิดให้บริการ ({TRAINING.openService})</div>
+          <Link href={ptHref(c, "posts")} className="mt-4 rounded-[18px] bg-[#211a18] flex items-center gap-3 hover:text-inherit" style={{ padding: 16 }}>
+            <span className="flex-1 min-w-0 flex flex-col"><span className="font-semibold">โพสต์ของฉัน</span><span className="text-[13px] font-light text-[#d9c9b4] truncate">{c.x.listing?.title || "หัวข้อ · กติกา · รูปปก (บัญชีละ 1 โพสต์)"}</span></span>
+            <span className="text-[#e8c472]" aria-hidden="true">›</span>
+          </Link>
         </div>
       </div>
       <PtNav c={c} active="jobs" />

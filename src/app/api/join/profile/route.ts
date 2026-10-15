@@ -3,6 +3,7 @@ import { ageError } from "@/lib/join/config";
 import { ageFrom } from "@/lib/join/form";
 import { canResume } from "@/lib/join/resume";
 import { extraOf, getByMb, saveProfile } from "@/lib/join/store";
+import { CONTACT_MSG, hasContact } from "@/lib/join/contact-guard";
 
 export const runtime = "nodejs";
 
@@ -80,7 +81,8 @@ export async function POST(req: Request) {
 
     // ตั้งค่า (ข้อความตอบกลับอัตโนมัติ + ข้อความสำเร็จรูป)
     if (step === "settings") {
-      const quick = uniq(form.getAll("quick_replies"), 12, 60);
+      const quick = uniq(form.getAll("quick_replies"), 10, 80);
+      if ([s("auto_reply", 300), ...quick].some(hasContact)) return bad(CONTACT_MSG, 400, ["auto_reply"]);
       await saveProfile(row.id, { pt_settings: { auto_reply_on: s("auto_reply_on") === "true", auto_reply: s("auto_reply", 300), quick_replies: quick } });
       return NextResponse.json({ ok: true });
     }
@@ -92,8 +94,17 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: true });
       }
       const text = s("text", 160), time = s("time", 40), zone = s("zone", 80);
+      if (hasContact(text) || hasContact(zone)) return bad(CONTACT_MSG, 400, ["text"]);
       if (!text || !time || !zone) return bad("กรอกกิจกรรม เวลา และโซนให้ครบ", 400, ["text", "time", "zone"]);
       await saveProfile(row.id, { post: { text, time, zone, open: true, created_at: new Date().toISOString() } });
+      return NextResponse.json({ ok: true });
+    }
+    // โพสต์โปรไฟล์ (บอร์ด P-Posts)
+    if (step === "listing") {
+      const title = s("title", 80), rules = s("rules", 600);
+      if (!title) return bad("กรอกหัวข้อโพสต์", 400, ["title"]);
+      if (hasContact(title) || hasContact(rules)) return bad(CONTACT_MSG, 400, ["title"]);
+      await saveProfile(row.id, { listing: { title, rules, hidden: s("hidden") === "true", updated_at: new Date().toISOString() } });
       return NextResponse.json({ ok: true });
     }
     // ขอลบบัญชีและข้อมูล (PDPA) — แอดมินดำเนินการและติดต่อกลับ

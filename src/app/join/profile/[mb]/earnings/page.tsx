@@ -35,7 +35,7 @@ export default async function MyEarningsPage({ params, searchParams }: { params:
             <Link href={ptHref(c, "withdraw")} className="w-full h-[50px] mt-3.5 rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold text-[16px] grid place-items-center hover:text-[#1b130b]">{acct ? `ถอนเข้า ${acct.name} ${acct.tail}` : "ถอนเงิน"}</Link>
           </div>
           <div className="rounded-[20px] bg-[#1b2322]" style={{ padding: 16 }}>
-            <div className="font-medium text-[16px]">ใบเสร็จ/ใบกำกับภาษี &amp; ใบหัก ณ ที่จ่าย</div>
+            <div className="flex justify-between items-baseline gap-2"><span className="font-medium text-[16px]">ใบเสร็จ/ใบกำกับภาษี &amp; ใบหัก ณ ที่จ่าย</span><Link href={ptHref(c, "docs")} className="text-[13px] text-[#e8c472] font-light shrink-0">ดูทั้งหมด ›</Link></div>
             <div className="text-[12.5px] font-light opacity-70 mt-0.5">ออกให้อัตโนมัติทุกครั้งที่ถอน · เก็บไฟล์ 30 วัน</div>
             {empty("ยังไม่มีเอกสาร · จะออกให้หลังถอนเงินครั้งแรก")}
           </div>
