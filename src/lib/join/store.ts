@@ -101,7 +101,10 @@ export type KycReason = Partial<Record<string, string>>;
 export interface Availability { slots: string[]; days: number | null; hours: number | null; week_days?: string[]; hours_band?: string }
 
 /** ข้อมูลเสริมที่แพ็กไว้ใน docs.extra ด้วย (ทนได้ถ้ายังไม่รัน migration 0003) */
-export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents" | "talents_other" | "activities_other" | "areas" | "no_area" | "slip_check" | "kyc_status" | "kyc_reason" | "kyc_submitted_at" | "bank_book_path"> & { attendance?: Record<string, boolean> };
+/** การ์ดโปรไฟล์ที่ผู้สมัครแก้เองในหน้า "โปรไฟล์ของฉัน" (บอร์ด ProviderEditProfile) */
+export interface ProfileCard { activities: string[]; places: string[]; partner_spas: string[]; skills: string[] }
+
+export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents" | "talents_other" | "activities_other" | "areas" | "no_area" | "slip_check" | "kyc_status" | "kyc_reason" | "kyc_submitted_at" | "bank_book_path"> & { attendance?: Record<string, boolean>; photos?: string[]; card?: ProfileCard | null; form_done?: number[] };
 
 /** รวมคอลัมน์ 0003 กับ docs.extra — คอลัมน์จริงมาก่อน */
 export function extraOf(a: Applicant): Extra {
@@ -110,8 +113,8 @@ export function extraOf(a: Applicant): Extra {
     activities: a.activities?.length ? a.activities : x.activities ?? [],
     massage_cert: a.massage_cert ?? x.massage_cert ?? null,
     availability: a.availability ?? x.availability,
-    ack_hours: a.ack_hours ?? x.ack_hours ?? false,
-    ack_no_refuse: a.ack_no_refuse ?? x.ack_no_refuse ?? false,
+    ack_hours: !!(a.ack_hours || x.ack_hours),
+    ack_no_refuse: !!(a.ack_no_refuse || x.ack_no_refuse),
     cohort: a.cohort ?? x.cohort ?? null,
     line_joined: a.line_joined ?? x.line_joined ?? false,
     phone_verified_at: a.phone_verified_at ?? x.phone_verified_at ?? null,
@@ -120,6 +123,9 @@ export function extraOf(a: Applicant): Extra {
     activities_other: a.activities_other || x.activities_other || "",
     areas: x.areas ?? [],
     no_area: x.no_area ?? "",
+    photos: x.photos ?? [],
+    card: x.card ?? null,
+    form_done: x.form_done ?? [],
     slip_check: x.slip_check ?? null,
     kyc_status: a.kyc_status && a.kyc_status !== "none" ? a.kyc_status : x.kyc_status ?? a.kyc_status ?? "none",
     kyc_reason: a.kyc_reason ?? x.kyc_reason ?? null,
@@ -254,7 +260,7 @@ export async function updateExtra(id: string, patch: Pick<Extra, "cohort" | "lin
 
 const KYC_EXTRA_KEYS = ["kyc_status", "kyc_reason", "kyc_submitted_at", "bank_book_path"];
 /** เก็บใน docs.extra อย่างเดียว (ไม่มีคอลัมน์) */
-const EXTRA_ONLY_KEYS = ["bank_consents"];
+const EXTRA_ONLY_KEYS = ["bank_consents", "areas", "no_area", "availability", "massage_cert", "ack_hours", "ack_no_refuse", "photos", "card", "form_done"];
 
 /** เขียนคอลัมน์ + docs (path ไฟล์ และ extra สำรอง) — คอลัมน์ 0006 ยังไม่มีก็เขียนเฉพาะคอลัมน์เดิม + docs */
 async function patchApplicant(id: string, allCols: Record<string, unknown>, docPaths: Partial<Record<DocKind, string>> = {}): Promise<Applicant | null> {
@@ -278,7 +284,7 @@ async function patchApplicant(id: string, allCols: Record<string, unknown>, docP
   return data as Applicant;
 }
 
-async function putKycFile(id: string, kind: DocKind, f: File) {
+async function putKycFile(id: string, kind: DocKind | "profile", f: File) {
   const path = `${id}/${kind}-${Date.now()}.${extOf(f)}`;
   await putFile(path, f);
   return path;
@@ -290,6 +296,21 @@ export async function saveKyc(id: string, files: { id_card?: File; selfie?: File
   if (files.id_copy) paths.id_copy = await putKycFile(id, "id_copy", files.id_copy);
   if (files.selfie) paths.selfie = await putKycFile(id, "selfie", files.selfie);
   return patchApplicant(id, address ? { address } : {}, paths);
+}
+
+/** ใบสมัครหลังชำระเงิน (บอร์ด JoinForm / JoinForm2) — คอลัมน์ปกติ + docs.extra · ไฟล์รูปหน้าตรง/เต็มตัว/ใบรับรอง */
+export async function saveProfile(id: string, cols: Record<string, unknown>, files: { photo?: File; other_doc?: File; cert_doc?: File } = {}) {
+  const paths: Partial<Record<DocKind, string>> = {};
+  for (const k of ["photo", "other_doc", "cert_doc"] as const) { const f = files[k]; if (f) paths[k] = await putKycFile(id, k, f); }
+  return patchApplicant(id, cols, paths);
+}
+
+/** รูปโปรไฟล์ (บอร์ด ProviderPhotos) สูงสุด 9 รูป — เก็บ path ใน docs.extra.photos ตามลำดับ (รูปแรก = รูปหลัก) */
+export async function addProfilePhoto(id: string, f: File) {
+  return putKycFile(id, "profile", f);
+}
+export async function setProfilePhotos(id: string, photos: string[]) {
+  return patchApplicant(id, { photos: photos.slice(0, 9) });
 }
 
 /** บันทึกบัญชีรับเงิน + ส่ง KYC (kyc_status = submitted) */

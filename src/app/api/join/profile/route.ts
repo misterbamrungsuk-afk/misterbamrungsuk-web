@@ -1,0 +1,92 @@
+import { NextResponse } from "next/server";
+import { ageError } from "@/lib/join/config";
+import { ageFrom } from "@/lib/join/form";
+import { canResume } from "@/lib/join/resume";
+import { extraOf, getByMb, saveProfile } from "@/lib/join/store";
+
+export const runtime = "nodejs";
+
+// ใบสมัครหลังชำระเงิน — step=1 (บอร์ด JoinForm) · step=2 (JoinForm2) · step=card (แท็บ "แก้ไข" ในโปรไฟล์ของฉัน)
+// ต้องเป็นเจ้าของรหัส (cookie mb_resume หรือ t)
+const MAX_FILE = 10 * 1024 * 1024;
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const WEEK_DAYS = ["จ", "อ", "พ", "พฤ", "ศ", "ส", "อา"];
+const PERIODS = ["กลางวัน", "กลางคืน"];
+const HOUR_BANDS: Record<string, number> = { "3–4 ชม.": 4, "5–6 ชม.": 6, "7–8 ชม.": 8, "มากกว่า 8 ชม.": 10 };
+const bad = (error: string, status = 400, fields?: string[]) => NextResponse.json({ ok: false, error, fields }, { status });
+const isDate = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v));
+const uniq = (xs: FormDataEntryValue[], max = 40, len = 60) => [...new Set(xs.map((x) => String(x).trim().slice(0, len)))].filter(Boolean).slice(0, max);
+
+export async function POST(req: Request) {
+  let form: FormData;
+  try { form = await req.formData(); } catch { return bad("ข้อมูลไม่ถูกต้อง"); }
+  const s = (k: string, max = 200) => String(form.get(k) ?? "").trim().slice(0, max);
+  const mb = s("mb");
+  if (!/^MB-\d{7,}$/.test(mb) || !(await canResume(mb, s("t", 2048) || null))) return bad("ลิงก์หมดอายุหรือไม่มีสิทธิ์ กรุณาติดต่อแอดมิน", 403);
+  const row = await getByMb(mb);
+  if (!row) return bad("ไม่พบใบสมัคร", 404);
+  const x = extraOf(row);
+  const step = s("step");
+  const done = new Set(x.form_done ?? []);
+
+  const file = (k: string): File | undefined | "bad" => {
+    const f = form.get(k);
+    if (!(f instanceof File) || f.size === 0) return undefined;
+    return IMAGE_TYPES.includes(f.type) && f.size <= MAX_FILE ? f : "bad";
+  };
+
+  try {
+    if (step === "1") {
+      const errors: string[] = [];
+      for (const k of ["first_name", "last_name", "nickname", "line_id", "address"]) if (!s(k)) errors.push(k);
+      if (!isDate(s("birthdate"))) errors.push("birthdate");
+      else { const ae = ageError(row.package, ageFrom(s("birthdate"))); if (ae) return bad(ae, 400, ["birthdate"]); }
+      const areas = uniq(form.getAll("areas"), 20, 120);
+      if (!areas.length) errors.push("areas");
+      const photo = file("photo"), body = file("other_doc");
+      if (photo === "bad") errors.push("photo"); else if (!photo && !row.docs.photo) errors.push("photo");
+      if (body === "bad") errors.push("other_doc"); else if (!body && !row.docs.other_doc) errors.push("other_doc");
+      if (errors.length) return bad("กรอกข้อมูลไม่ครบหรือไม่ถูกต้อง", 400, errors);
+      done.add(1);
+      await saveProfile(row.id, {
+        first_name: s("first_name"), last_name: s("last_name"), nickname: s("nickname"), birthdate: s("birthdate"),
+        line_id: s("line_id", 60), address: s("address", 300), areas, no_area: s("no_area", 300), form_done: [...done],
+      }, { photo: photo instanceof File ? photo : undefined, other_doc: body instanceof File ? body : undefined });
+      return NextResponse.json({ ok: true });
+    }
+
+    if (step === "2") {
+      const errors: string[] = [];
+      const weekDays = uniq(form.getAll("week_days")).filter((d) => WEEK_DAYS.includes(d));
+      const periods = uniq(form.getAll("periods")).filter((d) => PERIODS.includes(d));
+      const band = s("hours_band");
+      if (!weekDays.length) errors.push("week_days");
+      if (!periods.length) errors.push("periods");
+      if (!(band in HOUR_BANDS)) errors.push("hours_band");
+      if (s("ack_hours") !== "true") errors.push("ack_hours");
+      if (s("ack_no_refuse") !== "true") errors.push("ack_no_refuse");
+      const cert = file("cert_doc");
+      if (cert === "bad") errors.push("cert_doc");
+      if (errors.length) return bad("กรอกข้อมูลไม่ครบหรือไม่ถูกต้อง", 400, errors);
+      done.add(2);
+      await saveProfile(row.id, {
+        experience: s("experience", 500), intro: s("intro", 300),
+        availability: { slots: periods, days: weekDays.length, hours: HOUR_BANDS[band], week_days: weekDays, hours_band: band },
+        ack_hours: true, ack_no_refuse: true, form_done: [...done],
+        ...(row.package === "B" && (cert || row.docs.cert_doc) ? { massage_cert: true } : {}),
+      }, { cert_doc: cert instanceof File ? cert : undefined });
+      return NextResponse.json({ ok: true });
+    }
+
+    if (step === "card") {
+      await saveProfile(row.id, {
+        card: { activities: uniq(form.getAll("activities"), 20, 40), places: uniq(form.getAll("places"), 10, 40), partner_spas: uniq(form.getAll("partner_spas"), 10, 60), skills: uniq(form.getAll("skills"), 10, 40) },
+      });
+      return NextResponse.json({ ok: true });
+    }
+    return bad("ไม่รู้จักขั้นตอนนี้");
+  } catch (e) {
+    console.error("profile save failed", e);
+    return bad("บันทึกไม่สำเร็จ กรุณาลองใหม่", 500);
+  }
+}

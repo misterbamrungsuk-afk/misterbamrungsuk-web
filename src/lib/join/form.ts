@@ -2,7 +2,6 @@ import type { PackageKey } from "./config";
 
 // ข้อมูลฟอร์มส่งต่อจากหน้า sale page → หน้าชำระเงิน ผ่าน sessionStorage (อยู่ในเครื่องผู้สมัครเท่านั้น)
 // ฟอร์มสั้นตามชีต dev + รูปถ่าย/บัตรประชาชน; ฟิลด์ที่เหลือของ Sheet3 เก็บตอนอบรม (ปล่อยว่างได้)
-export const FORM_KEY = "mb_join_form";
 
 export interface JoinForm {
   package: PackageKey | "";

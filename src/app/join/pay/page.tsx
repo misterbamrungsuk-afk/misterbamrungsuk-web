@@ -1,27 +1,35 @@
 "use client";
 
-// ชำระเงิน (บอร์ด JoinPay + ป๊อปอัป JoinPayDone) — ต่อจากใบสมัคร 2 ขั้น · QR พร้อมเพย์ฝังยอด + แนบสลิป → /api/join/register (Slip2Go)
-// ต่างจากบอร์ด: หัวข้อย่อย "ขั้นสุดท้าย", ติ๊กยอมรับข้อกำหนด/PDPA ก่อนส่ง (ต้องมีก่อนเก็บข้อมูล), ป๊อปอัปพาไปยืนยันตัวตน
-import { useEffect, useState, type CSSProperties } from "react";
+// ชำระเงิน "ก่อนกรอกใบสมัคร" (บอร์ด JoinPay + ป๊อปอัป JoinPayDone) — ขั้นแรกหลังหน้า Join ตามลำดับบน canvas
+// ระบบต้องรู้ว่าใครจ่าย → กล่องชื่อ + เบอร์ (OTP) เหนือสรุปยอด และติ๊กยอมรับข้อกำหนด/PDPA ก่อนส่ง (ต้องมีก่อนเก็บข้อมูล)
+// ส่งสลิป → /api/join/register (Slip2Go) → ได้รหัส MB → ป๊อปอัป → โปรไฟล์ของฉัน (/join/profile/[mb])
+import { Suspense, useEffect, useState, type CSSProperties } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import QRCode from "qrcode";
-import { BANK, PACKAGES } from "@/lib/join/config";
-import { FORM_KEY, dataUrlToFile, resizeImage, type JoinForm } from "@/lib/join/form";
+import { BANK, PACKAGES, type PackageKey } from "@/lib/join/config";
+import { dataUrlToFile, resizeImage } from "@/lib/join/form";
 import { promptPayPayload } from "@/lib/join/promptpay";
 import { Turnstile } from "@/components/turnstile";
+import { OtpStep } from "@/components/otp-step";
 import { BrandHeader } from "@/components/mb/ui";
 
 const GOLD = "#e8c472";
 const QR_TTL = 900;
+const PKG_KEY = "mb_join_pkg";
 const box: CSSProperties = { padding: 20, borderRadius: 16, minWidth: 0, overflowWrap: "anywhere" };
 const cta = "min-h-14 w-full rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[17px] grid place-items-center text-center px-4";
 const ghost = "min-h-12 w-full rounded-[14px] text-[#e8c472] text-[15px] font-semibold grid place-items-center";
+const inCls = "w-full min-h-12 rounded-xl bg-[#211a18] text-[#f3ead9] px-[14px] text-[15px] placeholder:text-[#b5a596] outline-none border border-transparent focus:border-[#e8c472]";
 const baht = (n: number) => "฿" + n.toLocaleString("en-US");
 
-export default function PayPage() {
+function PayInner() {
   const router = useRouter();
-  const [f, setF] = useState<JoinForm | null>(null);
+  const params = useSearchParams();
+  const [k, setK] = useState<PackageKey | null>(null);
+  const [who, setWho] = useState({ first_name: "", last_name: "", nickname: "", tel: "" });
+  const [phoneOk, setPhoneOk] = useState(false);
+  const [otpOff, setOtpOff] = useState(false);
   const [qr, setQr] = useState("");
   const [sec, setSec] = useState(QR_TTL);
   const [slip, setSlip] = useState("");
@@ -34,20 +42,29 @@ export default function PayPage() {
   const [done, setDone] = useState("");
 
   useEffect(() => {
-    try {
-      const parsed = JSON.parse(sessionStorage.getItem(FORM_KEY) || "null") as JoinForm | null;
-      if (!parsed?.package) return router.replace("/join");
-      if (!parsed.ack_hours || !parsed.ack_no_refuse || !parsed.areas?.length) return router.replace(`/join/apply?pkg=${parsed.package}`);
-      setF(parsed);
-      setAgree(!!(parsed.accept_terms && parsed.consent_pdpa));
-    } catch { router.replace("/join"); }
-  }, [router]);
+    const q = params.get("pkg");
+    let pkg: string | null = q;
+    try { if (q === "A" || q === "B") sessionStorage.setItem(PKG_KEY, q); else pkg = sessionStorage.getItem(PKG_KEY); } catch {}
+    if (pkg === "A" || pkg === "B") setK(pkg); else router.replace("/join");
+  }, [params, router]);
 
   useEffect(() => {
-    if (!f?.package) return;
-    const payload = promptPayPayload(BANK.promptPayId, PACKAGES[f.package].price);
+    fetch("/api/otp/verify", { cache: "no-store" }).then((r) => r.json()).then((d: { phone?: string | null; required?: boolean }) => {
+      if (d.required === false) { setOtpOff(true); setPhoneOk(true); }
+    }).catch(() => {});
+  }, []);
+
+  // เบอร์นี้ยืนยัน OTP ไว้แล้ว (cookie 30 นาที) → ไม่ต้องขอซ้ำ
+  useEffect(() => {
+    if (!/^0\d{9}$/.test(who.tel)) return;
+    fetch("/api/otp/verify", { cache: "no-store" }).then((r) => r.json()).then((d: { phone?: string | null }) => { if (d.phone === who.tel) setPhoneOk(true); }).catch(() => {});
+  }, [who.tel]);
+
+  useEffect(() => {
+    if (!k) return;
+    const payload = promptPayPayload(BANK.promptPayId, PACKAGES[k].price);
     if (payload) QRCode.toDataURL(payload, { margin: 1, width: 480, errorCorrectionLevel: "M" }).then(setQr).catch(() => setQr(""));
-  }, [f?.package, sec === QR_TTL]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [k, sec === QR_TTL]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (sec <= 0 || done) return;
@@ -55,9 +72,9 @@ export default function PayPage() {
     return () => clearTimeout(t);
   }, [sec, done]);
 
-  if (!f || !f.package) return <main className="mb-v7 min-h-dvh grid place-items-center text-[#d9c9b4]">กำลังโหลด…</main>;
-  const k = f.package;
+  if (!k) return <main className="mb-v7 min-h-dvh grid place-items-center text-[#d9c9b4]">กำลังโหลด…</main>;
   const pkg = PACKAGES[k];
+  const setW = (key: keyof typeof who, v: string) => { setWho((w) => ({ ...w, [key]: v })); setErr(""); };
 
   const onSlip = async (file?: File) => {
     setErr("");
@@ -68,33 +85,27 @@ export default function PayPage() {
   };
 
   const submit = async () => {
+    if (!who.first_name.trim() || !who.last_name.trim() || !who.nickname.trim()) return setErr("กรอกชื่อ นามสกุล และชื่อเล่นของผู้สมัคร");
+    if (!/^0\d{9}$/.test(who.tel)) return setErr("เบอร์โทร 10 หลัก ขึ้นต้นด้วย 0");
+    if (!phoneOk) return setErr("ยืนยันเบอร์โทรด้วยรหัส OTP ก่อน");
     if (!slip) return setErr("แนบสลิปการโอนก่อน");
     if (!agree) return setErr("ติ๊กยอมรับข้อกำหนดและยินยอมตาม PDPA ก่อนส่ง");
     setBusy(true); setErr("");
     try {
       const fd = new FormData();
-      const put = (key: string, v: string) => fd.append(key, v);
-      put("package", k); put("first_name", f.first_name); put("last_name", f.last_name); put("nickname", f.nickname);
-      put("birthdate", f.birthdate); put("tel", f.tel); put("line_id", f.line_id); put("address", f.address);
-      put("no_area", f.no_area); put("experience", f.experience); put("intro", f.intro); put("hours_band", f.hours_band);
-      f.areas.forEach((x) => put("areas", x)); f.week_days.forEach((x) => put("week_days", x)); f.periods.forEach((x) => put("periods", x));
-      put("massage_cert", k === "B" ? (f.cert_doc ? "yes" : "no") : "");
-      put("ack_hours", String(f.ack_hours)); put("ack_no_refuse", String(f.ack_no_refuse));
-      put("accept_terms", "true"); put("consent_pdpa", "true"); put("turnstile", ts);
-      fd.append("photo", await dataUrlToFile(f.photo, "photo.jpg"));
-      fd.append("other_doc", await dataUrlToFile(f.other_doc, "body.jpg"));
-      if (k === "B" && f.cert_doc) fd.append("cert_doc", await dataUrlToFile(f.cert_doc, "cert.jpg"));
+      fd.append("package", k); fd.append("first_name", who.first_name.trim()); fd.append("last_name", who.last_name.trim());
+      fd.append("nickname", who.nickname.trim()); fd.append("tel", who.tel);
+      fd.append("accept_terms", "true"); fd.append("consent_pdpa", "true"); fd.append("turnstile", ts);
       fd.append("slip", await dataUrlToFile(slip, "slip.jpg"));
       const res = await fetch("/api/join/register", { method: "POST", body: fd });
       const data = (await res.json()) as { ok?: boolean; mb_code?: string; error?: string; fields?: string[]; needOtp?: boolean };
       if (!res.ok || !data.ok || !data.mb_code) {
-        const msg = data.error || "ส่งข้อมูลไม่สำเร็จ";
-        if (data.fields?.includes("slip")) { setSlip(""); setSlipName(""); setErr(msg); }
-        else if (data.needOtp) setErr(`${msg} — กลับไปยืนยันเบอร์ในใบสมัคร`);
-        else setErr(data.fields?.length ? `${msg} — กลับไปแก้ในใบสมัคร` : msg);
+        if (data.needOtp) setPhoneOk(false);
+        if (data.fields?.includes("slip")) { setSlip(""); setSlipName(""); }
+        setErr(data.error || "ส่งข้อมูลไม่สำเร็จ");
         throw null;
       }
-      sessionStorage.removeItem(FORM_KEY);
+      try { sessionStorage.removeItem(PKG_KEY); } catch {}
       setDone(data.mb_code);
     } catch (e) {
       if (e) setErr((e as Error).message || "ส่งข้อมูลไม่สำเร็จ");
@@ -102,27 +113,39 @@ export default function PayPage() {
     } finally { setBusy(false); }
   };
 
-  const lastInitial = f.last_name.trim() ? ` ${f.last_name.trim()[0]}.` : "";
-  const summary: [string, string][] = [["ผู้สมัคร", `นาย${f.first_name}${lastInitial}${f.nickname ? ` (${f.nickname})` : ""}`], ["กลุ่มอบรม", "กลุ่ม 1 · ภายใน 20 พ.ย."]];
+  const lastInitial = who.last_name.trim() ? ` ${who.last_name.trim()[0]}.` : "";
+  const summary: [string, string][] = [["ผู้สมัคร", who.first_name.trim() ? `นาย${who.first_name.trim()}${lastInitial}${who.nickname.trim() ? ` (${who.nickname.trim()})` : ""}` : "—"], ["กลุ่มอบรม", "กลุ่ม 1 · ภายใน 20 พ.ย."]];
   const items: [string, number][] = k === "A" ? [["ค่าอบรม", pkg.training], ["ค่าการันตี Branding", pkg.guarantee]] : [["ค่าอบรม (รับ Uniform + Oil นวด ฟรี)", pkg.training], ["ค่าการันตี Branding", pkg.guarantee]];
   const perks = k === "A" ? ["อบรมบุคลิกภาพ มารยาท การดูแลลูกค้า"] : ["อบรมบุคลิกภาพ + มาตรฐานการนวด", "Uniform + Oil นวด 1 ชุด ฟรี"];
   const mm = String(Math.floor(sec / 60)).padStart(2, "0"), ss = String(sec % 60).padStart(2, "0");
   const expired = sec === 0;
-  const ready = !!slip && agree && !busy;
+  const ready = !!slip && agree && phoneOk && !busy;
 
   return (
     <div className="mb-v7 min-h-dvh relative" style={{ background: "#171211", color: "#f3ead9", fontSize: 15, lineHeight: 1.7 }}>
       <BrandHeader tone="bar" href="/work-with-us" />
       <div className="mx-auto w-full max-w-[1000px]">
         <div className="flex items-center gap-3" style={{ padding: "20px 20px 10px" }}>
-          <Link href={`/join/apply?pkg=${k}&step=2`} aria-label="ย้อนกลับ" className="shrink-0 w-11 h-11 rounded-full bg-[#251d1b] text-[#f3ead9] grid place-items-center hover:text-[#f3ead9]">
+          <Link href="/join" aria-label="ย้อนกลับ" className="shrink-0 w-11 h-11 rounded-full bg-[#251d1b] text-[#f3ead9] grid place-items-center hover:text-[#f3ead9]">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
           </Link>
-          <div className="min-w-0"><div className="text-[13px] text-[#e8c472] font-light">ขั้นสุดท้าย</div><div className="font-semibold text-[20px] leading-[1.35]">ชำระเงิน</div></div>
+          <div className="min-w-0"><div className="text-[13px] text-[#e8c472] font-light">ก่อนกรอกใบสมัคร</div><div className="font-semibold text-[20px] leading-[1.35]">ชำระเงิน</div></div>
         </div>
 
         <div className="grid min-w-0 md:grid-cols-2 md:items-start" style={{ padding: "24px 20px 40px", gap: 31 }}>
           <div className="flex flex-col min-w-0" style={{ gap: 31 }}>
+            <div className="flex flex-col gap-3 bg-[#251d1b]" style={box}>
+              <div className="font-semibold text-[17px]">ผู้สมัคร</div>
+              <div className="grid grid-cols-2 gap-[10px]">
+                <input className={inCls} autoComplete="given-name" placeholder="ชื่อจริง" aria-label="ชื่อจริง" value={who.first_name} onChange={(e) => setW("first_name", e.target.value)} />
+                <input className={inCls} autoComplete="family-name" placeholder="นามสกุล" aria-label="นามสกุล" value={who.last_name} onChange={(e) => setW("last_name", e.target.value)} />
+              </div>
+              <input className={inCls} placeholder="ชื่อเล่น" aria-label="ชื่อเล่น" value={who.nickname} onChange={(e) => setW("nickname", e.target.value)} />
+              {otpOff
+                ? <input className={inCls} inputMode="tel" autoComplete="tel" maxLength={10} placeholder="เบอร์มือถือ 08x-xxx-xxxx" aria-label="เบอร์โทรศัพท์" value={who.tel} onChange={(e) => setW("tel", e.target.value.replace(/\D/g, ""))} />
+                : <OtpStep phone={who.tel} onPhone={(v) => { setW("tel", v); setPhoneOk(false); }} verified={phoneOk} onVerified={() => { setPhoneOk(true); setErr(""); }} inputCls={inCls} />}
+              {phoneOk && !otpOff && <div className="text-[13px] text-[#7fd6a3]">✓ ยืนยันเบอร์แล้ว</div>}
+            </div>
             <div className="flex flex-col bg-[#251d1b]" style={{ ...box, gap: 13 }}>
               {summary.map(([n, v]) => <div key={n} className="flex justify-between gap-4 min-w-0"><span className="whitespace-nowrap shrink-0">{n}</span><span className="text-right min-w-0">{v}</span></div>)}
               <div style={{ height: 1, background: "rgba(243,234,217,0.07)", margin: "4px 0" }} />
@@ -169,11 +192,15 @@ export default function PayPage() {
           <div className="w-full max-w-[400px] rounded-[20px] bg-[#1b2322] flex flex-col items-center gap-[14px] text-center" style={{ padding: "28px 20px 20px" }}>
             <div className="w-[72px] h-[72px] rounded-full bg-[#e8c472] text-[#1b130b] grid place-items-center"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg></div>
             <div id="paidT" className="font-semibold text-[22px] leading-[1.35] text-[#e8c472]">ชำระเงินเรียบร้อย</div>
-            <p className="m-0 text-[15px] leading-[1.7]">ได้รับสลิปแล้ว ทีมงานตรวจภายใน 2 ชม. (09:00–22:00)<br />ระหว่างนี้ยืนยันตัวตนต่อได้เลย · รหัสสมัคร {done}</p>
-            <Link href={`/join/kyc/${done}`} className={cta + " hover:text-[#1b130b]"}>ถัดไป · ยืนยันตัวตน</Link>
+            <p className="m-0 text-[15px] leading-[1.7]">ได้รับสลิปแล้ว ทีมงานตรวจภายใน 2 ชม. (09:00–22:00)<br />ระหว่างนี้ไปกรอกรายละเอียดในโปรไฟล์ได้เลย</p>
+            <Link href={`/join/profile/${done}`} className={cta + " hover:text-[#1b130b]"}>ไปที่โปรไฟล์ของฉัน</Link>
           </div>
         </div>
       )}
     </div>
   );
+}
+
+export default function PayPage() {
+  return <Suspense fallback={<main className="mb-v7 min-h-dvh grid place-items-center text-[#d9c9b4]">กำลังโหลด…</main>}><PayInner /></Suspense>;
 }

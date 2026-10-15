@@ -56,6 +56,7 @@ export default async function TrainingPage({ params, searchParams }: { params: P
             </div>
           );
         })}
+        <Link href={`/join/profile/${row.mb_code}${q}`} className="min-h-[52px] rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold text-[15px] grid place-items-center hover:text-[#1b130b]">อบรมครบแล้ว · ไปที่โปรไฟล์ของฉัน</Link>
         <div className="text-xs text-center" style={{ color: C.mut }}>เช็กชื่อที่สถานที่อบรมได้ตั้งแต่ 30 นาทีก่อนเริ่ม</div>
       </div>
     </div></div>

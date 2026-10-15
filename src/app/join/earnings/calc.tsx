@@ -19,7 +19,7 @@ export function EarningsCalc() {
 
   const actions = (
     <>
-      <Button href={`/join/apply?pkg=${svc === "massage" ? "B" : "A"}`}>สมัครเข้าอบรม</Button>
+      <Button href={`/join/pay?pkg=${svc === "massage" ? "B" : "A"}`}>สมัครเข้าอบรม</Button>
       <Button href="/" variant="text">ดูตัวอย่างแอปที่ลูกค้าเห็น</Button>
     </>
   );

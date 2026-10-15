@@ -23,7 +23,7 @@ export default async function DonePage({ params, searchParams }: { params: Promi
   if (!row) notFound();
   const x = extraOf(row);
   // ยังทำขั้นก่อนหน้าไม่ครบ → พากลับไปขั้นที่ค้าง
-  if ((x.kyc_status ?? "none") === "none") redirect(`/join/kyc/${mb}${q}`);
+  if ((x.kyc_status ?? "none") === "none") redirect(`/join/profile/${mb}${q}`);
   if (!row.contract_accepted_at) redirect(`/join/contract/${mb}${q}`);
 
   const P = PACKAGES[row.package];
@@ -60,6 +60,7 @@ export default async function DonePage({ params, searchParams }: { params: Promi
             </div>
           </div>
         </div>
+        <Link href={`/join/profile/${row.mb_code}${q}`} className="min-h-[52px] rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold text-[15px] grid place-items-center hover:text-[#1b130b]">ไปที่โปรไฟล์ของฉัน</Link>
         <div className="text-[12px] leading-[1.6] text-center font-light text-[#d9c9b4]">{fee} · เงินประกัน Refundable – คืนเมื่อครบ 1 ปี หากไม่ผิดกฎ</div>
       </div>
     </div>
