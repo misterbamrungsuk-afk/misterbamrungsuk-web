@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { Forbidden } from "../../_kyc/ui";
 import { canResume } from "@/lib/join/resume";
-import { CONTROLLER } from "@/lib/join/legal";
+import { ISSUER } from "@/lib/join/legal";
 import { BRAND, PACKAGES, feeBreakdown } from "@/lib/join/config";
 import { extraOf, fullName, getByMb } from "@/lib/join/store";
 import { SavePdfButton } from "./save-pdf";
@@ -80,10 +80,10 @@ export default async function ReceiptPage({ params, searchParams }: { params: Pr
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/brand/logo.png" alt={BRAND.name} className="h-14 w-auto object-contain" />
               <div className="min-w-0 text-[11.5px] text-[#4a3a30] leading-snug">
-                <div className="text-[14px] font-semibold text-[#1d1414]">{CONTROLLER.name}</div>
-                <div>เลขประจำตัวผู้เสียภาษี {CONTROLLER.regNo} (สำนักงานใหญ่)</div>
-                <div>{CONTROLLER.address}</div>
-                <div>โทร {CONTROLLER.phone} · {CONTROLLER.email}</div>
+                <div className="text-[14px] font-semibold text-[#1d1414]">{ISSUER.name}</div>
+                <div>เลขประจำตัวผู้เสียภาษี {ISSUER.taxId} (สำนักงานใหญ่)</div>
+                <div>{ISSUER.address}</div>
+                <div>โทร {ISSUER.phone} · {ISSUER.email}</div>
               </div>
             </div>
             <div className="text-right shrink-0">
@@ -125,7 +125,7 @@ export default async function ReceiptPage({ params, searchParams }: { params: Pr
           </div>
 
           <div className="grid grid-cols-2 gap-10 mt-14 text-center text-[12.5px] break-inside-avoid">
-            <div><div className="border-b border-dotted border-[#6b5a50] h-10" /><div className="mt-1">ผู้รับเงิน</div><div className="text-[#6b5a50]">{CONTROLLER.name}</div></div>
+            <div><div className="border-b border-dotted border-[#6b5a50] h-10" /><div className="mt-1">ผู้รับเงิน</div><div className="text-[#6b5a50]">{ISSUER.name}</div></div>
             <div><div className="border-b border-dotted border-[#6b5a50] h-10" /><div className="mt-1">วันที่</div><div className="text-[#6b5a50]">........../........../..........</div></div>
           </div>
           <p className="text-[11px] text-[#6b5a50] mt-6 mb-0">เอกสารนี้ออกโดยระบบอัตโนมัติ · ใบเสร็จรับเงินไม่ใช่ใบกำกับภาษี</p>
