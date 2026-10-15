@@ -380,3 +380,9 @@ html { scroll-behavior: smooth; }
 .mb-v7 .text-gradient-gold { background: none; -webkit-text-fill-color: var(--color-mb-gold); color: var(--color-mb-gold); }
 .mb-v7 input:not([type=checkbox]):not([type=radio]):not([type=file]), .mb-v7 select, .mb-v7 textarea { font-size: max(16px, 1em); }
 .mb-v7 input[type=checkbox], .mb-v7 input[type=radio] { accent-color: var(--color-mb-gold); }
+.mb-v7 .font-brand { font-weight: 400; }
+
+/* ใบสมัคร: ขั้น 1 (บอร์ด JoinForm) label ครีม ช่อง 42px · ขั้น 2 (JoinForm2) label เทา ช่อง 48px */
+.jf-lb { color: #b5a596; }
+.jf1 .jf-lb { color: #f3ead9; margin-bottom: 4px !important; }
+.jf1 .jf-in { min-height: 42px; }

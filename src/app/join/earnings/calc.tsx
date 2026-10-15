@@ -1,7 +1,7 @@
 "use client";
 
 // ตัวคำนวณรายได้ (บอร์ด JoinEarnings) · มือถือ = คอลัมน์เดียว + ปุ่มติดล่าง · lg = ตัวเลือกซ้าย / ผลลัพธ์ขวาแบบ sticky
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { BrandHeader, Button, Card, Chip, Container, Icon, Row, Shell, StickyAction, StickySpacer, baht } from "@/components/mb/ui";
 import { EARNINGS, sharePct, type EarnSvc, type EarnTier } from "@/lib/join/config";
 
@@ -55,32 +55,25 @@ export function EarningsCalc() {
             <Result className="lg:hidden" monthly={monthly} cases={cases} price={price} pct={pct} perCase={perCase} />
 
             <Card>
-              <h2 className="font-semibold mb-2 text-[15px]">ราคาต่อนัด 3 ชม. (ลูกค้าจ่าย)</h2>
-              <div className="overflow-x-auto">
-                <table className="w-full text-[14px] border-collapse [font-variant-numeric:tabular-nums]">
-                  <thead><tr className="text-left mb-xs"><th className="font-light py-1 pr-2">สายงาน</th><th className="font-light py-1 pr-2">TOP</th><th className="font-light py-1">Silver</th></tr></thead>
-                  <tbody>{SVCS.map(([k, v]) => <tr key={k} className={k === svc ? "text-mb-gold" : ""}><td className="py-1 pr-2">{v.label}</td><td className="py-1 pr-2">{baht(v.top)}</td><td className="py-1">{baht(v.silver)}</td></tr>)}</tbody>
-                </table>
+              <div className="font-semibold mb-2">ราคาต่อนัด 3 ชม. (ลูกค้าจ่าย)</div>
+              <div className="grid gap-1.5 text-[14px]" style={{ gridTemplateColumns: "1.4fr 1fr 1fr" }}>
+                <span className="mb-xs">สายงาน</span><span className="mb-xs">TOP</span><span className="mb-xs">Silver</span>
+                {SVCS.map(([k, v]) => <Fragment key={k}><span>{v.label}</span><span>{baht(v.top)}</span><span>{baht(v.silver)}</span></Fragment>)}
               </div>
-              <div className="mb-xs mt-2">5 ชม. = ×{EARNINGS.fiveHourMultiplier} · ทิปจากลูกค้าได้เต็ม {EARNINGS.tipPct}%</div>
+              <div className="mb-xs mt-2">{`5 ชม. = ×${EARNINGS.fiveHourMultiplier} · ทิปจากลูกค้าได้เต็ม ${EARNINGS.tipPct}%`}</div>
             </Card>
 
             <Card>
-              <h2 className="font-semibold mb-2 text-[15px]">ส่วนแบ่งของคุณ (นับนัดในเดือน)</h2>
+              <div className="font-semibold mb-2">ส่วนแบ่งของคุณ (นับนัดในเดือน)</div>
               {EARNINGS.tiers.map((t) => (
-                <Row key={t.label} k={t.label} v={<span className={t.pct === pct ? "text-mb-gold" : ""}>{t.pct}%</span>} className="py-2 border-t border-[rgba(243,234,217,0.07)]" />
+                <div key={t.label} className="flex justify-between items-center gap-3 py-2 border-t border-[rgba(243,234,217,0.07)]"><span>{t.label}</span><b className="font-semibold" style={{ color: t.pct === pct ? "#e8c472" : "#f3ead9" }}>{`${t.pct}%`}</b></div>
               ))}
               <div className="mb-xs">ทำนัดมากขึ้น ส่วนแบ่งขยับขึ้นทั้งเดือน · ส่วนที่เหลือเป็นค่าแพลตฟอร์ม การตลาด ประกัน และทีมดูแลความปลอดภัย</div>
             </Card>
 
             <Card className="flex flex-col gap-2">
-              <h2 className="font-semibold text-[15px]">ได้เงินเมื่อไร</h2>
-              <ul className="mb-s m-0 pl-5 list-disc">
-                <li>ลูกค้าจ่ายเข้าระบบก่อนนัด เงินพักไว้กับเรา</li>
-                <li>{EARNINGS.payout}</li>
-                <li>ลูกค้าไม่มาตามนัด คุณยังได้ส่วนของคุณเต็ม</li>
-                <li>ดูรายได้และถอนเงินในแอปได้ทุกวัน</li>
-              </ul>
+              <div className="font-semibold">ได้เงินเมื่อไร</div>
+              <div className="mb-s">• ลูกค้าจ่ายเข้าระบบก่อนนัด เงินพักไว้กับเรา<br />{`• ${EARNINGS.payout}`}<br />• ลูกค้าไม่มาตามนัด คุณยังได้ส่วนของคุณเต็ม<br />• ดูรายได้และถอนเงินในแอปได้ทุกวัน</div>
             </Card>
             <p className="mb-xs m-0">ตัวเลขเป็นการประมาณ ขึ้นกับจำนวนนัดจริงและระดับที่ได้รับ · ราคาและส่วนแบ่งตามประกาศล่าสุดของแพลตฟอร์ม</p>
           </div>
@@ -101,9 +94,9 @@ function Result({ monthly, cases, price, pct, perCase, className = "" }: { month
   return (
     <section aria-live="polite" className={`rounded-[20px] p-[18px] md:p-6 flex flex-col gap-2 bg-[linear-gradient(150deg,#3a2a17,#211a18_70%)] ${className}`}>
       <div className="mb-xs !text-mb-text2">รายได้โดยประมาณต่อเดือน</div>
-      <div className="mb-h text-[38px] md:text-[44px] text-mb-gold [font-variant-numeric:tabular-nums]">{baht(monthly)}</div>
-      <div className="mb-s">{cases} นัด × {baht(price)} × ส่วนแบ่ง {pct}%</div>
-      <Row k={<span className="mb-s">ได้ต่อนัด</span>} v={baht(perCase)} className="border-t border-[rgba(243,234,217,0.07)] pt-2" />
+      <div className="mb-h text-[38px] md:text-[44px] text-mb-gold [font-variant-numeric:tabular-nums]" style={{ lineHeight: 1.6 }}>{baht(monthly)}</div>
+      <div className="mb-s">{`${cases} นัด × ${baht(price)} × ส่วนแบ่ง ${pct}%`}</div>
+      <div className="mb-s flex justify-between items-center gap-3 border-t border-[rgba(243,234,217,0.07)] pt-2"><span>ได้ต่อนัด</span><b className="font-semibold text-[#f3ead9]">{baht(perCase)}</b></div>
     </section>
   );
 }

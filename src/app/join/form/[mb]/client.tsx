@@ -12,8 +12,8 @@ import { BrandHeader } from "@/components/mb/ui";
 
 const GOLD = "#e8c472";
 const TRACK = { A: "เพื่อนกินเที่ยว — ตามความสามารถพิเศษ", B: "เพื่อนกินเที่ยว — ที่มีความสามารถในการนวด" } as const;
-const inCls = "w-full min-h-12 rounded-xl bg-[#251d1b] text-[#f3ead9] px-[14px] text-[15px] placeholder:text-[#b5a596] outline-none border border-transparent focus:border-[#e8c472]";
-const lb: CSSProperties = { display: "block", fontSize: 13, color: "#b5a596", marginBottom: 6 };
+const inCls = "jf-in w-full min-h-12 rounded-xl bg-[#251d1b] text-[#f3ead9] px-[14px] text-[15px] placeholder:text-[#b5a596] outline-none border border-transparent focus:border-[#e8c472]";
+const lb: CSSProperties = { display: "block", fontSize: 13, marginBottom: 6 };
 const h2: CSSProperties = { margin: 0, fontSize: 18, lineHeight: 1.4, fontWeight: 600 };
 const cta = "min-h-14 w-full rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[17px] grid place-items-center text-center px-4 transition";
 
@@ -56,7 +56,7 @@ function Err({ msg }: { msg?: string }) {
   return msg ? <p data-err="1" className="m-0 mt-1.5 text-[12.5px] text-[#ff8a9a]">{msg}</p> : null;
 }
 function Field({ label, err, children }: { label: string; err?: string; children: ReactNode }) {
-  return <label className="block min-w-0"><span style={lb}>{label}</span>{children}<Err msg={err} /></label>;
+  return <label className="block min-w-0"><span className="jf-lb" style={lb}>{label}</span>{children}<Err msg={err} /></label>;
 }
 export type FormInit = Pick<JoinForm, "first_name" | "last_name" | "nickname" | "birthdate" | "tel" | "line_id" | "address" | "areas" | "no_area" | "week_days" | "periods" | "hours_band" | "experience" | "intro" | "ack_hours" | "ack_no_refuse"> & { hasPhoto: boolean; hasBody: boolean; hasCert: boolean };
 
@@ -174,7 +174,7 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0 }: { mb: string; 
 
   return (
     <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9", fontSize: 15, lineHeight: 1.7 }}>
-      <BrandHeader tone="bar" href="/work-with-us" />
+      <BrandHeader tone="bar" href="/work-with-us" small />
       <div className="mx-auto w-full max-w-[720px]">
         {step === 1 ? (
           <>
@@ -185,9 +185,9 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0 }: { mb: string; 
             <div className="flex flex-col gap-1" style={{ padding: "12px 16px 0" }}>
               <h1 className="m-0 font-semibold text-[20px] leading-[1.4] text-[#e8c472]">กรอกข้อมูล</h1>
             </div>
-            <div className="flex flex-col" style={{ padding: "12px 16px 28px", gap: 22 }}>
-              <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#251d1b]" style={{ padding: 20 }}>
-                <div className="min-w-0"><div className="text-[13px] font-light text-[#b5a596]">สายที่สมัคร</div><div className="font-semibold text-[17px] leading-[1.4]">{TRACK[pkg]}</div></div>
+            <div className="jf1 flex flex-col" style={{ padding: "12px 16px 28px", gap: 22 }}>
+              <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#251d1b]" style={{ padding: "14px 16px" }}>
+                <div className="min-w-0"><div className="text-[13px] font-light">สายที่สมัคร</div><div className="font-semibold text-[17px] leading-[1.4]">{TRACK[pkg]}</div></div>
                 <Link href="/join" className="shrink-0 text-[14px] text-[#e8c472]">เปลี่ยน</Link>
               </div>
 
@@ -201,7 +201,7 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0 }: { mb: string; 
                   <Field label="ชื่อเล่น" err={errs.nickname}><input className={inCls} placeholder="ชื่อเล่น" value={f.nickname} onChange={(e) => set("nickname", e.target.value)} /></Field>
                   <Field label="วันเกิด" err={errs.birthdate}><input type="date" className={inCls} style={{ colorScheme: "dark" }} value={f.birthdate} onChange={(e) => set("birthdate", e.target.value)} /></Field>
                 </div>
-                <div className="text-[13px] font-light text-[#b5a596]" style={{ marginTop: -4 }}>รับสมัครอายุ 20–50 ปี</div>
+                <div className="text-[13px] font-light" style={{ marginTop: -4 }}>รับสมัครอายุ 20–50 ปี</div>
                 <Field label="เบอร์โทรศัพท์"><input className={inCls} value={f.tel} readOnly aria-readonly="true" style={{ opacity: 0.8 }} /></Field>
                 <Field label="LINE ID" err={errs.line_id}><input className={inCls} placeholder="LINE ID" value={f.line_id} onChange={(e) => set("line_id", e.target.value)} /></Field>
                 <Field label="ปัจจุบันพักอาศัยอยู่แถวไหน" err={errs.address}><input className={inCls} placeholder="เช่น ลาดพร้าว, บางนา" value={f.address} onChange={(e) => set("address", e.target.value)} /></Field>
@@ -212,7 +212,7 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0 }: { mb: string; 
               </section>
 
               <section className="flex flex-col" style={{ gap: 10 }}>
-                <div><h2 style={h2}>พื้นที่ที่สะดวกรับงาน</h2><div className="text-[13px] font-light text-[#b5a596]">เลือกได้มากกว่า 1 ข้อ</div></div>
+                <div><h2 style={h2}>พื้นที่ที่สะดวกรับงาน</h2><div className="text-[13px] font-light">เลือกได้มากกว่า 1 ข้อ</div></div>
                 {f.areas.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
                     {f.areas.map((a) => (
@@ -234,7 +234,7 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0 }: { mb: string; 
               </section>
 
               {errs.form && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{errs.form}</p>}
-              <button type="button" onClick={next} disabled={busy} className={cta} style={{ opacity: busy ? 0.6 : 1 }}>{busy ? "กำลังบันทึก…" : "ถัดไป · วันเวลาและประสบการณ์"}</button>
+              <button type="button" onClick={next} disabled={busy} className={cta} style={{ opacity: busy ? 0.6 : 1, minHeight: 50 }}>{busy ? "กำลังบันทึก…" : "ถัดไป · วันเวลาและประสบการณ์"}</button>
             </div>
           </>
         ) : (
@@ -285,12 +285,12 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0 }: { mb: string; 
 
               <section className="flex flex-col" style={{ gap: 10 }}>
                 <h2 style={h2}>ประสบการณ์</h2>
-                <label className="block"><span style={lb}>ประสบการณ์ด้านงานบริการ / การนวด (ถ้ามี)</span>
+                <label className="block"><span className="jf-lb" style={lb}>ประสบการณ์ด้านงานบริการ / การนวด (ถ้ามี)</span>
                   <textarea rows={3} maxLength={500} placeholder="เช่น เคยทำงานโรงแรม 2 ปี, นวดแผนไทยได้" value={f.experience} onChange={(e) => set("experience", e.target.value)} className="w-full rounded-xl bg-[#251d1b] text-[#f3ead9] text-[15px] leading-[1.6] outline-none border border-transparent focus:border-[#e8c472] placeholder:text-[#b5a596]" style={{ padding: "12px 14px", resize: "vertical" }} />
                 </label>
                 {pkg === "B" && (
                   <div className="flex flex-col gap-1.5">
-                    <span style={{ ...lb, margin: 0 }}>ใบรับรองการนวด (สายนวด · ไม่บังคับ)</span>
+                    <span className="jf-lb" style={{ ...lb, margin: 0 }}>ใบรับรองการนวด (สายนวด · ไม่บังคับ)</span>
                     <Upload label="แนบใบรับรอง" done={!!f.cert_doc || init.hasCert} onPick={(x) => onFile("cert_doc", x)} err={errs.cert_doc} />
                   </div>
                 )}

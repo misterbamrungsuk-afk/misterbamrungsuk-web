@@ -3,6 +3,8 @@ export const TRAINING = {
   group: "กลุ่ม 1",
   dates: "15–16 พ.ย. 2569",
   datesLong: "15–16 พ.ย. 2569 (2 วัน)",
+  /** ข้อความช่วงอบรมบนหน้าผู้สมัคร (บอร์ด P-Done / P-Training) */
+  window: "ภายใน 20 พ.ย. 2569",
   venue: "MB Studio ทองหล่อ ซ.10",
   openService: "30 พ.ย. 2569",
   requiredCore: 4,

@@ -77,7 +77,7 @@ export function BankForm({ mb, t, initial }: { mb: string; t: string; initial: {
               {bookUrl ? <img src={bookUrl} alt="" className="w-full h-full object-cover" /> : hasBook ? "สมุดบัญชี ✓" : ""}
             </span>
             <span className="flex flex-col gap-0.5 min-w-0">
-              <span className="font-semibold" style={{ color: hasBook ? GOLD : "#f3ead9" }}>{hasBook ? `✓ ${book?.name ?? "แนบแล้ว"}` : "แนบรูปหน้าสมุดบัญชี"}</span>
+              <span className="font-semibold" style={{ color: hasBook ? GOLD : "#f3ead9", fontSize: 13.33 }}>{hasBook ? `✓ ${book?.name ?? "แนบแล้ว"}` : "แนบรูปหน้าสมุดบัญชี"}</span>
               <span className="text-[13px] text-[#d9c9b4] font-light">{hasBook ? "แตะเพื่อเปลี่ยนรูป" : "ถ่ายรูปหรือเลือกจากเครื่อง"}</span>
             </span>
             <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => pickBook(e.target.files?.[0])} />

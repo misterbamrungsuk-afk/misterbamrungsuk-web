@@ -70,7 +70,7 @@ export function ProfileHub({ d }: { d: HubData }) {
   const skillLine = skills.length ? "สกิลพิเศษ: " + SKILLS.filter(([id]) => skills.includes(id)).map(([, l]) => l.replace(" (แนบใบรับรอง)", "")).join(" · ") : "ยังไม่ได้เลือกสกิลพิเศษ";
 
   return (
-    <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9", lineHeight: 1.7 }}>
+    <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9", lineHeight: "normal" }}>
       <div className="mx-auto w-full max-w-[1000px]" style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}>
         <div className="flex items-center gap-2" style={{ padding: "12px 14px 0" }}>
           <Link href="/work-with-us" aria-label="ย้อนกลับ" className="w-11 h-11 rounded-full bg-[#251d1b] text-[#e8c472] grid place-items-center hover:text-[#e8c472]"><Ico d="m15 5-7 7 7 7" /></Link>

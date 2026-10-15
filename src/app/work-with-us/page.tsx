@@ -50,7 +50,7 @@ export default function WorkWithUsPage() {
             <span className="text-[#f3ead9] font-semibold">ติดต่อเรา</span>
           </div>
           <div className="flex flex-wrap text-[#f3ead9]" style={{ gap: "4px 12px" }}><Link href="/join/terms" className="text-[#f3ead9] hover:underline">ข้อกำหนดและเงื่อนไขการใช้งาน</Link><span className="text-[#b5a596]">|</span><Link href="/join/privacy" className="text-[#f3ead9] hover:underline">นโยบายความเป็นส่วนตัว (PDPA)</Link></div>
-          <div className="select-all">{CONTROLLER.email} · {CONTROLLER.phone}</div>
+          <div className="select-all">{`${CONTROLLER.email} · ${CONTROLLER.phone}`}</div>
           <div>© 2569 Mister Bamrungsuk สงวนลิขสิทธิ์</div>
         </div>
       </footer>

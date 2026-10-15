@@ -135,7 +135,7 @@ export function JoinSalePage({ seats }: { seats: Seats }) {
         <div className="flex flex-col border-t border-[rgba(243,234,217,0.07)] text-[13px] leading-[1.6] font-light" style={{ marginTop: 32, padding: "18px 0 24px", gap: 16 }}>
           <div className="flex justify-between items-center gap-3"><span className="inline-flex items-center gap-2"><img src="/brand/logo.png" alt="" width={34} height={34} className="w-[34px] h-[34px] object-contain" /><span className="font-brand text-[21px] text-[#e8c472]">Bamrungsuk</span></span><span>ติดต่อเรา</span></div>
           <div className="flex flex-wrap" style={{ gap: "4px 12px" }}><Link href="/join/terms" className="text-[#f3ead9] hover:underline">ข้อกำหนดและเงื่อนไขการใช้งาน</Link><span className="text-[#b5a596]">|</span><Link href="/join/privacy" className="text-[#f3ead9] hover:underline">นโยบายความเป็นส่วนตัว (PDPA)</Link></div>
-          <div className="select-all">{CONTROLLER.email} · {CONTROLLER.phone}</div>
+          <div className="select-all">{`${CONTROLLER.email} · ${CONTROLLER.phone}`}</div>
           <div className="text-[#b5a596]">© 2569 Mister Bamrungsuk สงวนลิขสิทธิ์</div>
         </div>
       </footer>

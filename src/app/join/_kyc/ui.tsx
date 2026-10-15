@@ -9,7 +9,7 @@ export const RED_GRAD = "#e8c472";
 export function Page({ children, padBottom = true }: { children: React.ReactNode; padBottom?: boolean }) {
   return (
     <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9", fontSize: 15, lineHeight: 1.7 }}>
-      <BrandHeader tone="bar" href="/work-with-us" />
+      <BrandHeader tone="bar" href="/work-with-us" small />
       <main className={`mx-auto w-full max-w-[720px] relative ${padBottom ? "pb-10" : "pb-8"}`}>{children}</main>
     </div>
   );

@@ -28,19 +28,19 @@ export default async function DonePage({ params, searchParams }: { params: Promi
 
   const P = PACKAGES[row.package];
   const group = x.cohort ? `กลุ่ม ${x.cohort}` : TRAINING.group;
-  const info: [string, string][] = [["วันอบรม", TRAINING.datesLong], ["สถานที่", TRAINING.venue], ["จำนวนรอบ", `${TRAINING_SESSIONS.length} รอบ · เช็กชื่อทุกรอบ`], ["เปิดให้บริการ", TRAINING.openService]];
+  const info: [string, string][] = [["วันอบรม", TRAINING.window], ["สถานที่", TRAINING.venue], ["จำนวนรอบ", `${TRAINING_SESSIONS.length} รอบ · เช็กชื่อทุกรอบ`], ["เปิดให้บริการ", TRAINING.openService]];
   const fee = row.package === "B"
     ? `เพื่อนกินเที่ยว (สำหรับผู้มีความสามารถด้านการนวด): ค่าการันตี Branding ${baht(P.guarantee)} + ค่าอบรม (รวมยูนิฟอร์ม + น้ำมันนวด) ${baht(P.training)} = ${baht(P.price)}`
     : `เพื่อนกินเที่ยว (ตามความสามารถพิเศษ): ค่าการันตี Branding ${baht(P.guarantee)} + ค่าอบรม ${baht(P.training)} = ${baht(P.price)}`;
 
   return (
-    <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9" }}>
+    <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9", lineHeight: "normal" }}>
       <div className="mx-auto max-w-[720px] flex flex-col gap-4" style={{ padding: "24px 16px 32px" }}>
         <div className="text-center">
           <div className="text-[12px] tracking-[2.5px] text-[#e8c472] font-light">ยินดีต้อนรับ Part-Time ใหม่</div>
           <h1 className="font-semibold text-[26px] text-[#e8c472]" style={{ margin: "8px 0 0" }}>ส่งใบสมัครเรียบร้อย</h1>
           <p className="text-[13px] text-[#d9c9b4] font-light" style={{ margin: "8px 0 0" }}>{row.status === "verified" ? "ชำระเงินและยืนยันตัวตนเรียบร้อย" : "ชำระเงินและยืนยันตัวตนเรียบร้อย · รอทีมงานตรวจสอบ"}</p>
-          <p className="text-[13px] text-[#d9c9b4] font-light" style={{ margin: "4px 0 0" }}>ยินดีต้อนรับสู่ Mister Bamrungsuk คุณ{row.nickname}</p>
+          <p className="text-[13px] text-[#d9c9b4] font-light" style={{ margin: "4px 0 0" }}>{`ยินดีต้อนรับสู่ Mister Bamrungsuk คุณ${row.nickname}`}</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2 md:items-start">
           <div className="flex flex-col gap-3 rounded-[18px]" style={{ padding: 16, border: "1px solid rgba(212,175,55,.55)", background: "linear-gradient(150deg,#3a2614,#211a18 55%,#2a0f15)" }}>
@@ -54,14 +54,14 @@ export default async function DonePage({ params, searchParams }: { params: Promi
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 4C7 4 3 7.2 3 11c0 3.4 3 6.2 7.2 6.9L10 21l3.6-3.1C18 17.4 21 14.5 21 11c0-3.8-4-7-9-7z" /></svg>เข้ากลุ่ม LINE กลุ่มอบรม
             </a>
             <div className="flex flex-col gap-3 rounded-2xl bg-[#211a18] border border-[rgba(243,234,217,0.07)]" style={{ padding: 16 }}>
-              <div className="font-semibold text-[15px] text-[#e8c472]">กลุ่มอบรมของคุณ · {group}</div>
+              <div className="font-semibold text-[15px] text-[#e8c472]">{`กลุ่มอบรมของคุณ · ${group}`}</div>
               {info.map(([n, v]) => <div key={n} className="flex justify-between items-baseline gap-4 text-[13px] min-w-0 font-light"><span className="text-[#d9c9b4] whitespace-nowrap shrink-0">{n}</span><span className="text-right min-w-0">{v}</span></div>)}
               <Link href={`/join/training/${row.mb_code}${q}`} className="h-12 rounded-[14px] border border-[rgba(243,234,217,0.07)] bg-[#211a18] text-[#e8c472] text-[14px] font-semibold grid place-items-center hover:text-[#e8c472]">ดูตารางอบรม</Link>
             </div>
           </div>
         </div>
         <Link href={`/join/profile/${row.mb_code}${q}`} className="min-h-[52px] rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold text-[15px] grid place-items-center hover:text-[#1b130b]">ไปที่โปรไฟล์ของฉัน</Link>
-        <div className="text-[12px] leading-[1.6] text-center font-light text-[#d9c9b4]">{fee} · เงินประกัน Refundable – คืนเมื่อครบ 1 ปี หากไม่ผิดกฎ</div>
+        <div className="text-[12px] leading-[1.6] text-center font-light text-[#d9c9b4]">{`${fee} · เงินประกัน Refundable – คืนเมื่อครบ 1 ปี หากไม่ผิดกฎ`}</div>
       </div>
     </div>
   );

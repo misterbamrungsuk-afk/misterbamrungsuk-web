@@ -123,7 +123,7 @@ function PayInner() {
 
   return (
     <div className="mb-v7 min-h-dvh relative" style={{ background: "#171211", color: "#f3ead9", fontSize: 15, lineHeight: 1.7 }}>
-      <BrandHeader tone="bar" href="/work-with-us" />
+      <BrandHeader tone="bar" href="/work-with-us" small />
       <div className="mx-auto w-full max-w-[1000px]">
         <div className="flex items-center gap-3" style={{ padding: "20px 20px 10px" }}>
           <Link href="/join" aria-label="ย้อนกลับ" className="shrink-0 w-11 h-11 rounded-full bg-[#251d1b] text-[#f3ead9] grid place-items-center hover:text-[#f3ead9]">
@@ -165,7 +165,7 @@ function PayInner() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 {qr ? <img src={qr} alt={`QR พร้อมเพย์ ยอด ${baht(pkg.price)}`} width={175} height={175} className="w-[175px] h-[175px] block bg-white" /> : <div className="w-[175px] h-[175px] bg-white" />}
               </div>
-              <div className="text-[13px] text-center font-light">{BANK.accountName} · {BANK.accountNo}</div>
+              <div className="text-[13px] text-center font-light">{`${BANK.accountName} · ${BANK.accountNo}`}</div>
               {expired && <button type="button" onClick={() => setSec(QR_TTL)} className={ghost} style={{ background: "rgba(232,196,114,0.16)" }}>สร้าง QR ใหม่</button>}
             </div>
             <div>
