@@ -33,7 +33,7 @@ export function EarningsCalc({ cfg }: { cfg: Omit<EarningsSettings, "history"> }
       <Container className="pt-5 md:pt-8">
         <Button href="/join" variant="text" block={false} className="!px-0 -ml-0.5"><Icon d="m15 18-6-6 6-6" /> กลับหน้ารับสมัคร</Button>
         <div className="mt-2 mb-5 md:mb-8">
-          <div className="text-[12px] font-light tracking-[2px] text-mb-gold">รายได้และส่วนแบ่ง</div>
+          <div className="text-[13px] font-light text-mb-gold">รายได้และส่วนแบ่ง</div>
           <h1 className="mb-h text-[26px] md:text-[34px] leading-[1.3]">คุณจะได้เท่าไหร่ต่อเดือน</h1>
           <p className="mb-s mt-1.5 mb-0 md:text-[15px]">ลองเลือกสายงาน ระดับ และจำนวนนัดต่อเดือน ตัวเลขเปลี่ยนทันที</p>
         </div>

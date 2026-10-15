@@ -41,10 +41,10 @@ export function JoinSalePage({ seats, showEarnings = true, invite }: { seats: Se
       </div>
 
       <div className="mx-auto max-w-[1200px] flex flex-col" style={{ padding: "20px 16px 0", gap: 26 }}>
-        <section className="md:py-16 md:px-10" style={{ padding: "40px 22px 34px", borderRadius: 18, background: "linear-gradient(180deg, rgba(79,22,34,.82), rgba(42,13,19,.96)), url(/brand/home/join-hero.jpg) 72% center/cover" }}>
+        <section className="join-hero md:min-h-[340px] md:flex md:flex-col md:justify-end md:py-14 md:px-12" style={{ padding: "40px 22px 34px", borderRadius: 18 }}>
           <div className="text-[11px] font-semibold tracking-[2px] text-[#e8c472]">{invite ? "✦ คำเชิญพิเศษ · PART TIME" : "PART TIME"}</div>
-          <h1 className="font-semibold text-[30px] md:text-[40px] leading-[1.25] text-[#f3ead9]" style={{ margin: "10px 0 6px" }}>เพื่อนกินเที่ยว Mister Bamrungsuk</h1>
-          <p className="m-0 text-[15px] text-[#e6d6c4]">งานพาร์ทไทม์ เลือกวันเวลาเอง{invite ? " · ผู้ได้รับคำเชิญไม่เก็บค่าการันตี" : ""}</p>
+          <h1 className="font-semibold text-[30px] md:text-[48px] leading-[1.25] text-[#f3ead9] md:max-w-[640px]" style={{ margin: "10px 0 6px" }}>เพื่อนกินเที่ยว Mister Bamrungsuk</h1>
+          <p className="m-0 text-[15px] md:text-[18px] text-[#e6d6c4]">งานพาร์ทไทม์ เลือกวันเวลาเอง{invite ? " · ผู้ได้รับคำเชิญไม่เก็บค่าการันตี" : ""}</p>
         </section>
 
         <section className="flex flex-col" style={{ gap: 18 }}>
@@ -96,10 +96,10 @@ export function JoinSalePage({ seats, showEarnings = true, invite }: { seats: Se
           </div>
         </section>
 
-        <div className="grid gap-[26px] md:grid-cols-2 md:items-start">
-          <section className="rounded-2xl bg-[#2c1a1f]" style={{ padding: "18px 20px" }}>
+        <div className="flex flex-col gap-[26px] md:gap-10">
+          <section className="rounded-2xl bg-[#2c1a1f] md:!px-7 md:!py-6" style={{ padding: "18px 20px" }}>
             <h2 className="font-semibold text-[16px] text-[#f3ead9]" style={{ margin: "0 0 8px" }}>คุณสมบัติที่เรามองหา</h2>
-            <div className="flex flex-col gap-1.5 text-[14px] leading-[1.5]">
+            <div className="flex flex-col gap-1.5 text-[14px] leading-[1.5] md:grid md:grid-cols-3 md:gap-6 md:text-[15px]">
               {LOOKING_FOR.map((x) => (
                 <div key={x} className="flex gap-[10px] items-start"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e8c472" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 mt-0.5"><path d="M5 12l5 5 9-10" /></svg><span>{x}</span></div>
               ))}
@@ -107,8 +107,21 @@ export function JoinSalePage({ seats, showEarnings = true, invite }: { seats: Se
           </section>
 
           <section className="flex flex-col" style={{ gap: 18 }}>
-            <h2 className="text-center md:text-left" style={h2}>กำหนดการ</h2>
-            <div className="flex flex-col pl-1">
+            <h2 className="text-center" style={h2}>กำหนดการ</h2>
+            {/* จอคอม: เส้นเวลาแนวนอน 5 ช่อง */}
+            <ol className="hidden md:grid grid-cols-5 m-0 p-0 list-none">
+              {TIMELINE.map(([date, text], i) => (
+                <li key={text} className="flex flex-col items-center text-center gap-2">
+                  <span className="relative w-full h-3 grid place-items-center">
+                    <span className="absolute top-1/2 h-0.5 -translate-y-1/2" style={{ left: i ? 0 : "50%", right: i === TIMELINE.length - 1 ? "50%" : 0, background: "rgba(232,196,114,0.35)" }} />
+                    <span className="relative w-3 h-3 rounded-full bg-[#e8c472]" />
+                  </span>
+                  <span className="text-[13px] text-[#e8c472] font-light">{date}</span>
+                  <span className="text-[15px] px-2">{text}</span>
+                </li>
+              ))}
+            </ol>
+            <div className="flex flex-col pl-1 md:hidden">
               {TIMELINE.map(([date, text]) => (
                 <div key={text} className="flex gap-[14px]">
                   <span className="flex flex-col items-center"><span className="w-3 h-3 rounded-full bg-[#e8c472]" style={{ marginTop: 7 }} /><span className="flex-1 w-0.5" style={{ background: "rgba(232,196,114,0.35)" }} /></span>

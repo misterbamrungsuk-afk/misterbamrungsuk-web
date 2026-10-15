@@ -177,9 +177,9 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE }: { showEarning
         </div>
 
         {list.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4" style={{ padding: "0 18px" }}>
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4" style={{ padding: "0 18px" }}>
             {list.map((x, i) => card(x, i))}
-            <Link href="/spas" style={{ gridTemplateColumns: "112px 1fr" }} className="order-[7] md:order-[11] col-span-full relative grid gap-3 items-center p-[10px] rounded-2xl bg-[#241c29] text-[#f3ead9] hover:text-[#f3ead9]">
+            <Link href="/spas" style={{ gridTemplateColumns: "112px 1fr" }} className="order-[7] md:order-[11] xl:order-[15] col-span-full relative grid gap-3 items-center p-[10px] rounded-2xl bg-[#241c29] text-[#f3ead9] hover:text-[#f3ead9]">
               <img src="/brand/home/ad-spa.jpg" alt="" className="w-[112px] h-[84px] rounded-[10px] object-cover block" />
               <span className="flex flex-col gap-0.5 min-w-0 font-normal">
                 <span className="text-[10.5px] text-[#b5a596] font-light">โฆษณา</span>
