@@ -54,7 +54,7 @@ export async function middleware(request: NextRequest) {
     pathname === "/partner" ||
     pathname.startsWith("/partner/") ||
     // Marketplace หน้าแรก เปิดสาธารณะ
-    pathname === "/" || pathname === "/work-with-us" || pathname.startsWith("/p/") || pathname === "/market" || pathname.startsWith("/market/") || marketPublic(pathname) ||
+    pathname === "/" || pathname === "/work-with-us" || pathname === "/map" || pathname.startsWith("/p/") || pathname === "/market" || pathname.startsWith("/market/") || marketPublic(pathname) ||
     pathname === "/products" || pathname.startsWith("/products/") || pathname === "/cart" ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||

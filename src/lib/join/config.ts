@@ -45,11 +45,13 @@ export type PackageKey = keyof typeof PACKAGES;
 export const GUARANTEE_REFUND_NOTE = "Refundable – คืนเมื่อครบ 1 ปี หากไม่ผิดกฎ เช่น ไม่ปฏิเสธการรับลูกค้า";
 
 /** รายการแยกยอด (แสดงทุกหน้า: landing / ชำระเงิน / done / แอดมิน) */
-export function feeBreakdown(k: PackageKey) {
-  return [
+/** รายการค่าใช้จ่าย · invite = สมัครผ่านลิงก์เชิญ (ไม่เก็บค่าการันตี) */
+export function feeBreakdown(k: PackageKey, invite = false) {
+  const all = [
     { name: "เงินประกันมาตรฐานแบรนด์", note: k === "B" ? "(Refundable – คืนเมื่อครบ 1 ปี หากไม่ผิดกฎ)" : "(Refundable – คืนเมื่อครบ 1 ปี หากไม่ผิดกฎ เช่น ไม่ปฏิเสธการรับลูกค้า)", amount: PACKAGES[k].guarantee },
     { name: k === "B" ? "คอร์สอบรมทักษะการนวด" : "คอร์สอบรมยกระดับการบริการ", note: k === "B" ? "(รวมยูนิฟอร์มและ Massage Oil 1 เซ็ต ฟรี!)" : "", amount: PACKAGES[k].training },
   ];
+  return invite ? all.slice(1) : all;
 }
 
 /** เกณฑ์อายุรับสมัคร (ปีเต็ม) — ทั้งสองสาย 20–50 */

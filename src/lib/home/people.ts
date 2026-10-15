@@ -5,6 +5,12 @@ export type Act = "eat" | "massage" | "cafe" | "photo" | "movie" | "gym" | "chil
 export type Person = {
   id: string; nick: string; age: number; img: string; top: boolean; rating: string; reviews: number; jobs: number; years: number;
   area: string; prov?: string; acts: Act[]; free: number; height: number; langs: string; bio: string; review: [string, string];
+  /** true = Part-Time จริงจากระบบสมัคร (ยังไม่มีสถิติ/รีวิว) */
+  real?: boolean;
+  /** ราคา 3 ชม. จริงจากหน้า "ราคาและส่วนแบ่ง" (คนจริง) */
+  price?: number;
+  /** จำนวนรูป (คนจริง) */
+  photos?: number;
 };
 
 const P = (id: string, nick: string, age: number, img: string, top: boolean, rating: string, area: string, acts: Act[], free: number, bio: string, extra: Partial<Person> = {}): Person => {
@@ -40,4 +46,4 @@ export const PEOPLE: Person[] = [
 ];
 
 export const personById = (id: string) => PEOPLE.find((p) => p.id === id);
-export const priceOf = (p: Person) => (p.top ? 10000 : 6500);
+export const priceOf = (p: Person) => p.price ?? (p.top ? 10000 : 6500);

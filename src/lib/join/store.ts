@@ -114,7 +114,7 @@ export interface PtWork { days: Record<string, { on: boolean; from: string; to: 
 export interface PtListing { title: string; rules: string; hidden: boolean; updated_at: string }
 export interface PtPost { text: string; time: string; zone: string; open: boolean; created_at: string }
 
-export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents" | "talents_other" | "activities_other" | "areas" | "no_area" | "slip_check" | "invite" | "kyc_status" | "kyc_reason" | "kyc_submitted_at" | "bank_book_path"> & { attendance?: Record<string, boolean>; photos?: string[]; card?: ProfileCard | null; form_done?: number[]; tier?: "top" | "silver"; pt_settings?: PtSettings | null; post?: PtPost | null; listing?: PtListing | null; work?: PtWork | null; delete_requested_at?: string | null; bank_consents?: { terms: boolean; pdpa: boolean; profile: boolean; at: string } | null };
+export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents" | "talents_other" | "activities_other" | "areas" | "no_area" | "slip_check" | "invite" | "kyc_status" | "kyc_reason" | "kyc_submitted_at" | "bank_book_path"> & { attendance?: Record<string, boolean>; photos?: string[]; card?: ProfileCard | null; form_done?: number[]; tier?: "top" | "silver"; pt_settings?: PtSettings | null; post?: PtPost | null; listing?: PtListing | null; work?: PtWork | null; listed?: boolean; delete_requested_at?: string | null; bank_consents?: { terms: boolean; pdpa: boolean; profile: boolean; at: string } | null };
 
 /** รวมคอลัมน์ 0003 กับ docs.extra — คอลัมน์จริงมาก่อน */
 export function extraOf(a: Applicant): Extra {
@@ -141,6 +141,7 @@ export function extraOf(a: Applicant): Extra {
     post: x.post ?? null,
     listing: x.listing ?? null,
     work: x.work ?? null,
+    listed: x.listed ?? false,
     delete_requested_at: x.delete_requested_at ?? null,
     bank_consents: x.bank_consents ?? null,
     slip_check: x.slip_check ?? null,
@@ -235,6 +236,14 @@ export async function listApplicants(status?: ApplicantStatus): Promise<Applican
   return data as Applicant[];
 }
 
+/** ใบสมัครตาม id (ใช้ในหลังบ้าน) */
+export async function getById(id: string): Promise<Applicant | null> {
+  if (isDemo) return demo.rows.find((x) => x.id === id) ?? null;
+  const { data, error } = await db().from("applicants").select("*").eq("id", id).maybeSingle();
+  if (error) throw error;
+  return (data as Applicant) ?? null;
+}
+
 export async function updateApplicant(id: string, patch: Partial<Pick<Applicant, "status" | "contract_accepted_at" | "sheet_synced">>) {
   if (isDemo) {
     const r = demo.rows.find((x) => x.id === id);
@@ -278,7 +287,7 @@ export async function updateExtra(id: string, patch: Pick<Extra, "cohort" | "lin
 
 const KYC_EXTRA_KEYS = ["kyc_status", "kyc_reason", "kyc_submitted_at", "bank_book_path"];
 /** เก็บใน docs.extra อย่างเดียว (ไม่มีคอลัมน์) */
-const EXTRA_ONLY_KEYS = ["pt_settings", "post", "listing", "work", "delete_requested_at", "tier", "bank_consents", "areas", "no_area", "availability", "massage_cert", "ack_hours", "ack_no_refuse", "photos", "card", "form_done"];
+const EXTRA_ONLY_KEYS = ["pt_settings", "post", "listing", "work", "listed", "delete_requested_at", "tier", "bank_consents", "areas", "no_area", "availability", "massage_cert", "ack_hours", "ack_no_refuse", "photos", "card", "form_done"];
 
 /** เขียนคอลัมน์ + docs (path ไฟล์ และ extra สำรอง) — คอลัมน์ 0006 ยังไม่มีก็เขียนเฉพาะคอลัมน์เดิม + docs */
 async function patchApplicant(id: string, allCols: Record<string, unknown>, docPaths: Partial<Record<DocKind, string>> = {}): Promise<Applicant | null> {

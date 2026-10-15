@@ -1,5 +1,6 @@
 import { HomeFeed } from "./home-feed";
 import { getEarnings } from "@/lib/join/earnings-settings";
+import { getLivePeople } from "@/lib/home/live";
 
 export const metadata = { title: "Mister Bamrungsuk — เลือกเพื่อนของคุณ" };
 
@@ -7,6 +8,7 @@ export const metadata = { title: "Mister Bamrungsuk — เลือกเพื
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const { show } = await getEarnings();
-  return <HomeFeed showEarnings={show} />;
+  const [{ show }, live] = await Promise.all([getEarnings(), getLivePeople().catch(() => [])]);
+  // มี Part-Time จริงที่แอดมินเปิดแสดงแล้ว → แสดงเฉพาะคนจริง · ยังไม่มี → ตัวอย่าง
+  return <HomeFeed showEarnings={show} people={live.length ? live : undefined} />;
 }

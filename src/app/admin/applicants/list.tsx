@@ -63,6 +63,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
     else flash(d.row ? `บันทึกสถานะ: ${LABEL[d.row.status]}` : "บันทึกไม่สำเร็จ");
     router.refresh();
   };
+  const setListed = async (id: string, listed: boolean) => { const d = (await patch(id, { listed })) as { ok?: boolean; error?: string }; flash(d.ok ? (listed ? "แสดงบนหน้าแรกแล้ว" : "ซ่อนจากหน้าแรกแล้ว") : d.error ?? "บันทึกไม่สำเร็จ"); };
   const setTier = async (id: string, tier: "top" | "silver") => { const d = await patch(id, { tier }); flash(d.ok ? `ตั้งระดับ ${tier === "top" ? "TOP" : "Silver"} แล้ว` : "บันทึกไม่สำเร็จ"); };
   const assign = async (id: string, cohort: string | null) => { const d = await patch(id, { cohort }); flash(d.ok ? `จัดเข้า${cohort ? cohortName(cohort) : " (ไม่ระบุกลุ่ม)"}` : "บันทึกไม่สำเร็จ"); };
   const setLine = async (id: string, v: boolean) => { const d = await patch(id, { line_joined: v }); flash(d.ok ? (v ? "บันทึก: เข้ากลุ่ม LINE แล้ว" : "บันทึก: ยังไม่เข้ากลุ่ม") : "บันทึกไม่สำเร็จ"); router.refresh(); };
@@ -156,6 +157,9 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
             <div className="flex justify-between items-center gap-2"><span className="text-[#cdbfb3]">ระดับ (หลังอบรม)</span>
               <span className="flex gap-1">{(["silver", "top"] as const).map((t) => { const on = (sel.tier ?? "silver") === t; return <button key={t} onClick={() => setTier(sel.id, t)} aria-pressed={on} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={{ borderColor: on ? GOLD : LINE_BD, background: on ? GOLD : "transparent", color: on ? "#1a1206" : "#d3c7bc" }}>{t === "top" ? "TOP" : "Silver"}</button>; })}</span>
             </div>
+            <div className="flex justify-between items-center gap-2"><span className="text-[#cdbfb3]">แสดงบนหน้าแรก (เปิดรับงาน)</span>
+              <button type="button" role="switch" aria-checked={!!sel.listed} onClick={() => setListed(sel.id, !sel.listed)} className="w-11 h-[26px] rounded-full relative shrink-0" style={{ background: sel.listed ? GOLD : "rgba(243,234,217,0.18)" }}><span className="absolute top-[3px] w-5 h-5 rounded-full bg-white transition-all" style={{ left: sel.listed ? 21 : 3 }} /></button>
+            </div>
             <Row k="อายุ · ชื่อเล่น" v={`${ageOf(sel.birthdate) ?? "-"} ปี · ${sel.nickname || "-"}`} />
             <Row k="พักอาศัยแถว" v={sel.address || "-"} />
             <Row k="พื้นที่สะดวก" v={(sel.areas ?? []).join(" · ") || "-"} />
@@ -196,7 +200,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
                 <div className="h-px bg-[rgba(240,200,90,.38)]" />
                 <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[12.5px]">
                   <dt className="text-[#cdbfb3]">สายงาน</dt><dd>{sel.package} · {PACKAGES[sel.package].name}</dd>
-                  {feeBreakdown(sel.package).map((x) => <Fragment key={x.name}><dt className="text-[#cdbfb3]">{x.name}</dt><dd>{fmt(x.amount)}</dd></Fragment>)}
+                  {feeBreakdown(sel.package, !!sel.invite).map((x) => <Fragment key={x.name}><dt className="text-[#cdbfb3]">{x.name}</dt><dd>{fmt(x.amount)}</dd></Fragment>)}
                   <dt className="text-[#cdbfb3]">ชำระโดย</dt><dd>{sel.payment_method === "qr" ? "QR" : "โอนบัญชี"}</dd>
                   <dt className="text-[#cdbfb3]">Slip2Go</dt>
                   <dd>{sel.slip_check ? <span style={{ color: SLIP_LABEL[sel.slip_check.verdict][1] }}>{SLIP_LABEL[sel.slip_check.verdict][0]} · {sel.slip_check.amount != null ? fmt(sel.slip_check.amount) : "-"}</span> : <span className="text-[#7d6d6a]">ไม่ได้ตรวจ</span>}</dd>

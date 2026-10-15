@@ -5,7 +5,7 @@ import { CONTROLLER } from "@/lib/join/legal";
 import { BRAND, COHORTS, GUARANTEE_REFUND_NOTE, PACKAGES, TERMS_SUMMARY, feeBreakdown } from "@/lib/join/config";
 import { extraOf, fullName, getByMb } from "@/lib/join/store";
 import { TRAINING } from "@/lib/join/training";
-import { PrintButton } from "./print-button";
+import { SavePdfButton } from "../../receipt/[mb]/save-pdf";
 
 // ใบยืนยันการสมัคร (A4 พิมพ์/บันทึก PDF) — เข้าถึงแบบเดียวกับหน้า done (MB ใน URL)
 export const dynamic = "force-dynamic";
@@ -27,7 +27,7 @@ export default async function DocPage({ params, searchParams }: { params: Promis
   if (!row) notFound();
 
   const x = extraOf(row);
-  const fees = feeBreakdown(row.package);
+  const fees = feeBreakdown(row.package, !!x.invite);
   const total = fees.reduce((a, f) => a + f.amount, 0);
   const cohort = x.cohort ? COHORTS.find((c) => c.key === x.cohort) : null;
   const group = cohort ? `${cohort.name} · ${cohort.date}` : x.cohort ? `กลุ่ม ${x.cohort}` : "รอจัดกลุ่ม (แจ้งทาง LINE)";
@@ -37,14 +37,17 @@ export default async function DocPage({ params, searchParams }: { params: Promis
     ["ชื่อ-นามสกุล", fullName(row)],
     ["ชื่อเล่น", row.nickname || "-"],
     ["เบอร์โทร", row.tel || "-"],
-    ["อีเมล", row.email || "-"],
+    ["LINE ID", row.line_id || "-"],
+    ["ที่พักอาศัย (ย่าน)", row.address || "-"],
+    ["พื้นที่ที่สะดวกรับงาน", (x.areas ?? []).join(" · ") || "-"],
     ["วันที่สมัคร", thDate(new Date(row.created_at))],
   ];
   const status: [string, string][] = [
     ["สถานะการชำระเงิน", PAY_TEXT[row.status] ?? row.status],
     ["สถานะยืนยันตัวตน (KYC)", KYC_TEXT[x.kyc_status ?? "none"]],
     ["กลุ่มอบรม", group],
-    ["วันอบรม", TRAINING.datesLong],
+    ["วันอบรม", cohort ? `${TRAINING.datesLong}` : TRAINING.datesLong],
+    ["ช่องทางสมัคร", x.invite ? "ลิงก์เชิญพิเศษ (ไม่เก็บค่าการันตี)" : "สมัครปกติ"],
     ["สถานที่อบรม", TRAINING.venue],
     ["เปิดให้บริการ", TRAINING.openService],
   ];
@@ -67,11 +70,11 @@ export default async function DocPage({ params, searchParams }: { params: Promis
       `}</style>
 
       <div className="no-print mx-auto max-w-[210mm] flex justify-between items-center gap-3 mb-4 flex-wrap">
-        <a href={`/join/done/${row.mb_code}${q}`} className="text-[13px] text-[#5a4a40] underline underline-offset-2">← กลับหน้าสมัครสำเร็จ</a>
-        <PrintButton />
+        <span className="flex gap-4 flex-wrap"><a href={`/join/done/${row.mb_code}${q}`} className="text-[13px] text-[#5a4a40] underline underline-offset-2">← กลับหน้าสมัครสำเร็จ</a><a href={`/join/receipt/${row.mb_code}${q}`} className="text-[13px] text-[#7e0a1e] underline underline-offset-2">ใบเสร็จรับเงิน ›</a></span>
+        <SavePdfButton targetId="doc-sheet" fileName={`ใบยืนยันการสมัคร-${row.mb_code}`} />
       </div>
 
-      <article className="doc-sheet mx-auto w-full max-w-[210mm] min-h-[297mm] bg-white text-[#1d1414] shadow-[0_6px_30px_rgba(0,0,0,.18)] px-[14mm] py-[12mm] text-[13px] leading-relaxed">
+      <article id="doc-sheet" className="doc-sheet mx-auto w-full max-w-[210mm] min-h-[297mm] bg-white text-[#1d1414] shadow-[0_6px_30px_rgba(0,0,0,.18)] px-[14mm] py-[12mm] text-[13px] leading-relaxed">
         <header className="flex items-center justify-between gap-4 border-b-2 border-[#c9a24a] pb-3">
           <div className="flex items-center gap-3 min-w-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -14,6 +14,8 @@ const line = "1px solid rgba(243,234,217,0.07)";
 export function ProfileView({ p }: { p: Person }) {
   const [svc, setSvc] = useState<3 | 5>(3);
   const [fav, setFav] = useState(false);
+  const [pic, setPic] = useState(0);
+  const pics = p.real && p.photos ? Array.from({ length: p.photos }, (_, i) => `/api/public/pt-photo?id=${p.id}&i=${i}`) : [p.img];
   const price = { 3: priceOf(p), 5: Math.round(priceOf(p) * 1.5) };
   const where = p.prov ? `${p.area} ${p.prov}` : `${p.area} กรุงเทพฯ`;
   const round = "w-11 h-11 rounded-full grid place-items-center";
@@ -24,7 +26,7 @@ export function ProfileView({ p }: { p: Person }) {
       <div className="mx-auto w-full max-w-[1120px] lg:grid lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)] lg:gap-10 lg:px-8 lg:pt-8" style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}>
         {/* รูป */}
         <div className="relative h-[380px] md:h-[520px] lg:h-[640px] lg:sticky lg:top-8 lg:rounded-[28px] lg:overflow-hidden">
-          <img src={p.img} alt={p.nick} className="w-full h-full object-cover block" />
+          <img src={pics[pic] ?? p.img} alt={p.nick} className="w-full h-full object-cover block" />
           <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(23,18,17,.35) 0%, rgba(23,18,17,0) 30%, rgba(23,18,17,0) 60%, #171211 100%)" }} />
           <Link href="/" aria-label="ย้อนกลับ" className={`absolute top-[14px] left-[14px] ${round} text-[#f3ead9] hover:text-[#f3ead9]`} style={glass}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
@@ -32,8 +34,13 @@ export function ProfileView({ p }: { p: Person }) {
           <button type="button" onClick={() => setFav(!fav)} aria-pressed={fav} aria-label="บันทึกเป็นคนโปรด" className={`absolute top-[14px] right-[14px] ${round}`} style={{ ...glass, color: fav ? "#ef8a97" : "#f3ead9" }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill={fav ? "#c9283d" : "none"} stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 20s-7-4.4-9-9a4.8 4.8 0 0 1 9-3 4.8 4.8 0 0 1 9 3c-2 4.6-9 9-9 9z" /></svg>
           </button>
+          {pics.length > 1 && (
+            <div className="absolute left-[18px] bottom-4 flex gap-2">
+              {pics.slice(0, 5).map((src, i) => <button key={src} type="button" onClick={() => setPic(i)} aria-label={`ดูรูปที่ ${i + 1}`} className="w-[52px] h-[52px] rounded-xl overflow-hidden p-0 bg-[#211a18]" style={{ border: `2px solid ${i === pic ? "#e8c472" : "rgba(246,239,228,.25)"}` }}><img src={src} alt="" className="w-full h-full object-cover block" /></button>)}
+            </div>
+          )}
           <div className="absolute right-[18px] bottom-6 h-[26px] rounded-full text-[12px] font-light flex items-center gap-[5px]" style={{ padding: "0 10px", background: "rgba(8,6,6,.7)", border: `1px solid ${p.free ? "rgba(232,196,114,.6)" : "rgba(74,222,128,.7)"}`, color: p.free ? "#e8c472" : "#bbf7d0" }}>
-            {p.free ? `● ว่างในอีก ${p.free} นาที` : "● ออนไลน์ · ว่างตอนนี้"}
+            {p.real ? "● เปิดให้จองเร็ว ๆ นี้" : p.free ? `● ว่างในอีก ${p.free} นาที` : "● ออนไลน์ · ว่างตอนนี้"}
           </div>
         </div>
 
@@ -45,11 +52,11 @@ export function ProfileView({ p }: { p: Person }) {
               {p.top && <span className="inline-flex items-center h-[18px] rounded text-[9.5px] font-bold tracking-[.2em] text-[#1b130b]" style={{ padding: "0 7px", background: "linear-gradient(135deg, #fff1c9 0%, #e8c472 45%, #a8781f 100%)" }}>TOP</span>}
               <span className="h-[26px] rounded-full text-[12px] font-light text-[#e8c472] flex items-center" style={{ padding: "0 10px", border: "1px solid rgba(212,175,55,.6)" }}>✓ ยืนยันตัวตน + ตรวจประวัติ</span>
             </div>
-            <div className="text-[13px] text-[#d9c9b4] mt-1 font-light">{p.age} ปี · {p.height} ซม. · {where}</div>
+            <div className="text-[13px] text-[#d9c9b4] mt-1 font-light">{[p.age ? `${p.age} ปี` : "", p.height ? `${p.height} ซม.` : "", where].filter(Boolean).join(" · ")}</div>
           </div>
 
           <div className="grid grid-cols-4 text-center" style={{ borderTop: line, borderBottom: line, padding: "12px 0" }}>
-            {[[p.rating, `${p.reviews} รีวิว`, true], [String(p.jobs), "นัดสำเร็จ"], [`${p.years} ปี`, "ประสบการณ์"], ["98%", "ตอบกลับ"]].map(([v, l, g], i) => (
+            {(p.real ? [["ใหม่", "Part-Time ใหม่", true], ["✓", "ผ่านอบรม"], ["✓", "ยืนยันตัวตน"], [p.top ? "TOP" : "Silver", "ระดับ"]] : [[p.rating, `${p.reviews} รีวิว`, true], [String(p.jobs), "นัดสำเร็จ"], [`${p.years} ปี`, "ประสบการณ์"], ["98%", "ตอบกลับ"]]).map(([v, l, g], i) => (
               <div key={String(l)} style={{ borderLeft: i ? line : undefined }}><div className="font-semibold text-[18px]" style={{ color: g ? "#e8c472" : undefined }}>{v}</div><div className="text-[12px] text-[#d9c9b4] font-light">{l}</div></div>
             ))}
           </div>
@@ -77,6 +84,7 @@ export function ProfileView({ p }: { p: Person }) {
 
           <div>
             <h2 className="m-0 mb-2 font-semibold text-[17px]">รีวิว</h2>
+            {p.real ? <div className="rounded-[14px] bg-[#211a18] text-[13px] font-light text-[#d9c9b4]" style={{ padding: 12, border: line }}>ยังไม่มีรีวิว · รีวิวจะขึ้นหลังจบนัดแรก</div> : <>
             <div className="flex gap-4 items-center">
               <div className="text-center"><div className="font-bold text-[40px] text-[#e8c472] leading-none">{p.rating}</div><div className="text-[12px] text-[#d9c9b4] mt-1 font-light">{p.reviews} รีวิว</div></div>
               <div className="flex-1 flex flex-col gap-[5px]">
@@ -89,8 +97,9 @@ export function ProfileView({ p }: { p: Person }) {
             <div className="mt-3 rounded-[14px] bg-[#211a18] text-[13px] leading-[1.6] text-[#d9c9b4] font-light" style={{ padding: 12, border: line }}>
               <div className="text-[#e8c472] text-[12px]">★★★★★ · {p.review[0]} · 3 วันที่แล้ว</div>{p.review[1]}
             </div>
+            </>}
           </div>
-          <p className="m-0 text-[12px] text-[#b5a596] font-light">ข้อมูลตัวอย่าง · แอปลูกค้าเปิดให้จองจริงเร็ว ๆ นี้</p>
+          <p className="m-0 text-[12px] text-[#b5a596] font-light">{p.real ? "เปิดให้จองและแชทผ่านแอปเร็ว ๆ นี้" : "ข้อมูลตัวอย่าง · แอปลูกค้าเปิดให้จองจริงเร็ว ๆ นี้"}</p>
         </div>
       </div>
 
@@ -99,9 +108,9 @@ export function ProfileView({ p }: { p: Person }) {
         <div className="mx-auto max-w-[1120px] flex items-center justify-between gap-3 lg:px-8" style={{ padding: "12px 18px calc(18px + env(safe-area-inset-bottom))" }}>
           <div><div className="text-[12px] text-[#d9c9b4] font-light">{svc} ชม.</div><div className="font-bold text-[22px] text-[#e8c472]">{baht(price[svc])}</div></div>
           <div className="flex gap-2">
-            <Link href={`/p/${p.id}/chat`} aria-label={`แชทกับ${p.nick}`} className="h-[52px] rounded-full flex items-center gap-2 text-[#e8c472] font-semibold hover:text-[#e8c472]" style={{ padding: "0 20px", border: "1.5px solid rgba(232,196,114,.6)" }}>
+            {!p.real && <Link href={`/p/${p.id}/chat`} aria-label={`แชทกับ${p.nick}`} className="h-[52px] rounded-full flex items-center gap-2 text-[#e8c472] font-semibold hover:text-[#e8c472]" style={{ padding: "0 20px", border: "1.5px solid rgba(232,196,114,.6)" }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" /></svg>แชท
-            </Link>
+            </Link>}
             <Link href="/login" className="h-[52px] rounded-full bg-[#e8c472] text-[#1b130b] font-semibold flex items-center hover:text-[#1b130b]" style={{ padding: "0 28px", border: "1.5px solid #e8c472" }}>จองเลย</Link>
           </div>
         </div>

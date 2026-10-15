@@ -35,12 +35,13 @@ const Svg = ({ d, size = 20, sw = 1.8 }: { d: string; size?: number; sw?: number
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
 );
 
-export function HomeFeed({ showEarnings = true }: { showEarnings?: boolean }) {
+/** people = Part-Time จริง (ถ้ามี) · ไม่มีคนจริง → ใช้ตัวอย่าง 20 คน */
+export function HomeFeed({ showEarnings = true, people = PEOPLE }: { showEarnings?: boolean; people?: Person[] }) {
   const [acts, setActs] = useState<Act[]>([]);
   const [sort, setSort] = useState<Sort>("top");
   const [ad, setAd] = useState(false);
   const [fOpen, setFOpen] = useState(false);
-  const [f, setF] = useState({ reg: "", prov: "", spot: "", type: "", tier: "", act: "", aMin: "25", aMax: "50" });
+  const [f, setF] = useState({ reg: "", prov: "", spot: "", type: "", tier: "", act: "", aMin: "20", aMax: "50" });
 
   // ป๊อปอัปโฆษณาตอนเปิดแอป (บอร์ด BenefitsPopup) — ครั้งเดียวต่อ session
   useEffect(() => {
@@ -48,20 +49,20 @@ export function HomeFeed({ showEarnings = true }: { showEarnings?: boolean }) {
   }, []);
   const closeAd = () => setAd(false);
 
-  const lo = +f.aMin || 25, hi = +f.aMax || 50, spot = f.spot.trim();
+  const lo = +f.aMin || 20, hi = +f.aMax || 50, spot = f.spot.trim();
   const list = useMemo(() => {
     const by: Record<Sort, (a: P, b: P) => number> = {
-      top: (a, b) => (b.top ? 1 : 0) - (a.top ? 1 : 0) || +b.rating - +a.rating,
-      rate: (a, b) => +b.rating - +a.rating, now: (a, b) => a.free - b.free, price: (a, b) => price(a) - price(b),
+      top: (a, b) => (b.top ? 1 : 0) - (a.top ? 1 : 0) || (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0),
+      rate: (a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0), now: (a, b) => a.free - b.free, price: (a, b) => price(a) - price(b),
     };
-    return PEOPLE.filter((p) => acts.every((a) => p.acts.includes(a)) && (!f.reg || PROV[provOf(p)] === f.reg) && (!f.prov || provOf(p) === f.prov)
+    return people.filter((p) => acts.every((a) => p.acts.includes(a)) && (!f.reg || PROV[provOf(p)] === f.reg) && (!f.prov || provOf(p) === f.prov)
       && (!spot || p.area.includes(spot) || spot.includes(p.area)) && (!f.type || (f.type === "massage") === p.acts.includes("massage"))
       && (!f.tier || (f.tier === "top") === p.top) && (!f.act || p.acts.includes(f.act as Act)) && ageOf(p) >= lo && ageOf(p) <= hi).sort(by[sort]);
-  }, [acts, sort, f.reg, f.prov, spot, f.type, f.tier, f.act, lo, hi]);
-  const nF = acts.length + [f.reg, f.prov, spot, f.type, f.tier, f.act].filter(Boolean).length + (lo !== 25 || hi !== 50 ? 1 : 0);
+  }, [people, acts, sort, f.reg, f.prov, spot, f.type, f.tier, f.act, lo, hi]);
+  const nF = acts.length + [f.reg, f.prov, spot, f.type, f.tier, f.act].filter(Boolean).length + (lo !== 20 || hi !== 50 ? 1 : 0);
   const provOpts = Object.keys(PROV).filter((k) => !f.reg || PROV[k] === f.reg).sort((a, b) => a.localeCompare(b, "th"));
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF((x) => ({ ...x, [k]: e.target.value }));
-  const clear = () => { setActs([]); setF({ reg: "", prov: "", spot: "", type: "", tier: "", act: "", aMin: "25", aMax: "50" }); };
+  const clear = () => { setActs([]); setF({ reg: "", prov: "", spot: "", type: "", tier: "", act: "", aMin: "20", aMax: "50" }); };
 
   const card = (p: P, i = 0) => (
     <Link key={p.id} href={`/p/${p.id}`} style={{ order: i * 2 }} className="block rounded-[18px] overflow-hidden bg-[#251d1b] text-inherit hover:text-inherit">
@@ -90,6 +91,7 @@ export function HomeFeed({ showEarnings = true }: { showEarnings?: boolean }) {
           </Link>
           <nav aria-label="เมนูหลัก (จอคอม)" className="hidden md:flex items-center gap-1 ml-auto mr-3 text-[14px] font-light">
             <Link href="/" aria-current="page" className="px-3 min-h-10 inline-flex items-center rounded-full text-[#e8c472] hover:text-[#e8c472]">ดูเพื่อน</Link>
+            <Link href="/map" className="px-3 min-h-10 inline-flex items-center rounded-full text-[#d9c9b4] hover:text-[#f3ead9]">แผนที่</Link>
             <Link href={showEarnings ? "/join/earnings" : "/join"} className="px-3 min-h-10 inline-flex items-center rounded-full text-[#d9c9b4] hover:text-[#f3ead9]">รายได้</Link>
             <Link href="/policy" className="px-3 min-h-10 inline-flex items-center rounded-full text-[#d9c9b4] hover:text-[#f3ead9]">กฎเกณฑ์</Link>
             <Link href="/work-with-us" className="px-3 min-h-10 inline-flex items-center rounded-full text-[#d9c9b4] hover:text-[#f3ead9]">ร่วมทีม</Link>
@@ -139,6 +141,9 @@ export function HomeFeed({ showEarnings = true }: { showEarnings?: boolean }) {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
             <input value={f.spot} onChange={set("spot")} placeholder="ค้นหาชื่อ ย่าน หรือกิจกรรม" aria-label="ค้นหา" className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[#f3ead9] placeholder:text-[#b5a596]" style={{ fontSize: 14 }} />
           </label>
+          <Link href="/map" aria-label="ดูบนแผนที่" className="grid place-items-center w-12 h-12 shrink-0 rounded-[14px] text-[#e8c472] hover:text-[#e8c472]" style={{ background: "rgba(232,196,114,0.16)" }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" /></svg>
+          </Link>
           <button type="button" onClick={() => setFOpen(true)} aria-label="ตัวกรอง" className="relative grid place-items-center w-12 h-12 shrink-0 rounded-[14px] text-[#e8c472] p-0" style={{ background: "rgba(232,196,114,0.16)" }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0" /><circle cx="16" cy="6" r="2" /><circle cx="10" cy="12" r="2" /><circle cx="18" cy="18" r="2" /></svg>
             {nF > 0 && <span className="absolute grid place-items-center rounded-full bg-[#b0182c] text-white font-bold" style={{ top: -6, right: -6, minWidth: 18, height: 18, padding: "0 5px", fontSize: 10.5 }}>{nF}</span>}
@@ -254,7 +259,7 @@ export function HomeFeed({ showEarnings = true }: { showEarnings?: boolean }) {
               <select aria-label="กิจกรรม" value={f.act} onChange={set("act")} style={sel}><option value="">ทุกกิจกรรม</option>{ACTS.map((a) => <option key={a.id} value={a.id}>{a.label}</option>)}</select>
               <div className="font-semibold text-[16px] mt-1">ช่วงอายุ (ปี)</div>
               <div className="grid items-center gap-2" style={{ gridTemplateColumns: "1fr 24px 1fr" }}>
-                <input type="number" inputMode="numeric" min={25} max={50} aria-label="อายุต่ำสุด" value={f.aMin} onChange={set("aMin")} style={{ ...sel, textAlign: "center" }} />
+                <input type="number" inputMode="numeric" min={20} max={50} aria-label="อายุต่ำสุด" value={f.aMin} onChange={set("aMin")} style={{ ...sel, textAlign: "center" }} />
                 <span className="text-center text-[#b5a596]">—</span>
                 <input type="number" inputMode="numeric" min={25} max={50} aria-label="อายุสูงสุด" value={f.aMax} onChange={set("aMax")} style={{ ...sel, textAlign: "center" }} />
               </div>

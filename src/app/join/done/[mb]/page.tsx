@@ -62,6 +62,10 @@ export default async function DonePage({ params, searchParams }: { params: Promi
             </div>
           </div>
         </div>
+        <div className="grid grid-cols-2 gap-2.5">
+          <a href={`/join/receipt/${row.mb_code}${q}`} className="min-h-12 rounded-[14px] bg-[#211a18] text-[#e8c472] text-[14px] font-semibold grid place-items-center text-center px-2 hover:text-[#e8c472]" style={{ border: "1px solid rgba(243,234,217,0.07)" }}>ใบเสร็จรับเงิน (PDF)</a>
+          <a href={`/join/doc/${row.mb_code}${q}`} className="min-h-12 rounded-[14px] bg-[#211a18] text-[#e8c472] text-[14px] font-semibold grid place-items-center text-center px-2 hover:text-[#e8c472]" style={{ border: "1px solid rgba(243,234,217,0.07)" }}>ใบยืนยันการสมัคร (PDF)</a>
+        </div>
         <Link href={`/join/profile/${row.mb_code}${q}`} className="min-h-[52px] rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold text-[15px] grid place-items-center hover:text-[#1b130b]">ไปที่โปรไฟล์ของฉัน</Link>
         <div className="text-[12px] leading-[1.6] text-center font-light text-[#d9c9b4]">{x.invite ? fee : `${fee} · เงินประกัน Refundable – คืนเมื่อครบ 1 ปี หากไม่ผิดกฎ`}</div>
       </div>
