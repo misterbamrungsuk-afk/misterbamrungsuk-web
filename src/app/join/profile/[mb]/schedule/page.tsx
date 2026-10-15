@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { TRAINING, TRAINING_SESSIONS } from "@/lib/join/training";
 import { Forbidden } from "../../../_kyc/ui";
-import { PtNav, PtPage, loadPt } from "../_pt";
+import { PtNav, PtPage, loadPt, ptHref } from "../_pt";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "ตารางงานของฉัน — Mister Bamrungsuk" };
@@ -94,11 +94,12 @@ export default async function SchedulePage({ params, searchParams }: { params: P
             : <div className="rounded-[18px] bg-[#211a18] text-[13.5px] font-light text-[#d9c9b4]" style={{ padding: 14, border: line }}>ยังไม่มีนัด · เริ่มรับงานหลังอบรม (เปิดให้บริการ {TRAINING.openService})</div>}
 
           <div className="rounded-[18px] bg-[#211a18] flex flex-col gap-2" style={{ padding: 14, border: line }}>
-            <div className="flex justify-between items-center"><span className="font-semibold text-[14px]">วันเวลาที่สะดวกรับงาน</span><Link href={`/join/form/${c.mb}?step=2${c.t ? `&t=${encodeURIComponent(c.t)}` : ""}`} className="text-[13px] text-[#e8c472] font-light">แก้ไข ›</Link></div>
+            <div className="flex justify-between items-center"><span className="font-semibold text-[14px]">วันเวลาที่สะดวกรับงาน</span><Link href={ptHref(c, "availability")} className="text-[13px] text-[#e8c472] font-light">ตั้งเวลา ›</Link></div>
             {av && weekDays.length
               ? <>
                   <div className="flex flex-wrap gap-1.5">{["จ", "อ", "พ", "พฤ", "ศ", "ส", "อา"].map((w) => <span key={w} className="w-9 h-9 rounded-full grid place-items-center text-[13px]" style={{ background: weekDays.includes(w) ? "rgba(232,196,114,0.16)" : "#251d1b", color: weekDays.includes(w) ? "#e8c472" : "#8d7f72" }}>{w}</span>)}</div>
-                  <span className="text-[13px] font-light text-[#d9c9b4]">{av.slots.join(" · ") || "—"}{av.hours_band ? ` · ${av.hours_band}/วัน` : ""}</span>
+                  <span className="text-[13px] font-light text-[#d9c9b4]">{c.x.work ? ["จ", "อ", "พ", "พฤ", "ศ", "ส", "อา"].filter((d) => c.x.work!.days[d]?.on).map((d) => `${d} ${c.x.work!.days[d].from}–${c.x.work!.days[d].to}`).join(" · ") + ` · รัศมี ${c.x.work.radius_km} กม.` : `${av.slots.join(" · ") || "—"}${av.hours_band ? ` · ${av.hours_band}/วัน` : ""}`}</span>
+                  {c.x.work?.paused && <span className="self-start rounded-full text-[12px] text-[#ff8a9a]" style={{ padding: "2px 10px", background: "rgba(255,138,154,0.1)" }}>พักงานชั่วคราว</span>}
                 </>
               : <span className="text-[13px] font-light text-[#d9c9b4]">ยังไม่ได้กรอก · กด “แก้ไข” เพื่อเลือกวันและช่วงเวลา</span>}
           </div>

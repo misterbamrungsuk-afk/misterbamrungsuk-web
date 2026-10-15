@@ -114,3 +114,50 @@ export function ListingForm({ mb, t, init, previewHref }: { mb: string; t: strin
     </div>
   );
 }
+
+/** บอร์ด P-Availability — เวลาทำงานรายวัน (เปิด/ปิด + เวลาเริ่ม–เลิก) · รัศมีรับงาน 2–20 กม. · พักงานชั่วคราว */
+const DAY_NAMES: [string, string][] = [["จ", "จันทร์"], ["อ", "อังคาร"], ["พ", "พุธ"], ["พฤ", "พฤหัส"], ["ศ", "ศุกร์"], ["ส", "เสาร์"], ["อา", "อาทิตย์"]];
+type WorkDays = Record<string, { on: boolean; from: string; to: string }>;
+export function WorkForm({ mb, t, init }: { mb: string; t: string; init: { days: WorkDays; radius_km: number; paused: boolean } }) {
+  const [days, setDays] = useState<WorkDays>(init.days);
+  const [radius, setRadius] = useState(init.radius_km);
+  const [paused, setPaused] = useState(init.paused);
+  const [st, setSt] = useState("");
+  const set = (d: string, v: Partial<WorkDays[string]>) => { setDays((x) => ({ ...x, [d]: { ...x[d], ...v } })); setSt(""); };
+  const save = async () => {
+    setSt("busy");
+    const err = await post(mb, t, "work", (fd) => { fd.set("days", JSON.stringify(days)); fd.set("radius_km", String(radius)); fd.set("paused", String(paused)); });
+    setSt(err ?? "ok");
+  };
+  const tg = (on: boolean) => <span className="w-11 h-[26px] rounded-full relative shrink-0 inline-block" style={{ background: on ? GOLD : "rgba(243,234,217,0.07)" }}><span className="absolute top-[3px] w-5 h-5 rounded-full transition-all" style={{ left: on ? 21 : 3, background: on ? "#fff" : "#d9c9b4" }} /></span>;
+  const tm = "h-8 rounded-[10px] bg-[#251d1b] text-[13px] text-[#f3ead9] px-2 outline-none border border-transparent focus:border-[#e8c472]";
+  const pct = ((radius - 2) / 18) * 100;
+  return (
+    <div className="flex flex-col gap-3.5">
+      <div className="bg-[#211a18] rounded-[20px] overflow-hidden" style={{ border: "1px solid rgba(243,234,217,0.07)" }}>
+        {DAY_NAMES.map(([d, name], i) => {
+          const v = days[d];
+          return (
+            <div key={d} className="flex items-center gap-3 text-[14px]" style={{ padding: "12px 14px", borderBottom: i < 6 ? "1px solid rgba(243,234,217,0.07)" : undefined, color: v.on ? "#f3ead9" : "#d9c9b4" }}>
+              <span className="w-[52px]">{name}</span>
+              <button type="button" role="switch" aria-checked={v.on} aria-label={`รับงานวัน${name}`} onClick={() => set(d, { on: !v.on })}>{tg(v.on)}</button>
+              {v.on
+                ? <span className="ml-auto flex gap-1.5"><input type="time" aria-label={`เริ่ม ${name}`} value={v.from} onChange={(e) => set(d, { from: e.target.value })} className={tm} style={{ colorScheme: "dark" }} /><input type="time" aria-label={`เลิก ${name}`} value={v.to} onChange={(e) => set(d, { to: e.target.value })} className={tm} style={{ colorScheme: "dark" }} /></span>
+                : <span className="ml-auto text-[13px] font-light">หยุด</span>}
+            </div>
+          );
+        })}
+      </div>
+      <div className="bg-[#211a18] rounded-[20px]" style={{ padding: 16, border: "1px solid rgba(243,234,217,0.07)" }}>
+        <div className="flex justify-between"><span className="font-medium">รัศมีรับงาน</span><b className="font-medium text-[#e8c472]">{radius} กม.</b></div>
+        <input type="range" min={2} max={20} step={1} value={radius} aria-label="รัศมีรับงาน (กม.)" onChange={(e) => { setRadius(Number(e.target.value)); setSt(""); }} className="w-full mt-4 accent-[#e8c472]" style={{ background: `linear-gradient(90deg, ${GOLD} ${pct}%, rgba(243,234,217,0.07) ${pct}%)` }} />
+        <div className="flex justify-between text-[12px] text-[#d9c9b4] font-light"><span>2 กม.</span><span>20 กม.</span></div>
+      </div>
+      <button type="button" role="switch" aria-checked={paused} onClick={() => { setPaused(!paused); setSt(""); }} className="flex items-center gap-3 bg-[#211a18] rounded-2xl text-[14px] text-left text-[#f3ead9]" style={{ padding: 14, border: "1px solid rgba(243,234,217,0.07)" }}>
+        <span className="flex-grow">พักงานชั่วคราว<span className="block text-[12px] text-[#d9c9b4] font-light">หยุดรับงานด่วน และซ่อนคุณจากแผนที่ไว้ก่อน</span></span>{tg(paused)}
+      </button>
+      <button type="button" onClick={save} disabled={st === "busy"} className="h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[17px]">{st === "busy" ? "กำลังบันทึก…" : st === "ok" ? "✓ บันทึกแล้ว" : "บันทึก"}</button>
+      {st && !["ok", "busy"].includes(st) && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{st}</p>}
+    </div>
+  );
+}

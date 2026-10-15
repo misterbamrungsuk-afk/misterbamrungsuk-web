@@ -99,6 +99,19 @@ export async function POST(req: Request) {
       await saveProfile(row.id, { post: { text, time, zone, open: true, created_at: new Date().toISOString() } });
       return NextResponse.json({ ok: true });
     }
+    // เวลาทำงานรายวัน (บอร์ด P-Availability) — sync วันที่เปิดไปที่ availability.week_days ด้วย
+    if (step === "work") {
+      let raw: Record<string, { on?: unknown; from?: unknown; to?: unknown }> = {};
+      try { raw = JSON.parse(s("days", 2000) || "{}"); } catch { return bad("ข้อมูลเวลาไม่ถูกต้อง"); }
+      const hm = (v: unknown, d: string) => (typeof v === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(v) ? v : d);
+      const days: Record<string, { on: boolean; from: string; to: string }> = {};
+      for (const d of WEEK_DAYS) days[d] = { on: raw[d]?.on === true, from: hm(raw[d]?.from, "17:00"), to: hm(raw[d]?.to, "23:00") };
+      const radius = Math.min(20, Math.max(2, Math.round(Number(s("radius_km")) || 8)));
+      const on = WEEK_DAYS.filter((d) => days[d].on);
+      const av = x.availability ?? { slots: [], days: null, hours: null };
+      await saveProfile(row.id, { work: { days, radius_km: radius, paused: s("paused") === "true", updated_at: new Date().toISOString() }, availability: { ...av, week_days: on, days: on.length } });
+      return NextResponse.json({ ok: true });
+    }
     // โพสต์โปรไฟล์ (บอร์ด P-Posts)
     if (step === "listing") {
       const title = s("title", 80), rules = s("rules", 600);
