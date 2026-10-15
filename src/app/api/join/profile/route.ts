@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ageError } from "@/lib/join/config";
 import { ageFrom } from "@/lib/join/form";
 import { canResume } from "@/lib/join/resume";
-import { extraOf, getByMb, saveProfile } from "@/lib/join/store";
+import { extraOf, getByMb, saveProfile, clearFixes } from "@/lib/join/store";
 import { CONTACT_MSG, hasContact } from "@/lib/join/contact-guard";
 
 export const runtime = "nodejs";
@@ -53,6 +53,7 @@ export async function POST(req: Request) {
         first_name: s("first_name"), last_name: s("last_name"), nickname: s("nickname"), birthdate: s("birthdate"),
         line_id: s("line_id", 60), address: s("address", 300), areas, no_area: s("no_area", 300), form_done: [...done],
       }, { photo: photo instanceof File ? photo : undefined, other_doc: body instanceof File ? body : undefined });
+      await clearFixes(row, ["info", ...(photo instanceof File ? ["photo"] : []), ...(body instanceof File ? ["other_doc"] : [])]);
       return NextResponse.json({ ok: true });
     }
 
@@ -76,6 +77,7 @@ export async function POST(req: Request) {
         ack_hours: true, ack_no_refuse: true, form_done: [...done],
         ...(row.package === "B" && (cert || row.docs.cert_doc) ? { massage_cert: true } : {}),
       }, { cert_doc: cert instanceof File ? cert : undefined });
+      await clearFixes(row, ["schedule", ...(cert instanceof File ? ["cert_doc"] : [])]);
       return NextResponse.json({ ok: true });
     }
 

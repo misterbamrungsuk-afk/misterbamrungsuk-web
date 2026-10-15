@@ -7,7 +7,7 @@ import { KYC_LABEL, KycPanel } from "./kyc-panel";
 
 const file = (p: string) => `/api/admin/applicants/file?path=${encodeURIComponent(p)}`;
 const GOLD = "#f0c75a";
-const TABS: [KycStatus, string, string][] = [["submitted", "รอตรวจเอกสาร", "#eed58a"], ["rejected", "ไม่ผ่าน · รอส่งใหม่", "#fca5a5"], ["approved", "อนุมัติแล้ว", "#4ade80"]];
+const TABS: [KycStatus, string, string][] = [["submitted", "รอตรวจเอกสาร", "#eed58a"], ["rejected", "ตีกลับ · รอแก้", "#fca5a5"], ["approved", "อนุมัติแล้ว", "#4ade80"]];
 const thTime = (iso?: string | null) => (iso ? new Date(iso).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", dateStyle: "short", timeStyle: "short" }) : "—");
 
 export function KycQueue({ initial }: { initial: Applicant[] }) {

@@ -8,16 +8,16 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "ใบสมัคร — Mister Bamrungsuk" };
 
 // ใบสมัคร 1/4–2/4 หลังชำระเงิน (canvas: โปรไฟล์ของฉัน → JoinForm → JoinForm2 → D2) · ?step=2 เปิดขั้นวันเวลา
-export default async function JoinFormPage({ params, searchParams }: { params: Promise<{ mb: string }>; searchParams: Promise<{ t?: string; step?: string }> }) {
+export default async function JoinFormPage({ params, searchParams }: { params: Promise<{ mb: string }>; searchParams: Promise<{ t?: string; step?: string; fix?: string }> }) {
   const { mb } = await params;
-  const { t, step } = await searchParams;
+  const { t, step, fix } = await searchParams;
   if (!/^MB-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
   const row = await getByMb(mb);
   if (!row) notFound();
   const x = extraOf(row);
   const a = x.availability;
   return (
-    <JoinFormClient mb={mb} t={t ?? ""} pkg={row.package} step={step === "2" ? 2 : 1}
+    <JoinFormClient mb={mb} t={t ?? ""} pkg={row.package} step={step === "2" ? 2 : 1} fix={fix === "1"}
       init={{
         first_name: row.first_name, last_name: row.last_name, nickname: row.nickname, birthdate: row.birthdate ?? "", tel: row.tel,
         line_id: row.line_id, address: row.address, areas: x.areas ?? [], no_area: x.no_area ?? "",

@@ -27,30 +27,35 @@ const cam = (
   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>
 );
 
-export function KycForm({ mb, t, hasIdCard }: { mb: string; t: string; hasIdCard: boolean }) {
+type K = "id_card" | "selfie" | "id_copy";
+export function KycForm({ mb, t, has, redo, fix }: { mb: string; t: string; has: Record<K, boolean>; redo: string[]; fix: boolean }) {
+  // มีไฟล์แล้วและไม่ถูกตีกลับ = ไม่ต้องส่งซ้ำ
+  const keep = (k: K) => has[k] && !redo.includes(k);
   const router = useRouter();
   const card = useImage();
   const selfie = useImage();
   const copy = useImage();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const cardDone = !!card.file || hasIdCard;
+  const cardDone = !!card.file || keep("id_card");
+  const selfieDone = !!selfie.file || keep("selfie");
+  const copyDone = !!copy.file || keep("id_copy");
   const q = t ? `?t=${encodeURIComponent(t)}` : "";
 
   const submit = async () => {
     if (!cardDone) return setError("กรุณาอัปโหลดหน้าบัตรประชาชน");
-    if (!selfie.file) return setError("กรุณาถ่ายเซลฟีถือบัตรคู่กับใบหน้า");
-    if (!copy.file) return setError("กรุณาอัปโหลดสำเนาบัตรประชาชนที่เซ็นรับรองแล้ว");
+    if (!selfieDone) return setError("กรุณาถ่ายเซลฟีถือบัตรคู่กับใบหน้า");
+    if (!copyDone) return setError("กรุณาอัปโหลดสำเนาบัตรประชาชนที่เซ็นรับรองแล้ว");
     setBusy(true); setError("");
     const fd = new FormData();
     fd.set("mb", mb);
     if (t) fd.set("t", t);
     if (card.file) fd.set("id_card", card.file);
-    fd.set("selfie", selfie.file);
-    fd.set("id_copy", copy.file);
+    if (selfie.file) fd.set("selfie", selfie.file);
+    if (copy.file) fd.set("id_copy", copy.file);
     const res = await fetch("/api/join/kyc", { method: "POST", body: fd }).catch(() => null);
     const data = await res?.json().catch(() => null);
-    if (res?.ok && data?.ok) return router.push(`/join/bank/${mb}${q}`);
+    if (res?.ok && data?.ok) return router.push(fix ? `/join/rejected/${mb}${q}` : `/join/bank/${mb}${q}`);
     setError(data?.error ?? "ส่งไม่สำเร็จ กรุณาลองใหม่"); setBusy(false);
   };
 
@@ -58,7 +63,7 @@ export function KycForm({ mb, t, hasIdCard }: { mb: string; t: string; hasIdCard
     <>
       <div className="flex flex-col md:grid md:grid-cols-2" style={{ padding: "24px 20px 0", gap: 26 }}>
         <div style={{ ...box, background: "#251d1b" }}>
-          <div className="flex justify-between items-center gap-3"><b className="font-semibold text-[17px]">1. หน้าบัตรประชาชน</b>{cardDone && <span className="text-[13px] text-[#e8c472] whitespace-nowrap font-light">✓ อัปโหลดแล้ว</span>}</div>
+          <div className="flex justify-between items-center gap-3"><b className="font-semibold text-[17px]">1. หน้าบัตรประชาชน</b>{!card.file && redo.includes("id_card") ? <span className="text-[13px] text-white bg-[#d93a3a] rounded-full whitespace-nowrap font-semibold" style={{ padding: "2px 10px" }}>ส่งใหม่</span> : cardDone && <span className="text-[13px] text-[#e8c472] whitespace-nowrap font-light">✓ อัปโหลดแล้ว</span>}</div>
           <label className={area} style={{ height: 120, background: "rgba(243,234,217,0.07)" }}>
             {card.url ? <img src={card.url} alt="บัตรประชาชน" className="h-full w-full object-cover" /> : <>{cam}<span className="text-[14px]">แตะเพื่อถ่ายรูป / อัปโหลด</span></>}
             <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => card.pick(e.target.files?.[0])} />
@@ -67,7 +72,7 @@ export function KycForm({ mb, t, hasIdCard }: { mb: string; t: string; hasIdCard
         </div>
 
         <div style={{ ...box, background: "#2c1a1f" }}>
-          <div className="flex justify-between items-center gap-3"><b className="font-semibold text-[17px]">2. เซลฟีถือบัตรคู่กับใบหน้า</b>{selfie.file && <span className="text-[13px] text-[#e8c472] whitespace-nowrap font-light">✓ ถ่ายแล้ว</span>}</div>
+          <div className="flex justify-between items-center gap-3"><b className="font-semibold text-[17px]">2. เซลฟีถือบัตรคู่กับใบหน้า</b>{!selfie.file && redo.includes("selfie") ? <span className="text-[13px] text-white bg-[#d93a3a] rounded-full whitespace-nowrap font-semibold" style={{ padding: "2px 10px" }}>ส่งใหม่</span> : selfieDone && <span className="text-[13px] text-[#e8c472] whitespace-nowrap font-light">✓ ถ่ายแล้ว</span>}</div>
           <label className={area} style={{ height: 150, background: "rgba(243,234,217,0.07)" }}>
             {selfie.url ? <img src={selfie.url} alt="เซลฟีถือบัตร" className="h-full w-full object-cover" /> : <>{cam}<span className="text-[14px]">แตะเพื่อถ่ายรูป</span></>}
             <input type="file" accept="image/jpeg,image/png,image/webp" capture="user" className="sr-only" onChange={(e) => selfie.pick(e.target.files?.[0])} />
@@ -76,7 +81,7 @@ export function KycForm({ mb, t, hasIdCard }: { mb: string; t: string; hasIdCard
         </div>
 
         <div className="md:col-span-2" style={{ ...box, background: "#272013" }}>
-          <div className="flex justify-between items-center gap-3"><b className="font-semibold text-[17px]">3. สำเนาบัตรประชาชน (เซ็นรับรอง)</b>{copy.file && <span className="text-[13px] text-[#e8c472] whitespace-nowrap font-light">✓ อัปโหลดแล้ว</span>}</div>
+          <div className="flex justify-between items-center gap-3"><b className="font-semibold text-[17px]">3. สำเนาบัตรประชาชน (เซ็นรับรอง)</b>{!copy.file && redo.includes("id_copy") ? <span className="text-[13px] text-white bg-[#d93a3a] rounded-full whitespace-nowrap font-semibold" style={{ padding: "2px 10px" }}>ส่งใหม่</span> : copyDone && <span className="text-[13px] text-[#e8c472] whitespace-nowrap font-light">✓ อัปโหลดแล้ว</span>}</div>
           <ol className="m-0 flex flex-col gap-1 text-[14px] leading-[1.6]" style={{ paddingLeft: 20 }}>
             <li>ถ่ายเอกสารหน้าบัตรลงกระดาษ A4</li>
             <li>เขียนกำกับ <b>“ใช้สำหรับสมัครพาร์ทไทม์กับ Mister Bamrungsuk เท่านั้น”</b></li>
@@ -92,7 +97,7 @@ export function KycForm({ mb, t, hasIdCard }: { mb: string; t: string; hasIdCard
       </div>
       <BottomBar>
         {error && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{error}</p>}
-        <button type="button" onClick={submit} disabled={busy} style={{ ...ctaStyle, opacity: busy ? 0.6 : 1 }}>{busy ? "กำลังอัปโหลด…" : "ถัดไป · บัญชีรับเงิน"}</button>
+        <button type="button" onClick={submit} disabled={busy} style={{ ...ctaStyle, opacity: busy ? 0.6 : 1 }}>{busy ? "กำลังอัปโหลด…" : fix ? "ส่งรายการที่แก้ไข" : "ถัดไป · บัญชีรับเงิน"}</button>
       </BottomBar>
     </>
   );

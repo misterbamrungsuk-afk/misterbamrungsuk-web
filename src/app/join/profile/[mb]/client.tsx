@@ -12,6 +12,7 @@ import type { ProfileCard } from "@/lib/join/store";
 export type HubData = {
   mb: string; t: string; nickname: string; fullName: string; statusLine: string; track: string; trackShort: string;
   main: string; photos: string[]; age: number | null; area: string; price: number; tier: "top" | "silver"; verified: boolean;
+  fixes: number;
   steps: { t: string; sub: string; ok: boolean; href: "" | "form" | "form2" | "kyc" | "rejected" }[];
   contractDone: boolean; card: ProfileCard;
 };
@@ -133,19 +134,27 @@ export function ProfileHub({ d }: { d: HubData }) {
               )}
             </div>
 
+            {d.fixes > 0 && (
+              <Link href={href.rejected} className="flex items-center gap-3 rounded-2xl text-[#f3ead9] hover:text-[#f3ead9]" style={{ padding: "14px 16px", background: "rgba(217,58,58,.16)", boxShadow: "inset 0 0 0 1px rgba(255,138,154,.45)" }}>
+                <span aria-hidden="true" className="shrink-0 w-7 h-7 rounded-full bg-[#d93a3a] text-white grid place-items-center font-bold">!</span>
+                <span className="flex-1 min-w-0 flex flex-col leading-[1.4]"><span className="font-semibold text-[15px]">ทีมงานขอให้แก้ไข {d.fixes} รายการ</span><span className="text-[13px] text-[#ffb3bd] font-light">แตะเพื่อดูเหตุผลและแก้ไข</span></span>
+                <span className="text-[#ff8a9a]">›</span>
+              </Link>
+            )}
+
             {/* กรอกรายละเอียดใบสมัคร */}
             <div className="flex flex-col gap-[10px] rounded-2xl bg-[#2c1a1f]" style={{ padding: 14 }}>
               <div className="flex justify-between items-baseline gap-2"><span className="font-semibold text-[16px]">กรอกรายละเอียดใบสมัคร</span><span className="text-[13px] text-[#e8c472] font-light">ครบ {nDone}/4</span></div>
               <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(243,234,217,0.12)" }}><div className="h-full bg-[#e8c472]" style={{ width: `${(nDone / 4) * 100}%` }} /></div>
               {allDone
                 ? <Link href={d.contractDone ? `/join/done/${d.mb}${q}` : `/join/contract/${d.mb}${q}`} className="min-h-[52px] rounded-[14px] bg-[#e8c472] text-[#1b130b] text-[15px] font-semibold grid place-items-center hover:text-[#1b130b]">{d.contractDone ? "ดูใบสมัครที่ส่งแล้ว" : "อ่านสัญญาและส่งใบสมัคร"}</Link>
-                : (() => { const i = d.steps.findIndex((st) => !st.ok && st.href); const nx = d.steps[i]; return <Link href={nx?.href ? href[nx.href] : href.form} className="min-h-[52px] rounded-[14px] bg-[#e8c472] text-[#1b130b] text-[15px] font-semibold grid place-items-center hover:text-[#1b130b]">{`กรอกต่อ · ใบสมัคร ${Math.max(1, i + 1)}/4`}</Link>; })()}
+                : (() => { const i = d.steps.findIndex((st) => !st.ok && st.href); const nx = d.steps[i]; return d.fixes > 0 ? <Link href={href.rejected} className="min-h-[52px] rounded-[14px] bg-[#d93a3a] text-white text-[15px] font-semibold grid place-items-center hover:text-white">แก้ไขตามที่ทีมงานแจ้ง</Link> : <Link href={nx?.href ? href[nx.href] : href.form} className="min-h-[52px] rounded-[14px] bg-[#e8c472] text-[#1b130b] text-[15px] font-semibold grid place-items-center hover:text-[#1b130b]">{`กรอกต่อ · ใบสมัคร ${Math.max(1, i + 1)}/4`}</Link>; })()}
               {d.steps.map((st) => {
                 const inner = (
                   <>
                     <span className="shrink-0 w-[26px] h-[26px] rounded-full grid place-items-center text-[14px] font-bold text-[#1b130b]" style={{ background: st.ok ? GOLD : "transparent", boxShadow: st.ok ? "none" : "inset 0 0 0 1.5px rgba(243,234,217,0.35)" }}>{st.ok ? "✓" : ""}</span>
                     <span className="flex-1 min-w-0 flex flex-col"><span className="text-[15px]">{st.t}</span><span className="text-[13px] text-[#b5a596] font-light">{st.sub}</span></span>
-                    {st.href && <span className="shrink-0 text-[13px] text-[#e8c472] font-light">{st.ok ? "แก้ไข ›" : "กรอก ›"}</span>}
+                    {st.href && <span className="shrink-0 text-[13px] font-light" style={{ color: st.href === "rejected" ? "#ff8a9a" : "#e8c472" }}>{st.ok || st.href === "rejected" ? "แก้ไข ›" : "กรอก ›"}</span>}
                   </>
                 );
                 const cls = "min-h-14 rounded-xl flex items-center gap-3 text-[#f3ead9] hover:text-[#f3ead9]";

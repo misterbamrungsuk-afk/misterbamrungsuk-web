@@ -7,7 +7,7 @@ import type { Applicant as ApplicantBase, ApplicantStatus, CriminalCheck, Extra 
 
 /** แถวที่หน้า page ส่งมา = คอลัมน์ + docs.extra (extraOf) */
 type Applicant = ApplicantBase & Extra;
-import { KycPanel } from "../kyc/kyc-panel";
+import { KYC_LABEL, KycPanel } from "../kyc/kyc-panel";
 
 // ตามบอร์ด AdminApplicants.dc.html (1280px) — ยอดรวมนับเฉพาะผู้สมัครที่ชำระแล้ว (verified)
 const GOLD = "#f0c75a";
@@ -23,18 +23,22 @@ const thTime = (iso: string) => new Date(iso).toLocaleString("th-TH", { timeZone
 const ageOf = (b: string | null) => { if (!b) return null; const d = new Date(b); if (isNaN(+d)) return null; const n = new Date(); let a = n.getFullYear() - d.getFullYear(); if (n < new Date(n.getFullYear(), d.getMonth(), d.getDate())) a--; return a; };
 
 type Pkg = "all" | PackageKey;
-type Filter = ApplicantStatus | "all";
+type Filter = ApplicantStatus | "all" | "todo" | "fix";
+/** รอแอดมิน = สลิปยังไม่ตรวจ หรือเอกสารส่งมารอตรวจ */
+const isTodo = (r: Applicant) => r.status === "pending_slip" || r.kyc_status === "submitted";
+const match = (r: Applicant, f: Filter) => f === "all" ? true : f === "todo" ? isTodo(r) : f === "fix" ? r.kyc_status === "rejected" : r.status === f;
+const FILTERS: [Filter, string][] = [["todo", "รอตรวจ"], ["fix", "ตีกลับ · รอแก้"], ["verified", "ชำระแล้ว"], ["pending_slip", "รอตรวจสลิป"], ["rejected", "ปฏิเสธ"], ["refunded", "คืนเงินแล้ว"], ["all", "ทั้งหมด"]];
 const PKG_TABS: [Pkg, string, string][] = [["all", "ทั้งหมด", "ผู้สมัครทุกสาย"], ["A", "สาย A", PACKAGES.A.name], ["B", "สาย B", PACKAGES.B.name]];
 const PN: Record<Pkg, string> = { all: "ทุกสาย", A: "สาย A", B: "สาย B" };
 const G = (k: PackageKey) => feeBreakdown(k)[0].amount;
 const T = (k: PackageKey) => feeBreakdown(k)[1].amount;
-const GRID = "grid grid-cols-[110px_minmax(0,1.4fr)_100px_90px_120px_100px]";
+const GRID = "grid grid-cols-[110px_minmax(0,1.4fr)_100px_100px_90px_120px_100px]";
 
 export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial: Applicant[]; cohorts: { key: string; name: string }[]; initialPkg: Pkg; note: string }) {
   const router = useRouter();
   const [rows, setRows] = useState(initial);
   const [pkg, setPkg] = useState<Pkg>(initialPkg);
-  const [filter, setFilter] = useState<Filter>("verified");
+  const [filter, setFilter] = useState<Filter>(() => initial.some(isTodo) ? "todo" : "verified");
   const [showDocs, setShowDocs] = useState(false);
   const [msg, setMsg] = useState("");
   const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(""), 2500); };
@@ -47,7 +51,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
   const fx = (k: Pkg, f: (p: PackageKey) => number) => k === "A" ? `A ${nA}×${fmt(f("A"))}` : k === "B" ? `B ${nB}×${fmt(f("B"))}` : `A ${nA}×${fmt(f("A"))} + B ${nB}×${fmt(f("B"))}`;
   const notLine = paid.filter((r) => !r.line_joined).length;
 
-  const shown = useMemo(() => rows.filter((r) => (pkg === "all" || r.package === pkg) && (filter === "all" || r.status === filter)), [rows, pkg, filter]);
+  const shown = useMemo(() => rows.filter((r) => (pkg === "all" || r.package === pkg) && match(r, filter)), [rows, pkg, filter]);
   const [open, setOpen] = useState<string | null>(shown[0]?.id ?? null);
   const sel = (shown.find((r) => r.id === open) ?? shown[0] ?? rows.find((r) => r.id === open)) ?? null;
 
@@ -88,15 +92,21 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
       <div className="flex-1 min-w-0 w-full flex flex-col gap-3.5">
         <div className="flex flex-wrap gap-3 justify-between items-end">
           <div>
-            <div className="text-[11px] tracking-[2.5px] text-[#f0c75a] font-semibold">APPLICANTS · PAID</div>
-            <h1 className="mt-0.5 font-lux font-bold text-2xl">ผู้สมัครที่ชำระแล้ว</h1>
+            <div className="text-[11px] tracking-[2.5px] text-[#f0c75a] font-semibold">APPLICANTS</div>
+            <h1 className="mt-0.5 font-lux font-bold text-2xl">ผู้สมัคร · ตรวจข้อมูลและเอกสาร</h1>
           </div>
           <div className="flex gap-2 items-center">
-            <select value={filter} onChange={(e) => setFilter(e.target.value as Filter)} aria-label="สถานะ" className="h-10 px-3 rounded-full border border-[rgba(240,200,90,.38)] bg-[#0e0a0a] text-[#d3c7bc] text-[13px]">
-              <option value="verified">ชำระแล้ว</option><option value="pending_slip">รอตรวจสลิป</option><option value="rejected">ปฏิเสธ</option><option value="refunded">คืนเงินแล้ว</option><option value="all">ทุกสถานะ</option>
-            </select>
             <button onClick={exportCsv} className="h-10 px-4 rounded-full border border-[rgba(240,200,90,.38)] text-[#d3c7bc] hover:text-[#f6efe4]">ส่งออกไฟล์ Excel / CSV</button>
           </div>
+        </div>
+        <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="สถานะ">
+          {FILTERS.map(([k, l]) => {
+            const on = filter === k;
+            const n = rows.filter((r) => (pkg === "all" || r.package === pkg) && match(r, k)).length;
+            const hot = (k === "todo" || k === "fix") && n > 0;
+            return <button key={k} role="tab" aria-selected={on} onClick={() => setFilter(k)} className="h-9 px-3.5 rounded-full border text-[12.5px] font-semibold flex items-center gap-1.5"
+              style={{ borderColor: on ? GOLD : LINE_BD, background: on ? GOLD : "transparent", color: on ? "#1a1206" : "#d3c7bc" }}>{l}<span className="min-w-5 h-5 px-1.5 rounded-full text-[11px] grid place-items-center" style={{ background: on ? "rgba(26,18,6,.15)" : hot ? (k === "todo" ? "#c8102e" : "rgba(239,68,68,.25)") : "rgba(240,200,90,.14)", color: on ? "#1a1206" : hot ? "#fff" : "#cdbfb3" }}>{n}</span></button>;
+          })}
         </div>
         {note && <p className="rounded-xl border border-[rgba(240,200,90,.3)] px-3 py-2 text-xs text-[#cdbfb3]">{note}</p>}
 
@@ -123,16 +133,17 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
         {msg && <p role="status" className="text-sm text-[#eed58a]">{msg}</p>}
 
         <div className="rounded-2xl border border-[rgba(240,200,90,.38)] overflow-x-auto text-[13px]">
-          <div className="min-w-[640px]">
-            <div className={`${GRID} px-3.5 py-2.5 bg-[#130e0e] text-[#7d6d6a] text-xs`}><span>รหัส MB</span><span>ชื่อ</span><span>สายงาน</span><span>กลุ่ม</span><span>กลุ่ม LINE</span><span>ตรวจประวัติ</span></div>
+          <div className="min-w-[740px]">
+            <div className={`${GRID} px-3.5 py-2.5 bg-[#130e0e] text-[#7d6d6a] text-xs`}><span>รหัส MB</span><span>ชื่อ</span><span>สายงาน</span><span>สลิป · เอกสาร</span><span>กลุ่ม</span><span>กลุ่ม LINE</span><span>ตรวจประวัติ</span></div>
             {shown.map((r) => {
               const c = CRIMINAL[r.criminal_check ?? "pending"];
               return (
                 <button key={r.id} onClick={() => { setOpen(r.id); setShowDocs(false); }} className={`w-full ${GRID} px-3.5 py-[11px] border-t border-[rgba(240,200,90,.38)] text-left items-center`}
                   style={{ background: sel?.id === r.id ? "rgba(240,200,90,.16)" : "transparent" }}>
                   <span className="text-[#ffd76a]">{r.mb_code}</span>
-                  <span className="truncate pr-2">{r.first_name} {r.last_name}{filter === "all" && r.status !== "verified" ? <span className="text-[11px] text-[#7d6d6a]"> · {LABEL[r.status]}</span> : null}</span>
+                  <span className="truncate pr-2">{r.first_name} {r.last_name}</span>
                   <span className="text-[#d3c7bc] pr-1">{r.package} · {fmt(G(r.package))} + {fmt(T(r.package))}</span>
+                  <span className="flex flex-col leading-tight text-[11.5px]"><span style={{ color: r.status === "verified" ? "#4ade80" : r.status === "pending_slip" ? "#eed58a" : "#fca5a5" }}>{LABEL[r.status]}</span><span style={{ color: KYC_LABEL[r.kyc_status ?? "none"][1] }}>{KYC_LABEL[r.kyc_status ?? "none"][0]}</span></span>
                   <span className="text-[#d3c7bc]">{cohortName(r.cohort)}</span>
                   <span style={{ color: r.line_joined ? "#4ade80" : "#eed58a" }}>{r.line_joined ? "✓ เข้ากลุ่มแล้ว" : "ยังไม่เข้า"}</span>
                   <span style={{ color: c[1] }}>{c[0]}</span>
@@ -226,7 +237,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
                 </div>
               </>
             )}
-            {sel.status === "verified" && (
+            {(
               <>
                 <div className="h-px bg-[rgba(240,200,90,.38)]" />
                 <KycPanel key={sel.id} row={sel} onSaved={(row) => setRows((rs) => rs.map((x) => (x.id === row.id ? row : x)))} />
@@ -245,10 +256,12 @@ const SKILL_TH: Record<string, string> = { massage: "นวดผ่อนคล
 function Progress({ r }: { r: Applicant }) {
   const done = new Set(r.form_done ?? []);
   const kyc = r.kyc_status ?? "none";
-  const steps: [string, boolean][] = [["ชำระ", true], ["ข้อมูล", done.has(1)], ["วันเวลา", done.has(2)], ["KYC", kyc !== "none"], ["สัญญา", !!r.contract_accepted_at]];
+  const steps: [string, boolean][] = [["ชำระ", r.status === "verified"], ["ข้อมูล", done.has(1)], ["วันเวลา", done.has(2)], ["เอกสาร", kyc === "approved"], ["สัญญา", !!r.contract_accepted_at]];
+  const nFix = kyc === "rejected" ? Object.keys(r.kyc_reason ?? {}).length : 0;
   return (
     <div className="flex flex-wrap gap-1">
       {steps.map(([t, ok]) => <span key={t} className="text-[11.5px] px-2 py-0.5 rounded-full border" style={{ borderColor: ok ? "rgba(74,222,128,.5)" : LINE_BD, color: ok ? "#4ade80" : "#7d6d6a" }}>{ok ? "✓ " : ""}{t}</span>)}
+      {nFix > 0 && <span className="text-[11.5px] px-2 py-0.5 rounded-full border border-[rgba(239,68,68,.6)] text-[#fca5a5]">! รอแก้ {nFix}</span>}
     </div>
   );
 }

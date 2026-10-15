@@ -287,7 +287,7 @@ export async function updateExtra(id: string, patch: Pick<Extra, "cohort" | "lin
 
 const KYC_EXTRA_KEYS = ["kyc_status", "kyc_reason", "kyc_submitted_at", "bank_book_path"];
 /** เก็บใน docs.extra อย่างเดียว (ไม่มีคอลัมน์) */
-const EXTRA_ONLY_KEYS = ["pt_settings", "post", "listing", "work", "listed", "delete_requested_at", "tier", "bank_consents", "areas", "no_area", "availability", "massage_cert", "ack_hours", "ack_no_refuse", "photos", "card", "form_done"];
+const EXTRA_ONLY_KEYS = ["slip_check", "pt_settings", "post", "listing", "work", "listed", "delete_requested_at", "tier", "bank_consents", "areas", "no_area", "availability", "massage_cert", "ack_hours", "ack_no_refuse", "photos", "card", "form_done"];
 
 /** เขียนคอลัมน์ + docs (path ไฟล์ และ extra สำรอง) — คอลัมน์ 0006 ยังไม่มีก็เขียนเฉพาะคอลัมน์เดิม + docs */
 async function patchApplicant(id: string, allCols: Record<string, unknown>, docPaths: Partial<Record<DocKind, string>> = {}): Promise<Applicant | null> {
@@ -345,16 +345,43 @@ export async function setProfilePhotos(id: string, photos: string[]) {
 }
 
 /** บันทึกบัญชีรับเงิน + ส่ง KYC (kyc_status = submitted) */
-export async function saveBank(id: string, b: { bank: string; bank_account: string; bank_account_name: string; bankbook?: File; consents?: { terms: boolean; pdpa: boolean; profile: boolean; at: string } }) {
+export async function saveBank(id: string, b: { bank: string; bank_account: string; bank_account_name: string; bankbook?: File; consents?: { terms: boolean; pdpa: boolean; profile: boolean; at: string }; otherFixes?: KycReason | null }) {
   const paths: Partial<Record<DocKind, string>> = {};
   if (b.bankbook) paths.bankbook = await putKycFile(id, "bankbook", b.bankbook);
   const cols: Record<string, unknown> = {
     bank: b.bank, bank_account: b.bank_account, bank_account_name: b.bank_account_name,
     kyc_status: "submitted", kyc_reason: null, kyc_submitted_at: new Date().toISOString(),
   };
+  // ถูกตีกลับหลายรายการ → แก้บัญชีแล้วยังเหลือรายการอื่น คงสถานะ "ต้องแก้ไข" ไว้
+  if (b.otherFixes && Object.keys(b.otherFixes).length) { cols.kyc_status = "rejected"; cols.kyc_reason = b.otherFixes; }
   if (paths.bankbook) cols.bank_book_path = paths.bankbook;
   if (b.consents) cols.bank_consents = b.consents;
   return patchApplicant(id, cols, paths);
+}
+
+/** ผู้สมัครแก้รายการที่ถูกตีกลับแล้ว → ลบเหตุผลรายการนั้น · ครบทุกรายการ → กลับเป็นรอตรวจ (มีบัญชีแล้ว) หรือยังไม่ส่ง */
+export async function clearFixes(row: Applicant, keys: string[]) {
+  const x = extraOf(row);
+  if (x.kyc_status !== "rejected" || !x.kyc_reason) return;
+  const rest: KycReason = { ...x.kyc_reason };
+  let changed = false;
+  for (const k of keys) if (k in rest) { delete rest[k]; changed = true; }
+  if (!changed) return;
+  if (Object.keys(rest).length) return patchApplicant(row.id, { kyc_reason: rest });
+  return patchApplicant(row.id, { kyc_status: row.bank_account ? "submitted" : "none", kyc_reason: null, kyc_submitted_at: new Date().toISOString() });
+}
+/** เหตุผลที่ยังค้าง ยกเว้นรายการที่กำลังแก้ */
+export function fixesExcept(row: Applicant, keys: string[]): KycReason | null {
+  const x = extraOf(row);
+  if (x.kyc_status !== "rejected" || !x.kyc_reason) return null;
+  const rest: KycReason = { ...x.kyc_reason };
+  for (const k of keys) delete rest[k];
+  return rest;
+}
+/** ส่งสลิปใหม่ (แอดมินตีกลับสลิป หรือยังรอตรวจ) → กลับเป็นรอตรวจสลิป */
+export async function saveSlip(id: string, f: File, slipCheck: unknown) {
+  const slip = await putKycFile(id, "slip", f);
+  return patchApplicant(id, { status: "pending_slip", slip_check: slipCheck }, { slip });
 }
 
 /** แอดมินตัดสิน KYC */

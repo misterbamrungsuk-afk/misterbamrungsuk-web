@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { extraOf, getById, listApplicants, saveProfile, setKyc, setTier, updateApplicant, updateExtra, type ApplicantStatus, type KycReason } from "@/lib/join/store";
 import { listCohorts } from "@/lib/join/cohorts";
 import { appendToSheet } from "@/lib/join/sheets";
+import { FIX_KEYS } from "@/lib/join/fixes";
 
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, canAccess, verifySession, type AdminRole } from "@/lib/admin-auth";
@@ -14,12 +15,11 @@ async function role(): Promise<AdminRole | null> {
 export const runtime = "nodejs";
 
 const STATUSES: ApplicantStatus[] = ["pending_slip", "verified", "rejected", "refunded"];
-const KYC_ITEMS = ["id_card", "id_copy", "selfie", "cert_doc", "bank"] as const;
 
 type Body = {
   listed?: boolean; status?: ApplicantStatus; sync?: boolean; cohort?: string | null; line_joined?: boolean;
   tier?: "top" | "silver";
-  kyc_status?: "approved" | "rejected"; kyc_reason?: Partial<Record<(typeof KYC_ITEMS)[number], string>> | null;
+  kyc_status?: "approved" | "rejected"; kyc_reason?: Partial<Record<string, string>> | null;
 };
 
 // แอดมินเปลี่ยนสถานะ (ยืนยันสลิป/ปฏิเสธ/คืนเงิน) จัดกลุ่ม/LINE sync ชีต หรือตัดสิน KYC
@@ -29,14 +29,14 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const { id } = await params;
   const body = (await req.json().catch(() => ({}))) as Body;
 
-  // ตัดสิน KYC — ฝ่าย KYC หรือผู้ดูแลผู้สมัคร
+  // ตัดสินเอกสาร: อนุมัติ หรือตีกลับรายการที่ต้องแก้ (สลิป รูป ข้อมูล บัตร บัญชี) — ฝ่าย KYC หรือผู้ดูแลผู้สมัคร
   if (body.kyc_status !== undefined) {
     if (!canAccess(r, "/admin/kyc") && !canAccess(r, "/admin/applicants")) return NextResponse.json({ ok: false }, { status: 401 });
     if (body.kyc_status !== "approved" && body.kyc_status !== "rejected") return NextResponse.json({ ok: false }, { status: 400 });
     let reason: KycReason | null = null;
     if (body.kyc_status === "rejected") {
       reason = {};
-      for (const k of KYC_ITEMS) {
+      for (const k of FIX_KEYS) {
         const v = body.kyc_reason?.[k];
         if (typeof v === "string" && v.trim()) reason[k] = v.trim().slice(0, 300);
       }

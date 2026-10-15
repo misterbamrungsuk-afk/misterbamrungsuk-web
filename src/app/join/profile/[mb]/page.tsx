@@ -5,6 +5,7 @@ import { getEarnings } from "@/lib/join/earnings-settings";
 import { ageFrom } from "@/lib/join/form";
 import { Forbidden } from "../../_kyc/ui";
 import { ProfileHub, type HubData } from "./client";
+import { FIX_ITEMS } from "@/lib/join/fixes";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "โปรไฟล์ของฉัน — Mister Bamrungsuk" };
@@ -22,6 +23,9 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
   const photos = (x.photos ?? []).map(fileUrl);
   const main = photos[0] ?? (row.docs.photo ? fileUrl(row.docs.photo) : "");
   const kyc = x.kyc_status ?? "none";
+  // รายการที่ทีมงานตีกลับ → แจ้งบนโปรไฟล์ + ขั้นที่เกี่ยวข้องยังไม่ครบ
+  const fixes = kyc === "rejected" ? Object.keys(x.kyc_reason ?? {}) : [];
+  const bad = (...go: string[]) => fixes.some((k) => go.includes(FIX_ITEMS.find((i) => i.key === k)?.go ?? ""));
   const cfg = await getEarnings();
   const svc = row.package === "B" ? cfg.price3h.massage : cfg.price3h.eat;
 
@@ -32,12 +36,12 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
     main, photos, age: row.birthdate ? ageFrom(row.birthdate) : null, area: (x.areas ?? [])[0]?.split(" › ").pop() ?? "",
     price: x.tier === "top" ? svc.top : svc.silver, tier: x.tier === "top" ? "top" : "silver", verified: row.status === "verified",
     steps: [
-      { t: "ชำระเงิน", sub: row.status === "verified" ? "ตรวจสลิปแล้ว" : "ส่งสลิปแล้ว · รอทีมงานตรวจ", ok: true, href: "" },
-      { t: "ข้อมูลส่วนตัว", sub: "ชื่อ เบอร์โทร LINE ที่พัก", ok: done.has(1), href: "form" },
-      { t: "วันเวลาที่รับงาน", sub: "วัน ช่วงเวลา ชั่วโมงต่อวัน ประสบการณ์", ok: done.has(2), href: "form2" },
-      { t: "ยืนยันตัวตน + บัญชีรับเงิน", sub: kyc === "rejected" ? "เอกสารต้องแก้ไข" : "บัตรประชาชน เซลฟี่ บัญชีธนาคาร", ok: kyc !== "none" && kyc !== "rejected", href: kyc === "rejected" ? "rejected" : "kyc" },
+      { t: "ชำระเงิน", sub: bad("slip") ? "สลิปต้องส่งใหม่" : row.status === "verified" ? "ตรวจสลิปแล้ว" : "ส่งสลิปแล้ว · รอทีมงานตรวจ", ok: !bad("slip"), href: bad("slip") ? "rejected" : "" },
+      { t: "ข้อมูลส่วนตัว", sub: bad("form") ? "ทีมงานขอให้แก้ไข" : "ชื่อ เบอร์โทร LINE ที่พัก", ok: done.has(1) && !bad("form"), href: bad("form") ? "rejected" : "form" },
+      { t: "วันเวลาที่รับงาน", sub: bad("form2") ? "ทีมงานขอให้แก้ไข" : "วัน ช่วงเวลา ชั่วโมงต่อวัน ประสบการณ์", ok: done.has(2) && !bad("form2"), href: bad("form2") ? "rejected" : "form2" },
+      { t: "ยืนยันตัวตน + บัญชีรับเงิน", sub: bad("kyc", "bank") ? "เอกสารต้องแก้ไข" : "บัตรประชาชน เซลฟี่ บัญชีธนาคาร", ok: kyc !== "none" && !bad("kyc", "bank") && !!row.bank_account, href: bad("kyc", "bank") ? "rejected" : "kyc" },
     ],
-    contractDone: !!row.contract_accepted_at,
+    contractDone: !!row.contract_accepted_at, fixes: fixes.length,
     card: x.card ?? { activities: [], places: [], partner_spas: [], skills: [] },
   };
   return <ProfileHub d={data} />;

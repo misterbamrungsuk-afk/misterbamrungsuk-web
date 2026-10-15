@@ -11,7 +11,7 @@ const GOLD = "#e8c472";
 const lb: React.CSSProperties = { display: "block", fontSize: 13, color: "#f3ead9", marginBottom: 6 };
 const inCls = "w-full min-h-12 rounded-xl bg-[#251d1b] text-[#f3ead9] px-[14px] text-[15px] outline-none border border-transparent focus:border-[#e8c472] placeholder:text-[#b5a596]";
 
-export function BankForm({ mb, t, initial }: { mb: string; t: string; initial: { bank: string; account: string; name: string; hasBook: boolean } }) {
+export function BankForm({ mb, t, initial, fix = false }: { mb: string; t: string; fix?: boolean; initial: { bank: string; account: string; name: string; hasBook: boolean } }) {
   const router = useRouter();
   const [bank, setBank] = useState(ALL_BANKS.includes(initial.bank) ? initial.bank : ALL_BANKS[0]);
   const [account, setAccount] = useState(initial.account);
@@ -45,7 +45,7 @@ export function BankForm({ mb, t, initial }: { mb: string; t: string; initial: {
     fd.set("ck_terms", "true"); fd.set("ck_pdpa", "true"); fd.set("ck_profile", "true");
     const res = await fetch("/api/join/bank", { method: "POST", body: fd }).catch(() => null);
     const data = await res?.json().catch(() => null);
-    if (res?.ok && data?.ok) return router.push(`/join/contract/${mb}${q}`);
+    if (res?.ok && data?.ok) return router.push(fix ? `/join/rejected/${mb}${q}` : `/join/contract/${mb}${q}`);
     setError(data?.error ?? "ส่งไม่สำเร็จ กรุณาลองใหม่"); setBusy(false);
   };
 

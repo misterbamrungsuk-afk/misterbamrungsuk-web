@@ -74,7 +74,7 @@ function Upload({ label, done, onPick, err }: { label: string; done: boolean; on
   );
 }
 
-export function JoinFormClient({ mb, t, pkg, init, step: step0 }: { mb: string; t: string; pkg: PackageKey; init: FormInit; step: 1 | 2 }) {
+export function JoinFormClient({ mb, t, pkg, init, step: step0, fix = false }: { mb: string; t: string; pkg: PackageKey; init: FormInit; step: 1 | 2; fix?: boolean }) {
   const router = useRouter();
   const [f, setF] = useState<JoinForm>({ ...emptyForm, ...init, package: pkg });
   const [step, setStep] = useState<1 | 2>(step0);
@@ -163,6 +163,7 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0 }: { mb: string; 
     const ok = await save();
     setBusy(false);
     if (!ok) return;
+    if (fix) return router.push(`/join/rejected/${mb}${q}`); // มาจากรายการที่ทีมงานตีกลับ → กลับไปดูรายการที่เหลือ
     if (step === 1) return setStep(2);
     router.push(`/join/kyc/${mb}${q}`);
   };

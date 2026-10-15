@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getByMb, saveBank } from "@/lib/join/store";
+import { fixesExcept, getByMb, saveBank } from "@/lib/join/store";
 import { canResume } from "@/lib/join/resume";
 import { ALL_BANKS, PROMPTPAY } from "@/lib/join/banks";
 
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
   if (errors.length) return bad("กรอกข้อมูลไม่ครบหรือไม่ถูกต้อง", 400, errors);
 
   try {
-    await saveBank(row.id, { bank, bank_account: account, bank_account_name: name, bankbook, consents: { terms: true, pdpa: true, profile: true, at: new Date().toISOString() } });
+    await saveBank(row.id, { bank, bank_account: account, bank_account_name: name, bankbook, consents: { terms: true, pdpa: true, profile: true, at: new Date().toISOString() }, otherFixes: fixesExcept(row, ["bank"]) });
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error("bank failed", e);
