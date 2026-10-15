@@ -59,7 +59,7 @@ const filled = (v: string) => (v && !v.startsWith("[") ? v : "");
 
 export function Footer() {
   const email = filled(CONTROLLER.email) || "Misterbamrungsuk@gmail.com";
-  const phone = filled(CONTROLLER.phone) || "082-853-5954";
+  const phone = filled(CONTROLLER.phone);
   return (
     <footer className="mt-12 border-t border-[rgba(243,234,217,0.07)]">
       <Container className="py-6 flex flex-col gap-3 text-[13px] leading-relaxed font-light md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-x-8">
