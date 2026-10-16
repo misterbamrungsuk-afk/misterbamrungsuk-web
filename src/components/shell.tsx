@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/i18n/provider";
 import { Logo } from "./ui";
-import { useMode } from "./mode-switch";
 import type { ReactNode } from "react";
 
 const icons = {
@@ -36,18 +35,10 @@ type Tab = { href: string; key: keyof typeof icons; label: string; center?: bool
 export function TabBar({ unread = 0 }: { unread?: number }) {
   const { t, lang } = useI18n();
   const path = usePathname();
-  const mode = useMode();
   const th = lang === "th";
   // เมนูล่างเปลี่ยนตามโหมด: ลูกค้า / Part-Time
-  const tabs: Tab[] = mode === "provider"
-    ? [
-        { href: "/provider", key: "home", label: th ? "แดชบอร์ด" : "Dashboard", match: /^\/provider$|^\/provider\/(earnings|availability|reviews|strikes|job)/ },
-        { href: "/jobs", key: "jobs", label: th ? "ประกาศงาน" : "Jobs" },
-        { href: "/provider/incoming", key: "incoming", label: th ? "งานเข้า" : "Incoming", center: true },
-        { href: "/chat", key: "chat", label: t.nav.chat, badge: unread },
-        { href: "/provider/settings", key: "profile", label: th ? "ตั้งค่า" : "Settings" },
-      ]
-    : [
+  // โหมด Part-Time เดิมเลิกใช้ (Part-Time ใช้หน้า /join/profile/[mb]) → เมนูลูกค้าเสมอ
+  const tabs: Tab[] = [
         // บอร์ด C-Home: หน้าแรก · แผนที่ · เรียกด่วน (ปุ่มทองกลาง) · แชท · บัญชี
         { href: "/", key: "home", label: "หน้าแรก", match: /^\/$|^\/home$/ },
         { href: "/map", key: "map", label: "แผนที่" },

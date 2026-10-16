@@ -1,100 +1,60 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useI18n } from "@/i18n/provider";
-import { TopBar } from "@/components/shell";
-import { Field, Modal, Toast } from "@/components/ui";
-import { PROVINCES } from "@/lib/categories";
-import { DEMO_ME } from "@/lib/demo-data";
+// บอร์ด C-EditProfile "แก้ไขโปรไฟล์" — ชื่อที่แสดง · เบอร์ (แสดงอย่างเดียว · เพื่อนไม่เห็น) · อีเมล · ผู้ติดต่อฉุกเฉิน
+import { useEffect, useState } from "react";
+import Link from "next/link";
+
+const GOLD = "#e8c472";
+const LN = "rgba(243,234,217,0.07)";
+const inp = "h-12 w-full rounded-[14px] bg-[#211a18] px-[14px] text-[16px] text-[#f3ead9] outline-none placeholder:text-[#b5a596]";
+const REL = ["พ่อ", "แม่", "พี่", "น้อง", "แฟน", "เพื่อน", "อื่น ๆ"];
 
 export default function EditProfilePage() {
-  const { t, lang } = useI18n();
-  const router = useRouter();
-  const [name, setName] = useState(DEMO_ME.name);
-  const [gender, setGender] = useState<"male" | "female" | "other">("male");
-  const [age, setAge] = useState(String(DEMO_ME.age ?? ""));
-  const [province, setProvince] = useState(DEMO_ME.province ?? "กรุงเทพมหานคร");
-  const [avatarUrl, setAvatarUrl] = useState(DEMO_ME.avatar);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleteText, setDeleteText] = useState("");
-  const [saved, setSaved] = useState(false);
-
-  const avatarPool = [...new Set([
-    DEMO_ME.avatar,
-    "https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&w=400&q=70&crop=faces",
-    "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=70&crop=faces",
-    "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=400&q=70&crop=faces",
-  ])];
-
-  function save() {
-    // demo: บันทึก local (โหมดจริง: PATCH /api/member)
-    setSaved(true);
-    setTimeout(() => router.push("/profile"), 900);
-  }
-
+  const [f, setF] = useState({ name: "", phone: "", email: "", ecName: "", ecTel: "", ecRel: "เพื่อน" });
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; t: string } | null>(null);
+  useEffect(() => {
+    fetch("/api/me", { cache: "no-store" }).then((r) => r.json()).then((d) => {
+      if (!d?.ok) return;
+      const p = d.profile;
+      setF({ name: p.name ?? "", phone: p.phone ?? "", email: p.email ?? "", ecName: p.emergency?.name ?? "", ecTel: p.emergency?.tel ?? "", ecRel: p.emergency?.relation || "เพื่อน" });
+    }).catch(() => {});
+  }, []);
+  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => { setF({ ...f, [k]: e.target.value }); setMsg(null); };
+  const save = async () => {
+    setBusy(true);
+    const body: Record<string, unknown> = { name: f.name };
+    if (f.ecName || f.ecTel) body.emergency = { name: f.ecName, tel: f.ecTel, relation: f.ecRel };
+    const r = await fetch("/api/me", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).catch(() => null);
+    const d = await r?.json().catch(() => null);
+    setBusy(false);
+    setMsg(d?.ok ? { ok: true, t: "บันทึกแล้ว" } : { ok: false, t: d?.error || "บันทึกไม่สำเร็จ" });
+  };
   return (
-    <>
-      <TopBar back="/profile" title={`✏️ ${t.profileInfo}`} />
-      <div className="px-4 py-4">
-        <Field label={lang === "th" ? "รูปโปรไฟล์" : "Avatar"}>
-          <div className="flex gap-3 flex-wrap">
-            {avatarPool.map((u) => (
-              <button key={u} onClick={() => setAvatarUrl(u)}
-                className={`w-16 h-16 rounded-full overflow-hidden border-2 transition ${avatarUrl === u ? "border-crimson-500 scale-105" : "border-ink-600"}`}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={u} alt="" className="w-full h-full object-cover" />
-              </button>
-            ))}
-          </div>
-        </Field>
-
-        <Field label={lang === "th" ? "ชื่อที่แสดง" : "Display name"}>
-          <input value={name} onChange={(e) => setName(e.target.value)} className="input-dark" />
-        </Field>
-
-        <Field label={t.gender}>
-          <div className="flex gap-2">
-            {([["male", lang === "th" ? "ชาย" : "Male"], ["female", lang === "th" ? "หญิง" : "Female"], ["other", lang === "th" ? "อื่นๆ" : "Other"]] as const).map(([v, l]) => (
-              <button key={v} onClick={() => setGender(v)} className={`chip flex-1 text-center py-2 ${gender === v ? "chip-red" : ""}`}>{l}</button>
-            ))}
-          </div>
-        </Field>
-
-        <div className="grid grid-cols-2 gap-2">
-          <Field label={lang === "th" ? "อายุ" : "Age"}>
-            <input type="number" min={18} max={99} value={age} onChange={(e) => setAge(e.target.value)} className="input-dark" />
-          </Field>
-          <Field label={t.province}>
-            <select value={province} onChange={(e) => setProvince(e.target.value)} className="input-dark">
-              {PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
-            </select>
-          </Field>
-        </div>
-
-        <button onClick={save} disabled={!name.trim()} className="btn-crimson w-full rounded-xl py-3.5 font-semibold">{t.save}</button>
-
-        <button onClick={() => setDeleteOpen(true)} className="w-full mt-6 text-sm text-crimson-300/80 hover:text-crimson-300 underline underline-offset-4">
-          🗑 {t.deleteAccount}
-        </button>
+    <div className="min-h-dvh pb-[110px]">
+      <div className="flex items-center gap-[10px]" style={{ padding: 16 }}>
+        <Link href="/profile" aria-label="ย้อนกลับ" className="w-[42px] h-[42px] rounded-full grid place-items-center text-[#f3ead9] hover:text-[#f3ead9]" style={{ border: `1px solid ${LN}` }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg></Link>
+        <h1 className="m-0 font-semibold text-[19px]">แก้ไขโปรไฟล์</h1>
       </div>
-
-      {/* delete account */}
-      <Modal open={deleteOpen} onClose={() => setDeleteOpen(false)} title={`🗑 ${t.deleteAccount}`}>
-        <p className="text-sm text-ink-300">{t.deleteAccountConfirm}</p>
-        <p className="text-xs text-ink-500 mt-2">{lang === "th" ? "พิมพ์ DELETE เพื่อยืนยัน" : "Type DELETE to confirm"}</p>
-        <input value={deleteText} onChange={(e) => setDeleteText(e.target.value)} className="input-dark mt-2" placeholder="DELETE" />
-        <div className="flex gap-2 mt-4">
-          <button onClick={() => setDeleteOpen(false)} className="btn-ghost rounded-xl flex-1 py-2.5 text-sm">{t.cancel}</button>
-          <button
-            disabled={deleteText !== "DELETE"}
-            onClick={() => { router.push("/login"); }}
-            className="btn-crimson rounded-xl flex-1 py-2.5 text-sm font-semibold disabled:opacity-50"
-          >{t.delete}</button>
+      <div className="flex flex-col gap-[14px]" style={{ padding: "0 16px" }}>
+        <div className="flex items-center gap-[14px]"><div className="w-[68px] h-[68px] rounded-full grid place-items-center text-[28px]" style={{ border: `1px solid ${GOLD}`, color: GOLD }}>{(f.name || f.email || "?").slice(0, 1)}</div></div>
+        <label className="flex flex-col gap-1.5"><span className="text-[13px] text-[#d9c9b4]">ชื่อที่แสดง</span><input value={f.name} onChange={set("name")} maxLength={60} className={inp} style={{ border: `1px solid ${LN}` }} /></label>
+        <label className="flex flex-col gap-1.5"><span className="text-[13px] text-[#d9c9b4]">เบอร์โทร (เพื่อนจะไม่เห็นเบอร์คุณ)</span><input value={f.phone} readOnly className={`${inp} opacity-70`} style={{ border: `1px solid ${LN}` }} /></label>
+        <label className="flex flex-col gap-1.5"><span className="text-[13px] text-[#d9c9b4]">อีเมล</span><input value={f.email} readOnly className={`${inp} opacity-70`} style={{ border: `1px solid ${LN}` }} /></label>
+        <div className="flex flex-col gap-[10px] rounded-[18px]" style={{ marginTop: 6, padding: 16, border: "1px solid #c9283d", background: "rgba(224,36,60,.05)" }}>
+          <div className="flex gap-2 items-center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF8A97" strokeWidth="1.8" aria-hidden="true"><path d="M12 3 2 20h20zM12 10v4M12 17h0" /></svg><b className="font-medium">ผู้ติดต่อฉุกเฉิน</b></div>
+          <div className="text-[12px] font-light text-[#d9c9b4]">เมื่อคุณกด SOS ทีมงานจะติดต่อคนนี้พร้อมตำแหน่งของคุณ</div>
+          <input value={f.ecName} onChange={set("ecName")} maxLength={60} placeholder="ชื่อผู้ติดต่อฉุกเฉิน" className={inp} style={{ border: `1px solid ${LN}`, background: "#251d1b" }} />
+          <div className="flex gap-2">
+            <input value={f.ecTel} onChange={set("ecTel")} inputMode="tel" maxLength={12} placeholder="เบอร์ผู้ติดต่อ" className={inp} style={{ border: `1px solid ${LN}`, background: "#251d1b", flex: 1.4 }} />
+            <select value={f.ecRel} onChange={set("ecRel")} aria-label="ความสัมพันธ์" className={inp} style={{ border: `1px solid ${LN}`, background: "#251d1b", flex: 1 }}>{REL.map((r) => <option key={r}>{r}</option>)}</select>
+          </div>
         </div>
-      </Modal>
-
-      <Toast show={saved}>{lang === "th" ? "บันทึกแล้ว ✓" : "Saved ✓"}</Toast>
-    </>
+        {msg && <p role="status" className="m-0 text-[13px]" style={{ color: msg.ok ? "#7fd6a3" : "#ff8a9a" }}>{msg.t}</p>}
+      </div>
+      <div className="fixed left-0 right-0 bottom-0 mx-auto max-w-[480px] z-40" style={{ padding: "12px 16px calc(96px + env(safe-area-inset-bottom))" }}>
+        <button type="button" disabled={busy} onClick={save} className="w-full h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[17px] disabled:opacity-50">{busy ? "กำลังบันทึก…" : "บันทึก"}</button>
+      </div>
+    </div>
   );
 }

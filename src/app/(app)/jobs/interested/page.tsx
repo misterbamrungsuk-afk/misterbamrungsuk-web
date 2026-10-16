@@ -1,63 +1,51 @@
-"use client";
-
-import { useState } from "react";
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import { useI18n } from "@/i18n/provider";
-import { TopBar } from "@/components/shell";
-import { Stars, VerifiedBadge, baht, EmptyState } from "@/components/ui";
-import { DEMO_JOBS, DEMO_MEMBERS } from "@/lib/demo-data";
+import { notFound, redirect } from "next/navigation";
+import { currentCustomer } from "@/lib/customer/auth";
+import { interestsFor, listMine } from "@/lib/posts";
+import { getLivePeople, publicId } from "@/lib/home/live";
+import { priceOf } from "@/lib/home/people";
+import { ClosePost } from "./close";
 
-export default function InterestedListPage() {
-  const { t, lang } = useI18n();
-  const myJobs = DEMO_JOBS.filter((j) => j.owner.id === "me" || j.role === "provider");
-  const [activeJob, setActiveJob] = useState(myJobs[0]?.id ?? "");
-  const job = myJobs.find((j) => j.id === activeJob);
+export const dynamic = "force-dynamic";
+export const metadata = { title: "คนที่สนใจ — Mister Bamrungsuk" };
 
-  // จำลองรายชื่อผู้สนใจ (โหมดจริง: JobInterest ต่อ job)
-  const interestedPeople = [
-    { member: DEMO_MEMBERS[0], at: "12:04", msg: lang === "th" ? "สนใจครับ ไปได้เลย" : "Interested!" },
-    { member: DEMO_MEMBERS[3], at: "12:31", msg: lang === "th" ? "ว่างตรงเวลานี้ค่ะ 🙌" : "Free at that time 🙌" },
-    { member: DEMO_MEMBERS[7], at: "13:15", msg: lang === "th" ? "พร้อมเสมอครับ" : "Always ready" },
-  ];
+const GOLD = "#e8c472";
 
+// บอร์ด C-JobInterested "คนที่สนใจ" — เลือกเพื่อนแล้วไปหน้าจองตามปกติ · ปิดโพสต์ได้ทุกเมื่อ
+export default async function InterestedPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+  const me = await currentCustomer();
+  if (!me) redirect("/login");
+  const { id } = await searchParams;
+  const post = (await listMine(me.sub).catch(() => [])).find((p) => p.id === id);
+  if (!post) notFound();
+  const [ints, people] = await Promise.all([interestsFor([post.id]).catch(() => []), getLivePeople().catch(() => [])]);
+  const list = ints.map((i) => ({ i, p: people.find((x) => x.id === publicId(i.parttime_mb)) })).filter((r) => r.p);
+  const open = post.status === "open" && Date.parse(post.expires_at) > Date.now();
+  const left = Math.max(0, Math.round((Date.parse(post.expires_at) - Date.now()) / 3600_000));
   return (
-    <>
-      <TopBar back="/jobs" title={`❤️ ${t.interestedCount}`} />
-      <div className="px-4 pt-4 flex gap-2 overflow-x-auto no-scrollbar">
-        {myJobs.map((j) => (
-          <button key={j.id} onClick={() => setActiveJob(j.id)} className={`chip whitespace-nowrap ${activeJob === j.id ? "chip-red" : ""}`}>
-            {j.title.slice(0, 18)}…
-          </button>
-        ))}
-      </div>
-
-      {job && (
-        <div className="px-4 py-3">
-          <div className="glass rounded-2xl p-4">
-            <p className="font-semibold">{job.title} <span className="text-gold-400">({job.durationHours}{t.hoursUnit})</span></p>
-            <p className="text-xs text-ink-400 mt-1">📍 {job.placeName} · 📅 {job.scheduleDate.slice(0, 10)} · {job.startTime}–{job.endTime} · {baht(job.budget)}</p>
-          </div>
+    <div className="min-h-dvh pb-[110px]">
+      <header className="flex items-center gap-3 h-[68px] px-4" style={{ background: "#251d1b" }}>
+        <Link href="/jobs" aria-label="ย้อนกลับ" className="w-11 h-11 rounded-full bg-[#211a18] grid place-items-center text-[#f3ead9] hover:text-[#f3ead9]"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg></Link>
+        <h1 className="m-0 flex-1 font-semibold text-[18px]">คนที่สนใจ · {list.length} คน</h1>
+      </header>
+      <main className="flex flex-col gap-4" style={{ padding: "20px 16px 0" }}>
+        <div className="rounded-2xl bg-[#211a18]" style={{ padding: 16 }}>
+          <div className="flex justify-between items-center gap-3"><span className="font-semibold">{post.activity} · {new Date(post.starts_at).toLocaleString("th-TH", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {post.hours} ชม.</span>
+            <span className="text-[12px] font-semibold rounded-full shrink-0" style={{ padding: "2px 10px", background: open ? "rgba(29,159,77,.14)" : "rgba(243,234,217,.07)", color: open ? "#7fd6a3" : "#b5a596" }}>{open ? `เปิดอยู่ · ${left} ชม.` : "ปิดแล้ว"}</span></div>
+          <div className="text-[13px] font-light text-[#d9c9b4]">{post.area}{post.note ? ` · ${post.note}` : ""}</div>
         </div>
-      )}
-
-      <div className="px-4 grid gap-2 pb-4">
-        {interestedPeople.length === 0 && <EmptyState icon="❤️" title={t.empty} />}
-        {interestedPeople.map(({ member, at, msg }) => (
-          <div key={member.id} className="glass glass-hover rounded-2xl p-4 flex items-center gap-3 animate-rise">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={member.avatar} alt="" className="w-12 h-12 rounded-full bg-ink-700 object-cover" />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="font-semibold truncate">{member.name}</p>
-                {member.kycVerified && <VerifiedBadge label={t.verified} />}
-              </div>
-              <Stars value={4.8} />
-              <p className="text-xs text-ink-400 truncate mt-0.5">💬 {msg} · {at}</p>
-            </div>
-            <Link href="/chat/room1" className="btn-crimson rounded-xl px-4 py-2 text-sm font-semibold">{t.chat}</Link>
+        {!list.length && <p className="m-0 text-center text-[14px] text-[#d9c9b4]" style={{ padding: 20 }}>{open ? "ยังไม่มีเพื่อนกดสนใจ · เราแจ้งเตือนคุณทันทีเมื่อมีคนสนใจ" : "โพสต์นี้ปิดแล้ว"}</p>}
+        {list.map(({ i, p }) => (
+          <div key={i.parttime_id} className="rounded-2xl bg-[#211a18] flex gap-3 items-center" style={{ padding: 16 }}>
+            <img src={p!.img} alt="" className="w-16 h-20 rounded-xl object-cover" style={{ objectPosition: p!.pos }} />
+            <div className="flex-1 min-w-0"><div className="font-semibold">{p!.nick} <span className="text-[12px] font-light text-[#b5a596]">★ {p!.rating}</span></div>{i.message && <div className="text-[13px] font-light text-[#d9c9b4]">{i.message}</div>}<div className="font-semibold" style={{ color: GOLD }}>฿{priceOf(p!).toLocaleString("en-US")} / 3 ชม.</div></div>
+            <Link href={`/book/${p!.id}`} className="min-h-10 px-[14px] rounded-full text-[13px] font-semibold grid place-items-center hover:text-[#e8c472]" style={{ background: "rgba(232,196,114,0.14)", color: GOLD }}>จอง</Link>
           </div>
         ))}
-      </div>
-    </>
+        <div className="text-center text-[12px] font-light text-[#b5a596]">เลือกเพื่อนแล้วไปหน้าจองตามปกติ · ปิดโพสต์ได้ทุกเมื่อ</div>
+        {open && <ClosePost id={post.id} />}
+      </main>
+    </div>
   );
 }

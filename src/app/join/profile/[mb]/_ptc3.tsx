@@ -127,3 +127,39 @@ export function PtChat({ mb, t, id }: { mb: string; t: string; id: string }) {
     </div>
   );
 }
+
+type JP = { id: string; activity: string; starts_at: string; hours: number; area: string; note: string | null; expires_at: string; interested: boolean };
+/** โพสต์หาเพื่อนของลูกค้า (บอร์ด C-JobPost) — Part-Time กดสนใจพร้อมข้อความสั้น ๆ */
+export function PtPosts({ mb, t }: { mb: string; t: string }) {
+  const [rows, setRows] = useState<JP[] | null>(null);
+  const [msg, setMsg] = useState<Record<string, string>>({});
+  const [busy, setBusy] = useState("");
+  const [err, setErr] = useState("");
+  const load = useCallback(() => fetch(`/api/pt/posts?${q(mb, t)}`, { cache: "no-store" }).then((r) => r.json()).then((d) => setRows(d?.ok ? d.posts : [])).catch(() => setRows([])), [mb, t]);
+  useEffect(() => { load(); }, [load]);
+  const interest = async (id: string) => {
+    setBusy(id); setErr("");
+    const r = await fetch("/api/pt/posts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mb, t, post_id: id, message: msg[id] ?? "" }) }).catch(() => null);
+    const d = await r?.json().catch(() => null);
+    setBusy("");
+    if (!d?.ok) setErr(d?.error || "ส่งไม่สำเร็จ");
+    load();
+  };
+  if (!rows?.length) return null;
+  return (
+    <section className="flex flex-col gap-3 px-4 pb-4">
+      <div className="flex justify-between items-baseline"><h2 className="m-0 text-[18px] font-medium">ลูกค้าโพสต์หาเพื่อน</h2><span className="text-[13px] font-light" style={{ color: GOLD }}>{rows.length} โพสต์</span></div>
+      {err && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{err}</p>}
+      {rows.map((p) => (
+        <div key={p.id} className="rounded-[20px] bg-[#211a18] flex flex-col gap-2 text-[14px]" style={{ padding: 14, border: `1px solid ${LN}` }}>
+          <b className="font-semibold">{p.activity} · {fmt(p.starts_at)} · {p.hours} ชม.</b>
+          <span className="text-[13px] font-light text-[#d9c9b4]">{p.area}{p.note ? ` · ${p.note}` : ""}</span>
+          {p.interested ? <span className="text-[13px] font-semibold text-[#7fd6a3]">ส่งความสนใจแล้ว · รอลูกค้าเลือก</span> : <>
+            <input value={msg[p.id] ?? ""} onChange={(e) => setMsg({ ...msg, [p.id]: e.target.value })} maxLength={120} placeholder="แนะนำตัวสั้น ๆ (ห้ามใส่ช่องทางติดต่อ)" className="h-11 rounded-xl bg-[#251d1b] px-3 text-[15px] text-[#f3ead9] outline-none placeholder:text-[#b5a596]" />
+            <button type="button" disabled={busy === p.id} onClick={() => interest(p.id)} className="h-11 rounded-xl bg-[#e8c472] text-[#1b130b] font-semibold disabled:opacity-50">{busy === p.id ? "กำลังส่ง…" : "สนใจ"}</button>
+          </>}
+        </div>
+      ))}
+    </section>
+  );
+}

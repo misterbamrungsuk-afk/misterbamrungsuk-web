@@ -1,99 +1,40 @@
-"use client";
-
-import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useI18n } from "@/i18n/provider";
+import { redirect } from "next/navigation";
 import { TopBar } from "@/components/shell";
-import JobCard from "@/components/job-card";
-import { Sheet, Field, EmptyState } from "@/components/ui";
-import { PROVINCES } from "@/lib/categories";
-import { DEMO_JOBS } from "@/lib/demo-data";
+import { currentCustomer } from "@/lib/customer/auth";
+import { interestsFor, listMine } from "@/lib/posts";
 
-export default function JobsPage() {
-  const { t, lang } = useI18n();
-  const [tab, setTab] = useState<"all" | "interested">("all");
-  const [role, setRole] = useState("");
-  const [province, setProvince] = useState("");
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [locating, setLocating] = useState(false);
+export const dynamic = "force-dynamic";
+export const metadata = { title: "โพสต์หาเพื่อน — Mister Bamrungsuk" };
 
-  const jobs = useMemo(() => {
-    let list = [...DEMO_JOBS];
-    if (role) list = list.filter((j) => j.role === role);
-    if (province) list = list.filter((j) => j.province === province);
-    if (tab === "interested") list = list.filter((j) => j.isInterested);
-    return list;
-  }, [role, province, tab]);
+const GOLD = "#e8c472";
+const LN = "rgba(243,234,217,0.07)";
 
-  function useMyLocation() {
-    if (!navigator.geolocation) return;
-    setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        // จำลอง reverse-geocode: กรุงเทพ (โหมดจริงต่อ API /api/location)
-        setProvince("กรุงเทพมหานคร");
-        setLocating(false);
-      },
-      () => setLocating(false),
-      { timeout: 5000 }
-    );
-  }
-
+// โพสต์หาเพื่อนของฉัน → แตะดูคนที่สนใจ (บอร์ด C-JobInterested) · + โพสต์ใหม่ (C-JobPost)
+export default async function MyPostsPage() {
+  const me = await currentCustomer();
+  if (!me) redirect("/login");
+  const posts = await listMine(me.sub).catch(() => []);
+  const ints = await interestsFor(posts.map((p) => p.id)).catch(() => []);
   return (
-    <>
-      <TopBar
-        title={
-          <div>
-            <p className="text-[11px] text-gold-400 tracking-widest font-semibold uppercase">{lang === "th" ? "หาผู้ให้บริการ / หางาน" : "Find companions"}</p>
-            <h1 className="font-semibold -mt-0.5">{t.jobsTitle}</h1>
-          </div>
-        }
-        right={<Link href="/jobs/create" className="btn-crimson rounded-full px-3.5 py-1.5 text-xs font-bold">＋ {t.createJob}</Link>}
-      />
-
-      <div className="px-4 pt-4 space-y-3">
-        <div className="flex gap-2">
-          <button onClick={() => setFilterOpen(true)} className="btn-ghost rounded-xl px-4 text-sm flex-1 text-left">
-            📍 {province || t.bkkMetro} ▾
-          </button>
-          <button onClick={useMyLocation} className="btn-ghost rounded-xl px-4 text-sm" disabled={locating}>
-            {locating ? "…" : "🧭"}
-          </button>
-        </div>
-
-        <div className="flex gap-2">
-          {[{ v: "", l: lang === "th" ? "ทุกบทบาท" : "All" }, { v: "hirer", l: t.roleHirer }, { v: "provider", l: t.roleProvider }].map((r) => (
-            <button key={r.v} onClick={() => setRole(r.v)} className={`chip flex-1 text-center ${role === r.v ? "chip-red" : ""}`}>{r.l}</button>
-          ))}
-        </div>
-
-        <div className="glass rounded-xl p-1 flex">
-          {(["all", "interested"] as const).map((k) => (
-            <button key={k} onClick={() => setTab(k)}
-              className={`flex-1 py-2 rounded-lg text-sm font-medium transition ${tab === k ? "btn-crimson" : "text-ink-300"}`}>
-              {k === "all" ? t.allJobs : `❤️ ${t.interestedJobs}`}
-            </button>
-          ))}
-        </div>
+    <div className="pb-6">
+      <TopBar back="/profile" title="โพสต์หาเพื่อน" />
+      <div className="flex flex-col gap-3" style={{ padding: "16px 16px 0" }}>
+        <Link href="/jobs/create" className="h-[52px] rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold grid place-items-center hover:text-[#1b130b]">+ โพสต์ใหม่</Link>
+        {!posts.length && <div className="rounded-2xl bg-[#211a18] text-center text-[14px] text-[#d9c9b4]" style={{ padding: 24, border: `1px solid ${LN}` }}>บอกสิ่งที่อยากทำ เพื่อนที่ว่างจะกดสนใจ แล้วคุณเลือกคนที่ชอบได้</div>}
+        {posts.map((p) => {
+          const open = p.status === "open" && Date.parse(p.expires_at) > Date.now();
+          const n = ints.filter((i) => i.post_id === p.id).length;
+          return (
+            <Link key={p.id} href={`/jobs/interested?id=${p.id}`} className="rounded-2xl bg-[#211a18] flex flex-col gap-1 text-[#f3ead9] hover:text-[#f3ead9]" style={{ padding: 16, border: `1px solid ${LN}` }}>
+              <div className="flex justify-between items-center gap-2"><span className="font-semibold">{p.activity} · {new Date(p.starts_at).toLocaleString("th-TH", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {p.hours} ชม.</span>
+                <span className="text-[12px] font-semibold rounded-full shrink-0" style={{ padding: "2px 10px", background: open ? "rgba(29,159,77,.14)" : "rgba(243,234,217,.07)", color: open ? "#7fd6a3" : "#b5a596" }}>{open ? "เปิดอยู่" : "ปิดแล้ว"}</span></div>
+              <div className="text-[13px] font-light text-[#d9c9b4]">{p.area}</div>
+              <div className="text-[13px] font-semibold" style={{ color: GOLD }}>คนที่สนใจ {n} คน ›</div>
+            </Link>
+          );
+        })}
       </div>
-
-      <div className="px-4 grid gap-4 py-4">
-        {jobs.length === 0 ? (
-          <EmptyState icon="💼" title={t.empty} sub={lang === "th" ? "ลองเปลี่ยนตัวกรองดู" : "Try changing filters"} />
-        ) : (
-          jobs.map((j) => <JobCard key={j.id} job={j} />)
-        )}
-      </div>
-
-      <Sheet open={filterOpen} onClose={() => setFilterOpen(false)} title={t.province}>
-        <Field label={t.province}>
-          <select value={province} onChange={(e) => setProvince(e.target.value)} className="input-dark">
-            <option value="">{t.bkkMetro}</option>
-            {PROVINCES.map((p) => <option key={p} value={p}>{p}</option>)}
-          </select>
-        </Field>
-        <button onClick={() => { setProvince(""); setFilterOpen(false); }} className="btn-ghost rounded-xl w-full py-2.5 text-sm">{t.reset}</button>
-      </Sheet>
-    </>
+    </div>
   );
 }

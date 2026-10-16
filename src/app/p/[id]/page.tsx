@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { personById } from "@/lib/home/people";
-import { getLivePeople } from "@/lib/home/live";
+import { getLiveApplicants, getLivePeople, publicId } from "@/lib/home/live";
+import { reviewsFor } from "@/lib/bookings/day";
 import { ProfileView } from "./view";
 
 export const dynamic = "force-dynamic";
@@ -18,5 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function PersonPage({ params }: { params: Promise<{ id: string }> }) {
   const p = await find((await params).id);
   if (!p) notFound();
-  return <ProfileView p={p} />;
+  const a = p.real ? (await getLiveApplicants().catch(() => [])).find((x) => publicId(x.mb_code) === p.id) : null;
+  const reviews = a ? (await reviewsFor(a.id).catch(() => [])).map((r) => ({ rating: r.rating, tags: r.tags, body: r.body, created_at: r.created_at })) : [];
+  return <ProfileView p={p} reviews={reviews} />;
 }

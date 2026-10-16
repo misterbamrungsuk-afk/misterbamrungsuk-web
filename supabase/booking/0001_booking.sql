@@ -108,3 +108,33 @@ alter table public.bookings enable row level security;
 alter table public.booking_events enable row level security;
 alter table public.messages enable row level security;
 alter table public.notifications enable row level security;
+
+-- ข้อมูลเสริมลูกค้า (บอร์ด C-EditProfile / C-Favorites / C-DeleteAccount)
+alter table public.customers add column if not exists emergency jsonb;
+alter table public.customers add column if not exists favorites text[] not null default '{}';
+alter table public.customers add column if not exists delete_requested_at timestamptz;
+
+-- โพสต์หาเพื่อนของลูกค้า (บอร์ด C-JobPost / C-JobInterested) — เปิด 24 ชม. · Part-Time กดสนใจ · ลูกค้าเลือกแล้วไปจองตามปกติ
+create table if not exists public.customer_posts (
+  id uuid primary key default gen_random_uuid(),
+  customer_id text not null,
+  activity text not null,
+  starts_at timestamptz not null,
+  hours int not null check (hours in (3, 5)),
+  area text not null,
+  note text,
+  status text not null default 'open' check (status in ('open','closed')),
+  expires_at timestamptz not null,
+  created_at timestamptz not null default now()
+);
+create index if not exists customer_posts_open on public.customer_posts(status, expires_at);
+create table if not exists public.post_interests (
+  post_id uuid not null references public.customer_posts(id),
+  parttime_id uuid not null,
+  parttime_mb text not null,
+  message text,
+  created_at timestamptz not null default now(),
+  primary key (post_id, parttime_id)
+);
+alter table public.customer_posts enable row level security;
+alter table public.post_interests enable row level security;

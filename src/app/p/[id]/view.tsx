@@ -3,7 +3,8 @@
 
 // บอร์ด C-Profile — รูปใหญ่ · ชื่อ + ยืนยันตัวตน · สถิติ 4 ช่อง · เกี่ยวกับ · เลือกบริการ 3/5 ชม. · รีวิว · แถบล่าง (แชท / จองเลย)
 // จอคอม (lg): รูปซ้ายติดจอ · ข้อมูลขวา
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { priceOf, type Act, type Person } from "@/lib/home/people";
 
@@ -11,9 +12,19 @@ const LABEL: Record<Act, string> = { eat: "กิน & เที่ยว", mass
 const baht = (n: number) => "฿" + n.toLocaleString("en-US");
 const line = "1px solid rgba(243,234,217,0.07)";
 
-export function ProfileView({ p }: { p: Person }) {
+export type Rv = { rating: number; tags: string[]; body: string | null; created_at: string };
+export function ProfileView({ p, reviews = [] }: { p: Person; reviews?: Rv[] }) {
+  const avg = reviews.length ? (reviews.reduce((t, r) => t + r.rating, 0) / reviews.length).toFixed(1) : null;
   const [svc, setSvc] = useState<3 | 5>(3);
   const [fav, setFav] = useState(false);
+  const router = useRouter();
+  // หัวใจ = บันทึกเพื่อนที่ถูกใจในบัญชี (ยังไม่ล็อกอิน → หน้าเข้าสู่ระบบ)
+  useEffect(() => { fetch("/api/me", { cache: "no-store" }).then((r) => r.json()).then((d) => d?.ok && setFav(d.profile.favorites.includes(p.id))).catch(() => {}); }, [p.id]);
+  const toggleFav = async () => {
+    const next = !fav; setFav(next);
+    const r = await fetch("/api/me", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ favorite: p.id, on: next }) }).catch(() => null);
+    if (r?.status === 401) { setFav(!next); router.push("/login"); }
+  };
   const [pic, setPic] = useState(0);
   const pics = p.real && p.photos ? Array.from({ length: p.photos }, (_, i) => `/api/public/pt-photo?id=${p.id}&i=${i}`) : [p.img];
   const price = { 3: priceOf(p), 5: Math.round(priceOf(p) * 1.5) };
@@ -31,7 +42,7 @@ export function ProfileView({ p }: { p: Person }) {
           <Link href="/" aria-label="ย้อนกลับ" className={`absolute top-[14px] left-[14px] ${round} text-[#f3ead9] hover:text-[#f3ead9]`} style={glass}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
           </Link>
-          <button type="button" onClick={() => setFav(!fav)} aria-pressed={fav} aria-label="บันทึกเป็นคนโปรด" className={`absolute top-[14px] right-[14px] ${round}`} style={{ ...glass, color: fav ? "#ef8a97" : "#f3ead9" }}>
+          <button type="button" onClick={toggleFav} aria-pressed={fav} aria-label="บันทึกเป็นคนโปรด" className={`absolute top-[14px] right-[14px] ${round}`} style={{ ...glass, color: fav ? "#ef8a97" : "#f3ead9" }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill={fav ? "#c9283d" : "none"} stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 20s-7-4.4-9-9a4.8 4.8 0 0 1 9-3 4.8 4.8 0 0 1 9 3c-2 4.6-9 9-9 9z" /></svg>
           </button>
           {pics.length > 1 && (
@@ -56,7 +67,7 @@ export function ProfileView({ p }: { p: Person }) {
           </div>
 
           <div className="grid grid-cols-4 text-center" style={{ borderTop: line, borderBottom: line, padding: "12px 0" }}>
-            {(p.real ? [["ใหม่", "Part-Time ใหม่", true], ["✓", "ผ่านอบรม"], ["✓", "ยืนยันตัวตน"], [p.top ? "TOP" : "Silver", "ระดับ"]] : [[p.rating, `${p.reviews} รีวิว`, true], [String(p.jobs), "นัดสำเร็จ"], [`${p.years} ปี`, "ประสบการณ์"], ["98%", "ตอบกลับ"]]).map(([v, l, g], i) => (
+            {(p.real ? [[avg ?? "ใหม่", avg ? `${reviews.length} รีวิว` : "Part-Time ใหม่", true], ["✓", "ผ่านอบรม"], ["✓", "ยืนยันตัวตน"], [p.top ? "TOP" : "Silver", "ระดับ"]] : [[p.rating, `${p.reviews} รีวิว`, true], [String(p.jobs), "นัดสำเร็จ"], [`${p.years} ปี`, "ประสบการณ์"], ["98%", "ตอบกลับ"]]).map(([v, l, g], i) => (
               <div key={String(l)} style={{ borderLeft: i ? line : undefined }}><div className="font-semibold text-[18px]" style={{ color: g ? "#e8c472" : undefined }}>{v}</div><div className="text-[12px] text-[#d9c9b4] font-light">{l}</div></div>
             ))}
           </div>
@@ -84,7 +95,10 @@ export function ProfileView({ p }: { p: Person }) {
 
           <div>
             <h2 className="m-0 mb-2 font-semibold text-[17px]">รีวิว</h2>
-            {p.real ? <div className="rounded-[14px] bg-[#211a18] text-[13px] font-light text-[#d9c9b4]" style={{ padding: 12, border: line }}>ยังไม่มีรีวิว · รีวิวจะขึ้นหลังจบนัดแรก</div> : <>
+            {p.real ? (!reviews.length ? <div className="rounded-[14px] bg-[#211a18] text-[13px] font-light text-[#d9c9b4]" style={{ padding: 12, border: line }}>ยังไม่มีรีวิว · รีวิวจะขึ้นหลังจบนัดแรก</div> : <div className="flex flex-col gap-2">
+              <div className="flex items-baseline gap-2"><span className="font-bold text-[32px] text-[#e8c472] leading-none">{avg}</span><span className="text-[12px] font-light text-[#d9c9b4]">จาก {reviews.length} รีวิว (ลูกค้าที่จองจริง)</span></div>
+              {reviews.slice(0, 6).map((r, i) => <div key={i} className="rounded-[14px] bg-[#211a18] text-[13px]" style={{ padding: 12, border: line }}><div className="text-[#e8c472] text-[12px]">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)} · {new Date(r.created_at).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}{r.tags.length ? ` · ${r.tags.join(" · ")}` : ""}</div>{r.body && <div className="font-light mt-1">{r.body}</div>}</div>)}
+            </div>) : <>
             <div className="flex gap-4 items-center">
               <div className="text-center"><div className="font-bold text-[40px] text-[#e8c472] leading-none">{p.rating}</div><div className="text-[12px] text-[#d9c9b4] mt-1 font-light">{p.reviews} รีวิว</div></div>
               <div className="flex-1 flex flex-col gap-[5px]">
