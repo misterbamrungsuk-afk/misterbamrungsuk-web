@@ -48,8 +48,8 @@ export function SearchList({ people, sample, q0 }: { people: Person[]; sample: b
       </div>
       <div className="flex flex-wrap justify-between items-center gap-2" style={{ padding: "0 16px 8px" }}>
         <span className="text-[13px] font-light text-[#d9c9b4]">พบ {list.length} คน{sample ? " (ตัวอย่าง)" : ""}</span>
-        <div className="flex gap-1">{SORT.map(([k, l]) => <button key={k} type="button" onClick={() => setSort(k)} aria-pressed={sort === k} className="h-8 px-2.5 rounded-full text-[12px]" style={{ border: `1px solid ${sort === k ? GOLD : LN}`, color: sort === k ? GOLD : "#d9c9b4" }}>{l}</button>)}
-          <Link href="/map" aria-label="แผนที่" className="w-10 h-8 rounded-full grid place-items-center text-[#d9c9b4] hover:text-[#d9c9b4]" style={{ border: `1px solid ${LN}` }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" /></svg></Link>
+        <div className="flex gap-1">{SORT.map(([k, l]) => <button key={k} type="button" onClick={() => setSort(k)} aria-pressed={sort === k} className="h-10 px-3 rounded-full text-[13px]" style={{ border: `1px solid ${sort === k ? GOLD : LN}`, color: sort === k ? GOLD : "#d9c9b4" }}>{l}</button>)}
+          <Link href="/map" aria-label="แผนที่" className="w-11 h-10 rounded-full grid place-items-center text-[#d9c9b4] hover:text-[#d9c9b4]" style={{ border: `1px solid ${LN}` }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" /></svg></Link>
         </div>
       </div>
       <div style={{ padding: "0 16px" }}>

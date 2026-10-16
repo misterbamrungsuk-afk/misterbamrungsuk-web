@@ -41,7 +41,7 @@ export function AlertsClient({ initial }: { initial: Notice[] }) {
             <div className="flex-1 min-w-0 text-[13.5px]">
               <div className="font-semibold">{n.title}</div>
               {n.body && <div className="text-[#cdbfb3] break-words">{linkify(n.body)}</div>}
-              <div className="text-[11.5px] text-[#7d6d6a] mt-1">{new Date(n.created_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}{n.read_at ? " · รับเรื่องแล้ว" : ""}{n.url ? <> · <Link href={n.url} className="text-[#e8c472]">เปิดที่เกี่ยวข้อง</Link></> : null}</div>
+              <div className="text-[11.5px] text-[#9a8a85] mt-1">{new Date(n.created_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}{n.read_at ? " · รับเรื่องแล้ว" : ""}{n.url ? <> · <Link href={n.url} className="text-[#e8c472]">เปิดที่เกี่ยวข้อง</Link></> : null}</div>
             </div>
             {!n.read_at && <button type="button" onClick={() => ack(n.id)} className="shrink-0 h-9 px-3 rounded-full border border-[rgba(240,200,90,.5)] text-[12.5px] text-[#f0c75a]">รับเรื่องแล้ว</button>}
           </div>

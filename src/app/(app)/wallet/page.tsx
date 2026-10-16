@@ -12,7 +12,20 @@ import { promptPayPayload } from "@/lib/join/promptpay";
 const GOLD = "#e8c472";
 const LN = "rgba(243,234,217,0.07)";
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US", { maximumFractionDigits: 2 });
-const KIND: Record<string, string> = { topup: "เติมเงิน", hold: "กันเงินรอตอบรับ", confirm: "ชำระค่านัด", release: "คืนเงินที่กันไว้", refund: "คืนเงิน", adjust: "ปรับยอดโดยทีมงาน", reversal: "รายการกลับ" };
+const KIND: Record<string, string> = { topup: "เติมเงิน", hold: "กันเงินรอเพื่อนตอบรับ", confirm: "ชำระค่านัด", release: "คืนเงินที่กันไว้", refund: "คืนเงิน", adjust: "ปรับยอดโดยทีมงาน", reversal: "รายการกลับ", split: "สรุปยอดหลังจบนัด", promo: "รับเครดิตจากโค้ด", gift: "ซื้อบัตรของขวัญ" };
+type H = { tx_id: number; kind: string; note: string | null; bucket: string; amount: number; created_at: string };
+/** รวมขาของรายการบัญชีคู่ให้เหลือ 1 แถวต่อธุรกรรม — ลูกค้าเห็นเฉพาะยอดที่ใช้ได้เปลี่ยนเท่าไร (เงินกันไว้แสดงเป็นหมายเหตุ) */
+function rowsOf(history: H[]) {
+  const by = new Map<number, H[]>();
+  for (const h of history) by.set(h.tx_id, [...(by.get(h.tx_id) ?? []), h]);
+  return [...by.values()].map((legs) => {
+    const avail = legs.filter((l) => l.bucket === "available").reduce((t, l) => t + l.amount, 0);
+    const held = legs.filter((l) => l.bucket === "held").reduce((t, l) => t + l.amount, 0);
+    const k = legs[0].kind;
+    const label = k === "split" ? (avail > 0 ? "คืนเงินตามผลพิจารณา" : avail < 0 ? "ทิปให้เพื่อน" : "สรุปยอดหลังจบนัด") : KIND[k] ?? "รายการอื่น";
+    return { ...legs[0], label, amount: avail, held };
+  }).filter((r) => r.amount !== 0 || r.held !== 0);
+}
 const CHIPS = [500, 1000, 3000, 5000];
 type W = { available: number; held: number; history: { tx_id: number; kind: string; note: string | null; bucket: string; amount: number; created_at: string }[]; topups: { id: string; amount_satang: number; status: string; reason: string | null; created_at: string }[] };
 
@@ -109,10 +122,12 @@ export default function WalletPage() {
           <h2 className="m-0 text-[15px] font-semibold">ประวัติรายการ</h2>
           {!w ? <p className="m-0 text-[13px] font-light text-[#b5a596]">กำลังโหลด…</p> : !w.history.length ? (
             <div className="rounded-2xl bg-[#211a18] text-center text-[13px] font-light text-[#d9c9b4]" style={{ padding: 24 }}>ยังไม่มีรายการ · เติมเงินเพื่อเริ่มนัดเพื่อนได้เลย</div>
-          ) : w.history.map((h, i) => (
-            <div key={`${h.tx_id}-${i}`} className="flex justify-between items-center gap-3 rounded-2xl bg-[#211a18]" style={{ padding: "12px 14px" }}>
-              <span className="flex flex-col min-w-0"><span className="text-[14px]">{KIND[h.kind] ?? h.kind}{h.bucket === "held" ? " · กันไว้" : ""}</span><span className="text-[12px] font-light text-[#b5a596]">{new Date(h.created_at).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}{h.note ? ` · ${h.note}` : ""}</span></span>
-              <span className="shrink-0 font-semibold tabular-nums" style={{ color: h.amount > 0 ? "#7fd6a3" : "#f3ead9" }}>{h.amount > 0 ? "+" : "−"}{baht(Math.abs(h.amount))}</span>
+          ) : rowsOf(w.history).map((h) => (
+            <div key={h.tx_id} className="flex justify-between items-center gap-3 rounded-2xl bg-[#211a18]" style={{ padding: "12px 14px" }}>
+              <span className="flex flex-col min-w-0"><span className="text-[14px]">{h.label}</span><span className="text-[12px] font-light text-[#b5a596]">{new Date(h.created_at).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}{h.note ? ` · ${h.note}` : ""}</span></span>
+              {h.amount !== 0
+                ? <span className="shrink-0 font-semibold tabular-nums" style={{ color: h.amount > 0 ? "#7fd6a3" : "#f3ead9" }}>{h.amount > 0 ? "+" : "−"}{baht(Math.abs(h.amount))}</span>
+                : <span className="shrink-0 flex flex-col items-end tabular-nums"><span className="font-semibold text-[#d9c9b4]">{baht(Math.abs(h.held))}</span><span className="text-[11.5px] font-light text-[#b5a596]">{h.held > 0 ? "กันไว้" : "จากยอดที่กันไว้"}</span></span>}
             </div>
           ))}
         </section>

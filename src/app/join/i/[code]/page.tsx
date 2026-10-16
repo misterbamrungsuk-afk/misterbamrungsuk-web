@@ -1,8 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import { CLOSE_AT, QUOTA } from "@/lib/join/config";
+import { CLOSE_AT } from "@/lib/join/config";
+import { nextCohortSeats } from "@/lib/join/cohorts";
 import { findInvite } from "@/lib/join/invites";
-import { countActive } from "@/lib/join/store";
 import { JoinSalePage } from "../../join-sale";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +25,6 @@ export default async function InvitePage({ params }: { params: Promise<{ code: s
       </main>
     );
   }
-  const active = await countActive().catch(() => 0);
-  const closed = active >= QUOTA || Date.now() > Date.parse(CLOSE_AT);
-  return <JoinSalePage seats={{ left: Math.max(0, QUOTA - active), quota: QUOTA, cohort: "", closed }} invite={code} />;
+  const s = await nextCohortSeats().catch(() => ({ cohort: "", left: 0, quota: 0, full: true }));
+  return <JoinSalePage seats={{ left: s.left, quota: s.quota, cohort: s.cohort, closed: s.full || Date.now() > Date.parse(CLOSE_AT) }} invite={code} />;
 }

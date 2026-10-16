@@ -44,7 +44,7 @@ export default async function SchedulePage({ params, searchParams }: { params: P
       <div className="font-bold text-[20px] tabular-nums" style={{ color: gold ? "#e8c472" : undefined }}>{v}</div><div className="text-[12px] text-[#d9c9b4] font-light">{l}</div>
     </div>
   );
-  const arrow = "w-8 h-8 rounded-lg grid place-items-center text-[#d9c9b4] hover:text-[#f3ead9]";
+  const arrow = "w-10 h-10 rounded-lg grid place-items-center text-[#d9c9b4] hover:text-[#f3ead9]";
 
   return (
     <PtPage>
@@ -66,14 +66,14 @@ export default async function SchedulePage({ params, searchParams }: { params: P
               <span className="text-[12px] text-[#d9c9b4] font-light"><span className="text-[#e8c472]">●</span> มีนัด <span className="text-[#c9283d]">●</span> วันนี้</span>
             </div>
             <div className="grid grid-cols-7 gap-[3px] text-center text-[12px] font-light">
-              {WD.map((w) => <span key={w} className="text-[11px] text-[#b5a596] py-0.5">{w}</span>)}
+              {WD.map((w) => <span key={w} className="text-[12px] text-[#d9c9b4] py-1">{w}</span>)}
               {Array.from({ length: first }, (_, i) => <span key={"e" + i} />)}
               {Array.from({ length: days }, (_, i) => {
                 const d = i + 1;
                 const on = d === sel, busy = isTrain(d), tdy = isThis && d === today.d;
                 return (
                   <Link key={d} href={link(`m=${key(y, m)}&d=${d}`)} aria-current={on ? "date" : undefined} aria-label={`${d} ${MONTHS[m]}${busy ? " · มีนัดอบรม" : ""}${tdy ? " · วันนี้" : ""}`}
-                    className="h-8 rounded-lg grid place-items-center tabular-nums"
+                    className="h-10 rounded-lg grid place-items-center tabular-nums"
                     style={{ background: on ? "#e8c472" : busy ? "rgba(212,175,55,.14)" : "transparent", color: on ? "#1b130b" : busy ? "#e8c472" : "#d9c9b4", border: `1px solid ${tdy && !on ? "#c9283d" : "transparent"}` }}>{d}</Link>
                 );
               })}
@@ -94,7 +94,7 @@ export default async function SchedulePage({ params, searchParams }: { params: P
             : <div className="rounded-[18px] bg-[#211a18] text-[13.5px] font-light text-[#d9c9b4]" style={{ padding: 14, border: line }}>ยังไม่มีนัด · เริ่มรับงานหลังอบรม (เปิดให้บริการ {TRAINING.openService})</div>}
 
           <div className="rounded-[18px] bg-[#211a18] flex flex-col gap-2" style={{ padding: 14, border: line }}>
-            <div className="flex justify-between items-center"><span className="font-semibold text-[14px]">วันเวลาที่สะดวกรับงาน</span><Link href={ptHref(c, "availability")} className="text-[13px] text-[#e8c472] font-light">ตั้งเวลา ›</Link></div>
+            <div className="flex justify-between items-center"><span className="font-semibold text-[14px]">วันเวลาที่สะดวกรับงาน</span><Link href={ptHref(c, "availability")} className="tap text-[13px] text-[#e8c472] font-light">ตั้งเวลา ›</Link></div>
             {av && weekDays.length
               ? <>
                   <div className="flex flex-wrap gap-1.5">{["จ", "อ", "พ", "พฤ", "ศ", "ส", "อา"].map((w) => <span key={w} className="w-9 h-9 rounded-full grid place-items-center text-[13px]" style={{ background: weekDays.includes(w) ? "rgba(232,196,114,0.16)" : "#251d1b", color: weekDays.includes(w) ? "#e8c472" : "#8d7f72" }}>{w}</span>)}</div>

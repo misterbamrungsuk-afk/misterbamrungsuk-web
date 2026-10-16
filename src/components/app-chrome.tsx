@@ -6,7 +6,10 @@ import { TabBar } from "./shell";
 import SOSButton from "./sos";
 
 // หน้าแบบเต็มจอ (มีแถบพิมพ์/ปุ่มควบคุมของตัวเองด้านล่าง) ไม่แสดงแถบเมนูลอยและปุ่ม SOS ลอย
-const FULLSCREEN = [/^\/chat\/[^/]+$/, /^\/call\//, /^\/book\//, /^\/order\//, /^\/report$/, /^\/profile\/addresses$/];
+// + ฟอร์มย่อยที่มีปุ่มหลักติดล่างจอ (บันทึก/โพสต์/ลบ) — ซ่อนเมนูล่างเพื่อไม่ให้ปุ่มหลักกับ SOS ลอยทับกัน
+const FULLSCREEN = [/^\/chat\/[^/]+$/, /^\/call\//, /^\/book\//, /^\/order\//, /^\/report$/, /^\/profile\/addresses$/, /^\/profile\/edit$/, /^\/profile\/delete$/, /^\/jobs\/create$/];
+// หน้าที่มีปุ่ม SOS ใหญ่ในหน้าอยู่แล้ว ไม่ต้องมีปุ่มลอยซ้ำ
+const OWN_SOS = [/^\/profile$/];
 
 export function AppChrome({ children }: { children: React.ReactNode }) {
   const path = usePathname();
@@ -23,7 +26,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
     <div className={`app-frame mb-v7 mb-c ${full ? "" : "safe-bottom"}`}>
       {children}
       {!full && <TabBar unread={unread} />}
-      {!full && <SOSButton />}
+      {!full && !OWN_SOS.some((re) => re.test(path)) && <SOSButton />}
     </div>
   );
 }

@@ -56,7 +56,7 @@ export default function SOSButton() {
       </button>
 
       <Sheet open={open} onClose={() => setOpen(false)} title={`🚨 ${lang === "th" ? "ฉุกเฉิน" : "Emergency"}`}>
-        <p className="text-xs text-ink-400 mb-4">{lang === "th" ? "กดปุ่มด้านล่างตามสถานการณ์ — ทีมงานเห็นการแจ้งเตือนทันที" : "Tap below per situation — our team sees alerts instantly"}</p>
+        <p className="text-xs text-[#9a8a85] mb-4">{lang === "th" ? "กดปุ่มด้านล่างตามสถานการณ์ — ทีมงานเห็นการแจ้งเตือนทันที" : "Tap below per situation — our team sees alerts instantly"}</p>
 
         <div className="grid gap-2">
           <a href="tel:191" className="rounded-[14px] py-3.5 font-semibold text-center text-white" style={{ background: "#c9283d" }}>📞 {lang === "th" ? "โทร 191 (ตำรวจ/ฉุกเฉิน)" : "Call 191 (Police)"}</a>
@@ -75,7 +75,7 @@ export default function SOSButton() {
           {lang === "th" ? "เปิดหน้า SOS เต็มจอ →" : "Open full-screen SOS →"}
         </Link>
 
-        <p className="text-[10px] text-ink-500 mt-4 text-center">
+        <p className="text-[12px] text-[#9a8a85] mt-4 text-center">
           {lang === "th" ? "ประวัติ SOS ทั้งหมดถูกบันทึกเข้าระบบเพื่อความปลอดภัยของคุณ" : "All SOS events are logged for your safety"}
         </p>
       </Sheet>

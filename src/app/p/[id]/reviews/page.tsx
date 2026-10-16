@@ -38,7 +38,7 @@ export default async function ReviewsPage({ params, searchParams }: { params: Pr
           </div>
         </div>
         <div className="flex gap-2 overflow-x-auto" style={{ padding: "18px 16px 4px" }}>
-          {chips.map(([k, l]) => <Link key={k} href={`/p/${id}/reviews${k === "all" ? "" : `?f=${k}`}`} className="h-[34px] px-[14px] rounded-full text-[13px] flex items-center whitespace-nowrap" style={f === k ? { background: "#f3ead9", color: "#171211", border: "1px solid #f3ead9" } : { border: `1px solid ${LN}`, color: "#f3ead9" }}>{l}</Link>)}
+          {chips.map(([k, l]) => <Link key={k} href={`/p/${id}/reviews${k === "all" ? "" : `?f=${k}`}`} className="h-10 px-4 rounded-full text-[13.5px] flex items-center whitespace-nowrap" style={f === k ? { background: "#f3ead9", color: "#171211", border: "1px solid #f3ead9" } : { border: `1px solid ${LN}`, color: "#f3ead9" }}>{l}</Link>)}
         </div>
         <div style={{ padding: "0 16px" }}>
           {!shown.length && <p className="text-center text-[14px] text-[#d9c9b4] font-light" style={{ padding: 28 }}>{all.length ? "ไม่มีรีวิวในตัวกรองนี้" : "ยังไม่มีรีวิว · รีวิวจะขึ้นหลังจบนัดแรก"}</p>}

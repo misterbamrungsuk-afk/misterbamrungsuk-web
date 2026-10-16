@@ -9,7 +9,7 @@ import { FIX_ITEMS, fixLabel } from "@/lib/join/fixes";
 const file = (p: string) => `/api/admin/applicants/file?path=${encodeURIComponent(p)}`;
 
 export const KYC_LABEL: Record<KycStatus, [string, string]> = {
-  none: ["ยังไม่ส่งเอกสาร", "#7d6d6a"],
+  none: ["ยังไม่ส่งเอกสาร", "#9a8a85"],
   submitted: ["รอตรวจเอกสาร", "#eed58a"],
   approved: ["✓ อนุมัติแล้ว", "#4ade80"],
   rejected: ["ตีกลับ · รอผู้สมัครแก้", "#fca5a5"],
@@ -78,12 +78,12 @@ export function KycPanel({ row, onSaved }: { row: Applicant; onSaved: (row: Appl
           <a key={l} href={file(p)} target="_blank" rel="noopener noreferrer" className="block text-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={file(p)} alt={l} className="w-full aspect-[4/3] rounded-lg object-cover bg-[#130e0e] border border-[rgba(240,200,90,.25)]" />
-            <span className="text-[10.5px] text-[#cdbfb3]">{l}</span>
+            <span className="text-[11.5px] text-[#cdbfb3]">{l}</span>
           </a>
         ) : (
           <div key={l} className="text-center">
-            <div className="w-full aspect-[4/3] rounded-lg border border-dashed border-[rgba(240,200,90,.3)] bg-[#130e0e] grid place-items-center text-[10px] text-[#7d6d6a]">ไม่มีไฟล์</div>
-            <span className="text-[10.5px] text-[#7d6d6a]">{l}</span>
+            <div className="w-full aspect-[4/3] rounded-lg border border-dashed border-[rgba(240,200,90,.3)] bg-[#130e0e] grid place-items-center text-[10px] text-[#9a8a85]">ไม่มีไฟล์</div>
+            <span className="text-[11.5px] text-[#9a8a85]">{l}</span>
           </div>
         ))}
       </div>

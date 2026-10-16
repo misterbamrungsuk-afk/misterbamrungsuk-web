@@ -44,7 +44,7 @@ export function LangToggle({ className = "" }: { className?: string }) {
       aria-label="switch language"
     >
       <span className={lang === "th" ? "text-crimson-300" : "text-ink-300"}>ไทย</span>
-      <span className="text-ink-400 mx-1">/</span>
+      <span className="text-[#9a8a85] mx-1">/</span>
       <span className={lang === "en" ? "text-crimson-300" : "text-ink-300"}>EN</span>
     </button>
   );

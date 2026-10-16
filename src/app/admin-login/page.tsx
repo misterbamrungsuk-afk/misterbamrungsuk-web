@@ -21,7 +21,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
             <img src="/brand/logo.png" alt="Mister Bamrungsuk" className="w-[56px] h-[56px] object-contain" />
             <div className="leading-[1.1]">
               <div className="font-lux font-semibold text-lg text-[#f0c75a]">Mister Bamrungsuk</div>
-              <div className="text-[11px] tracking-[2.5px] font-semibold text-[#7d6d6a] mt-0.5">ADMIN CONSOLE</div>
+              <div className="text-[11px] tracking-[2.5px] font-semibold text-[#9a8a85] mt-0.5">ADMIN CONSOLE</div>
             </div>
           </div>
         </div>
@@ -42,7 +42,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
             <p className="text-xs text-[#cdbfb3] mt-1">รหัสผ่านตามค่า ADMIN_DEMO_PASSWORD ใน .env.example · โหมดจริงบัญชีเหล่านี้ใช้ไม่ได้</p>
           </div>
         )}
-        <p className="text-xs text-[#7d6d6a] mt-auto">ทุกการเข้าสู่ระบบถูกบันทึก · session หมดอายุใน 8 ชั่วโมง</p>
+        <p className="text-xs text-[#9a8a85] mt-auto">ทุกการเข้าสู่ระบบถูกบันทึก · session หมดอายุใน 8 ชั่วโมง</p>
       </section>
       <section className="hidden lg:flex flex-col justify-center gap-4 px-14 border-l border-[rgba(240,200,90,.38)]">
         <h2 className="font-lux font-bold text-2xl">บทบาทและสิทธิ์</h2>

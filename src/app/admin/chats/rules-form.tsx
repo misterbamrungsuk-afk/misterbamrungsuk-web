@@ -23,7 +23,7 @@ export function RulesForm({ words, strikeLimit, edited }: { words: string[]; str
       <label className="flex items-center gap-2">แจ้งทีมงานเมื่อฝ่าฝืนครบ<input type="number" min={1} max={20} value={limit} onChange={(e) => setLimit(e.target.value)} className="h-9 w-20 rounded-lg border border-ink-600 bg-[#130e0e] px-2.5 text-[#f6efe4]" />ครั้งต่อนัด</label>
       <button type="button" onClick={save} disabled={busy} className="self-start btn-red-lux h-10 px-5 rounded-full text-white font-semibold disabled:opacity-40">{busy ? "กำลังบันทึก…" : "บันทึกคำห้าม"}</button>
       {msg && <p role="status" className="text-[#eed58a]">{msg}</p>}
-      {edited && <span className="text-[11.5px] text-[#7d6d6a]">แก้ล่าสุด {new Date(edited.at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })} โดย {edited.by}</span>}
+      {edited && <span className="text-[11.5px] text-[#9a8a85]">แก้ล่าสุด {new Date(edited.at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })} โดย {edited.by}</span>}
     </section>
   );
 }

@@ -47,7 +47,7 @@ export default async function AccountPage() {
       <div className="flex items-center gap-[14px]" style={{ padding: "22px 16px 0" }}>
         <div className="w-16 h-16 rounded-full grid place-items-center font-semibold text-[26px] shrink-0" style={{ border: `1px solid ${GOLD}`, color: GOLD }}>{(p.name || me.email).slice(0, 1)}</div>
         <div className="flex-1 min-w-0"><div className="font-semibold text-[20px] truncate">{p.name || me.email}</div><div className="text-[13px] font-light text-[#d9c9b4]">สมาชิกตั้งแต่ {since}</div></div>
-        <Link href="/work-with-us" className="h-8 px-3 rounded-full text-[12px] font-light grid place-items-center hover:text-[#e8c472]" style={{ border: `1px solid ${GOLD}`, color: GOLD }}>สมัครเป็นเพื่อน</Link>
+        <Link href="/work-with-us" className="h-10 px-4 rounded-full text-[13px] font-light grid place-items-center hover:text-[#e8c472]" style={{ border: `1px solid ${GOLD}`, color: GOLD }}>สมัครเป็นเพื่อน</Link>
       </div>
       <div className="grid grid-cols-3 text-center rounded-[20px] bg-[#211a18]" style={{ margin: "18px 16px 0", padding: "14px 0", border: `1px solid ${LN}` }}>
         <div><div className="font-semibold text-[22px]">{bookings.length}</div><div className="text-[12px] font-light text-[#d9c9b4]">การจอง</div></div>
@@ -56,7 +56,7 @@ export default async function AccountPage() {
       </div>
       {!!favs.length && (
         <div style={{ padding: "20px 16px 0" }}>
-          <div className="flex justify-between"><b className="font-medium text-[17px]">เพื่อนที่ถูกใจ</b><Link href="/favorites" className="text-[13px] font-light" style={{ color: GOLD }}>ทั้งหมด</Link></div>
+          <div className="flex justify-between items-center"><b className="font-medium text-[17px]">เพื่อนที่ถูกใจ</b><Link href="/favorites" className="tap pl-3 text-[13px] font-light" style={{ color: GOLD }}>ทั้งหมด ›</Link></div>
           <div className="flex gap-3 mt-3">{favs.map((f) => <Link key={f!.id} href={`/p/${f!.id}`}><img src={f!.img} alt={f!.nick} className="w-[62px] h-[62px] rounded-full object-cover" style={{ border: "2px solid #171211", boxShadow: `0 0 0 1px ${GOLD}`, objectPosition: f!.pos }} /></Link>)}</div>
         </div>
       )}
@@ -70,7 +70,7 @@ export default async function AccountPage() {
       <Link href="/sos" className="h-14 rounded-2xl flex items-center justify-center gap-[10px] font-semibold text-[16px] text-[#ff8a97] hover:text-[#ff8a97]" style={{ margin: "18px 16px 0", border: "1px solid #c9283d", background: "rgba(224,36,60,.1)" }}>
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 3 2 20h20zM12 10v4M12 17h0" /></svg>SOS ฉุกเฉิน · แอดมินรับเรื่องทันที
       </Link>
-      <div className="text-center text-[12px] font-light text-[#b5a596]" style={{ margin: "14px 16px 0", paddingTop: 8, borderTop: `1px dashed ${LN}` }}><LogoutLink /> · <Link href="/profile/delete" className="text-[#ff8a9a]">ลบบัญชี (PDPA)</Link></div>
+      <div className="grid grid-cols-2 gap-2 text-[14px]" style={{ margin: "14px 16px 0", paddingTop: 12, borderTop: `1px dashed ${LN}` }}><LogoutLink /><Link href="/profile/delete" className="h-11 rounded-[14px] grid place-items-center text-[#ff8a9a] hover:text-[#ff8a9a]" style={{ border: "1px solid rgba(255,138,154,.3)" }}>ลบบัญชี (PDPA)</Link></div>
     </div>
   );
 }

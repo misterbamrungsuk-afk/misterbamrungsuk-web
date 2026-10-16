@@ -48,7 +48,7 @@ export function AdminNav({ email, role }: { email: string; role: AdminRole }) {
           <img src="/brand/logo.png" alt="Mister Bamrungsuk" className="w-[46px] h-[46px] object-contain" />
           <div className="leading-[1.1] min-w-0">
             <div className="font-lux font-semibold text-[#f0c75a]">Mister Bamrungsuk</div>
-            <div className="text-[11px] text-[#7d6d6a] truncate">Admin · {role}</div>
+            <div className="text-[11px] text-[#9a8a85] truncate">Admin · {role}</div>
           </div>
         </div>
         {tabs.map((t) => (

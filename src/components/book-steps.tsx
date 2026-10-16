@@ -10,7 +10,7 @@ export function BookSteps({ step, th }: { step: 1 | 2 | 3 | 4; th: boolean }) {
         return (
           <li key={l} className="flex flex-col items-center gap-1 text-center">
             <span className={`h-1 w-full rounded-full ${done || on ? "bg-gold-500" : "bg-ink-600"}`} />
-            <span className={`text-[10.5px] leading-tight ${on ? "text-gold-300 font-semibold" : done ? "text-ink-200" : "text-ink-400"}`}>{done ? "✓ " : ""}{l}</span>
+            <span className={`text-[11.5px] leading-tight ${on ? "text-gold-300 font-semibold" : done ? "text-ink-200" : "text-[#9a8a85]"}`}>{done ? "✓ " : ""}{l}</span>
           </li>
         );
       })}

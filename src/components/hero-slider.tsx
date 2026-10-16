@@ -41,7 +41,7 @@ export function HeroSlider({ posts, lang }: { posts: Post[]; lang: string }) {
           <p className="text-[11px] font-semibold tracking-[0.2em] text-gold-500 flex items-center gap-2"><span className="w-5 h-px bg-[#b8860b]" />{th ? "เพื่อนแนะนำ" : "RECOMMENDED"}</p>
           <h2 className="font-display text-[20px] font-bold mt-0.5">{th ? "คัดมาเพื่อคุณวันนี้" : "Picked for you today"}</h2>
         </div>
-        <span className="text-xs text-ink-400">{i + 1}/{posts.length}</span>
+        <span className="text-xs text-[#9a8a85]">{i + 1}/{posts.length}</span>
       </div>
 
       <div ref={ref} className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar rounded-[28px]">

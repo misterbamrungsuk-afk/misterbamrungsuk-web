@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { CLOSE_AT, PACKAGES, QUOTA, type PackageKey } from "@/lib/join/config";
-import { countActive, createApplicant, updateApplicant, type DocKind } from "@/lib/join/store";
+import { CLOSE_AT, PACKAGES, type PackageKey } from "@/lib/join/config";
+import { createApplicant, updateApplicant, type DocKind } from "@/lib/join/store";
 import { consumeInvite, findInvite } from "@/lib/join/invites";
 import { appendToSheet } from "@/lib/join/sheets";
 import { applicantRegistered, sendAll } from "@/lib/email";
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
   if (limited(ip)) return bad("ส่งบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่", 429);
 
   if (Date.now() > Date.parse(CLOSE_AT)) return bad("ปิดรับสมัครแล้ว", 410);
-  if ((await countActive()) >= QUOTA) return bad("รับครบจำนวนแล้ว", 410);
+  if ((await (await import("@/lib/join/cohorts")).nextCohortSeats()).full) return bad("รับครบจำนวนแล้ว", 410);
 
   let form: FormData;
   try {

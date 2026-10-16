@@ -9,7 +9,7 @@ type State = Record<CoverSlot, CoverRow[]>;
 
 const card = "rounded-2xl border border-[rgba(240,200,90,.38)] bg-[#241717] p-4";
 const title = "font-lux font-semibold text-[17px]";
-const hint = "text-[12px] text-[#7d6d6a]";
+const hint = "text-[12px] text-[#9a8a85]";
 const goldBtn = "rounded-full border-[1.5px] border-[#e8d3a0] px-4 font-semibold text-[#2a1c0c] disabled:opacity-60";
 const goldBg = { background: "linear-gradient(100deg, #b8915a 0%, #d9bf8a 22%, #f0e0b4 48%, #dcc390 72%, #b38b55 100%)" };
 const navBtn = "rounded-lg border border-[rgba(240,200,90,.38)] bg-transparent text-[#ffd76a] disabled:opacity-40";
@@ -135,7 +135,7 @@ export function CoversAdmin({ initial, defaults, configured }: { initial: State;
                   <img src={u} alt={`รูปสไลด์ที่ ${i + 1}`} className="w-full aspect-[4/3] object-cover block" />
                   <span className="absolute top-2 left-2 w-[26px] h-[26px] rounded-full bg-[#f0c75a] text-[#1a1206] grid place-items-center font-bold text-[13px]">{i + 1}</span>
                 </div>
-                <div className="p-2 text-[11px] text-[#7d6d6a]">รูปเริ่มต้น · อัปรูปใหม่เพื่อแทนที่</div>
+                <div className="p-2 text-[11px] text-[#9a8a85]">รูปเริ่มต้น · อัปรูปใหม่เพื่อแทนที่</div>
               </div>
             ))}
             {slides.map((r, i) => (
@@ -157,7 +157,7 @@ export function CoversAdmin({ initial, defaults, configured }: { initial: State;
                 style={{ background: drag === "main_slider" ? "rgba(240,200,90,.14)" : "rgba(240,200,90,.05)" }}>
                 <span className="w-11 h-11 rounded-full border border-[#c9a24a] grid place-items-center text-[24px]">+</span>
                 {busy === "main_slider" ? "กำลังอัปโหลด…" : "เพิ่มรูป"}
-                <span className="text-[11px] text-[#7d6d6a]">ลากไฟล์มาวาง หรือกดเลือก</span>
+                <span className="text-[11px] text-[#9a8a85]">ลากไฟล์มาวาง หรือกดเลือก</span>
               </button>
             )}
           </div>
@@ -186,7 +186,7 @@ export function CoversAdmin({ initial, defaults, configured }: { initial: State;
             <section key={slot} className={`${card} flex gap-3.5 items-center`} {...dropProps(slot)}>
               {single(slot)
                 ? <img src={single(slot)} alt={alt} className={`${size} shrink-0 object-cover rounded-xl border border-[rgba(240,200,90,.5)]`} />
-                : <div className={`${size} shrink-0 rounded-xl border border-dashed border-[rgba(240,200,90,.5)] grid place-items-center text-[11px] text-[#7d6d6a]`}>ยังไม่มีรูป</div>}
+                : <div className={`${size} shrink-0 rounded-xl border border-dashed border-[rgba(240,200,90,.5)] grid place-items-center text-[11px] text-[#9a8a85]`}>ยังไม่มีรูป</div>}
               <div className="flex-1 min-w-0 flex flex-col gap-1.5">
                 <div className={title}>{t}</div>
                 <div className={hint}>{h}</div>
@@ -228,7 +228,7 @@ export function CoversAdmin({ initial, defaults, configured }: { initial: State;
               </button>
             )}
           </div>
-          <p className="text-[11px] text-[#7d6d6a]">ข้อความ/ลิงก์บนแบนเนอร์ยังจัดการที่ Marketplace (แอดมิน) — รูปที่นี่จะแทนรูปของแบนเนอร์ตามลำดับ</p>
+          <p className="text-[11px] text-[#9a8a85]">ข้อความ/ลิงก์บนแบนเนอร์ยังจัดการที่ Marketplace (แอดมิน) — รูปที่นี่จะแทนรูปของแบนเนอร์ตามลำดับ</p>
           {fileInput("market_banner")}
         </section>
       </div>

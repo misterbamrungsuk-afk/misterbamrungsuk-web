@@ -44,7 +44,7 @@ export default function JobPostPage() {
         <div className="rounded-2xl bg-[#211a18] text-[13px] font-light text-[#d9c9b4]" style={{ padding: 16 }}>โพสต์อยู่ 24 ชม. · ราคาตามระดับของเพื่อนที่คุณเลือก · ยังไม่ต้องจ่ายจนกว่าจะเลือกเพื่อน</div>
         {err && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{err}</p>}
       </main>
-      <div className="fixed left-0 right-0 bottom-0 mx-auto max-w-[480px] z-40" style={{ padding: "12px 16px calc(96px + env(safe-area-inset-bottom))", background: "linear-gradient(180deg, rgba(23,18,17,0), #171211 30%)" }}>
+      <div className="fixed left-0 right-0 bottom-0 mx-auto max-w-[480px] z-40" style={{ padding: "12px 16px calc(16px + env(safe-area-inset-bottom))", background: "linear-gradient(180deg, rgba(23,18,17,0), #171211 30%)" }}>
         <button type="button" disabled={busy || area.trim().length < 2} onClick={submit} className="w-full min-h-[52px] rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold text-[15px] disabled:opacity-45">{busy ? "กำลังโพสต์…" : "โพสต์"}</button>
       </div>
     </div>

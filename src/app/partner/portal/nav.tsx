@@ -33,7 +33,7 @@ export function PortalNav() {
 export function LogoutButton() {
   const router = useRouter();
   return (
-    <button type="button" className="text-xs text-ink-400 hover:text-gold-300 ml-2"
+    <button type="button" className="text-xs text-[#9a8a85] hover:text-gold-300 ml-2"
       onClick={async () => { await fetch("/api/partner/auth/logout", { method: "POST" }).catch(() => null); router.replace("/partner/login"); }}>
       ออก
     </button>

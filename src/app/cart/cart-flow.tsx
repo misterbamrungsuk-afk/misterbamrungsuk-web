@@ -158,7 +158,7 @@ export function CartFlow() {
                 </div>
               );
             })}
-            {products != null && !rows.length && <div className={`${card} text-center text-[#d9c9b4] text-[13px]`} style={{ borderColor: LINE }}>ตะกร้าว่าง · <Link href="/market" className="text-[#e8c472]">กลับไปเลือกสินค้า</Link></div>}
+            {products != null && !rows.length && <div className={`${card} text-center text-[#d9c9b4] text-[13px]`} style={{ borderColor: LINE }}>ตะกร้าว่าง · <Link href="/market" className="tap text-[#e8c472]">กลับไปเลือกสินค้า</Link></div>}
 
             {rows.length > 0 && free != null && price && price.shipping_fee >= 0 && (
               <div className={`${card} !py-3 flex flex-col gap-2`} style={{ borderColor: LINE }}>

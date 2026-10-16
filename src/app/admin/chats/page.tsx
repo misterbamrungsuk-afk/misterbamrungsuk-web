@@ -37,7 +37,7 @@ export default async function ChatsPage({ searchParams }: { searchParams: Promis
               <div className="flex-1 min-w-0 text-[13.5px]">
                 <div className="font-semibold">{r.b?.code ?? r.id.slice(0, 8)} · {r.b?.customer_email ?? "ลูกค้า"} ↔ {r.b?.parttime_nick ?? ""} ({r.b?.parttime_mb ?? ""})</div>
                 <div className="text-ink-300 truncate">{r.preview}</div>
-                <div className="text-[11.5px] text-[#7d6d6a]">{new Date(r.last).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })} · {r.n} ข้อความ</div>
+                <div className="text-[11.5px] text-[#9a8a85]">{new Date(r.last).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })} · {r.n} ข้อความ</div>
               </div>
               {r.blocked > 0 && <span className="shrink-0 rounded-full px-2.5 h-6 grid place-items-center text-[11px] font-semibold bg-crimson-500 text-white">ถูกกัน {r.blocked}</span>}
             </Link>

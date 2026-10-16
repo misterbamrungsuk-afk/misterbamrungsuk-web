@@ -159,7 +159,7 @@ export function MapView({ people, venues, sample }: { people: MapPerson[]; venue
             {ps.map((p) => (
               <button key={p.id} type="button" onClick={() => focus(p.lat, p.lng, { kind: "p", id: p.id })} className="shrink-0 w-[220px] rounded-2xl flex gap-2.5 p-2 text-left text-[#f3ead9]" style={{ ...glass, background: "rgba(33,26,24,.94)" }}>
                 <img src={p.img} alt="" className="w-[64px] h-[80px] rounded-xl object-cover shrink-0" style={p.pos ? { objectPosition: p.pos } : undefined} />
-                <span className="min-w-0 flex flex-col gap-0.5"><b className="font-semibold text-[14px] truncate">{p.nick}{p.age ? `, ${p.age}` : ""}</b><span className="text-[11.5px] font-light text-[#d9c9b4] truncate">★ {p.rating} · {p.area}</span><span className="text-[13px] font-semibold text-[#e8c472] mt-auto">{baht(p.price)}<span className="text-[10.5px] font-light text-[#b5a596]"> / 3 ชม.</span></span></span>
+                <span className="min-w-0 flex flex-col gap-0.5"><b className="font-semibold text-[14px] truncate">{p.nick}{p.age ? `, ${p.age}` : ""}</b><span className="text-[11.5px] font-light text-[#d9c9b4] truncate">★ {p.rating} · {p.area}</span><span className="text-[13px] font-semibold text-[#e8c472] mt-auto">{baht(p.price)}<span className="text-[11.5px] font-light text-[#b5a596]"> / 3 ชม.</span></span></span>
               </button>
             ))}
           </div>

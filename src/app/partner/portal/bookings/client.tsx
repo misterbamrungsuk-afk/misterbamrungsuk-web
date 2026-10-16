@@ -8,7 +8,7 @@ import { BOOKING_LABEL, BOOKING_STATUSES, split, type BookingStatus, type Partne
 const when = (iso: string) => new Date(iso).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 const TONE: Record<BookingStatus, string> = {
   pending: "text-gold-300 border-gold-500/50", confirmed: "text-emerald-300 border-emerald-500/50", full: "text-crimson-300 border-crimson-500/50",
-  done: "text-ink-300 border-ink-500", cancelled: "text-ink-400 border-ink-600",
+  done: "text-ink-300 border-ink-500", cancelled: "text-[#9a8a85] border-ink-600",
 };
 
 export function BookingsClient({ initial, rooms, partnerPct }: { initial: PartnerBooking[]; rooms: string[]; partnerPct: number | null }) {
@@ -51,7 +51,7 @@ export function BookingsClient({ initial, rooms, partnerPct }: { initial: Partne
         ))}
       </div>
 
-      {shown.length === 0 ? <p className="text-sm text-ink-400 mt-8 text-center">ไม่มีรายการในหมวดนี้</p> : (
+      {shown.length === 0 ? <p className="text-sm text-[#9a8a85] mt-8 text-center">ไม่มีรายการในหมวดนี้</p> : (
         <ul className="mt-4 space-y-2">
           {shown.map((b) => (
             <li key={b.id}>
@@ -59,7 +59,7 @@ export function BookingsClient({ initial, rooms, partnerPct }: { initial: Partne
                 <div className="min-w-0">
                   <p className="font-medium truncate">{b.parttime_name}</p>
                   <p className="text-xs text-ink-300 truncate">ลูกค้า {b.customer_name} · {b.hours} ชม.{b.room ? ` · ${b.room}` : ""}</p>
-                  <p className="text-xs text-ink-400 mt-0.5">{when(b.start_time)} · {b.booking_ref}</p>
+                  <p className="text-xs text-[#9a8a85] mt-0.5">{when(b.start_time)} · {b.booking_ref}</p>
                 </div>
                 <div className="text-right shrink-0">
                   <p className="font-display text-gold-300">฿{baht(b.amount)}</p>

@@ -35,12 +35,12 @@ export default async function PartnerPackagePage() {
         ) : (
           <p className="mt-2 text-sm text-ink-300">{pending ? `รอตรวจสลิป ${pending.invoice_no}` : "ยังไม่มีแผนโปรโมทที่ใช้งาน"}</p>
         )}
-        <p className="text-xs text-ink-400 mt-3">แพลตฟอร์มหัก {p.platform_pct ?? "[รอกำหนด]"}% ต่อการจอง</p>
+        <p className="text-xs text-[#9a8a85] mt-3">แพลตฟอร์มหัก {p.platform_pct ?? "[รอกำหนด]"}% ต่อการจอง</p>
       </section>
 
       <section className="mt-6">
         <h2 className="font-semibold">ต่ออายุ / อัปเกรด</h2>
-        <p className="text-xs text-ink-400 mt-1">ทุกแผนโปรโมทรวม: {PACKAGE_INCLUDES.join(" · ")}</p>
+        <p className="text-xs text-[#9a8a85] mt-1">ทุกแผนโปรโมทรวม: {PACKAGE_INCLUDES.join(" · ")}</p>
         {pending ? <p className="mt-3 text-sm rounded-2xl border border-gold-500/40 px-4 py-3">มีรายการรอตรวจสลิปอยู่ ({pending.invoice_no} · ฿{baht(pending.amount)}) — ทีมงานจะตรวจภายใน 24 ชม.</p>
           : <RenewBox current={p.package} />}
       </section>
@@ -52,8 +52,8 @@ export default async function PartnerPackagePage() {
             const done = i <= clipIdx;
             return (
               <li key={c} className="flex items-center gap-3 text-sm">
-                <span className={`w-7 h-7 rounded-full grid place-items-center text-xs shrink-0 ${done ? "bg-gold-500 text-[#1a1206] font-bold" : "border border-ink-500 text-ink-400"}`}>{done ? "✓" : i + 1}</span>
-                <span className={done ? "" : "text-ink-400"}>{CLIP_LABEL[c]}{i === clipIdx && p.clip_note ? <span className="text-ink-400"> · {p.clip_note}</span> : null}</span>
+                <span className={`w-7 h-7 rounded-full grid place-items-center text-xs shrink-0 ${done ? "bg-gold-500 text-[#1a1206] font-bold" : "border border-ink-500 text-[#9a8a85]"}`}>{done ? "✓" : i + 1}</span>
+                <span className={done ? "" : "text-[#9a8a85]"}>{CLIP_LABEL[c]}{i === clipIdx && p.clip_note ? <span className="text-[#9a8a85]"> · {p.clip_note}</span> : null}</span>
               </li>
             );
           })}
@@ -62,7 +62,7 @@ export default async function PartnerPackagePage() {
 
       <section id="invoices" className="mt-6 scroll-mt-20">
         <h2 className="font-semibold">ใบแจ้งหนี้</h2>
-        {purchases.length === 0 ? <p className="text-sm text-ink-400 mt-3">ยังไม่มีรายการ</p> : (
+        {purchases.length === 0 ? <p className="text-sm text-[#9a8a85] mt-3">ยังไม่มีรายการ</p> : (
           <ul className="mt-3 space-y-2">
             {purchases.map((x) => (
               <li key={x.id} className="rounded-2xl border border-ink-600 bg-ink-800/60 px-4 py-3 flex justify-between gap-3 text-sm">

@@ -39,7 +39,7 @@ export default function DeleteAccountPage() {
           <span className="w-[22px] h-[22px] rounded-md grid place-items-center text-[#1b130b]" style={{ background: ok ? GOLD : "#251d1b" }}>{ok ? "✓" : ""}</span>ฉันเข้าใจและต้องการลบบัญชี
         </button>}
       </main>
-      {!res?.done && <div className="fixed left-0 right-0 bottom-0 mx-auto max-w-[480px] flex flex-col gap-2 z-40" style={{ padding: "12px 16px calc(96px + env(safe-area-inset-bottom))", background: "linear-gradient(180deg, rgba(23,18,17,0), #171211 30%)" }}>
+      {!res?.done && <div className="fixed left-0 right-0 bottom-0 mx-auto max-w-[480px] flex flex-col gap-2 z-40" style={{ padding: "12px 16px calc(16px + env(safe-area-inset-bottom))", background: "linear-gradient(180deg, rgba(23,18,17,0), #171211 30%)" }}>
         <button type="button" onClick={send} disabled={!ok || busy} className="min-h-[52px] rounded-[14px] font-semibold text-[15px] text-[#ff8a9a] disabled:opacity-45" style={{ background: "rgba(201,40,61,.16)" }}>{busy ? "กำลังส่งคำขอ…" : "ส่งคำขอลบบัญชี"}</button>
         <Link href="/profile" className="min-h-11 grid place-items-center text-[14px] text-[#d9c9b4]">ยกเลิก</Link>
       </div>}

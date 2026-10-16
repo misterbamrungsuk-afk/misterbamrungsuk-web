@@ -17,7 +17,7 @@ export default async function ReportsPage() {
         {!rows.length && <p className="rounded-2xl border border-ink-600 p-6 text-center text-ink-300">ยังไม่มีรายงาน</p>}
         {rows.map((r) => (
           <div key={r.id} className={`rounded-2xl border p-4 flex flex-col gap-1.5 text-[13.5px] ${r.status === "open" ? "border-crimson-500" : "border-ink-600 opacity-70"}`}>
-            <div className="flex flex-wrap gap-2 items-center"><b>{r.code}</b><span className="rounded-full px-2.5 h-6 grid place-items-center text-[11px] font-semibold bg-crimson-500 text-white">{r.reason}</span>{r.blocked && <span className="text-ink-300 text-[12px]">· ลูกค้าบล็อกแล้ว</span>}<span className="ml-auto text-[11.5px] text-[#7d6d6a]">{new Date(r.created_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}</span></div>
+            <div className="flex flex-wrap gap-2 items-center"><b>{r.code}</b><span className="rounded-full px-2.5 h-6 grid place-items-center text-[11px] font-semibold bg-crimson-500 text-white">{r.reason}</span>{r.blocked && <span className="text-ink-300 text-[12px]">· ลูกค้าบล็อกแล้ว</span>}<span className="ml-auto text-[11.5px] text-[#9a8a85]">{new Date(r.created_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}</span></div>
             <div>ผู้ถูกรายงาน: {r.target_label ?? r.target_id}</div>
             <div className="text-ink-300">ผู้รายงาน: {r.reporter_type === "customer" ? "ลูกค้า" : "Part-Time"} {r.reporter_id}</div>
             {r.detail && <div className="whitespace-pre-wrap">{r.detail}</div>}

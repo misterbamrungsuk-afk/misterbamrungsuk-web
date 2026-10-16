@@ -33,7 +33,7 @@ export default async function MarketHome() {
   const ql = "lux-card min-h-11 grid place-items-center rounded-xl border bg-[#211a18] text-[#f3ead9] text-[12.5px] font-semibold text-center";
   const sec = (eb: string, title: string, href: string) => (
     <div className="flex justify-between items-end mx-[18px] mt-[22px] mb-2.5">
-      <div><p className="text-[10.5px] tracking-[2.5px] text-[#e8c472] font-semibold">{eb}</p><h2 className="font-lux font-semibold text-[18px] mt-0.5">{title}</h2></div>
+      <div><p className="text-[11.5px] tracking-[2.5px] text-[#e8c472] font-semibold">{eb}</p><h2 className="font-lux font-semibold text-[18px] mt-0.5">{title}</h2></div>
       <Link href={href} className="text-[12.5px] text-[#e8c472] min-h-8 inline-flex items-center">ดูทั้งหมด →</Link>
     </div>
   );
@@ -49,8 +49,8 @@ export default async function MarketHome() {
         <img src={hero} alt="" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(14,10,10,.35) 0%, rgba(14,10,10,.6) 55%, #171211 100%)" }} />
         <div className="absolute left-[18px] right-[18px] bottom-3.5 lg:left-8 lg:bottom-8 lg:max-w-[520px]">
-          <p className="text-[10.5px] tracking-[2.5px] text-[#e8c472] font-semibold">เพื่อนกิน เพื่อนเที่ยว · MARKETPLACE</p>
-          <h1 className="mt-1.5 mb-1 font-lux font-bold text-[28px] leading-[1.15]">โรงแรม สปา และของดี<br />ที่เราคัดมาให้</h1>
+          <p className="text-[11.5px] tracking-[2.5px] text-[#e8c472] font-semibold">เพื่อนกิน เพื่อนเที่ยว · MARKETPLACE</p>
+          <h1 className="mt-1.5 mb-1 font-lux font-bold text-[28px] leading-[1.3]">โรงแรม สปา และของดี<br />ที่เราคัดมาให้</h1>
           <p className="mb-3 text-[13px] text-[#d9c9b4]">พาร์ทเนอร์ที่ทำงานร่วมกับ Mister Bamrungsuk</p>
           <div className="flex gap-2.5">
             <Link href="/" className="btn-red-lux flex-1 h-12 rounded-[14px] border grid place-items-center text-white font-lux font-semibold text-[15px]" style={{ background: RED_GRAD, borderColor: "rgba(232,196,114,.55)" }}>หาเพื่อน</Link>
@@ -65,7 +65,7 @@ export default async function MarketHome() {
         {TRUST.map((t) => (
           <div key={t} className="flex flex-col items-center gap-1 px-1 py-2 rounded-xl bg-[#211a18] border text-[#7fd6a3] text-center" style={{ borderColor: LINE }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" /><path d="m8.5 12 2.5 2.5 4.5-5" /></svg>
-            <span className="text-[10.5px] text-[#d9c9b4] leading-tight">{t}</span>
+            <span className="text-[11.5px] text-[#d9c9b4] leading-snug">{t}</span>
           </div>
         ))}
       </div>
@@ -120,7 +120,7 @@ export default async function MarketHome() {
       <MarketShop products={rows} categories={categories.map((c) => ({ id: c.id, name: c.name, slug: c.slug }))} />
 
       <div className="mx-[18px] mt-[22px] p-[18px] rounded-[18px] border" style={{ borderColor: "rgba(232,196,114,.55)", background: "linear-gradient(135deg, #2a1418, #211a18)" }}>
-        <p className="text-[10.5px] tracking-[2.5px] text-[#e8c472] font-semibold">BECOME A PARTNER</p>
+        <p className="text-[11.5px] tracking-[2.5px] text-[#e8c472] font-semibold">BECOME A PARTNER</p>
         <h2 className="font-lux font-semibold text-[18px] my-1">โรงแรม สปา หรือแบรนด์สินค้า<br />อยากร่วมงานกับเรา?</h2>
         <p className="mb-3 text-[12.5px] text-[#d9c9b4]">ลงร้านบน Marketplace รับลูกค้าจากสมาชิกของเรา</p>
         <Link href="/partner" className="btn-red-lux grid place-items-center h-12 rounded-[14px] border text-white font-lux font-semibold" style={{ background: RED_GRAD, borderColor: "rgba(232,196,114,.55)" }}>สมัครเป็นพาร์ทเนอร์</Link>

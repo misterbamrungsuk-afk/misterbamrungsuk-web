@@ -39,7 +39,7 @@ export function MarketFooter() {
       <div className="max-w-6xl mx-auto px-4 py-8 grid gap-6 sm:grid-cols-3 text-sm">
         <div>
           <p className="text-[11px] font-semibold tracking-[0.3em] text-gold-500">MISTER BAMRUNGSUK</p>
-          <p className="text-ink-400 text-xs mt-2 leading-relaxed">สินค้าบางรายการจำหน่ายเฉพาะผู้มีอายุ 20 ปีขึ้นไป · ผลิตภัณฑ์ไม่ใช่ยา ไม่มีผลในการป้องกันหรือรักษาโรค</p>
+          <p className="text-[#9a8a85] text-xs mt-2 leading-relaxed">สินค้าบางรายการจำหน่ายเฉพาะผู้มีอายุ 20 ปีขึ้นไป · ผลิตภัณฑ์ไม่ใช่ยา ไม่มีผลในการป้องกันหรือรักษาโรค</p>
         </div>
         <nav className="flex flex-col gap-1.5 text-ink-300">
           <Link className={link} href="/products">สินค้าทั้งหมด</Link>
@@ -54,7 +54,7 @@ export function MarketFooter() {
           <Link className={link} href="/policy/privacy-shop">นโยบายความเป็นส่วนตัว</Link>
         </nav>
       </div>
-      <p className="text-center text-xs text-ink-500 pb-6">© Mister Bamrungsuk</p>
+      <p className="text-center text-xs text-[#9a8a85] pb-6">© Mister Bamrungsuk</p>
     </footer>
   );
 }

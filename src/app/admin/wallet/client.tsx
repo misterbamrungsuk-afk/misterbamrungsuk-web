@@ -47,7 +47,7 @@ export function WalletAdmin({ initial, money, recon }: { initial: Data; money: M
         <div><div className="text-[11px] tracking-[2.5px] font-semibold" style={{ color: GOLD }}>WALLET</div><h1 className="mt-0.5 font-lux font-bold text-2xl">กระเป๋าเงิน · เติมเงิน</h1></div>
         <span className="text-[13px] rounded-full px-3 py-1.5 border" style={{ borderColor: d.sum === 0 ? "rgba(74,222,128,.5)" : "rgba(239,68,68,.6)", color: d.sum === 0 ? "#4ade80" : "#fca5a5" }}>{d.sum === 0 ? "✓ ผลรวม ledger = 0 (สมดุล)" : Number.isNaN(d.sum) ? "⚠ ยังไม่ได้รัน migration กระเป๋าเงิน" : `⚠ ผลรวม ledger = ${d.sum} สตางค์ — ตรวจด่วน`}</span>
       </div>
-      {recon && <div className="rounded-2xl border p-3 text-[13px]" style={{ borderColor: recon.ok ? "rgba(74,222,128,.4)" : "rgba(239,68,68,.6)", background: recon.ok ? "rgba(74,222,128,.05)" : "rgba(239,68,68,.08)" }}><b style={{ color: recon.ok ? "#4ade80" : "#fca5a5" }}>{recon.ok ? "✓ กระทบยอดตรง: ledger · เงินพัก · เงินกันไว้ · ยอดกำลังถอน ตรงกับการจองและคำขอถอน" : `⚠ กระทบยอดไม่ตรง ${recon.issues.length} รายการ`}</b>{!recon.ok && <ul className="mt-1.5 list-disc pl-5 text-[#fca5a5]">{recon.issues.map((i) => <li key={i}>{i}</li>)}</ul>}<div className="mt-1 text-[11.5px] text-[#7d6d6a]">ตรวจตอนเปิดหน้านี้ + รอบรายวัน 10:00 (ไม่ตรง = แจ้งเตือน + อีเมลแอดมิน)</div></div>}
+      {recon && <div className="rounded-2xl border p-3 text-[13px]" style={{ borderColor: recon.ok ? "rgba(74,222,128,.4)" : "rgba(239,68,68,.6)", background: recon.ok ? "rgba(74,222,128,.05)" : "rgba(239,68,68,.08)" }}><b style={{ color: recon.ok ? "#4ade80" : "#fca5a5" }}>{recon.ok ? "✓ กระทบยอดตรง: ledger · เงินพัก · เงินกันไว้ · ยอดกำลังถอน ตรงกับการจองและคำขอถอน" : `⚠ กระทบยอดไม่ตรง ${recon.issues.length} รายการ`}</b>{!recon.ok && <ul className="mt-1.5 list-disc pl-5 text-[#fca5a5]">{recon.issues.map((i) => <li key={i}>{i}</li>)}</ul>}<div className="mt-1 text-[11.5px] text-[#9a8a85]">ตรวจตอนเปิดหน้านี้ + รอบรายวัน 10:00 (ไม่ตรง = แจ้งเตือน + อีเมลแอดมิน)</div></div>}
       {msg && <p role="status" className="text-sm text-[#eed58a]">{msg}</p>}
 
       {!!platform.length && <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -58,10 +58,10 @@ export function WalletAdmin({ initial, money, recon }: { initial: Data; money: M
         <div className="flex gap-2">
           {(["pending", "all"] as const).map((k) => <button key={k} onClick={() => setTab(k)} aria-pressed={tab === k} className="h-9 px-4 rounded-full border text-[13px] font-semibold" style={{ borderColor: tab === k ? GOLD : LINE, background: tab === k ? GOLD : "transparent", color: tab === k ? "#1a1206" : "#d3c7bc" }}>{k === "pending" ? `รอตรวจ ${pending.length}` : "ทั้งหมด"}</button>)}
         </div>
-        {!shown.length && <p className="rounded-2xl border px-4 py-10 text-center text-[#7d6d6a]" style={{ borderColor: LINE }}>ไม่มีคำขอเติมเงิน</p>}
+        {!shown.length && <p className="rounded-2xl border px-4 py-10 text-center text-[#9a8a85]" style={{ borderColor: LINE }}>ไม่มีคำขอเติมเงิน</p>}
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {shown.map((t) => {
-            const v = t.slip_check ? VERDICT[t.slip_check.verdict] ?? [t.slip_check.verdict, "#cdbfb3"] : ["ไม่ได้ตรวจ (ไม่มี Slip2Go)", "#7d6d6a"];
+            const v = t.slip_check ? VERDICT[t.slip_check.verdict] ?? [t.slip_check.verdict, "#cdbfb3"] : ["ไม่ได้ตรวจ (ไม่มี Slip2Go)", "#9a8a85"];
             return (
               <div key={t.id} className="rounded-2xl border p-3 flex gap-3" style={{ borderColor: LINE, background: "#241717" }}>
                 <a href={`/api/wallet/slip?id=${t.id}`} target="_blank" rel="noopener noreferrer" className="shrink-0"><img src={`/api/wallet/slip?id=${t.id}`} alt="สลิป" className="w-24 h-32 object-cover rounded-lg bg-[#130e0e]" /></a>
@@ -69,7 +69,7 @@ export function WalletAdmin({ initial, money, recon }: { initial: Data; money: M
                   <div className="flex justify-between gap-2"><b className="font-lux text-[18px]">{baht(t.amount_satang)}</b><span style={{ color: STATUS[t.status][1] }}>{STATUS[t.status][0]}</span></div>
                   <span className="text-[#cdbfb3] truncate">{t.customer_email ?? t.customer_id}</span>
                   <span style={{ color: v[1] }}>{v[0]}{t.slip_check?.amount != null ? ` · สลิป ${t.slip_check.amount.toLocaleString()} บาท` : ""}</span>
-                  <span className="text-[11.5px] text-[#7d6d6a]">{new Date(t.created_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}</span>
+                  <span className="text-[11.5px] text-[#9a8a85]">{new Date(t.created_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}</span>
                   {t.reason && <span className="text-[#fca5a5]">{t.reason}</span>}
                   {t.status === "pending" && <>
                     <label className="flex items-center gap-2 text-[12px] text-[#cdbfb3]">เข้ากระเป๋า (บาท)<input type="number" inputMode="decimal" value={amt[t.id] ?? String(t.slip_check?.amount ?? t.amount_satang / 100)} onChange={(e) => setAmt({ ...amt, [t.id]: e.target.value })} className="h-9 w-28 rounded-lg border bg-[#130e0e] px-2.5 text-[13px] text-[#f6efe4] outline-none" style={{ borderColor: LINE }} /></label>
@@ -98,18 +98,18 @@ export function WalletAdmin({ initial, money, recon }: { initial: Data; money: M
           <label className="flex items-center gap-2 self-center"><input type="checkbox" checked={!!m.autoCancel} onChange={(e) => setM({ ...m, autoCancel: e.target.checked })} className="w-4 h-4 accent-[#e8c472]" /><span>ยกเลิกอัตโนมัติตามกติกา</span></label>
           <label className="flex flex-col gap-1"><span className="text-[#cdbfb3] text-[12px]">คืนเต็มถ้ายกเลิกก่อนนัด ≥ (ชม.)</span><input type="number" step="any" value={m.cancelFullHours ?? 3} disabled={!m.autoCancel} onChange={(e) => setM({ ...m, cancelFullHours: Number(e.target.value) })} className={inp + " w-40 disabled:opacity-40"} style={{ borderColor: LINE }} /></label>
           <label className="flex flex-col gap-1"><span className="text-[#cdbfb3] text-[12px]">ยกเลิกช้ากว่านั้น คืน (%)</span><input type="number" step="any" value={m.cancelLatePct ?? 50} disabled={!m.autoCancel} onChange={(e) => setM({ ...m, cancelLatePct: Number(e.target.value) })} className={inp + " w-40 disabled:opacity-40"} style={{ borderColor: LINE }} /></label>
-          <span className="text-[11.5px] text-[#7d6d6a] basis-full">ปิด = ทีมงานตัดสินเป็นเคสใน /admin/orders · เปิด = ลูกค้ากดยกเลิกนัดที่ยืนยันแล้ว ระบบคืนเงินทันที ส่วนที่ไม่คืนแบ่งให้เพื่อนตามขั้นส่วนแบ่ง · ก่อนเพื่อนตอบรับยังคืนเต็มเสมอ</span>
+          <span className="text-[11.5px] text-[#9a8a85] basis-full">ปิด = ทีมงานตัดสินเป็นเคสใน /admin/orders · เปิด = ลูกค้ากดยกเลิกนัดที่ยืนยันแล้ว ระบบคืนเงินทันที ส่วนที่ไม่คืนแบ่งให้เพื่อนตามขั้นส่วนแบ่ง · ก่อนเพื่อนตอบรับยังคืนเต็มเสมอ</span>
         </div>
         <button disabled={busy} className="self-start btn-red-lux h-10 px-5 rounded-full text-white font-semibold disabled:opacity-40">บันทึกตั้งค่า</button>
-        {!!m.history.length && <span className="text-[11.5px] text-[#7d6d6a]">แก้ล่าสุด {new Date(m.history[0].at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })} โดย {m.history[0].by}</span>}
+        {!!m.history.length && <span className="text-[11.5px] text-[#9a8a85]">แก้ล่าสุด {new Date(m.history[0].at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })} โดย {m.history[0].by}</span>}
       </form>
 
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] items-start">
         <div className="rounded-2xl border overflow-x-auto" style={{ borderColor: LINE }}>
           <div className="min-w-[520px] text-[13px]">
-            <div className="grid grid-cols-[100px_minmax(0,1fr)_110px_120px] px-3.5 py-2.5 bg-[#130e0e] text-[#7d6d6a] text-xs"><span>ประเภท</span><span>เจ้าของ</span><span>ช่อง</span><span className="text-right">ยอด</span></div>
+            <div className="grid grid-cols-[100px_minmax(0,1fr)_110px_120px] px-3.5 py-2.5 bg-[#130e0e] text-[#9a8a85] text-xs"><span>ประเภท</span><span>เจ้าของ</span><span>ช่อง</span><span className="text-right">ยอด</span></div>
             {owners.map((a) => <div key={`${a.owner_type}${a.owner_id}${a.bucket}`} className="grid grid-cols-[100px_minmax(0,1fr)_110px_120px] px-3.5 py-2.5 border-t" style={{ borderColor: LINE }}><span>{OWNER[a.owner_type] ?? a.owner_type}</span><span className="truncate pr-2">{a.owner_id}</span><span className="text-[#cdbfb3]">{a.bucket}</span><span className="text-right tabular-nums">{baht(a.balance)}</span></div>)}
-            {!owners.length && <p className="border-t px-4 py-8 text-center text-[#7d6d6a]" style={{ borderColor: LINE }}>ยังไม่มียอดในกระเป๋า</p>}
+            {!owners.length && <p className="border-t px-4 py-8 text-center text-[#9a8a85]" style={{ borderColor: LINE }}>ยังไม่มียอดในกระเป๋า</p>}
           </div>
         </div>
         <form onSubmit={async (e) => { e.preventDefault(); if (await act({ action: "adjust", ...adj, idem: crypto.randomUUID() })) setAdj({ ...adj, amount_baht: "", reason: "" }); }} className="rounded-2xl border p-4 flex flex-col gap-2 text-[13px]" style={{ borderColor: LINE, background: "#241717" }}>

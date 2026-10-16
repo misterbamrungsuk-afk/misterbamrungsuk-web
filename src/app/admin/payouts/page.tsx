@@ -43,22 +43,22 @@ export default function AdminPayoutsPage() {
       ))}
       <div className="rounded-2xl border overflow-x-auto text-[13px]" style={{ borderColor: LINE }}>
         <div className="min-w-[860px]">
-          <div className="grid grid-cols-[110px_minmax(0,1fr)_110px_110px_130px_minmax(0,1.2fr)] px-3.5 py-2.5 bg-[#130e0e] text-[#7d6d6a] text-xs"><span>รหัส MB</span><span>บัญชี</span><span>ขอถอน</span><span>โอนสุทธิ</span><span>สถานะ</span><span>จัดการ</span></div>
+          <div className="grid grid-cols-[110px_minmax(0,1fr)_110px_110px_130px_minmax(0,1.2fr)] px-3.5 py-2.5 bg-[#130e0e] text-[#9a8a85] text-xs"><span>รหัส MB</span><span>บัญชี</span><span>ขอถอน</span><span>โอนสุทธิ</span><span>สถานะ</span><span>จัดการ</span></div>
           {(rows ?? []).map((w) => (
             <div key={w.id} className="grid grid-cols-[110px_minmax(0,1fr)_110px_110px_130px_minmax(0,1.2fr)] px-3.5 py-2.5 border-t items-center gap-1" style={{ borderColor: LINE }}>
               <span className="text-[#ffd76a]">{w.parttime_mb}</span><span className="truncate pr-2">{w.bank.bank} · {w.bank.account} · {w.bank.name}</span><span>{baht(w.amount_satang)}</span><span className="font-semibold">{baht(w.net_satang)}</span>
-              <span style={{ color: ST[w.status][1] }}>{ST[w.status][0]}{w.batch_id ? <span className="block text-[11px] text-[#7d6d6a]">{w.batch_id}</span> : null}</span>
+              <span style={{ color: ST[w.status][1] }}>{ST[w.status][0]}{w.batch_id ? <span className="block text-[11px] text-[#9a8a85]">{w.batch_id}</span> : null}</span>
               <span className="flex gap-1.5 items-center">{["requested", "batched"].includes(w.status) ? <>
                 <button disabled={busy} onClick={() => act({ action: "paid", id: w.id })} className="h-8 px-3 rounded-full text-[12px] font-semibold text-[#1a1206]" style={{ background: GOLD }}>โอนแล้ว</button>
                 <input value={fail[w.id] ?? ""} onChange={(e) => setFail({ ...fail, [w.id]: e.target.value })} placeholder="สาเหตุโอนไม่สำเร็จ" className="h-8 min-w-0 flex-1 rounded-lg bg-[#130e0e] border px-2 text-[12px]" style={{ borderColor: LINE }} />
                 <button disabled={busy || !(fail[w.id] ?? "").trim()} onClick={() => act({ action: "failed", id: w.id, note: fail[w.id] })} className="h-8 px-2.5 rounded-full border text-[12px] text-[#fecaca] disabled:opacity-40" style={{ borderColor: "rgba(201,40,61,.6)" }}>ไม่สำเร็จ</button>
-              </> : <span className="text-[12px] text-[#7d6d6a]">{w.paid_at ? new Date(w.paid_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" }) : w.note ?? ""}</span>}</span>
+              </> : <span className="text-[12px] text-[#9a8a85]">{w.paid_at ? new Date(w.paid_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" }) : w.note ?? ""}</span>}</span>
             </div>
           ))}
-          {rows !== null && !rows.length && <p className="border-t px-4 py-10 text-center text-[#7d6d6a]" style={{ borderColor: LINE }}>ยังไม่มีคำขอถอน</p>}
+          {rows !== null && !rows.length && <p className="border-t px-4 py-10 text-center text-[#9a8a85]" style={{ borderColor: LINE }}>ยังไม่มีคำขอถอน</p>}
         </div>
       </div>
-      <p className="text-[12px] text-[#7d6d6a]">ขั้นตอน: รวมรอบ → ดาวน์โหลด CSV → อัปโหลดในแอปธนาคารบริษัท (โอนกลุ่ม) → กด &quot;โอนแล้ว&quot; ทีละรายการ · โอนไม่สำเร็จ = คืนยอดให้ Part-Time ถอนใหม่</p>
+      <p className="text-[12px] text-[#9a8a85]">ขั้นตอน: รวมรอบ → ดาวน์โหลด CSV → อัปโหลดในแอปธนาคารบริษัท (โอนกลุ่ม) → กด &quot;โอนแล้ว&quot; ทีละรายการ · โอนไม่สำเร็จ = คืนยอดให้ Part-Time ถอนใหม่</p>
     </div>
   );
 }

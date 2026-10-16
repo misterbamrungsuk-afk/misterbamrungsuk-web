@@ -54,7 +54,7 @@ export default function DisputePage({ params }: { params: Promise<{ id: string }
       </div>
       <div className="fixed left-0 right-0 bottom-0 mx-auto max-w-[480px] flex flex-col gap-[10px]" style={{ padding: "12px 16px calc(24px + env(safe-area-inset-bottom))", background: "linear-gradient(180deg, rgba(23,18,17,0), #171211 25%)" }}>
         <button type="button" disabled={busy} onClick={send} className="h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[17px] disabled:opacity-50">{busy ? "กำลังส่ง…" : "ส่งเรื่องให้ทีมงาน"}</button>
-        <a href={lineAddUrl()} target="_blank" rel="noopener noreferrer" className="text-center text-[13px] font-light text-[#d9c9b4]">หรือติดต่อทีมงานทาง LINE</a>
+        <a href={lineAddUrl()} target="_blank" rel="noopener noreferrer" className="tap justify-center text-center text-[13px] font-light text-[#d9c9b4]">หรือติดต่อทีมงานทาง LINE</a>
       </div>
     </div>
   );

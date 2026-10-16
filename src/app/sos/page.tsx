@@ -70,11 +70,11 @@ export default function SOSPage() {
 
   return (
     <main className="mb-v7 min-h-dvh mx-auto max-w-[480px] px-5 py-6 flex flex-col overflow-x-hidden" style={{ background: "#171211", color: "#f3ead9" }}>
-      <p className="text-xs font-semibold tracking-[0.18em] text-crimson-400 text-center">EMERGENCY</p>
+      <p className="text-xs font-semibold tracking-[0.18em] text-[#ff8a9a] text-center">EMERGENCY</p>
       <h1 className="font-display text-2xl font-bold text-center mt-1">
         {status === "sent" ? (th ? "แจ้งทีมงานแล้ว" : "Team alerted") : countdown != null ? (th ? "กำลังส่ง SOS" : "Sending SOS") : (th ? "ขอความช่วยเหลือฉุกเฉิน" : "Emergency help")}
       </h1>
-      <p className="text-sm text-ink-400 text-center mt-1">
+      <p className="text-sm text-[#9a8a85] text-center mt-1">
         {status === "sent" ? (th ? "ทีมงาน Mister Bamrungsuk จะติดต่อกลับทันที" : "The Mister Bamrungsuk team will contact you right away")
           : countdown != null ? (th ? "แตะยกเลิกได้ภายในเวลาที่เหลือ" : "Tap cancel before time runs out")
           : (th ? "แตะปุ่มเพื่อส่ง SOS (ยกเลิกได้ใน 3 วินาที)" : "Tap to send SOS (3s to cancel)")}
@@ -105,11 +105,11 @@ export default function SOSPage() {
       <div className="glass rounded-3xl p-4 text-sm">
         <div className="flex items-center justify-between gap-2 py-2 border-b border-ink-600">
           <span>📍 {th ? "ตำแหน่งสดให้แอดมิน" : "Live location to admin"}</span>
-          <span className={coords ? "text-emerald-400" : "text-ink-500"}>{coords ? `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}` : th ? "ไม่มี GPS" : "No GPS"}</span>
+          <span className={coords ? "text-[#4ade80]" : "text-[#d9a95a]"}>{coords ? `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}` : th ? "ยังไม่ได้ตำแหน่ง · อนุญาต GPS" : "No GPS yet · allow location"}</span>
         </div>
         <div className="flex items-center justify-between gap-2 py-2">
           <span>🛡️ {th ? "บันทึกเหตุการณ์เข้าระบบ" : "Event logged"}</span>
-          <span className="text-emerald-400">{th ? "พร้อม" : "Ready"}</span>
+          <span className="text-[#4ade80]">{th ? "พร้อม" : "Ready"}</span>
         </div>
       </div>
 

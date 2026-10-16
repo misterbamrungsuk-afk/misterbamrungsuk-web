@@ -20,7 +20,7 @@ export default function NotificationsPage() {
   }, []);
   return (
     <div className="pb-6">
-      <TopBar back="/" title="การแจ้งเตือน" right={<Link href="/notifications/permission" className="text-[13px] font-light" style={{ color: GOLD }}>ตั้งค่า</Link>} />
+      <TopBar back="/" title="การแจ้งเตือน" right={<Link href="/notifications/permission" className="tap px-2 text-[13px] font-light" style={{ color: GOLD }}>ตั้งค่า</Link>} />
       <div className="flex flex-col gap-2" style={{ padding: "16px 16px 0" }}>
         {rows === null ? <p className="m-0 text-[13px] font-light text-[#b5a596]">กำลังโหลด…</p> : !rows.length ? (
           <div className="rounded-[20px] bg-[#211a18] text-center text-[14px] text-[#d9c9b4]" style={{ padding: 28, border: `1px solid ${LN}` }}>ยังไม่มีการแจ้งเตือน</div>

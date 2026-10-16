@@ -149,7 +149,7 @@ export default function RegisterPage() {
               {error && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{error}</p>}
               <button type="submit" disabled={busy || !agree || cool > 0} className={cta}>{busy ? "กำลังดำเนินการ…" : smsOff ? "สมัครสมาชิก" : cool > 0 ? `ส่งรหัสใหม่ได้ใน ${mmss}` : "ส่งรหัส OTP"}</button>
               <Link href="/auth/forgot" className="min-h-11 grid place-items-center text-[13px] font-light text-[#e8c472]">ลืมรหัสผ่าน?</Link>
-              <div className="text-center text-[13px] font-light text-[#d9c9b4]">มีบัญชีแล้ว? <Link href="/login" className="text-[#e8c472]">เข้าสู่ระบบ</Link></div>
+              <div className="text-center text-[13px] font-light text-[#d9c9b4]">มีบัญชีแล้ว? <Link href="/login" className="tap px-1 text-[#e8c472]">เข้าสู่ระบบ</Link></div>
             </form>
           )}
 

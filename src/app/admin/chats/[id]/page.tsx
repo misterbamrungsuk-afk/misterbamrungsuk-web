@@ -21,7 +21,7 @@ export default async function ChatTranscript({ params }: { params: Promise<{ id:
       <div className="max-w-[760px] flex flex-col gap-2">
         {ms.map((m) => (
           <div key={m.id} className={`rounded-xl border p-3 text-[13.5px] ${m.blocked ? "border-crimson-500 bg-crimson-500/10" : m.sender_type === "system" ? "border-ink-600 bg-transparent text-ink-300" : "border-ink-600 bg-ink-800"}`}>
-            <div className="flex justify-between gap-2 text-[11.5px] text-[#7d6d6a] mb-1">
+            <div className="flex justify-between gap-2 text-[11.5px] text-[#9a8a85] mb-1">
               <span className={m.sender_type === "customer" ? "text-sky-300" : m.sender_type === "parttime" ? "text-amber-300" : ""}>{WHO[m.sender_type]}</span>
               <span>{t(m.created_at)}{m.read_at ? " · อ่านแล้ว" : ""}</span>
             </div>

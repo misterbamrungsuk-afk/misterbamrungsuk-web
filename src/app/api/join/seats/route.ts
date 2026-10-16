@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
-import { CLOSE_AT, QUOTA } from "@/lib/join/config";
-import { countActive } from "@/lib/join/store";
+import { CLOSE_AT } from "@/lib/join/config";
+import { nextCohortSeats } from "@/lib/join/cohorts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** ที่นั่งคงเหลือ สำหรับ badge บนหน้าเว็บ */
+/** ที่นั่งคงเหลือของกลุ่มอบรมถัดไป (นับจริงจากกลุ่มที่แอดมินเปิดรับ) สำหรับ badge บนหน้าเว็บ */
 export async function GET() {
-  const left = Math.max(0, QUOTA - (await countActive()));
-  const closed = left === 0 || Date.now() > Date.parse(CLOSE_AT);
-  return NextResponse.json({ left, quota: QUOTA, closed });
+  const s = await nextCohortSeats();
+  return NextResponse.json({ left: s.left, quota: s.quota, cohort: s.cohort, closed: s.full || Date.now() > Date.parse(CLOSE_AT) });
 }

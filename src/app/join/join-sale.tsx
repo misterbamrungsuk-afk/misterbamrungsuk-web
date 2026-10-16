@@ -43,7 +43,7 @@ export function JoinSalePage({ seats, showEarnings = true, invite }: { seats: Se
       <div className="mx-auto max-w-[1200px] flex flex-col" style={{ padding: "20px 16px 0", gap: 26 }}>
         <section className="join-hero md:min-h-[340px] md:flex md:flex-col md:justify-end md:py-14 md:px-12" style={{ padding: "40px 22px 34px", borderRadius: 18 }}>
           <div className="text-[11px] font-semibold tracking-[2px] text-[#e8c472]">{invite ? "✦ คำเชิญพิเศษ · PART TIME" : "PART TIME"}</div>
-          <h1 className="font-semibold text-[30px] md:text-[48px] leading-[1.25] text-[#f3ead9] md:max-w-[640px]" style={{ margin: "10px 0 6px" }}>เพื่อนกินเที่ยว Mister Bamrungsuk</h1>
+          <h1 className="font-semibold text-[30px] md:text-[48px] leading-[1.32] text-[#f3ead9] md:max-w-[640px]" style={{ margin: "10px 0 6px" }}>เพื่อนกินเที่ยว Mister Bamrungsuk</h1>
           <p className="m-0 text-[15px] md:text-[18px] text-[#e6d6c4]">งานพาร์ทไทม์ เลือกวันเวลาเอง{invite ? " · ผู้ได้รับคำเชิญไม่เก็บค่าการันตี" : ""}</p>
         </section>
 
@@ -70,7 +70,7 @@ export function JoinSalePage({ seats, showEarnings = true, invite }: { seats: Se
             })}
           </div>
           <div className="w-full max-w-[560px] mx-auto flex flex-col" style={{ gap: 18 }}>
-            <Link href="/join/terms" className="self-center text-[14px] text-[#e8c472]">อ่านสัญญา</Link>
+            <Link href="/join/terms" className="self-center tap text-[14px] text-[#e8c472]">อ่านสัญญา</Link>
             {!invite && <div className="flex justify-between items-center rounded-xl text-[13px] font-light" style={{ padding: "10px 14px", background: "rgba(232,196,114,0.10)" }}>
               <span>{seats.closed ? "ปิดรับสมัครรอบนี้แล้ว" : `กลุ่มอบรมถัดไป · ${seats.cohort}`}</span>
               <span className="text-[#e8c472] font-semibold">{seats.closed ? "เต็มแล้ว" : `เหลือ ${seats.left} / ${seats.quota} ที่`}</span>
@@ -151,7 +151,7 @@ export function JoinSalePage({ seats, showEarnings = true, invite }: { seats: Se
       <footer className="mx-auto max-w-[1200px]" style={{ padding: "0 20px" }}>
         <div className="flex flex-col border-t border-[rgba(243,234,217,0.07)] text-[13px] leading-[1.6] font-light" style={{ marginTop: 32, padding: "18px 0 24px", gap: 16 }}>
           <div className="flex justify-between items-center gap-3"><span className="inline-flex items-center gap-2"><img src="/brand/logo.png" alt="" width={34} height={34} className="w-[34px] h-[34px] object-contain" /><span className="font-brand text-[21px] text-[#e8c472]">Bamrungsuk</span></span><span>ติดต่อเรา</span></div>
-          <div className="flex flex-wrap" style={{ gap: "4px 12px" }}><Link href="/join/terms" className="text-[#f3ead9] hover:underline">ข้อกำหนดและเงื่อนไขการใช้งาน</Link><span className="text-[#b5a596]">|</span><Link href="/join/privacy" className="text-[#f3ead9] hover:underline">นโยบายความเป็นส่วนตัว (PDPA)</Link></div>
+          <div className="flex flex-wrap" style={{ gap: "4px 12px" }}><Link href="/join/terms" className="tap text-[#f3ead9] hover:underline">ข้อกำหนดและเงื่อนไขการใช้งาน</Link><span className="text-[#b5a596]">|</span><Link href="/join/privacy" className="tap text-[#f3ead9] hover:underline">นโยบายความเป็นส่วนตัว (PDPA)</Link></div>
           <div className="select-all">{`${CONTROLLER.email} · ${CONTROLLER.phone}`}</div>
           <div className="text-[#b5a596]">© 2569 Mister Bamrungsuk สงวนลิขสิทธิ์</div>
         </div>

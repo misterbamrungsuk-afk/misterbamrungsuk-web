@@ -33,7 +33,7 @@ export function LuxHeader({ back, eyebrow, title, right }: { back: string; eyebr
     <div className="sticky top-0 z-10 flex items-center gap-3 px-[18px] py-4 h-[77px] bg-[#171211]" style={{ borderBottom: `1px solid ${BD}` }}>
       <Back href={back} />
       <div className="flex-1 min-w-0">
-        <div className="text-[10.5px] tracking-[2.5px] text-[#e8c472] font-semibold">{eyebrow}</div>
+        <div className="text-[11.5px] tracking-[2.5px] text-[#e8c472] font-semibold">{eyebrow}</div>
         <h1 className="m-0 font-lux font-semibold text-[20px] truncate">{title}</h1>
       </div>
       {right}

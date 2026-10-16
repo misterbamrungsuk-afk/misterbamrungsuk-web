@@ -47,7 +47,7 @@ export function VendorLogin() {
           {err && <p role="alert" className="text-sm text-crimson-300">{err}</p>}
           <button disabled={busy} className="btn-crimson h-12 rounded-full font-semibold">{busy ? "กำลังเข้าสู่ระบบ…" : "เข้าสู่ระบบ"}</button>
         </form>
-        <p className="text-xs text-ink-400 mt-4">ลืมรหัสผ่าน? ติดต่อทีมงานเพื่อขอลิงก์ตั้งรหัสใหม่ · <Link href="/" className="underline">กลับหน้าแรก</Link></p>
+        <p className="text-xs text-[#9a8a85] mt-4">ลืมรหัสผ่าน? ติดต่อทีมงานเพื่อขอลิงก์ตั้งรหัสใหม่ · <Link href="/" className="underline">กลับหน้าแรก</Link></p>
       </Shell>
     </div>
   );
@@ -96,7 +96,7 @@ export function VendorPortal({ email, initial }: { email: string; initial: Vendo
       <header className="sticky top-0 z-30 bg-ink-900/90 backdrop-blur-xl border-b border-ink-600">
         <div className="max-w-6xl mx-auto flex items-center gap-3 px-4 h-14">
           <Logo size={26} />
-          <div className="min-w-0"><p className="text-sm font-semibold truncate">{d.vendor.name}</p><p className="text-[11px] text-ink-400 truncate">{email}</p></div>
+          <div className="min-w-0"><p className="text-sm font-semibold truncate">{d.vendor.name}</p><p className="text-[11px] text-[#9a8a85] truncate">{email}</p></div>
           <Link href={`/shop/${d.vendor.slug}`} className="ml-auto text-xs text-gold-300 hidden sm:inline">ดูหน้าร้าน ↗</Link>
           <button onClick={logout} className="chip h-8 px-3 text-xs">ออกจากระบบ</button>
         </div>
@@ -127,7 +127,7 @@ function Orders({ d, reload, setMsg }: Sub) {
   if (!d.orders.length) return <div className={card}><p className="text-sm text-ink-300">ยังไม่มีคำสั่งซื้อที่ยืนยันชำระแล้ว</p></div>;
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-xs text-ink-400">แสดงเฉพาะรายการสินค้าของร้านคุณ ในคำสั่งซื้อที่ทีมงานยืนยันการชำระแล้ว · แพ็กมิดชิด ไม่ระบุชื่อสินค้าหน้ากล่อง</p>
+      <p className="text-xs text-[#9a8a85]">แสดงเฉพาะรายการสินค้าของร้านคุณ ในคำสั่งซื้อที่ทีมงานยืนยันการชำระแล้ว · แพ็กมิดชิด ไม่ระบุชื่อสินค้าหน้ากล่อง</p>
       {d.orders.map((o) => {
         const v = f[o.id] ?? { no: o.tracking?.tracking_no ?? "", carrier: o.tracking?.carrier ?? "thaipost" };
         return (
@@ -138,7 +138,7 @@ function Orders({ d, reload, setMsg }: Sub) {
                 <p className="text-sm mt-1">{o.buyer_name} · {o.phone}</p>
                 <p className="text-xs text-ink-300 whitespace-pre-line">{o.address}</p>
                 <ul className="text-sm mt-2">{o.items.map((i) => <li key={i.product_id}>{i.name} × {i.qty} — ฿{baht(i.price * i.qty)}</li>)}</ul>
-                <p className="text-xs text-ink-400 mt-1">ยืนยันชำระ {dt(o.paid_at)}</p>
+                <p className="text-xs text-[#9a8a85] mt-1">ยืนยันชำระ {dt(o.paid_at)}</p>
               </div>
               {o.split && (
                 <div className="text-sm min-w-[200px]">
@@ -218,7 +218,7 @@ function Products({ d, reload, setMsg }: Sub) {
       <section className={card}>
         <h3 className="font-semibold">{f.id ? "แก้ไขสินค้า" : "เพิ่มสินค้า"}</h3>
         <p className="mt-2 rounded-xl border border-crimson-500/50 bg-crimson-500/5 p-3 text-xs leading-relaxed">{CLAIM_NOTE}</p>
-        <p className="mt-2 text-xs text-ink-400">สินค้าจะแสดงบนเว็บเมื่อ: เปิด “ขอเผยแพร่” + มีเลข อย. + ทีมงานอนุมัติ · แก้ชื่อ/รายละเอียด/รูป/เลข อย. ต้องรออนุมัติใหม่</p>
+        <p className="mt-2 text-xs text-[#9a8a85]">สินค้าจะแสดงบนเว็บเมื่อ: เปิด “ขอเผยแพร่” + มีเลข อย. + ทีมงานอนุมัติ · แก้ชื่อ/รายละเอียด/รูป/เลข อย. ต้องรออนุมัติใหม่</p>
         <div className="flex flex-col gap-3 mt-3">
           <div><label className={lbl}>ชื่อสินค้า *</label><input className="input-dark w-full" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
           <div className="grid grid-cols-2 gap-2">

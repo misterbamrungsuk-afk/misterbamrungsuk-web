@@ -28,7 +28,7 @@ export function SiteFooter() {
       <nav aria-label="เอกสารทางกฎหมาย" className="flex flex-wrap gap-x-3 gap-y-1">
         {links.map((l, i) => (
           <span key={l.href} className="inline-flex items-center gap-3">
-            {i > 0 && <span aria-hidden className="text-[#7d6d6a]">|</span>}
+            {i > 0 && <span aria-hidden className="text-[#9a8a85]">|</span>}
             <Link href={l.href} className="text-[#d8c8b8] underline-offset-2 hover:underline hover:text-[#f6efe4]">{l.label}</Link>
           </span>
         ))}
@@ -40,7 +40,7 @@ export function SiteFooter() {
           {(email || phone) && <div>{[email, phone].filter(Boolean).join(" · ")}</div>}
         </address>
       )}
-      <div className="text-[#7d6d6a]">© {new Date().getFullYear() + 543} Mister Bamrungsuk{name ? ` · ${name}` : ""} สงวนลิขสิทธิ์</div>
+      <div className="text-[#9a8a85]">© {new Date().getFullYear() + 543} Mister Bamrungsuk{name ? ` · ${name}` : ""} สงวนลิขสิทธิ์</div>
     </footer>
   );
 }

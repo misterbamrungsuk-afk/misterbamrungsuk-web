@@ -28,7 +28,7 @@ export function MembersClient({ rows }: { rows: Row[] }) {
     setMsg(j?.ok ? { ok: true, text: action === "erase" ? "ลบข้อมูลส่วนบุคคลแล้ว" : action === "suspend" ? "ระงับบัญชีแล้ว · ออกจากระบบทุกเครื่อง" : "คืนสิทธิ์แล้ว" } : { ok: false, text: j?.error || "ทำรายการไม่สำเร็จ" });
     if (j?.ok) { setReason(""); router.refresh(); }
   };
-  const status = (r: Row) => (r.deleted_at ? ["ลบข้อมูลแล้ว", "#7d6d6a"] : r.suspended_at ? ["ระงับ", "#fca5a5"] : r.delete_requested_at ? ["ขอลบบัญชี", "#c4b5fd"] : ["ปกติ", "#cdbfb3"]);
+  const status = (r: Row) => (r.deleted_at ? ["ลบข้อมูลแล้ว", "#9a8a85"] : r.suspended_at ? ["ระงับ", "#fca5a5"] : r.delete_requested_at ? ["ขอลบบัญชี", "#c4b5fd"] : ["ปกติ", "#cdbfb3"]);
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px] items-start text-[13px]">
       <section className="flex flex-col gap-2 min-w-0">

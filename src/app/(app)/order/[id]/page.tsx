@@ -60,7 +60,7 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
         <div className="flex gap-3 items-center rounded-[20px] bg-[#211a18]" style={{ padding: 14, border: `1px solid ${LN}` }}>
           <img src={b.pt.img} alt="" className="w-14 h-14 rounded-full object-cover" />
           <div className="flex-1 min-w-0"><b className="font-medium text-[17px]">{b.pt.nick}</b><div className="text-[12px] font-light text-[#d9c9b4]">#{b.code} · จองเมื่อ {fmt(b.created_at)}</div></div>
-          <Link href={`/p/${b.pt.pid}`} className="text-[13px] font-light" style={{ color: GOLD }}>โปรไฟล์</Link>
+          <Link href={`/p/${b.pt.pid}`} className="tap px-1 text-[13px] font-light" style={{ color: GOLD }}>โปรไฟล์</Link>
         </div>
         <div className="rounded-[20px] bg-[#211a18] text-[14px]" style={{ padding: "4px 16px", border: `1px solid ${LN}` }}>
           {[["วันเวลา", `${fmt(b.starts_at)} (${b.hours} ชม.)`], ["สถานที่", `${b.place.label} ${b.place.detail}`], ...(b.note ? [["ฝากบอก", b.note]] : []), ["ค่าบริการ", baht(b.price_satang)], ...(b.room_fee_satang ? [["ค่าห้อง", baht(b.room_fee_satang)]] : [])].map(([k, v], i, a) => (
@@ -72,8 +72,8 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
           <div className="flex-1"><div className="text-[13px] font-light text-[#d9c9b4]">เงินของคุณ {baht(b.total_satang)}</div><b className="font-semibold" style={{ color: GOLD }}>{money[0]}</b><div className="text-[12.5px] font-light text-[#d9c9b4]">{money[1]}{b.decline_reason && (b.status === "declined") ? ` · ${b.decline_reason}` : ""}</div></div>
         </div>
         <div className="flex justify-between text-[13px] font-light">
-          {["accepted", "checked_in", "completed", "refunded", "cancel_requested", "disputed"].includes(b.status) ? <Link href={`/order/${b.id}/receipt`} style={{ color: GOLD }}>ใบเสร็จ / ใบกำกับภาษี ›</Link> : <span />}
-          <Link href={`/report?booking=${b.id}&nick=${encodeURIComponent(b.pt.nick)}`} className="text-[#d9c9b4] hover:text-[#f3ead9]">รายงานผู้ใช้</Link>
+          {["accepted", "checked_in", "completed", "refunded", "cancel_requested", "disputed"].includes(b.status) ? <Link href={`/order/${b.id}/receipt`} className="tap" style={{ color: GOLD }}>ใบเสร็จ / ใบกำกับภาษี ›</Link> : <span />}
+          <Link href={`/report?booking=${b.id}&nick=${encodeURIComponent(b.pt.nick)}`} className="tap text-[#d9c9b4] hover:text-[#f3ead9]">รายงานผู้ใช้</Link>
         </div>
         {cancel && (
           <div className="rounded-[20px] bg-[#211a18] flex flex-col gap-3" style={{ padding: 14, border: "1px solid rgba(255,138,154,.4)" }}>

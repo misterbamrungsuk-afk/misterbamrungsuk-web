@@ -138,7 +138,7 @@ export function WithdrawForm({ avail, acct, bankHref, mb, t, rules = { min: 500,
       </div>
 
       <div className="rounded-[20px] bg-[#251d1b]" style={{ padding: 16 }}>
-        <div className="flex justify-between items-center gap-2.5 mb-2"><span className="text-[13px] text-[#b5a596]">โอนเข้าบัญชี</span><Link href={bankHref} className="text-[13px] text-[#e8c472] font-light">+ เพิ่มบัญชี</Link></div>
+        <div className="flex justify-between items-center gap-2.5 mb-2"><span className="text-[13px] text-[#b5a596]">โอนเข้าบัญชี</span><Link href={bankHref} className="tap text-[13px] text-[#e8c472] font-light">+ เพิ่มบัญชี</Link></div>
         {acct
           ? <div className="flex items-center gap-3 rounded-[14px]" style={{ padding: "10px 12px", background: "rgba(232,196,114,0.12)" }}>
               <span className="w-[38px] h-[38px] rounded-[10px] text-white grid place-items-center text-[13px] font-bold shrink-0" style={{ background: acct.logo }}>{acct.short}</span>
@@ -195,15 +195,15 @@ export function SettingsForm({ mb, t, init }: { mb: string; t: string; init: PtS
       <div className="flex flex-wrap gap-2">
         {quick.map((q) => (
           <span key={q} className="h-[34px] rounded-[10px] text-[13px] flex items-center gap-1" style={{ padding: "0 4px 0 12px", background: "rgba(243,234,217,0.07)" }}>
-            {q}<button type="button" aria-label={`ลบ ${q}`} onClick={() => { setQuick(quick.filter((x) => x !== q)); ch(); }} className="w-7 h-7 grid place-items-center text-[#b5a596] hover:text-[#f3ead9]">×</button>
+            {q}<button type="button" aria-label={`ลบ ${q}`} onClick={() => { setQuick(quick.filter((x) => x !== q)); ch(); }} className="w-9 h-9 -mr-2 grid place-items-center text-[#b5a596] hover:text-[#f3ead9]">×</button>
           </span>
         ))}
         {adding
           ? <span className="h-[34px] rounded-[10px] flex items-center gap-1" style={{ padding: "0 4px 0 10px", background: "rgba(243,234,217,0.07)" }}>
               <input autoFocus aria-label="ข้อความสำเร็จรูปใหม่" value={add} maxLength={60} onChange={(e) => setAdd(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") addOne(); if (e.key === "Escape") setAdding(false); }} className="w-36 bg-transparent text-[13px] outline-none text-[#f3ead9]" />
-              <button type="button" onClick={addOne} className="h-7 px-2 text-[13px] text-[#e8c472]">เพิ่ม</button>
+              <button type="button" onClick={addOne} className="h-10 px-3 text-[13px] text-[#e8c472]">เพิ่ม</button>
             </span>
-          : quick.length < 10 && <button type="button" onClick={() => setAdding(true)} className="h-[34px] rounded-[10px] text-[13px] text-[#e8c472]" style={{ padding: "0 12px", background: "rgba(243,234,217,0.07)" }}>+ เพิ่ม</button>}
+          : quick.length < 10 && <button type="button" onClick={() => setAdding(true)} className="h-10 rounded-[10px] text-[13px] text-[#e8c472]" style={{ padding: "0 14px", background: "rgba(243,234,217,0.07)" }}>+ เพิ่ม</button>}
       </div>
       {(dirty || st) && (
         <button type="button" onClick={save} disabled={st === "busy" || !dirty} className="h-[46px] rounded-[14px] bg-[#e8c472] text-[#1b130b] text-[15px] font-semibold disabled:opacity-70">{st === "busy" ? "กำลังบันทึก…" : st === "ok" ? "✓ บันทึกแล้ว" : "บันทึก"}</button>

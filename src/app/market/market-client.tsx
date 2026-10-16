@@ -24,8 +24,8 @@ export function MarketBanner({ banners, fallback }: { banners: Banner[]; fallbac
         <>
           <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(14,10,10,.92) 30%, rgba(14,10,10,.15))" }} />
           <div className="absolute left-4 top-4 right-[110px]">
-            <p className="text-[10.5px] tracking-[2.5px] text-[#e8c472] font-semibold">PROMOTION</p>
-            <p className="font-lux font-semibold text-[17px] leading-tight mt-0.5">{b.title}</p>
+            <p className="text-[11.5px] tracking-[2.5px] text-[#e8c472] font-semibold">PROMOTION</p>
+            <p className="font-lux font-semibold text-[17px] leading-snug mt-0.5">{b.title}</p>
             {b.subtitle && <p className="text-xs text-[#d9c9b4] mt-0.5 line-clamp-2">{b.subtitle}</p>}
           </div>
           {b.link && <span className="absolute left-4 bottom-3 min-h-8 px-3 rounded-full border border-[#e8c472] bg-[rgba(14,10,10,.6)] text-[#e8c472] text-xs font-semibold inline-flex items-center">ดูเลย →</span>}

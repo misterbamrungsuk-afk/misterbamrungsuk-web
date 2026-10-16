@@ -52,8 +52,8 @@ export default async function PortalHome() {
         <p className="text-sm text-ink-300">{greet}</p>
         <h1 className="font-display text-2xl font-semibold">{p.business_name}</h1>
         <p className="text-xs mt-1">
-          <span className={listing?.published ? "text-emerald-300" : "text-ink-400"}>● {listing?.published ? "เปิดแสดงอยู่" : "ยังไม่เปิดแสดง"}</span>
-          <span className="text-ink-400"> · บัญชี{ACCOUNT_LABEL[p.account_status ?? "pending"]}</span>
+          <span className={listing?.published ? "text-emerald-300" : "text-[#9a8a85]"}>● {listing?.published ? "เปิดแสดงอยู่" : "ยังไม่เปิดแสดง"}</span>
+          <span className="text-[#9a8a85]"> · บัญชี{ACCOUNT_LABEL[p.account_status ?? "pending"]}</span>
         </p>
       </section>
 
@@ -73,12 +73,12 @@ export default async function PortalHome() {
 
       <section className="mt-6">
         <div className="flex justify-between items-baseline"><h2 className="font-semibold">การจองที่กำลังจะมาถึง</h2><Link href="/partner/portal/bookings" className="text-xs text-gold-300">ดูทั้งหมด</Link></div>
-        {upcoming.length === 0 ? <p className="text-sm text-ink-400 mt-3">ยังไม่มีการจองที่กำลังจะมาถึง</p> : (
+        {upcoming.length === 0 ? <p className="text-sm text-[#9a8a85] mt-3">ยังไม่มีการจองที่กำลังจะมาถึง</p> : (
           <ul className="mt-3 space-y-2">
             {upcoming.map((b) => (
               <li key={b.id} className="rounded-2xl border border-ink-600 bg-ink-800/60 px-4 py-3 flex justify-between gap-3">
                 <div className="min-w-0"><p className="font-medium truncate">{b.parttime_name}</p><p className="text-xs text-ink-300 truncate">ลูกค้า {b.customer_name} · {b.hours} ชม.</p></div>
-                <div className="text-right shrink-0"><p className="text-sm">{timeTh(b.start_time)}</p><p className="text-xs text-ink-400">{b.room ?? BOOKING_LABEL[b.status]}</p></div>
+                <div className="text-right shrink-0"><p className="text-sm">{timeTh(b.start_time)}</p><p className="text-xs text-[#9a8a85]">{b.room ?? BOOKING_LABEL[b.status]}</p></div>
               </li>
             ))}
           </ul>

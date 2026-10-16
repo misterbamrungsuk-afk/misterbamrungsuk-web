@@ -18,7 +18,7 @@ export function PtNav({ c, active }: { c: { mb: string; q: string }; active: PtK
   ];
   return (
     <nav aria-label="เมนู Part Time"
-      className="fixed z-40 bottom-0 inset-x-0 mx-auto max-w-[640px] h-[calc(76px+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)] grid grid-cols-5 items-center text-center font-light text-[#b5a596] text-[10.5px] border-t border-[rgba(243,234,217,0.07)] bg-[#251d1b] md:rounded-t-2xl
+      className="fixed z-40 bottom-0 inset-x-0 mx-auto max-w-[640px] h-[calc(76px+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)] grid grid-cols-5 items-center text-center font-light text-[#b5a596] text-[12px] border-t border-[rgba(243,234,217,0.07)] bg-[#251d1b] md:rounded-t-2xl
         lg:top-0 lg:right-auto lg:mx-0 lg:max-w-none lg:w-[104px] lg:h-auto lg:pb-6 lg:grid-cols-1 lg:auto-rows-[76px] lg:content-start lg:rounded-none lg:border-t-0 lg:border-r lg:text-[12px]">
       <Link href="/" aria-label="Mister Bamrungsuk · หน้าแรก" className="hidden lg:grid place-items-center h-[76px] mb-4">
         <img src="/brand/logo.png" alt="" width={48} height={48} className="w-12 h-12 object-contain" />

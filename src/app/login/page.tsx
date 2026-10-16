@@ -59,14 +59,14 @@ export default function LoginPage() {
         <div className="flex-1 md:flex-none" />
         <section className="flex flex-col gap-[14px]" style={{ padding: "24px 20px calc(26px + env(safe-area-inset-bottom))" }}>
           <div className="flex items-center gap-2 text-[12px] font-semibold text-[#e8c472]" style={{ letterSpacing: 3 }}><span className="w-[22px] h-px bg-[#e8c472]" />MISTER BAMRUNGSUK</div>
-          <h1 className="m-0 font-bold text-[32px] leading-[1.15]" style={{ textWrap: "balance" }}>เพื่อนกิน เพื่อนเที่ยว<span className="block mt-[37px] text-[#e8c472]">ในแบบของคุณ</span></h1>
+          <h1 className="m-0 font-bold text-[32px] leading-[1.3]" style={{ textWrap: "balance" }}>เพื่อนกิน เพื่อนเที่ยว<span className="block mt-[37px] text-[#e8c472]">ในแบบของคุณ</span></h1>
           <p className="m-0 text-[14px] text-[#d9c9b4] leading-[1.6]" style={{ textShadow: "0 1px 8px rgba(0,0,0,.6)" }}>เพื่อนทุกคนผ่านการยืนยันตัวตน จ่ายปลอดภัย เงินพักไว้กับเราจนจบนัด</p>
           <form onSubmit={emailLogin} className="flex flex-col gap-[10px]">
             <label className="flex flex-col gap-[5px] text-[12px] text-[#d9c9b4] font-light">อีเมล
               <input type="email" required autoComplete="email" inputMode="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className={field} /></label>
             <label className="flex flex-col gap-[5px] text-[12px] text-[#d9c9b4] font-light">รหัสผ่าน
               <input type="password" required autoComplete="current-password" placeholder="อย่างน้อย 8 ตัวอักษร" value={password} onChange={(e) => setPassword(e.target.value)} className={field} /></label>
-            <Link href="/auth/forgot" className="self-end min-h-8 flex items-center text-[13px] text-[#e8c472] font-light">ลืมรหัสผ่าน?</Link>
+            <Link href="/auth/forgot" className="self-end tap px-1 text-[13px] text-[#e8c472] font-light">ลืมรหัสผ่าน?</Link>
             {error && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{error}</p>}
             <button type="submit" disabled={!ok || busy} className="h-[54px] rounded-full bg-[#e8c472] text-[#1b130b] font-semibold text-[15px] disabled:opacity-45" style={{ border: `1.5px solid ${GOLD}` }}>{busy ? "กำลังเข้าสู่ระบบ…" : "เข้าสู่ระบบ"}</button>
             <Link href="/auth/register" className="self-center min-h-10 flex items-center text-[13px] text-[#d9c9b4] font-light">ยังไม่มีบัญชี?&nbsp;<span className="text-[#e8c472]">สมัครสมาชิก</span></Link>

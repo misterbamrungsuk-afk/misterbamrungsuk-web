@@ -209,7 +209,7 @@ function Banners({ d, reload, setMsg }: Sub) {
           <div><label className={lbl}>ลำดับ</label><input className="input-dark w-24" value={f.sort} onChange={(e) => setF({ ...f, sort: e.target.value })} /></div>
           <div><label className={lbl}>รูป (แนวนอน ~1600×600)</label><input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="text-sm" /></div>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={f.active} onChange={(e) => setF({ ...f, active: e.target.checked })} /> แสดงบนหน้าแรก</label>
-          <p className="text-[11px] text-ink-400">ข้อความโปรโมทต้องไม่อ้างสรรพคุณทางการแพทย์หรือสมรรถภาพ</p>
+          <p className="text-[11px] text-[#9a8a85]">ข้อความโปรโมทต้องไม่อ้างสรรพคุณทางการแพทย์หรือสมรรถภาพ</p>
           <div className="flex gap-2"><button onClick={save} className="btn-crimson h-10 px-5 rounded-full text-sm flex-1">บันทึก</button>{f.id && <button onClick={() => setF(EMPTY_BANNER)} className="chip h-10 px-4">ยกเลิก</button>}</div>
         </div>
       </Card>
@@ -281,7 +281,7 @@ function Reviews({ d, reload, setMsg }: Sub) {
           <div className="flex-1 min-w-0">
             <p className="text-sm"><span className="text-gold-400">{"★".repeat(r.stars)}</span> <b>{r.name}</b> · {d.products.find((p) => p.id === r.product_id)?.name ?? r.product_id}</p>
             {r.text && <p className="text-sm text-ink-200 mt-1 whitespace-pre-line">{r.text}</p>}
-            <p className="text-xs text-ink-400 mt-1">{new Date(r.created_at).toLocaleString("th-TH")} · 0{r.phone.slice(2, 4)}-xxx-{r.phone.slice(-4)} · ออเดอร์ {d.orders.find((o) => o.id === r.order_id)?.order_no ?? "—"}</p>
+            <p className="text-xs text-[#9a8a85] mt-1">{new Date(r.created_at).toLocaleString("th-TH")} · 0{r.phone.slice(2, 4)}-xxx-{r.phone.slice(-4)} · ออเดอร์ {d.orders.find((o) => o.id === r.order_id)?.order_no ?? "—"}</p>
           </div>
           <Pill tone={r.hidden ? "muted" : "green"}>{r.hidden ? "ซ่อน" : "แสดง"}</Pill>
           <button onClick={() => toggle(r.id, !r.hidden)} className="chip h-8 px-3 text-xs">{r.hidden ? "แสดง" : "ซ่อน"}</button>

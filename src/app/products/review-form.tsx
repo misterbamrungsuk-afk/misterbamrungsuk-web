@@ -47,7 +47,7 @@ export function ReviewForm({ productId }: { productId: string }) {
           </div>
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="ชื่อที่แสดง (เว้นว่าง = ผู้ซื้อ)" maxLength={40} className="input-dark" />
           <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} maxLength={1000} placeholder="เล่าประสบการณ์การสั่งซื้อ การจัดส่ง และบรรจุภัณฑ์" className="input-dark" />
-          <p className="text-[11px] text-ink-400">โปรดหลีกเลี่ยงการอ้างสรรพคุณทางการแพทย์ ข้อความลักษณะนี้จะถูกซ่อนไว้ให้ทีมงานตรวจ</p>
+          <p className="text-[11px] text-[#9a8a85]">โปรดหลีกเลี่ยงการอ้างสรรพคุณทางการแพทย์ ข้อความลักษณะนี้จะถูกซ่อนไว้ให้ทีมงานตรวจ</p>
           <button type="button" onClick={submit} disabled={busy} className="btn-crimson h-11 rounded-full font-semibold">{busy ? "กำลังส่ง…" : "ส่งรีวิว"}</button>
         </>
       )}

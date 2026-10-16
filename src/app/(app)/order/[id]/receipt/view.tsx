@@ -44,7 +44,7 @@ export function ReceiptView({ id, doc }: { id: string; doc: Doc }) {
               {doc.lines.map(([n, v]) => <div key={n} className="flex justify-between gap-3 text-[13px] font-light"><span>{n}</span><span className="tabular-nums shrink-0">{baht(v)}</span></div>)}
               <div className="flex justify-between pt-2 font-bold text-[18px]" style={{ color: "#9a6f1e", borderTop: "1px solid #c9b8a6" }}><span>รวมทั้งสิ้น</span><span className="tabular-nums">{baht(doc.total)}</span></div>
               <div className="text-[12px] font-light" style={{ color: "#6b5a52" }}>ชำระจากกระเป๋าเงินในแอป · {new Date(doc.paidAt).toLocaleString("th-TH", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Bangkok" })} · การจอง #{doc.code}</div>
-              <div className="text-[11px] font-light" style={{ color: "#8a7a70" }}>{doc.issuer.address} · {doc.issuer.phone}</div>
+              <div className="text-[12px] font-light" style={{ color: "#6b5d55" }}>{doc.issuer.address} · {doc.issuer.phone}</div>
             </div>
             <SavePdfButton targetId="receipt-doc" fileName={`ใบเสร็จ-${doc.no}`} />
           </>

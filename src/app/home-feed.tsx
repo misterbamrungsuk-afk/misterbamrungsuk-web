@@ -75,7 +75,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE }: { showEarning
       <div style={{ padding: "9px 10px 11px" }}>
         <div className="flex justify-between items-center"><span className="font-semibold text-[15px]">{p.nick}, {p.age}</span><span className="text-[13px] text-[#e8c472] font-normal">★ {p.rating}</span></div>
         <div className="text-[13px] mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis font-thin">{p.acts.map(labelOf).join(" · ")}</div>
-        <div className="font-semibold text-[#e8c472] mt-1.5 text-[15px]">฿{price(p).toLocaleString("en-US")} <span className="font-thin text-[10.5px] text-[#b5a596]">/ 3 ชม.</span></div>
+        <div className="font-semibold text-[#e8c472] mt-1.5 text-[15px]">฿{price(p).toLocaleString("en-US")} <span className="font-thin text-[11.5px] text-[#b5a596]">/ 3 ชม.</span></div>
       </div>
     </Link>
   );
@@ -109,7 +109,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE }: { showEarning
           <Link href="/market" className="relative block rounded-[18px] overflow-hidden aspect-[16/9] md:aspect-[16/5]">
             <img src={AD.img} alt={AD.name} className="w-full h-full object-cover block" />
             <span className="absolute inset-0" style={{ background: "linear-gradient(rgba(20,16,15,0) 40%, rgba(20,16,15,0.9))" }} />
-            <span className="absolute top-[10px] left-[10px] text-[10.5px] font-light text-white rounded-full" style={{ padding: "2px 9px", background: "rgba(20,16,15,0.7)" }}>โฆษณา</span>
+            <span className="absolute top-[10px] left-[10px] text-[11.5px] font-light text-white rounded-full" style={{ padding: "2px 9px", background: "rgba(20,16,15,0.7)" }}>โฆษณา</span>
             <span className="absolute flex flex-col text-[#f3ead9]" style={{ left: 14, right: 14, bottom: 12 }}>
               <span className="text-[13px] text-white font-light">{AD.kind}</span>
               <span className="font-semibold text-[18px]">{AD.name}</span>
@@ -118,7 +118,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE }: { showEarning
           </Link>
           <div className="flex justify-between items-center">
             <span className="flex gap-[5px]" aria-hidden="true"><span className="w-[18px] h-[5px] rounded-[3px] bg-[#e8c472]" /><span className="w-[5px] h-[5px] rounded-[3px] bg-[rgba(243,234,217,.25)]" /><span className="w-[5px] h-[5px] rounded-[3px] bg-[rgba(243,234,217,.25)]" /></span>
-            <Link href="/partner" className="text-[13px] text-[#f3ead9] font-light hover:text-[#f3ead9]">โฆษณากับเรา ›</Link>
+            <Link href="/partner" className="tap text-[13px] text-[#f3ead9] font-light hover:text-[#f3ead9]">โฆษณากับเรา ›</Link>
           </div>
         </div>
 
@@ -146,7 +146,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE }: { showEarning
           </Link>
           <button type="button" onClick={() => setFOpen(true)} aria-label="ตัวกรอง" className="relative grid place-items-center w-12 h-12 shrink-0 rounded-[14px] text-[#e8c472] p-0" style={{ background: "rgba(232,196,114,0.16)" }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0" /><circle cx="16" cy="6" r="2" /><circle cx="10" cy="12" r="2" /><circle cx="18" cy="18" r="2" /></svg>
-            {nF > 0 && <span className="absolute grid place-items-center rounded-full bg-[#b0182c] text-white font-bold" style={{ top: -6, right: -6, minWidth: 18, height: 18, padding: "0 5px", fontSize: 10.5 }}>{nF}</span>}
+            {nF > 0 && <span className="absolute grid place-items-center rounded-full bg-[#b0182c] text-white font-bold" style={{ top: -6, right: -6, minWidth: 18, height: 18, padding: "0 5px", fontSize: 11.5 }}>{nF}</span>}
           </button>
         </div>
 
@@ -156,7 +156,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE }: { showEarning
             const on = acts.includes(a.id);
             return (
               <button key={a.id} type="button" aria-pressed={on} onClick={() => setActs((x) => (on ? x.filter((y) => y !== a.id) : [...x, a.id]))}
-                className="flex flex-col items-center justify-center gap-[5px] rounded-2xl font-light flex-[0_0_70px] md:flex-1 md:text-[13px]!" style={{ minWidth: 70, height: 72, fontSize: 10.5, background: on ? "rgba(232,196,114,0.16)" : "rgba(42,33,30,0.9)", color: on ? GOLD : "#f3ead9" }}>
+                className="flex flex-col items-center justify-center gap-[5px] rounded-2xl font-light flex-[0_0_70px] md:flex-1 md:text-[13px]!" style={{ minWidth: 70, height: 72, fontSize: 11.5, background: on ? "rgba(232,196,114,0.16)" : "rgba(42,33,30,0.9)", color: on ? GOLD : "#f3ead9" }}>
                 <Svg d={a.icon} size={22} sw={1.6} />{a.label}
               </button>
             );
@@ -167,7 +167,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE }: { showEarning
         <div className="flex gap-2 overflow-x-auto no-scrollbar" style={{ padding: "12px 18px 0" }}>
           {SORTS.map(([id, label]) => {
             const on = sort === id;
-            return <button key={id} type="button" aria-pressed={on} onClick={() => setSort(id)} className="shrink-0 rounded-full font-semibold" style={{ height: 34, padding: "0 14px", fontSize: 13.5, background: on ? GOLD : "transparent", color: on ? "#1b130b" : "#f3ead9" }}>{label}</button>;
+            return <button key={id} type="button" aria-pressed={on} onClick={() => setSort(id)} className="shrink-0 rounded-full font-semibold" style={{ height: 40, padding: "0 16px", fontSize: 13.5, background: on ? GOLD : "transparent", color: on ? "#1b130b" : "#f3ead9" }}>{label}</button>;
           })}
         </div>
 
@@ -182,7 +182,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE }: { showEarning
             <Link href="/spas" style={{ gridTemplateColumns: "112px 1fr" }} className="order-[7] md:order-[11] xl:order-[15] col-span-full relative grid gap-3 items-center p-[10px] rounded-2xl bg-[#241c29] text-[#f3ead9] hover:text-[#f3ead9]">
               <img src="/brand/home/ad-spa.jpg" alt="" className="w-[112px] h-[84px] rounded-[10px] object-cover block" />
               <span className="flex flex-col gap-0.5 min-w-0 font-normal">
-                <span className="text-[10.5px] text-[#b5a596] font-light">โฆษณา</span>
+                <span className="text-[11.5px] text-[#b5a596] font-light">โฆษณา</span>
                 <span className="font-semibold text-[15px]">The Sathorn Retreat</span>
                 <span className="text-[13px] text-[#b5a596] font-light">ห้องพักราคาสมาชิก</span>
                 <span className="text-[13.5px] text-[#e8c472] font-semibold">ดูรายละเอียด ›</span>
@@ -198,19 +198,19 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE }: { showEarning
           <Link href="/market" className="relative block rounded-2xl overflow-hidden aspect-[16/7] md:aspect-[16/4]">
             <img src="/brand/home/ad-oil.jpg" alt="" className="w-full h-full object-cover block" />
             <span className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(20,16,15,.88) 0%, rgba(20,16,15,0) 70%)" }} />
-            <span className="absolute top-[10px] left-3 text-[10.5px] font-light text-white rounded-full" style={{ padding: "2px 8px", background: "rgba(20,16,15,.7)" }}>โฆษณา</span>
+            <span className="absolute top-[10px] left-3 text-[11.5px] font-light text-white rounded-full" style={{ padding: "2px 8px", background: "rgba(20,16,15,.7)" }}>โฆษณา</span>
             <span className="absolute flex flex-col text-[#f3ead9]" style={{ left: 14, bottom: 14 }}>
               <span className="font-semibold text-[17px]">น้ำมันนวดออร์แกนิก</span>
               <span className="text-[13.5px] text-[#e8c472]">ซื้อใน Marketplace ›</span>
             </span>
           </Link>
-          <Link href="/partner" className="self-end text-[13.5px] text-[#f3ead9] hover:text-[#f3ead9]">โฆษณากับเรา ›</Link>
+          <Link href="/partner" className="self-end tap text-[13.5px] text-[#f3ead9] hover:text-[#f3ead9]">โฆษณากับเรา ›</Link>
         </div>
       </div>
 
       {/* เมนูล่าง */}
       <nav aria-label="เมนูหลัก" className="md:hidden fixed bottom-0 inset-x-0 z-40 mx-auto max-w-[640px] grid grid-cols-5 items-center text-center font-light text-[#b5a596] border-t border-[rgba(243,234,217,0.07)] bg-[#251d1b] md:rounded-t-2xl"
-        style={{ height: "calc(64px + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", fontSize: 10.5 }}>
+        style={{ height: "calc(64px + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", fontSize: 12 }}>
         <Link href="/" aria-current="page" className="flex flex-col items-center gap-[3px] text-[#e8c472] hover:text-[#e8c472]"><Svg d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />ดูเพื่อน</Link>
         <Link href={showEarnings ? "/join/earnings" : "/join"} className="flex flex-col items-center gap-[3px] text-inherit hover:text-[#f3ead9]"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2" /><circle cx="12" cy="12" r="2.5" /></svg>รายได้</Link>
         <div><Link href="/auth/register" aria-label="สมัครทันที" className="mx-auto grid place-items-center w-[50px] h-[50px] rounded-2xl bg-[#e8c472] text-[#1b130b] hover:text-[#1b130b]"><Svg d="M12 5v14M5 12h14" size={22} sw={2.2} /></Link></div>

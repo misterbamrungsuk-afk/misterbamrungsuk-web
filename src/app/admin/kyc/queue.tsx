@@ -36,7 +36,7 @@ export function KycQueue({ initial }: { initial: Applicant[] }) {
         </div>
         <div className="rounded-2xl border border-[rgba(240,200,90,.38)] overflow-x-auto text-[13px]">
           <div className="min-w-[560px]">
-            <div className="grid grid-cols-[110px_minmax(0,1.4fr)_90px_130px_140px] px-3.5 py-2.5 bg-[#130e0e] text-[#7d6d6a] text-xs"><span>รหัส MB</span><span>ชื่อ</span><span>สายงาน</span><span>ส่งเอกสารเมื่อ</span><span>สถานะ KYC</span></div>
+            <div className="grid grid-cols-[110px_minmax(0,1.4fr)_90px_130px_140px] px-3.5 py-2.5 bg-[#130e0e] text-[#9a8a85] text-xs"><span>รหัส MB</span><span>ชื่อ</span><span>สายงาน</span><span>ส่งเอกสารเมื่อ</span><span>สถานะ KYC</span></div>
             {shown.map((r) => (
               <button key={r.id} onClick={() => setOpen(r.id)} className="w-full grid grid-cols-[110px_minmax(0,1.4fr)_90px_130px_140px] px-3.5 py-[11px] border-t border-[rgba(240,200,90,.38)] text-left items-center"
                 style={{ background: open === r.id ? "rgba(240,200,90,.16)" : "transparent" }}>
@@ -47,7 +47,7 @@ export function KycQueue({ initial }: { initial: Applicant[] }) {
                 <span style={{ color: KYC_LABEL[r.kyc_status ?? "none"][1] }}>{KYC_LABEL[r.kyc_status ?? "none"][0]}</span>
               </button>
             ))}
-            {!shown.length && <p className="border-t border-[rgba(240,200,90,.38)] px-4 py-12 text-center text-[#7d6d6a]">ไม่มีรายการในหมวดนี้</p>}
+            {!shown.length && <p className="border-t border-[rgba(240,200,90,.38)] px-4 py-12 text-center text-[#9a8a85]">ไม่มีรายการในหมวดนี้</p>}
           </div>
         </div>
       </div>
@@ -62,7 +62,7 @@ export function KycQueue({ initial }: { initial: Applicant[] }) {
             <div className="h-px bg-[rgba(240,200,90,.38)]" />
             <KycPanel key={sel.id} row={sel} onSaved={(row) => { setRows((rs) => rs.map((x) => (x.id === row.id ? row : x))); router.refresh(); }} />
           </>
-        ) : <p className="py-10 text-center text-[#7d6d6a]">เลือกผู้สมัครจากตารางเพื่อตรวจเอกสาร</p>}
+        ) : <p className="py-10 text-center text-[#9a8a85]">เลือกผู้สมัครจากตารางเพื่อตรวจเอกสาร</p>}
       </aside>
     </div>
   );

@@ -53,7 +53,7 @@ const priceText = (k: PartnerPackageKey) => {
 };
 
 const H2 = ({ children }: { children: React.ReactNode }) => <h2 className="font-lux m-0 mb-2.5 font-semibold text-[19px]">{children}</h2>;
-const INPUT = "h-[46px] w-full rounded-xl border border-[rgba(240,200,90,.38)] bg-[#130e0e] px-3 text-[14px] text-[#f6efe4] placeholder:text-[#7d6d6a] outline-none focus:border-[#f0c75a]";
+const INPUT = "h-[46px] w-full rounded-xl border border-[rgba(240,200,90,.38)] bg-[#130e0e] px-3 text-[14px] text-[#f6efe4] placeholder:text-[#9a8a85] outline-none focus:border-[#f0c75a]";
 const LBL = "flex flex-col gap-[5px] text-[12px] text-[#cdbfb3]";
 const RED = "btn-red-lux !border-[1.5px] !border-[#ffd76a] rounded-full text-white font-semibold";
 
@@ -100,7 +100,7 @@ export function PartnerSalePage({ hero }: { hero?: string }) {
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(14,10,10,.55),rgba(14,10,10,.2)_40%,#0e0a0a)]" />
           <div className="absolute inset-x-4 bottom-4">
             <div className="text-[11px] font-semibold tracking-[3px] text-[#f0c75a]">สปาทั่วประเทศ · โรงแรม</div>
-            <h1 className="font-lux mt-1.5 text-[28px] font-bold leading-[1.2] [text-wrap:balance]">ขายบริการของคุณ<br /><span className="text-[#ffd76a]">ผ่าน Mister Bamrungsuk</span></h1>
+            <h1 className="font-lux mt-1.5 text-[28px] font-bold leading-[1.32] [text-wrap:balance]">ขายบริการของคุณ<br /><span className="text-[#ffd76a]">ผ่าน Mister Bamrungsuk</span></h1>
             <div className="mt-2.5 inline-flex rounded-full border border-[rgba(212,175,55,.55)] bg-black/45 px-3 py-1.5 text-[11.5px] text-[#eed58a]">
               แผนโปรโมทเริ่มต้น <b className="text-[#ffd76a]">&nbsp;{priceText("3m")} / {PARTNER_PACKAGES["3m"].label}</b>
             </div>
@@ -145,7 +145,7 @@ export function PartnerSalePage({ hero }: { hero?: string }) {
                     className="lux-card flex w-full min-w-0 flex-col gap-1.5 rounded-[18px] p-4 text-left text-[#f6efe4]"
                     style={{ border: `1.5px solid ${on ? GOLD : LINE}`, background: on ? "rgba(240,200,90,.16)" : "#241717" }}>
                     <span className="flex items-center justify-between gap-2">
-                      <span className="text-[10.5px] tracking-[2px] text-[#ffd76a]">แผนโปรโมท {p.months}M</span>
+                      <span className="text-[11.5px] tracking-[2px] text-[#ffd76a]">แผนโปรโมท {p.months}M</span>
                       {p.badge && <span className="rounded-full bg-[#f0c75a] px-2 py-0.5 text-[11px] font-semibold text-[#0e0a0a]">{p.badge}</span>}
                     </span>
                     <span className="font-lux text-[17px] font-semibold">แผนโปรโมทพาร์ทเนอร์ {p.label}</span>

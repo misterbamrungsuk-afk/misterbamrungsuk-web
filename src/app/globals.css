@@ -177,7 +177,7 @@ body {
   min-height: 100dvh;
   position: relative;
 }
-.safe-bottom { padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
+.safe-bottom { padding-bottom: calc(152px + env(safe-area-inset-bottom)); } /* เมนูล่าง 84 + ปุ่ม SOS ลอย 44 + ระยะ */
 
 /* การ์ดรูปเต็ม + ไล่เฉดดำใต้ข้อความ (photo-first card) */
 .photo-scrim { background: linear-gradient(180deg, rgba(8,6,6,0) 0%, rgba(8,6,6,.92) 70%); }
@@ -436,3 +436,6 @@ html { scroll-behavior: smooth; }
 .mb-c .animate-pulse-red { animation: none; }
 /* marketplace: ปุ่มที่ใช้ RED_GRAD (ตอนนี้ = ทอง #e8c472) ให้ตัวหนังสือเข้ม */
 .mb-c .text-white[style*="background:#e8c472"] { color: #1b130b !important; }
+
+/* ลิงก์/ปุ่มตัวหนังสือ: พื้นที่กดอย่างน้อย 44px โดยไม่เปลี่ยนหน้าตา */
+.tap { display: inline-flex; align-items: center; min-height: 44px; }

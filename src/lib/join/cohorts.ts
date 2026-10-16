@@ -46,3 +46,30 @@ export async function createCohort(input: CohortInput): Promise<Cohort> {
   if (error) throw error;
   return row;
 }
+
+/** ที่นั่งกลุ่มอบรมถัดไป (นับจริง) — กลุ่มที่แอดมินตั้งสถานะ "เปิดรับสมัคร" เรียงตามลำดับ
+ *  ที่นั่งถูกใช้ = ผู้สมัครที่ยัง active (รอตรวจสลิป/ผ่านแล้ว) ที่จัดเข้ากลุ่มนั้น + คนที่ยังไม่ถูกจัดกลุ่ม (เติมเข้ากลุ่มเปิดแรกที่ยังว่าง)
+ *  ผู้สมัครในกลุ่มที่อบรมเสร็จแล้ว/ร่าง ไม่นับ */
+export async function nextCohortSeats(): Promise<{ cohort: string; left: number; quota: number; full: boolean }> {
+  const { listApplicants, extraOf } = await import("./store");
+  const [cohorts, apps] = await Promise.all([listCohorts(), listApplicants()]);
+  const open = cohorts.filter((c) => c.status === "open");
+  if (!open.length) return { cohort: "", left: 0, quota: 0, full: true };
+  const active = apps.filter((a) => a.status === "pending_slip" || a.status === "verified");
+  const keys = new Set(cohorts.map((c) => c.key));
+  const assigned = new Map<string, number>();
+  let unassigned = 0;
+  for (const a of active) {
+    const k = extraOf(a).cohort;
+    if (k && keys.has(k)) assigned.set(k, (assigned.get(k) ?? 0) + 1);
+    else unassigned++;
+  }
+  for (const c of open) {
+    const free = Math.max(0, c.capacity - (assigned.get(c.key) ?? 0));
+    const take = Math.min(free, unassigned);
+    unassigned -= take;
+    if (free - take > 0) return { cohort: c.name, left: free - take, quota: c.capacity, full: false };
+  }
+  const last = open[open.length - 1];
+  return { cohort: last.name, left: 0, quota: last.capacity, full: true };
+}

@@ -146,7 +146,7 @@ export function CohortsClient({ initialCohorts, initialMembers }: { initialCohor
               {Array.from({ length: sessions }, (_, i) => <span key={i}>รอบ {i + 1}</span>)}
               <span>รวม</span>
             </div>
-            {rows.length === 0 && <p style={{ fontSize: 13, color: "#7d6d6a", padding: "12px 4px", borderTop: `1px solid ${GOLD_BD}`, margin: 0 }}>ยังไม่มีผู้สมัครในกลุ่มนี้ — จัดกลุ่มได้ที่หน้าผู้สมัคร</p>}
+            {rows.length === 0 && <p style={{ fontSize: 13, color: "#9a8a85", padding: "12px 4px", borderTop: `1px solid ${GOLD_BD}`, margin: 0 }}>ยังไม่มีผู้สมัครในกลุ่มนี้ — จัดกลุ่มได้ที่หน้าผู้สมัคร</p>}
             {rows.map((m) => {
               const tot = Array.from({ length: sessions }, (_, i) => m.att[i + 1]).filter(Boolean).length;
               return (
@@ -157,7 +157,7 @@ export function CohortsClient({ initialCohorts, initialMembers }: { initialCohor
                     const v = !!m.att[i + 1];
                     return (
                       <button key={i} type="button" onClick={() => toggle(m, i + 1)} aria-label={`${m.name} รอบ ${i + 1}`} aria-pressed={v}
-                        style={{ height: 44, borderRadius: 10, border: `1px solid ${v ? "rgba(60,170,110,.5)" : GOLD_BD}`, background: v ? "rgba(60,170,110,.14)" : "#21191a", color: v ? "#7fd6a3" : "#7d6d6a", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
+                        style={{ height: 44, borderRadius: 10, border: `1px solid ${v ? "rgba(60,170,110,.5)" : GOLD_BD}`, background: v ? "rgba(60,170,110,.14)" : "#21191a", color: v ? "#7fd6a3" : "#9a8a85", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
                         {v ? "มา" : "ขาด"}
                       </button>
                     );

@@ -79,8 +79,8 @@ function Orders({ d, reload, setMsg }: Sub) {
               <p className="text-sm mt-1">{o.buyer_name} · 0{o.phone.slice(2)}</p>
               <p className="text-xs text-ink-300 whitespace-pre-line">{o.address}</p>
               <ul className="text-sm mt-2">{o.items.map((i) => <li key={i.product_id}>{i.name} × {i.qty} — ฿{baht(i.price * i.qty)}</li>)}</ul>
-              <p className="text-xs text-ink-400 mt-2">สั่ง {dt(o.created_at)} · ยืนยัน {dt(o.paid_at)}{o.tracking_no ? ` · พัสดุ ${carrierName(o.carrier)} ${o.tracking_no}` : ""}{o.decided_by ? ` · โดย ${o.decided_by}` : ""}</p>
-              {Object.keys(o.vendor_tracking ?? {}).length > 0 && <p className="text-xs text-ink-400">เลขพัสดุจากร้าน: {Object.entries(o.vendor_tracking ?? {}).map(([vid, t]) => `${d.vendors.find((v) => v.id === vid)?.name ?? vid}: ${t.tracking_no}`).join(" · ")}</p>}
+              <p className="text-xs text-[#9a8a85] mt-2">สั่ง {dt(o.created_at)} · ยืนยัน {dt(o.paid_at)}{o.tracking_no ? ` · พัสดุ ${carrierName(o.carrier)} ${o.tracking_no}` : ""}{o.decided_by ? ` · โดย ${o.decided_by}` : ""}</p>
+              {Object.keys(o.vendor_tracking ?? {}).length > 0 && <p className="text-xs text-[#9a8a85]">เลขพัสดุจากร้าน: {Object.entries(o.vendor_tracking ?? {}).map(([vid, t]) => `${d.vendors.find((v) => v.id === vid)?.name ?? vid}: ${t.tracking_no}`).join(" · ")}</p>}
               {o.reject_reason && <p className="text-xs text-crimson-300">เหตุผลที่ปฏิเสธ: {o.reject_reason}</p>}
             </div>
             <div className="text-sm min-w-[180px]">

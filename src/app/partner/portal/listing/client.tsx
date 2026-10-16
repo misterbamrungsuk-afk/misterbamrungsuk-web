@@ -62,17 +62,17 @@ export function ListingClient({ initial, name, canPublish }: { initial: Listing;
   return (
     <>
       {/* ตัวอย่างการ์ด (อัปเดตสด) */}
-      <p className="text-xs text-ink-400 mt-3">ลูกค้าจะเห็นการ์ดนี้ตอนเลือกสถานที่ให้บริการ</p>
+      <p className="text-xs text-[#9a8a85] mt-3">ลูกค้าจะเห็นการ์ดนี้ตอนเลือกสถานที่ให้บริการ</p>
       <div className="mt-2 rounded-3xl border border-gold-500/40 bg-ink-800 overflow-hidden">
         <div className="relative aspect-[16/9] bg-ink-700">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          {l.cover ? <img src={fileUrl(l.cover)} alt="ภาพปก" className="w-full h-full object-cover" /> : <div className="w-full h-full grid place-items-center text-ink-400 text-sm">ยังไม่มีภาพปก</div>}
+          {l.cover ? <img src={fileUrl(l.cover)} alt="ภาพปก" className="w-full h-full object-cover" /> : <div className="w-full h-full grid place-items-center text-[#9a8a85] text-sm">ยังไม่มีภาพปก</div>}
           <span className="absolute top-3 left-3 text-[11px] rounded-full bg-black/60 text-gold-300 px-2.5 py-1 border border-gold-500/50">พาร์ทเนอร์แนะนำ</span>
         </div>
         <div className="p-4">
           <p className="font-display text-lg font-semibold">{name}</p>
           <p className="text-xs text-ink-300 mt-0.5">{l.type ?? "—"} · {l.area || "—"} · {l.rooms} ห้อง</p>
-          {l.amenities.length > 0 && <p className="text-xs text-ink-400 mt-1 truncate">{l.amenities.join(" · ")}</p>}
+          {l.amenities.length > 0 && <p className="text-xs text-[#9a8a85] mt-1 truncate">{l.amenities.join(" · ")}</p>}
           <p className="text-xs text-gold-400 mt-2">{openDays.length ? `เปิด ${openDays.length} วัน/สัปดาห์ · ${openDays[0].from}–${openDays[0].to}` : "ยังไม่ได้ตั้งเวลาเปิด"}</p>
         </div>
       </div>
@@ -97,7 +97,7 @@ export function ListingClient({ initial, name, canPublish }: { initial: Listing;
               </div>
             ))}
             {l.gallery.length < 12 && (
-              <label className="aspect-square rounded-xl border border-dashed border-ink-500 grid place-items-center text-2xl text-ink-400 cursor-pointer hover:border-gold-500">
+              <label className="aspect-square rounded-xl border border-dashed border-ink-500 grid place-items-center text-2xl text-[#9a8a85] cursor-pointer hover:border-gold-500">
                 +
                 <input type="file" multiple accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={up} onChange={(e) => onFiles(e.target.files, "gallery")} />
               </label>
@@ -124,10 +124,10 @@ export function ListingClient({ initial, name, canPublish }: { initial: Listing;
                 {h.open ? (
                   <>
                     <input type="time" className="input-dark !py-1.5 flex-1 min-w-0" value={h.from} onChange={(e) => setDay(i, { from: e.target.value })} aria-label={`${DAYS[h.day]} เปิด`} />
-                    <span className="text-ink-400">–</span>
+                    <span className="text-[#9a8a85]">–</span>
                     <input type="time" className="input-dark !py-1.5 flex-1 min-w-0" value={h.to} onChange={(e) => setDay(i, { to: e.target.value })} aria-label={`${DAYS[h.day]} ปิด`} />
                   </>
-                ) : <span className="text-ink-400">ปิด</span>}
+                ) : <span className="text-[#9a8a85]">ปิด</span>}
               </div>
             ))}
           </div>
@@ -144,7 +144,7 @@ export function ListingClient({ initial, name, canPublish }: { initial: Listing;
 
         <div>
           <span className={lab}>รายการบริการ · ราคาสปา → ราคาบนแพลตฟอร์ม</span>
-          <p className="text-xs text-ink-400 mb-2">กรอกชื่อบริการ เวลา และราคาฐานของสปา · ราคาขายบนแพลตฟอร์ม (mark up) ทีมงานเป็นผู้กำหนด — ตอนนี้ [รอกำหนด]</p>
+          <p className="text-xs text-[#9a8a85] mb-2">กรอกชื่อบริการ เวลา และราคาฐานของสปา · ราคาขายบนแพลตฟอร์ม (mark up) ทีมงานเป็นผู้กำหนด — ตอนนี้ [รอกำหนด]</p>
           <div className="space-y-2">
             {services.map((x, i) => (
               <div key={i} className="rounded-2xl border border-ink-600 p-3 space-y-2">
@@ -154,9 +154,9 @@ export function ListingClient({ initial, name, canPublish }: { initial: Listing;
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <input className="input-dark w-20" inputMode="numeric" value={x.minutes || ""} placeholder="นาที" onChange={(e) => setSvc(i, { minutes: +e.target.value.replace(/D/g, "") || 0 })} aria-label="เวลา (นาที)" />
-                  <span className="text-ink-400">นาที · ฿</span>
+                  <span className="text-[#9a8a85]">นาที · ฿</span>
                   <input className="input-dark w-24" inputMode="numeric" value={x.base_price || ""} placeholder="ราคาสปา" onChange={(e) => setSvc(i, { base_price: +e.target.value.replace(/D/g, "") || 0 })} aria-label="ราคาฐานของสปา" />
-                  <span className="text-ink-400">→</span>
+                  <span className="text-[#9a8a85]">→</span>
                   <span className="text-gold-300 whitespace-nowrap">{x.platform_price != null ? `฿${baht(x.platform_price)}` : "[รอกำหนด]"}</span>
                 </div>
               </div>
@@ -178,7 +178,7 @@ export function ListingClient({ initial, name, canPublish }: { initial: Listing;
         </div>
 
         <label className="flex items-center justify-between gap-3 rounded-2xl border border-ink-600 px-4 py-3">
-          <span><span className="block text-sm">เปิดแสดงหน้าร้าน</span><span className="text-xs text-ink-400">{canPublish ? "ลูกค้าจะเห็นร้านของคุณ" : "เปิดได้หลังทีมงานอนุมัติบัญชี"}</span></span>
+          <span><span className="block text-sm">เปิดแสดงหน้าร้าน</span><span className="text-xs text-[#9a8a85]">{canPublish ? "ลูกค้าจะเห็นร้านของคุณ" : "เปิดได้หลังทีมงานอนุมัติบัญชี"}</span></span>
           <input type="checkbox" checked={l.published} disabled={!canPublish} onChange={(e) => set("published", e.target.checked)} className="accent-[#d4af37] w-5 h-5" />
         </label>
 

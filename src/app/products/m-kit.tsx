@@ -29,7 +29,7 @@ const circle = "w-11 h-11 shrink-0 rounded-full border grid place-items-center t
 
 export function CartCount() {
   const n = useCart().reduce((s, l) => s + l.qty, 0);
-  return n > 0 ? <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-[5px] rounded-full bg-[#e8c472] text-[#1b130b] text-[10.5px] font-bold grid place-items-center border-[1.5px] border-[#171211]">{n}</span> : null;
+  return n > 0 ? <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-[5px] rounded-full bg-[#e8c472] text-[#1b130b] text-[11.5px] font-bold grid place-items-center border-[1.5px] border-[#171211]">{n}</span> : null;
 }
 
 export function MHeader({ back, eyebrow, title, cart = true, onBack }: { back?: string; eyebrow: string; title: string; cart?: boolean; onBack?: () => void }) {
@@ -40,7 +40,7 @@ export function MHeader({ back, eyebrow, title, cart = true, onBack }: { back?: 
         ? <button type="button" onClick={onBack} aria-label="ย้อนกลับ" className={circle} style={{ borderColor: LINE }}>{backIcon}</button>
         : <Link href={back ?? "/market"} aria-label="ย้อนกลับ" className={circle} style={{ borderColor: LINE }}>{backIcon}</Link>}
       <div className="flex-1 min-w-0">
-        <p className="text-[10.5px] tracking-[2.5px] text-[#e8c472] font-semibold">{eyebrow}</p>
+        <p className="text-[11.5px] tracking-[2.5px] text-[#e8c472] font-semibold">{eyebrow}</p>
         <h1 className="m-0 font-lux font-semibold text-[20px] truncate">{title}</h1>
       </div>
       {cart && <Link href="/cart" aria-label="ตะกร้า" className={circle} style={{ borderColor: LINE }}><CartIcon /><CartCount /></Link>}
@@ -104,7 +104,7 @@ export function Bottle({ id, w = 70, h = 110 }: { id: string; w?: number; h?: nu
 }
 
 export function FdaPill({ label = "มี อย.", className = "" }: { label?: string; className?: string }) {
-  return <span className={`px-[7px] py-0.5 rounded-full bg-[#171211] border border-[#3f8f63] text-[#7fd6a3] text-[10.5px] font-semibold ${className}`}>{label}</span>;
+  return <span className={`px-[7px] py-0.5 rounded-full bg-[#171211] border border-[#3f8f63] text-[#7fd6a3] text-[11.5px] font-semibold ${className}`}>{label}</span>;
 }
 
 export type CardP = Product & { vendor_name?: string; vendor_slug?: string; kind?: string };
@@ -127,12 +127,12 @@ export function MProductCard({ p, onAdded }: { p: CardP; onAdded?: (msg: string)
           ? <img src={src} alt={p.name} className="absolute inset-0 w-full h-full object-cover" />
           : <Bottle id={p.id} />}
         <FdaPill className="absolute top-2 left-2" label={p.fda_no ? "มี อย." : "รอ อย."} />
-        {p.age_restricted && <span className="absolute top-2 right-2 px-[7px] py-0.5 rounded-full bg-[#171211] border border-[#b0182c] text-[#ef8a97] text-[10.5px] font-semibold">20+</span>}
+        {p.age_restricted && <span className="absolute top-2 right-2 px-[7px] py-0.5 rounded-full bg-[#171211] border border-[#b0182c] text-[#ef8a97] text-[11.5px] font-semibold">20+</span>}
       </Link>
       <div className="p-2.5 flex flex-col gap-1 flex-1">
         {p.vendor_name && <Link href={`/shop/${p.vendor_slug || p.vendor_id}`} className="text-[11px] text-[#d9c9b4]">{p.vendor_name}</Link>}
-        <Link href={`/products/${p.id}`} className="font-lux font-semibold text-[13.5px] leading-tight text-[#f3ead9]">{p.name}</Link>
-        {p.kind && <p className="text-[10.5px] text-[#b5a596]">{p.kind}</p>}
+        <Link href={`/products/${p.id}`} className="font-lux font-semibold text-[13.5px] leading-snug text-[#f3ead9]">{p.name}</Link>
+        {p.kind && <p className="text-[11.5px] text-[#b5a596]">{p.kind}</p>}
         <div className="flex justify-between items-center mt-auto pt-1.5">
           <span className="font-lux font-semibold text-[#e8c472]">{fmt(p.price)}</span>
           <button type="button" onClick={add} disabled={out} aria-label={`เพิ่ม ${p.name} ลงตะกร้า`}

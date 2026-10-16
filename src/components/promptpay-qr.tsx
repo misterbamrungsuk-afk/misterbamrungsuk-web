@@ -18,7 +18,7 @@ export default function PromptPayCard({ amount }: { amount: number }) {
       <div className="bg-[#113566] text-white text-center py-2 text-[12px] font-semibold tracking-wide">THAI QR PAYMENT · พร้อมเพย์</div>
       <div className="p-3 flex flex-col items-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        {src ? <img src={src} alt={`QR พร้อมเพย์ ${amount} บาท`} className="w-full aspect-square" /> : <div className="w-full aspect-square grid place-items-center text-sm text-ink-400">…</div>}
+        {src ? <img src={src} alt={`QR พร้อมเพย์ ${amount} บาท`} className="w-full aspect-square" /> : <div className="w-full aspect-square grid place-items-center text-sm text-[#9a8a85]">…</div>}
         <p className="text-[12px] mt-1.5 font-medium">{BANK.accountName}</p>
         <p className="font-display text-xl font-bold">{baht(amount)}</p>
       </div>

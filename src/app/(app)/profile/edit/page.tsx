@@ -52,7 +52,7 @@ export default function EditProfilePage() {
         </div>
         {msg && <p role="status" className="m-0 text-[13px]" style={{ color: msg.ok ? "#7fd6a3" : "#ff8a9a" }}>{msg.t}</p>}
       </div>
-      <div className="fixed left-0 right-0 bottom-0 mx-auto max-w-[480px] z-40" style={{ padding: "12px 16px calc(96px + env(safe-area-inset-bottom))" }}>
+      <div className="fixed left-0 right-0 bottom-0 mx-auto max-w-[480px] z-40" style={{ padding: "12px 16px calc(16px + env(safe-area-inset-bottom))" }}>
         <button type="button" disabled={busy} onClick={save} className="w-full h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[17px] disabled:opacity-50">{busy ? "กำลังบันทึก…" : "บันทึก"}</button>
       </div>
     </div>

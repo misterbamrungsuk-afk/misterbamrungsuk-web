@@ -125,16 +125,16 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 rounded-2xl border border-[rgba(240,200,90,.55)] overflow-hidden" style={{ background: "linear-gradient(160deg, rgba(240,200,90,.1), #241717 60%)" }}>
-          <div className="px-4 py-3"><div className="text-[11.5px] text-[#cdbfb3]">ค่าการันตี Branding · {PN[pkg]}</div><div className="font-lux font-bold text-xl">{fmt(sumOf(pkg, G))}</div><div className="text-[10.5px] text-[#7d6d6a]">{fx(pkg, G)} · คืนเมื่อครบ 1 ปี</div></div>
-          <div className="px-4 py-3 border-l border-[rgba(240,200,90,.25)]"><div className="text-[11.5px] text-[#cdbfb3]">ค่าอบรม · {PN[pkg]}</div><div className="font-lux font-bold text-xl">{fmt(sumOf(pkg, T))}</div><div className="text-[10.5px] text-[#7d6d6a]">{fx(pkg, T)}</div></div>
-          <div className="px-4 py-3 border-l border-[rgba(240,200,90,.25)] bg-[rgba(176,24,44,.12)]"><div className="text-[11.5px] text-[#cdbfb3]">ยอดรวม · {PN[pkg]}</div><div className="font-lux font-bold text-xl text-[#ffd76a]">{fmt(sumOf(pkg, G) + sumOf(pkg, T))}</div><div className="text-[10.5px] text-[#7d6d6a]">{nOf(pkg)} คน</div></div>
-          <div className="px-4 py-3 border-l border-[rgba(240,200,90,.25)]"><div className="text-[11.5px] text-[#cdbfb3]">ยังไม่เข้ากลุ่ม LINE</div><div className="font-lux font-bold text-xl text-[#eed58a]">{notLine} คน</div><div className="text-[10.5px] text-[#7d6d6a]">โควตา {QUOTA} คน</div></div>
+          <div className="px-4 py-3"><div className="text-[11.5px] text-[#cdbfb3]">ค่าการันตี Branding · {PN[pkg]}</div><div className="font-lux font-bold text-xl">{fmt(sumOf(pkg, G))}</div><div className="text-[11.5px] text-[#9a8a85]">{fx(pkg, G)} · คืนเมื่อครบ 1 ปี</div></div>
+          <div className="px-4 py-3 border-l border-[rgba(240,200,90,.25)]"><div className="text-[11.5px] text-[#cdbfb3]">ค่าอบรม · {PN[pkg]}</div><div className="font-lux font-bold text-xl">{fmt(sumOf(pkg, T))}</div><div className="text-[11.5px] text-[#9a8a85]">{fx(pkg, T)}</div></div>
+          <div className="px-4 py-3 border-l border-[rgba(240,200,90,.25)] bg-[rgba(176,24,44,.12)]"><div className="text-[11.5px] text-[#cdbfb3]">ยอดรวม · {PN[pkg]}</div><div className="font-lux font-bold text-xl text-[#ffd76a]">{fmt(sumOf(pkg, G) + sumOf(pkg, T))}</div><div className="text-[11.5px] text-[#9a8a85]">{nOf(pkg)} คน</div></div>
+          <div className="px-4 py-3 border-l border-[rgba(240,200,90,.25)]"><div className="text-[11.5px] text-[#cdbfb3]">ยังไม่เข้ากลุ่ม LINE</div><div className="font-lux font-bold text-xl text-[#eed58a]">{notLine} คน</div><div className="text-[11.5px] text-[#9a8a85]">โควตา {QUOTA} คน</div></div>
         </div>
         {msg && <p role="status" className="text-sm text-[#eed58a]">{msg}</p>}
 
         <div className="rounded-2xl border border-[rgba(240,200,90,.38)] overflow-x-auto text-[13px]">
           <div className="min-w-[740px]">
-            <div className={`${GRID} px-3.5 py-2.5 bg-[#130e0e] text-[#7d6d6a] text-xs`}><span>รหัส MB</span><span>ชื่อ</span><span>สายงาน</span><span>สลิป · เอกสาร</span><span>กลุ่ม</span><span>กลุ่ม LINE</span><span>ตรวจประวัติ</span></div>
+            <div className={`${GRID} px-3.5 py-2.5 bg-[#130e0e] text-[#9a8a85] text-xs`}><span>รหัส MB</span><span>ชื่อ</span><span>สายงาน</span><span>สลิป · เอกสาร</span><span>กลุ่ม</span><span>กลุ่ม LINE</span><span>ตรวจประวัติ</span></div>
             {shown.map((r) => {
               const c = CRIMINAL[r.criminal_check ?? "pending"];
               return (
@@ -150,7 +150,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
                 </button>
               );
             })}
-            {!shown.length && <p className="border-t border-[rgba(240,200,90,.38)] px-4 py-12 text-center text-[#7d6d6a]">ยังไม่มีผู้สมัครในหมวดนี้</p>}
+            {!shown.length && <p className="border-t border-[rgba(240,200,90,.38)] px-4 py-12 text-center text-[#9a8a85]">ยังไม่มีผู้สมัครในหมวดนี้</p>}
           </div>
         </div>
       </div>
@@ -214,7 +214,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
                   {feeBreakdown(sel.package, !!sel.invite).map((x) => <Fragment key={x.name}><dt className="text-[#cdbfb3]">{x.name}</dt><dd>{fmt(x.amount)}</dd></Fragment>)}
                   <dt className="text-[#cdbfb3]">ชำระโดย</dt><dd>{sel.payment_method === "qr" ? "QR" : "โอนบัญชี"}</dd>
                   <dt className="text-[#cdbfb3]">Slip2Go</dt>
-                  <dd>{sel.slip_check ? <span style={{ color: SLIP_LABEL[sel.slip_check.verdict][1] }}>{SLIP_LABEL[sel.slip_check.verdict][0]} · {sel.slip_check.amount != null ? fmt(sel.slip_check.amount) : "-"}</span> : <span className="text-[#7d6d6a]">ไม่ได้ตรวจ</span>}</dd>
+                  <dd>{sel.slip_check ? <span style={{ color: SLIP_LABEL[sel.slip_check.verdict][1] }}>{SLIP_LABEL[sel.slip_check.verdict][0]} · {sel.slip_check.amount != null ? fmt(sel.slip_check.amount) : "-"}</span> : <span className="text-[#9a8a85]">ไม่ได้ตรวจ</span>}</dd>
                   <dt className="text-[#cdbfb3]">โทร</dt><dd>{sel.tel}</dd>
                   <dt className="text-[#cdbfb3]">LINE</dt><dd className="break-all">{sel.line_id || "-"}</dd>
                   <dt className="text-[#cdbfb3]">สมัครเมื่อ</dt><dd>{thTime(sel.created_at)}</dd>
@@ -231,7 +231,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
                     <a key={k} href={file(sel.docs[k]!)} target="_blank" rel="noopener noreferrer" className="block text-center">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={file(sel.docs[k]!)} alt={l} className="w-full aspect-[3/4] rounded-lg object-cover bg-[#130e0e]" />
-                      <span className="text-[10.5px] text-[#cdbfb3]">{l}</span>
+                      <span className="text-[11.5px] text-[#cdbfb3]">{l}</span>
                     </a>
                   ))}
                 </div>
@@ -244,7 +244,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
               </>
             )}
           </>
-        ) : <p className="py-10 text-center text-[#7d6d6a]">เลือกผู้สมัครจากตารางเพื่อดูรายละเอียด</p>}
+        ) : <p className="py-10 text-center text-[#9a8a85]">เลือกผู้สมัครจากตารางเพื่อดูรายละเอียด</p>}
       </aside>
     </div>
   );
@@ -260,7 +260,7 @@ function Progress({ r }: { r: Applicant }) {
   const nFix = kyc === "rejected" ? Object.keys(r.kyc_reason ?? {}).length : 0;
   return (
     <div className="flex flex-wrap gap-1">
-      {steps.map(([t, ok]) => <span key={t} className="text-[11.5px] px-2 py-0.5 rounded-full border" style={{ borderColor: ok ? "rgba(74,222,128,.5)" : LINE_BD, color: ok ? "#4ade80" : "#7d6d6a" }}>{ok ? "✓ " : ""}{t}</span>)}
+      {steps.map(([t, ok]) => <span key={t} className="text-[11.5px] px-2 py-0.5 rounded-full border" style={{ borderColor: ok ? "rgba(74,222,128,.5)" : LINE_BD, color: ok ? "#4ade80" : "#9a8a85" }}>{ok ? "✓ " : ""}{t}</span>)}
       {nFix > 0 && <span className="text-[11.5px] px-2 py-0.5 rounded-full border border-[rgba(239,68,68,.6)] text-[#fca5a5]">! รอแก้ {nFix}</span>}
     </div>
   );

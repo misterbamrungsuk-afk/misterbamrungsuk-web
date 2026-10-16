@@ -78,7 +78,7 @@ export function EmptyState({ icon = "🌙", title, sub }: { icon?: string; title
     <div className="flex flex-col items-center justify-center py-20 text-center animate-rise">
       <div className="text-5xl mb-4 opacity-80">{icon}</div>
       <p className="text-ink-200 font-medium">{title}</p>
-      {sub && <p className="text-ink-400 text-sm mt-2 max-w-[260px]">{sub}</p>}
+      {sub && <p className="text-[#9a8a85] text-sm mt-2 max-w-[260px]">{sub}</p>}
     </div>
   );
 }

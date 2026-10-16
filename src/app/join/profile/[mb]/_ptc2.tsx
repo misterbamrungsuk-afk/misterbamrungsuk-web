@@ -130,7 +130,7 @@ export function WorkForm({ mb, t, init }: { mb: string; t: string; init: { days:
     setSt(err ?? "ok");
   };
   const tg = (on: boolean) => <span className="w-11 h-[26px] rounded-full relative shrink-0 inline-block" style={{ background: on ? GOLD : "rgba(243,234,217,0.07)" }}><span className="absolute top-[3px] w-5 h-5 rounded-full transition-all" style={{ left: on ? 21 : 3, background: on ? "#fff" : "#d9c9b4" }} /></span>;
-  const tm = "h-8 rounded-[10px] bg-[#251d1b] text-[13px] text-[#f3ead9] px-2 outline-none border border-transparent focus:border-[#e8c472]";
+  const tm = "h-10 w-[108px] min-w-0 rounded-[10px] bg-[#251d1b] text-[13px] text-[#f3ead9] px-1 outline-none border border-transparent focus:border-[#e8c472]";
   const pct = ((radius - 2) / 18) * 100;
   return (
     <div className="flex flex-col gap-3.5">
@@ -138,9 +138,9 @@ export function WorkForm({ mb, t, init }: { mb: string; t: string; init: { days:
         {DAY_NAMES.map(([d, name], i) => {
           const v = days[d];
           return (
-            <div key={d} className="flex items-center gap-3 text-[14px]" style={{ padding: "12px 14px", borderBottom: i < 6 ? "1px solid rgba(243,234,217,0.07)" : undefined, color: v.on ? "#f3ead9" : "#d9c9b4" }}>
-              <span className="w-[52px]">{name}</span>
-              <button type="button" role="switch" aria-checked={v.on} aria-label={`รับงานวัน${name}`} onClick={() => set(d, { on: !v.on })}>{tg(v.on)}</button>
+            <div key={d} className="flex items-center gap-2 text-[14px]" style={{ padding: "12px 14px", borderBottom: i < 6 ? "1px solid rgba(243,234,217,0.07)" : undefined, color: v.on ? "#f3ead9" : "#d9c9b4" }}>
+              <span className="w-[46px] shrink-0">{name}</span>
+              <button type="button" role="switch" aria-checked={v.on} aria-label={`รับงานวัน${name}`} onClick={() => set(d, { on: !v.on })} className="h-11 -my-2 grid place-items-center">{tg(v.on)}</button>
               {v.on
                 ? <span className="ml-auto flex gap-1.5"><input type="time" aria-label={`เริ่ม ${name}`} value={v.from} onChange={(e) => set(d, { from: e.target.value })} className={tm} style={{ colorScheme: "dark" }} /><input type="time" aria-label={`เลิก ${name}`} value={v.to} onChange={(e) => set(d, { to: e.target.value })} className={tm} style={{ colorScheme: "dark" }} /></span>
                 : <span className="ml-auto text-[13px] font-light">หยุด</span>}

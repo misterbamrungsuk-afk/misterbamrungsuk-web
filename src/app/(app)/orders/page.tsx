@@ -38,7 +38,7 @@ export default function OrdersPage() {
         <h1 className="m-0 font-semibold text-[28px]">นัดของฉัน</h1>
         <div className="flex gap-2">
           {([["up", "กำลังจะถึง"], ["done", "เสร็จแล้ว"], ["cancel", "ยกเลิก"]] as const).map(([id, l]) => (
-            <button key={id} type="button" onClick={() => setTab(id)} aria-pressed={tab === id} className="h-9 px-4 rounded-full text-[13px]" style={{ border: `1px solid ${tab === id ? "#f3ead9" : LN}`, background: tab === id ? "#f3ead9" : "transparent", color: tab === id ? "#171211" : "#f3ead9" }}>{l}</button>
+            <button key={id} type="button" onClick={() => setTab(id)} aria-pressed={tab === id} className="h-10 px-4 rounded-full text-[13.5px]" style={{ border: `1px solid ${tab === id ? "#f3ead9" : LN}`, background: tab === id ? "#f3ead9" : "transparent", color: tab === id ? "#171211" : "#f3ead9" }}>{l}</button>
           ))}
         </div>
       </div>

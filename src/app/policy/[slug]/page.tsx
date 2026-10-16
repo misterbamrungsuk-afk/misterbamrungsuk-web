@@ -59,7 +59,7 @@ export default async function PolicyPage({ params }: { params: Promise<{ slug: s
           {custom ? <div className="whitespace-pre-line">{custom}</div> : (
             <>
               <ul className="list-disc pl-5 flex flex-col gap-2">{OUTLINE[slug].map((l) => <li key={l}>{l}</li>)}</ul>
-              <p className="text-xs text-ink-400 mt-5">ฉบับร่าง — ข้อที่ระบุ {TBD} รอเจ้าของร้านกำหนดรายละเอียด</p>
+              <p className="text-xs text-[#9a8a85] mt-5">ฉบับร่าง — ข้อที่ระบุ {TBD} รอเจ้าของร้านกำหนดรายละเอียด</p>
             </>
           )}
         </div>

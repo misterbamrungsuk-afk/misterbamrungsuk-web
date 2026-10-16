@@ -161,7 +161,7 @@ export default function SalePage() {
             <button onClick={toForm} disabled={closed} className="btn-crimson w-full h-14 mt-5 font-display font-semibold text-[17px] flex items-center justify-center gap-2">
               {closed ? "ปิดรับสมัครแล้ว" : <>สมัครเป็นพาร์ทเนอร์ <span aria-hidden>→</span></>}
             </button>
-            <p className="text-center text-[11px] text-ink-400 mt-3 animate-bounce">เลื่อนดูรายละเอียด ↓</p>
+            <p className="text-center text-[11px] text-[#9a8a85] mt-3 animate-bounce">เลื่อนดูรายละเอียด ↓</p>
           </div>
         </section>
 
@@ -238,7 +238,7 @@ export default function SalePage() {
             <button onClick={toForm} disabled={closed} className="reveal btn-crimson w-full min-h-14 py-3 px-4 font-display font-semibold text-[16px] leading-snug">
               {closed ? "ปิดรับสมัครแล้ว" : CTA_LABEL}
             </button>
-            <p className="text-center text-[12px] text-ink-400 mt-2">กรอกประวัติ · อัปโหลดรูปถ่าย · แนบสลิป</p>
+            <p className="text-center text-[12px] text-[#9a8a85] mt-2">กรอกประวัติ · อัปโหลดรูปถ่าย · แนบสลิป</p>
           </section>
 
           {/* ── 4 · FAQ ── */}
@@ -360,7 +360,7 @@ export default function SalePage() {
                   <Upload label="รูปถ่ายหน้าตรง" hint="เห็นหน้าชัด" value={f.photo} err={errs.photo} onPick={(file) => onFile("photo", file)} />
                   <Upload label="บัตรประชาชน" hint="สำเนาพร้อมลงนาม" value={f.id_card} err={errs.id_card} onPick={(file) => onFile("id_card", file)} />
                 </div>
-                <p className="text-[12px] text-ink-400 -mt-1">ข้อมูลอื่น เช่น บัญชีรับเงินและที่อยู่ ทีมงานจะขอเพิ่มตอนอบรม</p>
+                <p className="text-[12px] text-[#9a8a85] -mt-1">ข้อมูลอื่น เช่น บัญชีรับเงินและที่อยู่ ทีมงานจะขอเพิ่มตอนอบรม</p>
               </Card>
 
               <Card title="เงื่อนไขและความยินยอม">
@@ -402,7 +402,7 @@ export default function SalePage() {
             <span className="text-ink-500" aria-hidden>·</span>
             <a href="/join/terms" className="min-h-10 px-2 inline-flex items-center text-gold-300">ข้อกำหนดการสมัคร</a>
           </nav>
-          <p className="text-[11.5px] text-ink-400 leading-relaxed mt-2">
+          <p className="text-[11.5px] text-[#9a8a85] leading-relaxed mt-2">
             ข้อมูลของคุณได้รับการคุ้มครองตาม<br />พ.ร.บ.คุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562
           </p>
           <p className="text-[11px] text-ink-500 mt-3">© {new Date().getFullYear()} {BRAND.name}</p>
@@ -439,7 +439,7 @@ function Steps({ at }: { at: 1 | 2 | 3 }) {
       {["ใบสมัคร", "ชำระเงิน", "รับรหัส MB"].map((s, i) => (
         <div key={s} className="flex-1">
           <div className={`h-1.5 rounded-full ${i < at ? "bg-gradient-to-r from-gold-400 to-gold-600" : "bg-ink-700"}`} />
-          <p className={`text-[11px] mt-1.5 ${i + 1 === at ? "text-gold-300" : "text-ink-400"}`}>{s}</p>
+          <p className={`text-[11px] mt-1.5 ${i + 1 === at ? "text-gold-300" : "text-[#9a8a85]"}`}>{s}</p>
         </div>
       ))}
     </div>
@@ -471,7 +471,7 @@ function Upload({ label, hint, value, err, onPick }: { label: string; hint: stri
         {value && <span className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full bg-gold-500 text-[#1a1206] grid place-items-center text-xs font-bold">✓</span>}
       </span>
       <span className="text-[13px] font-medium leading-tight">{label}</span>
-      <span className="text-[11px] text-ink-400 leading-tight -mt-1">{hint}</span>
+      <span className="text-[11px] text-[#9a8a85] leading-tight -mt-1">{hint}</span>
       {err && <span role="alert" className="text-[11px] text-crimson-300">{err}</span>}
       <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => onPick(e.target.files?.[0])} />
     </label>

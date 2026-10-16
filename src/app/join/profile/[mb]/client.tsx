@@ -109,7 +109,7 @@ export function ProfileHub({ d }: { d: HubData }) {
             <div className="flex flex-col gap-3 rounded-[18px]" style={{ padding: 16, background: "linear-gradient(150deg, #3a2a17 0%, #251d1b 70%)", boxShadow: "0 10px 24px rgba(0,0,0,0.35)" }}>
               <div className="flex justify-between items-center gap-2">
                 <span className="flex items-center gap-2 text-[14px] font-semibold text-[#e8c472]"><Ico><path d="M3 7a2 2 0 0 1 2-2h13v4" /><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z" /><circle cx="16" cy="14.5" r="1.3" /></Ico>กระเป๋าเงิน</span>
-                <Link href={`/join/profile/${d.mb}/earnings${q}`} className="text-[13px] text-[#e8c472] font-light">เช็คเรทรายได้ ›</Link>
+                <Link href={`/join/profile/${d.mb}/earnings${q}`} className="tap text-[13px] text-[#e8c472] font-light">เช็คเรทรายได้ ›</Link>
               </div>
               <div><div className="text-[13px] text-[#d9c9b4] font-light">ยอดใช้ได้</div><div className="font-semibold text-[32px] leading-[1.15]">{baht(d.wallet.available)}</div><div className="text-[13px] text-[#d9c9b4] mt-0.5 font-light">รอปล่อยเงิน {baht(d.wallet.pending)} · รายได้เดือนนี้ {baht(d.wallet.month)}</div></div>
               <div className="grid grid-cols-2 gap-2">
@@ -204,7 +204,7 @@ export function ProfileHub({ d }: { d: HubData }) {
                   </label>
                   <div className="flex flex-wrap items-center gap-1.5 mt-2 text-[13px] font-light">
                     <span>ลองพิมพ์:</span>
-                    {QP.map((v) => <button key={v || "clear"} type="button" onClick={() => setQuery(v)} className="h-[30px] px-[10px] rounded-full text-[13px] font-light" style={{ background: "rgba(232,196,114,0.16)", color: query === v ? GOLD : "#f3ead9" }}>{v || "ล้าง"}</button>)}
+                    {QP.map((v) => <button key={v || "clear"} type="button" onClick={() => setQuery(v)} className="h-9 px-3 rounded-full text-[13px] font-light" style={{ background: "rgba(232,196,114,0.16)", color: query === v ? GOLD : "#f3ead9" }}>{v || "ล้าง"}</button>)}
                   </div>
                   <div className="mt-2 rounded-xl bg-[#1b2322] overflow-hidden flex flex-col">
                     {sugg.map((label) => <button key={label} type="button" onClick={() => { setPicked([...picked, label]); setQuery(""); dirty(); }} className="min-h-11 px-[14px] bg-transparent border-b border-[rgba(243,234,217,0.07)] text-[#f3ead9] text-[13.5px] flex justify-between items-center text-left">{label}<span className="text-[#e8c472] text-[13px] font-light">+ เลือก</span></button>)}

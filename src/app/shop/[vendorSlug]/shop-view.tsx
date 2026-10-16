@@ -93,12 +93,12 @@ export function ShopView({ vendor, products, reviews, avg, count }: { vendor: { 
                     <Link href={`/products/${p.id}`} aria-label={p.name} className="relative h-[130px] grid place-items-center overflow-hidden" style={{ background: `radial-gradient(circle at 50% 40%, ${glowOf(p.id)[1]}, #140f0f 70%)` }}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       {p.img ? <img src={p.img} alt="" className="w-full h-full object-cover" /> : <Bottle id={p.id} w={60} h={96} />}
-                      <span className="absolute top-2 left-2 px-[7px] py-0.5 rounded-full bg-[#171211] text-[#7fd6a3] text-[10.5px] font-semibold" style={{ border: "1px solid #3f8f63" }}>มี อย.</span>
+                      <span className="absolute top-2 left-2 px-[7px] py-0.5 rounded-full bg-[#171211] text-[#7fd6a3] text-[11.5px] font-semibold" style={{ border: "1px solid #3f8f63" }}>มี อย.</span>
                     </Link>
                     <div className="p-2.5 flex flex-col gap-1 flex-1">
                       <span className="text-[11px] text-[#d9c9b4]">{vendor.name}</span>
                       <Link href={`/products/${p.id}`} className="font-lux font-semibold text-[13.5px] leading-[1.25] text-[#f3ead9] no-underline">{p.name}</Link>
-                      {p.kind && <div className="text-[10.5px] text-[#b5a596]">{p.kind}</div>}
+                      {p.kind && <div className="text-[11.5px] text-[#b5a596]">{p.kind}</div>}
                       <div className="flex justify-between items-center mt-auto pt-1.5 gap-1">
                         <span className="font-lux font-semibold text-[#e8c472]">{fmt(p.price)}</span>
                         {p.stock <= 0

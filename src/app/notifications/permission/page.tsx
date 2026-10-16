@@ -38,7 +38,7 @@ export default function NotifyPermissionPage() {
   return (
     <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9" }}>
       <main className="mx-auto w-full max-w-[480px] md:max-w-[520px] md:pt-8 flex flex-col gap-[14px]" style={{ padding: "12px 18px 24px" }}>
-        <div className="flex justify-between items-center"><Link href="/" className="text-[13px] min-h-11 flex items-center font-light text-[#e8c472]">ข้าม</Link></div>
+        <div className="flex justify-between items-center"><Link href="/" className="text-[13px] min-h-11 px-3 -mx-3 flex items-center font-light text-[#e8c472]">ข้าม</Link></div>
         <div className="flex flex-col items-center text-center gap-3" style={{ paddingTop: 24 }}>
           <div className="w-[120px] h-[120px] rounded-full grid place-items-center" style={{ background: "radial-gradient(circle,#2a1d12,#171211 70%)", border: "1px solid rgba(232,196,114,0.55)", color: GOLD }}>
             <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z" /><path d="M10 20a2 2 0 0 0 4 0" /></svg>

@@ -41,7 +41,7 @@ export default async function SettingsPage({ params, searchParams }: { params: P
             <div className="flex items-center gap-2.5">
               <svg className={`${ic} text-[#e8c472]`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z" /><path d="m8.5 12 2.5 2.5 4.5-5" /></svg>
               <div className="text-[17px] font-medium">ยืนยันตัวตน (KYC)</div>
-              <Link href={kycHref} className="ml-auto h-7 rounded-full text-[13px] font-light flex items-center text-[#e8c472] hover:text-[#e8c472]" style={{ padding: "0 10px", background: "rgba(232,196,114,0.16)", color: k === "rejected" ? "#ff8a9a" : undefined }}>{pill}</Link>
+              <Link href={kycHref} className="ml-auto h-9 rounded-full text-[13px] font-light flex items-center text-[#e8c472] hover:text-[#e8c472]" style={{ padding: "0 10px", background: "rgba(232,196,114,0.16)", color: k === "rejected" ? "#ff8a9a" : undefined }}>{pill}</Link>
             </div>
             <div className="flex gap-2.5">{tile(!!c.row.docs.id_card, "หน้าบัตรประชาชน")}{tile(!!c.row.docs.selfie, "รูปถือบัตรคู่หน้า")}</div>
             <div className="text-[13px] font-light">เมื่อได้ตรา ✓ แล้ว คุณจะรับงาน ถอนเงิน และลงประกาศรับงานได้</div>
