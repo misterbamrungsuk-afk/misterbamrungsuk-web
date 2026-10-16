@@ -32,6 +32,8 @@ async function figures(): Promise<Record<string, number>> {
     ptPending: sum((r) => r.owner_type === "parttime" && r.bucket === "pending"),
     expPtPending: unmatured.reduce((s, b) => s + (b.pt_pending_satang ?? 0), 0),
     unknownPending: unmatured.filter((b) => b.pt_pending_satang == null).length,
+    gift: sum((r) => r.owner_type === "platform" && r.bucket === "gift_liability"),
+    expGift: (await (await import("@/lib/codes")).listCodes()).filter((c) => c.kind === "gift").reduce((t, c) => t + c.amount_satang * (c.max_uses - c.used), 0),
     negatives: bal.filter((r) => r.owner_type !== "platform" && r.balance < 0).length,
   };
 }
@@ -44,6 +46,7 @@ export async function reconcile(): Promise<Recon> {
   if (f.escrow !== f.expEscrow) issues.push(`เงินพัก (escrow) ${baht(f.escrow)} ≠ การจองที่ยืนยันแล้ว ${baht(f.expEscrow)} บาท`);
   if (f.held !== f.expHeld) issues.push(`เงินกันไว้ของลูกค้า ${baht(f.held)} ≠ คำขอจองที่รอตอบรับ + เรียกด่วน ${baht(f.expHeld)} บาท`);
   if (f.withdrawing !== f.expW) issues.push(`ยอดกำลังถอน ${baht(f.withdrawing)} ≠ คำขอถอนค้าง ${baht(f.expW)} บาท`);
+  if ((f.gift ?? 0) !== (f.expGift ?? 0)) issues.push(`บัตรของขวัญค้างใช้ ${baht(f.gift ?? 0)} ≠ มูลค่าบัตรที่ยังไม่ถูกใช้ ${baht(f.expGift ?? 0)} บาท`);
   // นัดเก่าก่อน 0002 ไม่มี pt_pending_satang → ข้ามการเทียบช่องนี้จนกว่าจะปล่อยเงินครบ
   if (!f.unknownPending && f.ptPending !== f.expPtPending) issues.push(`รายได้ Part-Time รอปล่อย ${baht(f.ptPending)} ≠ ที่ควรเป็น ${baht(f.expPtPending)} บาท`);
   return { ok: !issues.length, at: new Date().toISOString(), issues, figures: f };

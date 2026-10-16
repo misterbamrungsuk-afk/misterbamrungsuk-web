@@ -36,7 +36,7 @@ const J = (r) => r.json();
   j = await J(await fetch(B + `/api/pt/posts?mb=${mb}&t=${encodeURIComponent(T)}`)); ok('closed post hidden from pt', !j.posts.some((p) => p.id === postId));
   // รีวิวจริงบนโปรไฟล์
   t = await (await fetch(B + `/p/${pid}`)).text(); ok('profile shows real review', t.includes('ดีมาก') && t.includes('รีวิว'));
-  for (const p of ['/search?q=วัฒนา', '/quick', '/jobs', '/jobs/create', '/page/terms', '/membership', '/profile/edit', '/profile/delete']) { r = await fetch(B + p, { headers: C1 }); ok('page ' + p, r.status === 200); }
-  for (const p of ['/home', '/provider', '/provider/earnings', '/matching', '/post/abc', '/membership/redeem', '/profile/verify']) { r = await fetch(B + p, { headers: C1, redirect: 'manual' }); ok('redirect ' + p, r.status >= 300 && r.status < 400, r.headers.get('location')); }
+  for (const p of ['/search?q=วัฒนา', '/quick', '/jobs', '/jobs/create', '/page/terms', '/membership', '/membership/redeem', '/profile/edit', '/profile/delete']) { r = await fetch(B + p, { headers: C1 }); ok('page ' + p, r.status === 200); }
+  for (const p of ['/home', '/provider', '/provider/earnings', '/matching', '/post/abc', '/profile/verify']) { r = await fetch(B + p, { headers: C1, redirect: 'manual' }); ok('redirect ' + p, r.status >= 300 && r.status < 400, r.headers.get('location')); }
   console.log(fails ? fails + ' FAILED' : 'ALL PASS');
 })().catch((e) => console.log('ERR', e));

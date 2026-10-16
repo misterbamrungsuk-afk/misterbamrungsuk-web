@@ -18,7 +18,7 @@ const form = (o, files = {}) => { const f = new FormData(); for (const [k, v] of
   let r = await fetch(B + '/api/wallet'); ok('no session → 401', r.status === 401);
   const forged = 'hamoo_session=' + Buffer.from(JSON.stringify({ sub: 'demo:a@test.local', email: 'a@test.local', exp: Date.now() + 1e6 })).toString('base64url') + '.forged';
   r = await fetch(B + '/api/wallet', { headers: { cookie: forged } }); ok('forged session → 401', r.status === 401);
-  r = await fetch(B + '/api/wallet', { headers: { cookie: 'hamoo_session=' + sess('demo:a@test.local', 'a@test.local', Date.now() - 1000) } }); ok('expired session → 401', r.status === 401);
+  r = await fetch(B + '/api/wallet', { headers: { cookie: 'hamoo_session=' + sess('demo:a@test.local', 'a@test.local', Date.now() - 1000) } }); ok('expired session → 401', r.status === 401, String(r.status));
   let w = await (await fetch(B + '/api/wallet', { headers: C1 })).json(); ok('empty wallet', w.ok && w.available === 0);
   r = await fetch(B + '/api/wallet/topup', { method: 'POST', headers: C1, body: form({ amount: '50' }, { slip: F('s.jpg') }) }); ok('min amount 100', r.status === 400);
   r = await fetch(B + '/api/wallet/topup', { method: 'POST', headers: C1, body: form({ amount: '1500' }) }); ok('slip required', r.status === 400);

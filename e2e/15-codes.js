@@ -1,0 +1,53 @@
+// โค้ดโปรโมชัน + บัตรของขวัญ (C-Redeem / "ซื้อเป็นของขวัญ"): สร้าง → ใช้ → เครดิตเข้ากระเป๋า · คนละครั้ง · สิทธิ์หมด · ปิดโค้ด · ใช้บัตรตัวเองไม่ได้ · กระทบยอดตรง
+const WEB = require('path').join(__dirname, '..');
+const fs = require('fs'), crypto = require('crypto');
+const { adm } = require('./_tok');
+const B = 'http://localhost:3210';
+const ENV = fs.readFileSync(WEB + '/.env.local', 'utf8');
+const env = (k) => (new RegExp('^' + k + '=(.*)$', 'm').exec(ENV)?.[1] || '').trim().replace(/^["']|["']$/g, '');
+const KEY = env('ADMIN_SESSION_SECRET') || 'hamoo-demo-secret';
+let fails = 0;
+const ok = (n, c, x = '') => { if (!c) fails++; console.log((c ? 'PASS ' : 'FAIL ') + n + (x ? ' · ' + x : '')); };
+const J = (r) => r.json();
+const ADM = { cookie: 'mord_admin=' + adm, 'content-type': 'application/json' };
+const sign = (p) => { const b = Buffer.from(JSON.stringify(p)).toString('base64url'); return b + '.' + crypto.createHmac('sha256', KEY).update(b).digest('base64url'); };
+const cust = (e) => ({ cookie: 'hamoo_session=' + sign({ sub: 'demo:' + e, email: e, exp: Date.now() + 3600e3 }), 'content-type': 'application/json' });
+const A = cust('codea@test.local'), Bc = cust('codeb@test.local'), C = cust('codec@test.local');
+const img = fs.readFileSync(WEB + '/public/brand/home/p-n04.jpg');
+const redeem = (h, code) => fetch(B + '/api/codes/redeem', { method: 'POST', headers: h, body: JSON.stringify({ code }) });
+const avail = (h) => fetch(B + '/api/wallet', { headers: h }).then(J).then((w) => w.available ?? 0);
+(async () => {
+  let r = await fetch(B + '/api/admin/promos', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'create', code: 'test-500', amount: 500, max_uses: 2, note: 'e2e' }) }); let j = await J(r);
+  ok('admin creates promo (code cleaned)', j.ok && j.code.code === 'TEST500', j.error);
+  r = await fetch(B + '/api/admin/promos', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'create', code: 'TEST500', amount: 1, max_uses: 1 }) }); ok('duplicate code refused', r.status === 400);
+  ok('admin promos need admin', (await fetch(B + '/api/admin/promos')).status === 401);
+  ok('redeem needs login', (await redeem({ 'content-type': 'application/json' }, 'TEST500')).status === 401);
+  const a0 = await avail(A);
+  j = await J(await redeem(A, ' test500 ')); ok('A redeems → +฿500', j.ok && j.amount === 50000 && (await avail(A)) - a0 === 50000, j.error);
+  j = await J(await redeem(A, 'TEST500')); ok('A twice refused', !j.ok && /ใช้โค้ดนี้ไปแล้ว/.test(j.error));
+  j = await J(await redeem(Bc, 'TEST500')); ok('B redeems', j.ok);
+  j = await J(await redeem(C, 'TEST500')); ok('C refused (max uses)', !j.ok && /ใช้ไม่ได้/.test(j.error));
+  j = await J(await redeem(C, 'NOPE1234')); ok('unknown code refused', !j.ok);
+  await fetch(B + '/api/admin/promos', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'create', code: 'OFFCODE1', amount: 100, max_uses: 5 }) });
+  await fetch(B + '/api/admin/promos', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'toggle', code: 'OFFCODE1', active: false }) });
+  j = await J(await redeem(C, 'OFFCODE1')); ok('inactive code refused', !j.ok);
+  // บัตรของขวัญ
+  j = await J(await fetch(B + '/api/codes/gift', { method: 'POST', headers: C, body: JSON.stringify({ amount: 1000, to_name: 'แพรว', message: 'สุขสันต์วันเกิด' }) })); ok('gift without funds refused', !j.ok && /ไม่พอ/.test(j.error));
+  const fd = new FormData(); fd.set('amount', '3000'); fd.set('slip', new File([img], 's.jpg', { type: 'image/jpeg' }));
+  await fetch(B + '/api/wallet/topup', { method: 'POST', headers: { cookie: C.cookie }, body: fd });
+  const ad = await J(await fetch(B + '/api/admin/wallet', { headers: ADM }));
+  await fetch(B + '/api/admin/wallet', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'approve', id: ad.topups.find((x) => x.customer_email === 'codec@test.local' && x.status === 'pending').id }) });
+  const c0 = await avail(C);
+  j = await J(await fetch(B + '/api/codes/gift', { method: 'POST', headers: C, body: JSON.stringify({ amount: 1000, to_name: 'แพรว', message: 'โทร 0812345678' }) })); ok('contact in gift message refused', !j.ok);
+  j = await J(await fetch(B + '/api/codes/gift', { method: 'POST', headers: C, body: JSON.stringify({ amount: 1000, to_name: 'แพรว', message: 'สุขสันต์วันเกิด' }) }));
+  ok('C buys gift ฿1,000', j.ok && /^GIFT[A-Z0-9]{8}$/.test(j.gift.code) && c0 - (await avail(C)) === 100000, j.error); const gcode = j.gift?.code;
+  j = await J(await redeem(C, gcode)); ok('own gift refused', !j.ok && /ซื้อเอง/.test(j.error));
+  const b0 = await avail(Bc);
+  j = await J(await redeem(Bc, gcode)); ok('B redeems gift', j.ok && j.kind === 'gift' && (await avail(Bc)) - b0 === 100000 && j.message === 'สุขสันต์วันเกิด');
+  j = await J(await redeem(A, gcode)); ok('gift single use', !j.ok);
+  j = await J(await fetch(B + '/api/codes/gift', { headers: C })); ok('C sees gift used', j.gifts.some((g) => g.code === gcode && g.used));
+  for (const p of ['/membership', '/membership/redeem']) { r = await fetch(B + p, { headers: C }); ok('page ' + p, r.status === 200); }
+  let t = await (await fetch(B + '/admin/promos', { headers: ADM })).text(); ok('admin promos page', t.includes('TEST500') && t.includes(gcode));
+  j = await J(await fetch(B + '/api/cron/money', { headers: { authorization: 'Bearer ' + env('CRON_SECRET') } })); ok('recon ok (gift liability)', j.recon?.ok, JSON.stringify(j.recon?.issues));
+  console.log(fails ? fails + ' FAILED' : 'ALL PASS');
+})().catch((e) => console.log('ERR', e));
