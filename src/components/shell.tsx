@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useI18n, LangToggle } from "@/i18n/provider";
+import { useI18n } from "@/i18n/provider";
 import { Logo } from "./ui";
-import { ModeSwitch, useMode } from "./mode-switch";
+import { useMode } from "./mode-switch";
 import type { ReactNode } from "react";
 
 const icons = {
@@ -48,35 +48,37 @@ export function TabBar({ unread = 0 }: { unread?: number }) {
         { href: "/provider/settings", key: "profile", label: th ? "ตั้งค่า" : "Settings" },
       ]
     : [
-        { href: "/home", key: "home", label: t.nav.home },
-        { href: "/map", key: "map", label: th ? "ใกล้ฉัน" : "Nearby" },
-        { href: "/matching", key: "quick", label: t.quickMatch, center: true },
-        { href: "/chat", key: "chat", label: t.nav.chat, badge: unread },
-        { href: "/profile", key: "profile", label: t.nav.profile },
+        // บอร์ด C-Home: หน้าแรก · แผนที่ · เรียกด่วน (ปุ่มทองกลาง) · แชท · บัญชี
+        { href: "/", key: "home", label: "หน้าแรก", match: /^\/$|^\/home$/ },
+        { href: "/map", key: "map", label: "แผนที่" },
+        { href: "/quick", key: "quick", label: "เรียกด่วน", center: true },
+        { href: "/chat", key: "chat", label: "แชท", badge: unread },
+        { href: "/profile", key: "profile", label: "บัญชี" },
       ];
 
   return (
-    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-40 border-t border-ink-600 bg-ink-900/95 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,.5)]" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
-      <div className="grid grid-cols-5 h-[68px] items-center">
+    <nav aria-label="เมนูหลัก" className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[640px] z-40 font-light md:rounded-t-2xl" style={{ background: "#251d1b", borderTop: "1px solid rgba(243,234,217,0.07)", color: "#b5a596", paddingBottom: "max(14px, env(safe-area-inset-bottom))" }}>
+      <div className="grid grid-cols-5 h-[66px] items-center text-center">
         {tabs.map((tab) => {
           const active = tab.match ? tab.match.test(path) : path === tab.href || path.startsWith(tab.href + "/");
           if (tab.center) {
             return (
-              <Link key={tab.key} href={tab.href} aria-label={tab.label} className="grid place-items-center">
-                <span className={`w-12 h-12 rounded-2xl text-white grid place-items-center transition active:scale-95 ${active ? "bg-crimson-600 ring-2 ring-crimson-300" : "bg-crimson-500"}`}>{icons[tab.key]}</span>
+              <Link key={tab.key} href={tab.href} aria-label={tab.label} className="flex flex-col items-center gap-0.5 text-[12px] text-[#e8c472] hover:text-[#e8c472]">
+                <span className="w-12 h-12 -mt-[18px] rounded-2xl bg-[#e8c472] text-[#1b130b] grid place-items-center transition active:scale-95" style={{ boxShadow: active ? "0 0 0 3px rgba(232,196,114,.3)" : "none" }}>{icons[tab.key]}</span>
+                {tab.label}
               </Link>
             );
           }
           return (
             <Link key={tab.key} href={tab.href}
-              className={`relative flex flex-col items-center gap-1 transition-colors ${active ? "text-gold-300" : "text-ink-300 hover:text-ink-200"}`}>
+              aria-current={active ? "page" : undefined} className="relative min-h-12 flex flex-col items-center justify-center gap-[3px]" style={{ color: active ? "#e8c472" : "inherit" }}>
               <span className="relative">
                 {icons[tab.key]}
                 {tab.badge ? (
-                  <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-crimson-500 text-[10px] font-bold text-white grid place-items-center">{tab.badge}</span>
+                  <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-[#e8c472] text-[10px] font-semibold text-[#1b130b] grid place-items-center">{tab.badge}</span>
                 ) : null}
               </span>
-              <span className="text-[11px]">{tab.label}</span>
+              <span className="text-[12px]">{tab.label}</span>
             </Link>
           );
         })}
@@ -86,37 +88,29 @@ export function TabBar({ unread = 0 }: { unread?: number }) {
 }
 
 export function TopBar({ title, back, right, notis = 0 }: { title?: ReactNode; back?: string; right?: ReactNode; notis?: number }) {
-  const path = usePathname();
-  // สวิตช์โหมดแสดงบนหน้าหลักของแต่ละโหมด
-  const showMode = !back || path === "/provider" || path === "/jobs";
+  // หัวหน้าตามบอร์ด C-* : พื้น #251d1b สูง 64 · ปุ่มกลับ 44px · ไม่มีตัวสลับภาษา
   return (
-    <header className="sticky top-0 z-30 bg-ink-900/90 backdrop-blur-xl border-b border-ink-600/60">
-      <div className="flex items-center gap-3 px-4 h-14">
+    <header className="sticky top-0 z-30" style={{ background: "#251d1b" }}>
+      <div className="flex items-center gap-3 px-4 h-16">
         {back ? (
-          <Link href={back} className="w-10 h-10 -ml-1 rounded-full border border-ink-600 grid place-items-center text-ink-100 hover:border-gold-500 transition" aria-label="back">
+          <Link href={back} className="w-11 h-11 shrink-0 rounded-full bg-[#211a18] grid place-items-center text-[#f3ead9] hover:text-[#f3ead9]" aria-label="ย้อนกลับ">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><path d="M15 5l-7 7 7 7" strokeLinecap="round"/></svg>
           </Link>
         ) : (
           <Link href="/" aria-label="หน้าแรก"><Logo size={30} /></Link>
         )}
         <div className="flex-1 min-w-0">
-          {typeof title === "string" ? <h1 className="font-semibold truncate">{title}</h1> : title}
+          {typeof title === "string" ? <h1 className="m-0 font-semibold text-[18px] truncate">{title}</h1> : title}
         </div>
         {right ?? (
           <div className="flex items-center gap-2">
-            <Link href="/notifications" className="relative w-10 h-10 grid place-items-center text-ink-200 hover:text-gold-300 transition" aria-label="notifications">
+            <Link href="/notifications" className="relative w-11 h-11 rounded-full grid place-items-center text-[#f3ead9] hover:text-[#f3ead9]" style={{ background: "rgba(232,196,114,0.16)" }} aria-label="การแจ้งเตือน">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-6 h-6"><path d="M18 10a6 6 0 10-12 0c0 6-2 7-2 7h16s-2-1-2-7M10.3 21a2 2 0 003.4 0"/></svg>
-              {notis > 0 && <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-crimson-500 animate-pulse" />}
+              {notis > 0 && <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#ff8a9a]" />}
             </Link>
-            <LangToggle />
           </div>
         )}
       </div>
-      {showMode && (
-        <div className="px-4 pb-2.5">
-          <ModeSwitch />
-        </div>
-      )}
     </header>
   );
 }

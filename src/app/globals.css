@@ -407,3 +407,30 @@ html { scroll-behavior: smooth; }
 /* หน้า /join: hero มือถือตามบอร์ด (ไล่สีแนวตั้ง) · จอคอมไล่สีจากซ้ายให้เห็นรูปด้านขวา */
 .join-hero{background:linear-gradient(180deg,rgba(79,22,34,.82),rgba(42,13,19,.96)),url(/brand/home/join-hero.jpg) 72% center/cover}
 @media (min-width:768px){.join-hero{background:linear-gradient(90deg,rgba(42,13,19,.97) 0%,rgba(52,15,24,.88) 45%,rgba(79,22,34,.35) 100%),url(/brand/home/join-hero.jpg) 70% 30%/cover}}
+
+/* ── ฝั่งลูกค้า (แอปเดิมใน (app) + หน้าเดี่ยว) ครอบด้วย .mb-v7.mb-c → token สีเก่า (ink/crimson/gold) ชี้ไปพาเลตต์ v7 (บอร์ด C-*)
+   หน้าเดิมที่ยังไม่ได้ถอดใหม่ทั้งหน้าจะเปลี่ยนโทนตามทันที · หน้าที่ถอดตามบอร์ดแล้วใช้ค่าสีตรงอยู่แล้ว ไม่กระทบ */
+.mb-c {
+  --color-ink-950: #171211; --color-ink-900: #171211; --color-ink-850: #1c1614; --color-ink-800: #211a18;
+  --color-ink-700: #251d1b; --color-ink-600: rgba(243,234,217,0.10); --color-ink-500: rgba(243,234,217,0.18);
+  --color-ink-400: #b5a596; --color-ink-300: #b5a596; --color-ink-200: #d9c9b4; --color-ink-100: #f3ead9;
+  --color-crimson-700: #2c1a1f; --color-crimson-600: #d9b25f; --color-crimson-500: #e8c472; --color-crimson-400: #e8c472;
+  --color-crimson-300: #ff8a9a; --color-crimson-200: #ff8a9a; --color-crimson-100: rgba(232,196,114,0.14);
+  --color-gold-600: #c9a24a; --color-gold-500: #e8c472; --color-gold-400: #e8c472; --color-gold-300: #e8c472; --color-gold-200: #f3ead9;
+  --shadow-glow-red: none; --shadow-glow-gold: none;
+  background: #171211; color: #f3ead9;
+}
+.mb-c .btn-ghost { background: #211a18 !important; color: #e8c472 !important; border: 1px solid rgba(243,234,217,0.07) !important; border-radius: 14px !important; box-shadow: none !important; }
+.mb-c input.bg-white, .mb-c textarea.bg-white, .mb-c select.bg-white, .mb-c .input, .mb-c .field { background: #251d1b !important; color: #f3ead9 !important; border-color: rgba(243,234,217,0.07) !important; }
+.mb-c .text-white { color: #f3ead9; }
+.mb-c .btn-crimson .text-white, .mb-c .bg-crimson-500 { color: #1b130b; }
+.mb-c .card, .mb-c .card-lux { background: #211a18; border-color: rgba(243,234,217,0.07); box-shadow: none; }
+.mb-c .chip { background: #251d1b; border-color: transparent; color: #f3ead9; min-height: 32px; display: inline-flex; align-items: center; }
+.mb-c .chip-red, .mb-c .chip-gold { background: rgba(232,196,114,0.14); border-color: transparent; color: #e8c472; font-weight: 600; }
+.mb-c .text-gradient-red { background: none; -webkit-text-fill-color: #e8c472; color: #e8c472; }
+.mb-c .input-dark { background: #251d1b; border-color: transparent; border-radius: 12px; min-height: 48px; font-size: max(16px, 1em); }
+.mb-c .input-dark:focus { border-color: #e8c472; box-shadow: none; }
+.mb-c .glass, .mb-c .glass-hover { background: #211a18; border-color: rgba(243,234,217,0.07); box-shadow: none; }
+.mb-c .gold-line { background: rgba(243,234,217,0.07); }
+.mb-c .section-title { font-family: var(--font-mb); font-weight: 600; letter-spacing: 0; }
+.mb-c .animate-pulse-red { animation: none; }

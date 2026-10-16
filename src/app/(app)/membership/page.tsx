@@ -56,7 +56,7 @@ export default function MembershipPage() {
 
   return (
     <>
-      <TopBar back="/profile" title={th ? "สมาชิก & แพ็กเกจ" : "Membership"} />
+      <TopBar back="/profile" title="ระดับสมาชิก" />
       <div className="px-4 pt-4 pb-28 flex flex-col gap-4">
         {/* สถานะปัจจุบัน */}
         {member ? (

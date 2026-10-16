@@ -20,9 +20,9 @@ export default function GatePage() {
   }
 
   return (
-    <main className="app-frame bg-white flex flex-col items-center justify-center px-6">
+    <main className="app-frame mb-v7 mb-c flex flex-col items-center justify-center px-6">
       <Logo size={40} />
-      <div className="mt-8 w-full max-w-[340px] rounded-[24px] border border-ink-600 bg-white shadow-[0_18px_40px_rgba(16,16,24,.08)] p-6">
+      <div className="mt-8 w-full max-w-[340px] rounded-[24px] border border-ink-600 bg-[#211a18] p-6">
         <div className="w-12 h-12 rounded-2xl bg-crimson-500/10 text-crimson-600 grid place-items-center mx-auto">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="w-6 h-6"><rect x="4" y="10" width="16" height="11" rx="2.5" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
         </div>

@@ -69,7 +69,7 @@ export default function SOSPage() {
   const label = status === "sent" ? (th ? "ส่งแล้ว" : "Sent") : status === "sending" ? "…" : countdown != null ? String(countdown) : "SOS";
 
   return (
-    <main className="min-h-dvh bg-ink-950 text-ink-100 mx-auto max-w-[480px] px-5 py-6 flex flex-col overflow-x-hidden">
+    <main className="mb-v7 min-h-dvh mx-auto max-w-[480px] px-5 py-6 flex flex-col overflow-x-hidden" style={{ background: "#171211", color: "#f3ead9" }}>
       <p className="text-xs font-semibold tracking-[0.18em] text-crimson-400 text-center">EMERGENCY</p>
       <h1 className="font-display text-2xl font-bold text-center mt-1">
         {status === "sent" ? (th ? "แจ้งทีมงานแล้ว" : "Team alerted") : countdown != null ? (th ? "กำลังส่ง SOS" : "Sending SOS") : (th ? "ขอความช่วยเหลือฉุกเฉิน" : "Emergency help")}

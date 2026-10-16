@@ -5,8 +5,8 @@ import Link from "next/link";
 // right: ป้าย/ปุ่มด้านขวา (ค่าเริ่มต้น = ไม่มีป้าย)
 export function SiteHeader({ right, pill = "" }: { right?: React.ReactNode; pill?: string }) {
   return (
-    <header className="relative z-30 flex justify-between items-center gap-3 px-4 py-3" style={{ background: "linear-gradient(180deg, #050303, #0e0a0a)" }}>
-      <Link href="/" className="inline-flex items-center gap-2 font-lux font-semibold text-[20px] no-underline min-w-0">
+    <header className="relative z-30 flex justify-between items-center gap-3 px-4 py-3" style={{ background: "#171211", borderBottom: "1px solid rgba(243,234,217,0.07)" }}>
+      <Link href="/" className="inline-flex items-center gap-2 font-brand text-[13px] md:text-[15px] no-underline min-w-0" style={{ fontWeight: 400 }}>
         <img src="/brand/logo.png" alt="Mister Bamrungsuk" className="w-10 h-10 object-contain shrink-0" />
         <span className="text-[#e8c472] truncate">Mister Bamrungsuk</span>
       </Link>

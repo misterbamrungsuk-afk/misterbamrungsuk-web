@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { hasSupabase } from "@/lib/supabase";
 import { isDemo } from "@/lib/data";
-import { lineAddUrl } from "@/lib/join/config";
 
 const GOLD = "#e8c472";
 const field = "h-12 w-full rounded-[14px] border border-[rgba(243,234,217,0.07)] bg-[#211a18] px-[14px] text-[14px] text-[#f3ead9] outline-none focus:border-[#e8c472] placeholder:text-[#b5a596]";
@@ -17,7 +16,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [forgot, setForgot] = useState(false);
   const nextUrl = () => {
     const n = new URLSearchParams(window.location.search).get("next") || "/home";
     return n.startsWith("/") && !n.startsWith("//") ? n : "/home";
@@ -68,8 +66,7 @@ export default function LoginPage() {
               <input type="email" required autoComplete="email" inputMode="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className={field} /></label>
             <label className="flex flex-col gap-[5px] text-[12px] text-[#d9c9b4] font-light">รหัสผ่าน
               <input type="password" required autoComplete="current-password" placeholder="อย่างน้อย 8 ตัวอักษร" value={password} onChange={(e) => setPassword(e.target.value)} className={field} /></label>
-            <button type="button" onClick={() => setForgot(!forgot)} aria-expanded={forgot} className="self-end min-h-8 text-[13px] text-[#e8c472] font-light">ลืมรหัสผ่าน?</button>
-            {forgot && <p className="m-0 rounded-[14px] bg-[#211a18] text-[13px] font-light text-[#d9c9b4]" style={{ padding: "10px 14px" }}>ติดต่อแอดมินทาง <a href={lineAddUrl()} target="_blank" rel="noopener noreferrer" className="text-[#e8c472]">LINE</a> เพื่อตั้งรหัสผ่านใหม่</p>}
+            <Link href="/auth/forgot" className="self-end min-h-8 flex items-center text-[13px] text-[#e8c472] font-light">ลืมรหัสผ่าน?</Link>
             {error && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{error}</p>}
             <button type="submit" disabled={!ok || busy} className="h-[54px] rounded-full bg-[#e8c472] text-[#1b130b] font-semibold text-[15px] disabled:opacity-45" style={{ border: `1.5px solid ${GOLD}` }}>{busy ? "กำลังเข้าสู่ระบบ…" : "เข้าสู่ระบบ"}</button>
             <Link href="/auth/register" className="self-center min-h-10 flex items-center text-[13px] text-[#d9c9b4] font-light">ยังไม่มีบัญชี?&nbsp;<span className="text-[#e8c472]">สมัครสมาชิก</span></Link>

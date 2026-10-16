@@ -86,3 +86,30 @@ export function rateLimited(key: string, max = 10, windowMs = 15 * 60_000) {
   return list.length > max;
 }
 export const clientIp = (req: Request) => req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "local";
+
+// ── ลืมรหัสผ่าน (บอร์ด C-Register "ลืมรหัสผ่าน" + C-ResetPassword) ──
+// โทเคนผูกกับ hash รหัสเดิม → ตั้งรหัสใหม่แล้วลิงก์เดิมใช้ซ้ำไม่ได้ · อายุ 30 นาที
+export const RESET_TTL_MS = 30 * 60_000;
+const resetSig = (body: string, hash: string) => createHmac("sha256", secret()).update(`reset:${body}:${hash.slice(-16)}`).digest("base64url");
+export function signReset(c: Pick<Customer, "email" | "password_hash">) {
+  const body = Buffer.from(JSON.stringify({ email: c.email, exp: Date.now() + RESET_TTL_MS })).toString("base64url");
+  return `${body}.${resetSig(body, c.password_hash)}`;
+}
+/** คืนลูกค้าถ้าโทเคนถูกต้อง ยังไม่หมดอายุ และรหัสยังไม่ถูกเปลี่ยน */
+export async function readReset(token: string): Promise<Customer | null> {
+  const [body, sig] = String(token || "").split(".");
+  if (!body || !sig) return null;
+  let p: { email?: string; exp?: number };
+  try { p = JSON.parse(Buffer.from(body, "base64url").toString()); } catch { return null; }
+  if (!p.email || !p.exp || p.exp < Date.now()) return null;
+  const c = await findCustomer(p.email);
+  if (!c) return null;
+  const want = resetSig(body, c.password_hash);
+  return want.length === sig.length && timingSafeEqual(Buffer.from(want), Buffer.from(sig)) ? c : null;
+}
+export async function setCustomerPassword(id: string, password: string) {
+  const res = await fetch(`${SB_URL()}/rest/v1/customers?id=eq.${encodeURIComponent(id)}`, {
+    method: "PATCH", headers: sbHeaders(), body: JSON.stringify({ password_hash: makeHash(password) }),
+  });
+  if (!res.ok) throw new Error(`customers password ${res.status}`);
+}

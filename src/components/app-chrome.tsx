@@ -11,7 +11,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const full = FULLSCREEN.some((re) => re.test(path));
   return (
-    <div className={`app-frame ${full ? "" : "safe-bottom"}`}>
+    <div className={`app-frame mb-v7 mb-c ${full ? "" : "safe-bottom"}`}>
       {children}
       {!full && <TabBar unread={1} />}
       {!full && <SOSButton />}

@@ -45,11 +45,11 @@ export default function SOSButton() {
       <button
         onClick={() => setOpen(true)}
         aria-label="SOS emergency"
-        className="fixed z-40 h-10 pl-2 pr-3.5 rounded-full bg-white border border-crimson-500/25 shadow-[0_6px_20px_rgba(16,16,24,.12)] flex items-center gap-1.5 text-crimson-600 font-bold text-[13px] tracking-wide active:scale-95 transition-transform"
-        style={{ right: "max(16px, calc(50% - 224px))", bottom: "calc(84px + env(safe-area-inset-bottom))" }}
+        className="fixed z-40 h-11 pl-2 pr-3.5 rounded-full flex items-center gap-1.5 font-semibold text-[13px] active:scale-95 transition-transform" 
+        style={{ right: "max(16px, calc(50% - 224px))", bottom: "calc(96px + env(safe-area-inset-bottom))", background: "#251d1b", color: "#ff8a9a", boxShadow: "inset 0 0 0 1px rgba(255,138,154,.45), 0 6px 20px rgba(0,0,0,.4)" }}
       >
-        <span className="relative w-6 h-6 rounded-full bg-crimson-500 grid place-items-center">
-          <span className="absolute inset-0 rounded-full bg-crimson-500/40 animate-ping" />
+        <span className="relative w-7 h-7 rounded-full grid place-items-center" style={{ background: "#c9283d" }}>
+          <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "rgba(201,40,61,.4)" }} />
           <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="relative w-3.5 h-3.5"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3z" /><path d="M12 8v4M12 15.5h.01" /></svg>
         </span>
         SOS
@@ -59,14 +59,14 @@ export default function SOSButton() {
         <p className="text-xs text-ink-400 mb-4">{lang === "th" ? "กดปุ่มด้านล่างตามสถานการณ์ — ทีมงานเห็นการแจ้งเตือนทันที" : "Tap below per situation — our team sees alerts instantly"}</p>
 
         <div className="grid gap-2">
-          <a href="tel:191" className="btn-crimson rounded-xl py-3.5 font-semibold text-center">📞 {lang === "th" ? "โทร 191 (ตำรวจ/ฉุกเฉิน)" : "Call 191 (Police)"}</a>
+          <a href="tel:191" className="rounded-[14px] py-3.5 font-semibold text-center text-white" style={{ background: "#c9283d" }}>📞 {lang === "th" ? "โทร 191 (ตำรวจ/ฉุกเฉิน)" : "Call 191 (Police)"}</a>
           <a href="tel:1669" className="btn-ghost rounded-xl py-3.5 font-semibold text-center">🏥 {lang === "th" ? "โทร 1669 (การแพทย์ฉุกเฉิน)" : "Call 1669 (Medical)"}</a>
           <button onClick={shareLocation} className="btn-ghost rounded-xl py-3.5 font-semibold">
             📍 {coords
               ? `${lang === "th" ? "แชร์ตำแหน่งของฉัน" : "Share my location"} (${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)})`
               : lang === "th" ? "ขอตำแหน่ง GPS แล้วแชร์" : "Get GPS & share"}
           </button>
-          <button onClick={alertTeam} disabled={sent} className={`rounded-xl py-3.5 font-semibold ${sent ? "btn-ghost text-emerald-400" : "btn-crimson animate-[pulseRed_2s_ease-in-out_infinite]"}`}>
+          <button onClick={alertTeam} disabled={sent} className={`rounded-[14px] py-3.5 font-semibold ${sent ? "btn-ghost text-emerald-400" : "text-white"}`} style={sent ? undefined : { background: "#c9283d" }}>
             {sent ? `✓ ${lang === "th" ? "แจ้งทีมงานแล้ว" : "Team alerted"}` : `🛡️ ${lang === "th" ? "แจ้งทีมงาน Mister Bamrungsuk (พร้อมตำแหน่ง)" : "Alert Mister Bamrungsuk team (with location)"}`}
           </button>
         </div>

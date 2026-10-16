@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useI18n, LangToggle } from "@/i18n/provider";
+import { useI18n } from "@/i18n/provider";
 import { VerifiedBadge } from "@/components/ui";
 import { DEMO_ME } from "@/lib/demo-data";
 
@@ -17,12 +17,11 @@ export default function ProfilePage() {
 
   const menu = [
     { href: "/profile/edit", icon: "✏️", label: t.profileInfo },
-    { href: "/membership", icon: "♛", label: lang === "th" ? "สมาชิก & แพ็กเกจ" : "Membership & packs" },
+    { href: "/membership", icon: "♛", label: "ระดับสมาชิก" },
     { href: "/membership/redeem", icon: "🎁", label: lang === "th" ? "รับของขวัญ" : "Redeem gift" },
     { href: "/orders", icon: "🧾", label: lang === "th" ? "ประวัติการจ้างงาน" : "My orders" },
     { href: "/search", icon: "🔍", label: lang === "th" ? "ค้นหาเพื่อน" : "Find companions" },
     { href: "/profile/addresses", icon: "📍", label: lang === "th" ? "ที่อยู่ที่บันทึก" : "Saved addresses" },
-    { href: "/profile/language", icon: "🌐", label: lang === "th" ? "ภาษา" : "Language" },
     { href: "/favorites", icon: "❤️", label: lang === "th" ? "เพื่อนที่ถูกใจ" : "Favorites" },
     { href: "/notifications", icon: "🔔", label: lang === "th" ? "การแจ้งเตือน" : "Notifications" },
     { href: "/jobs", icon: "📋", label: lang === "th" ? "บอร์ดประกาศงาน" : "Job board" },
@@ -42,7 +41,6 @@ export default function ProfilePage() {
       <header className="sticky top-0 z-30 bg-ink-950/85 backdrop-blur-xl border-b border-ink-600">
         <div className="flex items-center justify-between px-4 h-14">
           <h1 className="font-semibold">{t.nav.profile}</h1>
-          <LangToggle />
         </div>
       </header>
 
