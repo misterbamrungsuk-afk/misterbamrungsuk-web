@@ -65,7 +65,7 @@ export function MarketShop({ products, categories }: { products: CardP[]; catego
           {categories.map((x) => <Chip key={x.id} on={cat === x.id} onClick={() => setCat(x.id)}>{x.name}</Chip>)}
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2.5 px-[18px]">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 px-[18px]">
         {list.map((p) => <MProductCard key={p.id} p={p} onAdded={flash} />)}
       </div>
       {!list.length && <p className="px-[18px] text-[13px] text-[#d9c9b4]">ยังไม่มีสินค้าในหมวดนี้</p>}

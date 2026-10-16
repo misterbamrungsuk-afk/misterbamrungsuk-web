@@ -1,5 +1,6 @@
 import { allBalances, ledgerSum, listTopups } from "@/lib/wallet";
 import { getMoney } from "@/lib/wallet/settings";
+import { reconcile } from "@/lib/wallet/reconcile";
 import { WalletAdmin } from "./client";
 
 export const dynamic = "force-dynamic";
@@ -8,5 +9,6 @@ export const metadata = { title: "กระเป๋าเงิน · แอด
 // คิวเติมเงิน (Slip2Go ตรวจไม่ผ่าน → แอดมินตัดสิน) · ยอดทุกบัญชี · ผลรวม ledger ต้อง = 0 · ปรับยอดพร้อมเหตุผล
 export default async function WalletAdminPage() {
   const [topups, accounts, sum, money] = await Promise.all([listTopups({ limit: 200 }).catch(() => []), allBalances().catch(() => []), ledgerSum().catch(() => NaN), getMoney()]);
-  return <WalletAdmin initial={{ topups, accounts, sum }} money={money} />;
+  const recon = await reconcile().catch(() => null);
+  return <WalletAdmin initial={{ topups, accounts, sum }} money={money} recon={recon} />;
 }

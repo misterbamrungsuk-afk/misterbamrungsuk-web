@@ -138,3 +138,15 @@ create table if not exists public.post_interests (
 );
 alter table public.customer_posts enable row level security;
 alter table public.post_interests enable row level security;
+
+-- ── web push (#16): อุปกรณ์ที่ขอรับแจ้งเตือน · endpoint หมดอายุ (404/410) ถูกลบอัตโนมัติ ──
+create table if not exists public.push_subs (
+  endpoint text primary key,
+  user_type text not null check (user_type in ('customer','parttime','admin')),
+  user_id text not null,
+  p256dh text not null,
+  auth text not null,
+  created_at timestamptz not null default now()
+);
+create index if not exists push_subs_user on public.push_subs(user_type, user_id);
+alter table public.push_subs enable row level security;

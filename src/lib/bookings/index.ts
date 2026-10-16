@@ -50,23 +50,29 @@ async function insertBooking(b: Omit<Booking, "id" | "created_at" | "updated_at"
 }
 /** เปลี่ยนสถานะแบบมีเงื่อนไข (from) กันแข่งกันกด — คืน null ถ้าสถานะไม่ตรงแล้ว */
 export async function transition(id: string, from: Status[], patch: Partial<Booking>): Promise<Booking | null> {
+  let r: Booking | null;
   if (isDemo) {
     const b = demo.bookings.find((x) => x.id === id);
     if (!b || !from.includes(b.status)) return null;
-    Object.assign(b, patch, { updated_at: now() });
-    return b;
+    r = Object.assign(b, patch, { updated_at: now() });
+  } else {
+    const { data, error } = await db().from("bookings").update({ ...patch, updated_at: now() }).eq("id", id).in("status", from).select().maybeSingle();
+    if (error) throw error;
+    r = (data as Booking) ?? null;
   }
-  const { data, error } = await db().from("bookings").update({ ...patch, updated_at: now() }).eq("id", id).in("status", from).select().maybeSingle();
-  if (error) throw error;
-  return (data as Booking) ?? null;
+  // นัดที่สปาพาร์ทเนอร์ → พอร์ทัลพาร์ทเนอร์เห็นการจอง (#26) · พลาดไม่กระทบเงิน
+  if (r && patch.status && r.place?.spa_id) await import("@/lib/partner/portal").then((m) => m.syncSpaBooking(r!)).catch((e) => console.error("partner sync", e));
+  return r;
 }
 export async function addEvent(booking_id: string, type: string, actor: string | null, data: unknown = null) {
   if (isDemo) { demo.events.push({ booking_id, type, actor, data, created_at: now() }); return; }
   await db().from("booking_events").insert({ booking_id, type, actor, data });
 }
 export async function notify(n: Omit<Notice, "id" | "read_at" | "created_at">) {
-  if (isDemo) { demo.notices.unshift({ ...n, id: demo.notices.length + 1, read_at: null, created_at: now() }); return; }
-  await db().from("notifications").insert(n).then(({ error }) => { if (error) console.error("notify", error.message); });
+  if (isDemo) demo.notices.unshift({ ...n, id: demo.notices.length + 1, read_at: null, created_at: now() });
+  else await db().from("notifications").insert(n).then(({ error }) => { if (error) console.error("notify", error.message); });
+  // web push ไปทุกอุปกรณ์ที่ผู้ใช้เปิดรับไว้ (#16) — แอดมินดูในหลังบ้าน
+  if (n.user_type !== "admin") await import("@/lib/push").then((m) => m.sendPush(n.user_type, n.user_id, { title: n.title, body: n.body, url: n.url, tag: n.kind })).catch(() => 0);
 }
 
 export async function getBooking(id: string): Promise<Booking | null> {
@@ -74,6 +80,22 @@ export async function getBooking(id: string): Promise<Booking | null> {
   const b = isDemo ? demo.bookings.find((x) => x.id === id) ?? null : ((await db().from("bookings").select().eq("id", id).maybeSingle()).data as Booking | null);
   return b ? (await sweep([b]))[0] : null;
 }
+// พาร์ทเนอร์แจ้งห้องเต็ม/ยืนยันห้อง → แจ้งลูกค้า + เพื่อน + ทีมงาน (#26)
+export async function spaRoomUpdate(code: string, status: "confirmed" | "full", room: string | null) {
+  const b = isDemo ? demo.bookings.find((x) => x.code === code) ?? null : ((await db().from("bookings").select().eq("code", code).maybeSingle()).data as Booking | null);
+  if (!b) return;
+  const spa = b.place.spa_name ?? "สปา";
+  if (status === "confirmed") {
+    await addEvent(b.id, "spa_confirmed", "partner", { room });
+    await notify({ user_type: "customer", user_id: b.customer_id, kind: "spa_confirmed", title: `${spa} เตรียมห้องให้แล้ว`, body: `${b.code}${room ? ` · ${room}` : ""}`, url: `/order/${b.id}` });
+    return;
+  }
+  await addEvent(b.id, "spa_full", "partner", null);
+  await notify({ user_type: "customer", user_id: b.customer_id, kind: "spa_full", title: `${spa} แจ้งห้องเต็ม`, body: `${b.code} · ทีมงานจะติดต่อเพื่อเปลี่ยนสถานที่หรือเวลา หรือขอยกเลิกในหน้าการจองได้`, url: `/order/${b.id}` });
+  await notify({ user_type: "parttime", user_id: b.parttime_id, kind: "spa_full", title: `${spa} แจ้งห้องเต็ม ${b.code}`, body: "รอทีมงานประสานสถานที่ใหม่", url: `/join/profile/${b.parttime_mb}/jobs` });
+  await notify({ user_type: "admin", user_id: "ops", kind: "spa_full", title: `สปาแจ้งห้องเต็ม ${b.code}`, body: spa, url: "/admin/orders" });
+}
+
 export async function listForCustomer(customer_id: string): Promise<Booking[]> {
   const rows = isDemo ? demo.bookings.filter((b) => b.customer_id === customer_id) : (((await db().from("bookings").select().eq("customer_id", customer_id).order("starts_at", { ascending: false }).limit(100)).data ?? []) as Booking[]);
   return sweep(rows);
@@ -188,6 +210,15 @@ export async function cancelByCustomer(id: string, customer_id: string, reason: 
     const r = await transition(b.id, ["accepted"], { status: "cancel_requested", decline_reason: reason.slice(0, 200) || null });
     if (r) {
       await addEvent(b.id, "cancel_requested", `customer:${customer_id}`, { reason });
+      // กติกายกเลิกอัตโนมัติ (#23): เปิดในตั้งค่าการเงิน → คืนตาม % ทันที ส่วนที่เหลือแบ่งให้เพื่อนตามปกติ
+      const { getMoney, cancelRefundPct } = await import("@/lib/wallet/settings");
+      const pct = cancelRefundPct(await getMoney(), b.starts_at);
+      if (pct !== null) {
+        const { adminResolve } = await import("./day");
+        const done = await adminResolve(b.id, "auto:cancel-rule", { action: "refund", refundPct: pct, note: `ยกเลิกตามกติกา · คืน ${pct}%` });
+        await notify({ user_type: "parttime", user_id: b.parttime_id, kind: "booking_cancelled", title: `ลูกค้ายกเลิก ${b.code}`, body: pct < 100 ? `ยกเลิกช้า · คุณได้ส่วนแบ่งจากยอดที่ไม่คืน ${100 - pct}%` : "ยกเลิกล่วงหน้าตามกติกา", url: `/join/profile/${b.parttime_mb}/jobs` });
+        if (done) return done;
+      }
       await notify({ user_type: "parttime", user_id: b.parttime_id, kind: "booking_cancel_requested", title: `ลูกค้าขอยกเลิก ${b.code}`, body: "ทีมงานกำลังตรวจตามกติกา", url: `/join/profile/${b.parttime_mb}/jobs` });
       return r;
     }

@@ -16,6 +16,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (action === "confirmed" && !room) return NextResponse.json({ ok: false, error: "เลือกห้องก่อนยืนยัน" }, { status: 400 });
   try {
     const row = await actOnBooking(p.id, id, action, room || null);
+    if (row) await import("@/lib/bookings").then((m) => m.spaRoomUpdate(row.booking_ref, action, row.room)).catch((e) => console.error("spa notify", e));
     return row ? NextResponse.json({ ok: true, row }) : NextResponse.json({ ok: false, error: "ไม่พบรายการ หรือสถานะเปลี่ยนไปแล้ว" }, { status: 404 });
   } catch (e) {
     console.error("booking action", e);

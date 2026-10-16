@@ -38,7 +38,7 @@ export function PolicyTabs({ initial }: { initial: Tab }) {
   return (
     <main className="min-h-dvh bg-[#171211] text-[#f3ead9] mb-v7 mb-c">
       <SiteHeader />
-      <div className="max-w-[480px] mx-auto">
+      <div className="max-w-[480px] md:max-w-[760px] mx-auto">
         <LuxHeader back="/market" eyebrow="POLICIES" title="นโยบายร้านค้า" />
         <div className="px-[18px] pt-3.5 pb-6 flex flex-col gap-3">
           <div role="tablist" className="flex gap-1 p-1 rounded-[14px] bg-[#211a18]" style={{ border: `1px solid ${BD}` }}>

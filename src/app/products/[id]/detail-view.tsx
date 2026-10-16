@@ -52,7 +52,7 @@ export function ProductDetailView({ p, kind, vendor, bundle, bundleAuto, related
   const circle = "w-11 h-11 rounded-full border border-[rgba(246,239,228,.3)] bg-black/40 grid place-items-center text-[#f3ead9] relative";
 
   return (
-    <main className="mb-v7 mb-c w-full max-w-[480px] mx-auto min-h-dvh bg-[#171211] text-[#f3ead9] relative overflow-x-hidden pb-[100px]">
+    <main className="mb-v7 mb-c w-full max-w-[480px] md:max-w-[760px] mx-auto min-h-dvh bg-[#171211] text-[#f3ead9] relative overflow-x-hidden pb-[100px]">
       <SiteHeader />
       <div className="relative h-[320px] grid place-items-center overflow-hidden" style={{ background: `radial-gradient(circle at 50% 45%, ${glow}, #171211 72%)` }}>
         {imgs.length
@@ -196,7 +196,7 @@ export function ProductDetailView({ p, kind, vendor, bundle, bundleAuto, related
       </div>
 
       {added && <Link href="/cart" role="status" className="fixed z-40 left-1/2 -translate-x-1/2 bottom-24 w-[calc(min(100vw,480px)-36px)] px-3.5 py-3 rounded-xl bg-[#21191a] border border-[#3f8f63] text-[#7fd6a3] text-[13px]">{added} · ไปที่ตะกร้า →</Link>}
-      <div className="fixed z-30 bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] px-[18px] pt-3 pb-[18px] bg-[#171211] border-t flex gap-2.5 items-center" style={{ borderColor: LINE }}>
+      <div className="fixed z-30 bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] md:max-w-[760px] px-[18px] pt-3 pb-[18px] bg-[#171211] border-t flex gap-2.5 items-center" style={{ borderColor: LINE }}>
         <div className="flex items-center gap-1">
           <button type="button" onClick={() => setQty(Math.max(1, qty - 1))} aria-label="ลดจำนวน" className="w-11 h-11 rounded-xl border bg-[#21191a] text-[#e8c472] text-lg" style={{ borderColor: LINE }}>−</button>
           <span aria-live="polite" className="min-w-8 text-center font-lux text-[17px]">{qty}</span>

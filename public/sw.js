@@ -2,7 +2,7 @@
 // - static assets (_next/static, ไอคอน, ฟอนต์): cache-first
 // - หน้าเว็บ: network-first ถ้าเน็ตหลุดใช้ของที่แคชไว้ ไม่มีก็แสดง /offline
 // - API และข้อมูลเงิน/แชท: ไม่แคชเด็ดขาด (ต้องสดเสมอ)
-const VERSION = "mb-v1"; // เปลี่ยนเลขเมื่อไอคอน/แอปเปลี่ยน เพื่อล้างแคชเก่า
+const VERSION = "mb-v2"; // เปลี่ยนเลขเมื่อไอคอน/แอปเปลี่ยน เพื่อล้างแคชเก่า
 const STATIC = `${VERSION}-static`;
 const PAGES = `${VERSION}-pages`;
 const PRECACHE = ["/offline", "/pwa-icon/192", "/pwa-icon/512"];
@@ -50,4 +50,27 @@ self.addEventListener("fetch", (event) => {
         .catch(() => caches.match(req).then((hit) => hit || caches.match("/offline"))),
     );
   }
+});
+
+// web push (#16) — payload { title, body, url, tag } จาก /lib/push.ts
+self.addEventListener("push", (event) => {
+  let d = {};
+  try { d = event.data ? event.data.json() : {}; } catch { d = { title: event.data && event.data.text() }; }
+  const title = d.title || "Mister Bamrungsuk";
+  event.waitUntil(self.registration.showNotification(title, {
+    body: d.body || "", tag: d.tag || undefined, renotify: !!d.tag,
+    icon: "/pwa-icon/192", badge: "/pwa-icon/192", data: { url: d.url || "/notifications" },
+  }));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = new URL((event.notification.data && event.notification.data.url) || "/notifications", self.location.origin).href;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      for (const c of list) if (c.url === url && "focus" in c) return c.focus();
+      const c = list.find((x) => "navigate" in x);
+      return c ? c.navigate(url).then((w) => w && w.focus()) : self.clients.openWindow(url);
+    }),
+  );
 });

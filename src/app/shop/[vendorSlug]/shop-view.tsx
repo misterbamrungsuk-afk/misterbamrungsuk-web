@@ -46,7 +46,7 @@ export function ShopView({ vendor, products, reviews, avg, count }: { vendor: { 
   const cartQty = cart.reduce((s, l) => s + l.qty, 0);
   return (
     <main className="min-h-dvh bg-[#171211] text-[#f3ead9] mb-v7 mb-c">
-      <div className="max-w-[480px] mx-auto">
+      <div className="max-w-[480px] md:max-w-[760px] lg:max-w-[1120px] mx-auto">
         <SiteHeader />
         <div className="relative h-[150px]" style={{ background: "linear-gradient(135deg, #3a1018, #211a18 70%)" }}>
           <svg viewBox="0 0 390 150" preserveAspectRatio="xMaxYMid slice" className="absolute inset-0 w-full h-full" aria-hidden="true"><circle cx="330" cy="30" r="80" fill="none" stroke="rgba(212,175,55,.18)" strokeWidth="1.5" /><circle cx="330" cy="30" r="50" fill="none" stroke="rgba(212,175,55,.12)" strokeWidth="1.5" /><path d="M0 120 C100 90 200 140 390 100" stroke="rgba(194,29,51,.35)" strokeWidth="2" fill="none" /></svg>
@@ -85,7 +85,7 @@ export function ShopView({ vendor, products, reviews, avg, count }: { vendor: { 
           </div>
 
           {tab === "products" && (products.length ? (
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
               {products.map((p) => {
                 const qn = cart.find((l) => l.id === p.id)?.qty ?? 0;
                 return (

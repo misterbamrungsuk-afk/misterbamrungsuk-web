@@ -157,3 +157,27 @@ export async function actOnBooking(pid: string, id: string, status: Extract<Book
   if (error) throw error;
   return (data as PartnerBooking) ?? null;
 }
+
+/** การจองจริงที่ลูกค้าเลือกสปาพาร์ทเนอร์ (#26) — เพื่อนตอบรับ = เข้าพอร์ทัลเป็น "รอยืนยัน" · จบ = เสร็จสิ้น · ยกเลิก/คืนเงิน = ยกเลิก
+ *  ไม่ทับสถานะที่พาร์ทเนอร์ตั้งเอง (ยืนยัน/ห้องเต็ม) ระหว่างนัดยังเดินอยู่ · ไม่ส่งข้อมูลติดต่อลูกค้า */
+export async function syncSpaBooking(b: { code: string; status: string; starts_at: string; hours: number; room_fee_satang: number; customer_name: string | null; parttime_nick: string | null; place: { spa_id?: string } }) {
+  const pid = b.place.spa_id;
+  if (!pid || (!isDemo && !/^[0-9a-f-]{36}$/.test(pid))) return;
+  const to: BookingStatus | null = b.status === "accepted" ? "pending" : b.status === "completed" ? "done" : ["refunded", "cancelled"].includes(b.status) ? "cancelled" : null;
+  if (!to) return;
+  const nowIso = new Date().toISOString();
+  const row = { partner_id: pid, booking_ref: b.code, customer_name: (b.customer_name ?? "ลูกค้า").split(/\s+/)[0].slice(0, 40), parttime_name: b.parttime_nick ?? "เพื่อน", start_time: b.starts_at, hours: b.hours, room: null, addon: null, status: to, amount: Math.round(b.room_fee_satang / 100), platform_pct: null };
+  if (isDemo) {
+    const cur = demo.bookings.find((x) => x.booking_ref === b.code);
+    if (cur) { if (to !== "pending") Object.assign(cur, { status: to }); }
+    else if (to === "pending") demo.bookings.push({ ...row, id: crypto.randomUUID(), created_at: nowIso });
+    return;
+  }
+  if (to === "pending") {
+    const { error } = await db().from("partner_bookings").upsert(row, { onConflict: "booking_ref", ignoreDuplicates: true });
+    if (error) throw error;
+  } else {
+    const { error } = await db().from("partner_bookings").update({ status: to, updated_at: nowIso }).eq("booking_ref", b.code);
+    if (error) throw error;
+  }
+}

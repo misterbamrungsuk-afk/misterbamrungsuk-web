@@ -3,6 +3,7 @@
 // บอร์ด C-NotifPermission "การแจ้งเตือน" — ขอสิทธิ์แจ้งเตือน + เลือกหัวข้อ 4 อย่าง · ตอบแล้ว → ไปหน้าหลัก / เปลี่ยนการตั้งค่า
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { enablePush } from "@/lib/push-client";
 
 const GOLD = "#e8c472";
 const LN = "rgba(243,234,217,0.07)";
@@ -26,7 +27,11 @@ export default function NotifyPermissionPage() {
   const save = (v: Record<string, boolean>) => { setPr(v); try { localStorage.setItem(KEY, JSON.stringify(v)); } catch {} };
   const allow = async () => {
     if (typeof Notification === "undefined") { setNote("อุปกรณ์นี้ไม่รองรับการแจ้งเตือน · บน iPhone ให้เพิ่มเว็บไว้ที่หน้าจอโฮมก่อน"); setPerm("deny"); return; }
-    try { const r = await Notification.requestPermission(); setPerm(r === "granted" ? "allow" : "deny"); if (r === "denied") setNote("เบราว์เซอร์ปิดไว้ · เปิดได้ในการตั้งค่าเบราว์เซอร์"); } catch { setPerm("deny"); }
+    const r = await enablePush();
+    if (r === "unsupported") { setNote("บน iPhone ให้กดแชร์ → เพิ่มไปยังหน้าจอโฮม แล้วเปิดจากไอคอนก่อน จึงรับแจ้งเตือนได้"); setPerm("deny"); return; }
+    setPerm(r === "denied" ? "deny" : "allow");
+    if (r === "denied") setNote("เบราว์เซอร์ปิดไว้ · เปิดได้ในการตั้งค่าเบราว์เซอร์");
+    else if (r === "error") setNote("ยังผูกอุปกรณ์ไม่สำเร็จ · ระหว่างนี้ดูแจ้งเตือนได้ในแอป (ต้องเข้าสู่ระบบก่อน)");
   };
   const off = perm === "deny";
 

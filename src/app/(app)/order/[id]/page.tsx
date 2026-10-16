@@ -8,7 +8,7 @@ import Link from "next/link";
 const GOLD = "#e8c472";
 const LN = "rgba(243,234,217,0.07)";
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US");
-type B = { id: string; code: string; status: string; starts_at: string; hours: number; price_satang: number; room_fee_satang: number; total_satang: number; note: string | null; place: { label: string; detail: string }; decline_reason: string | null; expires_at: string | null; created_at: string; pt: { pid: string; nick: string; img: string } };
+type B = { id: string; code: string; status: string; starts_at: string; hours: number; price_satang: number; room_fee_satang: number; total_satang: number; note: string | null; place: { label: string; detail: string }; decline_reason: string | null; expires_at: string | null; created_at: string; cancel_refund_pct?: number | null; resolution?: { refund_pct?: number; refund_satang?: number } | null; pt: { pid: string; nick: string; img: string } };
 const MONEY: Record<string, [string, string]> = {
   requested: ["กันไว้ในกระเป๋าของคุณ", "รอเพื่อนตอบรับ · ไม่ตอบใน 30 นาทีคืนอัตโนมัติ"],
   accepted: ["พักไว้กับ Mister Bamrungsuk", "โอนให้เพื่อนหลังจบนัด · มีปัญหาแจ้งเราได้ก่อนเงินถูกปล่อย"],
@@ -35,7 +35,7 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
     const r = await fetch(`/api/bookings/${id}/cancel`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reason }) }).catch(() => null);
     const d = await r?.json().catch(() => null);
     setBusy(false); setCancel(false);
-    setMsg(d?.ok ? (d.status === "cancelled" ? "ยกเลิกแล้ว · คืนเงินเข้ากระเป๋าแล้ว" : "ส่งคำขอยกเลิกแล้ว · ทีมงานจะพิจารณาตามกติกา") : d?.error || "ยกเลิกไม่สำเร็จ");
+    setMsg(d?.ok ? (["cancelled", "refunded", "completed"].includes(d.status) ? "ยกเลิกแล้ว · คืนเงินตามกติกาเข้ากระเป๋าแล้ว" : "ส่งคำขอยกเลิกแล้ว · ทีมงานจะพิจารณาตามกติกา") : d?.error || "ยกเลิกไม่สำเร็จ");
     load();
   };
 
@@ -47,7 +47,8 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
   );
   if (err) return <div>{head}<p className="text-center text-[#ff8a9a]" style={{ padding: 40 }}>{err}</p></div>;
   if (!b) return <div>{head}<p className="text-center text-[#b5a596]" style={{ padding: 40 }}>กำลังโหลด…</p></div>;
-  const money = MONEY[b.status] ?? ["—", ""];
+  const rs = b.resolution?.refund_pct;
+  const money: [string, string] = rs && rs < 100 ? [`คืน ${baht(b.resolution?.refund_satang ?? 0)} เข้ากระเป๋าแล้ว`, `ยกเลิก/พิจารณาแล้ว · คืน ${rs}% ส่วนที่เหลือโอนให้เพื่อน`] : (MONEY[b.status] ?? ["—", ""]) as [string, string];
   const chatOpen = ["requested", "accepted", "checked_in", "cancel_requested"].includes(b.status);
   const canCancel = b.status === "requested" || b.status === "accepted";
 
@@ -73,7 +74,7 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
         {cancel && (
           <div className="rounded-[20px] bg-[#211a18] flex flex-col gap-3" style={{ padding: 14, border: "1px solid rgba(255,138,154,.4)" }}>
             <b className="font-semibold">{b.status === "requested" ? "ยกเลิกคำขอนี้?" : "ขอยกเลิกนัดที่ยืนยันแล้ว?"}</b>
-            <span className="text-[13px] font-light text-[#d9c9b4]">{b.status === "requested" ? "เพื่อนยังไม่ตอบรับ · คืนเงินเข้ากระเป๋าทันที" : "ทีมงานจะพิจารณาตามกติกาการยกเลิกและแจ้งผลยอดคืน"}</span>
+            <span className="text-[13px] font-light text-[#d9c9b4]">{b.status === "requested" ? "เพื่อนยังไม่ตอบรับ · คืนเงินเข้ากระเป๋าทันที" : b.cancel_refund_pct != null ? `ตามกติกา คืนเงิน ${b.cancel_refund_pct}% = ${baht(Math.round(b.total_satang * b.cancel_refund_pct / 100))} เข้ากระเป๋าทันที` : "ทีมงานจะพิจารณาตามกติกาการยกเลิกและแจ้งผลยอดคืน"}</span>
             <input value={reason} onChange={(e) => setReason(e.target.value)} maxLength={200} placeholder="เหตุผล (ไม่บังคับ)" className="h-12 rounded-xl bg-[#251d1b] px-[14px] text-[16px] text-[#f3ead9] outline-none placeholder:text-[#b5a596]" />
             <div className="grid grid-cols-2 gap-2">
               <button type="button" onClick={() => setCancel(false)} className="h-12 rounded-[14px] text-[#f3ead9]" style={{ border: `1px solid ${LN}` }}>ไม่ยกเลิก</button>

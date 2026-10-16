@@ -32,7 +32,7 @@ export function ProductBrowser({ products, categories, vendors, initial }: { pro
   const resetAll = () => { setQ(""); setCat("all"); setPrice("all"); setVendor("all"); };
 
   return (
-    <MShell className="pb-[96px]">
+    <MShell wide className="pb-[96px]">
       <MHeader back="/market" eyebrow="SHOP" title="สินค้าทั้งหมด" />
       <div className="px-[18px] pt-3 pb-5 flex flex-col gap-2.5">
         <div className="flex gap-2">
@@ -65,7 +65,7 @@ export function ProductBrowser({ products, categories, vendors, initial }: { pro
           <span className="text-[12.5px] text-[#d9c9b4]">{list.length} รายการ{q.trim() ? ` · "${q.trim()}"` : ""}</span>
           <button type="button" onClick={() => setSort(SORTS[sort][1])} className="min-h-10 px-3 rounded-full border bg-[#211a18] text-[#e8c472] text-xs font-semibold" style={{ borderColor: LINE }}>เรียง: {SORTS[sort][0]}</button>
         </div>
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
           {list.map((p) => <MProductCard key={p.id} p={p} onAdded={flash} />)}
         </div>
         {!list.length && (

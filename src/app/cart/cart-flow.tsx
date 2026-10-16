@@ -125,7 +125,7 @@ export function CartFlow() {
   };
 
   const head = step === "cart" ? ["CART · 1/2", "ตะกร้าและที่อยู่"] : step === "pay" ? ["PAYMENT · 2/2", "ชำระเงิน"] : ["ORDER PLACED", "สำเร็จ"];
-  const bottomBar = "fixed z-30 bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] px-[18px] pt-3 pb-[22px] border-t bg-[#171211]";
+  const bottomBar = "fixed z-30 bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] md:max-w-[760px] px-[18px] pt-3 pb-[22px] border-t bg-[#171211]";
   const cta = "btn-red-lux h-[52px] w-full rounded-[14px] border text-white text-[15px] font-semibold font-lux grid place-items-center disabled:opacity-45";
   const ctaStyle = { background: RED_GRAD, borderColor: "rgba(232,196,114,.55)" };
 

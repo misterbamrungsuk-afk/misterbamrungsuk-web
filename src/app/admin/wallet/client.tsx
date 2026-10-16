@@ -4,6 +4,7 @@
 import { useState } from "react";
 import type { Topup } from "@/lib/wallet";
 import type { MoneySettings } from "@/lib/wallet/settings";
+import type { Recon } from "@/lib/wallet/reconcile";
 
 type Acc = { owner_type: string; owner_id: string; bucket: string; balance: number };
 type Data = { topups: Topup[]; accounts: Acc[]; sum: number };
@@ -14,7 +15,7 @@ const VERDICT: Record<string, [string, string]> = { ok: ["✓ ยอดตรง
 const STATUS: Record<string, [string, string]> = { pending: ["รอตรวจ", "#eed58a"], credited: ["เข้ากระเป๋าแล้ว", "#4ade80"], rejected: ["ไม่ผ่าน", "#fca5a5"] };
 const OWNER: Record<string, string> = { customer: "ลูกค้า", parttime: "Part-Time", partner: "พาร์ทเนอร์", platform: "บริษัท" };
 
-export function WalletAdmin({ initial, money }: { initial: Data; money: MoneySettings }) {
+export function WalletAdmin({ initial, money, recon }: { initial: Data; money: MoneySettings; recon: Recon | null }) {
   const [m, setM] = useState(money);
   const [d, setD] = useState(initial);
   const [tab, setTab] = useState<"pending" | "all">("pending");
@@ -45,6 +46,7 @@ export function WalletAdmin({ initial, money }: { initial: Data; money: MoneySet
         <div><div className="text-[11px] tracking-[2.5px] font-semibold" style={{ color: GOLD }}>WALLET</div><h1 className="mt-0.5 font-lux font-bold text-2xl">กระเป๋าเงิน · เติมเงิน</h1></div>
         <span className="text-[13px] rounded-full px-3 py-1.5 border" style={{ borderColor: d.sum === 0 ? "rgba(74,222,128,.5)" : "rgba(239,68,68,.6)", color: d.sum === 0 ? "#4ade80" : "#fca5a5" }}>{d.sum === 0 ? "✓ ผลรวม ledger = 0 (สมดุล)" : Number.isNaN(d.sum) ? "⚠ ยังไม่ได้รัน migration กระเป๋าเงิน" : `⚠ ผลรวม ledger = ${d.sum} สตางค์ — ตรวจด่วน`}</span>
       </div>
+      {recon && <div className="rounded-2xl border p-3 text-[13px]" style={{ borderColor: recon.ok ? "rgba(74,222,128,.4)" : "rgba(239,68,68,.6)", background: recon.ok ? "rgba(74,222,128,.05)" : "rgba(239,68,68,.08)" }}><b style={{ color: recon.ok ? "#4ade80" : "#fca5a5" }}>{recon.ok ? "✓ กระทบยอดตรง: ledger · เงินพัก · เงินกันไว้ · ยอดกำลังถอน ตรงกับการจองและคำขอถอน" : `⚠ กระทบยอดไม่ตรง ${recon.issues.length} รายการ`}</b>{!recon.ok && <ul className="mt-1.5 list-disc pl-5 text-[#fca5a5]">{recon.issues.map((i) => <li key={i}>{i}</li>)}</ul>}<div className="mt-1 text-[11.5px] text-[#7d6d6a]">ตรวจตอนเปิดหน้านี้ + รอบรายวัน 10:00 (ไม่ตรง = แจ้งเตือน + อีเมลแอดมิน)</div></div>}
       {msg && <p role="status" className="text-sm text-[#eed58a]">{msg}</p>}
 
       {!!platform.length && <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -90,6 +92,12 @@ export function WalletAdmin({ initial, money }: { initial: Data; money: MoneySet
           ))}
         </div>
         <label className="flex flex-col gap-1"><span className="text-[#cdbfb3] text-[12px]">กติกายกเลิก (แสดงลูกค้า)</span><input value={m.cancelRule} onChange={(e) => setM({ ...m, cancelRule: e.target.value })} className={inp} style={{ borderColor: LINE }} /></label>
+        <div className="flex flex-wrap items-end gap-3 rounded-xl border p-3" style={{ borderColor: LINE }}>
+          <label className="flex items-center gap-2 self-center"><input type="checkbox" checked={!!m.autoCancel} onChange={(e) => setM({ ...m, autoCancel: e.target.checked })} className="w-4 h-4 accent-[#e8c472]" /><span>ยกเลิกอัตโนมัติตามกติกา</span></label>
+          <label className="flex flex-col gap-1"><span className="text-[#cdbfb3] text-[12px]">คืนเต็มถ้ายกเลิกก่อนนัด ≥ (ชม.)</span><input type="number" step="any" value={m.cancelFullHours ?? 3} disabled={!m.autoCancel} onChange={(e) => setM({ ...m, cancelFullHours: Number(e.target.value) })} className={inp + " w-40 disabled:opacity-40"} style={{ borderColor: LINE }} /></label>
+          <label className="flex flex-col gap-1"><span className="text-[#cdbfb3] text-[12px]">ยกเลิกช้ากว่านั้น คืน (%)</span><input type="number" step="any" value={m.cancelLatePct ?? 50} disabled={!m.autoCancel} onChange={(e) => setM({ ...m, cancelLatePct: Number(e.target.value) })} className={inp + " w-40 disabled:opacity-40"} style={{ borderColor: LINE }} /></label>
+          <span className="text-[11.5px] text-[#7d6d6a] basis-full">ปิด = ทีมงานตัดสินเป็นเคสใน /admin/orders · เปิด = ลูกค้ากดยกเลิกนัดที่ยืนยันแล้ว ระบบคืนเงินทันที ส่วนที่ไม่คืนแบ่งให้เพื่อนตามขั้นส่วนแบ่ง · ก่อนเพื่อนตอบรับยังคืนเต็มเสมอ</span>
+        </div>
         <button disabled={busy} className="self-start btn-red-lux h-10 px-5 rounded-full text-white font-semibold disabled:opacity-40">บันทึกตั้งค่า</button>
         {!!m.history.length && <span className="text-[11.5px] text-[#7d6d6a]">แก้ล่าสุด {new Date(m.history[0].at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })} โดย {m.history[0].by}</span>}
       </form>

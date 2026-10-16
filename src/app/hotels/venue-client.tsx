@@ -69,7 +69,7 @@ export function VenueListView({ type, items }: { type: "โรงแรม" | "�
   if (sort === "price") list = list.slice().sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
   return (
     <main className="min-h-dvh bg-[#171211] text-[#f3ead9] mb-v7 mb-c">
-      <div className="max-w-[480px] mx-auto">
+      <div className="max-w-[480px] md:max-w-[760px] lg:max-w-[1120px] mx-auto">
         <SiteHeader />
         <LuxHeader back="/market" eyebrow={hotel ? "HOTEL PARTNERS" : "SPA PARTNERS"} title={hotel ? "โรงแรมพาร์ทเนอร์" : "สปาพาร์ทเนอร์"} />
         <div className="px-[18px] pt-3.5 pb-6 flex flex-col gap-3">
@@ -82,6 +82,7 @@ export function VenueListView({ type, items }: { type: "โรงแรม" | "�
               เรียง: {sort === "rec" ? "แนะนำ" : "ราคาต่ำ → สูง"}
             </button>
           </div>
+          <div className="flex flex-col gap-3 md:grid md:grid-cols-2 lg:grid-cols-3">
           {list.map((h) => (
             <Link key={h.id} href={`${base}/${h.id}`} className="lux-card block no-underline text-[#f3ead9] rounded-2xl overflow-hidden bg-[#211a18]" style={{ border: `1px solid ${BD}` }}>
               <div className="relative">
@@ -99,6 +100,7 @@ export function VenueListView({ type, items }: { type: "โรงแรม" | "�
               </div>
             </Link>
           ))}
+          </div>
           {!list.length && (
             <div className="p-3.5 rounded-2xl bg-[#211a18] text-center text-[#d9c9b4] text-[13px] leading-[1.7]" style={{ border: `1px solid ${BD}` }}>
               ยังไม่มี{hotel ? "โรงแรม" : "สปา"}พาร์ทเนอร์ใน{prov}<br />เปิดรับพาร์ทเนอร์ [รอกำหนด] · <Link href="/partner" className="text-[#e8c472]">สมัครเป็นพาร์ทเนอร์</Link>
@@ -158,7 +160,7 @@ export function VenueDetailView({ v }: { v: VenueFull }) {
 
   return (
     <main className="min-h-dvh bg-[#171211] text-[#f3ead9] mb-v7 mb-c">
-      <div className="max-w-[480px] mx-auto pb-[92px]">
+      <div className="max-w-[480px] md:max-w-[760px] mx-auto pb-[92px]">
         <SiteHeader />
         <div className="relative h-[270px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -222,14 +224,14 @@ export function VenueDetailView({ v }: { v: VenueFull }) {
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] px-[18px] pt-3 pb-[22px] bg-[#171211] flex gap-2.5 z-20" style={{ borderTop: `1px solid ${BD}` }}>
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] md:max-w-[760px] px-[18px] pt-3 pb-[22px] bg-[#171211] flex gap-2.5 z-20" style={{ borderTop: `1px solid ${BD}` }}>
         <button type="button" onClick={() => setSheet(true)} className="basis-[132px] shrink-0 h-[52px] rounded-[14px] bg-[#211a18] text-[#e8c472] font-lux font-semibold text-[15px]" style={{ border: "1px solid #e8c472" }}>ติดต่อ/จอง</button>
         <button type="button" onClick={meet} className="btn-red-lux flex-1 h-[52px] rounded-[14px] font-lux font-semibold text-white text-[15px]">นัดเพื่อนที่นี่</button>
       </div>
 
       {sheet && (
         <div className="fixed inset-0 bg-[rgba(0,0,0,.6)] z-40" onClick={() => setSheet(false)}>
-          <div role="dialog" aria-label="ติดต่อหรือจอง" onClick={(e) => e.stopPropagation()} className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] px-[18px] pt-[18px] pb-6 rounded-t-[22px] bg-[#211a18] flex flex-col gap-2.5" style={{ borderTop: `1px solid ${BD}` }}>
+          <div role="dialog" aria-label="ติดต่อหรือจอง" onClick={(e) => e.stopPropagation()} className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] md:max-w-[760px] px-[18px] pt-[18px] pb-6 rounded-t-[22px] bg-[#211a18] flex flex-col gap-2.5" style={{ borderTop: `1px solid ${BD}` }}>
             <div className="flex justify-between items-center gap-2">
               <div className="font-lux font-semibold text-[17px] min-w-0">ติดต่อ/จอง · {v.name}</div>
               <button type="button" onClick={() => setSheet(false)} aria-label="ปิด" className="w-11 h-11 shrink-0 rounded-full bg-[#21191a] text-[#f3ead9]" style={{ border: `1px solid ${BD}` }}>✕</button>

@@ -12,9 +12,9 @@ export const LINE = "rgba(232,196,114,.38)";
 export const RED_GRAD = "#e8c472"; // ปุ่มหลักโทน v7 (ทอง) — ข้อความบนปุ่มใช้สีเข้ม #1b130b
 export const fmt = (n: number) => "฿" + baht(n);
 
-export function MShell({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+export function MShell({ children, className = "", wide = false }: { children: React.ReactNode; className?: string; wide?: boolean }) {
   return (
-    <main className={`mb-v7 mb-c w-full max-w-[480px] mx-auto min-h-dvh bg-[#171211] text-[#f3ead9] relative overflow-x-hidden ${className}`}><SiteHeader />{children}</main>
+    <main className={`mb-v7 mb-c w-full max-w-[480px] md:max-w-[760px] ${wide ? "lg:max-w-[1120px]" : ""} mx-auto min-h-dvh bg-[#171211] text-[#f3ead9] relative overflow-x-hidden ${className}`}><SiteHeader />{children}</main>
   );
 }
 
