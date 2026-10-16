@@ -47,6 +47,9 @@ export async function middleware(request: NextRequest) {
     pathname === "/welcome" ||
     pathname === "/onboarding" ||
     pathname === "/sos" ||
+    // ข้อกำหนด/นโยบาย ต้องอ่านได้ก่อนสมัคร (ลิงก์จากหน้าสมัคร + คุกกี้) · ค้นหาเพื่อนดูได้แบบเดียวกับหน้าแรก
+    pathname === "/page/terms" ||
+    pathname === "/search" ||
     // หน้ารับสมัคร Part-Time (sale funnel) เปิดสาธารณะ
     pathname === "/join" ||
     pathname.startsWith("/join/") ||

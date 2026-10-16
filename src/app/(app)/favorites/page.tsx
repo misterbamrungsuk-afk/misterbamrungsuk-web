@@ -17,7 +17,7 @@ export default async function FavoritesPage() {
   const me = await currentCustomer();
   if (!me) redirect("/login");
   const [p, live] = await Promise.all([getProfile(me.sub, me.email), getLivePeople().catch(() => [])]);
-  const people = [...live, ...PEOPLE];
+  const people = live.length ? live : PEOPLE;
   const list = p.favorites.map((id) => people.find((x) => x.id === id)).filter((x) => !!x);
   return (
     <div className="pb-6">

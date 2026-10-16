@@ -3,6 +3,7 @@ import { createHash } from "crypto";
 import { getEarnings } from "@/lib/join/earnings-settings";
 import { ageFrom } from "@/lib/join/form";
 import { extraOf, listApplicants, type Applicant } from "@/lib/join/store";
+import { ratingSummary } from "@/lib/bookings/day";
 import type { Act, Person } from "./people";
 
 // Part-Time จริงบนหน้าแรก — เงื่อนไข: ชำระแล้ว (verified) · KYC ผ่าน · มีรูป · แอดมินเปิด "แสดงบนหน้าแรก" · ไม่พักงาน · ไม่ขอลบบัญชี
@@ -29,7 +30,9 @@ export async function getLiveApplicants() {
 
 export async function getLivePeople(): Promise<Person[]> {
   const [rows, cfg] = await Promise.all([getLiveApplicants(), getEarnings()]);
+  const stars = await ratingSummary(rows.map((a) => a.id)).catch(() => new Map<string, { avg: number; count: number }>());
   return rows.map((a) => {
+    const st = stars.get(a.id);
     const x = extraOf(a);
     const id = publicId(a.mb_code);
     const top = x.tier === "top";
@@ -37,8 +40,8 @@ export async function getLivePeople(): Promise<Person[]> {
     const acts = [...new Set([...(a.package === "B" ? ["massage" as Act] : []), ...(x.card?.activities ?? []).map((t) => ACT_OF[t]).filter(Boolean)])] as Act[];
     const area = (x.areas ?? [])[0]?.split(" › ") ?? [];
     return {
-      id, nick: a.nickname, age: a.birthdate ? ageFrom(a.birthdate) ?? 0 : 0, img: `/api/public/pt-photo?id=${id}&i=0`, top, rating: "ใหม่",
-      reviews: 0, jobs: 0, years: 0, height: a.height || 0, langs: "TH",
+      id, nick: a.nickname, age: a.birthdate ? ageFrom(a.birthdate) ?? 0 : 0, img: `/api/public/pt-photo?id=${id}&i=0`, top, rating: st?.count ? st.avg.toFixed(1) : "ใหม่",
+      reviews: st?.count ?? 0, jobs: 0, years: 0, height: a.height || 0, langs: "TH",
       // แสดงระดับเขต/อำเภอ (ไม่ลงถึงแขวง) · จังหวัดแสดงเมื่อไม่ใช่กรุงเทพฯ
       area: area[1] || area[0] || "กรุงเทพฯ", prov: area[0] && area[0] !== "กรุงเทพฯ" ? area[0] : undefined,
       acts: acts.length ? acts : ["eat"], free: 0, bio: x.listing?.title || a.intro || "Part-Time ที่ผ่านการอบรมมาตรฐาน Mister Bamrungsuk",

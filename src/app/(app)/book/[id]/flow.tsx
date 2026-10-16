@@ -33,7 +33,7 @@ const Back = ({ onClick, href }: { onClick?: () => void; href?: string }) => {
   return href ? <Link href={href} aria-label="ย้อนกลับ" className={cls} style={{ border: `1px solid ${LN}` }}>{ic}</Link> : <button type="button" onClick={onClick} aria-label="ย้อนกลับ" className={cls} style={{ border: `1px solid ${LN}` }}>{ic}</button>;
 };
 
-export function BookFlow({ p, price, avail, spas, saved = [] }: { p: P; price: Record<3 | 5, number>; avail: Avail; spas: Spa[]; saved?: { id: string; label: string; detail: string; note: string; primary: boolean }[] }) {
+export function BookFlow({ p, price, avail, busy: taken = [], spas, saved = [] }: { p: P; price: Record<3 | 5, number>; avail: Avail; busy?: { s: number; h: number }[]; spas: Spa[]; saved?: { id: string; label: string; detail: string; note: string; primary: boolean }[] }) {
   const router = useRouter();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [h, setH] = useState<3 | 5>(3);
@@ -60,7 +60,8 @@ export function BookFlow({ p, price, avail, spas, saved = [] }: { p: P; price: R
   const win = avail[d0.getDay()];
   const slots = Array.from({ length: 14 }, (_, k) => 10 + k).map((hh) => {
     const at = new Date(d0); at.setHours(hh);
-    const ok = !!win && hh >= win[0] && hh + h <= Math.max(win[1], win[0] + 1) && at.getTime() > Date.now() + 60 * 60_000;
+    const ok = !!win && hh >= win[0] && hh + h <= Math.max(win[1], win[0] + 1) && at.getTime() > Date.now() + 60 * 60_000
+      && !taken.some((b) => Math.abs(b.s - at.getTime()) < Math.max(b.h, h) * 3600_000);
     return { hh, ok };
   });
   const starts = slot != null ? (() => { const at = new Date(d0); at.setHours(slot); return at; })() : null;

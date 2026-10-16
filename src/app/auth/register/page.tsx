@@ -139,12 +139,12 @@ export default function RegisterPage() {
                 </div>
                 {pwMsg && <p className="mt-1.5 mb-0 text-[12px] font-light" style={{ color: pwColor }}>{pwMsg}</p>}
               </div>
-              <button type="button" onClick={() => setAgree(!agree)} aria-pressed={agree} className="flex gap-[10px] items-center min-h-11 text-left text-[13px] font-light text-[#f3ead9]">
-                <span className="w-[22px] h-[22px] rounded-md grid place-items-center shrink-0" style={{ border: `1.5px solid ${GOLD}`, background: agree ? GOLD : "transparent" }}>
+              <div className="flex gap-[10px] items-center min-h-11 text-left text-[13px] font-light text-[#f3ead9]">
+                <button type="button" onClick={() => setAgree(!agree)} aria-pressed={agree} aria-label="ฉันอายุ 20 ปีขึ้นไป และยอมรับเงื่อนไขการใช้งานกับนโยบายความเป็นส่วนตัว" className="w-11 h-11 -m-[11px] grid place-items-center shrink-0"><span className="w-[22px] h-[22px] rounded-md grid place-items-center" style={{ border: `1.5px solid ${GOLD}`, background: agree ? GOLD : "transparent" }}>
                   {agree && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1b130b" strokeWidth="3" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg>}
-                </span>
-                <span>ฉันอายุ 20 ปีขึ้นไป และยอมรับ<Link href="/page/terms" onClick={(e) => e.stopPropagation()} className="text-[#e8c472]">เงื่อนไขการใช้งาน</Link>กับ<Link href="/join/privacy" onClick={(e) => e.stopPropagation()} className="text-[#e8c472]">นโยบายความเป็นส่วนตัว</Link></span>
-              </button>
+                </span></button>
+                <span><span onClick={() => setAgree(!agree)} className="cursor-pointer">ฉันอายุ 20 ปีขึ้นไป และยอมรับ</span><Link href="/page/terms" className="text-[#e8c472]">เงื่อนไขการใช้งาน</Link>กับ<Link href="/join/privacy" className="text-[#e8c472]">นโยบายความเป็นส่วนตัว</Link></span>
+              </div>
               {!smsOff && <Turnstile key={tsKey} onToken={setTs} />}
               {error && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{error}</p>}
               <button type="submit" disabled={busy || !agree || cool > 0} className={cta}>{busy ? "กำลังดำเนินการ…" : smsOff ? "สมัครสมาชิก" : cool > 0 ? `ส่งรหัสใหม่ได้ใน ${mmss}` : "ส่งรหัส OTP"}</button>

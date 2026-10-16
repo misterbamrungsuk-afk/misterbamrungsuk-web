@@ -25,7 +25,7 @@ export default async function AccountPage() {
     getProfile(me.sub, me.email), listForCustomer(me.sub).catch(() => []), listNotices("customer", me.sub).catch(() => []),
     balances("customer", me.sub).catch(() => ({} as Record<string, number>)), getLivePeople().catch(() => []),
   ]);
-  const people = [...live, ...PEOPLE];
+  const people = live.length ? live : PEOPLE;
   const favs = p.favorites.map((id) => people.find((x) => x.id === id)).filter(Boolean).slice(0, 5);
   const unread = notices.filter((n) => !n.read_at).length;
   const since = new Date(p.created_at).toLocaleDateString("th-TH", { month: "short", year: "numeric" });

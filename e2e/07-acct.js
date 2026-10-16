@@ -20,7 +20,7 @@ const J = (r) => r.json();
   r = await fetch(B + '/api/me', { method: 'POST', headers: C1, body: JSON.stringify({ emergency: { name: 'x', tel: '12' } }) }); ok('bad emergency tel refused', r.status === 400);
   r = await fetch(B + '/api/me', { method: 'POST', headers: C1, body: JSON.stringify({ favorite: pid, on: true }) }); ok('favorite on', (await J(r)).profile.favorites.includes(pid));
   r = await fetch(B + '/api/me', { method: 'POST', headers: C1, body: JSON.stringify({ favorite: 'ton', on: true }) });
-  let t = await (await fetch(B + '/favorites', { headers: C1 })).text(); ok('favorites page', t.includes('ตีกลับ') && t.includes('ต้น'));
+  let t = await (await fetch(B + '/favorites', { headers: C1 })).text(); ok('favorites page (real only, sample hidden once live PT exist)', t.includes('ตีกลับ') && !t.includes('/p/ton'));
   t = await (await fetch(B + '/profile', { headers: C1 })).text(); ok('account page', t.includes('คุณทดสอบ') && t.includes('กระเป๋าเงิน') && t.includes('ลบบัญชี'));
   r = await fetch(B + '/api/me/delete', { method: 'POST', headers: C1 }); j = await J(r); ok('delete blocked with open bookings', r.status === 409 || j.ok, j.error || 'no open');
   r = await fetch(B + '/api/me/delete', { method: 'POST', headers: C3 }); ok('delete request (fresh)', (await J(r)).ok);
@@ -31,7 +31,7 @@ const J = (r) => r.json();
   j = await J(await fetch(B + `/api/pt/posts?mb=${mb}&t=${encodeURIComponent(T)}`)); ok('pt sees open post', j.posts.some((p) => p.id === postId && !p.interested));
   r = await fetch(B + '/api/pt/posts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mb, t: T, post_id: postId, message: 'ชอบคาเฟ่ย่านนี้' }) }); ok('pt interest', (await J(r)).ok);
   t = await (await fetch(B + `/jobs/interested?id=${postId}`, { headers: C1 })).text(); ok('customer sees interested pt', t.includes('ชอบคาเฟ่ย่านนี้') && t.includes(`/book/${pid}`));
-  r = await fetch(B + `/jobs/interested?id=${postId}`, { headers: C3 }); ok('other customer cannot view post', r.status === 404);
+  r = await fetch(B + `/jobs/interested?id=${postId}`, { headers: C3, redirect: 'manual' }); ok('other customer cannot view post', r.status >= 300 && r.status < 400 && !(await r.text()).includes('ชอบคาเฟ่ย่านนี้'));
   r = await fetch(B + `/api/posts/${postId}`, { method: 'POST', headers: C1 }); ok('close post', (await J(r)).ok);
   j = await J(await fetch(B + `/api/pt/posts?mb=${mb}&t=${encodeURIComponent(T)}`)); ok('closed post hidden from pt', !j.posts.some((p) => p.id === postId));
   // รีวิวจริงบนโปรไฟล์

@@ -88,7 +88,7 @@ export function CohortsClient({ initialCohorts, initialMembers }: { initialCohor
       {err && <p role="alert" style={{ margin: 0, fontSize: 12, color: "#ff8a9a" }}>{err}</p>}
 
       {creating && (
-        <div style={{ ...CARD, display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr)) auto", gap: 12, alignItems: "end" }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto]" style={{ ...CARD, gap: 12, alignItems: "end" }}>
           <label><p style={LBL}>ชื่อกลุ่ม</p><input style={IN} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label>
           <label><p style={LBL}>วันเริ่ม</p><input style={IN} value={form.date_text} onChange={(e) => setForm({ ...form, date_text: e.target.value })} /></label>
           <label><p style={LBL}>สถานที่</p><input style={IN} value={form.venue} onChange={(e) => setForm({ ...form, venue: e.target.value })} /></label>
@@ -105,7 +105,7 @@ export function CohortsClient({ initialCohorts, initialMembers }: { initialCohor
         </div>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "340px minmax(0,1fr)", gap: 16, minHeight: 0, flex: 1 }}>
+      <div className="grid grid-cols-1 lg:grid-cols-[340px_minmax(0,1fr)]" style={{ gap: 16, minHeight: 0, flex: 1 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {cohorts.map((c, i) => {
             const n = members.filter((m) => m.cohort === c.key).length;
@@ -130,8 +130,8 @@ export function CohortsClient({ initialCohorts, initialMembers }: { initialCohor
         </div>
 
         <div style={{ ...CARD, display: "flex", flexDirection: "column", gap: 12, minWidth: 0 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ minWidth: 0 }}>
               <div style={{ fontFamily: HEAD, fontWeight: 600, fontSize: 18 }}>เช็กชื่อ · {cur?.name ?? "-"}</div>
               <div style={{ fontSize: 12, color: "#cdbfb3" }}>แตะช่องเพื่อสลับ มา / ขาด · เข้าร่วม {present} จาก {rows.length * sessions} ช่อง</div>
             </div>
@@ -141,7 +141,7 @@ export function CohortsClient({ initialCohorts, initialMembers }: { initialCohor
             </button>
           </div>
           <div style={{ overflowX: "auto" }}>
-            <div style={{ display: "grid", gridTemplateColumns: `1.6fr 1fr repeat(${sessions}, 64px) 90px`, gap: 6, fontSize: 12, color: "#cdbfb3", padding: "0 4px", marginBottom: 6 }}>
+            <div style={{ display: "grid", gridTemplateColumns: `minmax(110px,1.6fr) minmax(80px,1fr) repeat(${sessions}, 64px) 90px`, gap: 6, fontSize: 12, color: "#cdbfb3", padding: "0 4px", marginBottom: 6 }}>
               <span>ชื่อ</span><span>รหัส</span>
               {Array.from({ length: sessions }, (_, i) => <span key={i}>รอบ {i + 1}</span>)}
               <span>รวม</span>
@@ -150,7 +150,7 @@ export function CohortsClient({ initialCohorts, initialMembers }: { initialCohor
             {rows.map((m) => {
               const tot = Array.from({ length: sessions }, (_, i) => m.att[i + 1]).filter(Boolean).length;
               return (
-                <div key={m.id} style={{ display: "grid", gridTemplateColumns: `1.6fr 1fr repeat(${sessions}, 64px) 90px`, gap: 6, alignItems: "center", padding: 4, borderTop: `1px solid ${GOLD_BD}`, fontSize: 13 }}>
+                <div key={m.id} style={{ display: "grid", gridTemplateColumns: `minmax(110px,1.6fr) minmax(80px,1fr) repeat(${sessions}, 64px) 90px`, gap: 6, alignItems: "center", padding: 4, borderTop: `1px solid ${GOLD_BD}`, fontSize: 13 }}>
                   <span>{m.name}</span>
                   <span style={{ color: "#cdbfb3", fontFamily: HEAD }}>{m.code}</span>
                   {Array.from({ length: sessions }, (_, i) => {

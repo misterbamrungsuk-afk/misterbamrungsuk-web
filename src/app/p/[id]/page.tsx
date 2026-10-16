@@ -6,8 +6,11 @@ import { ProfileView } from "./view";
 
 export const dynamic = "force-dynamic";
 
+// โปรไฟล์ตัวอย่าง (mockup) แสดงได้เฉพาะตอนยังไม่มี Part-Time จริงเปิดแสดง — มีคนจริงแล้วตัวอย่างต้องหายทุกหน้า
 async function find(id: string) {
-  return personById(id) ?? (/^r[0-9a-f]{10}$/.test(id) ? (await getLivePeople()).find((x) => x.id === id) : undefined);
+  const live = await getLivePeople().catch(() => []);
+  if (/^r[0-9a-f]{10}$/.test(id)) return live.find((x) => x.id === id);
+  return live.length ? undefined : personById(id);
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {

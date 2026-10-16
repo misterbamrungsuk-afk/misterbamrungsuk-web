@@ -183,6 +183,17 @@ export async function reviewsFor(parttime_id: string): Promise<Review[]> {
   return (data ?? []) as Review[];
 }
 
+/** คะแนนเฉลี่ย + จำนวนรีวิว (ไม่รวมที่ซ่อน) ของ Part-Time หลายคนในครั้งเดียว — ใช้กับการ์ดหน้าแรก/ค้นหา/จอง */
+export async function ratingSummary(ids: string[]): Promise<Map<string, { avg: number; count: number }>> {
+  const out = new Map<string, { avg: number; count: number }>();
+  if (!ids.length) return out;
+  const rows: { parttime_id: string; rating: number }[] = isDemo
+    ? demo.reviews.filter((r) => ids.includes(r.parttime_id) && !r.hidden)
+    : (((await db().from("reviews").select("parttime_id, rating").in("parttime_id", ids).eq("hidden", false)).data ?? []) as { parttime_id: string; rating: number }[]);
+  for (const r of rows) { const x = out.get(r.parttime_id) ?? { avg: 0, count: 0 }; x.avg = (x.avg * x.count + r.rating) / (x.count + 1); x.count++; out.set(r.parttime_id, x); }
+  return out;
+}
+
 // ── ถอนเงิน (Part-Time) ──
 export async function ptWallet(parttime_id: string) {
   const [b, h] = await Promise.all([balances("parttime", parttime_id), history("parttime", parttime_id, 50)]);

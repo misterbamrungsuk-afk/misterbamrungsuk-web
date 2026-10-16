@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { currentCustomer } from "@/lib/customer/auth";
 import { interestsFor, listMine } from "@/lib/posts";
 import { getLivePeople, publicId } from "@/lib/home/live";
@@ -18,7 +18,7 @@ export default async function InterestedPage({ searchParams }: { searchParams: P
   if (!me) redirect("/login");
   const { id } = await searchParams;
   const post = (await listMine(me.sub).catch(() => [])).find((p) => p.id === id);
-  if (!post) notFound();
+  if (!post) redirect("/jobs");
   const [ints, people] = await Promise.all([interestsFor([post.id]).catch(() => []), getLivePeople().catch(() => [])]);
   const list = ints.map((i) => ({ i, p: people.find((x) => x.id === publicId(i.parttime_mb)) })).filter((r) => r.p);
   const open = post.status === "open" && Date.parse(post.expires_at) > Date.now();
