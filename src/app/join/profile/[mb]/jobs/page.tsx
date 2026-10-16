@@ -5,7 +5,7 @@ import { TRAINING } from "@/lib/join/training";
 import { Forbidden } from "../../../_kyc/ui";
 import { PtHead, PtNav, PtPage, baht, loadPt, ptHref } from "../_pt";
 import { JobPost } from "../_ptc";
-import { PtIncoming, PtPosts } from "../_ptc3";
+import { PtIncoming, PtPosts, PtQuick } from "../_ptc3";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "ประกาศงาน — Mister Bamrungsuk" };
@@ -25,6 +25,7 @@ export default async function JobsPage({ params, searchParams }: { params: Promi
   return (
     <PtPage>
       <PtHead back={ptHref(c)} title="งานและประกาศ" />
+      <PtQuick mb={c.mb} t={c.t} />
       <PtIncoming mb={c.mb} t={c.t} />
       <PtPosts mb={c.mb} t={c.t} />
       <div className="flex gap-2 px-4 pb-3.5">

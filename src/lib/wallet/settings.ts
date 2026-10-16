@@ -13,12 +13,13 @@ export interface MoneySettings {
   autoCancel: boolean;      // เปิด = ลูกค้าขอยกเลิกหลังยืนยัน → ระบบคืนเงินตามกติกาทันที · ปิด = แอดมินตัดสิน (#23)
   cancelFullHours: number;  // ยกเลิกก่อนเวลานัด ≥ กี่ชม. = คืนเต็ม
   cancelLatePct: number;    // ยกเลิกช้ากว่านั้น = คืนกี่ %
+  quickSeconds: number;     // เรียกด่วน: รอเพื่อนกดรับกี่วินาที (บอร์ด 15 วิ · ค่าเริ่มต้น 180 ให้เพื่อนทันเห็นแจ้งเตือน)
   history: { at: string; by: string; note: string }[];
 }
 export const DEFAULT_MONEY: MoneySettings = {
   minWithdraw: 500, feePct: 3, whtPct: 3, releaseHours: 24, autoCompleteHours: 12, autoPayoutLimit: 20000,
   cancelRule: "ยกเลิกได้ฟรีก่อนเพื่อนตอบรับ · หลังยืนยันแล้ว ทีมงานพิจารณาตามกรณี",
-  autoCancel: false, cancelFullHours: 3, cancelLatePct: 50, history: [],
+  autoCancel: false, cancelFullHours: 3, cancelLatePct: 50, quickSeconds: 180, history: [],
 };
 const PATH = "_config/money.json";
 const isDemo = !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -44,6 +45,7 @@ export function validateMoney(s: Omit<MoneySettings, "history">): string | null 
   if (!s.cancelRule.trim()) return "กรอกกติกายกเลิก";
   if (!(s.cancelFullHours >= 0 && s.cancelFullHours <= 168)) return "ยกเลิกคืนเต็ม 0–168 ชม.";
   if (!(s.cancelLatePct >= 0 && s.cancelLatePct <= 100)) return "คืนเงินเมื่อยกเลิกช้า 0–100%";
+  if (!(s.quickSeconds >= 15 && s.quickSeconds <= 1800)) return "เรียกด่วนรอรับ 15–1,800 วินาที";
   return null;
 }
 

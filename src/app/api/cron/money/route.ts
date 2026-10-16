@@ -14,6 +14,7 @@ export async function GET(req: Request) {
   if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) return NextResponse.json({ ok: false }, { status: 401 }); // ไม่ตั้ง secret = ปิด (กัน "Bearer undefined")
   try {
     const rows = await listAll(1000);
+    await (await import("@/lib/bookings/quick")).sweepAll().catch((e) => console.error("quick sweep", e)); // เรียกด่วนหมดเวลา = คืนเงิน
     const r = await reconcile();
     if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
       const { createClient } = await import("@supabase/supabase-js");

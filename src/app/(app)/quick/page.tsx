@@ -1,29 +1,25 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import { getLiveApplicants, getLivePeople, publicId } from "@/lib/home/live";
-import { extraOf } from "@/lib/join/store";
+import { getLivePeople, publicId } from "@/lib/home/live";
 import { priceOf } from "@/lib/home/people";
+import { currentCustomer } from "@/lib/customer/auth";
+import { freeToday } from "@/lib/bookings/quick";
+import { priceFor } from "@/lib/bookings";
+import { ACTIVITIES } from "@/lib/posts";
+import { QuickCall } from "./call";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "เรียกด่วน — Mister Bamrungsuk" };
 
 const GOLD = "#e8c472";
 const LN = "rgba(243,234,217,0.07)";
-const JS_DAY: Record<string, number> = { "อา": 0, "จ": 1, "อ": 2, "พ": 3, "พฤ": 4, "ศ": 5, "ส": 6 };
-
-// บอร์ด C-QuickCall "เรียกด่วน" — รอบเปิดตัว: แสดงเพื่อนที่ว่างวันนี้ (ประกาศ "วันนี้ว่าง" หรือวันรับงานตรงกับวันนี้) เรียงคนที่ประกาศก่อน → แตะเพื่อจองทันที
-// (การกระจายคำขอให้เพื่อนใกล้ ๆ รับภายใน 15 วิ ยังไม่อยู่ในรอบ 20 พ.ย.)
+// บอร์ด C-QuickCall "เรียกด่วน": ฟอร์มเรียก → ระบบกันเงินแล้วแจ้งเพื่อนที่ว่างวันนี้ → คนแรกที่กดรับได้นัด (call.tsx)
+// ด้านล่าง: เพื่อนที่ว่างวันนี้ (แตะเพื่อเลือกเองแล้วนัดตามปกติ)
 export default async function QuickPage() {
-  const [apps, people] = await Promise.all([getLiveApplicants().catch(() => []), getLivePeople().catch(() => [])]);
-  const today = new Date().getDay();
-  const rows = apps.map((a) => {
-    const x = extraOf(a);
-    const post = x.post?.open ? x.post : null;
-    const work = x.work?.days ? Object.entries(x.work.days).find(([k, d]) => d.on && JS_DAY[k] === today)?.[1] : null;
-    const free = !!post || !!work || (x.availability?.week_days ?? []).some((k) => JS_DAY[k] === today);
-    const p = people.find((y) => y.id === publicId(a.mb_code));
-    return p && free ? { p, note: post ? `${post.time} · ${post.zone}` : work ? `ว่าง ${work.from}–${work.to}` : "ว่างวันนี้", hot: !!post } : null;
-  }).filter((r) => !!r).sort((a, b) => Number(b!.hot) - Number(a!.hot));
+  const [free, people, me] = await Promise.all([freeToday(), getLivePeople().catch(() => []), currentCustomer().catch(() => null)]);
+  const rows = free.map(({ a, note, hot }) => { const p = people.find((y) => y.id === publicId(a.mb_code)); return p ? { p, note, hot } : null; }).filter((r) => !!r);
+  const est = { 3: 0, 5: 0 };
+  for (const { a } of free.slice(0, 20)) { est[3] = Math.max(est[3], (await priceFor(a, 3)) * 100); est[5] = Math.max(est[5], (await priceFor(a, 5)) * 100); }
 
   return (
     <div className="pb-6">
@@ -32,9 +28,10 @@ export default async function QuickPage() {
         <h1 className="m-0 font-semibold text-[19px]">เรียกด่วน</h1>
         <span className="ml-auto h-7 px-3 rounded-full text-[12px] font-semibold flex items-center gap-1.5 text-[#FF8A97]" style={{ border: "1px solid #c9283d" }}><span className="w-[7px] h-[7px] rounded-full bg-[#c9283d]" />สด</span>
       </div>
-      <div className="text-center" style={{ padding: "0 24px" }}>
-        <div className="font-semibold text-[22px]">เพื่อนที่ว่างวันนี้</div>
-        <div className="text-[14px] text-[#d9c9b4] mt-1">เลือกคนที่ใช่ แล้วนัดล่วงหน้าอย่างน้อย 1 ชม. · ส่งคำขอแล้วเพื่อนตอบภายใน 30 นาที</div>
+      <QuickCall loggedIn={!!me} free={free.length} est={est} activities={ACTIVITIES} />
+      <div className="text-center" style={{ padding: "26px 24px 0" }}>
+        <div className="font-semibold text-[18px]">หรือเลือกเพื่อนที่ว่างวันนี้เอง</div>
+        <div className="text-[13px] text-[#d9c9b4] mt-1">นัดล่วงหน้าอย่างน้อย 1 ชม. · เพื่อนตอบภายใน 30 นาที</div>
       </div>
       <div className="flex flex-col gap-2" style={{ padding: "18px 16px 0" }}>
         {!rows.length ? (

@@ -26,7 +26,7 @@ async function figures(): Promise<Record<string, number>> {
     escrow: sum((r) => r.owner_type === "platform" && r.owner_id === PLATFORM && r.bucket === "escrow"),
     expEscrow: bookings.filter((b) => ESCROW.includes(b.status)).reduce((s, b) => s + b.total_satang, 0),
     held: sum((r) => r.owner_type === "customer" && r.bucket === "held"),
-    expHeld: bookings.filter((b) => b.status === "requested").reduce((s, b) => s + b.total_satang, 0),
+    expHeld: bookings.filter((b) => b.status === "requested").reduce((s, b) => s + b.total_satang, 0) + (await import("@/lib/bookings/quick")).openHolds(),
     withdrawing: sum((r) => r.owner_type === "parttime" && r.bucket === "withdrawing"),
     expW: wds.filter((w) => w.status === "requested" || w.status === "batched").reduce((s, w) => s + w.amount_satang, 0),
     ptPending: sum((r) => r.owner_type === "parttime" && r.bucket === "pending"),
@@ -42,7 +42,7 @@ export async function reconcile(): Promise<Recon> {
   if (f.ledger !== 0) issues.push(`ผลรวม ledger ไม่เป็น 0 (${baht(f.ledger)} บาท)`);
   if (f.negatives) issues.push(`มีบัญชียอดติดลบ ${f.negatives} บัญชี`);
   if (f.escrow !== f.expEscrow) issues.push(`เงินพัก (escrow) ${baht(f.escrow)} ≠ การจองที่ยืนยันแล้ว ${baht(f.expEscrow)} บาท`);
-  if (f.held !== f.expHeld) issues.push(`เงินกันไว้ของลูกค้า ${baht(f.held)} ≠ คำขอจองที่รอตอบรับ ${baht(f.expHeld)} บาท`);
+  if (f.held !== f.expHeld) issues.push(`เงินกันไว้ของลูกค้า ${baht(f.held)} ≠ คำขอจองที่รอตอบรับ + เรียกด่วน ${baht(f.expHeld)} บาท`);
   if (f.withdrawing !== f.expW) issues.push(`ยอดกำลังถอน ${baht(f.withdrawing)} ≠ คำขอถอนค้าง ${baht(f.expW)} บาท`);
   // นัดเก่าก่อน 0002 ไม่มี pt_pending_satang → ข้ามการเทียบช่องนี้จนกว่าจะปล่อยเงินครบ
   if (!f.unknownPending && f.ptPending !== f.expPtPending) issues.push(`รายได้ Part-Time รอปล่อย ${baht(f.ptPending)} ≠ ที่ควรเป็น ${baht(f.expPtPending)} บาท`);

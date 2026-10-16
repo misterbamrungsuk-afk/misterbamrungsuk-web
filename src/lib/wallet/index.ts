@@ -61,7 +61,7 @@ export async function post(kind: TxKind, ref: { type?: string; id?: string } | n
   return Number(data);
 }
 
-export type MoveTable = "bookings" | "withdrawals" | "wallet_topups";
+export type MoveTable = "bookings" | "withdrawals" | "wallet_topups" | "quick_calls";
 export type MoveTx = { kind: TxKind; ref: { type?: string; id?: string } | null; idem: string; note: string | null; actor: string | null; legs: Leg[] };
 
 /** เปลี่ยนสถานะแบบมีเงื่อนไข (from) + ลงบัญชีเงิน ใน transaction เดียว (Postgres wallet_move · supabase/wallet/0002_atomic.sql)

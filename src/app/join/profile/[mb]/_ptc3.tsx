@@ -165,3 +165,45 @@ export function PtPosts({ mb, t }: { mb: string; t: string }) {
     </section>
   );
 }
+
+/** เรียกด่วนที่เชิญเราอยู่ (บอร์ด C-QuickCall ฝั่งเพื่อน) — คนแรกที่กดรับได้นัด · ดึงใหม่ทุก 5 วิ */
+type QC = { id: string; code: string; activity: string; hours: number; place: { label: string; detail: string }; note: string | null; price_satang: number; expires_at: string };
+export function PtQuick({ mb, t }: { mb: string; t: string }) {
+  const [rows, setRows] = useState<QC[]>([]);
+  const [busy, setBusy] = useState("");
+  const [msg, setMsg] = useState<{ ok: boolean; text: string; href?: string } | null>(null);
+  const [now, setNow] = useState(Date.now());
+  const load = useCallback(() => fetch(`/api/pt/quick?${q(mb, t)}`, { cache: "no-store" }).then((r) => r.json()).then((d) => d?.ok && setRows(d.calls)).catch(() => {}), [mb, t]);
+  useEffect(() => { load(); const i = setInterval(() => { setNow(Date.now()); if (document.visibilityState === "visible") load(); }, 5000); return () => clearInterval(i); }, [load]);
+  useEffect(() => { const i = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(i); }, []);
+  const accept = async (id: string) => {
+    setBusy(id); setMsg(null);
+    const r = await fetch("/api/pt/quick", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mb, t, id }) }).catch(() => null);
+    const d = await r?.json().catch(() => null);
+    setBusy("");
+    setMsg(d?.ok ? { ok: true, text: `ได้นัดแล้ว ${d.booking.code} · เริ่ม ${new Date(d.booking.starts_at).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })} น.`, href: `/join/profile/${mb}/chat/${d.booking.id}${t ? `?t=${encodeURIComponent(t)}` : ""}` } : { ok: false, text: d?.error || "รับนัดไม่สำเร็จ" });
+    load();
+  };
+  const live = rows.filter((r) => Date.parse(r.expires_at) > now);
+  if (!live.length && !msg) return null;
+  return (
+    <section className="flex flex-col gap-3 px-4 pb-4">
+      {msg && <p role="status" className="m-0 rounded-xl text-[13px]" style={{ padding: "10px 14px", background: msg.ok ? "rgba(95,208,143,.12)" : "rgba(201,40,61,.14)", color: msg.ok ? "#5fd08f" : "#ff8a9a" }}>{msg.text}{msg.href && <> · <Link href={msg.href} style={{ color: GOLD }}>แชทกับลูกค้า ›</Link></>}</p>}
+      {live.map((c) => {
+        const left = Math.max(0, Math.round((Date.parse(c.expires_at) - now) / 1000));
+        return (
+          <div key={c.id} className="rounded-[20px] flex flex-col gap-2" style={{ padding: 16, border: `1px solid ${GOLD}`, background: "linear-gradient(135deg, rgba(232,196,114,.14), #211a18)" }}>
+            <div className="flex items-center gap-2"><span className="h-6 px-2.5 rounded-full text-[11.5px] font-semibold grid place-items-center text-[#1b130b]" style={{ background: GOLD }}>🔔 เรียกด่วน</span><span className="ml-auto text-[13px] tabular-nums" style={{ color: left < 30 ? "#ff8a9a" : GOLD }} aria-live="polite">เหลือ {left >= 60 ? `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}` : `${left} วิ`}</span></div>
+            <b className="text-[17px] font-medium">{c.activity} · {c.hours} ชม.</b>
+            <span className="text-[13.5px] font-light text-[#d9c9b4]">{c.place.label} · {c.place.detail} · เริ่มราว 1 ชม. หลังรับ{c.note ? ` · ${c.note}` : ""}</span>
+            <div className="flex items-center justify-between gap-3 pt-1">
+              <b className="text-[18px]" style={{ color: GOLD }}>{baht(c.price_satang)}</b>
+              <button type="button" onClick={() => accept(c.id)} disabled={!!busy} className="h-11 px-6 rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold disabled:opacity-50">{busy === c.id ? "กำลังรับ…" : "รับนัด"}</button>
+            </div>
+            <span className="text-[11.5px] font-light text-[#b5a596]">เพื่อนคนแรกที่กดรับได้นัด · เงินลูกค้าพักไว้กับเราแล้ว</span>
+          </div>
+        );
+      })}
+    </section>
+  );
+}

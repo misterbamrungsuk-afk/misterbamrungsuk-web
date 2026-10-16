@@ -88,8 +88,8 @@ export function WalletAdmin({ initial, money, recon }: { initial: Data; money: M
 
       <form onSubmit={async (e) => { e.preventDefault(); await act({ action: "settings", money: m, note: "แก้ตั้งค่าการเงิน" }); }} className="rounded-2xl border p-4 flex flex-col gap-3 text-[13px]" style={{ borderColor: LINE, background: "#241717" }}>
         <b>ตั้งค่าการเงิน</b>
-        <div className="grid gap-2 grid-cols-2 lg:grid-cols-6">
-          {([["minWithdraw", "ถอนขั้นต่ำ (บาท)"], ["feePct", "ค่าธรรมเนียมถอน (%)"], ["whtPct", "หัก ณ ที่จ่าย (%)"], ["releaseHours", "ปล่อยเงินหลังจบงาน (ชม.)"], ["autoCompleteHours", "จบงานอัตโนมัติ (ชม.)"], ["autoPayoutLimit", "วงเงินถอนอัตโนมัติ/วัน"]] as const).map(([k, l]) => (
+        <div className="grid gap-2 grid-cols-2 lg:grid-cols-7">
+          {([["minWithdraw", "ถอนขั้นต่ำ (บาท)"], ["feePct", "ค่าธรรมเนียมถอน (%)"], ["whtPct", "หัก ณ ที่จ่าย (%)"], ["releaseHours", "ปล่อยเงินหลังจบงาน (ชม.)"], ["autoCompleteHours", "จบงานอัตโนมัติ (ชม.)"], ["autoPayoutLimit", "วงเงินถอนอัตโนมัติ/วัน"], ["quickSeconds", "เรียกด่วน รอรับ (วินาที)"]] as const).map(([k, l]) => (
             <label key={k} className="flex flex-col gap-1"><span className="text-[#cdbfb3] text-[12px]">{l}</span><input type="number" step="any" value={m[k]} onChange={(e) => setM({ ...m, [k]: Number(e.target.value) })} className={inp} style={{ borderColor: LINE }} /></label>
           ))}
         </div>
