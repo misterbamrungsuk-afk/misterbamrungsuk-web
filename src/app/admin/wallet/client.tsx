@@ -1,0 +1,104 @@
+"use client";
+/* eslint-disable @next/next/no-img-element */
+
+import { useState } from "react";
+import type { Topup } from "@/lib/wallet";
+
+type Acc = { owner_type: string; owner_id: string; bucket: string; balance: number };
+type Data = { topups: Topup[]; accounts: Acc[]; sum: number };
+const GOLD = "#f0c75a";
+const LINE = "rgba(240,200,90,.38)";
+const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US", { maximumFractionDigits: 2 });
+const VERDICT: Record<string, [string, string]> = { ok: ["✓ ยอดตรง", "#4ade80"], amt: ["ยอดไม่ตรง", "#fca5a5"], fake: ["ไม่พบรายการ", "#fca5a5"], error: ["ตรวจไม่สำเร็จ", "#eed58a"] };
+const STATUS: Record<string, [string, string]> = { pending: ["รอตรวจ", "#eed58a"], credited: ["เข้ากระเป๋าแล้ว", "#4ade80"], rejected: ["ไม่ผ่าน", "#fca5a5"] };
+const OWNER: Record<string, string> = { customer: "ลูกค้า", parttime: "Part-Time", partner: "พาร์ทเนอร์", platform: "บริษัท" };
+
+export function WalletAdmin({ initial }: { initial: Data }) {
+  const [d, setD] = useState(initial);
+  const [tab, setTab] = useState<"pending" | "all">("pending");
+  const [msg, setMsg] = useState("");
+  const [reason, setReason] = useState<Record<string, string>>({});
+  const [adj, setAdj] = useState({ owner_type: "customer", owner_id: "", bucket: "available", amount_baht: "", reason: "" });
+  const [busy, setBusy] = useState(false);
+  const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(""), 4000); };
+  const reload = async () => { const r = await fetch("/api/admin/wallet", { cache: "no-store" }); const j = await r.json().catch(() => null); if (j?.ok) setD({ topups: j.topups, accounts: j.accounts, sum: j.sum }); };
+  const act = async (body: Record<string, unknown>) => {
+    setBusy(true);
+    const r = await fetch("/api/admin/wallet", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const j = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+    setBusy(false);
+    flash(j.ok ? "บันทึกแล้ว" : j.error ?? "บันทึกไม่สำเร็จ");
+    if (j.ok) await reload();
+    return !!j.ok;
+  };
+  const pending = d.topups.filter((t) => t.status === "pending");
+  const shown = tab === "pending" ? pending : d.topups;
+  const owners = d.accounts.filter((a) => a.owner_type !== "platform" && a.balance !== 0);
+  const platform = d.accounts.filter((a) => a.owner_type === "platform");
+  const inp = "h-10 rounded-lg bg-[#130e0e] border px-2.5";
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap gap-3 justify-between items-end">
+        <div><div className="text-[11px] tracking-[2.5px] font-semibold" style={{ color: GOLD }}>WALLET</div><h1 className="mt-0.5 font-lux font-bold text-2xl">กระเป๋าเงิน · เติมเงิน</h1></div>
+        <span className="text-[13px] rounded-full px-3 py-1.5 border" style={{ borderColor: d.sum === 0 ? "rgba(74,222,128,.5)" : "rgba(239,68,68,.6)", color: d.sum === 0 ? "#4ade80" : "#fca5a5" }}>{d.sum === 0 ? "✓ ผลรวม ledger = 0 (สมดุล)" : Number.isNaN(d.sum) ? "⚠ ยังไม่ได้รัน migration กระเป๋าเงิน" : `⚠ ผลรวม ledger = ${d.sum} สตางค์ — ตรวจด่วน`}</span>
+      </div>
+      {msg && <p role="status" className="text-sm text-[#eed58a]">{msg}</p>}
+
+      {!!platform.length && <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {platform.map((a) => <div key={a.bucket} className="rounded-2xl border px-4 py-3" style={{ borderColor: LINE, background: "#241717" }}><div className="text-[12px] text-[#cdbfb3]">บริษัท · {a.bucket}</div><div className="font-lux font-bold text-xl">{baht(a.balance)}</div></div>)}
+      </div>}
+
+      <section className="flex flex-col gap-2">
+        <div className="flex gap-2">
+          {(["pending", "all"] as const).map((k) => <button key={k} onClick={() => setTab(k)} aria-pressed={tab === k} className="h-9 px-4 rounded-full border text-[13px] font-semibold" style={{ borderColor: tab === k ? GOLD : LINE, background: tab === k ? GOLD : "transparent", color: tab === k ? "#1a1206" : "#d3c7bc" }}>{k === "pending" ? `รอตรวจ ${pending.length}` : "ทั้งหมด"}</button>)}
+        </div>
+        {!shown.length && <p className="rounded-2xl border px-4 py-10 text-center text-[#7d6d6a]" style={{ borderColor: LINE }}>ไม่มีคำขอเติมเงิน</p>}
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {shown.map((t) => {
+            const v = t.slip_check ? VERDICT[t.slip_check.verdict] ?? [t.slip_check.verdict, "#cdbfb3"] : ["ไม่ได้ตรวจ (ไม่มี Slip2Go)", "#7d6d6a"];
+            return (
+              <div key={t.id} className="rounded-2xl border p-3 flex gap-3" style={{ borderColor: LINE, background: "#241717" }}>
+                <a href={`/api/wallet/slip?id=${t.id}`} target="_blank" rel="noopener noreferrer" className="shrink-0"><img src={`/api/wallet/slip?id=${t.id}`} alt="สลิป" className="w-24 h-32 object-cover rounded-lg bg-[#130e0e]" /></a>
+                <div className="flex-1 min-w-0 flex flex-col gap-1 text-[13px]">
+                  <div className="flex justify-between gap-2"><b className="font-lux text-[18px]">{baht(t.amount_satang)}</b><span style={{ color: STATUS[t.status][1] }}>{STATUS[t.status][0]}</span></div>
+                  <span className="text-[#cdbfb3] truncate">{t.customer_email ?? t.customer_id}</span>
+                  <span style={{ color: v[1] }}>{v[0]}{t.slip_check?.amount != null ? ` · สลิป ${t.slip_check.amount.toLocaleString()} บาท` : ""}</span>
+                  <span className="text-[11.5px] text-[#7d6d6a]">{new Date(t.created_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}</span>
+                  {t.reason && <span className="text-[#fca5a5]">{t.reason}</span>}
+                  {t.status === "pending" && <>
+                    <input value={reason[t.id] ?? ""} onChange={(e) => setReason({ ...reason, [t.id]: e.target.value })} placeholder="เหตุผลถ้าไม่ผ่าน เช่น ยอดไม่ตรง" className="h-9 rounded-lg border bg-[#130e0e] px-2.5 text-[12.5px] text-[#f6efe4] outline-none" style={{ borderColor: LINE }} />
+                    <div className="grid grid-cols-2 gap-1.5">
+                      <button disabled={busy || !(reason[t.id] ?? "").trim()} onClick={() => act({ action: "reject", id: t.id, reason: reason[t.id] })} className="h-9 rounded-full border text-[#fecaca] disabled:opacity-40" style={{ borderColor: "rgba(201,40,61,.6)" }}>ไม่ผ่าน</button>
+                      <button disabled={busy} onClick={() => act({ action: "approve", id: t.id })} className="btn-red-lux h-9 rounded-full text-white font-semibold disabled:opacity-40">เข้ากระเป๋า</button>
+                    </div>
+                  </>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] items-start">
+        <div className="rounded-2xl border overflow-x-auto" style={{ borderColor: LINE }}>
+          <div className="min-w-[520px] text-[13px]">
+            <div className="grid grid-cols-[100px_minmax(0,1fr)_110px_120px] px-3.5 py-2.5 bg-[#130e0e] text-[#7d6d6a] text-xs"><span>ประเภท</span><span>เจ้าของ</span><span>ช่อง</span><span className="text-right">ยอด</span></div>
+            {owners.map((a) => <div key={`${a.owner_type}${a.owner_id}${a.bucket}`} className="grid grid-cols-[100px_minmax(0,1fr)_110px_120px] px-3.5 py-2.5 border-t" style={{ borderColor: LINE }}><span>{OWNER[a.owner_type] ?? a.owner_type}</span><span className="truncate pr-2">{a.owner_id}</span><span className="text-[#cdbfb3]">{a.bucket}</span><span className="text-right tabular-nums">{baht(a.balance)}</span></div>)}
+            {!owners.length && <p className="border-t px-4 py-8 text-center text-[#7d6d6a]" style={{ borderColor: LINE }}>ยังไม่มียอดในกระเป๋า</p>}
+          </div>
+        </div>
+        <form onSubmit={async (e) => { e.preventDefault(); if (await act({ action: "adjust", ...adj, idem: crypto.randomUUID() })) setAdj({ ...adj, amount_baht: "", reason: "" }); }} className="rounded-2xl border p-4 flex flex-col gap-2 text-[13px]" style={{ borderColor: LINE, background: "#241717" }}>
+          <b>ปรับยอดพร้อมเหตุผล</b>
+          <span className="text-[12px] text-[#cdbfb3]">บันทึกเป็นรายการใหม่ (แก้/ลบรายการเดิมไม่ได้) · ใส่ติดลบเพื่อหักยอด</span>
+          <select value={adj.owner_type} onChange={(e) => setAdj({ ...adj, owner_type: e.target.value })} className={inp} style={{ borderColor: LINE }}><option value="customer">ลูกค้า</option><option value="parttime">Part-Time</option></select>
+          <input value={adj.owner_id} onChange={(e) => setAdj({ ...adj, owner_id: e.target.value })} placeholder="รหัสเจ้าของ (customer id / applicant id)" className={inp} style={{ borderColor: LINE }} />
+          <input value={adj.bucket} onChange={(e) => setAdj({ ...adj, bucket: e.target.value })} placeholder="ช่อง (available)" className={inp} style={{ borderColor: LINE }} />
+          <input value={adj.amount_baht} onChange={(e) => setAdj({ ...adj, amount_baht: e.target.value })} inputMode="decimal" placeholder="จำนวนเงิน (บาท)" className={inp} style={{ borderColor: LINE }} />
+          <input value={adj.reason} onChange={(e) => setAdj({ ...adj, reason: e.target.value })} placeholder="เหตุผล (บังคับ)" className={inp} style={{ borderColor: LINE }} />
+          <button disabled={busy || !adj.owner_id || !adj.amount_baht || !adj.reason.trim()} className="btn-red-lux h-10 rounded-full text-white font-semibold disabled:opacity-40">บันทึกการปรับยอด</button>
+        </form>
+      </section>
+    </div>
+  );
+}

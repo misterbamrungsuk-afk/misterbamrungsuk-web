@@ -113,3 +113,21 @@ export async function setCustomerPassword(id: string, password: string) {
   });
   if (!res.ok) throw new Error(`customers password ${res.status}`);
 }
+
+// ── ตรวจ session ลูกค้า (ลายเซ็น HMAC + วันหมดอายุ) — ใช้กับทุก API ที่เกี่ยวกับเงิน/การจอง ──
+export type CustomerSession = { sub: string; email: string };
+export function readCustomerSession(token: string | undefined | null): CustomerSession | null {
+  const [body, sig] = String(token || "").split(".");
+  if (!body || !sig) return null;
+  const want = createHmac("sha256", secret()).update(body).digest("base64url");
+  if (want.length !== sig.length || !timingSafeEqual(Buffer.from(want), Buffer.from(sig))) return null;
+  try {
+    const p = JSON.parse(Buffer.from(body, "base64url").toString()) as { sub?: string; email?: string; exp?: number };
+    return p.sub && p.email && p.exp && p.exp > Date.now() ? { sub: p.sub, email: p.email } : null;
+  } catch { return null; }
+}
+/** ลูกค้าที่ล็อกอินอยู่ (อ่านคุกกี้ในเซิร์ฟเวอร์) */
+export async function currentCustomer(): Promise<CustomerSession | null> {
+  const { cookies } = await import("next/headers");
+  return readCustomerSession((await cookies()).get(SESSION_COOKIE)?.value);
+}

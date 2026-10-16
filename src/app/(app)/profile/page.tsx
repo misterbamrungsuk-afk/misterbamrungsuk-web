@@ -17,6 +17,7 @@ export default function ProfilePage() {
 
   const menu = [
     { href: "/profile/edit", icon: "✏️", label: t.profileInfo },
+    { href: "/wallet", icon: "👛", label: "กระเป๋าเงิน" },
     { href: "/membership", icon: "♛", label: "ระดับสมาชิก" },
     { href: "/membership/redeem", icon: "🎁", label: lang === "th" ? "รับของขวัญ" : "Redeem gift" },
     { href: "/orders", icon: "🧾", label: lang === "th" ? "ประวัติการจ้างงาน" : "My orders" },

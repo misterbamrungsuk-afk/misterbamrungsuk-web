@@ -13,6 +13,7 @@ export const ADMIN_TABS = [
   { href: "/admin/orders", label: "ตรวจงาน" },
   { href: "/admin/applicants", label: "ผู้สมัคร" },
   { href: "/admin/slips", label: "ตรวจสลิป · Slip2Go" },
+  { href: "/admin/wallet", label: "กระเป๋าเงิน · เติมเงิน" },
   { href: "/admin/kyc", label: "คิว KYC" },
   { href: "/admin/cohorts", label: "กลุ่มอบรม / เช็กชื่อ" },
   { href: "/admin/earnings", label: "ราคาและส่วนแบ่ง" },
