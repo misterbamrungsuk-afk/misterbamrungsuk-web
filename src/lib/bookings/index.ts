@@ -236,6 +236,7 @@ export async function cancelByCustomer(id: string, customer_id: string, reason: 
         if (done) return done;
       }
       await notify({ user_type: "parttime", user_id: b.parttime_id, kind: "booking_cancel_requested", title: `ลูกค้าขอยกเลิก ${b.code}`, body: "ทีมงานกำลังตรวจตามกติกา", url: `/join/profile/${b.parttime_mb}/jobs` });
+      await notify({ user_type: "admin", user_id: "ops", kind: "cancel_req", title: `ขอยกเลิกนัด ${b.code}`, body: reason.slice(0, 200) || "ไม่ระบุเหตุผล", url: "/admin/orders" });
       return r;
     }
   }

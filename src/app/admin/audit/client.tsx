@@ -7,6 +7,7 @@ import { PushButton } from "@/components/push-button";
 
 const KIND: Record<string, [string, string]> = {
   sos: ["SOS", "#ef4444"], recon_alert: ["ยอดเงินไม่ตรง", "#f59e0b"], spa_full: ["สปาห้องเต็ม", "#e8c472"], customer_delete: ["ขอลบบัญชี", "#a78bfa"],
+  topup_pending: ["เติมเงินรอตรวจ", "#60a5fa"], withdraw_req: ["คำขอถอน", "#34d399"], dispute: ["แจ้งปัญหา", "#fb923c"], cancel_req: ["ขอยกเลิก", "#fb923c"],
 };
 const linkify = (s: string) => s.split(/(https:\/\/maps\.google\.com\/\?q=[0-9.,-]+)/).map((p, i) => (p.startsWith("https://maps.google.com") ? <a key={i} href={p} target="_blank" rel="noreferrer" className="text-[#e8c472] underline">แผนที่</a> : p));
 

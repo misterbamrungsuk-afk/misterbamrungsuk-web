@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
 import { getMoney, saveMoney, validateMoney } from "@/lib/wallet/settings";
+import { notify } from "@/lib/bookings";
 import { WalletError, adjust, allBalances, creditTopup, getTopup, ledgerSum, listTopups, rejectTopup, type OwnerType } from "@/lib/wallet";
 
 export const runtime = "nodejs";
@@ -33,12 +34,15 @@ export async function POST(req: Request) {
       if (b.action === "reject") {
         const reason = String(b.reason ?? "").trim().slice(0, 300);
         if (!reason) return NextResponse.json({ ok: false, error: "ระบุเหตุผล" }, { status: 400 });
-        return NextResponse.json({ ok: true, row: await rejectTopup(t.id, actor, reason) });
+        const row = await rejectTopup(t.id, actor, reason);
+        if (row) await notify({ user_type: "customer", user_id: t.customer_id, kind: "topup_rejected", title: "เติมเงินไม่ผ่าน", body: reason, url: "/wallet" });
+        return NextResponse.json({ ok: true, row });
       }
       // ยอดที่เข้ากระเป๋า = ที่แอดมินระบุ (amount_baht) > ยอดในสลิปที่ Slip2Go อ่านได้ > ยอดที่ลูกค้ากรอก
       const given = Number(b.amount_baht);
       const amt = Number.isFinite(given) && given > 0 ? Math.round(given * 100) : t.slip_check?.amount ? Math.round(t.slip_check.amount * 100) : t.amount_satang;
       const row = await creditTopup(t, actor, amt);
+      if (row) await notify({ user_type: "customer", user_id: t.customer_id, kind: "topup_credited", title: "เติมเงินเข้ากระเป๋าแล้ว", body: `฿${(amt / 100).toLocaleString()} พร้อมใช้จองได้เลย`, url: "/wallet" });
       return row ? NextResponse.json({ ok: true, row }) : NextResponse.json({ ok: false, error: "คำขอนี้ตัดสินไปแล้ว" }, { status: 409 });
     }
     if (b.action === "settings") {

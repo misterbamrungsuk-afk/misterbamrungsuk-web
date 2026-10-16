@@ -130,6 +130,7 @@ export async function dispute(id: string, customer_id: string, text: string) {
   const r = await transition(b.id, ["accepted", "checked_in"], { status: "disputed", resolution: { dispute: text.slice(0, 1000), at: now() } });
   if (!r) throw new BookingError("แจ้งปัญหาไม่ได้ในสถานะนี้ · ติดต่อทีมงานทาง LINE", "state");
   await addEvent(b.id, "disputed", `customer:${customer_id}`, { text });
+  await notify({ user_type: "admin", user_id: "ops", kind: "dispute", title: `ลูกค้าแจ้งปัญหา ${b.code}`, body: text.slice(0, 300), url: "/admin/orders" });
   return r;
 }
 
@@ -213,6 +214,7 @@ export async function requestWithdraw(a: Applicant, amountBaht: number): Promise
         { owner_type: "parttime", owner_id: a.id, bucket: "withdrawing", amount },
       ] });
     if (!w) throw new BookingError("สร้างคำขอถอนไม่สำเร็จ");
+    await notify({ user_type: "admin", user_id: "finance", kind: "withdraw_req", title: `คำขอถอน ${a.mb_code} ฿${amountBaht.toLocaleString()}`, body: `สุทธิ ฿${(w.net_satang / 100).toLocaleString()} · ${a.bank}`, url: "/admin/payouts" });
     return w;
   } catch (e) {
     await drop().catch(() => {});

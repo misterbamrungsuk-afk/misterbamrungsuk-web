@@ -28,7 +28,7 @@ export async function overview() {
       monthGmv: done.reduce((s, b) => s + b.total_satang, 0),
     },
     money: {
-      revenue: pf("revenue"), escrow: pf("escrow"), bank: -pf("bank"), wht: pf("wht_payable"), partner: pf("partner_payable"),
+      revenue: pf("revenue"), escrow: pf("escrow"), bank: -pf("bank") || 0, wht: pf("wht_payable"), partner: pf("partner_payable"),
       customerAvail: sum("customer", "available"), customerHeld: sum("customer", "held"),
       ptPending: sum("parttime", "pending"), ptAvail: sum("parttime", "available"), ptWithdrawing: sum("parttime", "withdrawing"),
     },

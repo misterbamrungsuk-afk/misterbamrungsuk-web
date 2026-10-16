@@ -33,6 +33,8 @@ export async function POST(req: Request) {
       await creditTopup(t, "slip2go");
       return NextResponse.json({ ok: true, status: "credited" });
     }
+    const { notify } = await import("@/lib/bookings");
+    await notify({ user_type: "admin", user_id: "finance", kind: "topup_pending", title: `เติมเงินรอตรวจ ฿${amount.toLocaleString()}`, body: `${me.email ?? me.sub} · ${check ? `Slip2Go: ${check.verdict}` : "ไม่มี Slip2Go"}`, url: "/admin/wallet" }).catch(() => {});
     return NextResponse.json({ ok: true, status: "pending" });
   } catch (e) {
     if (e instanceof WalletError) return bad(e.message === "สลิปนี้เคยถูกใช้แล้ว" ? "สลิปนี้เคยถูกใช้แล้ว กรุณาแนบสลิปของการโอนครั้งนี้" : e.message);
