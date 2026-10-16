@@ -85,3 +85,23 @@ export async function verifySlip(file: File, expected: number): Promise<SlipChec
     return { ...base, verdict: "error", code: "", message: "ตรวจสลิปไม่สำเร็จ" };
   }
 }
+
+/** ทดสอบว่าคีย์ Slip2Go ใช้ได้ (แอดมินกดจากหน้าภาพรวม) — ส่งรูปเปล่า 1×1 ไม่ใช่สลิปจริง จึงไม่กินโควตาตรวจสลิปที่สำเร็จ
+ *  ok = เซิร์ฟเวอร์รับคีย์ (ตอบว่าอ่านสลิปไม่ได้ตามคาด) · ไม่ ok = คีย์ผิด/หมดอายุ/แพ็กหมด/เชื่อมต่อไม่ได้ */
+export async function slip2goPing(): Promise<{ ok: boolean; status: number; code: string; message: string }> {
+  const secret = process.env.SLIP2GO_API_SECRET;
+  if (!secret) return { ok: false, status: 0, code: "", message: "ยังไม่ได้ตั้ง SLIP2GO_API_SECRET" };
+  try {
+    const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=", "base64");
+    const fd = new FormData();
+    fd.append("file", new Blob([png], { type: "image/png" }), "ping.png");
+    fd.append("payload", JSON.stringify({ checkDuplicate: false }));
+    const res = await fetch(URL, { method: "POST", headers: { Authorization: `Bearer ${secret}` }, body: fd, signal: AbortSignal.timeout(15_000) });
+    const body = (await res.json().catch(() => ({}))) as { code?: string; message?: string };
+    const code = String(body.code ?? res.status), message = String(body.message ?? "");
+    const denied = res.status === 401 || res.status === 403 || res.status >= 500 || /unauthori|forbidden|invalid.*(token|key|secret)|expire|หมดอายุ|package|quota|credit|insufficient/i.test(message);
+    return { ok: !denied, status: res.status, code, message };
+  } catch (e) {
+    return { ok: false, status: 0, code: "", message: e instanceof Error ? e.message : "เชื่อมต่อไม่ได้" };
+  }
+}

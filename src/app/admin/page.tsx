@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { overview, systemChecks } from "@/lib/admin/overview";
 import { Card, PageHead, Pill } from "./admin-nav";
+import { PingButton } from "./ping-button";
 
 export const dynamic = "force-dynamic";
 
@@ -62,7 +63,7 @@ export default async function AdminHome() {
         <h2 className="font-semibold mb-2">ความพร้อมระบบ (คีย์บริการภายนอก)</h2>
         <div className="grid gap-x-6 sm:grid-cols-2">
           {checks.map((c) => (
-            <div key={c.key} className="flex items-start gap-2 py-1.5 text-sm"><span className={c.ok ? "text-emerald-400" : "text-amber-400"}>{c.ok ? "✓" : "✗"}</span><span className="flex-1">{c.label}{!c.ok && <span className="block text-xs text-ink-300">{c.need}</span>}</span></div>
+            <div key={c.key} className="flex items-start gap-2 py-1.5 text-sm"><span className={c.ok ? "text-emerald-400" : "text-amber-400"}>{c.ok ? "✓" : "✗"}</span><span className="flex-1">{c.label}{!c.ok && <span className="block text-xs text-ink-300">{c.need}</span>}{c.ok && c.key === "slip2go" && <PingButton service="slip2go" label="ทดสอบคีย์" />}{c.ok && c.key === "email" && <PingButton service="email" label="ส่งอีเมลทดสอบ" />}</span></div>
           ))}
         </div>
       </Card>

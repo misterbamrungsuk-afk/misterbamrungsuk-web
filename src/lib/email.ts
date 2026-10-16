@@ -94,3 +94,20 @@ export function noticeMail(to: string, kind: string, title: string, body: string
 export function sendAll(mails: Mail[]) {
   return Promise.allSettled(mails.map(sendEmail));
 }
+
+/** ส่งอีเมลทดสอบ (แอดมินกดจากหน้าภาพรวม) — คืนข้อความผิดพลาดจาก Resend ตรง ๆ เพื่อดูว่าโดเมนยืนยันแล้วหรือยัง */
+export async function sendTestEmail(to: string): Promise<{ ok: boolean; error: string }> {
+  if (!emailEnabled()) return { ok: false, error: "ยังไม่ได้ตั้ง RESEND_API_KEY / EMAIL_FROM" };
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: process.env.EMAIL_FROM, to: [to], subject: "ทดสอบอีเมล Mister Bamrungsuk", html: layout("อีเมลระบบใช้งานได้", [["ส่งถึง", to], ["เวลา", new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })]], "ถ้าได้รับอีเมลนี้ แปลว่าระบบส่งอีเมล (ลืมรหัสผ่าน · แจ้งเตือน SOS) พร้อมใช้งาน") }),
+    });
+    if (res.ok) return { ok: true, error: "" };
+    const j = (await res.json().catch(() => ({}))) as { message?: string };
+    return { ok: false, error: `${res.status} ${j.message ?? ""}`.trim() };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "เชื่อมต่อไม่ได้" };
+  }
+}
