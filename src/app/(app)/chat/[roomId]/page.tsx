@@ -58,6 +58,7 @@ export default function ChatRoom({ params }: { params: Promise<{ roomId: string 
         <Link href="/chat" aria-label="ย้อนกลับ" className="w-10 h-10 rounded-full grid place-items-center text-[#f3ead9] hover:text-[#f3ead9]" style={{ border: `1px solid ${LN}` }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg></Link>
         {b && <img src={b.pt.img} alt="" className="w-[42px] h-[42px] rounded-full object-cover" />}
         <div className="flex-1 min-w-0"><div className="font-medium text-[16px]">{b?.pt.nick ?? "…"} <span className="text-[12px] font-light" style={{ color: GOLD }}>✓</span></div><div className="text-[12px] font-light text-[#d9c9b4]">{b ? `#${b.code}` : ""}</div></div>
+        {b && <Link href={`/report?booking=${b.id}&nick=${encodeURIComponent(b.pt.nick)}`} aria-label="รายงานผู้ใช้" className="w-10 h-10 rounded-full grid place-items-center text-[#d9c9b4] hover:text-[#f3ead9]" style={{ border: `1px solid ${LN}` }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M5 21V4h11l-1.5 4L16 12H5" /></svg></Link>}
         <Link href="/sos" aria-label="SOS" className="h-10 px-3 rounded-full grid place-items-center text-[13px] font-semibold text-[#ff8a9a] hover:text-[#ff8a9a]" style={{ border: "1px solid rgba(255,138,154,.4)" }}>SOS</Link>
       </header>
       {b && (

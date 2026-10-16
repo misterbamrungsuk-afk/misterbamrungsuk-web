@@ -13,6 +13,7 @@ export const ADMIN_TABS: AdminTab[] = [
   { href: "/admin/audit", label: "SOS · แจ้งเตือนระบบ" },
   { href: "/admin/orders", label: "ตรวจงาน" },
   { href: "/admin/chats", label: "แชท · คำห้ามส่ง" },
+  { href: "/admin/reports", label: "รายงานผู้ใช้" },
   { href: "/admin/applicants", label: "ผู้สมัคร" },
   { href: "/admin/slips", label: "ตรวจสลิป · Slip2Go" },
   { href: "/admin/wallet", label: "กระเป๋าเงิน · เติมเงิน" },

@@ -98,6 +98,7 @@ export function ProfileView({ p, reviews = [] }: { p: Person; reviews?: Rv[] }) 
             {p.real ? (!reviews.length ? <div className="rounded-[14px] bg-[#211a18] text-[13px] font-light text-[#d9c9b4]" style={{ padding: 12, border: line }}>ยังไม่มีรีวิว · รีวิวจะขึ้นหลังจบนัดแรก</div> : <div className="flex flex-col gap-2">
               <div className="flex items-baseline gap-2"><span className="font-bold text-[32px] text-[#e8c472] leading-none">{avg}</span><span className="text-[12px] font-light text-[#d9c9b4]">จาก {reviews.length} รีวิว (ลูกค้าที่จองจริง)</span></div>
               {reviews.slice(0, 6).map((r, i) => <div key={i} className="rounded-[14px] bg-[#211a18] text-[13px]" style={{ padding: 12, border: line }}><div className="text-[#e8c472] text-[12px]">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)} · {new Date(r.created_at).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}{r.tags.length ? ` · ${r.tags.join(" · ")}` : ""}</div>{r.body && <div className="font-light mt-1">{r.body}</div>}</div>)}
+              <Link href={`/p/${p.id}/reviews`} className="self-start text-[13px] font-light text-[#e8c472]">ดูรีวิวทั้งหมด ›</Link>
             </div>) : <>
             <div className="flex gap-4 items-center">
               <div className="text-center"><div className="font-bold text-[40px] text-[#e8c472] leading-none">{p.rating}</div><div className="text-[12px] text-[#d9c9b4] mt-1 font-light">{p.reviews} รีวิว</div></div>

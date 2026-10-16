@@ -81,7 +81,7 @@ export async function sweepAll() {
   return sweep(rows);
 }
 
-export type QuickInput = { activity: string; hours: 3 | 5; place: { type: string; detail: string }; note: string };
+export type QuickInput = { activity: string; hours: 3 | 5; place: { type: string; detail: string }; note: string; blocked?: string[] };
 export async function createQuick(cust: { sub: string; email: string; name?: string }, input: QuickInput): Promise<QuickCall> {
   if (!ACTIVITIES.includes(input.activity)) throw new BookingError("เลือกกิจกรรม");
   const type = input.place.type as PlaceType;
@@ -97,6 +97,7 @@ export async function createQuick(cust: { sub: string; email: string; name?: str
   const start = Date.parse(quickStart());
   const cands: { a: Applicant; price: number }[] = [];
   for (const { a } of await freeToday()) {
+    if (input.blocked?.includes(publicId(a.mb_code))) continue; // ลูกค้าบล็อกไว้ = ไม่เชิญ
     const clash = (await listForParttime(a.id)).some((b) => ["requested", "accepted", "checked_in"].includes(b.status) && Math.abs(Date.parse(b.starts_at) - start) < Math.max(b.hours, input.hours) * 3600_000);
     if (!clash) cands.push({ a, price: (await priceFor(a, input.hours)) * 100 });
     if (cands.length >= MAX_INVITE) break;

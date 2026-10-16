@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getProfile } from "@/lib/customer/profile";
 import { currentCustomer } from "@/lib/customer/auth";
 import { limited } from "@/lib/rate-limit";
 import { BookingError } from "@/lib/bookings";
@@ -22,7 +23,7 @@ export async function POST(req: Request) {
   const b = (await req.json().catch(() => ({}))) as Record<string, unknown>;
   const p = (b.place ?? {}) as Record<string, unknown>;
   try {
-    const q = await createQuick({ sub: me.sub, email: me.email }, { activity: String(b.activity ?? ""), hours: Number(b.hours) === 5 ? 5 : 3, place: { type: String(p.type ?? ""), detail: String(p.detail ?? "") }, note: String(b.note ?? "") });
+    const q = await createQuick({ sub: me.sub, email: me.email }, { activity: String(b.activity ?? ""), hours: Number(b.hours) === 5 ? 5 : 3, place: { type: String(p.type ?? ""), detail: String(p.detail ?? "") }, note: String(b.note ?? ""), blocked: (await getProfile(me.sub, me.email).catch(() => null))?.blocked ?? [] });
     return NextResponse.json({ ok: true, quick: await view(q) });
   } catch (e) {
     if (e instanceof BookingError) return NextResponse.json({ ok: false, error: e.message, code: e.code, ...(e.data ?? {}) }, { status: e.code === "funds" ? 402 : 400 });

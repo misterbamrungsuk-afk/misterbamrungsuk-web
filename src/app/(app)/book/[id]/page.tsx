@@ -6,6 +6,8 @@ import { priceFor } from "@/lib/bookings";
 import { listPartners } from "@/lib/partner/store";
 import { PARTNER_SPAS } from "@/lib/booking";
 import { BookFlow, type Avail } from "./flow";
+import { currentCustomer } from "@/lib/customer/auth";
+import { getProfile } from "@/lib/customer/profile";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "นัดเพื่อน — Mister Bamrungsuk" };
@@ -46,5 +48,8 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
   const [p3, p5] = await Promise.all([priceFor(live, 3), priceFor(live, 5)]);
   const real = await listPartners().then((l) => l.filter((x) => x.type === "สปา" && (x.account_status === "active" || x.status === "active")).map((x) => ({ id: x.id, name: x.business_name, area: x.province, price: 0 }))).catch(() => []);
   const spas = (real.length ? real : PARTNER_SPAS).map((s) => ({ id: s.id, name: s.name, area: s.area, price: s.price }));
-  return <BookFlow p={{ id, nick: person.nick, img: person.img, pos: mainPos(live) ?? null, area: person.area, rating: person.rating }} price={{ 3: p3, 5: p5 }} avail={availOf(live)} spas={spas} />;
+  const me = await currentCustomer().catch(() => null);
+  const prof = me ? await getProfile(me.sub, me.email).catch(() => null) : null;
+  if (prof?.blocked.includes(id)) return <div className="text-center" style={{ padding: "80px 24px" }}><p className="text-[#d9c9b4]">คุณบล็อกเพื่อนคนนี้ไว้ · ยกเลิกบล็อกได้ที่ บัญชี › ผู้ใช้ที่บล็อก</p><Link href="/profile/blocked" className="text-[#e8c472]">จัดการผู้ใช้ที่บล็อก</Link></div>;
+  return <BookFlow p={{ id, nick: person.nick, img: person.img, pos: mainPos(live) ?? null, area: person.area, rating: person.rating }} price={{ 3: p3, 5: p5 }} avail={availOf(live)} spas={spas} saved={prof?.addresses ?? []} />;
 }

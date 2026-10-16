@@ -1,0 +1,30 @@
+import { NextResponse } from "next/server";
+import { currentCustomer } from "@/lib/customer/auth";
+import { limited } from "@/lib/rate-limit";
+import { addEvent, getBooking, notify } from "@/lib/bookings";
+import { sendEmail } from "@/lib/email";
+import { ISSUER } from "@/lib/join/legal";
+
+export const runtime = "nodejs";
+
+// ขอใบกำกับภาษี (บอร์ด C-Receipt): { kind: person|corp, name, tax_id (13 หลัก), branch?, address, email } → แจ้งทีมงาน (ออกให้ภายใน 3 วันทำการ)
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const me = await currentCustomer();
+  if (!me) return NextResponse.json({ ok: false, error: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
+  if (await limited(`invoice:${me.sub}`, 10, 60 * 60_000)) return NextResponse.json({ ok: false, error: "ส่งคำขอบ่อยเกินไป" }, { status: 429 });
+  const b = await getBooking((await params).id);
+  if (!b || b.customer_id !== me.sub) return NextResponse.json({ ok: false, error: "ไม่พบการจอง" }, { status: 404 });
+  const x = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+  const kind = x.kind === "corp" ? "corp" : "person";
+  const name = String(x.name ?? "").trim().slice(0, 120), tax = String(x.tax_id ?? "").replace(/\D/g, ""), address = String(x.address ?? "").trim().slice(0, 300);
+  const email = String(x.email ?? "").trim().slice(0, 120), branch = String(x.branch ?? "").trim().slice(0, 60);
+  if (!name || !address) return NextResponse.json({ ok: false, error: "กรอกชื่อและที่อยู่ออกใบกำกับ" }, { status: 400 });
+  if (!/^\d{13}$/.test(tax)) return NextResponse.json({ ok: false, error: "เลขประจำตัวผู้เสียภาษีต้องมี 13 หลัก" }, { status: 400 });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return NextResponse.json({ ok: false, error: "อีเมลไม่ถูกต้อง" }, { status: 400 });
+  const info = { kind, name, tax_id: tax, branch: kind === "corp" ? branch : null, address, email };
+  await addEvent(b.id, "tax_invoice_request", `customer:${me.sub}`, info);
+  const line = `${kind === "corp" ? "นิติบุคคล" : "บุคคล"} ${name} · ${tax}${info.branch ? ` · ${info.branch}` : ""} · ${address} · ส่ง ${email}`;
+  await notify({ user_type: "admin", user_id: "finance", kind: "tax_invoice", title: `ขอใบกำกับภาษี ${b.code}`, body: line, url: "/admin/orders" });
+  void sendEmail({ to: process.env.ADMIN_ALERT_EMAIL || process.env.ADMIN_EMAIL || ISSUER.email, subject: `ขอใบกำกับภาษี ${b.code}`, html: `<p>${line.replace(/[<>&]/g, "")}</p><p>ยอด ${(b.total_satang / 100).toLocaleString()} บาท</p>` }).catch(() => {});
+  return NextResponse.json({ ok: true });
+}

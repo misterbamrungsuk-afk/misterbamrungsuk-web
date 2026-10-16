@@ -33,7 +33,7 @@ const Back = ({ onClick, href }: { onClick?: () => void; href?: string }) => {
   return href ? <Link href={href} aria-label="ย้อนกลับ" className={cls} style={{ border: `1px solid ${LN}` }}>{ic}</Link> : <button type="button" onClick={onClick} aria-label="ย้อนกลับ" className={cls} style={{ border: `1px solid ${LN}` }}>{ic}</button>;
 };
 
-export function BookFlow({ p, price, avail, spas }: { p: P; price: Record<3 | 5, number>; avail: Avail; spas: Spa[] }) {
+export function BookFlow({ p, price, avail, spas, saved = [] }: { p: P; price: Record<3 | 5, number>; avail: Avail; spas: Spa[]; saved?: { id: string; label: string; detail: string; note: string; primary: boolean }[] }) {
   const router = useRouter();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [h, setH] = useState<3 | 5>(3);
@@ -156,6 +156,11 @@ export function BookFlow({ p, price, avail, spas }: { p: P; price: Record<3 | 5,
           ) : (
             <label className="flex flex-col gap-[5px] text-[12px] font-light text-[#d9c9b4]">{place === "condo" || place === "hotel" ? "ชื่ออาคาร / ห้อง" : `จุดนัดพบ (${meta[1]})`}
               <input value={detail} onChange={(e) => setDetail(e.target.value)} placeholder={meta[3]} maxLength={200} className="h-[46px] rounded-[14px] bg-[#211a18] px-[14px] text-[16px] text-[#f3ead9] outline-none placeholder:text-[#b5a596]" style={{ border: `1px solid ${LN}` }} />
+              {!!saved.length && (
+                <span className="flex flex-wrap gap-1.5 pt-1" aria-label="ที่อยู่ที่บันทึก">
+                  {saved.map((a) => { const v = [a.detail, a.note].filter(Boolean).join(" · ").slice(0, 200); return <button key={a.id} type="button" onClick={() => setDetail(v)} className="h-8 px-3 rounded-full text-[12.5px]" style={{ border: `1px solid ${detail === v ? GOLD : LN}`, color: detail === v ? GOLD : "#d9c9b4", background: "#211a18" }}>📍 {a.label}</button>; })}
+                </span>
+              )}
             </label>
           )}
           {bar(`${h} ชม. · ${place === "spa" ? spaObj?.name ?? "สปา" : meta[1]}`, <button type="button" disabled={!step1ok} onClick={() => setStep(2)} className={ctaCls} style={{ padding: "0 28px" }}>ถัดไป</button>)}

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getProfile } from "@/lib/customer/profile";
 import { currentCustomer, rateLimited } from "@/lib/customer/auth";
 import { BookingError, createBooking, listForCustomer, ptPublic, type Place, type PlaceType } from "@/lib/bookings";
 import { getLiveApplicants, publicId } from "@/lib/home/live";
@@ -45,6 +46,7 @@ export async function POST(req: Request) {
     roomFee = s.price;
   } else if (!detail) return NextResponse.json({ ok: false, error: "กรอกจุดนัดพบ / ที่อยู่" }, { status: 400 });
   const place: Place = { type, label: LABEL[type], detail: spa ? spa.name : detail, ...(spa ? { spa_id: spa.id, spa_name: spa.name } : {}) };
+  if ((await getProfile(me.sub, me.email).catch(() => null))?.blocked.includes(String(b.pid ?? ""))) return NextResponse.json({ ok: false, error: "คุณบล็อกเพื่อนคนนี้ไว้ · ยกเลิกบล็อกได้ที่ บัญชี › ผู้ใช้ที่บล็อก" }, { status: 403 });
   const hours = Number(b.hours) === 5 ? 5 : 3;
   try {
     const row = await createBooking({ sub: me.sub, email: me.email }, { pid: String(b.pid ?? ""), hours, starts_at: String(b.starts_at ?? ""), place, note: String(b.note ?? "") },

@@ -15,7 +15,7 @@ const T = (() => { const b = Buffer.from(JSON.stringify({ mb, exp: Date.now() + 
 const img = fs.readFileSync(WEB + '/public/brand/home/p-n04.jpg');
 (async () => {
   // route เดโมเดิมถูกลบ
-  for (const p of ['/api/notify/booking', '/api/noshow', '/api/interest', '/api/report', '/api/review', '/api/kyc', '/api/escrow/x', '/api/chat/x/messages', '/api/jobs/x/arrive', '/api/provider/strikes']) {
+  for (const p of ['/api/notify/booking', '/api/noshow', '/api/interest', '/api/review', '/api/kyc', '/api/escrow/x', '/api/chat/x/messages', '/api/jobs/x/arrive', '/api/provider/strikes']) {
     const r = await fetch(B + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
     ok('removed ' + p, r.status === 404 || r.status === 405, String(r.status));
   }

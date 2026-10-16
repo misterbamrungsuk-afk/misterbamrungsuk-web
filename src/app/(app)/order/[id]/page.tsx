@@ -71,6 +71,10 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="1.8" aria-hidden="true" className="shrink-0 mt-0.5"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
           <div className="flex-1"><div className="text-[13px] font-light text-[#d9c9b4]">เงินของคุณ {baht(b.total_satang)}</div><b className="font-semibold" style={{ color: GOLD }}>{money[0]}</b><div className="text-[12.5px] font-light text-[#d9c9b4]">{money[1]}{b.decline_reason && (b.status === "declined") ? ` · ${b.decline_reason}` : ""}</div></div>
         </div>
+        <div className="flex justify-between text-[13px] font-light">
+          {["accepted", "checked_in", "completed", "refunded", "cancel_requested", "disputed"].includes(b.status) ? <Link href={`/order/${b.id}/receipt`} style={{ color: GOLD }}>ใบเสร็จ / ใบกำกับภาษี ›</Link> : <span />}
+          <Link href={`/report?booking=${b.id}&nick=${encodeURIComponent(b.pt.nick)}`} className="text-[#d9c9b4] hover:text-[#f3ead9]">รายงานผู้ใช้</Link>
+        </div>
         {cancel && (
           <div className="rounded-[20px] bg-[#211a18] flex flex-col gap-3" style={{ padding: 14, border: "1px solid rgba(255,138,154,.4)" }}>
             <b className="font-semibold">{b.status === "requested" ? "ยกเลิกคำขอนี้?" : "ขอยกเลิกนัดที่ยืนยันแล้ว?"}</b>
@@ -84,6 +88,7 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
         )}
       </main>
       <div className="fixed left-0 right-0 bottom-0 mx-auto max-w-[480px] flex flex-col gap-2 z-40" style={{ padding: "12px 16px calc(18px + env(safe-area-inset-bottom))", background: "linear-gradient(180deg, rgba(23,18,17,0), #171211 25%)" }}>
+        {(b.status === "checked_in" || (b.status === "accepted" && Date.parse(b.starts_at) - Date.now() < 2 * 3600_000)) && <Link href={`/order/${b.id}/session`} className="h-12 rounded-[14px] text-[14px] grid place-items-center hover:text-[#e8c472]" style={{ border: "1px solid rgba(232,196,114,.55)", color: GOLD }}>เปิดหน้าระหว่างนัด (เวลา · SOS)</Link>}
         {(b.status === "checked_in" || (b.status === "accepted" && Date.parse(b.starts_at) <= Date.now())) && <Link href={`/order/${b.id}/complete`} className="h-[52px] rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold grid place-items-center hover:text-[#1b130b]">ยืนยันจบนัดและให้คะแนน</Link>}
         {(b.status === "accepted" || b.status === "checked_in") && <Link href={`/order/${b.id}/dispute`} className="h-12 rounded-[14px] text-[14px] grid place-items-center text-[#f3ead9] hover:text-[#f3ead9]" style={{ border: `1px solid ${LN}` }}>มีปัญหา? แจ้งเรา</Link>}
         {chatOpen && <Link href={`/chat/${b.id}`} className="h-[52px] rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold grid place-items-center hover:text-[#1b130b]">แชทกับ{b.pt.nick}</Link>}

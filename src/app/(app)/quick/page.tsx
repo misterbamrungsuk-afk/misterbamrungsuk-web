@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import { myBlocked } from "@/lib/customer/profile";
 import { getLivePeople, publicId } from "@/lib/home/live";
 import { priceOf } from "@/lib/home/people";
 import { currentCustomer } from "@/lib/customer/auth";
@@ -17,7 +18,8 @@ const LN = "rgba(243,234,217,0.07)";
 // ด้านล่าง: เพื่อนที่ว่างวันนี้ (แตะเพื่อเลือกเองแล้วนัดตามปกติ)
 export default async function QuickPage() {
   const [free, people, me] = await Promise.all([freeToday(), getLivePeople().catch(() => []), currentCustomer().catch(() => null)]);
-  const rows = free.map(({ a, note, hot }) => { const p = people.find((y) => y.id === publicId(a.mb_code)); return p ? { p, note, hot } : null; }).filter((r) => !!r);
+  const blocked = await myBlocked();
+  const rows = free.filter(({ a }) => !blocked.has(publicId(a.mb_code))).map(({ a, note, hot }) => { const p = people.find((y) => y.id === publicId(a.mb_code)); return p ? { p, note, hot } : null; }).filter((r) => !!r);
   const est = { 3: 0, 5: 0 };
   for (const { a } of free.slice(0, 20)) { est[3] = Math.max(est[3], (await priceFor(a, 3)) * 100); est[5] = Math.max(est[5], (await priceFor(a, 5)) * 100); }
 

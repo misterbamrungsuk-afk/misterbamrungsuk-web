@@ -1,4 +1,5 @@
 import { PEOPLE, priceOf } from "@/lib/home/people";
+import { myBlocked } from "@/lib/customer/profile";
 import { getLivePeople } from "@/lib/home/live";
 import { coordsOf, jitter } from "@/lib/home/geo";
 import { listPartners, stripSecret } from "@/lib/partner/store";
@@ -10,7 +11,8 @@ export const metadata = { title: "แผนที่ — Mister Bamrungsuk" };
 
 // บอร์ด C-Map — หมุดเพื่อน (รูปโปรไฟล์ · ตำแหน่งตามย่านที่แจ้ง ไม่ใช่ตำแหน่งจริง) + หมุดสปาพาร์ทเนอร์ · Part-Time จริงถ้ามี ไม่งั้นตัวอย่าง
 export default async function MapPage() {
-  const live = await getLivePeople().catch(() => []);
+  const [all, blocked] = await Promise.all([getLivePeople().catch(() => []), myBlocked()]);
+  const live = all.filter((p) => !blocked.has(p.id));
   const people: MapPerson[] = (live.length ? live : PEOPLE).map((p) => {
     const [lat, lng] = jitter(coordsOf(p.prov, p.area), p.id);
     return { id: p.id, nick: p.nick, age: p.age, img: p.img, pos: p.pos, rating: p.rating, top: p.top, acts: p.acts, area: p.prov ? `${p.area} · ${p.prov}` : p.area, price: priceOf(p), free: p.free, lat, lng, real: !!p.real };
