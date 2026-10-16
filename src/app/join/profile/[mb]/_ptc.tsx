@@ -106,12 +106,24 @@ export function EarnBoard({ price, tiers, top }: { price: number; tiers: Tier[];
 export type Acct = { short: string; logo: string; name: string; no: string };
 
 /** บอร์ด Withdraw — กรอกจำนวน · บัญชีปลายทาง · ค่าธรรมเนียม 3% + หัก ณ ที่จ่าย 3% · ขั้นต่ำ ฿500 */
-export function WithdrawForm({ avail, acct, bankHref }: { avail: number; acct: Acct | null; bankHref: string }) {
+export function WithdrawForm({ avail, acct, bankHref, mb, t, rules = { min: 500, feePct: 3, whtPct: 3 }, kycOk = true }: { avail: number; acct: Acct | null; bankHref: string; mb?: string; t?: string; rules?: { min: number; feePct: number; whtPct: number }; kycOk?: boolean }) {
+  const router = useRouter();
   const [amt, setAmt] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; t: string } | null>(null);
   const n = Math.floor(Number(amt) || 0);
-  const ok = n >= 500 && n <= avail && !!acct;
-  const hint = avail < 500 ? "ยอดถอนได้ไม่ถึงขั้นต่ำ ฿500" : n > avail ? `เกินยอดถอนได้ (${baht(avail)})` : n > 0 && n < 500 ? "ถอนขั้นต่ำ ฿500" : `ถอนได้สูงสุด ${baht(avail)}`;
-  const base = ok ? n : 0, fee = Math.round(base * 0.03), wht = Math.round(base * 0.03);
+  const ok = n >= rules.min && n <= avail && !!acct && kycOk;
+  const hint = !kycOk ? "ถอนได้หลังทีมงานอนุมัติเอกสารยืนยันตัวตน" : avail < rules.min ? `ยอดถอนได้ไม่ถึงขั้นต่ำ ${baht(rules.min)}` : n > avail ? `เกินยอดถอนได้ (${baht(avail)})` : n > 0 && n < rules.min ? `ถอนขั้นต่ำ ${baht(rules.min)}` : `ถอนได้สูงสุด ${baht(avail)}`;
+  const base = ok ? n : 0, fee = Math.round(base * rules.feePct / 100), wht = Math.round(base * rules.whtPct / 100);
+  const submit = async () => {
+    if (!ok || !mb) return;
+    setBusy(true); setMsg(null);
+    const r = await fetch("/api/pt/wallet", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mb, t, amount: n }) }).catch(() => null);
+    const d = await r?.json().catch(() => null);
+    setBusy(false);
+    if (d?.ok) { setAmt(""); setMsg({ ok: true, t: "ส่งคำขอถอนแล้ว · เงินเข้าบัญชีในรอบโอนถัดไป" }); router.refresh(); }
+    else setMsg({ ok: false, t: d?.error || "ถอนไม่สำเร็จ" });
+  };
   const allOn = n > 0 && n === avail;
   return (
     <>
@@ -137,15 +149,16 @@ export function WithdrawForm({ avail, acct, bankHref }: { avail: number; acct: A
       </div>
 
       <div className="rounded-[20px] bg-[#1b2322] flex flex-col gap-1.5" style={{ padding: "14px 16px" }}>
-        {([["จำนวนที่ถอน", baht(base), ""], ["ค่าธรรมเนียมแพลตฟอร์ม (3%)", "−" + baht(fee), "#e8936a"], ["ภาษีหัก ณ ที่จ่าย (3%)", "−" + baht(wht), "#e8936a"]] as const).map(([l, v, c]) => (
+        {([["จำนวนที่ถอน", baht(base), ""], [`ค่าธรรมเนียมแพลตฟอร์ม (${rules.feePct}%)`, "−" + baht(fee), "#e8936a"], [`ภาษีหัก ณ ที่จ่าย (${rules.whtPct}%)`, "−" + baht(wht), "#e8936a"]] as const).map(([l, v, c]) => (
           <div key={l} className="flex justify-between items-center gap-2.5 text-[14px]"><span className="text-[#b5a596]">{l}</span><span className="tabular-nums" style={{ color: c || undefined }}>{v}</span></div>
         ))}
         <div className="flex justify-between items-center gap-2.5 text-[15px] pt-1.5 mt-0.5"><span className="font-semibold">ได้รับจริง</span><span className="font-bold text-[18px] text-[#e8c472] tabular-nums">{baht(base - fee - wht)}</span></div>
-        <div className="text-[12.5px] text-[#b5a596] font-light">ระบบออกใบเสร็จ/ใบกำกับภาษีและใบหัก ณ ที่จ่ายให้อัตโนมัติ ดูได้ที่หน้ารายได้ · เงินเข้าภายใน 1 วันทำการ · ถอนขั้นต่ำ ฿500</div>
+        <div className="text-[12.5px] text-[#b5a596] font-light">ระบบออกใบเสร็จ/ใบกำกับภาษีและใบหัก ณ ที่จ่ายให้อัตโนมัติ ดูได้ที่หน้ารายได้ · เงินเข้าในรอบโอนถัดไป · ถอนขั้นต่ำ {baht(rules.min)}</div>
       </div>
 
-      <button type="button" disabled={!ok} className="w-full h-[54px] rounded-2xl text-[16px] font-semibold" style={{ background: ok ? GOLD : "rgba(243,234,217,0.08)", color: ok ? "#1b130b" : "#b5a596" }}>
-        {ok ? `ยืนยันถอน ${baht(n)} · รับ ${baht(n - fee - wht)}` : "ใส่จำนวนเงินที่ต้องการถอน"}
+      {msg && <p role="status" className="m-0 text-[13px]" style={{ color: msg.ok ? "#7fd6a3" : "#ff8a9a" }}>{msg.t}</p>}
+      <button type="button" disabled={!ok || busy} onClick={submit} className="w-full h-[54px] rounded-2xl text-[16px] font-semibold" style={{ background: ok ? GOLD : "rgba(243,234,217,0.08)", color: ok ? "#1b130b" : "#b5a596" }}>
+        {busy ? "กำลังส่งคำขอ…" : ok ? `ยืนยันถอน ${baht(n)} · รับ ${baht(n - fee - wht)}` : "ใส่จำนวนเงินที่ต้องการถอน"}
       </button>
     </>
   );

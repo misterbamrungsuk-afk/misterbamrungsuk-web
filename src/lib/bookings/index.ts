@@ -16,6 +16,7 @@ export type Booking = {
   parttime_id: string; parttime_mb: string; parttime_nick: string | null; starts_at: string; hours: 3 | 5; place: Place; note: string | null;
   price_satang: number; room_fee_satang: number; total_satang: number; status: Status; expires_at: string | null; decline_reason: string | null;
   accepted_at: string | null; declined_at: string | null; cancelled_at: string | null; checked_in_at: string | null; completed_at: string | null; created_at: string; updated_at: string;
+  pt_done_at?: string | null; tip_satang?: number; share_pct?: number | null; matured_at?: string | null; resolution?: Record<string, unknown> | null;
 };
 export type Message = { id: number; booking_id: string; sender_type: "customer" | "parttime" | "system"; sender_id: string | null; body: string; blocked: boolean; created_at: string; read_at: string | null };
 export type Notice = { id: number; user_type: "customer" | "parttime" | "admin"; user_id: string; kind: string; title: string; body: string | null; url: string | null; read_at: string | null; created_at: string };
@@ -35,7 +36,7 @@ export async function priceFor(a: Applicant, hours: 3 | 5): Promise<number> {
   const cfg = await getEarnings();
   const svc = a.package === "B" ? cfg.price3h.massage : cfg.price3h.eat;
   const p3 = extraOf(a).tier === "top" ? svc.top : svc.silver;
-  return hours === 5 ? Math.round(p3 * 1.5) : p3;
+  return hours === 5 ? Math.round(p3 * (cfg.fiveHourMultiplier || 1.5)) : p3;
 }
 
 const code = () => "BK-" + Math.random().toString(36).slice(2, 8).toUpperCase();
@@ -48,7 +49,7 @@ async function insertBooking(b: Omit<Booking, "id" | "created_at" | "updated_at"
   return data as Booking;
 }
 /** เปลี่ยนสถานะแบบมีเงื่อนไข (from) กันแข่งกันกด — คืน null ถ้าสถานะไม่ตรงแล้ว */
-async function transition(id: string, from: Status[], patch: Partial<Booking>): Promise<Booking | null> {
+export async function transition(id: string, from: Status[], patch: Partial<Booking>): Promise<Booking | null> {
   if (isDemo) {
     const b = demo.bookings.find((x) => x.id === id);
     if (!b || !from.includes(b.status)) return null;
@@ -81,6 +82,8 @@ export async function listForParttime(parttime_id: string): Promise<Booking[]> {
   const rows = isDemo ? demo.bookings.filter((b) => b.parttime_id === parttime_id) : (((await db().from("bookings").select().eq("parttime_id", parttime_id).order("starts_at", { ascending: false }).limit(100)).data ?? []) as Booking[]);
   return sweep(rows);
 }
+/** การจองของ Part-Time แบบไม่ประมวลผลอัตโนมัติ (โหมดสาธิต ใช้นับงานในเดือน) */
+export const rawForParttime = (parttime_id: string) => demo.bookings.filter((b) => b.parttime_id === parttime_id);
 export async function listAll(limit = 300): Promise<Booking[]> {
   const rows = isDemo ? demo.bookings.slice(0, limit) : (((await db().from("bookings").select().order("created_at", { ascending: false }).limit(limit)).data ?? []) as Booking[]);
   return sweep(rows);
@@ -89,6 +92,8 @@ export async function listAll(limit = 300): Promise<Booking[]> {
 /** คำขอที่เลยเวลาตอบ → หมดเวลา + คืนเงินที่กันไว้ (ทำตอนอ่าน ไม่ต้องพึ่ง cron) */
 async function sweep(rows: Booking[]): Promise<Booking[]> {
   const out: Booking[] = [];
+  const { sweepDay } = await import("./day");
+  rows = await sweepDay(rows);
   for (const b of rows) {
     if (b.status === "requested" && b.expires_at && Date.parse(b.expires_at) < Date.now()) {
       const r = await releaseHold(b, "expired", "system", { expires_at: b.expires_at }).catch((e) => { console.error("sweep", e); return null; });
@@ -132,6 +137,7 @@ export async function createBooking(cust: { sub: string; email: string; name?: s
     starts_at: new Date(start).toISOString(), hours: input.hours, place: input.place, note: input.note.slice(0, 300) || null,
     price_satang: price, room_fee_satang: total - price, total_satang: total, status: "requested", expires_at: new Date(Date.now() + RESPOND_MINUTES * 60_000).toISOString(),
     decline_reason: null, accepted_at: null, declined_at: null, cancelled_at: null, checked_in_at: null, completed_at: null,
+    pt_done_at: null, tip_satang: 0, share_pct: null, matured_at: null, resolution: null,
   });
   try {
     await post("hold", { type: "booking", id: b.id }, `hold:${b.id}`, `กันเงินนัด ${b.code}`, `customer:${cust.sub}`, [

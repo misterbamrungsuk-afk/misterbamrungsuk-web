@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import type { Topup } from "@/lib/wallet";
+import type { MoneySettings } from "@/lib/wallet/settings";
 
 type Acc = { owner_type: string; owner_id: string; bucket: string; balance: number };
 type Data = { topups: Topup[]; accounts: Acc[]; sum: number };
@@ -13,7 +14,8 @@ const VERDICT: Record<string, [string, string]> = { ok: ["✓ ยอดตรง
 const STATUS: Record<string, [string, string]> = { pending: ["รอตรวจ", "#eed58a"], credited: ["เข้ากระเป๋าแล้ว", "#4ade80"], rejected: ["ไม่ผ่าน", "#fca5a5"] };
 const OWNER: Record<string, string> = { customer: "ลูกค้า", parttime: "Part-Time", partner: "พาร์ทเนอร์", platform: "บริษัท" };
 
-export function WalletAdmin({ initial }: { initial: Data }) {
+export function WalletAdmin({ initial, money }: { initial: Data; money: MoneySettings }) {
+  const [m, setM] = useState(money);
   const [d, setD] = useState(initial);
   const [tab, setTab] = useState<"pending" | "all">("pending");
   const [msg, setMsg] = useState("");
@@ -79,6 +81,18 @@ export function WalletAdmin({ initial }: { initial: Data }) {
           })}
         </div>
       </section>
+
+      <form onSubmit={async (e) => { e.preventDefault(); await act({ action: "settings", money: m, note: "แก้ตั้งค่าการเงิน" }); }} className="rounded-2xl border p-4 flex flex-col gap-3 text-[13px]" style={{ borderColor: LINE, background: "#241717" }}>
+        <b>ตั้งค่าการเงิน</b>
+        <div className="grid gap-2 grid-cols-2 lg:grid-cols-6">
+          {([["minWithdraw", "ถอนขั้นต่ำ (บาท)"], ["feePct", "ค่าธรรมเนียมถอน (%)"], ["whtPct", "หัก ณ ที่จ่าย (%)"], ["releaseHours", "ปล่อยเงินหลังจบงาน (ชม.)"], ["autoCompleteHours", "จบงานอัตโนมัติ (ชม.)"], ["autoPayoutLimit", "วงเงินถอนอัตโนมัติ/วัน"]] as const).map(([k, l]) => (
+            <label key={k} className="flex flex-col gap-1"><span className="text-[#cdbfb3] text-[12px]">{l}</span><input type="number" step="any" value={m[k]} onChange={(e) => setM({ ...m, [k]: Number(e.target.value) })} className={inp} style={{ borderColor: LINE }} /></label>
+          ))}
+        </div>
+        <label className="flex flex-col gap-1"><span className="text-[#cdbfb3] text-[12px]">กติกายกเลิก (แสดงลูกค้า)</span><input value={m.cancelRule} onChange={(e) => setM({ ...m, cancelRule: e.target.value })} className={inp} style={{ borderColor: LINE }} /></label>
+        <button disabled={busy} className="self-start btn-red-lux h-10 px-5 rounded-full text-white font-semibold disabled:opacity-40">บันทึกตั้งค่า</button>
+        {!!m.history.length && <span className="text-[11.5px] text-[#7d6d6a]">แก้ล่าสุด {new Date(m.history[0].at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })} โดย {m.history[0].by}</span>}
+      </form>
 
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] items-start">
         <div className="rounded-2xl border overflow-x-auto" style={{ borderColor: LINE }}>

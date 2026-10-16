@@ -83,6 +83,8 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
         )}
       </main>
       <div className="fixed left-0 right-0 bottom-0 mx-auto max-w-[480px] flex flex-col gap-2 z-40" style={{ padding: "12px 16px calc(18px + env(safe-area-inset-bottom))", background: "linear-gradient(180deg, rgba(23,18,17,0), #171211 25%)" }}>
+        {(b.status === "checked_in" || (b.status === "accepted" && Date.parse(b.starts_at) <= Date.now())) && <Link href={`/order/${b.id}/complete`} className="h-[52px] rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold grid place-items-center hover:text-[#1b130b]">ยืนยันจบนัดและให้คะแนน</Link>}
+        {(b.status === "accepted" || b.status === "checked_in") && <Link href={`/order/${b.id}/dispute`} className="h-12 rounded-[14px] text-[14px] grid place-items-center text-[#f3ead9] hover:text-[#f3ead9]" style={{ border: `1px solid ${LN}` }}>มีปัญหา? แจ้งเรา</Link>}
         {chatOpen && <Link href={`/chat/${b.id}`} className="h-[52px] rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold grid place-items-center hover:text-[#1b130b]">แชทกับ{b.pt.nick}</Link>}
         {canCancel && !cancel && <button type="button" onClick={() => setCancel(true)} className="h-12 rounded-[14px] text-[14px] text-[#f3ead9]" style={{ border: `1px solid ${LN}` }}>{b.status === "requested" ? "ยกเลิกคำขอ" : "ยกเลิก / เปลี่ยนเวลา"}</button>}
         {!chatOpen && !canCancel && <Link href={`/book/${b.pt.pid}`} className="h-[52px] rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold grid place-items-center hover:text-[#1b130b]">จองอีกครั้ง</Link>}

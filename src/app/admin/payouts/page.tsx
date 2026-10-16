@@ -1,66 +1,64 @@
 "use client";
 
-import { site } from "@/lib/site";
-import { useState } from "react";
-import { Toast, baht } from "@/components/ui";
-import { PAYOUTS } from "@/lib/admin-data";
-import { Card, PageHead, Pill } from "../admin-nav";
+// ถอนเงิน Part-Time (ข้อมูลจริง) — รวมคำขอเป็นรอบโอน → ดาวน์โหลดไฟล์โอนกลุ่ม (CSV) → อัปโหลดในแอปธนาคาร → กด "โอนแล้ว" ทีละรายการ
+import { useEffect, useState } from "react";
 
-const GP = site.commissionPercent / 100;
+type W = { id: string; parttime_mb: string; amount_satang: number; fee_satang: number; wht_satang: number; net_satang: number; bank: { bank: string; account: string; name: string }; status: string; batch_id: string | null; note: string | null; created_at: string; paid_at: string | null };
+const GOLD = "#f0c75a";
+const LINE = "rgba(240,200,90,.38)";
+const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US", { maximumFractionDigits: 2 });
+const ST: Record<string, [string, string]> = { requested: ["รอรวมรอบ", "#eed58a"], batched: ["อยู่ในรอบโอน", "#eed58a"], paid: ["โอนแล้ว", "#4ade80"], failed: ["โอนไม่สำเร็จ", "#fca5a5"] };
 
 export default function AdminPayoutsPage() {
-  const [rows, setRows] = useState(PAYOUTS.map((p) => ({ ...p, paid: false, picked: !p.hold })));
-  const [toast, setToast] = useState("");
-  const flash = (m: string) => { setToast(m); setTimeout(() => setToast(""), 2200); };
-  const net = (g: number) => Math.round(g * (1 - GP));
-  const picked = rows.filter((r) => r.picked && !r.paid && !r.hold);
-  const total = picked.reduce((s, r) => s + net(r.gross), 0);
-
-  const payOne = (id: string) => {
-    setRows(rows.map((r) => (r.id === id ? { ...r, paid: true, picked: false } : r)));
-    flash("ยืนยันโอนแล้ว · บันทึกใน Audit log");
+  const [rows, setRows] = useState<W[] | null>(null);
+  const [err, setErr] = useState("");
+  const [msg, setMsg] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [fail, setFail] = useState<Record<string, string>>({});
+  const load = () => fetch("/api/admin/withdrawals", { cache: "no-store" }).then((r) => r.json()).then((d) => (d?.ok ? setRows(d.withdrawals) : (setErr(d?.error || "โหลดไม่สำเร็จ"), setRows([])))).catch(() => setRows([]));
+  useEffect(() => { load(); }, []);
+  const act = async (body: Record<string, unknown>) => {
+    setBusy(true);
+    const r = await fetch("/api/admin/withdrawals", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const d = await r.json().catch(() => ({}));
+    setBusy(false); setMsg(d.ok ? (body.action === "batch" ? `สร้างรอบโอน ${d.batch} · ${d.rows?.length ?? 0} รายการ` : "บันทึกแล้ว") : d.error ?? "บันทึกไม่สำเร็จ");
+    load();
   };
-  const payPicked = () => {
-    setRows(rows.map((r) => (r.picked && !r.hold ? { ...r, paid: true, picked: false } : r)));
-    flash(`โอนแล้ว ${picked.length} ราย รวม ${baht(total)}`);
-  };
-  const exportCsv = () => {
-    const csv = ["name,account,jobs,gross,gp,net", ...rows.filter((r) => !r.paid && !r.hold).map((r) => `${r.name},${r.account},${r.jobs},${r.gross},${r.gross * GP},${net(r.gross)}`)].join("\n");
-    const a = document.createElement("a");
-    a.href = `data:text/csv;charset=utf-8,${encodeURIComponent("﻿" + csv)}`;
-    a.download = "mord-payouts.csv";
-    a.click();
-  };
+  const req = (rows ?? []).filter((w) => w.status === "requested");
+  const batches = [...new Set((rows ?? []).filter((w) => w.status === "batched").map((w) => w.batch_id!))];
 
   return (
-    <>
-      <PageHead title="รับเงิน / โอนให้ Part-Time" sub={`ยอดหลังหักค่าธรรมเนียม ${site.commissionPercent}% · รายที่ติดข้อพิพาทถูกพักไว้`}
-        right={<button onClick={exportCsv} className="h-11 px-4 rounded-xl bg-gold-500 text-[#1a1206] font-semibold">ส่งออกไฟล์โอน (CSV)</button>} />
-      <div className="flex flex-col gap-2">
-        {rows.map((r) => (
-          <Card key={r.id} className="!p-3 flex flex-wrap items-center gap-3">
-            <input type="checkbox" aria-label={`เลือก ${r.name}`} checked={r.picked} disabled={r.paid || r.hold}
-              onChange={(e) => setRows(rows.map((x) => (x.id === r.id ? { ...x, picked: e.target.checked } : x)))} className="w-5 h-5 accent-[#e0a400]" />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={r.avatar} alt="" className="w-11 h-11 rounded-full object-cover" />
-            <div className="flex-1 min-w-[140px]"><p className="font-medium">{r.name}</p><p className="text-xs text-ink-300">{r.account} · {r.jobs} งาน</p></div>
-            <div className="text-right text-sm min-w-[120px]">
-              <p className="text-ink-300">{baht(r.gross)} − GP {baht(r.gross * GP)}</p>
-              <p className="font-display font-semibold text-lg text-gold-300">{baht(net(r.gross))}</p>
-            </div>
-            <div className="w-full sm:w-auto flex justify-end">
-              {r.hold ? <Pill tone="red">พักไว้ · ข้อพิพาท</Pill>
-                : r.paid ? <Pill tone="green">โอนแล้ว</Pill>
-                : <button onClick={() => payOne(r.id)} className="h-10 px-4 rounded-xl bg-crimson-500 text-white font-semibold text-sm">ยืนยันโอน</button>}
-            </div>
-          </Card>
-        ))}
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap gap-3 justify-between items-end">
+        <div><div className="text-[11px] tracking-[2.5px] font-semibold" style={{ color: GOLD }}>PAYOUTS</div><h1 className="mt-0.5 font-lux font-bold text-2xl">ถอนเงิน Part-Time</h1></div>
+        <button disabled={busy || !req.length} onClick={() => act({ action: "batch" })} className="btn-red-lux h-10 px-5 rounded-full text-white font-semibold disabled:opacity-40">รวมคำขอเป็นรอบโอน ({req.length})</button>
       </div>
-      <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-gold-500 bg-gold-500/5 px-4 py-3">
-        <span className="text-sm">เลือก {picked.length} ราย · รวมโอน <b className="font-display font-semibold text-xl text-gold-300">{baht(total)}</b></span>
-        <button onClick={payPicked} disabled={!picked.length} className="ml-auto btn-crimson h-11 px-5 rounded-xl font-semibold">ยืนยันโอนที่เลือก</button>
+      {err && <p className="text-sm text-[#fca5a5]">{err}</p>}
+      {msg && <p role="status" className="text-sm text-[#eed58a]">{msg}</p>}
+      {batches.map((bid) => (
+        <div key={bid} className="rounded-2xl border px-4 py-3 flex flex-wrap gap-3 justify-between items-center" style={{ borderColor: LINE, background: "#241717" }}>
+          <span>รอบโอน <b className="text-[#ffd76a]">{bid}</b> · {(rows ?? []).filter((w) => w.batch_id === bid && w.status === "batched").length} รายการ · {baht((rows ?? []).filter((w) => w.batch_id === bid && w.status === "batched").reduce((t, w) => t + w.net_satang, 0))}</span>
+          <a href={`/api/admin/withdrawals?csv=${bid}`} className="h-9 px-4 rounded-full border grid place-items-center text-[13px]" style={{ borderColor: LINE, color: "#d3c7bc" }}>ดาวน์โหลดไฟล์โอนกลุ่ม (CSV)</a>
+        </div>
+      ))}
+      <div className="rounded-2xl border overflow-x-auto text-[13px]" style={{ borderColor: LINE }}>
+        <div className="min-w-[860px]">
+          <div className="grid grid-cols-[110px_minmax(0,1fr)_110px_110px_130px_minmax(0,1.2fr)] px-3.5 py-2.5 bg-[#130e0e] text-[#7d6d6a] text-xs"><span>รหัส MB</span><span>บัญชี</span><span>ขอถอน</span><span>โอนสุทธิ</span><span>สถานะ</span><span>จัดการ</span></div>
+          {(rows ?? []).map((w) => (
+            <div key={w.id} className="grid grid-cols-[110px_minmax(0,1fr)_110px_110px_130px_minmax(0,1.2fr)] px-3.5 py-2.5 border-t items-center gap-1" style={{ borderColor: LINE }}>
+              <span className="text-[#ffd76a]">{w.parttime_mb}</span><span className="truncate pr-2">{w.bank.bank} · {w.bank.account} · {w.bank.name}</span><span>{baht(w.amount_satang)}</span><span className="font-semibold">{baht(w.net_satang)}</span>
+              <span style={{ color: ST[w.status][1] }}>{ST[w.status][0]}{w.batch_id ? <span className="block text-[11px] text-[#7d6d6a]">{w.batch_id}</span> : null}</span>
+              <span className="flex gap-1.5 items-center">{["requested", "batched"].includes(w.status) ? <>
+                <button disabled={busy} onClick={() => act({ action: "paid", id: w.id })} className="h-8 px-3 rounded-full text-[12px] font-semibold text-[#1a1206]" style={{ background: GOLD }}>โอนแล้ว</button>
+                <input value={fail[w.id] ?? ""} onChange={(e) => setFail({ ...fail, [w.id]: e.target.value })} placeholder="สาเหตุโอนไม่สำเร็จ" className="h-8 min-w-0 flex-1 rounded-lg bg-[#130e0e] border px-2 text-[12px]" style={{ borderColor: LINE }} />
+                <button disabled={busy || !(fail[w.id] ?? "").trim()} onClick={() => act({ action: "failed", id: w.id, note: fail[w.id] })} className="h-8 px-2.5 rounded-full border text-[12px] text-[#fecaca] disabled:opacity-40" style={{ borderColor: "rgba(201,40,61,.6)" }}>ไม่สำเร็จ</button>
+              </> : <span className="text-[12px] text-[#7d6d6a]">{w.paid_at ? new Date(w.paid_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" }) : w.note ?? ""}</span>}</span>
+            </div>
+          ))}
+          {rows !== null && !rows.length && <p className="border-t px-4 py-10 text-center text-[#7d6d6a]" style={{ borderColor: LINE }}>ยังไม่มีคำขอถอน</p>}
+        </div>
       </div>
-      <Toast show={!!toast}>{toast}</Toast>
-    </>
+      <p className="text-[12px] text-[#7d6d6a]">ขั้นตอน: รวมรอบ → ดาวน์โหลด CSV → อัปโหลดในแอปธนาคารบริษัท (โอนกลุ่ม) → กด &quot;โอนแล้ว&quot; ทีละรายการ · โอนไม่สำเร็จ = คืนยอดให้ Part-Time ถอนใหม่</p>
+    </div>
   );
 }

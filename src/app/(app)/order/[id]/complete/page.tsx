@@ -1,98 +1,75 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
-import { Suspense, use, useState } from "react";
+// บอร์ด C-Complete "จบนัด ให้คะแนน" — ดาว + แท็ก + ทิป (หักจากกระเป๋า) → ยืนยันจบนัด และโอนให้เพื่อน
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useI18n } from "@/i18n/provider";
-import { Toast, baht } from "@/components/ui";
-import { DEMO_MY_ORDERS, DEMO_POSTS } from "@/lib/demo-data";
+import { useRouter } from "next/navigation";
 
-// จบนัด: ให้คะแนน + ทิป + ปล่อยเงินให้เพื่อน
-const TAGS = { th: ["ตรงเวลา", "แรงกำลังดี", "สุภาพ", "สะอาด", "อธิบายดี"], en: ["On time", "Good pressure", "Polite", "Clean", "Explains well"] };
-const TIPS = [0, 40, 80, 100];
-
-function CompleteInner({ id }: { id: string }) {
-  const { lang } = useI18n();
-  const th = lang === "th";
-  const router = useRouter();
-  const sp = useSearchParams();
-  const order = DEMO_MY_ORDERS.find((o) => o.id === id) ?? DEMO_MY_ORDERS[0];
-  const post = DEMO_POSTS.find((p) => p.member.id === order.provider.id);
-  const extra = Number(sp.get("extra") ?? 0);
-  const extendCost = Math.round((((post?.price3h ?? 1800) / 3) * 30) / 60 / 10) * 10;
-
-  const [stars, setStars] = useState(0);
-  const [tags, setTags] = useState<number[]>([]);
-  const [tip, setTip] = useState(80);
-  const [text, setText] = useState("");
-  const [toast, setToast] = useState("");
-  const release = order.totalAmount - order.discount + (extra / 30) * extendCost + tip;
-
-  const confirm = () => {
-    setToast(th ? `ปล่อยเงิน ${baht(release)} ให้ ${order.provider.name} แล้ว · ขอบคุณสำหรับรีวิว` : `Released ${baht(release)} · thanks for your review`);
-    setTimeout(() => router.push("/orders"), 1400);
-  };
-
-  return (
-    <main className="px-4 pt-8 pb-6 flex flex-col gap-5 min-h-dvh">
-      <div className="flex flex-col items-center text-center gap-1">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={order.provider.avatar} alt="" className="w-20 h-20 rounded-full object-cover border-2 border-gold-500" />
-        <h1 className="text-2xl font-semibold mt-2">{th ? `นัดกับ${order.provider.name}จบแล้ว` : `Session with ${order.provider.name} done`}</h1>
-        <p className="text-sm text-ink-300">{order.id.toUpperCase()}</p>
-      </div>
-
-      <section className="flex flex-col items-center gap-2">
-        <p className="text-sm">{th ? "ให้คะแนนเพื่อน" : "Rate your companion"}</p>
-        <div className="flex gap-1" role="radiogroup" aria-label={th ? "คะแนน" : "Rating"}>
-          {[1, 2, 3, 4, 5].map((n) => (
-            <button key={n} onClick={() => setStars(n)} role="radio" aria-checked={stars === n} aria-label={`${n} ${th ? "ดาว" : "stars"}`}
-              className={`w-11 h-11 grid place-items-center text-3xl transition ${n <= stars ? "text-amber-500" : "text-ink-600"}`}>★</button>
-          ))}
-        </div>
-        <div className="flex flex-wrap justify-center gap-2">
-          {TAGS[th ? "th" : "en"].map((t, i) => (
-            <button key={t} onClick={() => setTags(tags.includes(i) ? tags.filter((x) => x !== i) : [...tags, i])} aria-pressed={tags.includes(i)}
-              className={`chip h-9 px-3.5 ${tags.includes(i) ? "chip-red" : ""}`}>{t}</button>
-          ))}
-        </div>
-        <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder={th ? "เล่าประสบการณ์ให้คนอื่นรู้ (ไม่บังคับ)" : "Tell others about it (optional)"} aria-label={th ? "รีวิว" : "Review"}
-          className="input-dark h-20 resize-none mt-1" />
-      </section>
-
-      <section>
-        <p className="text-sm mb-2">{th ? "ทิปให้เพื่อน" : "Tip"} <span className="text-xs text-ink-300">· {th ? "เพื่อนได้เต็ม 100%" : "100% goes to your companion"}</span></p>
-        <div className="grid grid-cols-4 gap-2">
-          {TIPS.map((v) => (
-            <button key={v} onClick={() => setTip(v)} aria-pressed={tip === v}
-              className={`h-12 rounded-xl border font-display ${tip === v ? "border-gold-500 bg-gold-500/10 text-gold-300" : "border-ink-600"}`}>{v ? baht(v) : th ? "ไม่ให้" : "None"}</button>
-          ))}
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-gold-500 bg-gold-500/5 p-4 text-sm flex flex-col gap-1.5">
-        <div className="flex justify-between"><span className="text-ink-300">{th ? "ค่าบริการ" : "Service"}</span><span>{baht(order.totalAmount - order.discount)}</span></div>
-        {extra > 0 && <div className="flex justify-between"><span className="text-ink-300">{th ? `ต่อเวลา ${extra} นาที` : `Extended ${extra} min`}</span><span>{baht((extra / 30) * extendCost)}</span></div>}
-        {tip > 0 && <div className="flex justify-between"><span className="text-ink-300">{th ? "ทิป" : "Tip"}</span><span className="text-gold-300">+{baht(tip)}</span></div>}
-        <div className="flex justify-between border-t border-gold-500/40 pt-2 mt-1"><b className="font-medium">{th ? "ปล่อยเงินให้เพื่อน" : "Release to companion"}</b><b className="font-display font-semibold text-xl text-gold-300">{baht(release)}</b></div>
-      </section>
-
-      <div className="mt-auto flex flex-col gap-2">
-        <button onClick={confirm} disabled={!stars} className="btn-crimson h-14 rounded-2xl font-display font-semibold text-lg">
-          {stars ? (th ? "ยืนยันและปล่อยเงิน" : "Confirm & release") : th ? "ให้ดาวก่อน" : "Rate first"}
-        </button>
-        <div className="flex justify-between text-sm">
-          <Link href={`/order/${id}/dispute`} className="min-h-10 inline-flex items-center text-ink-300">{th ? "มีปัญหา? เปิดข้อพิพาท" : "Problem? Open a dispute"}</Link>
-          {post && <Link href={`/book/${post.id}`} className="min-h-10 inline-flex items-center text-gold-600">{th ? "จองคนนี้อีกครั้ง" : "Book again"}</Link>}
-        </div>
-        <p className="text-xs text-ink-300 text-center">{th ? "ถ้าไม่ยืนยันภายใน 24 ชม. ระบบจะปล่อยเงินอัตโนมัติ" : "Auto-released after 24h if not confirmed"}</p>
-      </div>
-      <Toast show={!!toast}>{toast}</Toast>
-    </main>
-  );
-}
+const GOLD = "#e8c472";
+const LN = "rgba(243,234,217,0.07)";
+const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US");
+const TAGS = ["ตรงเวลา", "คุยสนุก", "สุภาพ", "ดูแลดี", "ถ่ายรูปสวย"];
+const LBL = ["", "ไม่ประทับใจ", "พอใช้", "โอเค", "ดีมาก", "ประทับใจสุด ๆ"];
+type B = { id: string; status: string; starts_at: string; hours: number; total_satang: number; pt: { pid: string; nick: string; img: string } };
 
 export default function CompletePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  return <Suspense><CompleteInner id={id} /></Suspense>;
+  const router = useRouter();
+  const [b, setB] = useState<B | null>(null);
+  const [rating, setRating] = useState(5);
+  const [tags, setTags] = useState<string[]>(["ตรงเวลา"]);
+  const [tip, setTip] = useState(0);
+  const [again, setAgain] = useState("yes");
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  useEffect(() => { fetch(`/api/bookings/${id}`, { cache: "no-store" }).then((r) => r.json()).then((d) => (d?.ok ? setB(d.booking) : setErr(d?.error || "ไม่พบการจอง"))).catch(() => setErr("โหลดไม่สำเร็จ")); }, [id]);
+  const submit = async () => {
+    setBusy(true); setErr("");
+    const r = await fetch(`/api/bookings/${id}/complete`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ rating, tags, again, body: text, tip }) }).catch(() => null);
+    const d = await r?.json().catch(() => null);
+    setBusy(false);
+    if (d?.ok) return router.push(`/order/${id}`);
+    setErr(d?.error || "ยืนยันไม่สำเร็จ");
+  };
+  if (!b) return <p className="text-center" style={{ padding: "80px 24px", color: err ? "#ff8a9a" : "#b5a596" }}>{err || "กำลังโหลด…"}</p>;
+  const s = new Date(b.starts_at), e = new Date(s.getTime() + b.hours * 3600_000);
+  const hm = (d: Date) => d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+  const can = ["accepted", "checked_in"].includes(b.status);
+
+  return (
+    <div className="min-h-dvh pb-[150px]" style={{ background: "#171211" }}>
+      <div className="flex flex-col items-center text-center" style={{ padding: "30px 20px 0" }}>
+        <img src={b.pt.img} alt="" className="w-[84px] h-[84px] rounded-full object-cover" style={{ border: `2px solid ${GOLD}` }} />
+        <h1 className="m-0 mt-3 font-semibold text-[24px]">จบนัดกับ{b.pt.nick}แล้ว</h1>
+        <div className="text-[13px] font-light text-[#d9c9b4]">{b.hours} ชม. · {hm(s)}–{hm(e)}</div>
+      </div>
+      {!can ? <p className="text-center text-[14px] text-[#d9c9b4]" style={{ padding: 24 }}>นัดนี้ยืนยันจบไปแล้ว หรืออยู่ระหว่างทีมงานพิจารณา · <Link href={`/order/${id}`} style={{ color: GOLD }}>ดูสถานะ</Link></p> : <>
+        <div className="flex flex-col items-center gap-2" style={{ margin: "18px 16px 0" }}>
+          <div className="text-[14px]">วันนี้กับ{b.pt.nick}เป็นอย่างไรบ้าง</div>
+          <div className="flex gap-2">{[1, 2, 3, 4, 5].map((n) => <button key={n} type="button" onClick={() => setRating(n)} aria-label={`${n} ดาว`} style={{ color: n <= rating ? GOLD : LN }}><svg viewBox="0 0 24 24" width="38" height="38" aria-hidden="true"><path d="m12 2.5 2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z" fill="currentColor" /></svg></button>)}</div>
+          <div className="text-[12px] font-light" style={{ color: GOLD }}>{rating} ดาว · {LBL[rating]}</div>
+          <div className="flex flex-wrap gap-1.5 justify-center mt-1">{TAGS.map((t) => { const on = tags.includes(t); return <button key={t} type="button" aria-pressed={on} onClick={() => setTags(on ? tags.filter((x) => x !== t) : [...tags, t])} className="h-8 px-3 rounded-full text-[12px]" style={{ border: `1px solid ${on ? "#f3ead9" : LN}`, background: on ? "#f3ead9" : "transparent", color: on ? "#171211" : "#f3ead9" }}>{t}</button>; })}</div>
+        </div>
+        <div className="flex flex-col gap-2" style={{ margin: "18px 16px 0" }}>
+          <textarea value={text} onChange={(e) => setText(e.target.value)} maxLength={500} placeholder="เล่าสั้น ๆ ให้คนอื่นได้รู้ (ไม่บังคับ)" className="h-[76px] rounded-[14px] bg-[#251d1b] p-3 text-[16px] text-[#f3ead9] outline-none resize-none placeholder:text-[#b5a596]" style={{ border: `1px solid ${LN}` }} />
+          <div className="flex gap-1.5" role="radiogroup" aria-label="นัดซ้ำไหม">{[["yes", "นัดอีกแน่นอน"], ["maybe", "อาจจะ"], ["no", "ไม่นัดซ้ำ"]].map(([k, l]) => <button key={k} type="button" role="radio" aria-checked={again === k} onClick={() => setAgain(k)} className="flex-1 h-9 rounded-xl text-[12px]" style={{ border: `1px solid ${again === k ? GOLD : LN}`, color: again === k ? GOLD : "#f3ead9" }}>{l}</button>)}</div>
+        </div>
+        <div style={{ margin: "20px 16px 0" }}>
+          <div className="text-[14px] mb-2">ให้ทิป{b.pt.nick} <span className="text-[12px] font-light text-[#d9c9b4]">· หักจากกระเป๋าเงิน</span></div>
+          <div className="flex gap-2" role="radiogroup">{[0, 100, 200, 300].map((v) => <button key={v} type="button" role="radio" aria-checked={tip === v} onClick={() => setTip(v)} className="flex-1 h-[46px] rounded-xl text-[15px]" style={{ border: `1px solid ${tip === v ? GOLD : LN}`, color: tip === v ? GOLD : "#f3ead9", background: tip === v ? "rgba(232,196,114,0.16)" : "transparent" }}>{v ? `฿${v}` : "ไม่ให้"}</button>)}</div>
+        </div>
+        <div className="flex justify-between items-center rounded-2xl" style={{ margin: "18px 16px 0", padding: 14, border: `1px solid ${GOLD}`, background: "rgba(212,175,55,.05)" }}>
+          <span className="text-[14px]">ยอดที่พักไว้กับเรา</span>
+          <span className="text-right"><b className="font-semibold text-[22px]" style={{ color: GOLD }}>{baht(b.total_satang)}</b><span className="block text-[12px] font-light text-[#d9c9b4]">{tip ? `+ ทิป ฿${tip} จากกระเป๋า` : "ไม่รวมทิป"}</span></span>
+        </div>
+        {err && <p role="alert" className="text-[13px] text-[#ff8a9a]" style={{ margin: "12px 16px 0" }}>{err}</p>}
+        <div className="fixed left-0 right-0 bottom-0 mx-auto max-w-[480px] flex flex-col gap-[10px]" style={{ padding: "12px 16px calc(24px + env(safe-area-inset-bottom))", background: "linear-gradient(180deg, rgba(23,18,17,0), #171211 25%)" }}>
+          <button type="button" disabled={busy} onClick={submit} className="h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[17px] disabled:opacity-50">{busy ? "กำลังยืนยัน…" : `ยืนยันจบนัด และโอนให้${b.pt.nick}`}</button>
+          <div className="flex justify-between text-[13px] font-light"><Link href={`/order/${id}/dispute`} className="text-[#d9c9b4]">มีปัญหา? แจ้งเราได้</Link><Link href={`/book/${b.pt.pid}`} style={{ color: GOLD }}>จอง{b.pt.nick}อีกครั้ง</Link></div>
+        </div>
+      </>}
+    </div>
+  );
 }

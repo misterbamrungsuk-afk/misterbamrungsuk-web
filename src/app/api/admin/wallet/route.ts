@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
+import { getMoney, saveMoney, validateMoney } from "@/lib/wallet/settings";
 import { WalletError, adjust, allBalances, creditTopup, getTopup, ledgerSum, listTopups, rejectTopup, type OwnerType } from "@/lib/wallet";
 
 export const runtime = "nodejs";
@@ -14,8 +15,8 @@ async function admin() {
 // หลังบ้านกระเป๋าเงิน: คิวเติมเงิน · ยอดทุกบัญชี · ผลรวม ledger (ต้อง = 0)
 export async function GET() {
   if (!(await admin())) return NextResponse.json({ ok: false }, { status: 401 });
-  const [topups, accounts, sum] = await Promise.all([listTopups({ limit: 200 }), allBalances(), ledgerSum()]);
-  return NextResponse.json({ ok: true, topups, accounts, sum });
+  const [topups, accounts, sum, money] = await Promise.all([listTopups({ limit: 200 }), allBalances(), ledgerSum(), getMoney()]);
+  return NextResponse.json({ ok: true, topups, accounts, sum, money });
 }
 
 // { action: "approve" | "reject", id, reason? } · { action: "adjust", owner_type, owner_id, bucket, amount_baht, reason, idem }
@@ -35,6 +36,13 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: true, row: await rejectTopup(t.id, actor, reason) });
       }
       return NextResponse.json({ ok: true, row: await creditTopup(t, actor) });
+    }
+    if (b.action === "settings") {
+      const m = b.money as Record<string, unknown> | undefined;
+      const next = { minWithdraw: Number(m?.minWithdraw), feePct: Number(m?.feePct), whtPct: Number(m?.whtPct), releaseHours: Number(m?.releaseHours), autoCompleteHours: Number(m?.autoCompleteHours), autoPayoutLimit: Number(m?.autoPayoutLimit), cancelRule: String(m?.cancelRule ?? "").slice(0, 300) };
+      const err = validateMoney(next);
+      if (err) return NextResponse.json({ ok: false, error: err }, { status: 400 });
+      return NextResponse.json({ ok: true, money: await saveMoney(next, s.email, String(b.note ?? "").slice(0, 200)) });
     }
     if (b.action === "adjust") {
       const owner_type = String(b.owner_type) as OwnerType;

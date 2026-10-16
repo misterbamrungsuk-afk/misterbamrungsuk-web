@@ -1,88 +1,85 @@
 "use client";
 
-import { site } from "@/lib/site";
-import { useMemo, useState } from "react";
-import Link from "next/link";
-import { Toast, baht } from "@/components/ui";
-import { ADMIN_ORDERS, STATUS_LABEL, type OrderStatus } from "@/lib/admin-data";
-import { Card, PageHead, Pill } from "../admin-nav";
-import { NoShowClaims } from "./noshow-claims";
+// การจองทั้งหมด (ข้อมูลจริง) — กรองตามสถานะ · ตัดสินคำขอยกเลิก / ข้อพิพาท (คืนลูกค้า % · ส่วนที่เหลือแบ่งตามปกติ)
+import { useEffect, useMemo, useState } from "react";
 
-const FILTERS: [string, OrderStatus | ""][] = [["ทั้งหมด", ""], ["เงินถูกกัน", "held"], ["ระหว่างนัด", "in_progress"], ["รอปล่อยเงิน", "awaiting_release"], ["ข้อพิพาท", "disputed"]];
+type B = { id: string; code: string; status: string; customer_email: string | null; parttime_mb: string; parttime_nick: string | null; starts_at: string; hours: number; total_satang: number; place: { label: string; detail: string }; decline_reason: string | null; resolution: Record<string, unknown> | null; created_at: string };
+const GOLD = "#f0c75a";
+const LINE = "rgba(240,200,90,.38)";
+const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US");
+const ST: Record<string, [string, string]> = {
+  requested: ["รอ Part-Time ตอบ", "#eed58a"], accepted: ["ยืนยันแล้ว", "#4ade80"], checked_in: ["ระหว่างนัด", "#4ade80"], completed: ["จบงาน", "#cdbfb3"],
+  cancel_requested: ["ขอยกเลิก · รอตัดสิน", "#fca5a5"], disputed: ["ข้อพิพาท · รอตัดสิน", "#fca5a5"], declined: ["ปฏิเสธ", "#7d6d6a"], expired: ["หมดเวลา", "#7d6d6a"], cancelled: ["ยกเลิก", "#7d6d6a"], refunded: ["คืนเงินแล้ว", "#7d6d6a"],
+};
+const F: [string, string][] = [["todo", "รอตัดสิน"], ["live", "กำลังดำเนินการ"], ["completed", "จบงาน"], ["closed", "ยกเลิก/คืนเงิน"], ["all", "ทั้งหมด"]];
+const match = (b: B, f: string) => f === "all" ? true : f === "todo" ? ["cancel_requested", "disputed"].includes(b.status) : f === "live" ? ["requested", "accepted", "checked_in"].includes(b.status) : f === "completed" ? b.status === "completed" : ["declined", "expired", "cancelled", "refunded"].includes(b.status);
+const fmt = (iso: string) => new Date(iso).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", dateStyle: "short", timeStyle: "short" });
 
 export default function AdminOrdersPage() {
-  const [orders, setOrders] = useState(ADMIN_ORDERS);
-  const [filter, setFilter] = useState<OrderStatus | "">("");
-  const [q, setQ] = useState("");
-  const [selId, setSelId] = useState(ADMIN_ORDERS[0].id);
-  const [toast, setToast] = useState("");
-  const [noShow, setNoShow] = useState(false);
-
-  const list = useMemo(() => orders.filter((o) => (!filter || o.status === filter) && (!q || (o.id + o.customer + o.partTime).toLowerCase().includes(q.toLowerCase()))), [orders, filter, q]);
-  const sel = orders.find((o) => o.id === selId);
-  const setStatus = (status: OrderStatus, msg: string) => {
-    setOrders(orders.map((o) => (o.id === selId ? { ...o, status } : o)));
-    setToast(msg);
-    setTimeout(() => setToast(""), 2200);
+  const [rows, setRows] = useState<B[] | null>(null);
+  const [err, setErr] = useState("");
+  const [f, setF] = useState("todo");
+  const [sel, setSel] = useState<string | null>(null);
+  const [pct, setPct] = useState(100);
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+  const load = () => fetch("/api/admin/bookings", { cache: "no-store" }).then((r) => r.json()).then((d) => (d?.ok ? setRows(d.bookings) : (setErr(d?.error || "โหลดไม่สำเร็จ"), setRows([])))).catch(() => setRows([]));
+  useEffect(() => { load(); }, []);
+  const shown = useMemo(() => (rows ?? []).filter((b) => match(b, f)), [rows, f]);
+  const cur = (rows ?? []).find((b) => b.id === sel) ?? shown[0] ?? null;
+  const resolve = async (action: "refund" | "reject") => {
+    if (!cur) return;
+    setBusy(true);
+    const r = await fetch("/api/admin/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: cur.id, action, refund_pct: pct, note }) });
+    const d = await r.json().catch(() => ({}));
+    setBusy(false); setMsg(d.ok ? "บันทึกผลตัดสินแล้ว" : d.error ?? "บันทึกไม่สำเร็จ");
+    if (d.ok) { setNote(""); load(); }
   };
-  const open = sel && !["released", "cancelled"].includes(sel.status);
 
   return (
-    <>
-      <PageHead title="ตรวจงาน" sub="ออเดอร์ทั้งหมดพร้อม GP" right={<input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ค้นหา #ออเดอร์ / ชื่อ" aria-label="ค้นหาออเดอร์" className="input-dark h-11 w-64 max-w-full" />} />
-      <div className="flex gap-2 overflow-x-auto no-scrollbar mb-3">
-        {FILTERS.map(([l, v]) => (
-          <button key={l} onClick={() => { setFilter(v); setNoShow(false); }} className={`chip whitespace-nowrap h-9 px-3.5 ${!noShow && filter === v ? "chip-red" : ""}`}>{l}</button>
-        ))}
-        <button onClick={() => setNoShow(true)} className={`chip whitespace-nowrap h-9 px-3.5 ${noShow ? "chip-red" : ""}`}>คำร้องผิดนัด</button>
-      </div>
-      {noShow ? <NoShowClaims onToast={(m) => { setToast(m); setTimeout(() => setToast(""), 2200); }} /> : (
-      <div className="grid lg:grid-cols-[1fr_340px] gap-3">
-        <Card className="!p-2 flex flex-col gap-1">
-          {list.length === 0 && <p className="text-center text-ink-300 py-10">ไม่พบออเดอร์</p>}
-          {list.map((o) => {
-            const st = STATUS_LABEL[o.status];
-            return (
-              <button key={o.id} onClick={() => setSelId(o.id)} className={`flex items-center gap-3 p-3 rounded-xl text-left ${o.id === selId ? "bg-ink-700 ring-1 ring-gold-500" : "hover:bg-ink-700/50"}`}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={o.avatar} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
-                <span className="flex-1 min-w-0">
-                  <span className="block text-sm font-medium truncate">{o.id} · {o.service}</span>
-                  <span className="block text-xs text-ink-300 truncate">{o.customer} → {o.partTime} · {o.when}</span>
-                </span>
-                <span className="text-right shrink-0">
-                  <span className="block font-display font-semibold">{baht(o.amount)}</span>
-                  <Pill tone={st.tone}>{st.th}</Pill>
-                </span>
+    <div className="flex flex-col lg:flex-row gap-4 items-start">
+      <div className="flex-1 min-w-0 w-full flex flex-col gap-3.5">
+        <div><div className="text-[11px] tracking-[2.5px] font-semibold" style={{ color: GOLD }}>BOOKINGS</div><h1 className="mt-0.5 font-lux font-bold text-2xl">การจอง · เงินพักไว้</h1></div>
+        <div className="flex flex-wrap gap-1.5">
+          {F.map(([k, l]) => { const n = (rows ?? []).filter((b) => match(b, k)).length; const on = f === k; return <button key={k} onClick={() => setF(k)} aria-pressed={on} className="h-9 px-3.5 rounded-full border text-[12.5px] font-semibold" style={{ borderColor: on ? GOLD : LINE, background: on ? GOLD : "transparent", color: on ? "#1a1206" : "#d3c7bc" }}>{l} {n}</button>; })}
+        </div>
+        {err && <p className="text-sm text-[#fca5a5]">{err} · ต้องรัน supabase/booking/0001_booking.sql</p>}
+        {msg && <p role="status" className="text-sm text-[#eed58a]">{msg}</p>}
+        <div className="rounded-2xl border overflow-x-auto text-[13px]" style={{ borderColor: LINE }}>
+          <div className="min-w-[720px]">
+            <div className="grid grid-cols-[100px_minmax(0,1.2fr)_110px_130px_100px_150px] px-3.5 py-2.5 bg-[#130e0e] text-[#7d6d6a] text-xs"><span>รหัส</span><span>ลูกค้า → Part-Time</span><span>ยอด</span><span>เวลานัด</span><span>ชม.</span><span>สถานะ</span></div>
+            {shown.map((b) => (
+              <button key={b.id} onClick={() => { setSel(b.id); setMsg(""); }} className="w-full grid grid-cols-[100px_minmax(0,1.2fr)_110px_130px_100px_150px] px-3.5 py-[11px] border-t text-left items-center" style={{ borderColor: LINE, background: cur?.id === b.id ? "rgba(240,200,90,.16)" : "transparent" }}>
+                <span className="text-[#ffd76a]">{b.code}</span><span className="truncate pr-2">{b.customer_email} → {b.parttime_nick} ({b.parttime_mb})</span><span>{baht(b.total_satang)}</span><span>{fmt(b.starts_at)}</span><span>{b.hours}</span><span style={{ color: (ST[b.status] ?? [b.status, "#cdbfb3"])[1] }}>{(ST[b.status] ?? [b.status])[0]}</span>
               </button>
-            );
-          })}
-        </Card>
-        {sel && (
-          <Card className="flex flex-col gap-3 h-fit">
-            <div className="flex justify-between items-center"><b className="font-display font-semibold text-lg">{sel.id}</b><Pill tone={STATUS_LABEL[sel.status].tone}>{STATUS_LABEL[sel.status].th}</Pill></div>
-            <p className="text-sm text-ink-300">{sel.customer} → {sel.partTime} · {sel.place} · {sel.when}</p>
-            <div className="rounded-xl bg-ink-700 p-3 text-sm flex flex-col gap-1.5">
-              <div className="flex justify-between"><span className="text-ink-300">ยอดรวม</span><span>{baht(sel.amount)}</span></div>
-              <div className="flex justify-between"><span className="text-ink-300">Part-Time ได้รับ ({100 - site.commissionPercent}%)</span><span>{baht(sel.amount * (100 - site.commissionPercent) / 100)}</span></div>
-              <div className="flex justify-between text-gold-300"><span>ค่าธรรมเนียมแพลตฟอร์ม {site.commissionPercent}%</span><span>{baht((sel.amount * site.commissionPercent) / 100)}</span></div>
-            </div>
-            <p className="font-display font-medium">ไทม์ไลน์เงิน</p>
-            <ol className="text-sm flex flex-col gap-2 border-l border-ink-600 pl-4">
-              <li>สร้างออเดอร์ · ลูกค้าชำระเต็มจำนวน (เงินพักไว้กับเรา)</li>
-              <li>ตรวจสลิปผ่าน · เงินถูกกัน</li>
-              <li className={sel.status === "released" ? "" : "text-ink-300"}>{sel.status === "cancelled" ? "ยกเลิก · คืนเงินลูกค้า" : "ปล่อยเงินให้ผู้ให้บริการ (หรืออัตโนมัติใน 24 ชม.)"}</li>
-            </ol>
-            <Link href="/escrow/o1" className="text-sm text-gold-600 min-h-9 inline-flex items-center">ดูหน้าเงินพักของออเดอร์ →</Link>
-            <div className="flex gap-2">
-              <button onClick={() => setStatus("cancelled", `ยกเลิก ${sel.id} และคืนเงินลูกค้าแล้ว`)} disabled={!open} className="flex-1 h-11 rounded-xl border border-crimson-500 text-crimson-200 disabled:opacity-40">ยกเลิก + คืนเงิน</button>
-              <button onClick={() => setStatus("released", `ปิดงาน ${sel.id} · ปล่อยเงินให้ผู้ให้บริการแล้ว`)} disabled={!open} className="flex-1 h-11 rounded-xl bg-crimson-500 text-white font-semibold disabled:opacity-40">ปิดงาน</button>
-            </div>
-          </Card>
-        )}
+            ))}
+            {rows !== null && !shown.length && <p className="border-t px-4 py-10 text-center text-[#7d6d6a]" style={{ borderColor: LINE }}>ไม่มีรายการในหมวดนี้</p>}
+          </div>
+        </div>
       </div>
-      )}
-      <Toast show={!!toast}>{toast}</Toast>
-    </>
+      <aside className="w-full lg:w-[320px] shrink-0 p-[18px] rounded-[18px] border bg-[#241717] flex flex-col gap-2.5 text-[13px]" style={{ borderColor: "rgba(245,210,110,.85)" }}>
+        {!cur ? <p className="py-10 text-center text-[#7d6d6a]">เลือกการจอง</p> : <>
+          <div className="font-lux font-semibold text-[17px]">{cur.code}</div>
+          {[["สถานะ", (ST[cur.status] ?? [cur.status])[0]], ["ลูกค้า", cur.customer_email ?? "-"], ["Part-Time", `${cur.parttime_nick} · ${cur.parttime_mb}`], ["เวลานัด", `${fmt(cur.starts_at)} · ${cur.hours} ชม.`], ["สถานที่", `${cur.place.label} ${cur.place.detail}`], ["ยอดรวม", baht(cur.total_satang)], ["จองเมื่อ", fmt(cur.created_at)]].map(([k, v]) => <div key={k} className="flex justify-between gap-3"><span className="text-[#cdbfb3] shrink-0">{k}</span><span className="text-right">{v}</span></div>)}
+          {cur.decline_reason && <p className="m-0 text-[12.5px] text-[#eed58a]">เหตุผล: {cur.decline_reason}</p>}
+          {cur.resolution && typeof cur.resolution.dispute === "string" && <p className="m-0 rounded-lg px-3 py-2 text-[12.5px] text-[#fecaca] bg-[rgba(239,68,68,.1)]">แจ้งปัญหา: {cur.resolution.dispute}</p>}
+          {cur.resolution && cur.resolution.decided ? <p className="m-0 text-[12.5px] text-[#cdbfb3]">ตัดสินแล้ว: {String(cur.resolution.decided)} {cur.resolution.refund_pct != null ? `คืน ${String(cur.resolution.refund_pct)}%` : ""} · {String(cur.resolution.note ?? "")}</p> : null}
+          {["cancel_requested", "disputed"].includes(cur.status) && (
+            <div className="flex flex-col gap-2 rounded-xl border p-2.5" style={{ borderColor: LINE }}>
+              <b>ตัดสิน</b>
+              <label className="flex items-center gap-2">คืนลูกค้า<input type="number" min={0} max={100} value={pct} onChange={(e) => setPct(Math.max(0, Math.min(100, Number(e.target.value) || 0)))} className="w-20 h-9 rounded-lg bg-[#130e0e] border px-2" style={{ borderColor: LINE }} />% = {baht(Math.round(cur.total_satang * pct / 100))}</label>
+              <div className="flex gap-1">{[100, 50, 0].map((v) => <button key={v} type="button" onClick={() => setPct(v)} className="h-8 px-3 rounded-full border text-[12px]" style={{ borderColor: pct === v ? GOLD : LINE, color: pct === v ? GOLD : "#d3c7bc" }}>{v}%</button>)}</div>
+              <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="เหตุผล/บันทึก (บังคับ · ลูกค้าเห็น)" className="h-10 rounded-lg bg-[#130e0e] border px-2.5" style={{ borderColor: LINE }} />
+              <span className="text-[11.5px] text-[#7d6d6a]">ส่วนที่ไม่คืนแบ่งให้ Part-Time ตามขั้นส่วนแบ่ง · ส่วนที่เหลือเป็นรายได้บริษัท</span>
+              <div className="grid grid-cols-2 gap-1.5">
+                <button disabled={busy || !note.trim()} onClick={() => resolve("reject")} className="h-9 rounded-full border text-[#d3c7bc] disabled:opacity-40" style={{ borderColor: LINE }}>{cur.status === "cancel_requested" ? "ไม่ให้ยกเลิก" : "ยกคำร้อง"}</button>
+                <button disabled={busy || !note.trim()} onClick={() => resolve("refund")} className="btn-red-lux h-9 rounded-full text-white font-semibold disabled:opacity-40">บันทึกผล</button>
+              </div>
+            </div>
+          )}
+        </>}
+      </aside>
+    </div>
   );
 }

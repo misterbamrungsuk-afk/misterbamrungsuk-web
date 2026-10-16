@@ -7,7 +7,7 @@ import Link from "next/link";
 const GOLD = "#e8c472";
 const LN = "rgba(243,234,217,0.07)";
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US");
-type B = { id: string; code: string; status: string; starts_at: string; hours: number; total_satang: number; price_satang: number; place: { label: string; detail: string }; note: string | null; expires_at: string | null; customer_name: string | null };
+type B = { id: string; code: string; status: string; starts_at: string; hours: number; total_satang: number; price_satang: number; place: { label: string; detail: string }; note: string | null; expires_at: string | null; customer_name: string | null; pt_done_at?: string | null };
 const fmt = (iso: string) => new Date(iso).toLocaleString("th-TH", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 const q = (mb: string, t: string) => `mb=${encodeURIComponent(mb)}${t ? `&t=${encodeURIComponent(t)}` : ""}`;
 
@@ -22,6 +22,14 @@ export function PtIncoming({ mb, t }: { mb: string; t: string }) {
   const act = async (id: string, accept: boolean) => {
     setBusy(id);
     const r = await fetch(`/api/pt/bookings/${id}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mb, t, accept, reason: reason[id] ?? "" }) }).catch(() => null);
+    const d = await r?.json().catch(() => null);
+    setBusy("");
+    if (!d?.ok) setErr(d?.error || "บันทึกไม่สำเร็จ");
+    load();
+  };
+  const act2 = async (id: string, action: "checkin" | "done") => {
+    setBusy(id);
+    const r = await fetch(`/api/pt/bookings/${id}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mb, t, action }) }).catch(() => null);
     const d = await r?.json().catch(() => null);
     setBusy("");
     if (!d?.ok) setErr(d?.error || "บันทึกไม่สำเร็จ");
@@ -55,12 +63,21 @@ export function PtIncoming({ mb, t }: { mb: string; t: string }) {
         );
       })}
       {!!upcoming.length && <h3 className="m-0 mt-2 text-[15px] font-medium">นัดที่ยืนยันแล้ว</h3>}
-      {upcoming.map((b) => (
-        <Link key={b.id} href={`/join/profile/${mb}/chat/${b.id}${t ? `?t=${encodeURIComponent(t)}` : ""}`} className="rounded-[20px] bg-[#211a18] flex items-center gap-3 text-[#f3ead9] hover:text-[#f3ead9]" style={{ padding: 14, border: `1px solid ${LN}` }}>
-          <span className="flex-1 min-w-0"><b className="font-medium">{fmt(b.starts_at)} · {b.hours} ชม.</b><span className="block text-[13px] font-light text-[#d9c9b4] truncate">{b.place.label} {b.place.detail}{b.status === "cancel_requested" ? " · ลูกค้าขอยกเลิก" : ""}</span></span>
-          <span className="text-[13px] font-semibold" style={{ color: GOLD }}>แชท ›</span>
-        </Link>
-      ))}
+      {upcoming.map((b) => {
+        const chat = `/join/profile/${mb}/chat/${b.id}${t ? `?t=${encodeURIComponent(t)}` : ""}`;
+        const soon = Date.parse(b.starts_at) - now < 2 * 3600_000;
+        return (
+          <div key={b.id} className="rounded-[20px] bg-[#211a18] flex flex-col gap-2" style={{ padding: 14, border: `1px solid ${LN}` }}>
+            <b className="font-medium">{fmt(b.starts_at)} · {b.hours} ชม.</b>
+            <span className="text-[13px] font-light text-[#d9c9b4]">{b.place.label} {b.place.detail}{b.status === "cancel_requested" ? " · ลูกค้าขอยกเลิก รอทีมงาน" : b.status === "checked_in" ? " · ถึงจุดนัดแล้ว" : ""}</span>
+            <div className="grid grid-cols-3 gap-2">
+              {b.status === "accepted" && <button type="button" disabled={!!busy || !soon} onClick={() => act2(b.id, "checkin")} title={soon ? "" : "เช็กอินได้ก่อนเวลานัด 2 ชม."} className="h-11 rounded-xl bg-[#e8c472] text-[#1b130b] text-[13px] font-semibold disabled:opacity-40">ถึงจุดนัด</button>}
+              {(b.status === "checked_in" || b.status === "accepted") && <button type="button" disabled={!!busy || b.status !== "checked_in" || !!b.pt_done_at} onClick={() => act2(b.id, "done")} className="h-11 rounded-xl text-[13px] font-semibold disabled:opacity-40" style={{ border: `1px solid ${GOLD}`, color: GOLD }}>{b.pt_done_at ? "รอลูกค้ายืนยัน" : "จบงาน"}</button>}
+              <Link href={chat} className="h-11 rounded-xl text-[13px] grid place-items-center text-[#f3ead9] hover:text-[#f3ead9] col-start-3" style={{ border: `1px solid ${LN}` }}>แชท</Link>
+            </div>
+          </div>
+        );
+      })}
     </section>
   );
 }

@@ -1,7 +1,7 @@
 import "server-only";
 import { customersEnabled, dumpTable } from "@/lib/customer/auth";
 
-export const BACKUP_TABLES = ["applicants", "customers"] as const;
+export const BACKUP_TABLES = ["applicants", "customers", "wallet_accounts", "wallet_tx", "wallet_entries", "wallet_topups", "bookings", "booking_events", "messages", "reviews", "withdrawals"] as const;
 
 /** สำรองตาราง Supabase เป็น JSON — ตารางที่ดึงไม่ได้จะบันทึก error ไว้แทน */
 export async function buildBackup() {

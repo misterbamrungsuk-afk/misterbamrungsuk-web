@@ -6,6 +6,7 @@ import { ageFrom } from "@/lib/join/form";
 import { Forbidden } from "../../_kyc/ui";
 import { ProfileHub, type HubData } from "./client";
 import { FIX_ITEMS } from "@/lib/join/fixes";
+import { ptWallet } from "@/lib/bookings/day";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "โปรไฟล์ของฉัน — Mister Bamrungsuk" };
@@ -30,7 +31,11 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
   const cfg = await getEarnings();
   const svc = row.package === "B" ? cfg.price3h.massage : cfg.price3h.eat;
 
+  const w = await ptWallet(row.id).catch(() => null);
+  const m0 = new Date(); m0.setDate(1); m0.setHours(0, 0, 0, 0);
+  const month = (w?.history ?? []).filter((h) => h.kind === "split" && h.bucket === "pending" && Date.parse(h.created_at) >= +m0).reduce((t, h) => t + h.amount, 0);
   const data: HubData = {
+    wallet: { available: (w?.available ?? 0) / 100, pending: (w?.pending ?? 0) / 100, month: month / 100 },
     mb, t: t ?? "", nickname: row.nickname, fullName: `${row.first_name} ${row.last_name}`,
     statusLine: x.invite ? `คำเชิญพิเศษ · ไม่เก็บค่าการันตี · ${row.status === "verified" ? "ชำระค่าอบรมแล้ว" : "ส่งสลิปแล้ว · รอทีมงานตรวจ"}` : `สมัครปกติ · ${row.status === "verified" ? "ชำระค่าการันตีแล้ว" : "ส่งสลิปแล้ว · รอทีมงานตรวจ"}`,
     track: row.package === "B" ? "เพื่อนกินเที่ยว · นวด" : "เพื่อนกินเที่ยว", trackShort: row.package === "B" ? "สายนวด" : "สายกินเที่ยว",
