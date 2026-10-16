@@ -29,7 +29,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const m = await sendMessage(who.b, who.role, who.id, String(b.body ?? ""));
     return NextResponse.json({
       ok: true, message: { id: m.id, sender_type: m.sender_type, body: m.body, blocked: m.blocked, created_at: m.created_at },
-      warning: m.blocked ? "ข้อความนี้มีเบอร์โทร LINE หรือลิงก์ จึงไม่ถูกส่ง · คุยผ่านแอปเพื่อความปลอดภัย" : undefined,
+      warning: m.blocked ? (m.flag?.startsWith("word:") ? "ข้อความนี้มีคำที่ไม่อนุญาตในแชท จึงไม่ถูกส่ง · ฝ่าฝืนซ้ำทีมงานจะตรวจสอบและอาจระงับบัญชี" : "ข้อความนี้มีเบอร์โทร LINE ลิงก์ หรือช่องทางนอกแอป จึงไม่ถูกส่ง · ฝ่าฝืนซ้ำทีมงานจะตรวจสอบและอาจระงับบัญชี") : undefined,
     });
   } catch (e) {
     if (e instanceof BookingError) return NextResponse.json({ ok: false, error: e.message }, { status: 400 });

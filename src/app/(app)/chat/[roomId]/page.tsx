@@ -3,6 +3,7 @@
 
 // บอร์ด C-ChatRoom "ห้องแชท" — ผูกกับการจอง (roomId = booking id) · ดึงข้อความใหม่ทุก 4 วิ · กันเบอร์/LINE/ลิงก์
 import { use, useCallback, useEffect, useRef, useState } from "react";
+import { ChatNotice } from "@/components/chat-notice";
 import Link from "next/link";
 
 const GOLD = "#e8c472";
@@ -66,13 +67,14 @@ export default function ChatRoom({ params }: { params: Promise<{ roomId: string 
         </Link>
       )}
       <div className="flex-1 overflow-y-auto flex flex-col gap-2" style={{ padding: "14px 12px" }}>
-        {!ms.length && <div className="self-center text-[12px] font-light text-[#d9c9b4] text-center">เริ่มคุยรายละเอียดนัดได้เลย · ห้ามแลกเบอร์โทร LINE หรือช่องทางนอกแอป</div>}
+        <ChatNotice />
+        {!ms.length && <div className="self-center text-[12px] font-light text-[#d9c9b4] text-center">เริ่มคุยรายละเอียดนัดได้เลย</div>}
         {ms.map((m) => m.sender_type === "system" ? (
           <div key={m.id} className="self-center max-w-[90%] text-center text-[12px] font-light text-[#d9c9b4] rounded-xl bg-[#211a18]" style={{ padding: "6px 12px" }}>{m.body}</div>
         ) : m.sender_type === "customer" ? (
           <div key={m.id} className="self-end max-w-[76%] flex flex-col items-end gap-0.5">
             <div className="text-[15px] leading-[1.45]" style={{ background: m.blocked ? "rgba(201,40,61,.2)" : GOLD, color: m.blocked ? "#ff8a9a" : "#1b130b", borderRadius: "20px 20px 6px 20px", padding: "10px 14px" }}>{m.body}</div>
-            <span className="text-[12px] text-[#d9c9b4]">{time(m.created_at)}{m.blocked ? " · ไม่ถูกส่ง (มีช่องทางติดต่อ)" : ""}</span>
+            <span className="text-[12px] text-[#d9c9b4]">{time(m.created_at)}{m.blocked ? " · ไม่ถูกส่ง (ข้อความต้องห้าม)" : ""}</span>
           </div>
         ) : (
           <div key={m.id} className="self-start max-w-[76%] text-[15px] leading-[1.45] bg-[#251d1b]" style={{ borderRadius: "20px 20px 20px 6px", padding: "10px 14px" }}>{m.body}</div>

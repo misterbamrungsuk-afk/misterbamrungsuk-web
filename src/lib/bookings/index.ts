@@ -19,7 +19,7 @@ export type Booking = {
   pt_done_at?: string | null; tip_satang?: number; share_pct?: number | null; matured_at?: string | null; resolution?: Record<string, unknown> | null;
   pt_pending_satang?: number | null; // ยอดที่เข้า PT.pending จริง (0002_atomic) — ปล่อยเงินตามนี้
 };
-export type Message = { id: number; booking_id: string; sender_type: "customer" | "parttime" | "system"; sender_id: string | null; body: string; blocked: boolean; created_at: string; read_at: string | null };
+export type Message = { id: number; booking_id: string; sender_type: "customer" | "parttime" | "system"; sender_id: string | null; body: string; blocked: boolean; flag?: string | null; created_at: string; read_at: string | null };
 export type Notice = { id: number; user_type: "customer" | "parttime" | "admin"; user_id: string; kind: string; title: string; body: string | null; url: string | null; read_at: string | null; created_at: string };
 
 export const RESPOND_MINUTES = 30;
@@ -260,11 +260,20 @@ export async function listMessages(booking_id: string, after = 0): Promise<Messa
 export async function sendMessage(b: Booking, sender_type: Message["sender_type"], sender_id: string | null, body: string): Promise<Message> {
   const text = body.trim().slice(0, 1000);
   if (!text) throw new BookingError("พิมพ์ข้อความก่อนส่ง");
-  const blocked = sender_type !== "system" && hasContact(text);
-  const row = { booking_id: b.id, sender_type, sender_id, body: text, blocked };
+  // ตัวกรองแชท (ช่องทางติดต่อ + คำห้ามส่ง) — ถูกกันก็ยังเก็บไว้ให้ทีมงานตรวจ (flag = เหตุผล)
+  const chk = sender_type === "system" ? { blocked: false as const } : await (await import("@/lib/chat-guard")).checkChat(text);
+  const blocked = chk.blocked;
+  const row = { booking_id: b.id, sender_type, sender_id, body: text, blocked, flag: chk.blocked ? chk.flag : null };
   let m: Message;
   if (isDemo) { m = { ...row, id: demo.messages.length + 1, created_at: now(), read_at: null }; demo.messages.push(m); }
   else { const { data, error } = await db().from("messages").insert(row).select().single(); if (error) throw error; m = data as Message; }
+  if (blocked) {
+    // ฝ่าฝืนครบจำนวนครั้งในนัดนี้ → แจ้งทีมงาน (ครั้งที่ครบพอดี และทุก ๆ รอบถัดไป)
+    const limit = (await (await import("@/lib/chat-guard")).getChatRules()).strikeLimit;
+    const n = isDemo ? demo.messages.filter((x) => x.booking_id === b.id && x.sender_type === sender_type && x.blocked).length
+      : ((await db().from("messages").select("id", { count: "exact", head: true }).eq("booking_id", b.id).eq("sender_type", sender_type).eq("blocked", true)).count ?? 0);
+    if (n > 0 && n % limit === 0) await notify({ user_type: "admin", user_id: "cs", kind: "chat_violation", title: `แชทฝ่าฝืน ${n} ครั้ง · ${b.code}`, body: `${sender_type === "customer" ? `ลูกค้า ${b.customer_email ?? ""}` : `Part-Time ${b.parttime_mb}`} · ล่าสุด: ${text.slice(0, 120)}`, url: `/admin/chats/${b.id}` });
+  }
   if (!blocked && sender_type !== "system") {
     const to = sender_type === "customer" ? { user_type: "parttime" as const, user_id: b.parttime_id, url: `/join/profile/${b.parttime_mb}/jobs` } : { user_type: "customer" as const, user_id: b.customer_id, url: `/chat/${b.id}` };
     await notify({ ...to, kind: "message", title: sender_type === "customer" ? "ข้อความใหม่จากลูกค้า" : `ข้อความใหม่จาก ${b.parttime_nick ?? "เพื่อน"}`, body: text.slice(0, 80) });
@@ -302,3 +311,11 @@ export async function markAdminNoticeRead(id: number | "all") {
 export const ptPublic = (b: Booking) => ({ pid: publicId(b.parttime_mb), nick: b.parttime_nick ?? "เพื่อน", img: `/api/public/pt-photo?id=${publicId(b.parttime_mb)}&i=0` });
 export const findLiveByPid = async (pid: string, list: () => Promise<Applicant[]>) => (await list()).find((a) => publicId(a.mb_code) === pid) ?? null;
 export { getById };
+
+/** แชททั้งหมดล่าสุด (สำหรับทีมงาน — รวมข้อความที่ถูกกัน) */
+export async function recentMessages(limit = 5000): Promise<Message[]> {
+  if (isDemo) return demo.messages.slice(-limit).reverse();
+  const { data, error } = await db().from("messages").select().order("id", { ascending: false }).limit(limit);
+  if (error) throw error;
+  return (data ?? []) as Message[];
+}

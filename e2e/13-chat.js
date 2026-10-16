@@ -1,0 +1,48 @@
+// แชท: เก็บทุกข้อความ · ตัวกรองช่องทางติดต่อ + คำห้ามส่ง (กันเลี่ยงด้วยเว้นวรรค) · อีกฝ่ายไม่เห็น · ฝ่าฝืนครบแจ้งทีมงาน · หน้าแอดมิน
+const WEB = require('path').join(__dirname, '..');
+const fs = require('fs'), crypto = require('crypto');
+const { adm } = require('./_tok');
+const B = 'http://localhost:3210', mb = 'MB-2610001';
+const ENV = fs.readFileSync(WEB + '/.env.local', 'utf8');
+const KEY = (/^ADMIN_SESSION_SECRET=(.*)$/m.exec(ENV)?.[1] || '').trim().replace(/^["']|["']$/g, '') || 'hamoo-demo-secret';
+let fails = 0;
+const ok = (n, c, x = '') => { if (!c) fails++; console.log((c ? 'PASS ' : 'FAIL ') + n + (x ? ' · ' + x : '')); };
+const J = (r) => r.json();
+const ADM = { cookie: 'mord_admin=' + adm, 'content-type': 'application/json' };
+const sign = (p) => { const b = Buffer.from(JSON.stringify(p)).toString('base64url'); return b + '.' + crypto.createHmac('sha256', KEY).update(b).digest('base64url'); };
+const C1 = { cookie: 'hamoo_session=' + sign({ sub: 'demo:chat@test.local', email: 'chat@test.local', exp: Date.now() + 3600e3 }), 'content-type': 'application/json' };
+const T = (() => { const b = Buffer.from(JSON.stringify({ mb, exp: Date.now() + 3600e3 })).toString('base64url'); return b + '.' + crypto.createHmac('sha256', KEY).update('resume:' + b).digest('base64url'); })();
+const img = fs.readFileSync(WEB + '/public/brand/home/p-n04.jpg');
+(async () => {
+  const fd = new FormData(); fd.set('amount', '20000'); fd.set('slip', new File([img], 's.jpg', { type: 'image/jpeg' }));
+  await fetch(B + '/api/wallet/topup', { method: 'POST', headers: { cookie: C1.cookie }, body: fd });
+  const a = await J(await fetch(B + '/api/admin/wallet', { headers: ADM }));
+  await fetch(B + '/api/admin/wallet', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'approve', id: a.topups.find((x) => x.customer_email === 'chat@test.local' && x.status === 'pending').id }) });
+  const pid = (/\/p\/(r[0-9a-f]{10})/.exec(await (await fetch(B + '/')).text()) || [])[1];
+  const d = new Date(Date.now() + 20 * 86400e3); d.setHours(13, 0, 0, 0);
+  let j = await J(await fetch(B + '/api/bookings', { method: 'POST', headers: C1, body: JSON.stringify({ pid, hours: 3, starts_at: d.toISOString(), place: { type: 'cafe', detail: 'คาเฟ่' }, note: '' }) }));
+  ok('booking for chat', j.ok, j.error); const id = j.id;
+  const send = (body) => fetch(B + `/api/bookings/${id}/messages`, { method: 'POST', headers: C1, body: JSON.stringify({ body }) }).then(J);
+  j = await send('สวัสดีค่ะ นัดวันที่ 20/11 19:00 3 ชม. ที่คาเฟ่นะคะ'); ok('normal message (date/time not phone)', j.ok && !j.message.blocked && !j.warning);
+  j = await send('ขอเบอร์หน่อย'); ok('banned word blocked', j.message.blocked && /คำที่ไม่อนุญาต/.test(j.warning));
+  j = await send('แอด ไ ล น์ มานะ'); ok('spaced evasion blocked', j.message.blocked);
+  j = await send('โทร 081-234-5678'); ok('phone blocked', j.message.blocked && /เบอร์โทร/.test(j.warning));
+  j = await J(await fetch(B + `/api/bookings/${id}/messages?mb=${mb}&t=${encodeURIComponent(T)}`));
+  ok('pt sees only clean messages', j.ok && j.messages.length === 1 && !j.messages.some((m) => m.blocked), String(j.messages.length));
+  j = await J(await fetch(B + `/api/bookings/${id}/messages`, { headers: C1 }));
+  ok('sender sees own blocked', j.messages.filter((m) => m.blocked).length === 3);
+  j = await J(await fetch(B + '/api/admin/alerts', { headers: ADM }));
+  ok('3 violations → admin alert', j.items.some((n) => n.kind === 'chat_violation' && n.url === `/admin/chats/${id}`));
+  let t = (await (await fetch(B + `/admin/chats/${id}`, { headers: ADM })).text()).replace(/<!-- -->/g, '');
+  ok('admin transcript has blocked + reason', t.includes('ขอเบอร์หน่อย') && t.includes('คำห้าม') && t.includes('ช่องทางติดต่อนอกแอป'));
+  t = await (await fetch(B + '/admin/chats?f=flag', { headers: ADM })).text(); ok('admin chat list', t.includes('ถูกกัน'));
+  ok('admin chats need admin', (await fetch(B + `/admin/chats/${id}`, { redirect: 'manual' })).status >= 300);
+  // แอดมินเพิ่มคำห้ามเอง
+  let r = await fetch(B + '/api/admin/chats', { method: 'POST', headers: ADM, body: JSON.stringify({ words: 'คำทดสอบพิเศษ\nขอเบอร์', strikeLimit: 3 }) }); j = await J(r);
+  ok('save rules', j.ok && j.rules.words.includes('คำทดสอบพิเศษ'));
+  j = await send('นี่คือ คำทดสอบ พิเศษ'); ok('custom word blocked', j.message.blocked);
+  j = await send('แอดไลน์'); ok('removed default still caught by contact rule', j.message.blocked);
+  ok('rules need admin', (await fetch(B + '/api/admin/chats', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' })).status === 401);
+  t = await (await fetch(B + `/chat/${id}`, { headers: C1 })).text(); ok('chat page renders', t.length > 0);
+  console.log(fails ? fails + ' FAILED' : 'ALL PASS');
+})().catch((e) => console.log('ERR', e));

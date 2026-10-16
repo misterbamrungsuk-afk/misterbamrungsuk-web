@@ -2,6 +2,7 @@
 
 // งานเข้า (บอร์ด P-Incoming) + แชทกับลูกค้า — ใช้ข้อมูลการจองจริง (/api/pt/bookings)
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ChatNotice } from "@/components/chat-notice";
 import Link from "next/link";
 
 const GOLD = "#e8c472";
@@ -113,7 +114,8 @@ export function PtChat({ mb, t, id }: { mb: string; t: string; id: string }) {
   return (
     <div className="flex flex-col" style={{ minHeight: "calc(100dvh - 160px)" }}>
       <div className="flex-1 flex flex-col gap-2 px-4 py-3">
-        {!ms.length && <div className="self-center text-[12px] font-light text-[#d9c9b4] text-center">คุยรายละเอียดนัดกับลูกค้า · ห้ามแลกเบอร์โทร LINE หรือช่องทางนอกแอป</div>}
+        <ChatNotice />
+        {!ms.length && <div className="self-center text-[12px] font-light text-[#d9c9b4] text-center">คุยรายละเอียดนัดกับลูกค้า</div>}
         {ms.map((m) => m.sender_type === "system" ? <div key={m.id} className="self-center text-center text-[12px] font-light text-[#d9c9b4] rounded-xl bg-[#211a18]" style={{ padding: "6px 12px" }}>{m.body}</div>
           : m.sender_type === "parttime" ? <div key={m.id} className="self-end max-w-[76%] text-[15px]" style={{ background: m.blocked ? "rgba(201,40,61,.2)" : GOLD, color: m.blocked ? "#ff8a9a" : "#1b130b", borderRadius: "20px 20px 6px 20px", padding: "10px 14px" }}>{m.body}{m.blocked ? " · ไม่ถูกส่ง" : ""}</div>
           : <div key={m.id} className="self-start max-w-[76%] text-[15px] bg-[#251d1b]" style={{ borderRadius: "20px 20px 20px 6px", padding: "10px 14px" }}>{m.body}</div>)}
