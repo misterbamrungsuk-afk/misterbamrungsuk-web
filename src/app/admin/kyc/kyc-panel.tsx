@@ -46,9 +46,24 @@ export function KycPanel({ row, onSaved }: { row: Applicant; onSaved: (row: Appl
     const res = await fetch(`/api/admin/applicants/${row.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const data = (await res.json().catch(() => ({}))) as { ok?: boolean; row?: Applicant; error?: string };
     setBusy(false);
-    if (data.row) { onSaved(data.row); setMode("view"); setFail({}); setMsg(body.kyc_status === "approved" ? "อนุมัติเอกสารแล้ว" : "ตีกลับแล้ว · ผู้สมัครเห็นเหตุผลที่โปรไฟล์และแก้ได้ทันที"); }
+    if (data.row) { onSaved(data.row); setMode("view"); setFail({}); setMsg(body.kyc_status === "approved" ? "อนุมัติเอกสารแล้ว" : "ตีกลับแล้ว · กด \"คัดลอกข้อความแจ้งแก้ไข + ลิงก์\" แล้วส่งทาง LINE"); }
     else setMsg(data.error ?? "บันทึกไม่สำเร็จ");
     setTimeout(() => setMsg(""), 3500);
+  };
+  // ลิงก์เข้าโปรไฟล์ (#35) — ผู้สมัครเปลี่ยนเครื่อง/ล้างคุกกี้ หรือถูกตีกลับ → คัดลอกข้อความพร้อมลิงก์ส่งทาง LINE
+  const copyLink = async () => {
+    setBusy(true);
+    const res = await fetch(`/api/admin/applicants/${row.id}/link`, { method: "POST" }).catch(() => null);
+    const data = (await res?.json().catch(() => null)) as { ok?: boolean; url?: string; fix?: boolean } | null;
+    setBusy(false);
+    if (!data?.ok || !data.url) { setMsg("สร้างลิงก์ไม่สำเร็จ"); return; }
+    const reasons = data.fix ? Object.entries(row.kyc_reason ?? {}).map(([k, v]) => `• ${fixLabel(k)}: ${v}`).join("\n") : "";
+    const text = data.fix
+      ? `สวัสดีค่ะคุณ${row.nickname} (${row.mb_code}) ทีมงานขอให้แก้ไขเอกสารดังนี้\n${reasons}\n\nกดลิงก์เพื่อแก้ไข (ใช้ได้ 30 วัน): ${data.url}`
+      : `สวัสดีค่ะคุณ${row.nickname} (${row.mb_code}) ลิงก์เข้าโปรไฟล์ของคุณ (ใช้ได้ 30 วัน): ${data.url}`;
+    try { await navigator.clipboard.writeText(text); setMsg(data.fix ? "คัดลอกข้อความแจ้งแก้ไข + ลิงก์แล้ว · วางส่งทาง LINE ได้เลย" : "คัดลอกลิงก์เข้าโปรไฟล์แล้ว · วางส่งทาง LINE ได้เลย"); }
+    catch { setMsg(text); }
+    setTimeout(() => setMsg(""), 6000);
   };
   const toggle = (k: string, on: boolean) => setFail((f) => { const n = { ...f }; if (on) n[k] = n[k] ?? ""; else delete n[k]; return n; });
 
@@ -119,7 +134,8 @@ export function KycPanel({ row, onSaved }: { row: Applicant; onSaved: (row: Appl
           <button disabled={busy || status === "none" || status === "approved"} onClick={() => send({ kyc_status: "approved" })} title={status === "none" ? "ผู้สมัครยังส่งเอกสารไม่ครบ" : ""} className="btn-red-lux h-10 rounded-full text-white font-semibold disabled:opacity-40">อนุมัติเอกสาร</button>
         </div>
       )}
-      {msg && <p role="status" className="text-[12px] text-[#eed58a]">{msg}</p>}
+      <button type="button" disabled={busy} onClick={copyLink} className="h-10 rounded-full border border-[rgba(240,200,90,.38)] text-[#d3c7bc] text-[12.5px] disabled:opacity-40">{status === "rejected" ? "คัดลอกข้อความแจ้งแก้ไข + ลิงก์" : "คัดลอกลิงก์เข้าโปรไฟล์"}</button>
+      {msg && <p role="status" className="text-[12px] text-[#eed58a] whitespace-pre-line break-all">{msg}</p>}
     </div>
   );
 }
