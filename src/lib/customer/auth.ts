@@ -133,21 +133,27 @@ export function readCustomerSession(token: string | undefined | null): CustomerS
 export async function currentCustomer(): Promise<CustomerSession | null> {
   const { cookies } = await import("next/headers");
   const s = readCustomerSession((await cookies()).get(SESSION_COOKIE)?.value);
-  if (!s || !customersEnabled() || s.sub.startsWith("demo:")) return s;
+  if (!s) return null;
+  if (!customersEnabled() || s.sub.startsWith("demo:")) {
+    // โหมดสาธิต: ตรวจเฉพาะสถานะระงับ/ลบ (หน้าแอดมินสมาชิก)
+    const fl = await (await import("./admin")).memberFlags(s.sub).catch(() => null);
+    return fl?.suspended_at || fl?.deleted_at ? null : s;
+  }
   // ฐานจริง: บัญชียังอยู่ · ไม่ได้ขอลบ · รหัสผ่านไม่ถูกเปลี่ยนหลังล็อกอิน (เพิกถอน session ทุกเครื่อง)
   const row = await sessionRow(s.sub).catch(() => undefined);
   if (row === undefined) return s; // อ่านฐานไม่ได้ชั่วคราว — ไม่เตะลูกค้าออก
-  if (!row || row.delete_requested_at || !s.pv || s.pv !== pvOf(row.password_hash)) return null;
+  if (!row || row.delete_requested_at || row.suspended_at || row.deleted_at || !s.pv || s.pv !== pvOf(row.password_hash)) return null;
   const { pv: _pv, ...out } = s; void _pv;
   return out;
 }
-const rowCache = new Map<string, { at: number; row: { password_hash: string; delete_requested_at: string | null } | null }>();
+type SessRow = { password_hash: string; delete_requested_at: string | null; suspended_at?: string | null; deleted_at?: string | null };
+const rowCache = new Map<string, { at: number; row: SessRow | null }>();
 async function sessionRow(id: string) {
   const hit = rowCache.get(id);
   if (hit && Date.now() - hit.at < 30_000) return hit.row;
-  const res = await fetch(`${SB_URL()}/rest/v1/customers?id=eq.${encodeURIComponent(id)}&select=password_hash,delete_requested_at&limit=1`, { headers: sbHeaders(), cache: "no-store" });
+  const res = await fetch(`${SB_URL()}/rest/v1/customers?id=eq.${encodeURIComponent(id)}&select=password_hash,delete_requested_at,suspended_at,deleted_at&limit=1`, { headers: sbHeaders(), cache: "no-store" });
   if (!res.ok) throw new Error(`customers session ${res.status}`);
-  const row = ((await res.json()) as { password_hash: string; delete_requested_at: string | null }[])[0] ?? null;
+  const row = ((await res.json()) as SessRow[])[0] ?? null;
   rowCache.set(id, { at: Date.now(), row });
   if (rowCache.size > 5000) rowCache.clear();
   return row;

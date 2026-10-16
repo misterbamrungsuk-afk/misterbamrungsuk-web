@@ -45,3 +45,6 @@ export async function myBlocked(): Promise<Set<string>> {
   if (!me) return new Set();
   return new Set((await getProfile(me.sub, me.email).catch(() => null))?.blocked ?? []);
 }
+
+/** โหมดสาธิต: โปรไฟล์ลูกค้าในหน่วยความจำทั้งหมด (หน้าแอดมินสมาชิก) */
+export const listDemoProfiles = () => [...demo.values()];

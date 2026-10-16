@@ -94,6 +94,22 @@ export async function notify(n: Omit<Notice, "id" | "read_at" | "created_at">) {
   // แอดมิน: ทุกเครื่องของแอดมินที่เปิดรับ (user_id "all") — SOS / ยอดไม่ตรง / ห้องเต็ม ถึงมือทันที
   const [pt, pid] = n.user_type === "admin" ? ["admin", "all"] : [n.user_type, n.user_id];
   await import("@/lib/push").then((m) => m.sendPush(pt, pid, { title: n.title, body: n.body, url: n.url, tag: n.kind === "sos" ? undefined : n.kind })).catch(() => 0);
+  // อีเมลคู่กับเรื่องสำคัญ (บอร์ด A-Notify) — ต้องตั้ง RESEND_API_KEY + EMAIL_FROM · ไม่มี = ข้าม · ไม่รอ ไม่ทำให้งานหลักพัง
+  if (n.user_type !== "admin") void emailNotice(n).catch((e) => console.error("notice email", e));
+}
+async function emailNotice(n: Omit<Notice, "id" | "read_at" | "created_at">) {
+  const mail = await import("@/lib/email");
+  if (!mail.emailEnabled() || !mail.EMAIL_KINDS.has(n.kind)) return;
+  let to: string | null = null;
+  if (n.user_type === "customer") {
+    if (n.user_id.startsWith("demo:")) to = n.user_id.slice(5);
+    else {
+      const res = await fetch(`${process.env.SUPABASE_URL}/rest/v1/customers?id=eq.${encodeURIComponent(n.user_id)}&select=email&limit=1`, { headers: { apikey: process.env.SUPABASE_SERVICE_ROLE_KEY!, Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}` }, cache: "no-store" });
+      to = res.ok ? ((await res.json()) as { email?: string }[])[0]?.email ?? null : null;
+    }
+  } else to = (await getById(n.user_id).catch(() => null))?.email ?? null;
+  // ลิงก์ Part-Time ไม่ใส่โทเคนในอีเมล — เปิดได้บนเครื่องที่เคยเข้าโปรไฟล์ (cookie) ไม่งั้นขอลิงก์ใหม่จากทีมงาน
+  if (to) await mail.sendEmail(mail.noticeMail(to, n.kind, n.title, n.body, n.url));
 }
 
 export async function getBooking(id: string): Promise<Booking | null> {

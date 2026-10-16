@@ -5,7 +5,7 @@ import { allowed } from "../../guard";
 
 export const runtime = "nodejs";
 
-// แอดมินตรวจสลิปค่าแพ็กเกจ: approve = ตั้ง starts_at/ends_at + ต่ออายุพาร์ทเนอร์, reject = ไม่ผ่าน
+// แอดมินตรวจสลิปค่าแผนโปรโมท: approve = ตั้ง starts_at/ends_at + ต่ออายุพาร์ทเนอร์, reject = ไม่ผ่าน
 export async function POST(req: Request, { params }: { params: Promise<{ pid: string }> }) {
   if (!(await allowed())) return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   const { pid } = await params;

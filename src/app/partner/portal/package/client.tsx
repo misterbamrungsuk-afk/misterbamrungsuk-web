@@ -17,7 +17,7 @@ export function RenewBox({ current }: { current: PartnerPackageKey }) {
 
   return (
     <>
-      <div className="mt-3 space-y-2" role="radiogroup" aria-label="แพ็กเกจ">
+      <div className="mt-3 space-y-2" role="radiogroup" aria-label="แผนโปรโมท">
         {PACKAGE_KEYS.map((k) => {
           const x = PARTNER_PACKAGES[k];
           return (

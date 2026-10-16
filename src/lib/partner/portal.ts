@@ -63,7 +63,7 @@ export async function saveListing(l: Listing): Promise<Listing> {
   return data as Listing;
 }
 
-// ── แพ็กเกจ ──
+// ── แผนโปรโมท ──
 function invoiceNo() {
   const th = new Date(Date.now() + 7 * 3600_000);
   return `PI-${String(th.getUTCFullYear()).slice(2)}${String(th.getUTCMonth() + 1).padStart(2, "0")}${String(th.getUTCDate()).padStart(2, "0")}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;

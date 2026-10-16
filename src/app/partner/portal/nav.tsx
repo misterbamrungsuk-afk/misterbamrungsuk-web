@@ -7,7 +7,7 @@ const TABS = [
   { href: "/partner/portal", label: "หน้าหลัก", d: "M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" },
   { href: "/partner/portal/bookings", label: "การจอง", d: "M7 3v3m10-3v3M4 8h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1z" },
   { href: "/partner/portal/listing", label: "หน้าร้าน", d: "M4 9h16l-1-5H5zm0 0v11h16V9M9 20v-6h6v6" },
-  { href: "/partner/portal/package", label: "แพ็กเกจ", d: "M12 3 3 8l9 5 9-5zm-9 9 9 5 9-5M3 16l9 5 9-5" },
+  { href: "/partner/portal/package", label: "แผนโปรโมท", d: "M12 3 3 8l9 5 9-5zm-9 9 9 5 9-5M3 16l9 5 9-5" },
 ];
 
 export function PortalNav() {

@@ -17,14 +17,14 @@ const GOLD = "#f0c75a";
 const LINE = "rgba(240,200,90,.38)";
 
 const WHY = [
-  ["คลิปโปรโมทโดยทีมแบรนด์", "1 คลิป/แพ็กเกจ ลง IG & FB ของแบรนด์"],
+  ["คลิปโปรโมทโดยทีมแบรนด์", "1 คลิป/แผนโปรโมท ลง IG & FB ของแบรนด์"],
   ["มีฐานลูกค้าพรีเมียมรองรับ", "เรารับจองให้ ไม่ต้องหาลูกค้าเอง"],
   ["ช่วยตั้งราคาขาย (mark up)", "ตั้งราคาขายบนแพลตฟอร์มให้เหมาะกับตลาดพรีเมียม"],
   ["ป้ายรับรองแบรนด์", "ได้ป้าย “ทำงานร่วมกับ Mister Bamrungsuk”"],
 ];
 const CONDS = [
   ["มาตรฐานการนวดเทียบเท่า Bamrungsuk", "ผ่านการตรวจมาตรฐานจากทีมงานก่อนเปิดขาย"],
-  ["ยินยอมให้ทีมงาน QC", "ตรวจก่อนเริ่ม และสุ่ม QC ตลอดระยะแพ็กเกจ"],
+  ["ยินยอมให้ทีมงาน QC", "ตรวจก่อนเริ่ม และสุ่ม QC ตลอดระยะแผนโปรโมท"],
   ["รับจองผ่านแพลตฟอร์ม", `เราหัก ${BOOKING_COMMISSION}% ต่อ booking ที่มาจากแพลตฟอร์ม`],
   ["ราคาขายผ่านแพลตฟอร์ม", `เราช่วย mark up ราคา · ราคาขายต่อบริการ ${SELL_PRICE_NOTE}`],
   ["ชำระค่าป้ายแบรนด์", "พาร์ทเนอร์ชำระค่าป้ายแบรนด์ [รอกำหนด]"],
@@ -33,10 +33,10 @@ const KINDS = [
   ["/brand/venue.jpg", "สปา", "เดย์สปา · สปาเพื่อสุขภาพ · ทั่วประเทศ"],
   ["/brand/hotel1.jpg", "โรงแรม", "โรงแรม · สปาในโรงแรม"],
 ];
-const STEPS = ["ส่งใบสมัคร", "ชำระแพ็กเกจ (QR + สลิป)", "นัด QC สถานที่ · มาตรฐานเทียบเท่า Bamrungsuk", "ทำสัญญา + ป้ายแบรนด์ · ถ่ายคลิปโปรโมท", "เปิดแสดงบนแพลตฟอร์ม"];
+const STEPS = ["ส่งใบสมัคร", "ชำระแผนโปรโมท (QR + สลิป)", "นัด QC สถานที่ · มาตรฐานเทียบเท่า Bamrungsuk", "ทำสัญญา + ป้ายแบรนด์ · ถ่ายคลิปโปรโมท", "เปิดแสดงบนแพลตฟอร์ม"];
 const FAQ = [
   ["หักค่าธรรมเนียมเท่าไร", `หัก ${BOOKING_COMMISSION}% ต่อ booking ที่มาจากแพลตฟอร์ม (กำลังสรุปอัตรา)`],
-  ["โรงแรมสมัครได้ไหม", "ได้ ทั้งโรงแรมที่มีสปาและโรงแรมที่ต้องการขายห้องพัก/แพ็กเกจผ่านแพลตฟอร์ม"],
+  ["โรงแรมสมัครได้ไหม", "ได้ ทั้งโรงแรมที่มีสปาและโรงแรมที่ต้องการขายห้องพัก/แผนโปรโมทผ่านแพลตฟอร์ม"],
   ["QC ตรวจอะไรบ้าง", "มาตรฐานการนวด ความสะอาด ห้อง/สถานที่ ใบอนุญาต และเอกสาร"],
   ["ค่าป้ายแบรนด์เท่าไร", "ค่าป้ายแบรนด์ [รอกำหนด] แจ้งให้ทราบก่อนทำสัญญา"],
 ];
@@ -102,7 +102,7 @@ export function PartnerSalePage({ hero }: { hero?: string }) {
             <div className="text-[11px] font-semibold tracking-[3px] text-[#f0c75a]">สปาทั่วประเทศ · โรงแรม</div>
             <h1 className="font-lux mt-1.5 text-[28px] font-bold leading-[1.2] [text-wrap:balance]">ขายบริการของคุณ<br /><span className="text-[#ffd76a]">ผ่าน Mister Bamrungsuk</span></h1>
             <div className="mt-2.5 inline-flex rounded-full border border-[rgba(212,175,55,.55)] bg-black/45 px-3 py-1.5 text-[11.5px] text-[#eed58a]">
-              แพ็กเกจเริ่มต้น <b className="text-[#ffd76a]">&nbsp;{priceText("3m")} / {PARTNER_PACKAGES["3m"].label}</b>
+              แผนโปรโมทเริ่มต้น <b className="text-[#ffd76a]">&nbsp;{priceText("3m")} / {PARTNER_PACKAGES["3m"].label}</b>
             </div>
           </div>
         </div>
@@ -135,7 +135,7 @@ export function PartnerSalePage({ hero }: { hero?: string }) {
           </section>
 
           <section id="packages">
-            <H2>แพ็กเกจและสิ่งที่ได้รับ</H2>
+            <H2>แผนโปรโมทและสิ่งที่ได้รับ</H2>
             <div className="flex flex-col gap-2.5">
               {PACKAGE_KEYS.map((k) => {
                 const p = PARTNER_PACKAGES[k];
@@ -145,11 +145,11 @@ export function PartnerSalePage({ hero }: { hero?: string }) {
                     className="lux-card flex w-full min-w-0 flex-col gap-1.5 rounded-[18px] p-4 text-left text-[#f6efe4]"
                     style={{ border: `1.5px solid ${on ? GOLD : LINE}`, background: on ? "rgba(240,200,90,.16)" : "#241717" }}>
                     <span className="flex items-center justify-between gap-2">
-                      <span className="text-[10.5px] tracking-[2px] text-[#ffd76a]">แพ็กเกจ {p.months}M</span>
+                      <span className="text-[10.5px] tracking-[2px] text-[#ffd76a]">แผนโปรโมท {p.months}M</span>
                       {p.badge && <span className="rounded-full bg-[#f0c75a] px-2 py-0.5 text-[11px] font-semibold text-[#0e0a0a]">{p.badge}</span>}
                     </span>
-                    <span className="font-lux text-[17px] font-semibold">แพ็กเกจพาร์ทเนอร์ {p.label}</span>
-                    <span className="text-[13px]">ค่าแพ็กเกจ <span className="font-lux text-[24px] font-bold text-[#ffd76a]">{p.price == null ? "ติดต่อทีมงาน" : `฿${baht(p.price)}`}</span> บาท</span>
+                    <span className="font-lux text-[17px] font-semibold">แผนโปรโมทพาร์ทเนอร์ {p.label}</span>
+                    <span className="text-[13px]">ค่าแผนโปรโมท <span className="font-lux text-[24px] font-bold text-[#ffd76a]">{p.price == null ? "ติดต่อทีมงาน" : `฿${baht(p.price)}`}</span> บาท</span>
                     <span className="text-[12.5px] leading-[1.6] text-[#d3c7bc]"><b className="text-[#ffd76a]">[รอกำหนด ฿]</b> ค่าป้ายแบรนด์ (ชำระเพิ่ม)</span>
                     <span className="text-[12.5px] leading-[1.6] text-[#d3c7bc]"><b className="text-[#ffd76a]">{BOOKING_COMMISSION}%</b> การหักต่อ booking ที่มาจากแพลตฟอร์ม</span>
                     <span className="text-[12.5px] leading-[1.6] text-[#d3c7bc]"><b className="text-[#ffd76a]">{SELL_PRICE_NOTE}</b> ราคาขายต่อบริการ (ช่วย mark up ให้)</span>
@@ -221,9 +221,9 @@ export function PartnerSalePage({ hero }: { hero?: string }) {
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m5 12 5 5 9-10" /></svg>
                 </div>
                 <div className="font-lux text-[18px] font-semibold">ได้รับใบสมัครแล้ว</div>
-                <div className="text-[13px] text-[#cdbfb3]">ขั้นต่อไป: ชำระแพ็กเกจ {sel.label} แล้วทีมงานจะติดต่อนัด QC สถานที่</div>
+                <div className="text-[13px] text-[#cdbfb3]">ขั้นต่อไป: ชำระแผนโปรโมท {sel.label} แล้วทีมงานจะติดต่อนัด QC สถานที่</div>
                 {payHref
-                  ? <a href={payHref} className={`${RED} font-lux mt-1 grid h-[52px] w-full place-items-center text-[15px] no-underline`}>ไปชำระแพ็กเกจ</a>
+                  ? <a href={payHref} className={`${RED} font-lux mt-1 grid h-[52px] w-full place-items-center text-[15px] no-underline`}>ไปชำระแผนโปรโมท</a>
                   : <div className="text-[13px] text-[#cdbfb3]">ทีมงานจะติดต่อกลับภายใน 24 ชม.</div>}
               </div>
             ) : (
@@ -282,12 +282,12 @@ export function PartnerSalePage({ hero }: { hero?: string }) {
       <div className="fixed inset-x-0 bottom-0 z-30">
         <div className="mx-auto flex max-w-[480px] items-center justify-between gap-3 border-t bg-[rgba(14,10,10,.97)] px-4 pb-4 pt-3" style={{ borderColor: LINE }}>
           <div className="min-w-0">
-            <div className="text-[11px] text-[#cdbfb3]">แพ็กเกจ {sel.label}</div>
+            <div className="text-[11px] text-[#cdbfb3]">แผนโปรโมท {sel.label}</div>
             <div className="font-lux text-[22px] font-bold text-[#ffd76a]">{priceText(f.package)}</div>
           </div>
           <a href={payHref || "#apply"}
             className="btn-red-lux !border-[1.5px] !border-[#ffd76a] inline-flex h-[52px] items-center whitespace-nowrap rounded-full px-[18px] text-[14px] font-semibold text-white no-underline !shadow-[0_0_0_3px_rgba(255,59,85,.18),0_10px_28px_rgba(255,40,70,.45)]">
-            {payHref ? "ไปชำระแพ็กเกจ" : "สมัคร · ไปชำระแพ็กเกจ"}
+            {payHref ? "ไปชำระแผนโปรโมท" : "สมัคร · ไปชำระแผนโปรโมท"}
           </a>
         </div>
       </div>

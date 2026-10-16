@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 const isDate = (v: unknown): v is string => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v));
 const fail = (error: string, status = 400) => NextResponse.json({ ok: false, error }, { status });
 
-// แอดมินเปลี่ยนสถานะ / QC / แพ็กเกจ+วันเริ่ม (คำนวณวันจบให้) / ยอดชำระ / โน้ต
+// แอดมินเปลี่ยนสถานะ / QC / แผนโปรโมท+วันเริ่ม (คำนวณวันจบให้) / ยอดชำระ / โน้ต
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!(await allowed())) return fail("unauthorized", 401);
   const { id } = await params;

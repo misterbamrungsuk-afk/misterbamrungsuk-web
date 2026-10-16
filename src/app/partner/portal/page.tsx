@@ -62,13 +62,13 @@ export default async function PortalHome() {
       <Link href="/partner/portal/package" className="block glass rounded-3xl p-4 mt-4">
         {left != null && total ? (
           <>
-            <div className="flex justify-between text-sm"><span>แพ็กเกจ {(PARTNER_PACKAGES[p.package]?.label ?? p.package)}</span><span className={left <= 30 ? "text-crimson-300" : "text-gold-300"}>{left > 0 ? `เหลือ ${left} / ${total} วัน` : "หมดอายุแล้ว"}</span></div>
+            <div className="flex justify-between text-sm"><span>แผนโปรโมท {(PARTNER_PACKAGES[p.package]?.label ?? p.package)}</span><span className={left <= 30 ? "text-crimson-300" : "text-gold-300"}>{left > 0 ? `เหลือ ${left} / ${total} วัน` : "หมดอายุแล้ว"}</span></div>
             <div className="h-1.5 rounded-full bg-ink-700 mt-2 overflow-hidden"><div className={`h-full ${left <= 30 ? "bg-crimson-500" : "bg-gold-500"}`} style={{ width: `${Math.max(0, Math.min(100, (left / total) * 100))}%` }} /></div>
           </>
         ) : (
-          <p className="text-sm">{pendingPay ? "รอทีมงานตรวจสลิปค่าแพ็กเกจ" : "ยังไม่มีแพ็กเกจที่ใช้งาน — ชำระค่าแพ็กเกจ"}</p>
+          <p className="text-sm">{pendingPay ? "รอทีมงานตรวจสลิปค่าแผนโปรโมท" : "ยังไม่มีแผนโปรโมทที่ใช้งาน — ชำระค่าแผนโปรโมท"}</p>
         )}
-        <p className="text-xs text-gold-400 mt-2">ดูรายละเอียดแพ็กเกจ ›</p>
+        <p className="text-xs text-gold-400 mt-2">ดูรายละเอียดแผนโปรโมท ›</p>
       </Link>
 
       <section className="mt-6">

@@ -34,7 +34,7 @@ export const partnerCookieOptions = {
   httpOnly: true, sameSite: "lax" as const, secure: process.env.NODE_ENV === "production", path: "/", maxAge: DAYS * 86400,
 };
 
-/** token หลังส่งฟอร์มสมัคร — ใช้ชำระค่าแพ็กเกจ + ตั้งรหัสผ่าน (อายุ 14 วัน) */
+/** token หลังส่งฟอร์มสมัคร — ใช้ชำระค่าแผนโปรโมท + ตั้งรหัสผ่าน (อายุ 14 วัน) */
 export const signApplyToken = (pid: string) => sign({ k: "pa", pid, exp: Date.now() + 14 * 86400_000 });
 export const verifyApplyToken = (t: string | null | undefined) => verify<{ pid: string; exp: number }>(t ?? undefined, "pa")?.pid ?? null;
 

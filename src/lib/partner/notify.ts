@@ -8,7 +8,7 @@ import type { Purchase } from "./portal-types";
 // ชีต: ใช้ webhook Apps Script เดียวกับ /join (GOOGLE_SHEETS_WEBHOOK_URL/TOKEN) โดยส่ง sheet: "partners"
 //  → สคริปต์ต้องอ่าน body.sheet เป็นชื่อแท็บ (ไม่งั้นจะต่อแถวลงแท็บเดิมของสคริปต์)
 
-const COLUMNS = ["วันที่", "ธุรกิจ", "ประเภท", "จังหวัด", "ผู้ติดต่อ", "โทร", "อีเมล", "LINE", "ลิงก์", "แพ็กเกจ", "ข้อความ", "สถานะ", "id"];
+const COLUMNS = ["วันที่", "ธุรกิจ", "ประเภท", "จังหวัด", "ผู้ติดต่อ", "โทร", "อีเมล", "LINE", "ลิงก์", "แผนโปรโมท", "ข้อความ", "สถานะ", "id"];
 
 export async function syncPartnerSheet(p: Partner): Promise<boolean> {
   const url = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
@@ -31,16 +31,16 @@ const esc = (v: unknown) => String(v ?? "").replace(/[&<>"']/g, (c) => ENT[c]);
 export async function notifyAdmin(p: Partner) {
   const admin = process.env.ADMIN_NOTIFY_EMAIL;
   if (!admin) return false;
-  const rows: [string, string][] = [["ธุรกิจ", p.business_name], ["ประเภท", p.type], ["จังหวัด", p.province], ["ผู้ติดต่อ", p.contact_name], ["โทร", p.tel], ["อีเมล", p.email], ["LINE", p.line_id || "-"], ["แพ็กเกจ", PARTNER_PACKAGES[p.package].label], ["ข้อความ", p.message || "-"]];
+  const rows: [string, string][] = [["ธุรกิจ", p.business_name], ["ประเภท", p.type], ["จังหวัด", p.province], ["ผู้ติดต่อ", p.contact_name], ["โทร", p.tel], ["อีเมล", p.email], ["LINE", p.line_id || "-"], ["แผนโปรโมท", PARTNER_PACKAGES[p.package].label], ["ข้อความ", p.message || "-"]];
   const trs = rows.map(([k, v]) => `<tr><td style="padding:4px 12px 4px 0;color:#6b6152">${esc(k)}</td><td style="font-weight:600">${esc(v)}</td></tr>`).join("");
   const html = `<div style="font-family:Tahoma,sans-serif;max-width:520px;margin:auto;padding:24px;border:1px solid #d4af37;border-radius:16px"><p style="letter-spacing:.2em;font-size:12px;color:#8f5e00;margin:0">MISTER BAMRUNGSUK · PARTNER</p><h2>มีพาร์ทเนอร์สนใจใหม่</h2><table style="font-size:14px">${trs}</table><p style="font-size:13px;color:#6b6152">จัดการได้ที่ /admin/partners</p></div>`;
   return sendEmail({ to: admin.split(",").map((x) => x.trim()), subject: `[พาร์ทเนอร์ใหม่] ${p.business_name}`, html });
 }
 
-/** แจ้งทีม: มีสลิปค่าแพ็กเกจพาร์ทเนอร์รอตรวจ */
+/** แจ้งทีม: มีสลิปค่าแผนโปรโมทพาร์ทเนอร์รอตรวจ */
 export async function notifyPurchase(p: Partner, x: Purchase) {
   const admin = process.env.ADMIN_NOTIFY_EMAIL;
   if (!admin) return false;
-  const html = `<div style="font-family:Tahoma,sans-serif;max-width:520px;margin:auto;padding:24px;border:1px solid #d4af37;border-radius:16px"><p style="letter-spacing:.2em;font-size:12px;color:#8f5e00;margin:0">MISTER BAMRUNGSUK · PARTNER</p><h2>สลิปค่าแพ็กเกจรอตรวจ</h2><p>${esc(p.business_name)} · ${esc(PARTNER_PACKAGES[x.package].label)} · ฿${x.amount.toLocaleString("th-TH")}</p><p style="font-size:13px;color:#6b6152">ใบแจ้งหนี้ ${esc(x.invoice_no)} · ตรวจได้ที่ /admin/partners</p></div>`;
+  const html = `<div style="font-family:Tahoma,sans-serif;max-width:520px;margin:auto;padding:24px;border:1px solid #d4af37;border-radius:16px"><p style="letter-spacing:.2em;font-size:12px;color:#8f5e00;margin:0">MISTER BAMRUNGSUK · PARTNER</p><h2>สลิปค่าแผนโปรโมทรอตรวจ</h2><p>${esc(p.business_name)} · ${esc(PARTNER_PACKAGES[x.package].label)} · ฿${x.amount.toLocaleString("th-TH")}</p><p style="font-size:13px;color:#6b6152">ใบแจ้งหนี้ ${esc(x.invoice_no)} · ตรวจได้ที่ /admin/partners</p></div>`;
   return sendEmail({ to: admin.split(",").map((s) => s.trim()), subject: `[สลิปพาร์ทเนอร์] ${p.business_name} ${x.invoice_no}`, html }).catch(() => false);
 }

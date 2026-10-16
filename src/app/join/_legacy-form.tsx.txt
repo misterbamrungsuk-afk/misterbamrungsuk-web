@@ -72,7 +72,7 @@ export default function SalePage() {
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!f.package) e.package = "เลือกแพ็กเกจก่อน";
+    if (!f.package) e.package = "เลือกแผนโปรโมทก่อน";
     if (!f.first_name.trim()) e.first_name = "กรอกชื่อ";
     if (!f.last_name.trim()) e.last_name = "กรอกนามสกุล";
     if (!f.nickname.trim()) e.nickname = "กรอกชื่อเล่น";
@@ -195,7 +195,7 @@ export default function SalePage() {
           <section className="pb-10" id="packages">
             <SectionHead kicker="เลือกระดับความสำเร็จของคุณ" title="การลงทุนเพื่อภาพลักษณ์และมาตรฐานที่ลูกค้า VIP ไว้วางใจ" />
             <p className="reveal text-[14px] text-ink-200 mt-3 leading-relaxed">เพื่อรักษามาตรฐานระดับพรีเมียม เราจึงมีระบบ “เงินประกันมาตรฐานแบรนด์” ซึ่งคุณจะ<b className="text-gold-300">ได้รับคืนเต็มจำนวน</b> เมื่อทำงานครบตามกำหนด ถือเป็นการรับประกันความมั่นใจทั้งสำหรับคุณและลูกค้า</p>
-            <div className="flex flex-col gap-4 mt-5" role="radiogroup" aria-label="แพ็กเกจ">
+            <div className="flex flex-col gap-4 mt-5" role="radiogroup" aria-label="แผนโปรโมท">
               {(Object.keys(PACKAGES) as PackageKey[]).map((k) => {
                 const p = PACKAGES[k];
                 const on = f.package === k;
@@ -207,7 +207,7 @@ export default function SalePage() {
                       {premium && <span className="absolute -top-3 right-5 rounded-full bg-gold-500 text-[#1a1206] text-[11px] font-bold px-3 py-1 shadow-lg">PREMIUM</span>}
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <p className="text-[11px] font-semibold tracking-[0.2em] text-gold-400">แพ็กเกจ {k}</p>
+                          <p className="text-[11px] font-semibold tracking-[0.2em] text-gold-400">แผนโปรโมท {k}</p>
                           <p className="font-display text-xl font-semibold mt-1">{p.nameEn}</p>
                           <p className="text-[13px] text-ink-300 mt-0.5">({p.name})</p>
                         </div>
@@ -224,7 +224,7 @@ export default function SalePage() {
                         ))}
                       </ul>
                       <span className={`mt-5 h-12 grid place-items-center rounded-full font-semibold text-[15px] transition ${on ? "bg-gold-500 text-[#1a1206]" : "border border-white/15 text-ink-100"}`}>
-                        {on ? "✓ เลือกแพ็กเกจนี้แล้ว" : "เลือกแพ็กเกจนี้"}
+                        {on ? "✓ เลือกแผนโปรโมทนี้แล้ว" : "เลือกแผนโปรโมทนี้"}
                       </span>
                     </div>
                   </button>
@@ -279,12 +279,12 @@ export default function SalePage() {
             <Steps at={1} />
 
             <div className="flex flex-col gap-5 mt-5">
-              <Card title="แพ็กเกจที่เลือก" err={errs.package}>
+              <Card title="แผนโปรโมทที่เลือก" err={errs.package}>
                 <div className="grid grid-cols-2 gap-2">
                   {(Object.keys(PACKAGES) as PackageKey[]).map((k) => (
                     <button key={k} type="button" onClick={() => set("package", k)} aria-pressed={f.package === k}
                       className={`rounded-2xl border px-3 py-3 text-left transition ${f.package === k ? "border-gold-500 bg-gold-500/10" : "border-ink-600"}`}>
-                      <span className="block text-[11px] text-gold-400 font-semibold">แพ็กเกจ {k}</span>
+                      <span className="block text-[11px] text-gold-400 font-semibold">แผนโปรโมท {k}</span>
                       <span className="block text-[13px] font-medium mt-0.5">{PACKAGES[k].name}</span>
                       <span className="block font-display text-gold-300 mt-1">฿{baht(PACKAGES[k].price)}</span>
                     </button>
@@ -378,7 +378,7 @@ export default function SalePage() {
                 </Consent>
                 {errs.consent_criminal && <p data-err="1" className="text-[12px] text-crimson-300 -mt-1">{errs.consent_criminal}</p>}
                 <Consent checked={!!f.ack_hours} onChange={(v) => set("ack_hours", v)} required>
-                  รับทราบว่าการให้บริการอยู่ที่ {f.package ? PACKAGES[f.package].hours : "3–8 (A) / 3–5 (B)"} ชม. แล้วแต่แพ็กเกจ
+                  รับทราบว่าการให้บริการอยู่ที่ {f.package ? PACKAGES[f.package].hours : "3–8 (A) / 3–5 (B)"} ชม. แล้วแต่แผนโปรโมท
                 </Consent>
                 <Consent checked={!!f.ack_no_refuse} onChange={(v) => set("ack_no_refuse", v)} required>
                   {ACK_NO_REFUSE_TEXT}

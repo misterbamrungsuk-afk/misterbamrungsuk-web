@@ -24,7 +24,7 @@ export default async function PortalLayout({ children }: { children: React.React
         </p>
       )}
       {st === "expired" && (
-        <p className="mx-5 mt-4 rounded-2xl border border-crimson-500/50 bg-crimson-500/10 px-4 py-3 text-xs text-ink-200">แพ็กเกจหมดอายุ — ต่ออายุได้ที่แท็บแพ็กเกจ</p>
+        <p className="mx-5 mt-4 rounded-2xl border border-crimson-500/50 bg-crimson-500/10 px-4 py-3 text-xs text-ink-200">แผนโปรโมทหมดอายุ — ต่ออายุได้ที่แท็บแผนโปรโมท</p>
       )}
       <main className="px-5">{children}</main>
       <PortalNav />

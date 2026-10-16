@@ -14,7 +14,7 @@ const cell = (v: unknown) => {
 
 export async function GET() {
   if (!(await allowed())) return NextResponse.json({ ok: false }, { status: 401 });
-  const head = ["สมัครเมื่อ", "ธุรกิจ", "ประเภท", "จังหวัด", "ผู้ติดต่อ", "โทร", "อีเมล", "LINE", "ลิงก์", "แพ็กเกจ", "สถานะ", "QC", "เริ่ม", "สิ้นสุด", "ยอดชำระ", "ข้อความ", "โน้ต"];
+  const head = ["สมัครเมื่อ", "ธุรกิจ", "ประเภท", "จังหวัด", "ผู้ติดต่อ", "โทร", "อีเมล", "LINE", "ลิงก์", "แผนโปรโมท", "สถานะ", "QC", "เริ่ม", "สิ้นสุด", "ยอดชำระ", "ข้อความ", "โน้ต"];
   const rows = (await listPartners()).map((p) => [
     p.created_at, p.business_name, p.type, p.province, p.contact_name, p.tel, p.email, p.line_id, p.links,
     PARTNER_PACKAGES[p.package as PartnerPackageKey]?.label ?? p.package, STATUS_LABEL[p.status], p.qc, p.starts_at, p.ends_at, p.amount, p.message, p.notes,

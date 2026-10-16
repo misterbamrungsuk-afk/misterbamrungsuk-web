@@ -58,7 +58,7 @@ export function partnerTimeline(p: TimelineInput): TimelineStep[] {
   const qcFailed = p.qc === "failed" || p.qc_status === "failed";
   const raw: [string, boolean, string, boolean][] = [
     ["ส่งใบสมัคร", true, "", false],
-    ["ชำระแพ็กเกจ", p.pay === "paid" || p.pay === "pending",
+    ["ชำระแผนโปรโมท", p.pay === "paid" || p.pay === "pending",
       p.pay === "pending" ? "รอตรวจสลิป" : p.pay === "rejected" ? "สลิปไม่ผ่าน กรุณาส่งใหม่" : p.pay ? "" : "ยังไม่ได้ส่งสลิป", p.pay === "rejected"],
     ["นัด QC สถานที่", qcPassed, qcFailed ? "ไม่ผ่าน QC · ทีมงานจะติดต่อกลับ" : p.qc_slot ? `นัดแล้ว ${qcSlotLabel(p.qc_slot)}` : "", qcFailed],
     ["ทำสัญญา + ป้ายแบรนด์", qcPassed && approved, "", false],

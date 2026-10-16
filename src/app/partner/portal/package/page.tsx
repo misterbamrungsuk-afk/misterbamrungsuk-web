@@ -21,7 +21,7 @@ export default async function PartnerPackagePage() {
 
   return (
     <>
-      <h1 className="font-display text-2xl font-semibold mt-5">แพ็กเกจของฉัน</h1>
+      <h1 className="font-display text-2xl font-semibold mt-5">แผนโปรโมทของฉัน</h1>
 
       <section className="mt-4 rounded-3xl border border-gold-500/50 bg-gradient-to-br from-ink-800 to-ink-900 p-5">
         <div className="flex justify-between text-[11px] tracking-[.18em] text-gold-400"><span>CURRENT PLAN</span><span className="tracking-normal">QC {QC_LABEL[p.qc]}</span></div>
@@ -33,14 +33,14 @@ export default async function PartnerPackagePage() {
             <p className={`text-xs mt-1 ${left <= 30 ? "text-crimson-300" : "text-ink-300"}`}>{left > 0 ? `เหลือ ${left} / ${total} วัน` : "หมดอายุแล้ว"}</p>
           </>
         ) : (
-          <p className="mt-2 text-sm text-ink-300">{pending ? `รอตรวจสลิป ${pending.invoice_no}` : "ยังไม่มีแพ็กเกจที่ใช้งาน"}</p>
+          <p className="mt-2 text-sm text-ink-300">{pending ? `รอตรวจสลิป ${pending.invoice_no}` : "ยังไม่มีแผนโปรโมทที่ใช้งาน"}</p>
         )}
         <p className="text-xs text-ink-400 mt-3">แพลตฟอร์มหัก {p.platform_pct ?? "[รอกำหนด]"}% ต่อการจอง</p>
       </section>
 
       <section className="mt-6">
         <h2 className="font-semibold">ต่ออายุ / อัปเกรด</h2>
-        <p className="text-xs text-ink-400 mt-1">ทุกแพ็กเกจรวม: {PACKAGE_INCLUDES.join(" · ")}</p>
+        <p className="text-xs text-ink-400 mt-1">ทุกแผนโปรโมทรวม: {PACKAGE_INCLUDES.join(" · ")}</p>
         {pending ? <p className="mt-3 text-sm rounded-2xl border border-gold-500/40 px-4 py-3">มีรายการรอตรวจสลิปอยู่ ({pending.invoice_no} · ฿{baht(pending.amount)}) — ทีมงานจะตรวจภายใน 24 ชม.</p>
           : <RenewBox current={p.package} />}
       </section>
@@ -66,7 +66,7 @@ export default async function PartnerPackagePage() {
           <ul className="mt-3 space-y-2">
             {purchases.map((x) => (
               <li key={x.id} className="rounded-2xl border border-ink-600 bg-ink-800/60 px-4 py-3 flex justify-between gap-3 text-sm">
-                <div className="min-w-0"><p className="font-medium truncate">{x.invoice_no}</p><p className="text-xs text-ink-300">{new Date(x.created_at).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", day: "numeric", month: "short", year: "2-digit" })} · แพ็กเกจ {PARTNER_PACKAGES[x.package].label}</p></div>
+                <div className="min-w-0"><p className="font-medium truncate">{x.invoice_no}</p><p className="text-xs text-ink-300">{new Date(x.created_at).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", day: "numeric", month: "short", year: "2-digit" })} · แผนโปรโมท {PARTNER_PACKAGES[x.package].label}</p></div>
                 <div className="text-right shrink-0"><p className="font-display text-gold-300">฿{baht(x.amount)}</p><p className={`text-xs ${x.status === "paid" ? "text-emerald-300" : x.status === "rejected" ? "text-crimson-300" : "text-ink-300"}`}>{PURCHASE_LABEL[x.status]}</p></div>
               </li>
             ))}

@@ -10,7 +10,7 @@ import { notifyPurchase } from "@/lib/partner/notify";
 export const runtime = "nodejs";
 const bad = (error: string, status = 400) => NextResponse.json({ ok: false, error }, { status });
 
-// ชำระค่าแพ็กเกจ (QR + สลิป) → purchase สถานะ pending รอแอดมินตรวจ
+// ชำระค่าแผนโปรโมท (QR + สลิป) → purchase สถานะ pending รอแอดมินตรวจ
 // ผู้เรียก: พาร์ทเนอร์ที่ล็อกอิน (ต่ออายุ/อัปเกรด) หรือผู้สมัครใหม่ที่ถือ token จากฟอร์มสมัคร
 export async function POST(req: Request) {
   if (rateLimited(`ppay:${clientIp(req)}`, 6, 10 * 60_000)) return bad("ส่งบ่อยเกินไป กรุณารอสักครู่", 429);
@@ -25,8 +25,8 @@ export async function POST(req: Request) {
   if (!partner) return bad("กรุณาเข้าสู่ระบบ", 401);
 
   const pkg = String(form.get("package") ?? "") as PartnerPackageKey;
-  if (!PACKAGE_KEYS.includes(pkg)) return bad("เลือกแพ็กเกจ");
-  if (PARTNER_PACKAGES[pkg].price == null) return bad("แพ็กเกจนี้กรุณาติดต่อทีมงาน");
+  if (!PACKAGE_KEYS.includes(pkg)) return bad("เลือกแผนโปรโมท");
+  if (PARTNER_PACKAGES[pkg].price == null) return bad("แผนโปรโมทนี้กรุณาติดต่อทีมงาน");
   const slip = form.get("slip");
   if (!(slip instanceof File) || !slip.size) return bad("แนบสลิปการโอนก่อน");
   if (!IMAGE_TYPES.includes(slip.type) || slip.size > MAX_FILE) return bad("สลิปต้องเป็นรูป JPG/PNG/WEBP ไม่เกิน 5MB");

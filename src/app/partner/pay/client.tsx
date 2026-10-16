@@ -5,7 +5,7 @@ import Link from "next/link";
 import { BOOKING_COMMISSION, PACKAGE_KEYS, PARTNER_PACKAGES, baht, type PartnerPackageKey } from "@/lib/partner/config";
 import { PartnerPayBox } from "../pay-box";
 
-// หน้าชำระแพ็กเกจหลังสมัคร — ตามบอร์ด PartnerPay.dc.html (เลือกแพ็กเกจ → สรุปยอด → QR + สลิป → รอตรวจ)
+// หน้าชำระแผนโปรโมทหลังสมัคร — ตามบอร์ด PartnerPay.dc.html (เลือกแผนโปรโมท → สรุปยอด → QR + สลิป → รอตรวจ)
 const LINE = "rgba(240,200,90,.38)";
 const PERKS = ["คลิปโปรโมท 1 คลิปลง IG & FB ของแบรนด์", "สุ่ม QC มาตรฐาน", "โปรโมทผ่านแพลตฟอร์ม Mister Bamrungsuk", 'ป้าย "ทำงานร่วมกับ Mister Bamrungsuk"'];
 const NEXT = ["QC สถานที่", "ทำสัญญา", "ถ่ายคลิป", "เปิดแสดงบนแพลตฟอร์ม"];
@@ -55,7 +55,7 @@ export function SignupPay({ token, business, type, initial, hasPassword }: { tok
   const sel = PARTNER_PACKAGES[pkg];
   return (
     <>
-      <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="แพ็กเกจ">
+      <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="แผนโปรโมท">
         {PACKAGE_KEYS.map((k) => {
           const x = PARTNER_PACKAGES[k];
           const on = pkg === k;
@@ -64,7 +64,7 @@ export function SignupPay({ token, business, type, initial, hasPassword }: { tok
               className="flex min-h-[84px] w-full min-w-0 flex-col items-center justify-center gap-1 rounded-[14px] p-2 text-center text-[#f6efe4]"
               style={{ border: `1px solid ${on ? "#f0c75a" : LINE}`, background: on ? "rgba(240,200,90,.16)" : "#241717" }}>
               {x.badge && <span className="rounded-full bg-[#f0c75a] px-2 py-0.5 text-[11px] font-semibold leading-[1.3] text-[#0e0a0a]">{x.badge}</span>}
-              <span className="text-[12px] leading-[1.4] text-[#cdbfb3]">แพ็กเกจ {x.label}</span>
+              <span className="text-[12px] leading-[1.4] text-[#cdbfb3]">แผนโปรโมท {x.label}</span>
               <span className="font-lux text-[18px] font-semibold text-[#ffd76a]">{price(k)}</span>
             </button>
           );
@@ -75,11 +75,11 @@ export function SignupPay({ token, business, type, initial, hasPassword }: { tok
         <div className="flex flex-col gap-2">
           <Row n="ธุรกิจ" v={business} />
           <Row n="ประเภท" v={type} />
-          <Row n="แพ็กเกจ" v={sel.label} />
+          <Row n="แผนโปรโมท" v={sel.label} />
         </div>
         <div className="flex min-w-0 flex-col gap-2">
           <div className="text-[12px] text-[#cdbfb3]">รายการ</div>
-          <Row muted={false} n={`แพ็กเกจพาร์ทเนอร์ ${sel.label}`} v={price(pkg)} />
+          <Row muted={false} n={`แผนโปรโมทพาร์ทเนอร์ ${sel.label}`} v={price(pkg)} />
           <Row muted={false} n="ค่าป้ายแบรนด์" v="[รอกำหนด]" />
         </div>
         <div className="flex min-w-0 flex-col gap-2">

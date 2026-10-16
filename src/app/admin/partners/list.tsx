@@ -49,7 +49,7 @@ export function PartnerList({ initial, purchases: initialPurchases }: { initial:
       ["กำลังโปรโมท", String(rows.filter((r) => r.status === "active").length)],
       ["รอทำสัญญา / QC", String(rows.filter((r) => r.status === "qc" || r.status === "contacted").length)],
       ["ใกล้หมดอายุ ≤30 วัน", String(soon)],
-      ["สลิปแพ็กเกจรอตรวจ", String(purchases.filter((x) => x.status === "pending").length)],
+      ["สลิปแผนโปรโมทรอตรวจ", String(purchases.filter((x) => x.status === "pending").length)],
       ["รายได้รวม", `฿${baht(rows.reduce((s, r) => s + (r.amount || 0), 0))}`],
     ];
   }, [rows, purchases]);
@@ -84,7 +84,7 @@ export function PartnerList({ initial, purchases: initialPurchases }: { initial:
             <table className="w-full text-sm">
               <thead className="text-left text-xs text-ink-300 border-b border-ink-600">
                 <tr>
-                  <th className="p-3">ธุรกิจ</th><th className="p-3">แพ็กเกจ</th><th className="p-3">เริ่ม</th>
+                  <th className="p-3">ธุรกิจ</th><th className="p-3">แผนโปรโมท</th><th className="p-3">เริ่ม</th>
                   <th className="p-3">สถานะ</th><th className="p-3">ระยะเวลาคงเหลือ</th><th className="p-3">QC</th>
                 </tr>
               </thead>
@@ -119,7 +119,7 @@ function Detail({ p, purchases, onClose, onSaved, onPurchase }: { p: PartnerRow;
   const [clipNote, setClipNote] = useState(p.clip_note ?? "");
   const [pct, setPct] = useState(p.platform_pct == null ? "" : String(p.platform_pct));
   const decide = async (x: Purchase, action: "approve" | "reject") => {
-    if (action === "approve" && !confirm(`อนุมัติสลิป ${x.invoice_no} ฿${baht(x.amount)} และต่ออายุแพ็กเกจ?`)) return;
+    if (action === "approve" && !confirm(`อนุมัติสลิป ${x.invoice_no} ฿${baht(x.amount)} และต่ออายุแผนโปรโมท?`)) return;
     setBusy(true);
     setMsg("");
     try {
@@ -128,7 +128,7 @@ function Detail({ p, purchases, onClose, onSaved, onPurchase }: { p: PartnerRow;
       if (!out.ok || !out.row) return setMsg(`ไม่สำเร็จ ${out.error ?? ""}`);
       onPurchase(out.row);
       if (out.partner) onSaved(out.partner);
-      setMsg(action === "approve" ? "อนุมัติแล้ว ต่ออายุแพ็กเกจให้แล้ว" : "ปฏิเสธสลิปแล้ว");
+      setMsg(action === "approve" ? "อนุมัติแล้ว ต่ออายุแผนโปรโมทให้แล้ว" : "ปฏิเสธสลิปแล้ว");
     } finally {
       setBusy(false);
     }
@@ -194,7 +194,7 @@ function Detail({ p, purchases, onClose, onSaved, onPurchase }: { p: PartnerRow;
           </select>
         </div>
         <div>
-          <label className={lab}>แพ็กเกจ</label>
+          <label className={lab}>แผนโปรโมท</label>
           <select className="input-dark w-full" value={pkg} onChange={(e) => setPkg(e.target.value as PartnerPackageKey)}>
             {PACKAGE_KEYS.map((k) => <option key={k} value={k}>{PARTNER_PACKAGES[k].label}</option>)}
           </select>
@@ -204,10 +204,10 @@ function Detail({ p, purchases, onClose, onSaved, onPurchase }: { p: PartnerRow;
           <input type="date" className="input-dark w-full" value={start} onChange={(e) => setStart(e.target.value)} />
         </div>
         <div className="col-span-2">
-          <label className={lab}>ยอดที่ชำระแล้ว (บาท) {PARTNER_PACKAGES[pkg].price != null && <span>· ราคาแพ็กเกจ ฿{baht(PARTNER_PACKAGES[pkg].price!)}</span>}</label>
+          <label className={lab}>ยอดที่ชำระแล้ว (บาท) {PARTNER_PACKAGES[pkg].price != null && <span>· ราคาแผนโปรโมท ฿{baht(PARTNER_PACKAGES[pkg].price!)}</span>}</label>
           <input type="number" min={0} inputMode="numeric" className="input-dark w-full" value={amount} onChange={(e) => setAmount(e.target.value)} />
         </div>
-        <p className="col-span-2 text-xs text-ink-300">สิ้นสุด: {fmt(p.ends_at)} (คำนวณอัตโนมัติจากวันเริ่ม + แพ็กเกจเมื่อบันทึก)</p>
+        <p className="col-span-2 text-xs text-ink-300">สิ้นสุด: {fmt(p.ends_at)} (คำนวณอัตโนมัติจากวันเริ่ม + แผนโปรโมทเมื่อบันทึก)</p>
         <div>
           <label className={lab}>บัญชีพอร์ทัล {p.has_login ? "" : "(ยังไม่ตั้งรหัส)"}</label>
           <select className="input-dark w-full" value={account} onChange={(e) => setAccount(e.target.value as AccountStatus)}>
@@ -238,7 +238,7 @@ function Detail({ p, purchases, onClose, onSaved, onPurchase }: { p: PartnerRow;
       {msg && <p className="mt-2 text-xs text-ink-300">{msg}</p>}
 
       <div className="mt-5 border-t border-ink-600 pt-4">
-        <p className="font-semibold text-sm">การชำระค่าแพ็กเกจ</p>
+        <p className="font-semibold text-sm">การชำระค่าแผนโปรโมท</p>
         {purchases.length === 0 ? <p className="text-xs text-ink-300 mt-2">ยังไม่มีรายการ</p> : (
           <ul className="mt-2 space-y-2">
             {purchases.map((x) => (

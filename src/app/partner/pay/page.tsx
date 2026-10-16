@@ -6,9 +6,9 @@ import { SignupPay } from "./client";
 import { SiteHeader } from "@/components/site-header";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "ชำระค่าแพ็กเกจพาร์ทเนอร์ · Mister Bamrungsuk" };
+export const metadata = { title: "ชำระค่าแผนโปรโมทพาร์ทเนอร์ · Mister Bamrungsuk" };
 
-// ชำระค่าแพ็กเกจหลังส่งฟอร์มสมัคร (QR + สลิป) — ต้องมี token (?t=) · ตามบอร์ด PartnerPay.dc.html
+// ชำระค่าแผนโปรโมทหลังส่งฟอร์มสมัคร (QR + สลิป) — ต้องมี token (?t=) · ตามบอร์ด PartnerPay.dc.html
 export default async function PartnerPay({ searchParams }: { searchParams: Promise<{ t?: string; pkg?: string }> }) {
   const { t, pkg } = await searchParams;
   const pid = verifyApplyToken(t);
@@ -22,7 +22,7 @@ export default async function PartnerPay({ searchParams }: { searchParams: Promi
           <Link href="/partner" aria-label="ย้อนกลับ" className="grid h-11 w-11 place-items-center rounded-full border border-[rgba(240,200,90,.38)] bg-[#241717] text-[#ffd76a]">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m15 5-7 7 7 7" /></svg>
           </Link>
-          <h1 className="font-lux m-0 text-[17px] font-semibold text-[#f0c75a]">ชำระแพ็กเกจพาร์ทเนอร์</h1>
+          <h1 className="font-lux m-0 text-[17px] font-semibold text-[#f0c75a]">ชำระแผนโปรโมทพาร์ทเนอร์</h1>
         </div>
         <div className="flex min-w-0 flex-col gap-4 px-4 pt-4">
           {p ? <SignupPay token={t!} business={p.business_name} type={p.type} initial={initial} hasPassword={!!p.password_hash} />

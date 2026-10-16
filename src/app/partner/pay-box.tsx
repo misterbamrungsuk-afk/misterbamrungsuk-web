@@ -8,7 +8,7 @@ import { resizeImage, dataUrlToFile } from "@/lib/join/form";
 import { promptPayPayload } from "@/lib/join/promptpay";
 import { BOOKING_COMMISSION, PARTNER_PACKAGES, baht, type PartnerPackageKey } from "@/lib/partner/config";
 
-// ชำระค่าแพ็กเกจพาร์ทเนอร์: QR พร้อมเพย์ฝังยอด (หมดอายุ 15 นาที กดสร้างใหม่ได้) + แนบสลิป — ตามบอร์ด PartnerPay.dc.html
+// ชำระค่าแผนโปรโมทพาร์ทเนอร์: QR พร้อมเพย์ฝังยอด (หมดอายุ 15 นาที กดสร้างใหม่ได้) + แนบสลิป — ตามบอร์ด PartnerPay.dc.html
 // token = ผู้สมัครใหม่ (ยังไม่ล็อกอิน); ไม่มี token = ใช้เซสชันพาร์ทเนอร์
 // requireAgree = แสดงช่องยอมรับเงื่อนไข (หน้าสมัคร) · showAmount = แสดงยอดชำระในกล่อง (พอร์ทัล)
 const QR_TTL = 15 * 60;
@@ -40,7 +40,7 @@ export function PartnerPayBox({ pkg, token, onDone, requireAgree = false, showAm
     return () => clearInterval(t);
   }, []);
 
-  if (price == null) return <p className="text-sm text-[#cdbfb3]">แพ็กเกจ {PARTNER_PACKAGES[pkg].label} กรุณาติดต่อทีมงานเพื่อเสนอราคา</p>;
+  if (price == null) return <p className="text-sm text-[#cdbfb3]">แผนโปรโมท {PARTNER_PACKAGES[pkg].label} กรุณาติดต่อทีมงานเพื่อเสนอราคา</p>;
 
   const hasQr = !!qr || !!BANK.qrImage;
   const expired = sec === 0;

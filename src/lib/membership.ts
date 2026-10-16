@@ -1,4 +1,4 @@
-// ── สมาชิก / แพ็กเกจ / ของขวัญ (โหมดสาธิต: เก็บสถานะใน localStorage) ──
+// ── สมาชิก / แผนโปรโมท / ของขวัญ (โหมดสาธิต: เก็บสถานะใน localStorage) ──
 import type { Post, PromoCostModel } from "./types";
 
 // ⚠️ ราคาทั้งหมดด้านล่างเป็น "ราคาตัวอย่าง (placeholder)" — เจ้าของกิจการต้องกำหนดราคาจริงก่อนเปิดใช้งาน
@@ -11,7 +11,7 @@ export const MEMBERSHIP = {
 
 export interface SessionPack { key: "pack5" | "pack10"; sessions: number; price: number; validMonths: number }
 
-/** แพ็กเกจจำนวนครั้ง อายุ 12 เดือน — ราคาเป็น PLACEHOLDER */
+/** แผนโปรโมทจำนวนครั้ง อายุ 12 เดือน — ราคาเป็น PLACEHOLDER */
 export const SESSION_PACKS: SessionPack[] = [
   { key: "pack5", sessions: 5, price: 4500, validMonths: 12 },
   { key: "pack10", sessions: 10, price: 8500, validMonths: 12 },
@@ -27,7 +27,7 @@ export function planPrice(plan: PlanKey, withEntry: boolean) {
 export function planLabel(plan: PlanKey, th = true) {
   if (plan === "monthly") return th ? "สมาชิกรายเดือน" : "Monthly membership";
   const p = SESSION_PACKS.find((x) => x.key === plan)!;
-  return th ? `แพ็กเกจ ${p.sessions} ครั้ง` : `${p.sessions}-session pack`;
+  return th ? `แผนโปรโมท ${p.sessions} ครั้ง` : `${p.sessions}-session pack`;
 }
 
 // ── สถานะสมาชิก (localStorage) ──

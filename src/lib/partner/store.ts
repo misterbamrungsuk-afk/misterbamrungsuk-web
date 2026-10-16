@@ -52,7 +52,7 @@ export const db = () => (sb ??= createClient(process.env.SUPABASE_URL!, process.
 const g = globalThis as unknown as { __mbPartnerDemo?: Partner[] };
 export const demo: Partner[] = (g.__mbPartnerDemo ??= []);
 
-/** วันสิ้นสุด = วันเริ่ม + จำนวนเดือนของแพ็กเกจ (YYYY-MM-DD) */
+/** วันสิ้นสุด = วันเริ่ม + จำนวนเดือนของแผนโปรโมท (YYYY-MM-DD) */
 export function endDateFor(start: string, pkg: PartnerPackageKey): string {
   const d = new Date(`${start}T00:00:00Z`);
   d.setUTCMonth(d.getUTCMonth() + (PARTNER_PACKAGES[pkg]?.months ?? 0));

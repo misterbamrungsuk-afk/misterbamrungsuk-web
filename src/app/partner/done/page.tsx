@@ -37,7 +37,7 @@ export default async function PartnerDone({ searchParams }: { searchParams: Prom
         <div className="rounded-[22px] p-[18px] border border-[rgba(212,175,55,.55)] bg-[linear-gradient(150deg,#3a2614,#241717_55%,#2a0f15)] flex flex-col gap-2">
           <div className="flex justify-between items-center gap-2">
             <span className="text-xs text-[#ffd76a]">รหัสพาร์ทเนอร์ของคุณ</span>
-            <span className="text-[11px] px-2.5 py-[3px] rounded-full border border-[#f0c75a] text-[#f0c75a]">แพ็กเกจ {PARTNER_PACKAGES[p.package]?.label ?? p.package}</span>
+            <span className="text-[11px] px-2.5 py-[3px] rounded-full border border-[#f0c75a] text-[#f0c75a]">แผนโปรโมท {PARTNER_PACKAGES[p.package]?.label ?? p.package}</span>
           </div>
           <div className="font-lux font-semibold text-[32px] tracking-[3px]">{code}</div>
           <CopyCode code={code} />

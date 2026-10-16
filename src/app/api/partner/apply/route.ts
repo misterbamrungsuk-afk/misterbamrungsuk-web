@@ -40,13 +40,13 @@ export async function POST(req: Request) {
   if (!input.contact_name) return bad("กรอกชื่อผู้ติดต่อ");
   if (!/^\+?\d{9,15}$/.test(input.tel)) return bad("เบอร์โทรไม่ถูกต้อง");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email)) return bad("อีเมลไม่ถูกต้อง");
-  if (!PACKAGE_KEYS.includes(input.package)) return bad("เลือกแพ็กเกจที่สนใจ");
+  if (!PACKAGE_KEYS.includes(input.package)) return bad("เลือกแผนโปรโมทที่สนใจ");
   if (b.consent !== true) return bad("กรุณายินยอมการเก็บข้อมูล (PDPA)");
 
   try {
     const row = await createPartner({ ...input, consented_at: new Date().toISOString(), ip });
     void Promise.allSettled([syncPartnerSheet(row), notifyAdmin(row)]);
-    // token สำหรับชำระค่าแพ็กเกจ + ตั้งรหัสผ่านเข้าพอร์ทัล (/partner/pay)
+    // token สำหรับชำระค่าแผนโปรโมท + ตั้งรหัสผ่านเข้าพอร์ทัล (/partner/pay)
     return NextResponse.json({ ok: true, token: signApplyToken(row.id), package: row.package });
   } catch (e) {
     console.error("partner apply", e);

@@ -6,7 +6,7 @@ import { PartnerList } from "./list";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "พาร์ทเนอร์ · แอดมิน Mister Bamrungsuk" };
 
-// พาร์ทเนอร์ที่ซื้อพื้นที่โปรโมท (จากหน้า /partner) — สถานะ แพ็กเกจ วันหมดอายุ รายได้
+// พาร์ทเนอร์ที่ซื้อพื้นที่โปรโมท (จากหน้า /partner) — สถานะ แผนโปรโมท วันหมดอายุ รายได้
 export default async function PartnersPage() {
   const [rows, purchases] = await Promise.all([listPartners(), listPurchases().catch(() => [])]);
   return (
