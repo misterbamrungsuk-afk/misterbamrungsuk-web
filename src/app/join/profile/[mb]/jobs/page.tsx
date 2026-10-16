@@ -5,6 +5,7 @@ import { TRAINING } from "@/lib/join/training";
 import { Forbidden } from "../../../_kyc/ui";
 import { PtHead, PtNav, PtPage, baht, loadPt, ptHref } from "../_pt";
 import { JobPost } from "../_ptc";
+import { PtIncoming } from "../_ptc3";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "ประกาศงาน — Mister Bamrungsuk" };
@@ -23,7 +24,8 @@ export default async function JobsPage({ params, searchParams }: { params: Promi
 
   return (
     <PtPage>
-      <PtHead back={ptHref(c)} title="ประกาศงาน" />
+      <PtHead back={ptHref(c)} title="งานและประกาศ" />
+      <PtIncoming mb={c.mb} t={c.t} />
       <div className="flex gap-2 px-4 pb-3.5">
         <span className="h-9 rounded-full text-[13px] flex items-center bg-[#f3ead9] text-[#1b130b] font-semibold" style={{ padding: "0 16px" }}>ประกาศของฉัน</span>
         <span className="h-9 rounded-full text-[13px] flex items-center bg-[#2c1a1f] font-light" style={{ padding: "0 16px" }}>บอกลูกค้าว่าวันนี้คุณว่าง</span>

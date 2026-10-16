@@ -99,7 +99,7 @@ export function ProfileView({ p }: { p: Person }) {
             </div>
             </>}
           </div>
-          <p className="m-0 text-[12px] text-[#b5a596] font-light">{p.real ? "เปิดให้จองและแชทผ่านแอปเร็ว ๆ นี้" : "ข้อมูลตัวอย่าง · แอปลูกค้าเปิดให้จองจริงเร็ว ๆ นี้"}</p>
+          <p className="m-0 text-[12px] text-[#b5a596] font-light">{p.real ? "จองแล้วเงินพักไว้กับเราจนจบนัด · คุยกับเพื่อนได้ในแชทหลังเพื่อนตอบรับ" : "ข้อมูลตัวอย่าง · เลือกเพื่อนที่เปิดรับงานจริงจากหน้าแรกเพื่อจอง"}</p>
         </div>
       </div>
 
@@ -111,7 +111,7 @@ export function ProfileView({ p }: { p: Person }) {
             {!p.real && <Link href={`/p/${p.id}/chat`} aria-label={`แชทกับ${p.nick}`} className="h-[52px] rounded-full flex items-center gap-2 text-[#e8c472] font-semibold hover:text-[#e8c472]" style={{ padding: "0 20px", border: "1.5px solid rgba(232,196,114,.6)" }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" /></svg>แชท
             </Link>}
-            <Link href="/login" className="h-[52px] rounded-full bg-[#e8c472] text-[#1b130b] font-semibold flex items-center hover:text-[#1b130b]" style={{ padding: "0 28px", border: "1.5px solid #e8c472" }}>จองเลย</Link>
+            <Link href={p.real ? `/book/${p.id}` : "/login"} className="h-[52px] rounded-full bg-[#e8c472] text-[#1b130b] font-semibold flex items-center hover:text-[#1b130b]" style={{ padding: "0 28px", border: "1.5px solid #e8c472" }}>จองเลย</Link>
           </div>
         </div>
       </div>

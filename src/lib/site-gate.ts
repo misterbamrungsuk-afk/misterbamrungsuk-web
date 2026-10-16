@@ -18,7 +18,7 @@ export function gateExempt(p: string) {
   return (
     p === "/gate" || p === "/api/gate" ||
     p.startsWith("/api/cron/") || // Vercel Cron (ป้องกันด้วย CRON_SECRET เอง)
-    p === "/join" || p.startsWith("/join/") || p.startsWith("/api/join/") ||
+    p === "/join" || p.startsWith("/join/") || p.startsWith("/api/join/") || p.startsWith("/api/pt/") ||
     p.startsWith("/api/otp/") || // OTP ใช้ในหน้ารับสมัคร /join/pay (มี Turnstile + rate limit)
     p === "/partner" || p.startsWith("/partner/") || p.startsWith("/api/partner/") ||
     // Marketplace หน้าแรก (สาธารณะ)

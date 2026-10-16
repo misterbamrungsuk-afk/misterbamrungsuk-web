@@ -1,169 +1,36 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
-import { useMemo, useState } from "react";
+// บอร์ด C-Chats "แชท" — 1 ห้องต่อ 1 การจอง (คุยได้ตั้งแต่ส่งคำขอจนจบนัด)
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useI18n } from "@/i18n/provider";
-import { TopBar } from "@/components/shell";
-import { Sheet, Field, EmptyState, Modal } from "@/components/ui";
-import { DEMO_ROOMS, DEMO_BANKS, DEMO_SAVED_REPLIES, DEMO_AUTO_REPLY } from "@/lib/demo-data";
-import { BANKS } from "@/lib/categories";
 
-export default function ChatListPage() {
-  const { t, lang } = useI18n();
-  const [tab, setTab] = useState<"all" | "hirer" | "provider">("all");
-  const [q, setQ] = useState("");
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [settingTab, setSettingTab] = useState<"auto" | "saved" | "banks">("auto");
-  const [autoEnabled, setAutoEnabled] = useState(true);
-  const [autoMsg, setAutoMsg] = useState(DEMO_AUTO_REPLY);
-  const [replies, setReplies] = useState(DEMO_SAVED_REPLIES);
-  const [banks, setBanks] = useState(DEMO_BANKS);
-  const [addBankOpen, setAddBankOpen] = useState(false);
-  const [newBank, setNewBank] = useState({ bankCode: "kbank", accountNo: "", accountName: "" });
-  const [savedToast, setSavedToast] = useState(false);
+const LN = "rgba(243,234,217,0.07)";
+type B = { id: string; code: string; status: string; starts_at: string; hours: number; place: { label: string }; pt: { nick: string; img: string } };
+const OPEN = ["requested", "accepted", "checked_in", "cancel_requested"];
+const SUB: Record<string, string> = { requested: "รอเพื่อนตอบรับ", accepted: "ยืนยันนัดแล้ว", checked_in: "ระหว่างนัด", cancel_requested: "ขอยกเลิก · รอทีมงาน" };
 
-  const rooms = useMemo(() => {
-    let list = [...DEMO_ROOMS];
-    if (q) list = list.filter((r) => r.partner.name.toLowerCase().includes(q.toLowerCase()) || r.lastMessage.includes(q));
-    return list.sort((a, b) => b.unread - a.unread);
-  }, [q]);
-  void tab;
-
+export default function ChatsPage() {
+  const [rows, setRows] = useState<B[] | null>(null);
+  useEffect(() => { fetch("/api/bookings", { cache: "no-store" }).then((r) => r.json()).then((d) => setRows(d?.ok ? d.bookings : [])).catch(() => setRows([])); }, []);
+  const open = (rows ?? []).filter((b) => OPEN.includes(b.status)).sort((a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at));
   return (
-    <>
-      <TopBar
-        title={
-          <div>
-            <p className="text-[11px] text-gold-500 tracking-widest font-semibold uppercase">{lang === "th" ? "ข้อความ" : "Messages"}</p>
-            <h1 className="font-semibold -mt-0.5">{t.chat}</h1>
+    <div className="pb-6">
+      <div style={{ padding: "18px 16px 12px" }}><h1 className="m-0 font-semibold text-[28px]">แชท</h1></div>
+      <div className="flex flex-col gap-2" style={{ padding: "0 16px" }}>
+        {rows === null ? <p className="m-0 text-[13px] font-light text-[#b5a596]">กำลังโหลด…</p> : !open.length ? (
+          <div className="rounded-[20px] bg-[#211a18] flex flex-col items-center gap-3 text-center" style={{ padding: 28, border: `1px solid ${LN}` }}>
+            <span className="text-[14px] text-[#d9c9b4]">ยังไม่มีห้องแชท · ห้องแชทเปิดเมื่อคุณส่งคำขอนัดเพื่อน</span>
+            <Link href="/" className="h-11 px-5 rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold grid place-items-center hover:text-[#1b130b]">เลือกเพื่อน</Link>
           </div>
-        }
-        right={
-          <button onClick={() => setSettingsOpen(true)} aria-label="chat settings" className="w-10 h-10 grid place-items-center rounded-full border border-ink-600 text-ink-200 hover:text-gold-300 transition">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-6 h-6"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.9 2.9l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.2a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.9-2.9l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.2a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.9-2.9l.1.1a1.7 1.7 0 001.9.3h0a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.2a1.7 1.7 0 001 1.5h0a1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.9 2.9l-.1.1a1.7 1.7 0 00-.3 1.9v0a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.2a1.7 1.7 0 00-1.5 1z"/></svg>
-          </button>
-        }
-      />
-
-      <div className="px-4 pt-4 space-y-3">
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t.search} className="input-dark" />
-        <div className="flex gap-2">
-          {([["all", t.all], ["hirer", t.roleHirer], ["provider", t.roleProvider]] as const).map(([v, l]) => (
-            <button key={v} onClick={() => setTab(v)} className={`chip flex-1 text-center ${tab === v ? "chip-red" : ""}`}>{l}</button>
-          ))}
-        </div>
-      </div>
-
-      <div className="py-4 grid gap-2 px-4">
-        {rooms.length === 0 && <EmptyState icon="💬" title={t.noMessages} />}
-        {rooms.map((r) => (
-          <Link key={r.id} href={`/chat/${r.id}`} className="glass glass-hover rounded-2xl p-4 flex items-center gap-3 animate-rise">
-            <div className="relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={r.partner.avatar} alt="" className="w-12 h-12 rounded-full bg-ink-700" />
-              {r.orderStatus !== "negotiated" && <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-gold-500 border-2 border-ink-900" />}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <p className="font-semibold truncate">{r.partner.name}</p>
-                <span className="text-[10px] text-ink-500">{r.lastAt}</span>
-              </div>
-              <p className={`text-sm truncate mt-0.5 ${r.unread ? "text-ink-100 font-medium" : "text-ink-400"}`}>
-                {r.orderStatus === "in_progress" && "💰 "}{r.lastMessage}
-              </p>
-            </div>
-            {r.unread > 0 && <span className="w-5 h-5 rounded-full bg-crimson-600 text-[10px] font-bold grid place-items-center">{r.unread}</span>}
+        ) : open.map((b) => (
+          <Link key={b.id} href={`/chat/${b.id}`} className="flex gap-3 items-center rounded-2xl bg-[#211a18] text-[#f3ead9] hover:text-[#f3ead9]" style={{ padding: 12, border: `1px solid ${LN}` }}>
+            <img src={b.pt.img} alt="" className="w-[52px] h-[52px] rounded-full object-cover shrink-0" />
+            <span className="flex-1 min-w-0"><b className="font-medium text-[15px]">{b.pt.nick}</b><span className="block text-[12.5px] font-light text-[#d9c9b4] truncate">{SUB[b.status]} · {b.place.label} {b.hours} ชม. · {new Date(b.starts_at).toLocaleString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span></span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d9c9b4" strokeWidth="1.8" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
           </Link>
         ))}
       </div>
-
-      {/* ── chat settings ── */}
-      <Sheet open={settingsOpen} onClose={() => setSettingsOpen(false)} title={t.chatSettings}>
-        <div className="flex gap-2 mb-5">
-          {([["auto", t.autoReply], ["saved", t.savedReplies], ["banks", t.bankAccounts]] as const).map(([v, l]) => (
-            <button key={v} onClick={() => setSettingTab(v)} className={`chip flex-1 text-center ${settingTab === v ? "chip-red" : ""}`}>{l}</button>
-          ))}
-        </div>
-
-        {settingTab === "auto" && (
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium">{t.autoReply}</span>
-              <button onClick={() => setAutoEnabled(!autoEnabled)} className={`w-12 h-6.5 rounded-full transition relative ${autoEnabled ? "bg-crimson-600" : "bg-ink-600"}`} style={{ width: 48, height: 26 }}>
-                <span className={`absolute top-1 w-5 h-5 rounded-full bg-white transition-all ${autoEnabled ? "left-[22px]" : "left-1"}`} />
-              </button>
-            </div>
-            <textarea value={autoMsg} onChange={(e) => setAutoMsg(e.target.value)} rows={5} className="input-dark" />
-            <button onClick={() => { setSavedToast(true); setTimeout(() => setSavedToast(false), 1800); }} className="btn-crimson rounded-xl w-full py-2.5 text-sm font-semibold mt-3">{t.save}</button>
-          </div>
-        )}
-
-        {settingTab === "saved" && (
-          <div className="space-y-2">
-            {replies.map((r) => (
-              <div key={r.id} className="glass rounded-xl p-3.5">
-                <div className="flex justify-between items-center">
-                  <p className="font-medium text-sm text-gold-300">{r.title}</p>
-                  <button onClick={() => setReplies(replies.filter((x) => x.id !== r.id))} className="text-ink-400 hover:text-crimson-400 text-xs">{t.delete}</button>
-                </div>
-                <p className="text-sm text-ink-300 mt-1">{r.message}</p>
-              </div>
-            ))}
-            <button
-              onClick={() => setReplies([...replies, { id: String(Date.now()), title: lang === "th" ? "คำตอบใหม่" : "New reply", message: lang === "th" ? "ข้อความสำเร็จรูป…" : "Quick message…" }])}
-              className="btn-ghost rounded-xl w-full py-2.5 text-sm"
-            >＋ {t.savedReplies}</button>
-          </div>
-        )}
-
-        {settingTab === "banks" && (
-          <div className="space-y-2">
-            {banks.map((b) => (
-              <div key={b.id} className="glass rounded-xl p-3.5 flex items-center gap-3">
-                <span className="w-10 h-10 rounded-lg grid place-items-center text-lg" style={{ background: (BANKS.find((x) => x.code === b.bankCode)?.color ?? "#333") + "33" }}>
-                  {b.isPromptPay ? "📱" : "🏦"}
-                </span>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{b.bankName}</p>
-                  <p className="text-xs text-ink-400">{b.accountNo} · {b.accountName}</p>
-                </div>
-                <button onClick={() => setBanks(banks.filter((x) => x.id !== b.id))} className="text-ink-400 hover:text-crimson-400 text-xs">{t.delete}</button>
-              </div>
-            ))}
-            <button onClick={() => setAddBankOpen(true)} className="btn-ghost rounded-xl w-full py-2.5 text-sm">＋ {t.addBank}</button>
-          </div>
-        )}
-      </Sheet>
-
-      {/* add bank modal */}
-      <Modal open={addBankOpen} onClose={() => setAddBankOpen(false)} title={t.addBank}>
-        <Field label={t.bank}>
-          <select value={newBank.bankCode} onChange={(e) => setNewBank({ ...newBank, bankCode: e.target.value })} className="input-dark">
-            {BANKS.map((b) => <option key={b.code} value={b.code}>{b.name}</option>)}
-          </select>
-        </Field>
-        <Field label={t.accountNo}>
-          <input value={newBank.accountNo} onChange={(e) => setNewBank({ ...newBank, accountNo: e.target.value })} className="input-dark" />
-        </Field>
-        <Field label={t.accountName}>
-          <input value={newBank.accountName} onChange={(e) => setNewBank({ ...newBank, accountName: e.target.value })} className="input-dark" />
-        </Field>
-        <div className="flex gap-2">
-          <button onClick={() => setAddBankOpen(false)} className="btn-ghost rounded-xl flex-1 py-2.5 text-sm">{t.cancel}</button>
-          <button
-            onClick={() => {
-              if (!newBank.accountNo || !newBank.accountName) return;
-              const bank = BANKS.find((b) => b.code === newBank.bankCode)!;
-              setBanks([...banks, { id: String(Date.now()), bankCode: bank.code, bankName: bank.name, accountNo: newBank.accountNo, accountName: newBank.accountName, isPromptPay: bank.code === "promptpay" }]);
-              setAddBankOpen(false);
-              setNewBank({ bankCode: "kbank", accountNo: "", accountName: "" });
-            }}
-            className="btn-crimson rounded-xl flex-1 py-2.5 text-sm font-semibold"
-          >{t.save}</button>
-        </div>
-      </Modal>
-
-      {savedToast && <div className="fixed bottom-24 left-1/2 -translate-x-1/2 chip chip-gold z-50">✓ {t.save} ✓</div>}
-    </>
+    </div>
   );
 }

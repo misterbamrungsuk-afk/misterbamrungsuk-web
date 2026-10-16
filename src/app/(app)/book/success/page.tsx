@@ -1,101 +1,68 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
-import { Suspense, useEffect, useRef } from "react";
+// บอร์ด C-BookSuccess "จองสำเร็จ" — ส่งคำขอแล้ว เงินกันไว้ในกระเป๋า · รอเพื่อนตอบรับภายใน 30 นาที
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useI18n } from "@/i18n/provider";
-import { baht } from "@/components/ui";
-import { DEMO_POSTS } from "@/lib/demo-data";
-import { ADDRESSES, thaiDate } from "@/lib/booking";
-import { RecommendStrip } from "./recommend-strip";
 
-// จองสำเร็จ — จ่ายเต็มจำนวนแล้ว เงินพักไว้กับเราจนจบนัด
-function SuccessInner() {
-  const { lang } = useI18n();
-  const th = lang === "th";
-  const sp = useSearchParams();
-  const post = DEMO_POSTS.find((p) => p.id === sp.get("id")) ?? DEMO_POSTS[0];
-  const pkg = sp.get("pkg") ?? "180";
-  const date = sp.get("date") ?? "";
-  const time = sp.get("time") ?? "";
-  const total = Number(sp.get("total") ?? 0);
-  const addr0 = ADDRESSES.find((a) => a.id === sp.get("addr")) ?? ADDRESSES[0];
-  const place = sp.get("place");
-  const addr = place ? { th: place, en: place } : addr0;
-  const code = "HM-24091"; // เดโม: โหมดจริงได้จากออเดอร์ที่สร้างบนเซิร์ฟเวอร์
+const GOLD = "#e8c472";
+const LN = "rgba(243,234,217,0.07)";
+const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US");
+type B = { id: string; code: string; status: string; starts_at: string; hours: number; total_satang: number; place: { label: string; detail: string }; expires_at: string | null; pt: { nick: string; img: string } };
+const when = (iso: string) => new Date(iso).toLocaleString("th-TH", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
-  // แจ้งอีเมลยืนยันการจอง (ครั้งเดียว ไม่บล็อกหน้า)
-  const notified = useRef(false);
+function Success() {
+  const id = useSearchParams().get("id") ?? "";
+  const [b, setB] = useState<B | null>(null);
+  const [err, setErr] = useState("");
   useEffect(() => {
-    if (notified.current) return;
-    notified.current = true;
-    fetch("/api/notify/booking", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code, providerName: post.member.name, date, time, minutes: pkg, total, place: addr.th }),
-    }).catch(() => {});
-  }, [code, post.member.name, date, time, pkg, total, addr.th]);
-
-  // เพิ่มลงปฏิทิน: ไฟล์ .ics สร้างในเครื่อง ไม่ส่งข้อมูลออก
-  const icsHref = (() => {
-    if (!date || !time) return "";
-    const start = `${date.replaceAll("-", "")}T${time.replace(":", "")}00`;
-    const endD = new Date(`${date}T${time}:00`);
-    endD.setMinutes(endD.getMinutes() + Number(pkg));
-    const p = (n: number) => String(n).padStart(2, "0");
-    const end = `${endD.getFullYear()}${p(endD.getMonth() + 1)}${p(endD.getDate())}T${p(endD.getHours())}${p(endD.getMinutes())}00`;
-    const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "BEGIN:VEVENT", `DTSTART:${start}`, `DTEND:${end}`, `SUMMARY:Mister Bamrungsuk · นัดกับ ${post.member.name}`, `DESCRIPTION:รหัสจอง ${code}`, "END:VEVENT", "END:VCALENDAR"].join("\r\n");
-    return `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`;
-  })();
-
+    if (!id) return setErr("ไม่พบการจอง");
+    fetch(`/api/bookings/${id}`, { cache: "no-store" }).then((r) => r.json()).then((d) => (d?.ok ? setB(d.booking) : setErr(d?.error || "ไม่พบการจอง"))).catch(() => setErr("โหลดไม่สำเร็จ"));
+  }, [id]);
+  const ics = () => {
+    if (!b) return;
+    const t = (d: Date) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
+    const s = new Date(b.starts_at), e = new Date(s.getTime() + b.hours * 3600_000);
+    const body = ["BEGIN:VCALENDAR", "VERSION:2.0", "BEGIN:VEVENT", `UID:${b.id}@misterbamrungsuk`, `DTSTART:${t(s)}`, `DTEND:${t(e)}`, `SUMMARY:นัดกับ${b.pt.nick} · ${b.code}`, `LOCATION:${b.place.label} ${b.place.detail}`, "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([body], { type: "text/calendar" })); a.download = `${b.code}.ics`; a.click();
+  };
   const share = async () => {
-    const text = `${th ? "นัด Mister Bamrungsuk" : "Mister Bamrungsuk booking"} ${thaiDate(date)} ${time} · ${post.member.name} · ${code}`;
-    try {
-      if (navigator.share) await navigator.share({ title: "Mister Bamrungsuk", text });
-      else await navigator.clipboard.writeText(text);
-    } catch { /* ผู้ใช้ยกเลิก */ }
+    if (!b) return;
+    const text = `นัดของฉัน ${b.code}: ${when(b.starts_at)} · ${b.place.label} ${b.place.detail} (Mister Bamrungsuk)`;
+    try { if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); alert("คัดลอกรายละเอียดนัดแล้ว"); } } catch {}
   };
 
+  if (err) return <div className="text-center" style={{ padding: "80px 24px" }}><p className="text-[#ff8a9a]">{err}</p><Link href="/orders" className="text-[#e8c472]">ไปที่การจองของฉัน</Link></div>;
+  if (!b) return <p className="text-center text-[#b5a596]" style={{ padding: "80px 24px" }}>กำลังโหลด…</p>;
+  const waiting = b.status === "requested";
   return (
-    <main className="px-4 pt-12 pb-10 flex flex-col items-center text-center gap-2 animate-rise">
-      <div className="w-24 h-24 rounded-full border border-gold-500 grid place-items-center text-gold-500">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-12 h-12"><path d="m5 12 5 5 9-10" strokeLinecap="round" strokeLinejoin="round" /></svg>
+    <div className="min-h-dvh pb-[220px]" style={{ background: "#171211" }}>
+      <div className="flex flex-col items-center text-center" style={{ padding: "48px 24px 0" }}>
+        <div className="w-[88px] h-[88px] rounded-full grid place-items-center" style={{ border: `1px solid ${GOLD}`, color: GOLD }}><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg></div>
+        <h1 className="m-0 mt-[18px] font-semibold text-[28px]">{waiting ? "ส่งคำขอนัดแล้ว" : "จองสำเร็จ"}</h1>
+        <div className="mt-1.5 text-[14px] text-[#d9c9b4]">{waiting ? `กันเงิน ${baht(b.total_satang)} ไว้ในกระเป๋า · รอ${b.pt.nick}ตอบรับภายใน 30 นาที ถ้าไม่ตอบคืนเงินอัตโนมัติ` : `ชำระเต็มจำนวน ${baht(b.total_satang)} แล้ว เงินพักไว้กับเราจนจบนัด`}</div>
       </div>
-      <h1 className="text-[28px] font-semibold mt-3">{th ? "จองสำเร็จ" : "Booked!"}</h1>
-      <p className="text-sm text-ink-300 max-w-[300px]">{th ? `ชำระ ${baht(total)} แล้ว เงินพักไว้กับเราจนจบนัด ${post.member.name} ยืนยันนัดของคุณแล้ว` : `${baht(total)} is held in escrow. ${post.member.name} confirmed your booking.`}</p>
-
-      <section className="glass rounded-2xl w-full mt-5 px-4 py-2 text-left text-sm">
-        <div className="flex items-center gap-3 py-3 border-b border-ink-600">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={post.member.avatar} alt="" className="w-12 h-12 rounded-full object-cover" />
-          <div className="flex-1 min-w-0"><p className="font-display font-semibold truncate">{post.member.name}</p><p className="text-xs text-ink-300">{Math.round(Number(pkg) / 60)} {th ? "ชม." : "h"}</p></div>
-        </div>
-        <div className="flex justify-between py-2.5 border-b border-ink-600"><span className="text-ink-300">{th ? "วันเวลา" : "When"}</span><span>{date ? thaiDate(date) : "-"} · {time || "-"}</span></div>
-        <div className="flex justify-between py-2.5 border-b border-ink-600"><span className="text-ink-300">{th ? "สถานที่" : "Where"}</span><span>{th ? addr.th : addr.en}</span></div>
-        <div className="flex justify-between py-2.5"><span className="text-ink-300">{th ? "รหัสจอง" : "Booking ID"}</span><span className="font-display tracking-wider text-gold-300">{code}</span></div>
-      </section>
-
-      <div className="grid grid-cols-2 gap-2 w-full mt-2">
-        {icsHref ? (
-          <a href={icsHref} download={`mord-${code}.ics`} className="h-12 rounded-xl border border-ink-600 text-sm flex items-center justify-center">{th ? "เพิ่มลงปฏิทิน" : "Add to calendar"}</a>
-        ) : <span />}
-        <button onClick={share} className="h-12 rounded-xl border border-ink-600 text-sm">{th ? "แชร์ให้คนใกล้ชิด" : "Share with someone"}</button>
+      <div className="rounded-[20px] bg-[#211a18]" style={{ margin: "26px 16px 0", padding: "6px 16px 10px", border: `1px solid ${LN}` }}>
+        <div className="flex gap-3 items-center py-3" style={{ borderBottom: `1px solid ${LN}` }}><img src={b.pt.img} alt="" className="w-[52px] h-[52px] rounded-full object-cover" /><div className="flex-1"><b className="font-medium text-[17px]">{b.pt.nick}</b><div className="text-[12px] font-light text-[#d9c9b4]">{b.hours} ชม.</div></div></div>
+        <div className="flex justify-between text-[14px] py-[9px]" style={{ borderBottom: `1px solid ${LN}` }}><span className="text-[#d9c9b4]">วันเวลา</span><span>{when(b.starts_at)}</span></div>
+        <div className="flex justify-between gap-3 text-[14px] py-[9px]" style={{ borderBottom: `1px solid ${LN}` }}><span className="text-[#d9c9b4]">สถานที่</span><span className="text-right">{b.place.label} {b.place.detail}</span></div>
+        <div className="flex justify-between text-[14px] py-[9px]"><span className="text-[#d9c9b4]">รหัสจอง</span><span style={{ color: GOLD }}>{b.code}</span></div>
       </div>
-      <p className="text-xs text-ink-300 mt-2">{th ? "เราจะแจ้งเตือนก่อนนัด 1 ชม. และตอนเพื่อนเริ่มเดินทาง" : "We'll remind you 1h before and when your companion sets off"}</p>
-
-      <div className="w-full flex flex-col gap-2 mt-4">
-        <Link href="/chat/room1" className="btn-crimson h-14 rounded-2xl font-display font-semibold text-lg flex items-center justify-center">{th ? "แชทกับเพื่อน" : "Chat with your companion"}</Link>
-        <Link href="/escrow/o1" className="h-12 rounded-2xl border border-gold-500 text-gold-300 flex items-center justify-center">{th ? "ดูสถานะเงินที่พักไว้" : "View escrow"}</Link>
-        <Link href="/orders" className="h-12 rounded-2xl border border-ink-600 flex items-center justify-center">{th ? "ออเดอร์ของฉัน" : "My orders"}</Link>
+      <div className="flex gap-2" style={{ margin: "14px 16px 0" }}>
+        <button type="button" onClick={ics} className="flex-1 h-12 rounded-[14px] text-[13px] text-[#f3ead9]" style={{ border: `1px solid ${LN}` }}>เพิ่มลงปฏิทิน</button>
+        <button type="button" onClick={share} className="flex-1 h-12 rounded-[14px] text-[13px] text-[#f3ead9]" style={{ border: `1px solid ${LN}` }}>แชร์ให้คนใกล้ชิด</button>
       </div>
-      {th && <RecommendStrip />}
-    </main>
+      <div className="flex gap-2 text-[12px] font-light text-[#d9c9b4] leading-[1.55]" style={{ margin: "14px 16px 0" }}>เราจะแจ้งเตือนเมื่อ{b.pt.nick}ตอบรับ · ยกเลิกได้ฟรีก่อนเพื่อนตอบรับ</div>
+      <div className="fixed left-0 right-0 bottom-0 mx-auto max-w-[480px] flex flex-col gap-[10px]" style={{ padding: "12px 16px calc(24px + env(safe-area-inset-bottom))", background: "linear-gradient(180deg, rgba(23,18,17,0), #171211 25%)" }}>
+        <Link href={`/chat/${b.id}`} className="h-[54px] rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[16px] grid place-items-center hover:text-[#1b130b]">แชทกับ{b.pt.nick}</Link>
+        <Link href={`/order/${b.id}`} className="h-[50px] rounded-2xl text-[15px] grid place-items-center text-[#f3ead9] hover:text-[#f3ead9]" style={{ border: `1px solid ${LN}` }}>ดูสถานะการจองและเงินของคุณ</Link>
+        <div className="flex gap-[10px]"><Link href="/orders" className="flex-1 h-[46px] rounded-[14px] text-[14px] grid place-items-center text-[#f3ead9] hover:text-[#f3ead9]" style={{ border: `1px solid ${LN}` }}>การจองของฉัน</Link><Link href="/" className="flex-1 h-[46px] rounded-[14px] text-[14px] grid place-items-center text-[#f3ead9] hover:text-[#f3ead9]" style={{ border: `1px solid ${LN}` }}>กลับหน้าแรก</Link></div>
+      </div>
+    </div>
   );
 }
 
-export default function BookSuccessPage() {
-  return (
-    <Suspense>
-      <SuccessInner />
-    </Suspense>
-  );
+export default function SuccessPage() {
+  return <Suspense><Success /></Suspense>;
 }

@@ -1,164 +1,50 @@
-"use client";
-
-import { Suspense, use, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useI18n } from "@/i18n/provider";
-import { TopBar } from "@/components/shell";
-import { baht } from "@/components/ui";
-import { BookSteps } from "@/components/book-steps";
-import { DEMO_POSTS } from "@/lib/demo-data";
-import { BLOCKS, MEET_PLACES, blockPrice, isRoomPlace, type BlockHours, type MeetPlaceId } from "@/lib/booking";
-import { usePartnerSpas } from "@/lib/spas";
-import { readPlace } from "@/lib/market/place-pick";
+import { getLiveApplicants, getLivePeople, publicId, mainPos } from "@/lib/home/live";
+import { personById } from "@/lib/home/people";
+import { extraOf, type Applicant } from "@/lib/join/store";
+import { priceFor } from "@/lib/bookings";
+import { listPartners } from "@/lib/partner/store";
+import { PARTNER_SPAS } from "@/lib/booking";
+import { BookFlow, type Avail } from "./flow";
 
-// ขั้นที่ 2-3/4: เลือกบริการ (บล็อก 3/5 ชม.) และสถานที่นัด 7 แบบ
-function BookInner({ id }: { id: string }) {
-  const { lang } = useI18n();
-  const th = lang === "th";
-  const router = useRouter();
-  const sp = useSearchParams();
-  const post = DEMO_POSTS.find((p) => p.id === id);
+export const dynamic = "force-dynamic";
+export const metadata = { title: "นัดเพื่อน — Mister Bamrungsuk" };
 
-  const [hrs, setHrs] = useState<BlockHours>(3);
-  const spas = usePartnerSpas();
-  const initLoc = MEET_PLACES.find((x) => x.id === sp.get("loc"))?.id ?? "condo";
-  const [loc, setLoc] = useState<MeetPlaceId>(initLoc);
-  const [address, setAddress] = useState("");
-  const [room, setRoom] = useState("");
-  const [note, setNote] = useState("");
-  const [spaPick, setSpa] = useState<string>("");
-  const spa = spaPick || spas[0]?.id || "";
-  // มาจากปุ่ม "นัดเพื่อนที่นี่" (หน้า /spas/[id] /hotels/[id]) → เลือกสถานที่ให้ (ถ้าไม่ได้ระบุ ?loc)
-  useEffect(() => {
-    if (sp.get("loc")) return;
-    const p = readPlace();
-    if (!p) return;
-    if (p.kind === "spa" && spas.some((s) => s.id === p.id)) { setLoc("spa"); setSpa(p.id); }
-    else if (p.kind === "hotel") { setLoc("hotel"); setAddress((a) => a || `${p.name} · ${p.area}`); }
-  }, [sp, spas]);
+const JS_DAY: Record<string, number> = { "อา": 0, "จ": 1, "อ": 2, "พ": 3, "พฤ": 4, "ศ": 5, "ส": 6 };
+const hr = (s: string) => Number(s.split(":")[0]) || 0;
 
-  if (!post) {
-    return (
-      <>
-        <TopBar back="/home" title={th ? "จอง" : "Book"} />
-        <p className="text-center text-ink-300 py-20">{th ? "ไม่พบเพื่อนคนนี้" : "Companion not found"}</p>
-      </>
-    );
+/** ช่วงเวลาที่รับงานต่อวัน (0=อาทิตย์) จากหน้า "วันเวลาที่รับงาน" ของ Part-Time · ไม่ได้ตั้ง = 10:00–22:00 ทุกวัน */
+function availOf(a: Applicant): Avail {
+  const x = extraOf(a);
+  const out: Avail = {};
+  if (x.work?.days && Object.values(x.work.days).some((d) => d.on)) {
+    for (const [k, d] of Object.entries(x.work.days)) if (d.on && k in JS_DAY) out[JS_DAY[k]] = [hr(d.from), hr(d.to) || 24];
+    return out;
   }
-
-  const spaObj = spas.find((s) => s.id === spa);
-  const spaFee = loc === "spa" ? spaObj?.price ?? 0 : 0;
-  const price = blockPrice(post, hrs) + spaFee;
-  const pl = MEET_PLACES.find((x) => x.id === loc)!;
-  const isRoom = isRoomPlace(loc);
-  const ready = loc === "spa" ? !!spaObj : address.trim().length > 0;
-
-  const next = () => {
-    const place = loc === "spa" ? `${spaObj?.name} · ${spaObj?.area}` : `${th ? pl.th : pl.en} · ${address}${isRoom && room ? ` (${room})` : ""}`;
-    const q = new URLSearchParams({ hrs: String(hrs), loc, spa: loc === "spa" ? spa : "", place, note });
-    router.push(`/book/${post.id}/checkout?${q}`);
-  };
-
-  return (
-    <>
-      <TopBar back={`/post/${post.id}`} title={th ? "นัดเพื่อน" : "Book a companion"} />
-      <BookSteps step={3} th={th} />
-      <div className="px-4 pt-4 pb-28 flex flex-col gap-6">
-        <Link href={`/post/${post.id}`} className="glass rounded-2xl p-3 flex items-center gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={post.member.avatar} alt="" className="w-12 h-12 rounded-full object-cover shrink-0" />
-          <div className="min-w-0 flex-1">
-            <p className="font-display font-semibold truncate">{post.member.name}</p>
-            <p className="text-xs text-ink-300 truncate">{post.serviceArea}</p>
-          </div>
-          {post.rating != null && <span className="shrink-0 inline-flex items-center gap-0.5 h-[22px] px-2 rounded-full bg-black/60 border border-gold-500/40 text-[11.5px] font-bold text-ink-100"><span className="text-gold-500">★</span>{post.rating.toFixed(1)}</span>}
-        </Link>
-
-        <section>
-          <h2 className="section-title mb-3">{th ? "เลือกบริการ" : "Choose service"}</h2>
-          <div className="grid grid-cols-2 gap-2">
-            {BLOCKS.map((h) => (
-              <button key={h} onClick={() => setHrs(h)} aria-pressed={hrs === h}
-                className={`rounded-2xl border py-3.5 flex flex-col items-center gap-0.5 transition ${hrs === h ? "border-gold-500 bg-gold-500/10" : "border-ink-600 bg-ink-800"}`}>
-                <span className={`text-[13px] ${hrs === h ? "text-gold-300" : "text-ink-300"}`}>{th ? "เพื่อน" : "Companion"} {h} {th ? "ชม." : "h"}</span>
-                <span className={`font-display font-semibold text-xl ${hrs === h ? "text-gold-300" : ""}`}>{baht(blockPrice(post, h))}</span>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section>
-          <h2 className="section-title mb-3">{th ? "เจอกันที่ไหนดี" : "Where to meet"}</h2>
-          <div className="grid grid-cols-2 gap-2">
-            {MEET_PLACES.map((x) => (
-              <button key={x.id} onClick={() => setLoc(x.id)} aria-pressed={loc === x.id}
-                className={`rounded-2xl border p-3 text-left transition ${loc === x.id ? "border-gold-500 bg-gold-500/10" : "border-ink-600 bg-ink-800"}`}>
-                <span className={`block text-sm font-semibold ${loc === x.id ? "text-gold-300" : ""}`}>{th ? x.th : x.en}</span>
-                <span className="block text-xs text-ink-300 mt-0.5">{x.sub}</span>
-              </button>
-            ))}
-          </div>
-
-          {loc === "spa" ? (
-            <div className="mt-3 flex flex-col gap-2">
-              <p className="text-xs text-ink-300">{th ? "เลือกสปา / สถานที่พาร์ทเนอร์" : "Choose a partner spa"}</p>
-              {spas.map((s) => (
-                <label key={s.id} className={`flex items-center gap-3 rounded-2xl border p-3.5 cursor-pointer transition ${spa === s.id ? "border-gold-500 bg-gold-500/5" : "border-ink-600 bg-ink-800"}`}>
-                  <input type="radio" name="spa" checked={spa === s.id} onChange={() => setSpa(s.id)} className="accent-[#d4af37] w-5 h-5" />
-                  <span className="flex-1 min-w-0">
-                    <span className="block font-medium truncate">{s.name}</span>
-                    <span className="block text-xs text-ink-300">{s.area}{s.km != null ? ` · ${s.km} ${th ? "กม." : "km"}` : ""}{s.rating != null ? <> · <span className="text-gold-500">★</span> {s.rating}</> : null}</span>
-                  </span>
-                  {s.price > 0 && <span className="text-sm text-gold-300 shrink-0">+{baht(s.price)} {th ? "ห้อง" : "room"}</span>}
-                </label>
-              ))}
-            </div>
-          ) : isRoom ? (
-            <div className="mt-3 flex flex-col gap-3">
-              <div className="relative h-36 rounded-2xl overflow-hidden border border-ink-600 bg-ink-800 bg-[linear-gradient(rgba(212,175,55,.07)_1px,transparent_1px),linear-gradient(90deg,rgba(212,175,55,.07)_1px,transparent_1px)] bg-[size:22px_22px]">
-                <svg viewBox="0 0 24 24" className="w-9 h-9 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full text-crimson-500" fill="currentColor"><path d="M12 22s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12zm0-9a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" /></svg>
-                <span className="absolute bottom-2 left-2 text-[11px] px-2 py-1 rounded-full bg-black/60 border border-gold-500/40 text-ink-100">{th ? "ใช้ตำแหน่งปัจจุบัน" : "Use current location"}</span>
-              </div>
-              <input value={address} onChange={(e) => setAddress(e.target.value)} className="input-dark h-12" placeholder={loc === "hotel" ? (th ? "ชื่อโรงแรม / ที่อยู่" : "Hotel name / address") : (th ? "ชื่ออาคาร / ที่อยู่" : "Building / address")} aria-label={th ? "ที่อยู่" : "Address"} />
-              <input value={room} onChange={(e) => setRoom(e.target.value)} className="input-dark h-12" placeholder={th ? "เลขห้อง / ชั้น" : "Room / floor"} aria-label={th ? "เลขห้อง" : "Room"} />
-            </div>
-          ) : (
-            <div className="mt-3">
-              <label className="block">
-                <span className="text-xs text-ink-300 mb-1.5 block">{th ? `จุดนัดพบ (${pl.th})` : `Meeting point (${pl.en})`}</span>
-                <input value={address} onChange={(e) => setAddress(e.target.value)} className="input-dark h-12" placeholder={pl.hint} />
-              </label>
-            </div>
-          )}
-        </section>
-
-        <label className="block">
-          <span className="text-xs text-ink-300 mb-1.5 block">{th ? "หมายเหตุถึงเพื่อน" : "Note to your companion"}</span>
-          <input value={note} onChange={(e) => setNote(e.target.value)} className="input-dark h-12" placeholder={th ? "เช่น อยากไปร้านอาหารญี่ปุ่น มีที่จอดรถ" : "e.g. Japanese dinner, parking available"} />
-        </label>
-      </div>
-
-      <div className="fixed left-1/2 -translate-x-1/2 w-full max-w-[480px] z-30 px-4" style={{ bottom: "calc(16px + env(safe-area-inset-bottom))" }}>
-        <div className="rounded-2xl border border-ink-600 bg-ink-900/95 backdrop-blur-xl p-3 flex items-center gap-3">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-ink-300 truncate">{th ? "เพื่อน" : "Companion"} {hrs} {th ? "ชม." : "h"} · {loc === "spa" ? spaObj?.name : th ? pl.th : pl.en}</p>
-            <p className="font-display font-semibold text-xl text-gold-300">{baht(price)}</p>
-          </div>
-          <button onClick={next} disabled={!ready} className="btn-crimson h-12 px-6 rounded-xl font-display font-semibold">
-            {ready ? (th ? "ถัดไป" : "Next") : (th ? "ใส่จุดนัดก่อน" : "Add a place")}
-          </button>
-        </div>
-      </div>
-    </>
-  );
+  const days = x.availability?.week_days ?? [];
+  const slots = x.availability?.slots ?? [];
+  const from = slots.includes("กลางวัน") ? 10 : 17, to = slots.includes("กลางคืน") ? 24 : 18;
+  for (const k of days.length ? days : Object.keys(JS_DAY)) if (k in JS_DAY) out[JS_DAY[k]] = slots.length ? [from, to] : [10, 22];
+  return out;
 }
 
-export default function BookPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  return (
-    <Suspense>
-      <BookInner id={id} />
-    </Suspense>
-  );
+// บอร์ด C-Booking → C-Schedule → C-Checkout · จองได้เฉพาะ Part-Time จริงที่เปิดรับงาน · คนตัวอย่างแสดงข้อความแจ้ง
+export default async function BookPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const live = /^r[0-9a-f]{10}$/.test(id) ? (await getLiveApplicants().catch(() => [])).find((a) => publicId(a.mb_code) === id) : undefined;
+  if (!live) {
+    const sample = personById(id);
+    return (
+      <div className="flex flex-col items-center text-center gap-3" style={{ padding: "80px 24px" }}>
+        <h1 className="m-0 font-semibold text-[22px]">{sample ? `${sample.nick} เป็นข้อมูลตัวอย่าง` : "ไม่พบเพื่อนคนนี้"}</h1>
+        <p className="m-0 text-[14px] text-[#d9c9b4]">{sample ? "ตัวอย่างใช้แสดงหน้าตาแอป ยังจองจริงไม่ได้ · เลือกเพื่อนที่เปิดรับงานจากหน้าแรก" : "เพื่อนอาจปิดรับงานชั่วคราว ลองเลือกคนอื่นจากหน้าแรก"}</p>
+        <Link href="/" className="mt-2 h-12 px-6 rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold grid place-items-center hover:text-[#1b130b]">กลับหน้าแรก</Link>
+      </div>
+    );
+  }
+  const person = (await getLivePeople()).find((p) => p.id === id)!;
+  const [p3, p5] = await Promise.all([priceFor(live, 3), priceFor(live, 5)]);
+  const real = await listPartners().then((l) => l.filter((x) => x.type === "สปา" && (x.account_status === "active" || x.status === "active")).map((x) => ({ id: x.id, name: x.business_name, area: x.province, price: 0 }))).catch(() => []);
+  const spas = (real.length ? real : PARTNER_SPAS).map((s) => ({ id: s.id, name: s.name, area: s.area, price: s.price }));
+  return <BookFlow p={{ id, nick: person.nick, img: person.img, pos: mainPos(live) ?? null, area: person.area, rating: person.rating }} price={{ 3: p3, 5: p5 }} avail={availOf(live)} spas={spas} />;
 }

@@ -1,373 +1,93 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
-import { use, useEffect, useMemo, useRef, useState } from "react";
+// บอร์ด C-ChatRoom "ห้องแชท" — ผูกกับการจอง (roomId = booking id) · ดึงข้อความใหม่ทุก 4 วิ · กันเบอร์/LINE/ลิงก์
+import { use, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useI18n } from "@/i18n/provider";
-import { baht, Modal, Field, Sheet, Toast } from "@/components/ui";
-import { DEMO_ROOMS } from "@/lib/demo-data";
-import type { ChatMessage, ChatPayment } from "@/lib/types";
 
-const FULL_AMOUNT = 2400; // เดโม: ราคาบล็อก 3 ชม.
+const GOLD = "#e8c472";
+const LN = "rgba(243,234,217,0.07)";
+const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US");
+type M = { id: number; sender_type: "customer" | "parttime" | "system"; body: string; blocked: boolean; created_at: string };
+type B = { id: string; code: string; status: string; starts_at: string; hours: number; total_satang: number; place: { label: string }; pt: { nick: string; img: string; pid: string } };
+const time = (iso: string) => new Date(iso).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
 
-export default function ChatRoomPage({ params }: { params: Promise<{ roomId: string }> }) {
+export default function ChatRoom({ params }: { params: Promise<{ roomId: string }> }) {
   const { roomId } = use(params);
-  const { t, lang } = useI18n();
-  const room = useMemo(() => DEMO_ROOMS.find((r) => r.id === roomId), [roomId]);
+  const [b, setB] = useState<B | null>(null);
+  const [ms, setMs] = useState<M[]>([]);
+  const [text, setText] = useState("");
+  const [warn, setWarn] = useState("");
+  const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
+  const last = useRef(0);
+  const end = useRef<HTMLDivElement>(null);
 
-  const [messages, setMessages] = useState<ChatMessage[]>(room?.messages ?? []);
-  const [input, setInput] = useState("");
-  const [promoOpen, setPromoOpen] = useState(false);
-  const [promoCode, setPromoCode] = useState("");
-  const [promoApplied, setPromoApplied] = useState<number>(0); // ส่วนลด (บาท)
-  const [toast, setToast] = useState("");
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  // payment state — ลูกค้าจ่ายเต็มจำนวนครั้งเดียว (ไม่มีมัดจำ)
-  const [paymentCreated, setPaymentCreated] = useState(room?.paymentCreated ?? false);
-  const [paymentConfirmed, setPaymentConfirmed] = useState(room?.paymentConfirmed ?? false);
-  const [reviewed, setReviewed] = useState(room?.reviewed ?? false);
-  const [reviewOpen, setReviewOpen] = useState(false);
-  const [blocked, setBlocked] = useState(false);
-  const [blockOpen, setBlockOpen] = useState(false);
-  const [rating, setRating] = useState(5);
-  const [reviewText, setReviewText] = useState("");
-
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
-
-  // ดึงข้อความจาก server (demo memory store / LIVE: Supabase) — ถ้า fail ใช้ข้อมูล local
-  useEffect(() => {
-    fetch(`/api/chat/${roomId}/messages`)
-      .then((r) => r.json())
-      .then((d) => { if (Array.isArray(d.messages) && d.messages.length) setMessages(d.messages); })
-      .catch(() => {});
+  const poll = useCallback(async () => {
+    const r = await fetch(`/api/bookings/${roomId}/messages?after=${last.current}`, { cache: "no-store" }).catch(() => null);
+    const d = await r?.json().catch(() => null);
+    if (!d?.ok) return;
+    if (d.messages.length) { last.current = d.messages[d.messages.length - 1].id; setMs((x) => [...x, ...d.messages.filter((m: M) => !x.some((y) => y.id === m.id))]); }
   }, [roomId]);
+  useEffect(() => {
+    fetch(`/api/bookings/${roomId}`, { cache: "no-store" }).then((r) => r.json()).then((d) => (d?.ok ? setB(d.booking) : setErr("ไม่พบห้องแชทนี้"))).catch(() => setErr("โหลดไม่สำเร็จ"));
+    poll();
+    const t = setInterval(() => { if (document.visibilityState === "visible") poll(); }, 4000);
+    return () => clearInterval(t);
+  }, [roomId, poll]);
+  useEffect(() => { end.current?.scrollIntoView({ block: "end" }); }, [ms.length]);
 
-  function pushToServer(payload: Record<string, unknown>) {
-    fetch(`/api/chat/${roomId}/messages`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ senderId: "me", ...payload }),
-    }).catch(() => {});
-  }
-
-  if (!room) {
-    return (
-      <main className="app-frame safe-bottom">
-        <div className="text-center py-24 text-ink-400">💬 {t.empty}</div>
-      </main>
-    );
-  }
-
-  const meIsProvider = false; // demo: ผู้ใช้คือผู้ว่าจ้าง
-
-  function flash(msg: string) { setToast(msg); setTimeout(() => setToast(""), 2000); }
-
-  function sendImage(src: string) {
-    setMessages((m) => [...m, {
-      id: String(Date.now()), roomId, senderId: "me", kind: "image", content: src,
-      createdAt: new Date().toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" }), isRead: false,
-    }]);
-    if (!src.startsWith("data:")) pushToServer({ kind: "image", content: src });
-  }
-
-  function pickImage() {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.onchange = () => {
-      const file = input.files?.[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => sendImage(String(reader.result));
-      reader.readAsDataURL(file);
-    };
-    input.click();
-  }
-
-  function send() {
-    if (!input.trim() || !room) return;
-    const partnerId = room.partner.id;
-    const text = input.trim();
-    setMessages((m) => [...m, {
-      id: String(Date.now()), roomId, senderId: "me", kind: "text",
-      content: text, createdAt: new Date().toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" }), isRead: false,
-    }]);
-    setInput("");
-    pushToServer({ kind: "text", content: text });
-    // จำลอง auto-reply ของอีกฝ่าย
-    setTimeout(() => {
-      setMessages((m) => [...m, {
-        id: String(Date.now() + 1), roomId, senderId: partnerId, kind: "text",
-        content: lang === "th" ? "รับทราบครับผม 🙏" : "Noted! 🙏",
-        createdAt: new Date().toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" }), isRead: false,
-      }]);
-    }, 1200);
-  }
-
-  function sendPayment() {
-    const amount = FULL_AMOUNT;
-    const pay: ChatPayment = {
-      id: String(Date.now()), type: "full",
-      amount: Math.max(0, amount - promoApplied),
-      status: "created", bankLabel: "กสิกรไทย x-4451",
-      promoCode: promoApplied ? promoCode : undefined, discount: promoApplied,
-    };
-    setMessages((m) => [...m, {
-      id: String(Date.now()), roomId, senderId: "me", kind: "payment", content: "",
-      payment: pay, createdAt: new Date().toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" }), isRead: false,
-    }]);
-    setPaymentCreated(true);
-    flash(lang === "th" ? "ส่งข้อความการชำระเงินแล้ว" : "Payment message sent");
-  }
-
-  function attachSlip(payId: string) {
-    setMessages((m) => m.map((msg) =>
-      msg.id === payId && msg.payment ? { ...msg, payment: { ...msg.payment, status: "slip_uploaded", slipUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=600&q=60" } } : msg
-    ));
-    flash(t.slipUploaded);
-  }
-
-  function confirmPayment(payId: string) {
-    setMessages((m) => m.map((msg) =>
-      msg.id === payId && msg.payment ? { ...msg, payment: { ...msg.payment, status: "confirmed" } } : msg
-    ));
-    setPaymentConfirmed(true);
-    flash(lang === "th" ? "ยืนยันรับเงินเรียบร้อย ✓" : "Payment confirmed ✓");
-  }
-
-  const paymentCard = (pay: ChatPayment, mine: boolean) => {
-    const statusLabel = pay.status === "created" ? t.statusCreated : pay.status === "slip_uploaded" ? t.statusSlip : t.statusConfirmed;
-    const statusTone = pay.status === "confirmed" ? "text-emerald-400" : pay.status === "slip_uploaded" ? "text-gold-600" : "text-crimson-300";
-    return (
-      <div className={`glass rounded-2xl p-4 min-w-[240px] ${mine ? "ml-auto border-crimson-500/30" : "border-gold-500/25"}`}>
-        <div className="flex items-center justify-between mb-2">
-          <span className="chip chip-red">🧾 {t.paymentFull}</span>
-          <span className={`text-xs font-semibold ${statusTone}`}>● {statusLabel}</span>
-        </div>
-        <p className="text-2xl font-bold text-gold-600">{baht(pay.amount)}</p>
-        {pay.discount > 0 && <p className="text-xs text-emerald-400 mt-0.5">{t.promoCode} {pay.promoCode} −{baht(pay.discount)}</p>}
-        <p className="text-xs text-ink-400 mt-1">🏦 {pay.bankLabel}</p>
-
-        {/* QR จำลอง PromptPay */}
-        {pay.status === "created" && !mine && (
-          <div className="mt-3 bg-white/95 rounded-xl p-3 w-fit mx-auto">
-            <div className="grid grid-cols-8 gap-[2px]">
-              {Array.from({ length: 64 }).map((_, i) => (
-                <span key={i} className="w-2.5 h-2.5 rounded-[1px]" style={{ background: (i * 7 + pay.amount) % 3 === 0 ? "#111" : "transparent" }} />
-              ))}
-            </div>
-            <p className="text-[9px] text-black/70 text-center mt-1.5">PromptPay (demo)</p>
-          </div>
-        )}
-
-        {pay.slipUrl && (
-          <div className="mt-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={pay.slipUrl} alt="slip" className="rounded-xl w-40 border border-ink-600" />
-          </div>
-        )}
-
-        <div className="flex gap-2 mt-3">
-          {pay.status === "created" && !mine && (
-            <button onClick={() => attachSlip(pay.id)} className="btn-crimson rounded-lg px-3 py-2 text-xs font-semibold flex-1">📎 {t.attachSlip}</button>
-          )}
-          {pay.status === "slip_uploaded" && !mine && (
-            <button onClick={() => confirmPayment(pay.id)} className="btn-crimson rounded-lg px-3 py-2 text-xs font-semibold flex-1">✓ {t.confirmPaid}</button>
-          )}
-          {pay.status === "confirmed" && <span className="text-xs text-emerald-400 flex-1 text-center py-2">✓ {t.statusConfirmed}</span>}
-        </div>
-      </div>
-    );
+  const send = async () => {
+    const body = text.trim();
+    if (!body || busy) return;
+    setBusy(true); setWarn("");
+    const r = await fetch(`/api/bookings/${roomId}/messages`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ body }) }).catch(() => null);
+    const d = await r?.json().catch(() => null);
+    setBusy(false);
+    if (!d?.ok) return setWarn(d?.error || "ส่งไม่สำเร็จ");
+    setText(""); if (d.warning) setWarn(d.warning);
+    last.current = Math.max(last.current, d.message.id); setMs((x) => [...x, d.message]);
   };
 
+  if (err) return <div className="text-center" style={{ padding: "80px 24px" }}><p className="text-[#ff8a9a]">{err}</p><Link href="/chat" className="text-[#e8c472]">กลับไปรายการแชท</Link></div>;
+  const open = b ? ["requested", "accepted", "checked_in", "cancel_requested"].includes(b.status) : true;
   return (
-    <main className="app-frame flex flex-col h-dvh">
-      {/* header */}
-      <header className="sticky top-0 z-30 bg-ink-950/90 backdrop-blur-xl border-b border-ink-600">
-        <div className="flex items-center gap-2 px-4 h-14">
-          <Link href="/chat" className="w-10 h-10 -ml-2 grid place-items-center text-ink-200" aria-label="back">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6"><path d="M15 5l-7 7 7 7" strokeLinecap="round"/></svg>
-          </Link>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={room.partner.avatar} alt="" className="w-9 h-9 rounded-full bg-ink-700" />
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold truncate">{room.partner.name}</p>
-            <p className="text-[11px] text-gold-600 truncate">
-              {reviewed ? t.stCompleted : paymentConfirmed ? t.stPaid : t.stNegotiated}
-            </p>
-          </div>
-          <Link href={`/call/${room.id}`} className="btn-ghost rounded-full w-9 h-9 grid place-items-center shrink-0" aria-label="call">📞</Link>
-          <Link href="/escrow/e1" className="btn-ghost rounded-full w-9 h-9 grid place-items-center shrink-0 border-gold-500/50" aria-label="escrow">🏦</Link>
-          <button onClick={() => setPromoOpen(true)} className="btn-ghost rounded-full w-9 h-9 hidden min-[360px]:grid place-items-center shrink-0" aria-label="promo">🎟️</button>
-          <button onClick={() => setBlockOpen(true)} className="btn-ghost rounded-full w-9 h-9 grid place-items-center shrink-0" aria-label="block">🚫</button>
-        </div>
-
-        {/* order timeline (escrow ของเรา) */}
-        <div className="flex items-start justify-between px-4 pb-2.5 gap-1">
-          {[
-            [t.stNegotiated, true],
-            [t.stPaid, paymentConfirmed],
-            [t.stInProgress, paymentConfirmed],
-            [t.stCompleted, reviewed],
-            [t.stReviewed, reviewed],
-          ].map(([label, done], i, arr) => (
-            <div key={i} className="flex items-start flex-1 last:flex-none">
-              <div className="flex flex-col items-center shrink-0 w-12">
-                <span className={`w-2.5 h-2.5 rounded-full ${done ? "bg-gold-500 shadow-[0_0_10px_rgba(224,164,0,.6)]" : "bg-ink-600"}`} />
-                <span className={`text-[9px] mt-1 leading-tight text-center max-w-[48px] ${done ? "text-gold-600" : "text-ink-500"}`}>{label as string}</span>
-              </div>
-              {i < arr.length - 1 && <div className={`h-0.5 flex-1 -mx-4 mt-[4px] ${arr[i + 1][1] ? "bg-gold-500/60" : "bg-ink-600"}`} />}
-            </div>
-          ))}
-        </div>
+    <div className="flex flex-col h-dvh" style={{ background: "#171211" }}>
+      <header className="flex items-center gap-[10px]" style={{ padding: "14px 12px", borderBottom: `1px solid ${LN}` }}>
+        <Link href="/chat" aria-label="ย้อนกลับ" className="w-10 h-10 rounded-full grid place-items-center text-[#f3ead9] hover:text-[#f3ead9]" style={{ border: `1px solid ${LN}` }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg></Link>
+        {b && <img src={b.pt.img} alt="" className="w-[42px] h-[42px] rounded-full object-cover" />}
+        <div className="flex-1 min-w-0"><div className="font-medium text-[16px]">{b?.pt.nick ?? "…"} <span className="text-[12px] font-light" style={{ color: GOLD }}>✓</span></div><div className="text-[12px] font-light text-[#d9c9b4]">{b ? `#${b.code}` : ""}</div></div>
+        <Link href="/sos" aria-label="SOS" className="h-10 px-3 rounded-full grid place-items-center text-[13px] font-semibold text-[#ff8a9a] hover:text-[#ff8a9a]" style={{ border: "1px solid rgba(255,138,154,.4)" }}>SOS</Link>
       </header>
-
-      {/* messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-        {messages.map((msg) => {
-          const mine = msg.senderId === "me";
-          if (msg.kind === "payment" && msg.payment) {
-            return <div key={msg.id}>{paymentCard(msg.payment, mine)}</div>;
-          }
-          if (msg.kind === "image") {
-            return (
-              <div key={msg.id} className={`flex ${mine ? "justify-end" : "justify-start"} animate-rise`}>
-                {!mine && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={room.partner.avatar} alt="" className="w-7 h-7 rounded-full bg-ink-700 self-end mb-1 mr-2" />
-                )}
-                <div className="max-w-[70%]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={msg.content} alt="chat image" className="rounded-2xl w-full border border-ink-600" />
-                  <span className={`block text-[9px] mt-1 ${mine ? "text-ink-500 text-right" : "text-ink-500"}`}>{msg.createdAt}</span>
-                </div>
-              </div>
-            );
-          }
-          return (
-            <div key={msg.id} className={`flex ${mine ? "justify-end" : "justify-start"} animate-rise`}>
-              {!mine && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={room.partner.avatar} alt="" className="w-7 h-7 rounded-full bg-ink-700 self-end mb-1 mr-2" />
-              )}
-              <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap
-                ${mine ? "bg-gradient-to-br from-crimson-600 to-crimson-700 text-white rounded-br-md" : "glass rounded-bl-md"}`}>
-                {msg.content.split(/(https?:\/\/\S+)/).map((part, i) =>
-                  part.startsWith("http") ? <a key={i} href={part} target="_blank" className="underline text-gold-300">{part}</a> : part
-                )}
-                <span className={`block text-[9px] mt-1 ${mine ? "text-white/60" : "text-ink-500"}`}>{msg.createdAt}</span>
-              </div>
-            </div>
-          );
-        })}
-        <div ref={bottomRef} />
-      </div>
-
-      {/* payment action bar (ลูกค้า: จ่ายเต็มจำนวนครั้งเดียว; อีกฝ่ายยืนยันในการ์ด) */}
-      {!paymentConfirmed && (
-        <div className="px-4 pb-2 pt-2 border-t border-ink-600 bg-ink-950/80 backdrop-blur flex gap-2">
-          {!paymentCreated && (
-            <button onClick={sendPayment} className="btn-crimson rounded-xl px-4 py-2.5 text-xs font-bold flex-1">
-              🧾 {t.payBtn} {baht(FULL_AMOUNT - promoApplied)}
-            </button>
-          )}
-          {paymentCreated && (
-            <span className="flex-1 text-center text-xs text-gold-600 py-2.5">⏳ {lang === "th" ? "รอยืนยันยอดชำระ…" : "Waiting for payment confirmation…"}</span>
-          )}
-          <button onClick={() => setPromoOpen(true)} className="btn-ghost rounded-xl px-3 text-sm">🎟️</button>
-        </div>
+      {b && (
+        <Link href={`/order/${b.id}`} className="flex items-center gap-[10px] rounded-[14px] text-[#f3ead9] hover:text-[#f3ead9]" style={{ margin: "10px 12px 0", padding: "10px 12px", border: "1px solid rgba(212,175,55,.4)", background: "rgba(212,175,55,.06)" }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="1.8" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
+          <div className="flex-1 text-[13px] font-light"><b style={{ color: GOLD }}>{b.status === "requested" ? `กันเงิน ${baht(b.total_satang)} · รอ${b.pt.nick}ตอบรับ` : `ชำระแล้ว ${baht(b.total_satang)} · เงินพักไว้กับเราจนจบนัด`}</b><br /><span className="text-[#d9c9b4]">{b.place.label} {b.hours} ชม. · {new Date(b.starts_at).toLocaleString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span></div>
+        </Link>
       )}
-
-      {/* review unlock */}
-      {paymentConfirmed && !reviewed && (
-        <div className="px-4 pb-2 pt-2 border-t border-ink-600 bg-ink-950/80">
-          <button onClick={() => setReviewOpen(true)} className="btn-crimson w-full rounded-xl py-2.5 text-xs font-bold">⭐ {t.writeReview}</button>
-        </div>
-      )}
-      {reviewed && (
-        <div className="px-4 pb-2 pt-2 border-t border-ink-600 text-center text-xs text-gold-600 py-3">⭐ {t.stReviewed}</div>
-      )}
-
-      {/* input */}
-      {blocked ? (
-        <div className="px-4 pb-[calc(14px+env(safe-area-inset-bottom))] pt-2 border-t border-ink-600 bg-ink-950/90 text-center">
-          <p className="text-xs text-ink-400">🚫 {t.blocked} — <button onClick={() => setBlocked(false)} className="text-crimson-300 underline">{t.unblock}</button></p>
-        </div>
-      ) : (
-        <div className="px-3 pb-[calc(12px+env(safe-area-inset-bottom))] pt-1 flex gap-2 items-center border-t border-ink-600 bg-ink-950/90">
-          <button onClick={() => setInput((v) => v + "🙏")} className="w-10 h-10 shrink-0 grid place-items-center text-ink-300 hover:text-gold-300 text-xl" aria-label="emoji">😊</button>
-          <button onClick={pickImage} className="w-10 h-10 shrink-0 grid place-items-center text-ink-300 hover:text-gold-300 text-xl" aria-label="attach image">📎</button>
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && send()}
-            placeholder={t.typeMessage}
-            className="input-dark flex-1 !rounded-full"
-          />
-          <button onClick={send} className="btn-crimson rounded-full w-10 h-10 grid place-items-center" aria-label="send">
-            <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M3 11.5L21 3l-8.5 18-2.6-7.4L3 11.5z"/></svg>
-          </button>
-        </div>
-      )}
-
-      {/* block sheet */}
-      <Sheet open={blockOpen} onClose={() => setBlockOpen(false)} title={`🚫 ${t.block}`}>
-        <div className="glass rounded-2xl p-4 flex items-center gap-3 mb-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={room.partner.avatar} alt="" className="w-12 h-12 rounded-full bg-ink-700" />
-          <div>
-            <p className="font-semibold">{room.partner.name}</p>
-            <p className="text-xs text-ink-400">{t.block === "Block" ? "Block this user?" : "บล็อกผู้ใช้นี้?"}</p>
+      <div className="flex-1 overflow-y-auto flex flex-col gap-2" style={{ padding: "14px 12px" }}>
+        {!ms.length && <div className="self-center text-[12px] font-light text-[#d9c9b4] text-center">เริ่มคุยรายละเอียดนัดได้เลย · ห้ามแลกเบอร์โทร LINE หรือช่องทางนอกแอป</div>}
+        {ms.map((m) => m.sender_type === "system" ? (
+          <div key={m.id} className="self-center max-w-[90%] text-center text-[12px] font-light text-[#d9c9b4] rounded-xl bg-[#211a18]" style={{ padding: "6px 12px" }}>{m.body}</div>
+        ) : m.sender_type === "customer" ? (
+          <div key={m.id} className="self-end max-w-[76%] flex flex-col items-end gap-0.5">
+            <div className="text-[15px] leading-[1.45]" style={{ background: m.blocked ? "rgba(201,40,61,.2)" : GOLD, color: m.blocked ? "#ff8a9a" : "#1b130b", borderRadius: "20px 20px 6px 20px", padding: "10px 14px" }}>{m.body}</div>
+            <span className="text-[12px] text-[#d9c9b4]">{time(m.created_at)}{m.blocked ? " · ไม่ถูกส่ง (มีช่องทางติดต่อ)" : ""}</span>
           </div>
-        </div>
-        <p className="text-xs text-ink-400 mb-4">{lang === "th" ? "เมื่อบล็อกแล้ว อีกฝ่ายจะส่งข้อความหาคุณไม่ได้ และปลดบล็อกได้ตลอดเวลา" : "Blocked users cannot message you. You can unblock anytime."}</p>
-        <div className="flex gap-2">
-          <button onClick={() => setBlockOpen(false)} className="btn-ghost rounded-xl flex-1 py-2.5 text-sm">{t.cancel}</button>
-          <button
-            onClick={() => { setBlocked(true); setBlockOpen(false); flash(lang === "th" ? "บล็อกเรียบร้อย" : "Blocked"); }}
-            className="btn-crimson rounded-xl flex-1 py-2.5 text-sm font-semibold"
-          >🚫 {t.block}</button>
-        </div>
-      </Sheet>
-
-      {/* promo modal */}
-      <Modal open={promoOpen} onClose={() => setPromoOpen(false)} title={`🎟️ ${t.promoCode}`}>
-        <Field label={t.promoCode}>
-          <input value={promoCode} onChange={(e) => setPromoCode(e.target.value.toUpperCase())} placeholder="MB10" className="input-dark" />
-        </Field>
-        {promoApplied > 0 && <p className="text-emerald-400 text-sm mb-3">✓ {t.promoApplied} −{baht(promoApplied)}</p>}
-        <div className="flex gap-2">
-          <button onClick={() => { setPromoApplied(0); setPromoOpen(false); }} className="btn-ghost rounded-xl flex-1 py-2.5 text-sm">{t.reset}</button>
-          <button
-            onClick={() => { if (promoCode === "MB10") setPromoApplied(50); else flash(t.promoInvalid); setPromoOpen(false); }}
-            className="btn-crimson rounded-xl flex-1 py-2.5 text-sm font-semibold"
-          >{t.applyPromo}</button>
-        </div>
-      </Modal>
-
-      {/* review sheet */}
-      <Sheet open={reviewOpen} onClose={() => setReviewOpen(false)} title={t.writeReview}>
-        <div className="flex gap-2 justify-center mb-4">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <button key={i} onClick={() => setRating(i)} className={`text-3xl ${i <= rating ? "text-amber-500" : "text-ink-600"}`}>★</button>
-          ))}
-        </div>
-        <Field label={t.writeReview}>
-          <textarea value={reviewText} onChange={(e) => setReviewText(e.target.value)} rows={4} className="input-dark" placeholder={t.reviewPlaceholder} />
-        </Field>
-        <button
-          onClick={() => {
-            flash(lang === "th" ? "ขอบคุณสำหรับรีวิว ⭐" : "Thanks for your review ⭐");
-            setReviewed(true); setReviewOpen(false);
-            fetch("/api/review", {
-              method: "POST", headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ postId: "p1", rating, content: reviewText }),
-            }).catch(() => {});
-          }}
-          className="btn-crimson rounded-xl w-full py-2.5 text-sm font-semibold"
-        >{t.send}</button>
-      </Sheet>
-
-      <Toast show={!!toast}>{toast}</Toast>
-    </main>
+        ) : (
+          <div key={m.id} className="self-start max-w-[76%] text-[15px] leading-[1.45] bg-[#251d1b]" style={{ borderRadius: "20px 20px 20px 6px", padding: "10px 14px" }}>{m.body}</div>
+        ))}
+        <div ref={end} />
+      </div>
+      {warn && <p role="alert" className="m-0 text-[12.5px] text-[#ff8a9a]" style={{ padding: "0 14px 6px" }}>{warn}</p>}
+      <form onSubmit={(e) => { e.preventDefault(); send(); }} className="flex gap-2 items-center" style={{ padding: "10px 12px calc(22px + env(safe-area-inset-bottom))", borderTop: `1px solid ${LN}` }}>
+        <label className="flex-1 h-[46px] rounded-full bg-[#211a18] flex items-center px-4" style={{ border: `1px solid ${LN}` }}>
+          <input value={text} onChange={(e) => setText(e.target.value)} disabled={!open} maxLength={1000} placeholder={open ? "พิมพ์ข้อความ" : "แชทของนัดนี้ปิดแล้ว"} aria-label="พิมพ์ข้อความ" className="flex-1 min-w-0 bg-transparent outline-none text-[16px] text-[#f3ead9] placeholder:text-[#b5a596]" />
+        </label>
+        <button type="submit" aria-label="ส่ง" disabled={!text.trim() || busy || !open} className="w-[46px] h-[46px] rounded-full bg-[#e8c472] text-[#1b130b] grid place-items-center disabled:opacity-45">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z" /></svg>
+        </button>
+      </form>
+    </div>
   );
 }

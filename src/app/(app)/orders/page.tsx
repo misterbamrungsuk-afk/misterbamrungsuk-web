@@ -1,77 +1,79 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
+// บอร์ด C-Orders "นัดของฉัน" — แท็บ กำลังจะถึง / เสร็จแล้ว / ยกเลิก · เส้นสถานะ 5 ขั้น · ข้อมูลจริงจาก /api/bookings
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useI18n } from "@/i18n/provider";
-import { TopBar } from "@/components/shell";
-import { baht, EmptyState } from "@/components/ui";
-import { DEMO_MY_ORDERS } from "@/lib/demo-data";
-import type { OrderStatus } from "@/lib/types";
 
-const steps: [OrderStatus, string][] = [
-  ["negotiated", "stNegotiated"],
-  ["paid", "stPaid"],
-  ["in_progress", "stInProgress"],
-  ["completed", "stCompleted"],
-  ["reviewed", "stReviewed"],
-];
+const GOLD = "#e8c472";
+const LN = "rgba(243,234,217,0.07)";
+const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US");
+type B = { id: string; code: string; status: string; starts_at: string; hours: number; total_satang: number; place: { label: string; detail: string }; decline_reason: string | null; pt: { pid: string; nick: string; img: string } };
+const UP = ["requested", "accepted", "checked_in", "cancel_requested", "disputed"];
+const DONE = ["completed"];
+const STEPS = ["ส่งคำขอ", "ยืนยันแล้ว", "ถึงจุดนัด", "ระหว่างนัด", "เสร็จสิ้น"];
+const stepOf = (s: string) => (s === "requested" ? 0 : s === "accepted" || s === "cancel_requested" ? 1 : s === "checked_in" ? 3 : s === "completed" ? 4 : 0);
+const LABEL: Record<string, [string, string]> = {
+  requested: ["รอเพื่อนตอบรับ", GOLD], accepted: ["ยืนยันแล้ว", "#5EDB98"], checked_in: ["ระหว่างนัด", "#5EDB98"], cancel_requested: ["ขอยกเลิก · รอทีมงาน", "#e3a35c"], disputed: ["แจ้งปัญหา · รอทีมงาน", "#e3a35c"],
+  completed: ["เสร็จสิ้น", "#5EDB98"], declined: ["เพื่อนไม่สะดวก · คืนเงินแล้ว", "#d9c9b4"], expired: ["หมดเวลาตอบรับ · คืนเงินแล้ว", "#d9c9b4"], cancelled: ["ยกเลิก · คืนเงินแล้ว", "#d9c9b4"], refunded: ["คืนเงินแล้ว", "#d9c9b4"],
+};
+const when = (iso: string) => {
+  const d = new Date(iso), today = new Date();
+  const same = d.toDateString() === today.toDateString();
+  return (same ? "วันนี้ " : d.toLocaleDateString("th-TH", { day: "numeric", month: "short" }) + " ") + d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+};
 
 export default function OrdersPage() {
-  const { t, lang } = useI18n();
-
-  const label = (s: OrderStatus) => t[steps.find((x) => x[0] === s)![1] as keyof typeof t] as string;
-  const idx = (s: OrderStatus) => steps.findIndex((x) => x[0] === s);
+  const [tab, setTab] = useState<"up" | "done" | "cancel">("up");
+  const [rows, setRows] = useState<B[] | null>(null);
+  const [err, setErr] = useState("");
+  useEffect(() => {
+    fetch("/api/bookings", { cache: "no-store" }).then((r) => r.json()).then((d) => (d?.ok ? setRows(d.bookings) : (setErr(d?.error || "โหลดไม่สำเร็จ"), setRows([])))).catch(() => { setErr("โหลดไม่สำเร็จ"); setRows([]); });
+  }, []);
+  const list = (rows ?? []).filter((b) => (tab === "up" ? UP.includes(b.status) : tab === "done" ? DONE.includes(b.status) : !UP.includes(b.status) && !DONE.includes(b.status)));
 
   return (
-    <>
-      <TopBar back="/profile" title={`🧾 ${lang === "th" ? "ประวัติการจ้างงาน" : "My orders"}`} />
-      <div className="px-4 py-4 grid gap-3">
-        {DEMO_MY_ORDERS.length === 0 && <EmptyState icon="🧾" title={t.empty} />}
-        {DEMO_MY_ORDERS.map((o) => {
-          const step = idx(o.status);
+    <div className="pb-6">
+      <div className="flex flex-col gap-[14px]" style={{ padding: "18px 16px 12px" }}>
+        <h1 className="m-0 font-semibold text-[28px]">นัดของฉัน</h1>
+        <div className="flex gap-2">
+          {([["up", "กำลังจะถึง"], ["done", "เสร็จแล้ว"], ["cancel", "ยกเลิก"]] as const).map(([id, l]) => (
+            <button key={id} type="button" onClick={() => setTab(id)} aria-pressed={tab === id} className="h-9 px-4 rounded-full text-[13px]" style={{ border: `1px solid ${tab === id ? "#f3ead9" : LN}`, background: tab === id ? "#f3ead9" : "transparent", color: tab === id ? "#171211" : "#f3ead9" }}>{l}</button>
+          ))}
+        </div>
+      </div>
+      <div className="flex flex-col gap-3" style={{ padding: "0 16px" }}>
+        {err && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{err}</p>}
+        {rows === null ? <p className="m-0 text-[13px] font-light text-[#b5a596]">กำลังโหลด…</p> : !list.length ? (
+          <div className="rounded-[20px] bg-[#211a18] flex flex-col items-center gap-3 text-center" style={{ padding: 28, border: `1px solid ${LN}` }}>
+            <span className="text-[14px] text-[#d9c9b4]">{tab === "up" ? "ยังไม่มีนัดที่กำลังจะถึง" : tab === "done" ? "ยังไม่มีนัดที่เสร็จแล้ว" : "ไม่มีนัดที่ยกเลิก"}</span>
+            {tab === "up" && <Link href="/" className="h-11 px-5 rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold grid place-items-center hover:text-[#1b130b]">เลือกเพื่อน</Link>}
+          </div>
+        ) : list.map((b) => {
+          const st = stepOf(b.status);
+          const lab = LABEL[b.status] ?? [b.status, "#d9c9b4"];
           return (
-            <div key={o.id} className="glass rounded-2xl p-4 animate-rise">
-              <div className="flex items-center gap-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={o.provider.avatar} alt="" className="w-11 h-11 rounded-full bg-ink-700 object-cover" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm truncate">{o.provider.name}</p>
-                  <p className="text-[11px] text-ink-500">
-                    {new Date(o.createdAt).toLocaleDateString(lang === "th" ? "th-TH" : "en-GB")}
-                    {o.promoCode && ` · 🎟️ ${o.promoCode}`}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-gold-600">{baht(o.totalAmount - o.discount)}</p>
-                  {o.discount > 0 && <p className="text-[10px] text-emerald-400">−{baht(o.discount)}</p>}
-                </div>
+            <Link key={b.id} href={`/order/${b.id}`} className="rounded-[20px] bg-[#211a18] flex flex-col gap-[14px] text-[#f3ead9] hover:text-[#f3ead9]" style={{ padding: 14, border: `1px solid ${LN}`, opacity: tab === "cancel" ? 0.85 : 1 }}>
+              <div className="flex gap-3 items-center">
+                <img src={b.pt.img} alt="" className="w-14 h-14 rounded-[14px] object-cover shrink-0" style={{ filter: tab === "cancel" ? "grayscale(.6)" : "none" }} />
+                <div className="flex-1 min-w-0"><b className="font-medium text-[16px]">{b.pt.nick} · {b.place.label} {b.hours} ชม.</b><div className="text-[13px] font-light text-[#d9c9b4]">{when(b.starts_at)} · #{b.code}</div></div>
+                <b className="font-semibold text-[18px] shrink-0" style={{ color: GOLD }}>{baht(b.total_satang)}</b>
               </div>
-
-              {/* timeline */}
-              <div className="flex items-center mt-3">
-                {steps.map(([s], i) => (
-                  <div key={s} className="flex items-center flex-1 last:flex-none">
-                    <span className={`w-2 h-2 rounded-full ${i <= step ? "bg-gold-500" : "bg-ink-600"}`} />
-                    {i < steps.length - 1 && <div className={`h-0.5 flex-1 mx-0.5 ${i < step ? "bg-gold-500/60" : "bg-ink-600"}`} />}
-                  </div>
-                ))}
-              </div>
-              <div className="flex justify-between mt-1.5">
-                <span className={`text-[10px] font-medium ${step >= 4 ? "text-gold-600" : "text-crimson-300"}`}>{label(o.status)}</span>
-                <div className="flex gap-2">
-                  {o.id === "o1" && <Link href="/escrow/e1" className="inline-flex items-center min-h-9 px-2 -mx-1 text-xs text-gold-300 hover:underline">🏦 {lang === "th" ? "สถานะเงิน" : "Escrow"} ›</Link>}
-                  {(o.status === "negotiated" || o.status === "paid") && <Link href={`/order/${o.id}/cancel`} className="inline-flex items-center min-h-9 px-2 -mx-1 text-xs text-crimson-200 underline">{lang === "th" ? "ยกเลิก" : "Cancel"} ›</Link>}
-                  {o.status === "in_progress" && <Link href={`/order/${o.id}/session`} className="inline-flex items-center min-h-9 px-2 -mx-1 text-xs text-gold-300 underline">{lang === "th" ? "ระหว่างนัด" : "Meet-up"} ›</Link>}
-                  {o.status === "completed" && <Link href={`/order/${o.id}/complete`} className="inline-flex items-center min-h-9 px-2 -mx-1 text-xs text-gold-300 underline">{lang === "th" ? "ปล่อยเงิน / รีวิว" : "Release / review"} ›</Link>}
-                  {o.roomId && <Link href={`/chat/${o.roomId}`} className="inline-flex items-center min-h-9 px-2 -mx-1 text-xs text-ink-200 hover:text-gold-300 underline">{t.chat} ›</Link>}
+              {tab === "up" && b.status !== "cancel_requested" && b.status !== "disputed" ? (
+                <div className="grid grid-cols-5 gap-1 text-center text-[12px] text-[#d9c9b4]">
+                  {STEPS.map((l, i) => (
+                    <div key={l} style={{ color: i === st ? "#f3ead9" : undefined }}>
+                      <span className="w-6 h-6 rounded-full mx-auto mb-1 grid place-items-center text-[12px] font-semibold" style={i < st ? { background: "#f3ead9", color: "#171211" } : i === st ? { background: GOLD, color: "#1b130b" } : { border: `1px solid ${LN}` }}>{i < st ? "✓" : i + 1}</span>{l}
+                    </div>
+                  ))}
                 </div>
-              </div>
-            </div>
+              ) : <span className="self-start h-6 px-[9px] rounded-full text-[12px] font-light flex items-center" style={{ border: `1px solid ${lab[1] === "#d9c9b4" ? LN : lab[1]}`, color: lab[1] }}>{lab[0]}</span>}
+              {b.status === "requested" && <div className="rounded-xl bg-[#251d1b] text-[13px] font-light" style={{ padding: 12 }}>กันเงินไว้ในกระเป๋า · ถ้าเพื่อนไม่ตอบใน 30 นาที คืนเงินอัตโนมัติ</div>}
+            </Link>
           );
         })}
-        <p className="text-[10px] text-ink-500 text-center pb-2">
-          {lang === "th" ? "ทุกออเดอร์ผ่านระบบ Escrow — เงินคุณปลอดภัยทุกขั้นตอน" : "All orders run on escrow — your money is safe"}
-        </p>
+        {tab === "up" && !!list.length && <div className="text-[12px] font-light text-[#d9c9b4] leading-[1.6]">ยกเลิกได้ฟรีก่อนเพื่อนตอบรับ · หลังยืนยันแล้ว ทีมงานพิจารณาตามกติกาการยกเลิก</div>}
       </div>
-    </>
+    </div>
   );
 }
