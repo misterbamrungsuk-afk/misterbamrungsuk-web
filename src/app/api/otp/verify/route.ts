@@ -1,12 +1,13 @@
+import { limited } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
-import { clientIp, rateLimited } from "@/lib/customer/auth";
+import { clientIp } from "@/lib/customer/auth";
 import { PHONE_COOKIE, PHONE_TOKEN_MS, normalizePhone, readPhoneToken, otpRequired, signPhoneToken, verifyOtp } from "@/lib/otp";
 
 export const runtime = "nodejs";
 
 // ตรวจรหัส OTP — สำเร็จแล้วตั้ง cookie ยืนยันเบอร์ (30 นาที) ให้ขั้นสมัครใช้
 export async function POST(req: Request) {
-  if (rateLimited(`otpv:${clientIp(req)}`, 20, 15 * 60_000)) return NextResponse.json({ ok: false, error: "ลองบ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
+  if (await limited(`otpv:${clientIp(req)}`, 20, 15 * 60_000)) return NextResponse.json({ ok: false, error: "ลองบ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
   const b = (await req.json().catch(() => ({}))) as { phone?: string; code?: string; skip?: boolean };
   const phone = normalizePhone(String(b.phone ?? ""));
   // ยังไม่มีระบบ SMS บนเว็บจริง → ยืนยันเบอร์แบบไม่ใช้รหัส (ใช้ได้เฉพาะตอน otpRequired() = false)

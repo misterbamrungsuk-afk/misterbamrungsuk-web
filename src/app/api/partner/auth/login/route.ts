@@ -1,5 +1,6 @@
+import { limited } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
-import { checkHash, clientIp, isEmail, rateLimited } from "@/lib/customer/auth";
+import { checkHash, clientIp, isEmail } from "@/lib/customer/auth";
 import { PARTNER_COOKIE, partnerCookieOptions, signPartnerSession } from "@/lib/partner/auth";
 import { findPartnerLogin } from "@/lib/partner/store";
 
@@ -11,7 +12,7 @@ export async function POST(req: Request) {
   const email = String(b.email ?? "").trim().toLowerCase().slice(0, 200);
   const password = String(b.password ?? "");
   const ip = clientIp(req);
-  if (rateLimited(`plogin:${ip}`, 20) || rateLimited(`plogin:${ip}:${email}`, 8)) return bad("ลองหลายครั้งเกินไป กรุณารอ 15 นาที", 429);
+  if (await limited(`plogin:${ip}`, 20) || await limited(`plogin:${ip}:${email}`, 8)) return bad("ลองหลายครั้งเกินไป กรุณารอ 15 นาที", 429);
   if (!isEmail(email) || !password) return bad("กรุณากรอกอีเมลและรหัสผ่าน");
   try {
     const p = await findPartnerLogin(email);

@@ -1,5 +1,6 @@
+import { limited } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
-import { checkHash, clientIp, makeHash, rateLimited } from "@/lib/customer/auth";
+import { checkHash, clientIp, makeHash } from "@/lib/customer/auth";
 import { VENDOR_COOKIE, readInvite, signVendorSession, vendorCookieOptions } from "@/lib/market/vendor-auth";
 import { findAccountByEmail, patchAccount } from "@/lib/market/store";
 
@@ -15,7 +16,7 @@ export async function POST(req: Request) {
     res.cookies.set(VENDOR_COOKIE, "", { ...vendorCookieOptions, maxAge: 0 });
     return res;
   }
-  if (rateLimited(`mkv:${clientIp(req)}`, 10, 15 * 60_000)) return bad("ลองบ่อยเกินไป กรุณารอสักครู่", 429);
+  if (await limited(`mkv:${clientIp(req)}`, 10, 15 * 60_000)) return bad("ลองบ่อยเกินไป กรุณารอสักครู่", 429);
   const password = String(b.password ?? "");
   let accountId = "";
   if (b.op === "accept") {

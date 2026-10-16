@@ -65,8 +65,10 @@ export function checkHash(password: string, stored: string) {
 const secret = () => sessionSecret();
 
 /** token = base64url(json).hmac */
-export function signCustomerSession(sub: string, email: string) {
-  const body = Buffer.from(JSON.stringify({ sub, email, exp: Date.now() + SESSION_DAYS * 86400_000 })).toString("base64url");
+/** ลายนิ้วมือรหัสผ่านใน session — เปลี่ยนรหัส (ลืมรหัส/ตั้งใหม่) = session เก่าทุกเครื่องใช้ไม่ได้ทันที */
+const pvOf = (hash: string) => createHmac("sha256", secret()).update(`pv:${hash}`).digest("base64url").slice(0, 16);
+export function signCustomerSession(sub: string, email: string, passwordHash?: string) {
+  const body = Buffer.from(JSON.stringify({ sub, email, exp: Date.now() + SESSION_DAYS * 86400_000, ...(passwordHash ? { pv: pvOf(passwordHash) } : {}) })).toString("base64url");
   return `${body}.${createHmac("sha256", secret()).update(body).digest("base64url")}`;
 }
 
@@ -116,19 +118,39 @@ export async function setCustomerPassword(id: string, password: string) {
 }
 
 // ── ตรวจ session ลูกค้า (ลายเซ็น HMAC + วันหมดอายุ) — ใช้กับทุก API ที่เกี่ยวกับเงิน/การจอง ──
-export type CustomerSession = { sub: string; email: string };
+export type CustomerSession = { sub: string; email: string; pv?: string };
 export function readCustomerSession(token: string | undefined | null): CustomerSession | null {
   const [body, sig] = String(token || "").split(".");
   if (!body || !sig) return null;
   const want = createHmac("sha256", secret()).update(body).digest("base64url");
   if (want.length !== sig.length || !timingSafeEqual(Buffer.from(want), Buffer.from(sig))) return null;
   try {
-    const p = JSON.parse(Buffer.from(body, "base64url").toString()) as { sub?: string; email?: string; exp?: number };
-    return p.sub && p.email && p.exp && p.exp > Date.now() ? { sub: p.sub, email: p.email } : null;
+    const p = JSON.parse(Buffer.from(body, "base64url").toString()) as { sub?: string; email?: string; exp?: number; pv?: string };
+    return p.sub && p.email && p.exp && p.exp > Date.now() ? { sub: p.sub, email: p.email, ...(p.pv ? { pv: p.pv } : {}) } : null;
   } catch { return null; }
 }
 /** ลูกค้าที่ล็อกอินอยู่ (อ่านคุกกี้ในเซิร์ฟเวอร์) */
 export async function currentCustomer(): Promise<CustomerSession | null> {
   const { cookies } = await import("next/headers");
-  return readCustomerSession((await cookies()).get(SESSION_COOKIE)?.value);
+  const s = readCustomerSession((await cookies()).get(SESSION_COOKIE)?.value);
+  if (!s || !customersEnabled() || s.sub.startsWith("demo:")) return s;
+  // ฐานจริง: บัญชียังอยู่ · ไม่ได้ขอลบ · รหัสผ่านไม่ถูกเปลี่ยนหลังล็อกอิน (เพิกถอน session ทุกเครื่อง)
+  const row = await sessionRow(s.sub).catch(() => undefined);
+  if (row === undefined) return s; // อ่านฐานไม่ได้ชั่วคราว — ไม่เตะลูกค้าออก
+  if (!row || row.delete_requested_at || !s.pv || s.pv !== pvOf(row.password_hash)) return null;
+  const { pv: _pv, ...out } = s; void _pv;
+  return out;
 }
+const rowCache = new Map<string, { at: number; row: { password_hash: string; delete_requested_at: string | null } | null }>();
+async function sessionRow(id: string) {
+  const hit = rowCache.get(id);
+  if (hit && Date.now() - hit.at < 30_000) return hit.row;
+  const res = await fetch(`${SB_URL()}/rest/v1/customers?id=eq.${encodeURIComponent(id)}&select=password_hash,delete_requested_at&limit=1`, { headers: sbHeaders(), cache: "no-store" });
+  if (!res.ok) throw new Error(`customers session ${res.status}`);
+  const row = ((await res.json()) as { password_hash: string; delete_requested_at: string | null }[])[0] ?? null;
+  rowCache.set(id, { at: Date.now(), row });
+  if (rowCache.size > 5000) rowCache.clear();
+  return row;
+}
+/** ล้างแคช session ของลูกค้าคนนี้ (หลังเปลี่ยนรหัส/ขอลบบัญชี ให้มีผลทันทีในเครื่องนี้) */
+export const forgetSession = (id: string) => rowCache.delete(id);

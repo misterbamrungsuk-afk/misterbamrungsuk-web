@@ -169,4 +169,7 @@ function parsePhoneToken(token: string | undefined): { phone: string; exp: numbe
 }
 
 /** ต้องยืนยัน OTP ไหม — เปิดเมื่อตั้งคีย์ ThaiBulkSMS แล้ว (หรือรันในเครื่อง ที่ได้รหัสโหมด dev) · บนเว็บจริงที่ยังไม่มีคีย์ = ข้าม OTP ชั่วคราว */
-export const otpRequired = () => !!(process.env.THAIBULKSMS_API_KEY && process.env.THAIBULKSMS_API_SECRET) || process.env.NODE_ENV !== "production";
+export const otpRequired = () => otpEnabled() && (!!(process.env.THAIBULKSMS_API_KEY && process.env.THAIBULKSMS_API_SECRET) || process.env.NODE_ENV !== "production");
+/** สวิตช์หลักขั้นยืนยัน OTP (16 ต.ค.: ปิดไว้ก่อน ยังไม่ใช้ ThaiBulkSMS — โค้ดยังอยู่ครบ)
+ *  เปิดกลับ: ตั้ง env OTP_ENABLED=1 (+ คีย์ ThaiBulkSMS) แล้ว redeploy → หน้าสมัครลูกค้า/Part-Time กลับมามีขั้น OTP เอง */
+export function otpEnabled() { return process.env.OTP_ENABLED === "1"; }

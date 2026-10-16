@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ADMIN_COOKIE, SESSION_HOURS, homeFor, signSession } from "@/lib/admin-auth";
 import { adminLoginEnabled, checkLogin } from "@/lib/admin-accounts";
+import { limited } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -14,6 +15,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "ยังไม่ได้ตั้งค่าบัญชีแอดมิน (ADMIN_ACCOUNTS)" }, { status: 503 });
   }
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "local";
+  // นับรวมทุกเซิร์ฟเวอร์ (ฐานข้อมูล): ลองได้ 12 ครั้ง / 10 นาที / IP — ชั้นในหน่วยความจำด้านล่างยังนับเฉพาะครั้งที่ผิด
+  if (await limited(`adm:${ip}`, 12, WINDOW)) return NextResponse.json({ error: "ลองหลายครั้งเกินไป กรุณารอ 10 นาที" }, { status: 429 });
   const now = Date.now();
   const rec = attempts.get(ip);
   if (rec && rec.until > now && rec.n >= MAX) {

@@ -1,6 +1,7 @@
+import { limited } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { currentCustomer, rateLimited } from "@/lib/customer/auth";
+import { currentCustomer } from "@/lib/customer/auth";
 import { currentParttime } from "@/lib/bookings/auth";
 import { RESUME_COOKIE, readResume } from "@/lib/join/resume";
 import { addEvent, listForCustomer, listForParttime, notify, type Booking } from "@/lib/bookings";
@@ -17,7 +18,7 @@ const esc = (s: string) => s.replace(/[<>&"]/g, "");
 // body: { lat?, lng?, mb?, t? } — ลูกค้าใช้ session · Part-Time ใช้ mb+t หรือ cookie resume · ไม่ได้ล็อกอินก็ส่งได้ (ไม่ปฏิเสธเหตุฉุกเฉิน)
 export async function POST(req: Request) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "local";
-  if (rateLimited(`sos:${ip}`, 6, 10 * 60_000)) return NextResponse.json({ ok: true, hotline: HOTLINE, note: "รับเรื่องแล้ว" });
+  if (await limited(`sos:${ip}`, 6, 10 * 60_000)) return NextResponse.json({ ok: true, hotline: HOTLINE, note: "รับเรื่องแล้ว" });
   const b = (await req.json().catch(() => ({}))) as { lat?: unknown; lng?: unknown; mb?: string; t?: string };
   const lat = Number(b.lat), lng = Number(b.lng);
   const hasLoc = Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;

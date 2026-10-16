@@ -1,5 +1,6 @@
+import { limited } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
-import { clientIp, makeHash, rateLimited } from "@/lib/customer/auth";
+import { clientIp, makeHash } from "@/lib/customer/auth";
 import { PARTNER_COOKIE, partnerCookieOptions, signPartnerSession, verifyApplyToken } from "@/lib/partner/auth";
 import { findPartnerLogin, getPartner, updatePartner } from "@/lib/partner/store";
 
@@ -8,7 +9,7 @@ const bad = (error: string, status = 400) => NextResponse.json({ ok: false, erro
 
 // ตั้งรหัสผ่านเข้าพอร์ทัล — ต้องมี token ที่ได้หลังส่งฟอร์มสมัคร (/partner) เท่านั้น (กันคนอื่นอ้างอีเมลธุรกิจ)
 export async function POST(req: Request) {
-  if (rateLimited(`preg:${clientIp(req)}`, 8, 10 * 60_000)) return bad("ส่งบ่อยเกินไป กรุณารอสักครู่", 429);
+  if (await limited(`preg:${clientIp(req)}`, 8, 10 * 60_000)) return bad("ส่งบ่อยเกินไป กรุณารอสักครู่", 429);
   const b = (await req.json().catch(() => ({}))) as Record<string, unknown>;
   const pid = verifyApplyToken(String(b.token ?? ""));
   if (!pid) return bad("ลิงก์หมดอายุหรือไม่ถูกต้อง กรุณาติดต่อทีมงาน", 401);

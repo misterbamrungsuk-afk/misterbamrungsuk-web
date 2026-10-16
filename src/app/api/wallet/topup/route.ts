@@ -1,5 +1,6 @@
+import { limited } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
-import { clientIp, currentCustomer, rateLimited } from "@/lib/customer/auth";
+import { clientIp, currentCustomer } from "@/lib/customer/auth";
 import { verifySlip } from "@/lib/slip2go";
 import { WalletError, createTopup, creditTopup, saveSlip, transRefUsed } from "@/lib/wallet";
 
@@ -14,7 +15,7 @@ const bad = (error: string, status = 400) => NextResponse.json({ ok: false, erro
 export async function POST(req: Request) {
   const me = await currentCustomer();
   if (!me) return bad("กรุณาเข้าสู่ระบบ", 401);
-  if (rateLimited(`topup:${me.sub}`, 10, 60 * 60_000) || rateLimited(`topup-ip:${clientIp(req)}`, 20, 60 * 60_000)) return bad("ส่งบ่อยเกินไป กรุณารอสักครู่", 429);
+  if (await limited(`topup:${me.sub}`, 10, 60 * 60_000) || await limited(`topup-ip:${clientIp(req)}`, 20, 60 * 60_000)) return bad("ส่งบ่อยเกินไป กรุณารอสักครู่", 429);
   let form: FormData;
   try { form = await req.formData(); } catch { return bad("ข้อมูลไม่ถูกต้อง"); }
   const amount = Math.round(Number(form.get("amount")));

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { currentCustomer } from "@/lib/customer/auth";
+import { SESSION_COOKIE, currentCustomer, forgetSession } from "@/lib/customer/auth";
 import { getProfile, updateProfile } from "@/lib/customer/profile";
 import { listForCustomer, notify } from "@/lib/bookings";
 
@@ -17,7 +17,11 @@ export async function POST() {
   try {
     await updateProfile(me.sub, me.email, { delete_requested_at: at });
     await notify({ user_type: "admin", user_id: "pdpa", kind: "customer_delete", title: "ลูกค้าขอลบบัญชี", body: me.email, url: null });
-    return NextResponse.json({ ok: true, at });
+    forgetSession(me.sub);
+    // ขอลบแล้ว = ออกจากระบบทุกเครื่อง (session ถูกเพิกถอนที่ currentCustomer) · ทีมงานลบข้อมูลภายใน 30 วัน
+    const res = NextResponse.json({ ok: true, at, signedOut: true });
+    res.cookies.set(SESSION_COOKIE, "", { path: "/", maxAge: 0 });
+    return res;
   } catch (e) {
     console.error("delete request", e);
     return NextResponse.json({ ok: false, error: "ส่งคำขอไม่สำเร็จ · ติดต่อทีมงานทาง LINE" }, { status: 500 });

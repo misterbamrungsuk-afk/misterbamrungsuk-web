@@ -61,6 +61,19 @@ const img = fs.readFileSync(WEB + '/public/brand/home/p-n04.jpg');
     ]);
     ok('paid vs failed: only one wins', [x1.status, x2.status].filter((s) => s === 200).length === 1, `${x1.status}/${x2.status}`);
   } else ok('withdraw race (skipped: ยอดถอนได้ไม่พอ)', true);
+  // 16 ต.ค.: ปิดขั้น OTP (OTP_ENABLED ไม่ตั้ง) · ปุ่ม "สมัครทันที" = สมัครลูกค้า
+  j = await J(await fetch(B + '/api/otp/verify')); ok('otp step off', j.required === false);
+  const em = `reg${Date.now()}@test.local`;
+  r = await fetch(B + '/api/otp/verify', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ phone: '0891234567', skip: true }) });
+  const ck = (r.headers.get('set-cookie') || '').split(';')[0];
+  r = await fetch(B + '/api/auth/register', { method: 'POST', headers: { 'content-type': 'application/json', cookie: ck }, body: JSON.stringify({ name: 'ทดสอบ', phone: '0891234567', email: em, password: 'demo-pass-1234', accept_terms: true }) });
+  ok('register without OTP', (await J(r)).ok);
+  t = await (await fetch(B + '/')).text();
+  ok('สมัครทันที → /auth/register', /href="\/auth\/register"[^>]*>สมัครทันที/.test(t) && !/href="\/join"[^>]*>สมัครทันที/.test(t));
+  // ขอลบบัญชี = ออกจากระบบ (ล้าง cookie)
+  const C9 = { cookie: 'hamoo_session=' + sign({ sub: 'demo:del@test.local', email: 'del@test.local', exp: Date.now() + 3600e3 }) };
+  r = await fetch(B + '/api/me/delete', { method: 'POST', headers: C9 }); j = await J(r);
+  ok('delete request signs out', j.ok && j.signedOut && /hamoo_session=;/.test(r.headers.get('set-cookie') || ''));
   // กระทบยอดยังตรงหลังทุกอย่าง
   const CRON = (/^CRON_SECRET=(.*)$/m.exec(ENV)?.[1] || '').trim().replace(/^["']|["']$/g, '');
   j = await J(await fetch(B + '/api/cron/money', { headers: { authorization: 'Bearer ' + CRON } })); ok('recon ok', j.recon?.ok, JSON.stringify(j.recon?.issues));

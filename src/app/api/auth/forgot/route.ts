@@ -1,5 +1,6 @@
+import { limited } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
-import { clientIp, customersEnabled, findCustomer, isEmail, rateLimited, signReset } from "@/lib/customer/auth";
+import { clientIp, customersEnabled, findCustomer, isEmail, signReset } from "@/lib/customer/auth";
 import { emailEnabled, sendEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
@@ -7,12 +8,12 @@ export const runtime = "nodejs";
 // ขอลิงก์ตั้งรหัสผ่านใหม่ทางอีเมล — ตอบเหมือนกันทุกกรณี (ไม่บอกว่าอีเมลมีบัญชีหรือไม่) · mail=false = ระบบอีเมลยังไม่เปิด ให้ติดต่อแอดมิน
 export async function POST(req: Request) {
   const ip = clientIp(req);
-  if (rateLimited(`forgot:${ip}`, 5, 15 * 60_000)) return NextResponse.json({ ok: false, error: "ขอบ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
+  if (await limited(`forgot:${ip}`, 5, 15 * 60_000)) return NextResponse.json({ ok: false, error: "ขอบ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
   const b = (await req.json().catch(() => ({}))) as { email?: string };
   const email = String(b.email ?? "").trim().toLowerCase().slice(0, 200);
   if (!isEmail(email)) return NextResponse.json({ ok: false, error: "อีเมลไม่ถูกต้อง" }, { status: 400 });
   const mail = emailEnabled() && customersEnabled();
-  if (mail && !rateLimited(`forgot:${email}`, 3, 60 * 60_000)) {
+  if (mail && !await limited(`forgot:${email}`, 3, 60 * 60_000)) {
     try {
       const c = await findCustomer(email);
       if (c) {

@@ -32,7 +32,7 @@ export default function RegisterPage() {
   const [agree, setAgree] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [smsOff, setSmsOff] = useState(false);
+  const [smsOff, setSmsOff] = useState(true); // เริ่มแบบไม่มี OTP (ค่าปัจจุบัน) · เซิร์ฟเวอร์ตอบ required=true ค่อยแสดงขั้น OTP
   const [ts, setTs] = useState("");
   const [tsKey, setTsKey] = useState(0);
   const [code, setCode] = useState("");
@@ -42,7 +42,9 @@ export default function RegisterPage() {
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => { setF({ ...f, [k]: e.target.value }); setError(""); };
   const phone = f.phone.replace(/\D/g, "");
   const [pwMsg, pwColor] = strength(f.password);
-  const idx = { form: 0, otp: 1, done: 2 }[step];
+  // ปิด OTP (smsOff) = แถบ 2 ขั้น บัญชี → เสร็จสิ้น · เปิด = 3 ขั้นตามบอร์ด C-Register/C-OTP
+  const steps = smsOff ? ["บัญชี", "เสร็จสิ้น"] : ["บัญชี", "ยืนยัน OTP", "เสร็จสิ้น"];
+  const idx = smsOff ? (step === "done" ? 1 : 0) : { form: 0, otp: 1, done: 2 }[step];
 
   useEffect(() => {
     fetch("/api/otp/verify", { cache: "no-store" }).then((r) => r.json()).then((d: { required?: boolean }) => setSmsOff(d.required === false)).catch(() => {});
@@ -117,8 +119,8 @@ export default function RegisterPage() {
         </div>
 
         <div className="flex flex-col gap-4" style={{ padding: "14px 18px 0" }}>
-          <div className="grid grid-cols-3 gap-1.5" aria-label={`ขั้นที่ ${idx + 1} จาก 3`}>
-            {["บัญชี", "ยืนยัน OTP", "เสร็จสิ้น"].map((l, i) => (
+          <div className={`grid ${steps.length === 2 ? "grid-cols-2" : "grid-cols-3"} gap-1.5`} aria-label={`ขั้นที่ ${idx + 1} จาก ${steps.length}`}>
+            {steps.map((l, i) => (
               <div key={l} className="flex flex-col gap-1.5"><div className="h-1 rounded-full" style={{ background: i <= idx ? GOLD : "rgba(232,196,114,0.14)" }} /><span className="text-[12px] font-light" style={{ color: i <= idx ? GOLD : "#b5a596" }}>{l}</span></div>
             ))}
           </div>

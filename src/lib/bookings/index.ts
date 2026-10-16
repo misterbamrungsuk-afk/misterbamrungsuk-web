@@ -33,7 +33,14 @@ const demo: DemoB = (g.__mbBook ??= { bookings: [], events: [], messages: [], no
 /** เปลี่ยนสถานะการจอง + ลงเงินใน transaction เดียว (wallet_move) — null = สถานะเปลี่ยนไปแล้ว ไม่ลงเงิน
  *  นัดที่สปาพาร์ทเนอร์ → sync พอร์ทัลพาร์ทเนอร์เหมือน transition() */
 export async function moveBooking(id: string, from: Status[], patch: Partial<Booking>, tx: MoveTx | null): Promise<Booking | null> {
-  const r = await move<Booking>({ table: "bookings", id, from, patch: patch as Record<string, unknown>, demoRow: () => demo.bookings.find((x) => x.id === id) }, tx);
+  let r: Booking | null;
+  try {
+    r = await move<Booking>({ table: "bookings", id, from, patch: patch as Record<string, unknown>, demoRow: () => demo.bookings.find((x) => x.id === id) }, tx);
+  } catch (e) {
+    // trigger bookings_no_clash (0003_guards.sql): เพื่อนมีนัดซ้อนเวลา (กดจองพร้อมกัน)
+    if (/booking clash/.test(String((e as { message?: string })?.message ?? ""))) throw new BookingError("ช่วงเวลานี้เพื่อนมีนัดแล้ว ลองเลือกเวลาอื่น", "clash");
+    throw e;
+  }
   if (r && patch.status && r.place?.spa_id) await import("@/lib/partner/portal").then((m) => m.syncSpaBooking(r)).catch((e) => console.error("partner sync", e));
   return r;
 }

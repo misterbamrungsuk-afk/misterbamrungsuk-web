@@ -15,6 +15,10 @@ export async function GET(req: Request) {
   try {
     const rows = await listAll(1000);
     const r = await reconcile();
+    if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      const { createClient } = await import("@supabase/supabase-js");
+      await createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } }).rpc("rate_gc").then(() => {}, () => {}); // ล้างตัวนับกันสแปมที่เก่ากว่า 1 วัน
+    }
     if (!r.ok) {
       await notify({ user_type: "admin", user_id: "finance", kind: "recon_alert", title: "ยอดเงินไม่ตรง (กระทบยอดรายวัน)", body: r.issues.join(" · ").slice(0, 500), url: "/admin/wallet" });
       const to = process.env.ADMIN_ALERT_EMAIL || process.env.ADMIN_EMAIL || ISSUER.email;
