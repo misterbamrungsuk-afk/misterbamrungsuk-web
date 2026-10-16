@@ -1,11 +1,11 @@
 import "server-only";
 import { cookies } from "next/headers";
-import { PHONE_COOKIE, readPhoneToken } from "@/lib/otp";
+import { PHONE_COOKIE, readVerifiedPhone } from "@/lib/otp";
 import type { Order } from "./config";
 
-/** เบอร์ผู้ซื้อที่ยืนยัน OTP แล้ว (cookie mb_phone_ok, 668xxxxxxxx) — null = ยังไม่ยืนยัน */
+/** เบอร์ผู้ซื้อที่ยืนยันด้วยรหัส OTP จริง (cookie mb_phone_ok, 668xxxxxxxx) — null = ยังไม่ยืนยัน / ข้าม OTP (ไม่มีคีย์ SMS) ใช้ดูคำสั่งซื้อของเบอร์ไม่ได้ */
 export async function buyerPhone() {
-  return readPhoneToken((await cookies()).get(PHONE_COOKIE)?.value);
+  return readVerifiedPhone((await cookies()).get(PHONE_COOKIE)?.value);
 }
 
 /** ข้อมูลออเดอร์ที่ผู้ซื้อเห็นได้ (ไม่ส่ง ip / สลิป / ผู้ตัดสิน / GP) */

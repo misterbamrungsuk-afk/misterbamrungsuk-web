@@ -12,7 +12,8 @@
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
-    "admin:hash": "node -e \"const c=require('crypto');const pw=process.argv[1];if(!pw){console.error('ใส่รหัสผ่าน: npm run admin:hash -- \\\"รหัส\\\"');process.exit(1)}const s=c.randomBytes(16).toString('hex');console.log(s+':'+c.scryptSync(pw,s,32).toString('hex'))\""
+    "admin:hash": "node -e \"const c=require('crypto');const pw=process.argv[1];if(!pw){console.error('ใส่รหัสผ่าน: npm run admin:hash -- \\\"รหัส\\\"');process.exit(1)}const s=c.randomBytes(16).toString('hex');console.log(s+':'+c.scryptSync(pw,s,32).toString('hex'))\"",
+    "e2e": "node e2e/run.js"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

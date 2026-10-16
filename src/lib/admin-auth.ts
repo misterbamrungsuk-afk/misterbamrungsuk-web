@@ -1,5 +1,6 @@
 // สิทธิ์แอดมิน + session แบบลงลายเซ็น (HMAC-SHA256)
 // ใช้ได้ทั้งใน middleware (edge) และ route handler เพราะใช้ Web Crypto อย่างเดียว
+import { isProdDeploy } from "./session-secret";
 
 export const ADMIN_COOKIE = "mord_admin";
 export const SESSION_HOURS = 8;
@@ -47,7 +48,7 @@ export function homeFor(role: AdminRole) {
 
 export type AdminSession = { email: string; role: AdminRole; exp: number };
 
-const isDemo = !process.env.DATABASE_URL;
+const isDemo = !process.env.DATABASE_URL && !isProdDeploy(); // เว็บจริงไม่มีโหมดสาธิตเด็ดขาด (ไม่มี DATABASE_URL บน Vercel)
 
 /** secret สำหรับลงลายเซ็น: โหมดจริงต้องตั้ง ADMIN_SESSION_SECRET ไม่งั้นปิดระบบแอดมินทั้งหมด */
 function secret(): string | null {

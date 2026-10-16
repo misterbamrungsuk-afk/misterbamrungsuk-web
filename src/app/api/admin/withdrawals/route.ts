@@ -1,3 +1,4 @@
+import { csvCell } from "@/lib/csv";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
@@ -19,7 +20,7 @@ export async function GET(req: Request) {
   try {
     const rows = await listWithdrawals();
     if (csv) {
-      const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+      const esc = (v: unknown) => csvCell(v); // กันสูตร Excel
       const lines = rows.filter((w) => w.batch_id === csv && w.status === "batched").map((w) => [w.bank.bank, w.bank.account, w.bank.name, (w.net_satang / 100).toFixed(2), w.parttime_mb, w.id].map(esc).join(","));
       const body = "﻿" + [["ธนาคาร", "เลขบัญชี", "ชื่อบัญชี", "ยอดโอนสุทธิ", "รหัส MB", "อ้างอิง"].map(esc).join(","), ...lines].join("\r\n");
       return new NextResponse(body, { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="payout-${csv}.csv"`, "Cache-Control": "no-store" } });

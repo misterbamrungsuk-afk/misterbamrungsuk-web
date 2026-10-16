@@ -9,7 +9,8 @@ export const runtime = "nodejs";
 // แอดมินสร้างลิงก์เข้าโปรไฟล์ให้ผู้สมัคร (#35) — อายุ 30 วัน · เปิดแล้วตั้งคุกกี้ให้เครื่องใหม่ผ่าน /join/go
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const s = await verifySession((await cookies()).get(ADMIN_COOKIE)?.value);
-  if (!s || (!canAccess(s.role, "/admin/applicants") && !canAccess(s.role, "/admin/kyc"))) return NextResponse.json({ ok: false }, { status: 401 });
+  // ลิงก์นี้เข้าโปรไฟล์ได้เต็ม (แก้บัญชีรับเงินได้) — เฉพาะ super/การเงิน ไม่ให้บทบาท KYC (กันออกลิงก์ + อนุมัติ KYC เองคนเดียว)
+  if (!s || !canAccess(s.role, "/admin/applicants")) return NextResponse.json({ ok: false }, { status: 401 });
   const row = await getById((await params).id);
   if (!row) return NextResponse.json({ ok: false }, { status: 404 });
   const x = extraOf(row);

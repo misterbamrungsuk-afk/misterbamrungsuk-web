@@ -22,9 +22,15 @@ function init() {
   return (ready = true);
 }
 
+// รับเฉพาะ endpoint ของบริการ push จริง (Chrome/Android · Firefox · Safari/iOS · Edge) — กันใช้เซิร์ฟเวอร์เรายิง POST ไป URL อื่น
+const PUSH_HOSTS = [/^fcm\.googleapis\.com$/, /^(updates\.push\.services\.mozilla\.com|push\.services\.mozilla\.com)$/, /(^|\.)push\.apple\.com$/, /\.notify\.windows\.com$/];
 export function validSub(s: unknown): s is PushSub {
   const x = s as PushSub;
-  return !!x && typeof x.endpoint === "string" && /^https:\/\//.test(x.endpoint) && x.endpoint.length < 1000 && typeof x.keys?.p256dh === "string" && typeof x.keys?.auth === "string";
+  if (!x || typeof x.endpoint !== "string" || x.endpoint.length > 1000 || typeof x.keys?.p256dh !== "string" || typeof x.keys?.auth !== "string") return false;
+  try {
+    const u = new URL(x.endpoint);
+    return u.protocol === "https:" && PUSH_HOSTS.some((h) => h.test(u.hostname));
+  } catch { return false; }
 }
 
 export async function saveSub(user_type: Row["user_type"], user_id: string, s: PushSub) {

@@ -1,0 +1,31 @@
+// ตำแหน่งรูปหลัก: ผู้สมัครบันทึก → หน้าแรก/โปรไฟล์/แผนที่ ใช้ object-position เดียวกัน (โหมดเดโม · ต้องมี MB-2610001 จาก fix-e2e)
+const WEB = require('path').join(__dirname, '..');
+const fs = require('fs'), crypto = require('crypto');
+const env = fs.readFileSync(WEB + '/.env.local', 'utf8');
+const secret = (/^ADMIN_SESSION_SECRET=(.*)$/m.exec(env)?.[1] || '').trim().replace(/^["']|["']$/g, '') || 'hamoo-demo-secret';
+const { adm } = require('./_tok');
+const B = 'http://localhost:3210', mb = 'MB-2610001';
+const body = Buffer.from(JSON.stringify({ mb, exp: Date.now() + 3600_000 })).toString('base64url');
+const t = body + '.' + crypto.createHmac('sha256', secret).update('resume:' + body).digest('base64url');
+let fails = 0;
+const ok = (n, c, x = '') => { if (!c) fails++; console.log((c ? 'PASS ' : 'FAIL ') + n + (x ? ' · ' + x : '')); };
+const form = (o) => { const f = new FormData(); for (const [k, v] of Object.entries(o)) f.append(k, v); return f; };
+const ADM = { cookie: 'mord_admin=' + adm, 'content-type': 'application/json' };
+(async () => {
+  const l = (await (await fetch(B + '/admin/applicants', { headers: ADM })).text()).replace(/\\"/g, '"');
+  const at = l.indexOf('"mb_code":"' + mb + '"');
+  const id = [...l.slice(Math.max(0, at - 6000), at).matchAll(/"id":"([0-9a-f-]{36})"/g)].pop()[1];
+  const photo = [...l.slice(Math.max(0, at - 6000), at + 6000).matchAll(/"photo":"([^"]+)"/g)].map((m) => m[1]).find((p) => p.startsWith(id));
+  await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ kyc_status: 'approved' }) });
+  let r = await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ listed: true }) }); ok('listed', r.status === 200);
+  r = await fetch(B + '/api/join/profile', { method: 'POST', body: form({ mb, t, step: 'photo_pos', path: 'someone/else.jpg', pos: '50% 10%' }) }); ok('foreign path rejected', r.status === 400);
+  r = await fetch(B + '/api/join/profile', { method: 'POST', body: form({ mb, t, step: 'photo_pos', path: photo, pos: '150% 10%' }) }); ok('bad pos rejected', r.status === 400);
+  r = await fetch(B + '/api/join/profile', { method: 'POST', body: form({ mb, step: 'photo_pos', path: photo, pos: '50% 10%' }) }); ok('no token → 403', r.status === 403);
+  r = await fetch(B + '/api/join/profile', { method: 'POST', body: form({ mb, t, step: 'photo_pos', path: photo, pos: '50% 12%' }) }); ok('save pos', r.status === 200, photo + ' ' + (await r.clone().text()));
+  let h = await (await fetch(B + '/')).text(); ok('home uses pos', h.includes('object-position:50% 12%'));
+  const pid = (/\/p\/(r[0-9a-f]{10})/.exec(h) || [])[1];
+  h = await (await fetch(B + '/p/' + pid)).text(); ok('profile uses pos', h.includes('object-position:50% 12%'));
+  h = await (await fetch(B + '/map')).text(); ok('map gets pos', h.includes('50% 12%'));
+  h = await (await fetch(B + `/join/profile/${mb}?t=${encodeURIComponent(t)}`)).text(); ok('hub uses pos', h.includes('object-position:50% 12%'));
+  console.log(fails ? fails + ' FAILED' : 'ALL PASS', 't=' + encodeURIComponent(t));
+})().catch((e) => console.log('ERR', e));

@@ -1,3 +1,4 @@
+import { sessionSecret } from "@/lib/session-secret";
 import "server-only";
 import { createHmac, randomInt, randomUUID, timingSafeEqual } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
@@ -496,7 +497,7 @@ export const monthlySummary = (orders: Order[], vendors: Vendor[]): SummaryRow[]
   vendorReport(orders, vendors, []).map((r) => ({ month: r.month, vendor: r.vendor, sales: r.gross - r.discount, gp: r.gp, payout: r.payout, orders: r.orders, pendingGp: r.pendingGp }));
 
 // ── token ให้ผู้ซื้ออัปโหลดสลิป / ดูสถานะออเดอร์ของตัวเอง ──
-const secret = () => process.env.ADMIN_SESSION_SECRET || "hamoo-demo-secret";
+const secret = () => sessionSecret();
 export const orderToken = (id: string) => createHmac("sha256", secret()).update(`market-order:${id}`).digest("base64url");
 export function checkOrderToken(id: string, token: string) {
   const a = Buffer.from(orderToken(id)), b = Buffer.from(token || "");

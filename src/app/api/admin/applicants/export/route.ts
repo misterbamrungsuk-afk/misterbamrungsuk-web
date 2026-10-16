@@ -1,3 +1,4 @@
+import { csvCell } from "@/lib/csv";
 import { listApplicants } from "@/lib/join/store";
 import { COLUMNS, applicantRow } from "@/lib/join/sheets";
 
@@ -11,7 +12,7 @@ async function allowed() {
 
 export const runtime = "nodejs";
 
-const esc = (v: unknown) => `"${String(v ?? "").replace(/^'/, "").replace(/"/g, '""')}"`;
+const esc = (v: unknown) => csvCell(v, true); // กันสูตร Excel (CSV injection)
 
 /** ส่งออก CSV (UTF-8 BOM ให้ Excel อ่านภาษาไทยได้) */
 export async function GET() {

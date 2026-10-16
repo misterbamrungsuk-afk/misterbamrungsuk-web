@@ -4,12 +4,13 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Logo } from "@/components/ui";
 import { Fragment } from "react";
-import { PAYOUTS, REPORTS, TICKETS } from "@/lib/admin-data";
 import { ROLE_LABEL, canAccess, type AdminRole } from "@/lib/admin-auth";
 import { ModeSwitch } from "@/components/mode-switch";
 
-export const ADMIN_TABS = [
-  { href: "/admin", label: "ภาพรวม / รายได้", exact: true },
+export type AdminTab = { href: string; label: string; exact?: boolean; divider?: boolean; badge?: number };
+export const ADMIN_TABS: AdminTab[] = [
+  { href: "/admin", label: "ภาพรวม", exact: true },
+  { href: "/admin/audit", label: "SOS · แจ้งเตือนระบบ" },
   { href: "/admin/orders", label: "ตรวจงาน" },
   { href: "/admin/applicants", label: "ผู้สมัคร" },
   { href: "/admin/slips", label: "ตรวจสลิป · Slip2Go" },
@@ -18,17 +19,12 @@ export const ADMIN_TABS = [
   { href: "/admin/cohorts", label: "กลุ่มอบรม / เช็กชื่อ" },
   { href: "/admin/earnings", label: "ราคาและส่วนแบ่ง" },
   { href: "/admin/invites", label: "ลิงก์เชิญ" },
-  { href: "/admin/payouts", label: "โอนให้ Part-Time", badge: PAYOUTS.filter((p) => !p.hold).length },
+  { href: "/admin/payouts", label: "โอนให้ Part-Time" },
   { href: "/admin/partners", label: "พาร์ทเนอร์ / พื้นที่โปรโมท" },
   { href: "/admin/market", label: "ร้านค้า Marketplace" },
-  { href: "/admin/covers", label: "รูปหน้าปก" },
-  { href: "/admin/members", label: "สมาชิก · ใบเตือน" },
-  { href: "/admin/reports", label: "รายงาน", badge: REPORTS.length },
-  { href: "/admin/cs", label: "เรื่องร้องเรียน", badge: TICKETS.filter((t) => t.status === "new").length },
-  { href: "/admin/promos", label: "โปรโมชัน" },
-  { href: "/admin/audit", label: "บันทึกระบบ · SOS" },
-  { href: "/admin/settings", label: "ตั้งค่าระบบ", divider: true },
-] as const;
+  { href: "/admin/covers", label: "รูปหน้าปก", divider: true },
+  
+];
 
 export function AdminNav({ email, role }: { email: string; role: AdminRole }) {
   const path = usePathname();
@@ -37,7 +33,7 @@ export function AdminNav({ email, role }: { email: string; role: AdminRole }) {
     await fetch("/api/admin/logout", { method: "POST" });
     window.location.href = "/admin-login";
   };
-  const isOn = (t: (typeof ADMIN_TABS)[number]) => ("exact" in t && t.exact ? path === t.href : path.startsWith(t.href));
+  const isOn = (t: AdminTab) => (t.exact ? path === t.href : path.startsWith(t.href));
 
   return (
     <>

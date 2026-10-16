@@ -1,6 +1,6 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { PLATFORM, WalletError, balances, post } from "@/lib/wallet";
+import { PLATFORM, WalletError, balances, move, type Leg, type MoveTx } from "@/lib/wallet";
 import { getById, extraOf, type Applicant } from "@/lib/join/store";
 import { getEarnings } from "@/lib/join/earnings-settings";
 import { isLive, publicId } from "@/lib/home/live";
@@ -17,6 +17,7 @@ export type Booking = {
   price_satang: number; room_fee_satang: number; total_satang: number; status: Status; expires_at: string | null; decline_reason: string | null;
   accepted_at: string | null; declined_at: string | null; cancelled_at: string | null; checked_in_at: string | null; completed_at: string | null; created_at: string; updated_at: string;
   pt_done_at?: string | null; tip_satang?: number; share_pct?: number | null; matured_at?: string | null; resolution?: Record<string, unknown> | null;
+  pt_pending_satang?: number | null; // ยอดที่เข้า PT.pending จริง (0002_atomic) — ปล่อยเงินตามนี้
 };
 export type Message = { id: number; booking_id: string; sender_type: "customer" | "parttime" | "system"; sender_id: string | null; body: string; blocked: boolean; created_at: string; read_at: string | null };
 export type Notice = { id: number; user_type: "customer" | "parttime" | "admin"; user_id: string; kind: string; title: string; body: string | null; url: string | null; read_at: string | null; created_at: string };
@@ -28,6 +29,17 @@ const db = () => (sb ??= createClient(process.env.SUPABASE_URL!, process.env.SUP
 type DemoB = { bookings: Booking[]; events: { booking_id: string; type: string; actor: string | null; data: unknown; created_at: string }[]; messages: Message[]; notices: Notice[] };
 const g = globalThis as unknown as { __mbBook?: DemoB };
 const demo: DemoB = (g.__mbBook ??= { bookings: [], events: [], messages: [], notices: [] } as DemoB);
+
+/** เปลี่ยนสถานะการจอง + ลงเงินใน transaction เดียว (wallet_move) — null = สถานะเปลี่ยนไปแล้ว ไม่ลงเงิน
+ *  นัดที่สปาพาร์ทเนอร์ → sync พอร์ทัลพาร์ทเนอร์เหมือน transition() */
+export async function moveBooking(id: string, from: Status[], patch: Partial<Booking>, tx: MoveTx | null): Promise<Booking | null> {
+  const r = await move<Booking>({ table: "bookings", id, from, patch: patch as Record<string, unknown>, demoRow: () => demo.bookings.find((x) => x.id === id) }, tx);
+  if (r && patch.status && r.place?.spa_id) await import("@/lib/partner/portal").then((m) => m.syncSpaBooking(r)).catch((e) => console.error("partner sync", e));
+  return r;
+}
+const ref = (b: { id: string }) => ({ type: "booking", id: b.id });
+const legsOf = (...l: (Leg | false | 0 | null)[]) => l.filter(Boolean) as Leg[];
+export { legsOf };
 
 export class BookingError extends Error { constructor(msg: string, public code = "bad", public data?: Record<string, unknown>) { super(msg); } }
 
@@ -71,8 +83,10 @@ export async function addEvent(booking_id: string, type: string, actor: string |
 export async function notify(n: Omit<Notice, "id" | "read_at" | "created_at">) {
   if (isDemo) demo.notices.unshift({ ...n, id: demo.notices.length + 1, read_at: null, created_at: now() });
   else await db().from("notifications").insert(n).then(({ error }) => { if (error) console.error("notify", error.message); });
-  // web push ไปทุกอุปกรณ์ที่ผู้ใช้เปิดรับไว้ (#16) — แอดมินดูในหลังบ้าน
-  if (n.user_type !== "admin") await import("@/lib/push").then((m) => m.sendPush(n.user_type, n.user_id, { title: n.title, body: n.body, url: n.url, tag: n.kind })).catch(() => 0);
+  // web push ไปทุกอุปกรณ์ที่ผู้ใช้เปิดรับไว้ (#16)
+  // แอดมิน: ทุกเครื่องของแอดมินที่เปิดรับ (user_id "all") — SOS / ยอดไม่ตรง / ห้องเต็ม ถึงมือทันที
+  const [pt, pid] = n.user_type === "admin" ? ["admin", "all"] : [n.user_type, n.user_id];
+  await import("@/lib/push").then((m) => m.sendPush(pt, pid, { title: n.title, body: n.body, url: n.url, tag: n.kind === "sos" ? undefined : n.kind })).catch(() => 0);
 }
 
 export async function getBooking(id: string): Promise<Booking | null> {
@@ -127,12 +141,11 @@ async function sweep(rows: Booking[]): Promise<Booking[]> {
 
 async function releaseHold(b: Booking, to: "declined" | "expired" | "cancelled", actor: string, extra: Partial<Booking> = {}): Promise<Booking | null> {
   const stamp = to === "declined" ? { declined_at: now() } : to === "cancelled" ? { cancelled_at: now() } : {};
-  const r = await transition(b.id, ["requested"], { status: to, ...stamp, ...extra });
-  if (!r) return null;
-  await post("release", { type: "booking", id: b.id }, `release:${b.id}`, `คืนเงินที่กันไว้ · ${b.code}`, actor, [
+  const r = await moveBooking(b.id, ["requested"], { status: to, ...stamp, ...extra }, { kind: "release", ref: ref(b), idem: `release:${b.id}`, note: `คืนเงินที่กันไว้ · ${b.code}`, actor, legs: [
     { owner_type: "customer", owner_id: b.customer_id, bucket: "held", amount: -b.total_satang },
     { owner_type: "customer", owner_id: b.customer_id, bucket: "available", amount: b.total_satang },
-  ]);
+  ] });
+  if (!r) return null;
   await addEvent(b.id, to, actor);
   const msg = to === "declined" ? `${b.parttime_nick ?? "เพื่อน"} ไม่สะดวกนัดนี้ · คืนเงินเข้ากระเป๋าแล้ว` : to === "expired" ? "เพื่อนไม่ได้ตอบรับภายในเวลา · คืนเงินเข้ากระเป๋าแล้ว" : "ยกเลิกคำขอแล้ว · คืนเงินเข้ากระเป๋าแล้ว";
   await notify({ user_type: "customer", user_id: b.customer_id, kind: `booking_${to}`, title: `นัด ${b.code}`, body: msg, url: `/order/${b.id}` });
@@ -157,20 +170,24 @@ export async function createBooking(cust: { sub: string; email: string; name?: s
   const b = await insertBooking({
     code: code(), customer_id: cust.sub, customer_email: cust.email, customer_name: cust.name ?? null, parttime_id: a.id, parttime_mb: a.mb_code, parttime_nick: a.nickname,
     starts_at: new Date(start).toISOString(), hours: input.hours, place: input.place, note: input.note.slice(0, 300) || null,
-    price_satang: price, room_fee_satang: total - price, total_satang: total, status: "requested", expires_at: new Date(Date.now() + RESPOND_MINUTES * 60_000).toISOString(),
+    price_satang: price, room_fee_satang: total - price, total_satang: total, status: "cancelled", expires_at: new Date(Date.now() + RESPOND_MINUTES * 60_000).toISOString(),
     decline_reason: null, accepted_at: null, declined_at: null, cancelled_at: null, checked_in_at: null, completed_at: null,
     pt_done_at: null, tip_satang: 0, share_pct: null, matured_at: null, resolution: null,
   });
+  // แถวเริ่มเป็น cancelled แล้วเปิดเป็น requested พร้อมกันเงิน (อะตอมมิก) — กันเงินไม่ได้ = ไม่มีคำขอค้างให้เพื่อนกดรับ
+  let opened: Booking | null;
   try {
-    await post("hold", { type: "booking", id: b.id }, `hold:${b.id}`, `กันเงินนัด ${b.code}`, `customer:${cust.sub}`, [
+    opened = await moveBooking(b.id, ["cancelled"], { status: "requested" }, { kind: "hold", ref: ref(b), idem: `hold:${b.id}`, note: `กันเงินนัด ${b.code}`, actor: `customer:${cust.sub}`, legs: [
       { owner_type: "customer", owner_id: cust.sub, bucket: "available", amount: -total },
       { owner_type: "customer", owner_id: cust.sub, bucket: "held", amount: total },
-    ]);
+    ] });
   } catch (e) {
-    await transition(b.id, ["requested"], { status: "cancelled", cancelled_at: now() });
+    await transition(b.id, ["cancelled"], { cancelled_at: now() }).catch(() => null);
     if (e instanceof WalletError) throw new BookingError("ยอดในกระเป๋าไม่พอ", "funds", { need: total });
     throw e;
   }
+  if (!opened) throw new BookingError("สร้างคำขอนัดไม่สำเร็จ กรุณาลองใหม่");
+  Object.assign(b, opened);
   await addEvent(b.id, "requested", `customer:${cust.sub}`);
   await notify({ user_type: "parttime", user_id: a.id, kind: "booking_new", title: "มีงานเข้าใหม่", body: `${b.code} · ${input.hours} ชม. · ตอบภายใน ${RESPOND_MINUTES} นาที`, url: `/join/profile/${a.mb_code}/jobs` });
   return b;
@@ -186,12 +203,11 @@ export async function respond(id: string, parttime_id: string, accept: boolean, 
     if (!r) throw new BookingError("งานนี้ตอบไปแล้ว", "state");
     return r;
   }
-  const r = await transition(b.id, ["requested"], { status: "accepted", accepted_at: now(), expires_at: null });
-  if (!r) throw new BookingError("งานนี้ตอบไปแล้ว", "state");
-  await post("confirm", { type: "booking", id: b.id }, `confirm:${b.id}`, `ชำระค่านัด ${b.code}`, `parttime:${parttime_id}`, [
+  const r = await moveBooking(b.id, ["requested"], { status: "accepted", accepted_at: now(), expires_at: null }, { kind: "confirm", ref: ref(b), idem: `confirm:${b.id}`, note: `ชำระค่านัด ${b.code}`, actor: `parttime:${parttime_id}`, legs: [
     { owner_type: "customer", owner_id: b.customer_id, bucket: "held", amount: -b.total_satang },
     { owner_type: "platform", owner_id: PLATFORM, bucket: "escrow", amount: b.total_satang },
-  ]);
+  ] });
+  if (!r) throw new BookingError("งานนี้ตอบไปแล้ว", "state");
   await addEvent(b.id, "accepted", `parttime:${parttime_id}`);
   await notify({ user_type: "customer", user_id: b.customer_id, kind: "booking_accepted", title: `${b.parttime_nick ?? "เพื่อน"} ยืนยันนัดแล้ว`, body: `${b.code} · เงินพักไว้กับเราจนจบนัด`, url: `/order/${b.id}` });
   await sendMessage(b, "system", null, `${b.parttime_nick ?? "เพื่อน"} ยืนยันนัดแล้ว · คุยรายละเอียดกันได้ที่นี่ (ห้ามแลกเบอร์หรือช่องทางนอกแอป)`);
@@ -260,6 +276,20 @@ export async function markNoticesRead(user_type: Notice["user_type"], user_id: s
   await db().from("notifications").update({ read_at: now() }).eq("user_type", user_type).eq("user_id", user_id).is("read_at", null);
 }
 
+
+// ── แจ้งเตือนของแอดมิน (SOS · ยอดไม่ตรง · ห้องเต็ม · ขอลบบัญชี ฯลฯ) — ทุก user_id ของ user_type=admin ──
+export async function listAdminNotices(limit = 100): Promise<Notice[]> {
+  if (isDemo) return demo.notices.filter((n) => n.user_type === "admin").slice(0, limit);
+  const { data, error } = await db().from("notifications").select().eq("user_type", "admin").order("id", { ascending: false }).limit(limit);
+  if (error) throw error;
+  return (data ?? []) as Notice[];
+}
+export async function markAdminNoticeRead(id: number | "all") {
+  if (isDemo) { for (const n of demo.notices) if (n.user_type === "admin" && !n.read_at && (id === "all" || n.id === id)) n.read_at = now(); return; }
+  let q = db().from("notifications").update({ read_at: now() }).eq("user_type", "admin").is("read_at", null);
+  if (id !== "all") q = q.eq("id", id);
+  await q;
+}
 /** ข้อมูลสาธารณะของ Part-Time สำหรับหน้าจอง/การ์ด (ไม่เปิดเผยรหัสผู้สมัคร) */
 export const ptPublic = (b: Booking) => ({ pid: publicId(b.parttime_mb), nick: b.parttime_nick ?? "เพื่อน", img: `/api/public/pt-photo?id=${publicId(b.parttime_mb)}&i=0` });
 export const findLiveByPid = async (pid: string, list: () => Promise<Applicant[]>) => (await list()).find((a) => publicId(a.mb_code) === pid) ?? null;

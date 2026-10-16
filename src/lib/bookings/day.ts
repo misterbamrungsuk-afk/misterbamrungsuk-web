@@ -1,10 +1,10 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { PLATFORM, balances, history, post, WalletError } from "@/lib/wallet";
+import { PLATFORM, balances, history, move, WalletError, type Leg } from "@/lib/wallet";
 import { getMoney } from "@/lib/wallet/settings";
 import { getEarnings, pctFor } from "@/lib/join/earnings-settings";
 import type { Applicant } from "@/lib/join/store";
-import { BookingError, addEvent, getBooking, isDemo, notify, rawForParttime, sendMessage, transition, type Booking } from "./index";
+import { BookingError, addEvent, getBooking, isDemo, moveBooking, notify, rawForParttime, sendMessage, transition, type Booking } from "./index";
 
 // วันนัด → จบงาน → แบ่งเงิน → ปล่อยเงิน → ถอน (แผนข้อ 4 "ทางเดินเงิน")
 // จบงาน: บริษัท.escrow → PT.pending (x% ของค่าบริการ) + บริษัท.revenue (ส่วนที่เหลือ) + บริษัท.partner_payable (ค่าห้อง)
@@ -22,6 +22,7 @@ const demo: DemoD = (g.__mbDay ??= { reviews: [], withdrawals: [] } as DemoD);
 
 /** ส่วนของ Part-Time จากการจองนี้ (ค่าบริการ × % + ทิป × % ทิป) — คำนวณซ้ำได้จากค่าที่บันทึกไว้ */
 export async function ptAmount(b: Booking): Promise<number> {
+  if (typeof b.pt_pending_satang === "number") return b.pt_pending_satang; // ยอดที่ลงจริงตอนแบ่งเงิน (0002_atomic)
   const cfg = await getEarnings();
   return Math.round(b.price_satang * (b.share_pct ?? 0) / 100) + Math.round((b.tip_satang ?? 0) * cfg.tipPct / 100);
 }
@@ -35,28 +36,29 @@ async function completedThisMonth(parttime_id: string): Promise<number> {
   return count ?? 0;
 }
 
-/** แบ่งเงินเมื่อจบงาน (ครั้งเดียวต่อการจอง — กันซ้ำด้วย idem) */
+/** แบ่งเงินเมื่อจบงาน (ครั้งเดียวต่อการจอง) — เปลี่ยนสถานะ + ลงเงิน (ค่านัด + ทิป) ใน transaction เดียว
+ *  เฉพาะนัดที่ยังดำเนินอยู่ (accepted/checked_in) — ข้อพิพาท/ขอยกเลิก ต้องให้แอดมินตัดสิน (adminResolve) เท่านั้น
+ *  ทิปตัดจากกระเป๋าลูกค้าไม่ได้ (ยอดไม่พอ) = จบงานโดยไม่มีทิป · pt_pending_satang = ยอดที่เข้า PT.pending จริง */
 async function split(b: Booking, actor: string, tip: number): Promise<Booking> {
   const cfg = await getEarnings();
   const pct = pctFor(cfg.tiers, (await completedThisMonth(b.parttime_id)) + 1);
   const ptShare = Math.round(b.price_satang * pct / 100);
-  const r = await transition(b.id, ["accepted", "checked_in", "disputed", "cancel_requested"], { status: "completed", completed_at: now(), share_pct: pct, tip_satang: tip });
+  const run = async (t: number) => {
+    const tipPt = Math.round(t * cfg.tipPct / 100);
+    const legs: Leg[] = [
+      { owner_type: "platform", owner_id: PLATFORM, bucket: "escrow", amount: -b.total_satang },
+      { owner_type: "parttime", owner_id: b.parttime_id, bucket: "pending", amount: ptShare + tipPt },
+      { owner_type: "platform", owner_id: PLATFORM, bucket: "revenue", amount: b.price_satang - ptShare + (t - tipPt) },
+    ];
+    if (b.room_fee_satang) legs.push({ owner_type: "platform", owner_id: PLATFORM, bucket: "partner_payable", amount: b.room_fee_satang });
+    if (t > 0) legs.push({ owner_type: "customer", owner_id: b.customer_id, bucket: "available", amount: -t });
+    return moveBooking(b.id, ["accepted", "checked_in"], { status: "completed", completed_at: now(), share_pct: pct, tip_satang: t, pt_pending_satang: ptShare + tipPt },
+      { kind: "split", ref: { type: "booking", id: b.id }, idem: `split:${b.id}`, note: `แบ่งเงินนัด ${b.code} · ส่วนแบ่ง ${pct}%${t ? ` · ทิป ฿${t / 100}` : ""}`, actor, legs: legs.filter((l) => l.amount !== 0) });
+  };
+  let r: Booking | null;
+  try { r = await run(tip); }
+  catch (e) { if (tip > 0 && e instanceof WalletError) { tip = 0; r = await run(0); } else throw e; }
   if (!r) throw new BookingError("สถานะการจองเปลี่ยนไปแล้ว", "state");
-  const legs = [
-    { owner_type: "platform" as const, owner_id: PLATFORM, bucket: "escrow", amount: -b.total_satang },
-    { owner_type: "parttime" as const, owner_id: b.parttime_id, bucket: "pending", amount: ptShare },
-    { owner_type: "platform" as const, owner_id: PLATFORM, bucket: "revenue", amount: b.price_satang - ptShare },
-  ];
-  if (b.room_fee_satang) legs.push({ owner_type: "platform", owner_id: PLATFORM, bucket: "partner_payable", amount: b.room_fee_satang });
-  await post("split", { type: "booking", id: b.id }, `split:${b.id}`, `แบ่งเงินนัด ${b.code} · ส่วนแบ่ง ${pct}%`, actor, legs);
-  if (tip > 0) {
-    const tipPt = Math.round(tip * cfg.tipPct / 100);
-    await post("split", { type: "tip", id: b.id }, `tip:${b.id}`, `ทิปนัด ${b.code}`, actor, [
-      { owner_type: "customer", owner_id: b.customer_id, bucket: "available", amount: -tip },
-      { owner_type: "parttime", owner_id: b.parttime_id, bucket: "pending", amount: tipPt },
-      { owner_type: "platform", owner_id: PLATFORM, bucket: "revenue", amount: tip - tipPt },
-    ]);
-  }
   await addEvent(b.id, "completed", actor, { pct, tip });
   const money = await getMoney();
   await notify({ user_type: "parttime", user_id: b.parttime_id, kind: "earning", title: `จบงาน ${b.code}`, body: `รายได้รอปล่อย · ถอนได้ใน ${money.releaseHours} ชม.`, url: `/join/profile/${b.parttime_mb}/earnings` });
@@ -72,11 +74,10 @@ export async function sweepDay(rows: Booking[]): Promise<Booking[]> {
       if ((b.status === "checked_in" || b.status === "accepted") && b.pt_done_at && Date.parse(b.pt_done_at) + m.autoCompleteHours * 3600_000 < Date.now()) b = await split(b, "system:auto-complete", 0);
       if (b.status === "completed" && !b.matured_at && b.completed_at && Date.parse(b.completed_at) + m.releaseHours * 3600_000 < Date.now()) {
         const amt = await ptAmount(b);
-        if (amt > 0) await post("mature", { type: "booking", id: b.id }, `mature:${b.id}`, `ปล่อยรายได้ ${b.code}`, "system", [
+        b = (await moveBooking(b.id, ["completed"], { matured_at: now() }, amt > 0 ? { kind: "mature", ref: { type: "booking", id: b.id }, idem: `mature:${b.id}`, note: `ปล่อยรายได้ ${b.code}`, actor: "system", legs: [
           { owner_type: "parttime", owner_id: b.parttime_id, bucket: "pending", amount: -amt },
           { owner_type: "parttime", owner_id: b.parttime_id, bucket: "available", amount: amt },
-        ]);
-        b = (await transition(b.id, ["completed"], { matured_at: now() })) ?? b;
+        ] } : null)) ?? b;
       }
     } catch (e) { console.error("sweepDay", b.id, e); }
     out.push(b);
@@ -99,7 +100,10 @@ export async function checkIn(id: string, parttime_id: string) {
 export async function ptDone(id: string, parttime_id: string) {
   const b = await getBooking(id);
   if (!b || b.parttime_id !== parttime_id) throw new BookingError("ไม่พบงานนี้", "notfound");
-  const r = await transition(b.id, ["checked_in", "accepted"], { pt_done_at: now() });
+  // ต้องเช็กอินแล้ว และถึงเวลานัดแล้ว (กันกดจบงานล่วงหน้าแล้วรอจบอัตโนมัติ)
+  if (b.status !== "checked_in") throw new BookingError("เช็กอินที่จุดนัดก่อน จึงจะแจ้งจบงานได้", "state");
+  if (Date.parse(b.starts_at) > Date.now()) throw new BookingError("ยังไม่ถึงเวลานัด");
+  const r = await transition(b.id, ["checked_in"], { pt_done_at: now() });
   if (!r) throw new BookingError("จบงานไม่ได้ในสถานะนี้", "state");
   const m = await getMoney();
   await addEvent(b.id, "pt_done", `parttime:${parttime_id}`);
@@ -142,20 +146,25 @@ export async function adminResolve(id: string, admin: string, d: { action: "refu
   }
   const pct = Math.max(0, Math.min(100, Math.round(d.refundPct)));
   const refund = Math.round(b.total_satang * pct / 100);
-  const rest = b.total_satang - refund;
+  // ส่วนที่ไม่คืน: ค่าห้องตามสัดส่วน → ค้างจ่ายพาร์ทเนอร์ · ค่าบริการ → แบ่ง PT ตามขั้น + รายได้บริษัท
+  const roomKeep = Math.round(b.room_fee_satang * (100 - pct) / 100);
+  const serviceKeep = b.total_satang - refund - roomKeep;
   const cfg = await getEarnings();
   const sharePct = pctFor(cfg.tiers, (await completedThisMonth(b.parttime_id)) + 1);
-  const ptShare = Math.round(rest * sharePct / 100);
-  const legs = [{ owner_type: "platform" as const, owner_id: PLATFORM, bucket: "escrow", amount: -b.total_satang }];
-  if (refund) legs.push({ owner_type: "customer", owner_id: b.customer_id, bucket: "available", amount: refund } as never);
-  if (ptShare) legs.push({ owner_type: "parttime", owner_id: b.parttime_id, bucket: "pending", amount: ptShare } as never);
-  if (rest - ptShare) legs.push({ owner_type: "platform", owner_id: PLATFORM, bucket: "revenue", amount: rest - ptShare });
-  await post(pct === 100 ? "refund" : "split", { type: "booking", id: b.id }, `split:${b.id}`, `ผลพิจารณา ${b.code} · คืนลูกค้า ${pct}%`, admin, legs);
-  const r = await transition(b.id, ["cancel_requested", "disputed"], {
-    status: pct === 100 ? "refunded" : "completed", completed_at: now(), share_pct: pct === 100 ? 0 : sharePct, price_satang: b.price_satang,
-    resolution: { ...(b.resolution ?? {}), decided: "refund", refund_pct: pct, refund_satang: refund, pt_satang: ptShare, note: d.note, by: admin, at: now() },
+  const ptShare = Math.round(serviceKeep * sharePct / 100);
+  const legs: Leg[] = [
+    { owner_type: "platform", owner_id: PLATFORM, bucket: "escrow", amount: -b.total_satang },
+    { owner_type: "customer", owner_id: b.customer_id, bucket: "available", amount: refund },
+    { owner_type: "parttime", owner_id: b.parttime_id, bucket: "pending", amount: ptShare },
+    { owner_type: "platform", owner_id: PLATFORM, bucket: "revenue", amount: serviceKeep - ptShare },
+    { owner_type: "platform", owner_id: PLATFORM, bucket: "partner_payable", amount: roomKeep },
+  ];
+  const r = await moveBooking(b.id, ["cancel_requested", "disputed"], {
+    status: pct === 100 ? "refunded" : "completed", completed_at: now(), share_pct: pct === 100 ? 0 : sharePct, pt_pending_satang: ptShare,
+    resolution: { ...(b.resolution ?? {}), decided: "refund", refund_pct: pct, refund_satang: refund, pt_satang: ptShare, room_satang: roomKeep, note: d.note, by: admin, at: now() },
     ...(ptShare ? {} : { matured_at: now() }),
-  });
+  }, { kind: pct === 100 ? "refund" : "split", ref: { type: "booking", id: b.id }, idem: `resolve:${b.id}`, note: `ผลพิจารณา ${b.code} · คืนลูกค้า ${pct}%`, actor: admin, legs: legs.filter((l) => l.amount !== 0) });
+  if (!r) throw new BookingError("การจองนี้ถูกตัดสินไปแล้ว", "state");
   await addEvent(b.id, "resolve_refund", admin, { pct, refund, ptShare });
   await notify({ user_type: "customer", user_id: b.customer_id, kind: "booking_resolved", title: `ผลพิจารณา ${b.code}`, body: refund ? `คืนเงิน ${(refund / 100).toLocaleString()} บาทเข้ากระเป๋าแล้ว` : d.note, url: `/order/${b.id}` });
   return r;
@@ -188,16 +197,28 @@ export async function requestWithdraw(a: Applicant, amountBaht: number): Promise
   const fee = Math.round(amount * m.feePct / 100), wht = Math.round(amount * m.whtPct / 100);
   const row: Omit<Withdrawal, "id" | "created_at" | "paid_at"> = { parttime_id: a.id, parttime_mb: a.mb_code, amount_satang: amount, fee_satang: fee, wht_satang: wht, net_satang: amount - fee - wht, bank: { bank: a.bank, account: a.bank_account, name: a.bank_account_name }, status: "requested", batch_id: null, note: null };
   const id = crypto.randomUUID();
+  // แถวคำขอก่อน → ย้ายเงิน available → withdrawing แบบมีเงื่อนไข (ยอดไม่พอ = ลบแถวทิ้ง ไม่มีเงินค้างไร้เจ้าของ)
+  const demoRow: Withdrawal = { ...row, id, created_at: now(), paid_at: null };
+  if (isDemo) demo.withdrawals.unshift(demoRow);
+  else {
+    const { error } = await db().from("withdrawals").insert({ ...row, id });
+    if (error?.code === "23505") throw new BookingError("มีคำขอถอนที่รอโอนอยู่แล้ว · รอรอบโอนถัดไป");
+    if (error) throw error;
+  }
+  const drop = async () => { if (isDemo) demo.withdrawals.splice(demo.withdrawals.indexOf(demoRow), 1); else await db().from("withdrawals").delete().eq("id", id).eq("status", "requested"); };
   try {
-    await post("withdraw_req", { type: "withdrawal", id }, `wreq:${id}`, `ขอถอน ฿${amountBaht.toLocaleString()}`, `parttime:${a.id}`, [
-      { owner_type: "parttime", owner_id: a.id, bucket: "available", amount: -amount },
-      { owner_type: "parttime", owner_id: a.id, bucket: "withdrawing", amount },
-    ]);
-  } catch (e) { if (e instanceof WalletError) throw new BookingError("ยอดถอนได้ไม่พอ"); throw e; }
-  if (isDemo) { const w: Withdrawal = { ...row, id, created_at: now(), paid_at: null }; demo.withdrawals.unshift(w); return w; }
-  const { data, error } = await db().from("withdrawals").insert({ ...row, id }).select().single();
-  if (error) throw error;
-  return data as Withdrawal;
+    const w = await move<Withdrawal>({ table: "withdrawals", id, from: ["requested"], patch: { status: "requested" }, demoRow: () => demo.withdrawals.find((x) => x.id === id) },
+      { kind: "withdraw_req", ref: { type: "withdrawal", id }, idem: `wreq:${id}`, note: `ขอถอน ฿${amountBaht.toLocaleString()}`, actor: `parttime:${a.id}`, legs: [
+        { owner_type: "parttime", owner_id: a.id, bucket: "available", amount: -amount },
+        { owner_type: "parttime", owner_id: a.id, bucket: "withdrawing", amount },
+      ] });
+    if (!w) throw new BookingError("สร้างคำขอถอนไม่สำเร็จ");
+    return w;
+  } catch (e) {
+    await drop().catch(() => {});
+    if (e instanceof WalletError) throw new BookingError("ยอดถอนได้ไม่พอ");
+    throw e;
+  }
 }
 export async function listWithdrawals(opts: { parttime_id?: string; status?: Withdrawal["status"] } = {}): Promise<Withdrawal[]> {
   if (isDemo) return demo.withdrawals.filter((w) => (!opts.parttime_id || w.parttime_id === opts.parttime_id) && (!opts.status || w.status === opts.status));
@@ -222,25 +243,37 @@ export async function makeBatch(admin: string) {
   for (const w of reqs) { const r = await patchW(w.id, ["requested"], { status: "batched", batch_id: batch, note: `by ${admin}` }); if (r) done.push(r); }
   return { batch, rows: done };
 }
-export async function markPaid(id: string, admin: string) {
-  const w = (await listWithdrawals()).find((x) => x.id === id);
+export async function getWithdrawal(id: string): Promise<Withdrawal | null> {
+  if (isDemo) return demo.withdrawals.find((x) => x.id === id) ?? null;
+  if (!/^[0-9a-f-]{36}$/.test(id)) return null;
+  const { data } = await db().from("withdrawals").select().eq("id", id).maybeSingle();
+  return (data as Withdrawal) ?? null;
+}
+/** ปิดคำขอถอน (โอนแล้ว/โอนไม่สำเร็จ) — เปลี่ยนสถานะ + ลงเงินพร้อมกัน · idem เดียวกันทั้ง 2 ทาง กันกดทั้งโอนแล้วและไม่สำเร็จ */
+async function settle(id: string, admin: string, paid: boolean, note = "") {
+  const w = await getWithdrawal(id);
   if (!w || !["requested", "batched"].includes(w.status)) throw new BookingError("คำขอนี้ไม่ได้รอโอน", "state");
-  await post("withdraw_paid", { type: "withdrawal", id }, `wpaid:${id}`, `โอนแล้ว ฿${(w.net_satang / 100).toLocaleString()}`, admin, [
+  const legs: Leg[] = paid ? [
     { owner_type: "parttime", owner_id: w.parttime_id, bucket: "withdrawing", amount: -w.amount_satang },
     { owner_type: "platform", owner_id: PLATFORM, bucket: "bank", amount: w.net_satang },
     { owner_type: "platform", owner_id: PLATFORM, bucket: "revenue", amount: w.fee_satang },
     { owner_type: "platform", owner_id: PLATFORM, bucket: "wht_payable", amount: w.wht_satang },
-  ]);
-  const r = await patchW(id, ["requested", "batched"], { status: "paid", paid_at: now() });
+  ] : [
+    { owner_type: "parttime", owner_id: w.parttime_id, bucket: "withdrawing", amount: -w.amount_satang },
+    { owner_type: "parttime", owner_id: w.parttime_id, bucket: "available", amount: w.amount_satang },
+  ];
+  const r = await move<Withdrawal>({ table: "withdrawals", id, from: ["requested", "batched"], patch: paid ? { status: "paid", paid_at: now() } : { status: "failed", note: note.slice(0, 200) }, demoRow: () => demo.withdrawals.find((x) => x.id === id) },
+    { kind: paid ? "withdraw_paid" : "withdraw_fail", ref: { type: "withdrawal", id }, idem: `wsettle:${id}`, note: paid ? `โอนแล้ว ฿${(w.net_satang / 100).toLocaleString()}` : `โอนไม่สำเร็จ · ${note}`, actor: admin, legs: legs.filter((l) => l.amount !== 0) });
+  if (!r) throw new BookingError("คำขอนี้ถูกปิดไปแล้ว", "state");
+  return { w, r };
+}
+export async function markPaid(id: string, admin: string) {
+  const { w, r } = await settle(id, admin, true);
   await notify({ user_type: "parttime", user_id: w.parttime_id, kind: "withdraw_paid", title: "โอนเงินแล้ว", body: `฿${(w.net_satang / 100).toLocaleString()} เข้าบัญชี ${w.bank.bank}`, url: `/join/profile/${w.parttime_mb}/earnings` });
   return r;
 }
 export async function markFailed(id: string, admin: string, note: string) {
-  const w = (await listWithdrawals()).find((x) => x.id === id);
-  if (!w || !["requested", "batched"].includes(w.status)) throw new BookingError("คำขอนี้ไม่ได้รอโอน", "state");
-  await post("withdraw_fail", { type: "withdrawal", id }, `wfail:${id}`, `โอนไม่สำเร็จ · ${note}`, admin, [
-    { owner_type: "parttime", owner_id: w.parttime_id, bucket: "withdrawing", amount: -w.amount_satang },
-    { owner_type: "parttime", owner_id: w.parttime_id, bucket: "available", amount: w.amount_satang },
-  ]);
-  return patchW(id, ["requested", "batched"], { status: "failed", note: note.slice(0, 200) });
+  const { w, r } = await settle(id, admin, false, note);
+  await notify({ user_type: "parttime", user_id: w.parttime_id, kind: "withdraw_failed", title: "โอนเงินไม่สำเร็จ", body: `คืนยอดเข้าถอนได้แล้ว · ${note}`.slice(0, 200), url: `/join/profile/${w.parttime_mb}/withdraw` });
+  return r;
 }

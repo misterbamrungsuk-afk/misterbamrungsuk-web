@@ -2,13 +2,14 @@
 // โหมดจริง: ตั้ง ADMIN_ACCOUNTS ใน env รูปแบบ  email|role|salt:hash ; คั่นหลายบัญชีด้วย ;
 //   สร้างค่า salt:hash ด้วย  npm run admin:hash -- "รหัสผ่าน"
 // โหมดเดโม (ไม่มี DATABASE_URL และไม่ได้ตั้ง ADMIN_ACCOUNTS): ใช้บัญชีสาธิต 4 บทบาท รหัสผ่านจาก ADMIN_DEMO_PASSWORD
+import { isProdDeploy } from "@/lib/session-secret";
 import { scryptSync, timingSafeEqual } from "node:crypto";
 import type { AdminRole } from "./admin-auth";
 
 type Account = { email: string; role: AdminRole; salt?: string; hash?: string; plain?: string };
 
 const ROLES: AdminRole[] = ["super", "finance", "cs", "kyc"];
-const isDemo = !process.env.DATABASE_URL;
+const isDemo = !process.env.DATABASE_URL && !isProdDeploy(); // เว็บจริงไม่มีโหมดสาธิตเด็ดขาด (ไม่มี DATABASE_URL บน Vercel)
 
 export const DEMO_ADMIN_EMAILS: Record<AdminRole, string> = {
   super: "super@mord.demo",

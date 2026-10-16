@@ -35,6 +35,7 @@ export async function post(kind: TxKind, ref: { type?: string; id?: string } | n
   if (clean.length !== legs.length) throw new WalletError("จำนวนเงินต้องเป็นสตางค์เต็ม");
   if (legs.reduce((s, l) => s + l.amount, 0) !== 0) throw new WalletError("รายการเงินไม่สมดุล");
   if (isDemo) {
+    prodGuard();
     if (idem) { const ex = demo.tx.find((t) => t.idem === idem); if (ex) return ex.id; }
     const accOf = (l: Leg) => {
       let a = demo.acc.find((x) => x.owner_type === l.owner_type && x.owner_id === l.owner_id && x.bucket === l.bucket);
@@ -58,6 +59,51 @@ export async function post(kind: TxKind, ref: { type?: string; id?: string } | n
     throw error;
   }
   return Number(data);
+}
+
+export type MoveTable = "bookings" | "withdrawals" | "wallet_topups";
+export type MoveTx = { kind: TxKind; ref: { type?: string; id?: string } | null; idem: string; note: string | null; actor: string | null; legs: Leg[] };
+
+/** เปลี่ยนสถานะแบบมีเงื่อนไข (from) + ลงบัญชีเงิน ใน transaction เดียว (Postgres wallet_move · supabase/wallet/0002_atomic.sql)
+ *  คืน null = สถานะเปลี่ยนไปแล้ว (ไม่ลงเงิน) · เงินไม่พอ = WalletError และสถานะไม่เปลี่ยน
+ *  โหมดสาธิต: แก้แถวในหน่วยความจำแล้วลงเงิน ถ้าลงเงินพลาดคืนค่าแถวเดิม */
+export async function move<T extends { status: string }>(m: { table: MoveTable; id: string; from: string[]; patch: Record<string, unknown>; demoRow?: () => T | undefined }, tx: MoveTx | null): Promise<T | null> {
+  if (tx) {
+    if (!tx.legs.every((l) => Number.isInteger(l.amount))) throw new WalletError("จำนวนเงินต้องเป็นสตางค์เต็ม");
+    if (tx.legs.reduce((s, l) => s + l.amount, 0) !== 0) throw new WalletError("รายการเงินไม่สมดุล");
+  }
+  if (isDemo) {
+    prodGuard();
+    const row = m.demoRow?.();
+    if (!row || !m.from.includes(row.status)) return null;
+    const before = { ...row };
+    Object.assign(row, m.patch, m.table === "bookings" ? { updated_at: new Date().toISOString() } : {});
+    if (tx) {
+      try {
+        const id = await post(tx.kind, tx.ref, tx.idem, tx.note, tx.actor, tx.legs);
+        if (m.table === "wallet_topups") (row as unknown as Topup).tx_id = id;
+      } catch (e) {
+        for (const k of Object.keys(row)) if (!(k in before)) delete (row as Record<string, unknown>)[k];
+        Object.assign(row, before);
+        throw e;
+      }
+    }
+    return row;
+  }
+  const { data, error } = await db().rpc("wallet_move", {
+    p_table: m.table, p_id: m.id, p_from: m.from, p_patch: m.patch,
+    p_kind: tx?.kind ?? null, p_ref_type: tx?.ref?.type ?? null, p_ref_id: tx?.ref?.id ?? null, p_idem: tx?.idem ?? null, p_note: tx?.note ?? null, p_actor: tx?.actor ?? null, p_legs: tx?.legs ?? null,
+  });
+  if (error) {
+    if (/insufficient balance/.test(error.message)) throw new WalletError("ยอดเงินไม่พอ");
+    throw error;
+  }
+  return (data as T | null) ?? null;
+}
+
+/** เว็บจริง (Vercel production) ห้ามตกไปใช้ ledger ในหน่วยความจำเพราะ env หาย — ให้พังดีกว่าเงินหาย */
+function prodGuard() {
+  if (process.env.VERCEL_ENV === "production") throw new Error("wallet: SUPABASE env missing in production — refusing in-memory ledger");
 }
 
 /** ยอดคงเหลือทุกช่องของเจ้าของ (สตางค์) */
@@ -132,6 +178,7 @@ export async function createTopup(t: Pick<Topup, "customer_id" | "customer_email
     return row;
   }
   const { data, error } = await db().from("wallet_topups").insert(t).select().single();
+  if (error?.code === "23505") throw new WalletError("สลิปนี้เคยถูกใช้แล้ว"); // wallet_topups_transref
   if (error) throw error;
   return data as Topup;
 }
@@ -163,13 +210,27 @@ async function patchTopup(id: string, patch: Partial<Topup>, onlyPending = true)
   return (data as Topup) ?? null;
 }
 
-/** เติมเงินเข้ากระเป๋าลูกค้า: platform.bank → customer.available (กันซ้ำด้วยรหัสคำขอ) */
-export async function creditTopup(t: Topup, actor: string): Promise<Topup | null> {
-  const tx = await post("topup", { type: "topup", id: t.id }, `topup:${t.id}`, `เติมเงิน ฿${baht(t.amount_satang).toLocaleString("en-US")}`, actor, [
-    { owner_type: "platform", owner_id: PLATFORM, bucket: "bank", amount: -t.amount_satang },
-    { owner_type: "customer", owner_id: t.customer_id, bucket: "available", amount: t.amount_satang },
-  ]);
-  return patchTopup(t.id, { status: "credited", tx_id: tx, reviewed_by: actor, reviewed_at: new Date().toISOString() });
+/** เติมเงินเข้ากระเป๋าลูกค้า: platform.bank → customer.available — เปลี่ยนสถานะ + ลงเงินพร้อมกัน (กันอนุมัติ/ปฏิเสธชนกัน)
+ *  amountSatang = ยอดที่เข้ากระเป๋าจริง (แอดมินแก้ตามสลิปได้) */
+export async function creditTopup(t: Topup, actor: string, amountSatang = t.amount_satang): Promise<Topup | null> {
+  const amt = Math.round(amountSatang);
+  if (!(amt > 0) || amt > 100_000_00) throw new WalletError("ยอดเติมไม่ถูกต้อง");
+  return move<Topup>(
+    { table: "wallet_topups", id: t.id, from: ["pending"], patch: { status: "credited", amount_satang: amt, reviewed_by: actor, reviewed_at: new Date().toISOString() }, demoRow: () => demo.topups.find((x) => x.id === t.id) },
+    { kind: "topup", ref: { type: "topup", id: t.id }, idem: `topup:${t.id}`, note: `เติมเงิน ฿${baht(amt).toLocaleString("en-US")}`, actor, legs: [
+      { owner_type: "platform", owner_id: PLATFORM, bucket: "bank", amount: -amt },
+      { owner_type: "customer", owner_id: t.customer_id, bucket: "available", amount: amt },
+    ] },
+  );
+}
+/** สลิป (trans_ref) นี้เคยใช้เติมเงินแล้วหรือยัง (นับเฉพาะที่ไม่ถูกปฏิเสธ) — กันสลิปซ้ำในระบบเอง ไม่พึ่ง Slip2Go อย่างเดียว */
+export async function transRefUsed(ref: string | null | undefined, exceptId?: string): Promise<boolean> {
+  if (!ref) return false;
+  if (isDemo) return demo.topups.some((t) => t.id !== exceptId && t.status !== "rejected" && t.slip_check?.trans_ref === ref);
+  let q = db().from("wallet_topups").select("id").neq("status", "rejected").eq("slip_check->>trans_ref", ref).limit(1);
+  if (exceptId) q = q.neq("id", exceptId);
+  const { data } = await q;
+  return !!data?.length;
 }
 export async function rejectTopup(id: string, actor: string, reason: string): Promise<Topup | null> {
   return patchTopup(id, { status: "rejected", reason, reviewed_by: actor, reviewed_at: new Date().toISOString() });

@@ -43,6 +43,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ entity:
       case "banners":
         if (op === "delete" && id) return ok({ deleted: await deleteBanner(id) });
         if (!String(b.title ?? "").trim()) return bad("ใส่หัวข้อแบนเนอร์");
+        // ลิงก์แบนเนอร์: https:// หรือ path ในเว็บ (/...) เท่านั้น — กัน javascript:
+        if (b.link && !/^(https:\/\/|\/(?!\/))/.test(String(b.link))) return bad("ลิงก์ต้องขึ้นต้นด้วย https:// หรือ /");
         return ok({ banner: await saveBanner({ id, title: String(b.title), subtitle: String(b.subtitle ?? ""), image: String(b.image ?? ""), link: String(b.link ?? ""), sort: Number(b.sort ?? 0), active: b.active !== false }) });
       case "promos":
         if (op === "delete" && id) return ok({ deleted: await deletePromo(id) });

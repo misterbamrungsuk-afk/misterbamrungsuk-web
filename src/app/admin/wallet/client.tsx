@@ -11,7 +11,7 @@ type Data = { topups: Topup[]; accounts: Acc[]; sum: number };
 const GOLD = "#f0c75a";
 const LINE = "rgba(240,200,90,.38)";
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US", { maximumFractionDigits: 2 });
-const VERDICT: Record<string, [string, string]> = { ok: ["✓ ยอดตรง", "#4ade80"], amt: ["ยอดไม่ตรง", "#fca5a5"], fake: ["ไม่พบรายการ", "#fca5a5"], error: ["ตรวจไม่สำเร็จ", "#eed58a"] };
+const VERDICT: Record<string, [string, string]> = { ok: ["✓ ยอดตรง", "#4ade80"], check: ["ยอดตรง · ต้องเทียบบัญชี/วันที่เอง", "#eed58a"], dup: ["สลิปซ้ำ", "#fca5a5"], acct: ["โอนเข้าบัญชีอื่น", "#fca5a5"], amt: ["ยอดไม่ตรง", "#fca5a5"], fake: ["ไม่พบรายการ", "#fca5a5"], error: ["ตรวจไม่สำเร็จ", "#eed58a"] };
 const STATUS: Record<string, [string, string]> = { pending: ["รอตรวจ", "#eed58a"], credited: ["เข้ากระเป๋าแล้ว", "#4ade80"], rejected: ["ไม่ผ่าน", "#fca5a5"] };
 const OWNER: Record<string, string> = { customer: "ลูกค้า", parttime: "Part-Time", partner: "พาร์ทเนอร์", platform: "บริษัท" };
 
@@ -21,6 +21,7 @@ export function WalletAdmin({ initial, money, recon }: { initial: Data; money: M
   const [tab, setTab] = useState<"pending" | "all">("pending");
   const [msg, setMsg] = useState("");
   const [reason, setReason] = useState<Record<string, string>>({});
+  const [amt, setAmt] = useState<Record<string, string>>({});
   const [adj, setAdj] = useState({ owner_type: "customer", owner_id: "", bucket: "available", amount_baht: "", reason: "" });
   const [busy, setBusy] = useState(false);
   const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(""), 4000); };
@@ -71,10 +72,11 @@ export function WalletAdmin({ initial, money, recon }: { initial: Data; money: M
                   <span className="text-[11.5px] text-[#7d6d6a]">{new Date(t.created_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}</span>
                   {t.reason && <span className="text-[#fca5a5]">{t.reason}</span>}
                   {t.status === "pending" && <>
+                    <label className="flex items-center gap-2 text-[12px] text-[#cdbfb3]">เข้ากระเป๋า (บาท)<input type="number" inputMode="decimal" value={amt[t.id] ?? String(t.slip_check?.amount ?? t.amount_satang / 100)} onChange={(e) => setAmt({ ...amt, [t.id]: e.target.value })} className="h-9 w-28 rounded-lg border bg-[#130e0e] px-2.5 text-[13px] text-[#f6efe4] outline-none" style={{ borderColor: LINE }} /></label>
                     <input value={reason[t.id] ?? ""} onChange={(e) => setReason({ ...reason, [t.id]: e.target.value })} placeholder="เหตุผลถ้าไม่ผ่าน เช่น ยอดไม่ตรง" className="h-9 rounded-lg border bg-[#130e0e] px-2.5 text-[12.5px] text-[#f6efe4] outline-none" style={{ borderColor: LINE }} />
                     <div className="grid grid-cols-2 gap-1.5">
                       <button disabled={busy || !(reason[t.id] ?? "").trim()} onClick={() => act({ action: "reject", id: t.id, reason: reason[t.id] })} className="h-9 rounded-full border text-[#fecaca] disabled:opacity-40" style={{ borderColor: "rgba(201,40,61,.6)" }}>ไม่ผ่าน</button>
-                      <button disabled={busy} onClick={() => act({ action: "approve", id: t.id })} className="btn-red-lux h-9 rounded-full text-white font-semibold disabled:opacity-40">เข้ากระเป๋า</button>
+                      <button disabled={busy} onClick={() => act({ action: "approve", id: t.id, amount_baht: Number(amt[t.id] ?? t.slip_check?.amount ?? t.amount_satang / 100) })} className="btn-red-lux h-9 rounded-full text-white font-semibold disabled:opacity-40">เข้ากระเป๋า</button>
                     </div>
                   </>}
                 </div>

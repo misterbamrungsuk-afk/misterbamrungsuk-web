@@ -142,20 +142,29 @@ export async function verifyOtp(phone: string, code: string): Promise<{ ok: true
 export const PHONE_COOKIE = "mb_phone_ok";
 export const PHONE_TOKEN_MS = 30 * 60_000;
 
-export function signPhoneToken(phone: string) {
-  const body = Buffer.from(JSON.stringify({ phone, exp: Date.now() + PHONE_TOKEN_MS })).toString("base64url");
+/** verified=false = ข้าม OTP (ยังไม่มีคีย์ SMS) — ใช้สมัครได้ แต่ห้ามใช้เป็นหลักฐานความเป็นเจ้าของเบอร์ (เช่น ดูคำสั่งซื้อของเบอร์นี้) */
+export function signPhoneToken(phone: string, verified = true) {
+  const body = Buffer.from(JSON.stringify({ phone, exp: Date.now() + PHONE_TOKEN_MS, v: verified })).toString("base64url");
   return `${body}.${createHmac("sha256", secret()).update(`phone:${body}`).digest("base64url")}`;
 }
 
+/** เบอร์ที่ยืนยันด้วยรหัส OTP จริงเท่านั้น */
+export function readVerifiedPhone(token: string | undefined): string | null {
+  const p = parsePhoneToken(token);
+  return p && p.v !== false ? p.phone : null;
+}
 export function readPhoneToken(token: string | undefined): string | null {
+  return parsePhoneToken(token)?.phone ?? null;
+}
+function parsePhoneToken(token: string | undefined): { phone: string; exp: number; v?: boolean } | null {
   if (!token) return null;
   const [body, sig] = token.split(".");
   if (!body || !sig) return null;
   const want = createHmac("sha256", secret()).update(`phone:${body}`).digest("base64url");
   if (want.length !== sig.length || !timingSafeEqual(Buffer.from(want), Buffer.from(sig))) return null;
   try {
-    const p = JSON.parse(Buffer.from(body, "base64url").toString()) as { phone: string; exp: number };
-    return p.exp > Date.now() ? p.phone : null;
+    const p = JSON.parse(Buffer.from(body, "base64url").toString()) as { phone: string; exp: number; v?: boolean };
+    return p.exp > Date.now() ? p : null;
   } catch { return null; }
 }
 

@@ -1,3 +1,4 @@
+import { sessionSecret } from "@/lib/session-secret";
 import "server-only";
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 
@@ -61,7 +62,7 @@ export function checkHash(password: string, stored: string) {
   return got.length === want.length && timingSafeEqual(got, want);
 }
 
-const secret = () => process.env.ADMIN_SESSION_SECRET || "hamoo-demo-secret";
+const secret = () => sessionSecret();
 
 /** token = base64url(json).hmac */
 export function signCustomerSession(sub: string, email: string) {

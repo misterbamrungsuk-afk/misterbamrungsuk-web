@@ -10,7 +10,8 @@ export const dynamic = "force-dynamic";
 // รอบรายวัน: หมดเวลาตอบรับ → คืนเงิน · จบงานอัตโนมัติ · ปล่อยรายได้ที่ครบเวลา (ปกติทำตอนมีคนเปิดหน้าอยู่แล้ว รอบนี้กันค้าง)
 // แล้วกระทบยอด ledger กับการจอง/คำขอถอน (#24) — ไม่ตรง = แจ้งเตือนในหลังบ้าน + อีเมลแอดมิน
 export async function GET(req: Request) {
-  if (req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) return NextResponse.json({ ok: false }, { status: 401 });
+  const secret = process.env.CRON_SECRET;
+  if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) return NextResponse.json({ ok: false }, { status: 401 }); // ไม่ตั้ง secret = ปิด (กัน "Bearer undefined")
   try {
     const rows = await listAll(1000);
     const r = await reconcile();

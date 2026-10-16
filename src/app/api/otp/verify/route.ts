@@ -25,7 +25,7 @@ export async function POST(req: Request) {
   }
   if (!phone) return NextResponse.json({ ok: false, error: "เบอร์มือถือไม่ถูกต้อง" }, { status: 400 });
   const res = NextResponse.json({ ok: true });
-  res.cookies.set(PHONE_COOKIE, signPhoneToken(phone), {
+  res.cookies.set(PHONE_COOKIE, signPhoneToken(phone, !skip), {
     httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: PHONE_TOKEN_MS / 1000,
   });
   return res;

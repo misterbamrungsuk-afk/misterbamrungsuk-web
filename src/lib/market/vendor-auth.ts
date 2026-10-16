@@ -1,3 +1,4 @@
+import { sessionSecret } from "@/lib/session-secret";
 import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
@@ -8,7 +9,7 @@ import type { Vendor, VendorAccount } from "./config";
 // cookie mb_vendor (httpOnly, SameSite=Lax) ลงลายเซ็น HMAC · รหัสผ่าน scrypt (makeHash/checkHash จาก customer/auth)
 export const VENDOR_COOKIE = "mb_vendor";
 const DAYS = 30;
-const secret = () => process.env.ADMIN_SESSION_SECRET || "hamoo-demo-secret";
+const secret = () => sessionSecret();
 
 function sign(payload: Record<string, unknown>) {
   const body = Buffer.from(JSON.stringify(payload)).toString("base64url");

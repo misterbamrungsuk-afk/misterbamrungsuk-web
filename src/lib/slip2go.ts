@@ -5,8 +5,10 @@ import "server-only";
 
 const URL = "https://connect.slip2go.com/api/verify-slip/qr-image/info";
 
-/** ok = ยอดตรง · acct = โอนเข้าบัญชีอื่น · amt = ยอดไม่ตรง · dup = สลิปซ้ำ · fake = ไม่พบรายการ/อ่านไม่ได้ · error = ระบบตรวจขัดข้อง */
-export type SlipVerdict = "ok" | "acct" | "amt" | "dup" | "fake" | "error";
+/** ok = ยอดตรง + ยืนยันได้ว่าเข้าบัญชีร้าน + สลิปไม่เก่า · check = ยอดตรงแต่เทียบบัญชีผู้รับไม่ได้หรือสลิปเก่าเกิน 48 ชม. (ให้แอดมินดู)
+ *  acct = โอนเข้าบัญชีอื่น · amt = ยอดไม่ตรง · dup = สลิปซ้ำ · fake = ไม่พบรายการ/อ่านไม่ได้ · error = ระบบตรวจขัดข้อง */
+export type SlipVerdict = "ok" | "check" | "acct" | "amt" | "dup" | "fake" | "error";
+const MAX_AGE_MS = 48 * 3600_000;
 
 export interface SlipCheck {
   verdict: SlipVerdict;
@@ -71,8 +73,13 @@ export async function verifySlip(file: File, expected: number): Promise<SlipChec
     const out = { ...base, code, message, amount, trans_ref: str(d.transRef), sender: nameOf(d.sender), receiver: nameOf(d.receiver), date_time: str(d.dateTime) };
     if (/duplicate|ซ้ำ/i.test(message)) return { ...out, verdict: "dup" };
     if (!res.ok || !code.startsWith("2") || amount === null) return { ...out, verdict: res.status >= 500 ? "error" : "fake" };
-    if (receiverIsOurs(d.receiver) === false) return { ...out, verdict: "acct" };
-    return { ...out, verdict: Math.abs(amount - expected) < 0.01 ? "ok" : "amt" };
+    const ours = receiverIsOurs(d.receiver);
+    if (ours === false) return { ...out, verdict: "acct" };
+    if (Math.abs(amount - expected) >= 0.01) return { ...out, verdict: "amt" };
+    // ผ่านอัตโนมัติได้เฉพาะเมื่อยืนยันได้ว่าเข้าบัญชีร้านจริง และสลิปไม่เก่า — ที่เหลือให้แอดมินดู (กันสลิปโอนเข้าพร้อมเพย์คนอื่น/สลิปเก่า)
+    const at = out.date_time ? Date.parse(out.date_time) : NaN;
+    const fresh = Number.isFinite(at) && Date.now() - at < MAX_AGE_MS && at < Date.now() + 10 * 60_000;
+    return { ...out, verdict: ours === true && fresh ? "ok" : "check" };
   } catch (e) {
     console.error("slip2go failed", e);
     return { ...base, verdict: "error", code: "", message: "ตรวจสลิปไม่สำเร็จ" };

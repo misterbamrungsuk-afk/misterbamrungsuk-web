@@ -17,6 +17,7 @@ const TABS: [Tab, string, string][] = [
 // [label, bg, fg]
 const VERDICT: Record<SlipVerdict | "none", [string, string, string]> = {
   ok: ["✓ ตรงยอด · ของจริง", "rgba(74,222,128,.15)", "#bbf7d0"],
+  check: ["ยอดตรง · ต้องเทียบบัญชี/วันที่เอง", "rgba(251,146,60,.18)", "#fed7aa"],
   amt: ["ยอดไม่ตรง", "rgba(251,146,60,.18)", "#fed7aa"],
   acct: ["โอนเข้าบัญชีอื่น", "rgba(239,68,68,.2)", "#fecaca"],
   dup: ["สลิปซ้ำ", "rgba(239,68,68,.2)", "#fecaca"],
@@ -25,6 +26,7 @@ const VERDICT: Record<SlipVerdict | "none", [string, string, string]> = {
   none: ["ไม่ได้ตรวจ", "#21191a", "#cdbfb3"],
 };
 const WARN: Partial<Record<SlipVerdict | "none", string>> = {
+  check: "ยอดตรงแต่ระบบยืนยันบัญชีผู้รับไม่ได้ หรือสลิปเก่าเกิน 48 ชม. · เช็กว่าเงินเข้าบัญชีร้านจริงก่อนยืนยัน",
   acct: "บัญชีผู้รับในสลิปไม่ใช่บัญชีของร้าน · อย่ายืนยันจนกว่าจะตรวจกับบัญชีธนาคารจริง",
   dup: "เลขอ้างอิงนี้เคยถูกใช้แล้ว · อาจเป็นสลิปซ้ำ ห้ามยืนยัน",
   fake: "Slip2Go ไม่พบรายการโอนนี้ในระบบธนาคาร · ห้ามยืนยัน",

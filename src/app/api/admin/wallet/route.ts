@@ -19,7 +19,7 @@ export async function GET() {
   return NextResponse.json({ ok: true, topups, accounts, sum, money });
 }
 
-// { action: "approve" | "reject", id, reason? } · { action: "adjust", owner_type, owner_id, bucket, amount_baht, reason, idem }
+// { action: "approve" | "reject", id, reason?, amount_baht? } · { action: "adjust", owner_type, owner_id, bucket, amount_baht, reason, idem }
 export async function POST(req: Request) {
   const s = await admin();
   if (!s) return NextResponse.json({ ok: false }, { status: 401 });
@@ -35,7 +35,11 @@ export async function POST(req: Request) {
         if (!reason) return NextResponse.json({ ok: false, error: "ระบุเหตุผล" }, { status: 400 });
         return NextResponse.json({ ok: true, row: await rejectTopup(t.id, actor, reason) });
       }
-      return NextResponse.json({ ok: true, row: await creditTopup(t, actor) });
+      // ยอดที่เข้ากระเป๋า = ที่แอดมินระบุ (amount_baht) > ยอดในสลิปที่ Slip2Go อ่านได้ > ยอดที่ลูกค้ากรอก
+      const given = Number(b.amount_baht);
+      const amt = Number.isFinite(given) && given > 0 ? Math.round(given * 100) : t.slip_check?.amount ? Math.round(t.slip_check.amount * 100) : t.amount_satang;
+      const row = await creditTopup(t, actor, amt);
+      return row ? NextResponse.json({ ok: true, row }) : NextResponse.json({ ok: false, error: "คำขอนี้ตัดสินไปแล้ว" }, { status: 409 });
     }
     if (b.action === "settings") {
       const m = b.money as Record<string, unknown> | undefined;

@@ -1,3 +1,4 @@
+import { sessionSecret } from "@/lib/session-secret";
 import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
@@ -7,7 +8,7 @@ import { getPartner, type Partner } from "./store";
 // รหัสผ่านใช้ makeHash/checkHash (scrypt) จาก customer/auth
 export const PARTNER_COOKIE = "mb_partner";
 const DAYS = 30;
-const secret = () => process.env.ADMIN_SESSION_SECRET || "hamoo-demo-secret";
+const secret = () => sessionSecret();
 
 function sign(payload: Record<string, unknown>) {
   const body = Buffer.from(JSON.stringify(payload)).toString("base64url");

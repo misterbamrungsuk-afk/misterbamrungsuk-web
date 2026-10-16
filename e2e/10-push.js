@@ -1,0 +1,18 @@
+const WEB = require('path').join(__dirname, '..');
+const fs=require('fs'),crypto=require('crypto');const B='http://localhost:3210',mb='MB-2610001';
+const ENV=fs.readFileSync(WEB + '/.env.local','utf8');const KEY=(/^ADMIN_SESSION_SECRET=(.*)$/m.exec(ENV)?.[1]||'').trim().replace(/^["']|["']$/g,'')||'hamoo-demo-secret';
+let fails=0;const ok=(n,c,x='')=>{if(!c)fails++;console.log((c?'PASS ':'FAIL ')+n+(x?' · '+x:''));};
+const sign=(p)=>{const b=Buffer.from(JSON.stringify(p)).toString('base64url');return b+'.'+crypto.createHmac('sha256',KEY).update(b).digest('base64url');};
+const C={cookie:'hamoo_session='+sign({sub:'demo:buyer@test.local',email:'buyer@test.local',exp:Date.now()+3600e3}),'content-type':'application/json'};
+const T=(()=>{const b=Buffer.from(JSON.stringify({mb,exp:Date.now()+3600e3})).toString('base64url');return b+'.'+crypto.createHmac('sha256',KEY).update('resume:'+b).digest('base64url');})();
+const sub={endpoint:'https://fcm.googleapis.com/fcm/send/test-'+Date.now(),keys:{p256dh:'BNcRdreALRFXTkOOUHK1EtK2wtaz5Ry4YfYCA_0QTpQtUbVlUls0VJXg7A8u-Ts1XbjhazAkj7I99e8QcYP7DkM',auth:'tBHItJI5svbpez7KI4CCXg'}};
+(async()=>{let j=await (await fetch(B+'/api/push')).json();ok('GET key',j.ok,'enabled='+j.enabled);
+let r=await fetch(B+'/api/push',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sub})});ok('no auth 401',r.status===401);
+r=await fetch(B+'/api/push',{method:'POST',headers:C,body:JSON.stringify({sub:{endpoint:'http://x'}})});ok('bad sub 400',r.status===400);
+r=await fetch(B+'/api/push',{method:'POST',headers:C,body:JSON.stringify({sub})});ok('customer subscribe',(await r.json()).ok);
+r=await fetch(B+'/api/push',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sub:{...sub,endpoint:sub.endpoint+'pt'},mb,t:T})});ok('pt subscribe',(await r.json()).ok);
+r=await fetch(B+'/api/push',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sub,mb,t:'bad'})});ok('pt bad token 401',r.status===401);
+r=await fetch(B+'/api/push',{method:'DELETE',headers:{'content-type':'application/json'},body:JSON.stringify({endpoint:sub.endpoint})});ok('unsubscribe',(await r.json()).ok);
+const sw=await (await fetch(B+'/sw.js')).text();ok('sw has push handler',sw.includes('addEventListener("push"')&&sw.includes('notificationclick'));
+let t=await (await fetch(`${B}/join/profile/${mb}/settings?t=${encodeURIComponent(T)}`)).text();ok('pt settings shows push',t.includes('แจ้งเตือนบนเครื่องนี้'));
+console.log(fails?fails+' FAILED':'ALL PASS');})();

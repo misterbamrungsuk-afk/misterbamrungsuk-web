@@ -9,7 +9,7 @@ const b64ToBytes = (s: string) => {
 
 export const pushSupported = () => typeof window !== "undefined" && "serviceWorker" in navigator && "PushManager" in window && typeof Notification !== "undefined";
 
-export async function enablePush(pt?: { mb: string; t: string }): Promise<PushResult> {
+export async function enablePush(pt?: { mb: string; t: string }, admin = false): Promise<PushResult> {
   if (!pushSupported()) return "unsupported";
   try {
     const perm = await Notification.requestPermission();
@@ -19,7 +19,7 @@ export async function enablePush(pt?: { mb: string; t: string }): Promise<PushRe
     const reg = (await navigator.serviceWorker.getRegistration()) ?? (await navigator.serviceWorker.register("/sw.js"));
     await navigator.serviceWorker.ready;
     const sub = (await reg.pushManager.getSubscription()) ?? (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(cfg.key) }));
-    const r = await fetch("/api/push", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sub: sub.toJSON(), ...(pt ?? {}) }) });
+    const r = await fetch("/api/push", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sub: sub.toJSON(), ...(pt ?? {}), ...(admin ? { admin: true } : {}) }) });
     return r.ok ? "ok" : "error";
   } catch { return "error"; }
 }

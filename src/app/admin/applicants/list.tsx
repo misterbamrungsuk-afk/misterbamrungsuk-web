@@ -14,7 +14,7 @@ const GOLD = "#f0c75a";
 const LINE_BD = "rgba(240,200,90,.38)";
 const CRIMINAL: Record<CriminalCheck, [string, string]> = { pending: ["รอตรวจ", "#cdbfb3"], passed: ["ผ่าน", "#4ade80"], failed: ["ไม่ผ่าน", "#fca5a5"] };
 const LABEL: Record<ApplicantStatus, string> = { pending_slip: "รอตรวจสลิป", verified: "ชำระแล้ว", rejected: "ปฏิเสธ", refunded: "คืนเงินแล้ว" };
-const SLIP_LABEL: Record<string, [string, string]> = { ok: ["✓ ยอดตรง", "#4ade80"], acct: ["โอนเข้าบัญชีอื่น", "#fca5a5"], amt: ["ยอดไม่ตรง", "#fca5a5"], dup: ["สลิปซ้ำ", "#fca5a5"], fake: ["ไม่พบรายการ", "#fca5a5"], error: ["ตรวจไม่สำเร็จ", "#eed58a"] };
+const SLIP_LABEL: Record<string, [string, string]> = { ok: ["✓ ยอดตรง", "#4ade80"], check: ["ยอดตรง · ต้องเทียบบัญชีเอง", "#eed58a"], acct: ["โอนเข้าบัญชีอื่น", "#fca5a5"], amt: ["ยอดไม่ตรง", "#fca5a5"], dup: ["สลิปซ้ำ", "#fca5a5"], fake: ["ไม่พบรายการ", "#fca5a5"], error: ["ตรวจไม่สำเร็จ", "#eed58a"] };
 const DOCS = [["photo", "รูปหน้าตรง"], ["other_doc", "รูปเต็มตัว"], ["slip", "สลิป"], ["id_card", "บัตรประชาชน"], ["id_copy", "สำเนาบัตรเซ็นรับรอง"], ["selfie", "เซลฟีถือบัตร"], ["bankbook", "สมุดบัญชี"], ["cert_doc", "ใบรับรองนวด"]] as const;
 const file = (p: string) => `/api/admin/applicants/file?path=${encodeURIComponent(p)}`;
 const fmt = (n: number) => "฿" + n.toLocaleString("en-US");
