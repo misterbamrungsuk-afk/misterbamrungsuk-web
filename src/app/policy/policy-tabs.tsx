@@ -28,38 +28,38 @@ const D: Record<Tab, [string, [string, string][]]> = {
   ]],
 };
 const T: [Tab, string][] = [["returns", "คืนสินค้า"], ["shipping", "การจัดส่ง"], ["privacy", "ความเป็นส่วนตัว"]];
-const BD = "rgba(240,200,90,.38)";
-const GHOST = "flex-1 h-12 rounded-[14px] bg-[#241717] text-[#ffd76a] text-[14px] font-semibold grid place-items-center no-underline";
+const BD = "rgba(232,196,114,.38)";
+const GHOST = "flex-1 h-12 rounded-[14px] bg-[#211a18] text-[#e8c472] text-[14px] font-semibold grid place-items-center no-underline";
 
 export function PolicyTabs({ initial }: { initial: Tab }) {
   const [tab, setTab] = useState<Tab>(initial);
   const [open, setOpen] = useState<Record<number, boolean>>({ 0: true });
   const [intro, secs] = D[tab];
   return (
-    <main className="min-h-dvh bg-[#0e0a0a] text-[#f6efe4] font-lux-body">
+    <main className="min-h-dvh bg-[#171211] text-[#f3ead9] mb-v7 mb-c">
       <SiteHeader />
       <div className="max-w-[480px] mx-auto">
         <LuxHeader back="/market" eyebrow="POLICIES" title="นโยบายร้านค้า" />
         <div className="px-[18px] pt-3.5 pb-6 flex flex-col gap-3">
-          <div role="tablist" className="flex gap-1 p-1 rounded-[14px] bg-[#241717]" style={{ border: `1px solid ${BD}` }}>
+          <div role="tablist" className="flex gap-1 p-1 rounded-[14px] bg-[#211a18]" style={{ border: `1px solid ${BD}` }}>
             {T.map(([k, label]) => (
               <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => { setTab(k); setOpen({ 0: true }); }}
-                className="flex-1 min-h-11 rounded-[10px] text-[13px] font-semibold" style={{ background: tab === k ? "#b0182c" : "transparent", color: tab === k ? "#fff" : "#d3c7bc" }}>{label}</button>
+                className="flex-1 min-h-11 rounded-[10px] text-[13px] font-semibold" style={{ background: tab === k ? "#e8c472" : "transparent", color: tab === k ? "#1b130b" : "#d9c9b4" }}>{label}</button>
             ))}
           </div>
-          <div className="p-3.5 rounded-2xl text-[12.5px] text-[#d3c7bc] leading-[1.6] bg-[#1d1712]" style={{ border: "1px solid rgba(227,195,92,.35)" }}>{intro}</div>
+          <div className="p-3.5 rounded-2xl text-[12.5px] text-[#d9c9b4] leading-[1.6] bg-[#1d1712]" style={{ border: "1px solid rgba(227,195,92,.35)" }}>{intro}</div>
           {secs.map(([h, body], i) => {
             const on = !!open[i];
             return (
-              <div key={tab + i} className="rounded-2xl bg-[#241717] overflow-hidden" style={{ border: `1px solid ${BD}` }}>
-                <button type="button" onClick={() => setOpen({ ...open, [i]: !on })} aria-expanded={on} className="w-full min-h-[52px] flex justify-between items-center gap-2.5 px-3.5 text-[#f6efe4] text-left text-[14px] font-semibold">
-                  <span>{h}</span><span className="text-[#ffd76a] text-[18px]">{on ? "−" : "+"}</span>
+              <div key={tab + i} className="rounded-2xl bg-[#211a18] overflow-hidden" style={{ border: `1px solid ${BD}` }}>
+                <button type="button" onClick={() => setOpen({ ...open, [i]: !on })} aria-expanded={on} className="w-full min-h-[52px] flex justify-between items-center gap-2.5 px-3.5 text-[#f3ead9] text-left text-[14px] font-semibold">
+                  <span>{h}</span><span className="text-[#e8c472] text-[18px]">{on ? "−" : "+"}</span>
                 </button>
-                {on && <div className="px-3.5 pb-3.5 text-[13px] text-[#d3c7bc] leading-[1.75] whitespace-pre-line">{body}</div>}
+                {on && <div className="px-3.5 pb-3.5 text-[13px] text-[#d9c9b4] leading-[1.75] whitespace-pre-line">{body}</div>}
               </div>
             );
           })}
-          <div className="text-[11.5px] text-[#7d6d6a] leading-[1.6]">ปรับปรุงล่าสุด [รอกำหนด] · ร่างนี้ต้องให้ทนายตรวจก่อนเปิดใช้งาน</div>
+          <div className="text-[11.5px] text-[#b5a596] leading-[1.6]">ปรับปรุงล่าสุด [รอกำหนด] · ร่างนี้ต้องให้ทนายตรวจก่อนเปิดใช้งาน</div>
           <div className="flex gap-2">
             <Link href="/orders/track" className={GHOST} style={{ border: `1px solid ${BD}` }}>ติดตามคำสั่งซื้อ</Link>
             <Link href="/market" className={GHOST} style={{ border: `1px solid ${BD}` }}>กลับ Marketplace</Link>

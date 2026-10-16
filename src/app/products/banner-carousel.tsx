@@ -30,7 +30,7 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
               {img
                 // eslint-disable-next-line @next/next/no-img-element
                 ? <img src={img} alt="" className="absolute inset-0 w-full h-full object-cover" />
-                : <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,175,55,0.25),transparent_60%),linear-gradient(135deg,#2a1014,#0e0a0a)]" />}
+                : <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,175,55,0.25),transparent_60%),linear-gradient(135deg,#2a1014,#171211)]" />}
               {b.title && <div className="absolute inset-0 bg-gradient-to-r from-ink-950/85 via-ink-950/40 to-transparent" />}
               {b.title && <div className="relative h-full flex flex-col justify-center px-6 lg:px-10 max-w-xl">
                 <p className="text-[11px] font-semibold tracking-[0.3em] text-gold-500">PROMOTION</p>

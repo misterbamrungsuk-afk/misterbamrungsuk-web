@@ -434,3 +434,5 @@ html { scroll-behavior: smooth; }
 .mb-c .gold-line { background: rgba(243,234,217,0.07); }
 .mb-c .section-title { font-family: var(--font-mb); font-weight: 600; letter-spacing: 0; }
 .mb-c .animate-pulse-red { animation: none; }
+/* marketplace: ปุ่มที่ใช้ RED_GRAD (ตอนนี้ = ทอง #e8c472) ให้ตัวหนังสือเข้ม */
+.mb-c .text-white[style*="background:#e8c472"] { color: #1b130b !important; }

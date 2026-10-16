@@ -46,7 +46,7 @@ export default async function PolicyPage({ params }: { params: Promise<{ slug: s
   if (!meta) notFound();
   const custom = (await getSettings())[meta.key].trim();
   return (
-    <main className="min-h-dvh bg-ink-900 text-ink-100">
+    <main className="mb-v7 mb-c min-h-dvh">
       <SiteHeader />
       <MarketHeader />
       <article className="max-w-3xl mx-auto px-4 py-10">
