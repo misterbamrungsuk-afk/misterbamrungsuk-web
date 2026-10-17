@@ -143,7 +143,19 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
             <span className="shrink-0 h-10 px-4 rounded-full text-[#f3ead9] text-[13.5px] font-semibold flex items-center bg-[#1b130b]">สมัครร่วมทีม →</span>
           </Link>
         ) : (
-          /* ร่วมงานกับเรา — ปุ่มเดียวแบบเดิม สีครีมอ่อน */
+          <>
+          {/* ลูกค้าล็อกอินแล้ว: ทางไปเลือกซื้อบริการและสินค้า (สีครีมอ่อน) */}
+          {me && (
+            <nav aria-label="ซื้อบริการและสินค้า" className="grid grid-cols-2 gap-2 md:gap-3" style={{ margin: "14px 18px 0" }}>
+              {([["/market", "โรงแรม · สปา", "ราคาสมาชิก", "M3 21V8l9-5 9 5v13M9 21v-6h6v6M3 21h18"], ["/products", "สินค้า", "ส่งถึงบ้าน", "M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"]] as const).map(([h, t, sub, d]) => (
+                <Link key={h} href={h} className="flex items-center gap-2.5 rounded-2xl text-[#1b130b] hover:text-[#1b130b] active:scale-[.98] transition-transform" style={{ padding: "12px 12px", minHeight: 64, background: "#f3ead9" }}>
+                  <span className="grid place-items-center w-10 h-10 rounded-xl shrink-0" style={{ background: "rgba(143,94,0,0.12)", color: "#8f5e00" }}><Svg d={d} size={20} /></span>
+                  <span className="min-w-0 leading-[1.35]"><span className="block font-semibold text-[15px]">{t}</span><span className="block text-[12px] text-[#5a4a42] truncate">{sub}</span></span>
+                </Link>
+              ))}
+            </nav>
+          )}
+          {/* ร่วมงานกับเรา — ปุ่มเดียวแบบเดิม สีครีมอ่อน */}
           <Link href="/work-with-us" className="flex items-center gap-3 rounded-2xl text-[#1b130b] hover:text-[#1b130b]" style={{ margin: "14px 18px 0", padding: "12px 14px", background: "#f3ead9" }}>
             <span className="grid place-items-center w-[38px] h-[38px] rounded-xl shrink-0" style={{ background: "rgba(143,94,0,0.12)", color: "#8f5e00" }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m11 17 2 2a1 1 0 1 0 3-3" /><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4" /><path d="m21 3 1 11h-2" /><path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3" /><path d="M3 4h8" /></svg>
@@ -151,6 +163,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
             <span className="flex-1 min-w-0 leading-[1.4]"><span className="block font-semibold text-[15px]">ร่วมงานกับเรา</span></span>
             <span className="shrink-0 h-9 px-3.5 rounded-full text-[#f3ead9] text-[13px] font-semibold flex items-center bg-[#1b130b]">สมัคร →</span>
           </Link>
+          </>
         )}
 
         {/* ค้นหา + ตัวกรอง */}

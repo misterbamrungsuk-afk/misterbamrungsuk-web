@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandBar } from "@/components/brand-bar";
 import { notFound } from "next/navigation";
 import { getLiveApplicants, getLivePeople, publicId } from "@/lib/home/live";
 import { reviewsFor } from "@/lib/bookings/day";
@@ -26,6 +27,7 @@ export default async function ReviewsPage({ params, searchParams }: { params: Pr
   const chips: [string, string][] = [["all", "ทั้งหมด"], ["5", "★ 5"], ["4", "★ 4"], ["low", "ต่ำกว่า 4"]];
   return (
     <div className="min-h-dvh pb-10" style={{ background: "#171211", color: "#f3ead9" }}>
+      <BrandBar />
       <main className="mx-auto w-full max-w-[480px] md:max-w-[640px]">
         <div className="flex items-center gap-[10px]" style={{ padding: 16 }}>
           <Link href={`/p/${id}`} aria-label="ย้อนกลับ" className="w-[42px] h-[42px] rounded-full grid place-items-center text-[#f3ead9] hover:text-[#f3ead9]" style={{ border: `1px solid ${LN}` }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg></Link>

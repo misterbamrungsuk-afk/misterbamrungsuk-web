@@ -4,6 +4,7 @@
 // บอร์ด C-Profile — รูปใหญ่ · ชื่อ + ยืนยันตัวตน · สถิติ 4 ช่อง · เกี่ยวกับ · เลือกบริการ 3/5 ชม. · รีวิว · แถบล่าง (แชท / จองเลย)
 // จอคอม (lg): รูปซ้ายติดจอ · ข้อมูลขวา
 import { useEffect, useState } from "react";
+import { BrandBar } from "@/components/brand-bar";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { priceOf, type Act, type Person } from "@/lib/home/people";
@@ -34,9 +35,10 @@ export function ProfileView({ p, reviews = [] }: { p: Person; reviews?: Rv[] }) 
 
   return (
     <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9", lineHeight: "normal" }}>
-      <div className="mx-auto w-full max-w-[1120px] lg:grid lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)] lg:gap-10 lg:px-8 lg:pt-8" style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}>
+      <BrandBar />
+      <div className="mx-auto w-full max-w-[1120px] lg:grid lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)] lg:gap-10 lg:px-8 lg:pt-4" style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}>
         {/* รูป */}
-        <div className="relative h-[380px] md:h-[520px] lg:h-[640px] lg:sticky lg:top-8 lg:rounded-[28px] lg:overflow-hidden">
+        <div className="relative h-[380px] md:h-[520px] lg:h-[640px] lg:sticky lg:top-[84px] rounded-[24px] lg:rounded-[28px] overflow-hidden mx-[18px] mt-1 lg:mx-0 lg:mt-0">
           <img src={pics[pic] ?? p.img} alt={p.nick} className="w-full h-full object-cover block" style={pic === 0 && p.pos ? { objectPosition: p.pos } : undefined} />
           <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(23,18,17,.35) 0%, rgba(23,18,17,0) 30%, rgba(23,18,17,0) 60%, #171211 100%)" }} />
           <Link href="/" aria-label="ย้อนกลับ" className={`absolute top-[14px] left-[14px] ${round} text-[#f3ead9] hover:text-[#f3ead9]`} style={glass}>
