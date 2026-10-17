@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { currentCustomer } from "@/lib/customer/auth";
 import { clientIp, rateLimited } from "@/lib/customer/auth";
 import { readPhoneToken } from "@/lib/otp";
 import { TURNSTILE_ERROR, verifyTurnstile } from "@/lib/turnstile";
@@ -45,7 +46,8 @@ export async function POST(req: Request) {
   }
 
   try {
-    const o = await createOrder({ buyer_name, phone, address, items, ip, promo_code: str(b.promo_code, 30) || null });
+    const me = await currentCustomer().catch(() => null);
+    const o = await createOrder({ buyer_name, phone, address, items, ip, promo_code: str(b.promo_code, 30) || null, customer: me ? { id: me.sub, email: me.email } : null });
     return NextResponse.json({
       ok: true, id: o.id, order_no: o.order_no, total: o.total, token: orderToken(o.id), track: trackPath(o),
       subtotal: o.subtotal, discount: o.discount, shipping_fee: o.shipping_fee,

@@ -34,6 +34,9 @@ const up = (cookie, as, extra = {}, file = new File([img], 'a.jpg', { type: 'ima
   j = await up(PC, 'partner'); ok('partner uploads logo', j.ok, j.error);
   ok('partner listing page has editor', (await (await fetch(B + '/partner/portal/listing', { headers: { cookie: PC } })).text()).includes('รูปโปรไฟล์ / โลโก้'));
   ok('customer cannot act as partner', (await up(C, 'partner')).ok !== true);
+  ok('partner logo is public', (await fetch(B + `/api/public/avatar?t=partner&id=${p.id}`)).status === 200);
+  ok('customer photo is NOT public', (await fetch(B + `/api/public/avatar?t=customer&id=demo:avatar@test.local`)).status === 404);
+  ok('spa list shows logo', (await (await fetch(B + '/spas')).text()).includes(`/api/public/avatar?t=partner&amp;id=${p.id}`));
   // ร้านค้า
   const v = await J(await fetch(B + '/api/market/admin/vendors', { method: 'POST', headers: ADM, body: JSON.stringify({ name: 'ร้านรูปโปรไฟล์', gp_pct: 10 }) }));
   const a = await J(await fetch(B + '/api/market/admin/accounts', { method: 'POST', headers: ADM, body: JSON.stringify({ vendor_id: v.vendor.id, email: `logo${Date.now()}@test.local` }) }));

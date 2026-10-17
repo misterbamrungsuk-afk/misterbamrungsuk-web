@@ -1,6 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { marketPartners } from "@/lib/market/partners";
+import { publicLogo } from "@/lib/avatar";
+import { LogoBadge } from "@/components/logo-badge";
 import { getCovers } from "@/lib/covers";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -15,6 +17,7 @@ const FALLBACK = ["/brand/hotel1.jpg", "/brand/venue.jpg", "/brand/hotel2.jpg", 
 export default async function StayHome() {
   const [partners, heroImgs] = await Promise.all([marketPartners(), getCovers("market_hero")]);
   const hero = heroImgs[0] || "/brand/venue.jpg";
+  const logo = new Map(await Promise.all([...partners.hotels, ...partners.spas].map(async (p) => [p.id, p.sample ? null : await publicLogo("partner", p.id)] as const)));
   const img = (cover: string | undefined, k: number) => cover || FALLBACK[k % FALLBACK.length];
   const sec = (eb: string, title: string, href: string) => (
     <div className="flex justify-between items-end mx-[18px] mt-[22px] mb-2.5">
@@ -48,7 +51,7 @@ export default async function StayHome() {
           <div className="flex gap-3 overflow-x-auto no-scrollbar px-[18px] lg:grid lg:grid-cols-3 lg:overflow-visible">
             {partners.hotels.map((h, k) => (
               <Link key={h.id} href={`/hotels/${h.id}`} className="lux-card shrink-0 w-[220px] lg:w-auto rounded-2xl overflow-hidden bg-[#211a18] border text-[#f3ead9]" style={{ borderColor: LINE }}>
-                <img src={img(h.cover, k)} alt={h.name} className="w-full h-[120px] lg:h-[180px] object-cover block" />
+                <span className="relative block"><img src={img(h.cover, k)} alt={h.name} className="w-full h-[120px] lg:h-[180px] object-cover block" />{logo.get(h.id) && <LogoBadge logo={logo.get(h.id)!} size={38} className="absolute right-2.5 -bottom-4" />}</span>
                 <div className="px-3 py-2.5"><div className="font-lux font-semibold text-sm">{h.name}</div><div className="text-xs text-[#d9c9b4]">{h.area}</div><div className="text-xs text-[#e8c472] mt-1">ส่วนลดสมาชิก [รอกำหนด]</div></div>
               </Link>
             ))}
@@ -62,7 +65,7 @@ export default async function StayHome() {
           <div className="flex flex-col gap-2.5 px-[18px] md:grid md:grid-cols-2 lg:grid-cols-3">
             {partners.spas.slice(0, 6).map((s, k) => (
               <Link key={s.id} href={`/spas/${s.id}`} className="lux-card flex gap-3 p-2.5 rounded-2xl bg-[#211a18] border text-[#f3ead9]" style={{ borderColor: LINE }}>
-                <img src={img(s.cover, k + 1)} alt={s.name} className="w-[76px] h-[76px] rounded-xl object-cover shrink-0" />
+                {logo.get(s.id) ? <LogoBadge logo={logo.get(s.id)!} size={76} /> : <img src={img(s.cover, k + 1)} alt={s.name} className="w-[76px] h-[76px] rounded-xl object-cover shrink-0" />}
                 <div className="min-w-0">
                   <div className="font-lux font-semibold text-[14.5px]">{s.name}</div>
                   <div className="text-xs text-[#d9c9b4]">{s.type} · {s.area}</div>

@@ -24,6 +24,7 @@ async function read(id: string): Promise<Track | null> {
   if (error) throw error;
   return (data as Track) ?? null;
 }
+export async function lastTrack(id: string) { return read(id); }
 export async function clearTrack(id: string) {
   if (isDemo) { demo.delete(id); return; }
   await db().from("booking_tracks").delete().eq("booking_id", id);

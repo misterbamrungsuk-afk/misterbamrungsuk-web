@@ -53,7 +53,8 @@ const post = (u, h, b) => fetch(B + u, { method: 'POST', headers: h, body: JSON.
   const VC = { cookie: (acc.headers.get('set-cookie') || '').split(';')[0], 'content-type': 'application/json' };
   ok('vendor accepts invite (demo)', VC.cookie.startsWith('mb_vendor='));
   w = await J(await fetch(B + '/api/market/vendor/wallet', { headers: VC })); ok('vendor wallet 0', w.ok && w.available === 0, JSON.stringify(w).slice(0, 60));
-  const BC = { cookie: 'mb_phone_ok=' + encodeURIComponent(phone('66812223333')), 'content-type': 'application/json' };
+  const shopper = 'hamoo_session=' + sign({ sub: 'demo:shopper@test.local', email: 'shopper@test.local', exp: Date.now() + 3600e3 });
+  const BC = { cookie: 'mb_phone_ok=' + encodeURIComponent(phone('66812223333')) + '; ' + shopper, 'content-type': 'application/json' };
   j = await J(await post('/api/market/orders', BC, { name: 'ผู้ซื้อ ทดสอบ', address: '99/1 ถนนทดสอบ แขวงทดสอบ กรุงเทพ 10110', items: [{ id: prod, qty: 2 }], age_confirm: true })); ok('buyer orders 2 × ฿500', j.ok, j.error);
   const oid = j.id || j.order?.id, tok = j.token;
   const sf = new FormData(); sf.set('token', tok); sf.set('slip', new File([img], 's.jpg', { type: 'image/jpeg' }));
@@ -63,6 +64,8 @@ const post = (u, h, b) => fetch(B + u, { method: 'POST', headers: h, body: JSON.
   const o = (await J(await post(`/api/market/admin/orders/${oid}`, ADM, { action: 'done' }))).order; const ship = Number(o.shipping_fee || 0);
   w = await J(await fetch(B + '/api/market/vendor/wallet', { headers: VC })); const want = Math.round((1000 - 200 + ship) * 100);
   ok('done → vendor gets 1,000 − GP 200 + shipping', w.available === want, `${w.available} vs ${want}`);
+  const pts = (await J(await fetch(B + '/api/membership', { headers: { cookie: shopper } }))).me?.points ?? 0;
+  ok('logged-in buyer earns points on done', pts >= 10, String(pts));
   await post(`/api/market/admin/orders/${oid}`, ADM, { action: 'regp' }); w = await J(await fetch(B + '/api/market/vendor/wallet', { headers: VC })); ok('regp does not double-credit', w.available === want);
   j = await J(await post('/api/market/vendor/wallet', VC, { amount: want / 100, bank: BANK })); ok('vendor requests full amount', j.ok, j.error); const vr = j.request?.id;
   t = (await (await fetch(B + '/admin/payroll', { headers: ADM })).text()).replace(/<!-- -->/g, ''); ok('CEO page lists vendor request', t.includes('ร้านทดสอบกระเป๋า') && t.includes('ถอนเงินร้านค้า Marketplace'));

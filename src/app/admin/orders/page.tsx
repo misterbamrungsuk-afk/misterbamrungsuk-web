@@ -28,6 +28,8 @@ export default function AdminOrdersPage() {
   useEffect(() => { load(); }, []);
   const shown = useMemo(() => (rows ?? []).filter((b) => match(b, f)), [rows, f]);
   const cur = (rows ?? []).find((b) => b.id === sel) ?? shown[0] ?? null;
+  const [arr, setArr] = useState<{ arrival: { at: string; gps: { lat: number; lng: number } | null; accuracy: number | null; error: string | null; dist_m: number | null } | null; pin: { lat: number; lng: number } | null } | null>(null);
+  useEffect(() => { setArr(null); if (cur) fetch(`/api/admin/bookings?arrival=${cur.id}`, { cache: "no-store" }).then((r) => r.json()).then((d) => d?.ok && setArr(d)).catch(() => {}); }, [cur?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const resolve = async (action: "refund" | "reject") => {
     if (!cur) return;
     setBusy(true);
@@ -63,6 +65,8 @@ export default function AdminOrdersPage() {
           <div className="font-lux font-semibold text-[17px]">{cur.code}</div>
           {[["สถานะ", (ST[cur.status] ?? [cur.status])[0]], ["ลูกค้า", cur.customer_email ?? "-"], ["Part-Time", `${cur.parttime_nick} · ${cur.parttime_mb}`], ["เวลานัด", `${fmt(cur.starts_at)} · ${cur.hours} ชม.`], ["สถานที่", `${cur.place.label} ${cur.place.detail}`], ["ยอดรวม", baht(cur.total_satang)], ["จองเมื่อ", fmt(cur.created_at)]].map(([k, v]) => <div key={k} className="flex justify-between gap-3"><span className="text-[#cdbfb3] shrink-0">{k}</span><span className="text-right">{v}</span></div>)}
           {cur.decline_reason && <p className="m-0 text-[12.5px] text-[#eed58a]">เหตุผล: {cur.decline_reason}</p>}
+          {arr?.pin && <div className="flex justify-between gap-3"><span className="text-[#cdbfb3] shrink-0">หมุดจุดนัด</span><a className="text-right underline" style={{ color: GOLD }} target="_blank" rel="noreferrer" href={`https://www.google.com/maps?q=${arr.pin.lat},${arr.pin.lng}`}>{arr.pin.lat.toFixed(5)}, {arr.pin.lng.toFixed(5)}</a></div>}
+          {arr?.arrival && <div className="flex justify-between gap-3"><span className="text-[#cdbfb3] shrink-0">ถึงจุดนัด</span><span className="text-right">{fmt(arr.arrival.at)} · {arr.arrival.gps ? <a className="underline" style={{ color: GOLD }} target="_blank" rel="noreferrer" href={`https://www.google.com/maps?q=${arr.arrival.gps.lat},${arr.arrival.gps.lng}`}>GPS{arr.arrival.dist_m != null ? ` ห่างหมุด ${arr.arrival.dist_m < 1000 ? `${arr.arrival.dist_m} ม.` : `${(arr.arrival.dist_m / 1000).toFixed(1)} กม.`}` : ""}</a> : <span className="text-[#fca5a5]">ไม่มี GPS{arr.arrival.error ? ` (${arr.arrival.error})` : ""}</span>}</span></div>}
           {cur.resolution && typeof cur.resolution.dispute === "string" && <p className="m-0 rounded-lg px-3 py-2 text-[12.5px] text-[#fecaca] bg-[rgba(239,68,68,.1)]">แจ้งปัญหา: {cur.resolution.dispute}</p>}
           {cur.resolution && cur.resolution.decided ? <p className="m-0 text-[12.5px] text-[#cdbfb3]">ตัดสินแล้ว: {String(cur.resolution.decided)} {cur.resolution.refund_pct != null ? `คืน ${String(cur.resolution.refund_pct)}%` : ""} · {String(cur.resolution.note ?? "")}</p> : null}
           {["cancel_requested", "disputed"].includes(cur.status) && (

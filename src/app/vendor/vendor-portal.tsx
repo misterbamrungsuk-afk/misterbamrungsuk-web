@@ -113,7 +113,7 @@ export function VendorPortal({ email, initial }: { email: string; initial: Vendo
         {tab === "products" && <Products d={d} reload={reload} setMsg={setMsg} />}
         {tab === "wallet" && <div className="max-w-[560px]"><OwnerWallet api="/api/market/vendor/wallet" source="ส่วนของร้านจากออเดอร์ที่สำเร็จ (หัก GP แล้ว รวมค่าส่ง)" /></div>}
         {tab === "payout" && <Payout d={d} />}
-        {tab === "profile" && <section className="max-w-[420px] rounded-2xl border border-ink-600 p-5 flex flex-col items-center gap-2"><b className="self-start">รูปโปรไฟล์ / โลโก้ร้าน</b><AvatarEditor as="vendor" letter={d.vendor.name} size={140} /></section>}
+        {tab === "profile" && <section className="max-w-[420px] rounded-2xl border border-ink-600 p-5 flex flex-col items-center gap-2"><b className="self-start">รูปโปรไฟล์ / โลโก้ร้าน</b><span className="text-xs text-ink-300 self-start">แสดงบนหน้าร้านค้าสาธารณะ</span><AvatarEditor as="vendor" letter={d.vendor.name} size={140} /></section>}
       </div>
     </>
   );

@@ -13,8 +13,17 @@ async function admin() {
 }
 
 // การจองทั้งหมด (หลังบ้าน /admin/orders)
-export async function GET() {
+// GET ?arrival=<id> = จุดที่ Part-Time กด "ถึงจุดนัด" (GPS) + ระยะจากหมุดจุดนัด · ไม่มี = รายการการจองทั้งหมด
+export async function GET(req: Request) {
   if (!(await admin())) return NextResponse.json({ ok: false }, { status: 401 });
+  const aid = new URL(req.url).searchParams.get("arrival");
+  if (aid) {
+    const [{ getArrival }, { getBooking }, { inThailand, km }] = await Promise.all([import("@/lib/arrival"), import("@/lib/bookings"), import("@/lib/geo")]);
+    const [a, bk] = await Promise.all([getArrival(aid).catch(() => null), getBooking(aid)]);
+    const pin = { lat: bk?.place?.lat, lng: bk?.place?.lng };
+    const gps = a && a.lat != null && a.lng != null ? { lat: a.lat, lng: a.lng } : null;
+    return NextResponse.json({ ok: true, arrival: a ? { at: a.arrived_at, gps, accuracy: a.accuracy, error: a.gps_error, dist_m: gps && inThailand(pin) ? Math.round(km(gps, pin) * 1000) : null } : null, pin: inThailand(pin) ? pin : null });
+  }
   try { return NextResponse.json({ ok: true, bookings: await listAll() }); }
   catch (e) { console.error("admin bookings", e); return NextResponse.json({ ok: false, error: "ระบบการจองยังไม่เปิดใช้งาน" }, { status: 503 }); }
 }

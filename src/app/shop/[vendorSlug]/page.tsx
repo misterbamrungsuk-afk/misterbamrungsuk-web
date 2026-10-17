@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { shopVendor } from "@/lib/market/catalog";
+import { publicLogo } from "@/lib/avatar";
 import { imageUrl } from "@/lib/market/config";
 import { ShopView } from "./shop-view";
 
@@ -22,7 +23,7 @@ export default async function ShopPage({ params }: { params: Promise<{ vendorSlu
   const catName = (id?: string | null) => c.categories.find((x) => x.id === id)?.name ?? "";
   return (
     <ShopView
-      vendor={{ name: v.name, description: v.description ?? "", logo: v.logo ? imageUrl(v.logo) : "", sample: !!v.sample }}
+      vendor={{ name: v.name, description: v.description ?? "", logo: v.logo ? imageUrl(v.logo) : v.sample ? "" : (await publicLogo("vendor", v.id))?.src ?? "", sample: !!v.sample }}
       products={products.map((p) => ({ id: p.id, name: p.name, price: p.price, stock: p.stock, img: imageUrl(p.images[0]), kind: catName(p.category_id), sample: !!p.sample }))}
       reviews={rv.slice(0, 20).map((r) => ({ id: r.id, stars: r.stars, text: r.text, who: r.name, item: products.find((p) => p.id === r.product_id)?.name ?? "", at: r.created_at }))}
       avg={avg}

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { partnerDetail, partnerDetails, type PartnerDetail, type PartnerKind } from "@/lib/market/partners";
 import { VenueListView, VenueDetailView, type VenueCard, type VenueFull } from "./venue-client";
+import { publicLogo } from "@/lib/avatar";
 
 // หน้ารายการ / รายละเอียด โรงแรม-สปาพาร์ทเนอร์ — ตามบอร์ด HotelList/SpaList/HotelDetail/SpaDetail (.dc.html)
 const FALLBACK: Record<PartnerKind, string[]> = {
@@ -21,7 +22,8 @@ function card(p: PartnerDetail, i: number): VenueCard {
 
 export async function VenueList({ type }: { type: PartnerKind; province?: string }) {
   const all = await partnerDetails(type);
-  return <VenueListView type={type} items={all.map(card)} />;
+  const logos = await Promise.all(all.map((p) => (p.sample ? null : publicLogo("partner", p.id))));
+  return <VenueListView type={type} items={all.map((p, i) => ({ ...card(p, i), logo: logos[i] }))} />;
 }
 
 export async function VenueDetail({ type, id }: { type: PartnerKind; id: string }) {
@@ -35,7 +37,7 @@ export async function VenueDetail({ type, id }: { type: PartnerKind; id: string 
     gallery: p.gallery.length ? p.gallery : FALLBACK[type],
     facts,
     services: p.services.map((s) => ({ name: s.name, desc: s.minutes >= 600 ? "ค้างคืน" : `${s.minutes} นาที`, price: s.platform_price ?? s.base_price, base: s.base_price })),
-    tel, telLabel: p.tel, line,
+    tel, telLabel: p.tel, line, logo: p.sample ? null : await publicLogo("partner", p.id),
     map: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${p.name.replace(/\(ตัวอย่าง\)/, "").trim()} ${p.area} ${p.province}`)}`,
   };
   return <VenueDetailView v={v} />;

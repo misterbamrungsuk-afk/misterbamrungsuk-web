@@ -45,3 +45,10 @@ export async function avatarFile(t: AvatarOwner, id: string) {
   const a = await getAvatar(t, id).catch(() => null);
   return a ? readFile(a.path) : null;
 }
+
+/** โลโก้สาธารณะของพาร์ทเนอร์ / ร้านค้า (ลูกค้า/Sale Man ไม่เปิดสาธารณะ) */
+export type Logo = { src: string; pos: string; zoom: number };
+export async function publicLogo(t: "partner" | "vendor", id: string): Promise<Logo | null> {
+  const a = await getAvatar(t, id).catch(() => null);
+  return a ? { src: `/api/public/avatar?t=${t}&id=${encodeURIComponent(id)}&v=${Date.parse(a.updated_at)}`, pos: a.pos, zoom: a.zoom } : null;
+}

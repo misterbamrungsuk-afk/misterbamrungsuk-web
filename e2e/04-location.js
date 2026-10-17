@@ -35,7 +35,7 @@ const ptAct = (id, extra) => fetch(B + `/api/pt/bookings/${id}`, { method: 'POST
   await fetch(B + '/api/admin/wallet', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'adjust', owner_type: 'customer', owner_id: 'demo:trk@test.local', bucket: 'available', amount_baht: 20000, reason: 'e2e', idem: 'e2e-trk-' + Date.now() }) });
   const pid = (/\/p\/(r[0-9a-f]{10})/.exec(await (await fetch(B + '/')).text()) || [])[1];
   const dest = { lat: 13.7466, lng: 100.5393 };
-  const soon = new Date(Date.now() + 100 * 60_000); soon.setMinutes(Math.ceil(soon.getMinutes() / 30) * 30, 0, 0);
+  const soon = new Date(Date.now() + 65 * 60_000); soon.setMinutes(Math.ceil(soon.getMinutes() / 30) * 30, 0, 0);
   j = await J(await fetch(B + '/api/bookings', { method: 'POST', headers: C, body: JSON.stringify({ pid, hours: 3, starts_at: soon.toISOString(), place: { type: 'cafe', detail: 'คาเฟ่สยาม', ...dest }, note: '' }) }));
   ok('book with meeting pin', j.ok, j.error); const id = j.id;
   const bk = (await J(await fetch(B + `/api/bookings/${id}`, { headers: C }))).booking;
@@ -56,7 +56,9 @@ const ptAct = (id, extra) => fetch(B + `/api/pt/bookings/${id}`, { method: 'POST
   ok('stranger cannot read track', (await fetch(B + `/api/bookings/${id}/track`, { headers: { cookie: sess('x@test.local') } })).status === 404);
   ok('order page renders', (await fetch(B + `/order/${id}`, { headers: { cookie: C.cookie } })).status === 200);
   // ถึงจุดนัด → หยุดแชร์ + ลบตำแหน่ง
-  await ptAct(id, { action: 'checkin' });
+  await ptAct(id, { action: 'checkin', gps: { lat: 13.7468, lng: 100.5395, accuracy: 12 } });
+  const ar = await J(await fetch(B + `/api/admin/bookings?arrival=${id}`, { headers: ADM }));
+  ok('admin sees arrival GPS + distance to pin', ar.ok && ar.arrival?.gps?.lat === 13.7468 && ar.arrival.dist_m < 60 && ar.pin?.lat === dest.lat, JSON.stringify(ar).slice(0, 160));
   j = await J(await fetch(B + `/api/bookings/${id}/track`, { headers: C }));
   ok('after check-in: arrived, position removed', j.state === 'arrived' && j.track === null, JSON.stringify(j).slice(0, 80));
   ok('PT cannot send after check-in', (await track(id, 13.7466, 100.5393)).status === 409);

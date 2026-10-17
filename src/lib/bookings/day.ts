@@ -111,13 +111,23 @@ export async function sweepDay(rows: Booking[]): Promise<Booking[]> {
 }
 
 // ── วันนัด ──
-export async function checkIn(id: string, parttime_id: string) {
+/** gps = ตำแหน่งตอนกด "ถึงจุดนัด" (ส่งมาจากเครื่อง) · ไม่มี = ใช้จุดล่าสุดจากการแชร์ระหว่างเดินทาง — เก็บเป็นหลักฐานกรณีลูกค้าไม่มา */
+export async function checkIn(id: string, parttime_id: string, gps?: { lat?: unknown; lng?: unknown; accuracy?: unknown; error?: unknown }) {
   const b = await getBooking(id);
   if (!b || b.parttime_id !== parttime_id) throw new BookingError("ไม่พบงานนี้", "notfound");
   if (Date.parse(b.starts_at) - Date.now() > 2 * 3600_000) throw new BookingError("เช็กอินได้ก่อนเวลานัดไม่เกิน 2 ชม.");
   const r = await transition(b.id, ["accepted"], { status: "checked_in", checked_in_at: now() });
   if (!r) throw new BookingError("เช็กอินไม่ได้ในสถานะนี้", "state");
-  await addEvent(b.id, "checked_in", `parttime:${parttime_id}`);
+  const { inThailand, km } = await import("@/lib/geo");
+  let pos: { lat: number; lng: number; accuracy: number | null } | null = null;
+  const g = { lat: Number(gps?.lat), lng: Number(gps?.lng) };
+  if (inThailand(g)) pos = { ...g, accuracy: Number.isFinite(Number(gps?.accuracy)) ? Math.round(Number(gps?.accuracy)) : null };
+  else { const t = await import("./track").then((m) => m.lastTrack(b.id)).catch(() => null); if (t) pos = { lat: t.lat, lng: t.lng, accuracy: t.accuracy }; }
+  const pin = { lat: b.place?.lat, lng: b.place?.lng };
+  const dist_m = pos && inThailand(pin) ? Math.round(km(pos, pin) * 1000) : null;
+  await import("@/lib/arrival").then((m) => m.recordArrival({ booking_id: b.id, provider_id: parttime_id, lat: pos?.lat ?? null, lng: pos?.lng ?? null, accuracy: pos?.accuracy ?? null, gps_error: pos ? null : String(gps?.error ?? "ไม่มี GPS").slice(0, 120) })).catch((e) => console.error("arrival", e));
+  await addEvent(b.id, "checked_in", `parttime:${parttime_id}`, pos ? { gps: pos, dist_m } : { gps: null });
+  await import("./track").then((m) => m.clearTrack(b.id)).catch(() => {});
   await notify({ user_type: "customer", user_id: b.customer_id, kind: "booking_checked_in", title: `${b.parttime_nick ?? "เพื่อน"} ถึงจุดนัดแล้ว`, body: b.place.detail, url: `/order/${b.id}` });
   await sendMessage(b, "system", null, `${b.parttime_nick ?? "เพื่อน"} ถึงจุดนัดแล้ว · มีเหตุฉุกเฉินกด SOS ได้ตลอด`);
   return r;

@@ -6,12 +6,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { savePlace } from "@/lib/market/place-pick";
 import { useRouter } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
+import { LogoBadge } from "@/components/logo-badge";
+import type { Logo } from "@/lib/avatar";
 
-export type VenueCard = { id: string; name: string; province: string; area: string; img: string; tags: string; price: number | null; sample: boolean };
+export type VenueCard = { id: string; name: string; province: string; area: string; img: string; tags: string; price: number | null; sample: boolean; logo?: Logo | null };
 export type VenueFull = {
   id: string; name: string; type: "โรงแรม" | "สปา"; province: string; area: string; sample: boolean; description: string;
   gallery: string[]; facts: string[]; services: { name: string; desc: string; price: number; base: number }[];
-  tel: string; telLabel: string; line: string; map: string;
+  tel: string; telLabel: string; line: string; map: string; logo?: Logo | null;
 };
 
 const BD = "rgba(232,196,114,.38)";
@@ -90,6 +92,7 @@ export function VenueListView({ type, items }: { type: "โรงแรม" | "�
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={h.img} alt={h.name} className="w-full h-40 object-cover block" />
                 <span className="absolute left-2.5 top-2.5 rounded-full bg-[rgba(14,10,10,.8)]"><Badge /></span>
+                {h.logo && <LogoBadge logo={h.logo} size={44} className="absolute right-3 -bottom-5" />}
               </div>
               <div className="p-3">
                 <div className="font-lux font-semibold text-[16px]">{h.name}</div>
@@ -190,7 +193,7 @@ export function VenueDetailView({ v }: { v: VenueFull }) {
         <div className="px-[18px] pt-3 pb-5 flex flex-col gap-3">
           <div>
             <Badge />
-            <h1 className="mt-2 mb-0.5 font-lux font-bold text-[24px]">{v.name}</h1>
+            <h1 className="mt-2 mb-0.5 font-lux font-bold text-[24px] flex items-center gap-2.5">{v.logo && <LogoBadge logo={v.logo} size={44} />}{v.name}</h1>
             <div className="text-[12.5px] text-[#d9c9b4]">{v.province} · {v.area}</div>
           </div>
           <div className={HROW}>{v.facts.map((t) => <span key={t} className="shrink-0 px-2.5 py-1.5 rounded-[10px] bg-[#211a18] text-[11.5px] text-[#d9c9b4]" style={{ border: `1px solid ${BD}` }}>{t}</span>)}</div>

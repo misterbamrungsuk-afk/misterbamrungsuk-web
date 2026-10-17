@@ -52,6 +52,8 @@ export interface Order {
   subtotal?: number; discount?: number; promo_code?: string | null; shipping_fee?: number;
   carrier?: string | null; shipped_at?: string | null; done_at?: string | null; reject_reason?: string | null;
   vendor_split?: VendorSplit[] | null; vendor_tracking?: VendorTracking;
+  /** ลูกค้าที่ล็อกอินตอนสั่ง (ไว้ให้แต้มเมื่อออเดอร์สำเร็จ) · null = สั่งแบบไม่ล็อกอิน */
+  customer_id?: string | null; customer_email?: string | null;
   slip_check?: unknown;
 }
 export type CartLine = { id: string; qty: number };

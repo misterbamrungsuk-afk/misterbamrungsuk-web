@@ -335,7 +335,7 @@ export async function priceCart(items: OrderItem[], code?: string | null) {
   return { subtotal, discount, promo, promoError, shipping_fee, total: r2(subtotal - discount + shipping_fee), settings };
 }
 
-export async function createOrder(input: { buyer_name: string; phone: string; address: string; items: OrderItem[]; ip: string; promo_code?: string | null }): Promise<Order> {
+export async function createOrder(input: { buyer_name: string; phone: string; address: string; items: OrderItem[]; ip: string; promo_code?: string | null; customer?: { id: string; email: string } | null }): Promise<Order> {
   // กันชั้นสุดท้าย: สินค้าตัวอย่าง (mock-*) ห้ามเกิดออเดอร์/รับเงินจริง
   if (input.items.some((i) => isMockId(i.product_id))) throw new Error(SAMPLE_BLOCK);
   const pr = await priceCart(input.items, input.promo_code);
@@ -346,6 +346,7 @@ export async function createOrder(input: { buyer_name: string; phone: string; ad
     age_confirmed_at: now(), ip: input.ip, paid_at: null, decided_by: null, created_at: now(),
     subtotal: pr.subtotal, discount: pr.discount, promo_code: pr.promo?.code ?? null, shipping_fee: pr.shipping_fee,
     carrier: null, shipped_at: null, done_at: null, reject_reason: null, vendor_split: null, vendor_tracking: {},
+    ...(input.customer ? { customer_id: input.customer.id, customer_email: input.customer.email } : {}),
   };
   const o = await q<Order>(() => db().from("market_orders").insert(row).select().single(), () => (mem.orders.push(row), row)).then(normOrder);
   if (pr.promo) await updateT("promos", pr.promo.id, { used_count: pr.promo.used_count + 1 }).catch(() => {});
@@ -420,7 +421,11 @@ export async function decideOrder(id: string, action: OrderAction, admin: string
     Object.assign(patch, { status: "shipped", tracking_no: extra.tracking_no.trim().slice(0, 60), carrier: extra.carrier || null, shipped_at: now() });
   } else Object.assign(patch, { status: "done", done_at: now() });
   const out = await patchOrder(id, patch);
-  if (out.status === "done") await creditVendors(out, admin).catch((e) => console.error("market credit", e));
+  if (out.status === "done") {
+    await creditVendors(out, admin).catch((e) => console.error("market credit", e));
+    // แต้มสมาชิก: เฉพาะออเดอร์ที่ลูกค้าล็อกอินตอนสั่ง (คิดจากยอดที่จ่ายจริง) · ครั้งเดียวต่อออเดอร์
+    if (out.customer_id) await import("@/lib/member").then((m) => m.awardPoints(out.customer_id!, out.customer_email ?? "", Math.round(Number(out.total) * 100), `mk:${out.id}`, `ซื้อสินค้า ${out.order_no}`)).catch((e) => console.error("market points", e));
+  }
   return out;
 }
 

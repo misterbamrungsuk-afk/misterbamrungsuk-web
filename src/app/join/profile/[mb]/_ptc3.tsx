@@ -31,7 +31,10 @@ export function PtIncoming({ mb, t }: { mb: string; t: string }) {
   };
   const act2 = async (id: string, action: "checkin" | "done") => {
     setBusy(id);
-    const r = await fetch(`/api/pt/bookings/${id}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mb, t, action }) }).catch(() => null);
+    // ถึงจุดนัด: แนบ GPS ตอนนี้ (รอสูงสุด 6 วิ) เป็นหลักฐานว่ามาถึงจริง
+    const gps = action !== "checkin" || !navigator.geolocation ? undefined : await new Promise<Record<string, unknown>>((ok) => navigator.geolocation.getCurrentPosition(
+      (p) => ok({ lat: p.coords.latitude, lng: p.coords.longitude, accuracy: p.coords.accuracy }), (e) => ok({ error: e.code === 1 ? "ไม่อนุญาตตำแหน่ง" : "จับ GPS ไม่ได้" }), { enableHighAccuracy: true, timeout: 6000, maximumAge: 60_000 }));
+    const r = await fetch(`/api/pt/bookings/${id}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mb, t, action, gps }) }).catch(() => null);
     const d = await r?.json().catch(() => null);
     setBusy("");
     if (!d?.ok) setErr(d?.error || "บันทึกไม่สำเร็จ");
