@@ -45,7 +45,7 @@ export function LuxHeader({ back, eyebrow, title, right }: { back: string; eyebr
 }
 
 export const Badge = () => (
-  <span className="inline-flex items-center gap-[5px] px-[9px] py-[3px] rounded-full text-[11px] font-semibold text-[#e8c472]" style={{ border: "1px solid rgba(212,175,55,.55)", background: "rgba(232,196,114,.18)" }}>
+  <span className="inline-flex items-center gap-[5px] px-[9px] py-[3px] rounded-full text-[12px] font-semibold text-[#e8c472]" style={{ border: "1px solid rgba(212,175,55,.55)", background: "rgba(232,196,114,.18)" }}>
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="m5 12 5 5 9-10" /></svg>ทำงานร่วมกับ Mister Bamrungsuk
   </span>
 );

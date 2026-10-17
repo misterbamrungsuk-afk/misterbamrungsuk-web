@@ -167,7 +167,7 @@ export function BookFlow({ p, price, avail, busy: taken = [], spas, saved = [] }
             </label>
             <div className="flex flex-col gap-[5px]">
               <span className="text-[12px] font-light text-[#d9c9b4]">ปักหมุดจุดนัด <span className="text-[#b5a596]">· ใช้บอกเวลาถึงตอนเพื่อนเดินทาง และให้เพื่อนนำทางมาถูกที่</span></span>
-              <PinPicker value={pin} onChange={(v) => setPin(v)} height={200} />
+              <PinPicker value={pin} onChange={(v) => setPin(v)} height={200} hint={pin ? "เลื่อนแผนที่เพื่อปรับหมุดได้" : ""} />
               {!pin && <span className="text-[12px] text-[#ff8a9a]">เลื่อนแผนที่หรือกด "ใช้ตำแหน่งฉัน" เพื่อปักหมุดก่อนไปต่อ</span>}
             </div></>
           )}

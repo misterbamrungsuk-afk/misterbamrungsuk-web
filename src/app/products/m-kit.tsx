@@ -132,7 +132,7 @@ export function MProductCard({ p, onAdded }: { p: CardP; onAdded?: (msg: string)
         {p.age_restricted && <span className="absolute top-2 right-2 px-[7px] py-0.5 rounded-full bg-[#171211] border border-[#b0182c] text-[#ef8a97] text-[11.5px] font-semibold">20+</span>}
       </Link>
       <div className="p-2.5 flex flex-col gap-1 flex-1">
-        {p.vendor_name && <Link href={`/shop/${p.vendor_slug || p.vendor_id}`} className="text-[11px] text-[#d9c9b4]">{p.vendor_name}</Link>}
+        {p.vendor_name && <Link href={`/shop/${p.vendor_slug || p.vendor_id}`} className="text-[12px] text-[#d9c9b4] py-1">{p.vendor_name}</Link>}
         <Link href={`/products/${p.id}`} className="font-lux font-semibold text-[13.5px] leading-snug text-[#f3ead9]">{p.name}</Link>
         {p.kind && <p className="text-[11.5px] text-[#b5a596]">{p.kind}</p>}
         <div className="flex justify-between items-center mt-auto pt-1.5">

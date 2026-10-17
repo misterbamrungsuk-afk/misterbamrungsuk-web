@@ -22,7 +22,7 @@ export default async function StayHome() {
   const sec = (eb: string, title: string, href: string) => (
     <div className="flex justify-between items-end mx-[18px] mt-[22px] mb-2.5">
       <div><p className="text-[11.5px] tracking-[2.5px] text-[#e8c472] font-semibold">{eb}</p><h2 className="font-lux font-semibold text-[18px] mt-0.5">{title}</h2></div>
-      <Link href={href} className="text-[12.5px] text-[#e8c472] min-h-8 inline-flex items-center">ดูทั้งหมด →</Link>
+      <Link href={href} className="text-[13px] text-[#e8c472] min-h-10 px-1 inline-flex items-center">ดูทั้งหมด →</Link>
     </div>
   );
   const tab = "lux-card min-h-12 grid place-items-center rounded-xl border bg-[#211a18] text-[#f3ead9] text-[14px] font-semibold text-center";
@@ -69,14 +69,14 @@ export default async function StayHome() {
                 <div className="min-w-0">
                   <div className="font-lux font-semibold text-[14.5px]">{s.name}</div>
                   <div className="text-xs text-[#d9c9b4]">{s.type} · {s.area}</div>
-                  <div className="mt-1.5"><span className="inline-flex items-center gap-[5px] px-[9px] py-[3px] rounded-full border border-[rgba(212,175,55,.55)] bg-[rgba(232,196,114,.18)] text-[#e8c472] text-[11px] font-semibold"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden><path d="m5 12 5 5 9-10" /></svg>ทำงานร่วมกับ Mister Bamrungsuk</span></div>
+                  <div className="mt-1.5"><span className="inline-flex items-center gap-[5px] px-[9px] py-[3px] rounded-full border border-[rgba(212,175,55,.55)] bg-[rgba(232,196,114,.18)] text-[#e8c472] text-[12px] font-semibold"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden><path d="m5 12 5 5 9-10" /></svg>ทำงานร่วมกับ Mister Bamrungsuk</span></div>
                 </div>
               </Link>
             ))}
           </div>
         </>
       )}
-      {(partners.hotels.some((r) => r.sample) || partners.spas.some((r) => r.sample)) && <p className="text-[11px] text-[#b5a596] mx-[18px] mt-2">* ข้อมูลตัวอย่าง รอรายชื่อพาร์ทเนอร์จริง</p>}
+      {(partners.hotels.some((r) => r.sample) || partners.spas.some((r) => r.sample)) && <p className="text-[12px] text-[#b5a596] mx-[18px] mt-2">* ข้อมูลตัวอย่าง รอรายชื่อพาร์ทเนอร์จริง</p>}
 
       <div className="mx-[18px] mt-[22px] mb-6 p-[18px] rounded-[18px] border" style={{ borderColor: "rgba(232,196,114,.55)", background: "linear-gradient(135deg, #2a1418, #211a18)" }}>
         <p className="text-[11.5px] tracking-[2.5px] text-[#e8c472] font-semibold">BECOME A PARTNER</p>

@@ -46,9 +46,9 @@ export function PinPicker({ value, onChange, height = 220, zoom = 15, hint = "�
         <svg className="absolute left-1/2 top-1/2 z-[400] pointer-events-none" style={{ transform: "translate(-50%, -100%)" }} width="34" height="44" viewBox="0 0 34 44" aria-hidden="true">
           <path d="M17 43C17 43 32 27 32 16A15 15 0 0 0 2 16C2 27 17 43 17 43Z" fill="#c9283d" stroke="#f3ead9" strokeWidth="2" /><circle cx="17" cy="16" r="5.5" fill="#f3ead9" />
         </svg>
-        <button type="button" onClick={gps} className="absolute right-2 bottom-2 z-[400] h-9 px-3 rounded-full text-[12.5px] font-semibold text-[#1b130b] bg-[#e8c472]" style={{ boxShadow: "0 2px 8px rgba(0,0,0,.4)" }}>◎ ใช้ตำแหน่งฉัน</button>
+        <button type="button" onClick={gps} className="absolute right-2 bottom-2 z-[400] h-10 px-3.5 rounded-full text-[13px] font-semibold text-[#1b130b] bg-[#e8c472]" style={{ boxShadow: "0 2px 8px rgba(0,0,0,.4)" }}>◎ ใช้ตำแหน่งฉัน</button>
       </div>
-      <span className="text-[12px] font-light text-[#b5a596]">{gpsMsg || hint}</span>
+      {(gpsMsg || hint) && <span className="text-[12px] font-light text-[#b5a596]">{gpsMsg || hint}</span>}
     </div>
   );
 }

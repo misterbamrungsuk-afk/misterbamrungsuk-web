@@ -42,7 +42,7 @@ export function SalesBoard({ who, mb, t, summary, link, tiers, boostMult }: { wh
         <div className="flex items-center gap-2"><b className="text-[30px] tracking-[.12em] select-all">{summary.rep.code}</b>
           <button type="button" onClick={() => copy(summary.rep.code, "code")} className="ml-auto h-10 px-3 rounded-xl text-[13px] font-semibold text-[#1b130b] bg-[#e8c472]">{copied === "code" ? "คัดลอกแล้ว" : "คัดลอกโค้ด"}</button></div>
         <div className="flex items-center gap-2 rounded-xl bg-[#171211] text-[13px]" style={{ padding: "8px 10px" }}><span className="flex-1 min-w-0 truncate select-all text-[#d9c9b4]">{link}</span>
-          <button type="button" onClick={() => copy(link, "link")} className="h-9 px-3 rounded-lg text-[12.5px] font-semibold" style={{ background: "rgba(232,196,114,.18)", color: GOLD }}>{copied === "link" ? "คัดลอกแล้ว" : "คัดลอกลิงก์"}</button></div>
+          <button type="button" onClick={() => copy(link, "link")} className="h-10 px-3 rounded-lg text-[13px] font-semibold" style={{ background: "rgba(232,196,114,.18)", color: GOLD }}>{copied === "link" ? "คัดลอกแล้ว" : "คัดลอกลิงก์"}</button></div>
         <span className="text-[13px] text-[#d9c9b4]">ส่งลิงก์ให้ลูกค้า เปิดลิงก์แล้วเปิดเมมภายใน 30 วัน ระบบใส่โค้ดคุณให้อัตโนมัติ</span>
       </section>
 
