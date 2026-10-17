@@ -3,6 +3,7 @@
 // บอร์ด C-EditProfile "แก้ไขโปรไฟล์" — ชื่อที่แสดง · เบอร์ (แสดงอย่างเดียว · เพื่อนไม่เห็น) · อีเมล · ผู้ติดต่อฉุกเฉิน
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { AvatarEditor } from "@/components/avatar-editor";
 
 const GOLD = "#e8c472";
 const LN = "rgba(243,234,217,0.07)";
@@ -37,7 +38,7 @@ export default function EditProfilePage() {
         <h1 className="m-0 font-semibold text-[19px]">แก้ไขโปรไฟล์</h1>
       </div>
       <div className="flex flex-col gap-[14px]" style={{ padding: "0 16px" }}>
-        <div className="flex items-center gap-[14px]"><div className="w-[68px] h-[68px] rounded-full grid place-items-center text-[28px]" style={{ border: `1px solid ${GOLD}`, color: GOLD }}>{(f.name || f.email || "?").slice(0, 1)}</div></div>
+        <AvatarEditor as="customer" letter={f.name || f.email} size={128} />
         <label className="flex flex-col gap-1.5"><span className="text-[13px] text-[#d9c9b4]">ชื่อที่แสดง</span><input value={f.name} onChange={set("name")} maxLength={60} className={inp} style={{ border: `1px solid ${LN}` }} /></label>
         <label className="flex flex-col gap-1.5"><span className="text-[13px] text-[#d9c9b4]">เบอร์โทร (เพื่อนจะไม่เห็นเบอร์คุณ)</span><input value={f.phone} readOnly className={`${inp} opacity-70`} style={{ border: `1px solid ${LN}` }} /></label>
         <label className="flex flex-col gap-1.5"><span className="text-[13px] text-[#d9c9b4]">อีเมล</span><input value={f.email} readOnly className={`${inp} opacity-70`} style={{ border: `1px solid ${LN}` }} /></label>

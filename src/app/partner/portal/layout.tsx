@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { currentPartner } from "@/lib/partner/auth";
 import { ACCOUNT_LABEL } from "@/lib/partner/portal-types";
 import { PortalNav, LogoutButton } from "./nav";
+import { AvatarView } from "@/components/avatar-editor";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "พอร์ทัลพาร์ทเนอร์ · Mister Bamrungsuk" };
@@ -16,6 +17,7 @@ export default async function PortalLayout({ children }: { children: React.React
       <header className="flex items-center gap-2 h-14 px-5 border-b border-ink-700">
         <span className="font-display text-gold-400 tracking-[.18em] text-sm">MB PARTNER</span>
         <span className="ml-auto text-xs text-ink-300 truncate max-w-[45%]">{p.business_name}</span>
+        <a href="/partner/portal/listing" aria-label="รูปโปรไฟล์"><AvatarView as="partner" letter={p.business_name} size={32} /></a>
         <LogoutButton />
       </header>
       {st === "pending" && (

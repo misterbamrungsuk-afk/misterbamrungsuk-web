@@ -10,6 +10,8 @@ import { balances } from "@/lib/wallet";
 import { getLivePeople } from "@/lib/home/live";
 import { PEOPLE } from "@/lib/home/people";
 import { LogoutLink } from "./logout";
+import { AvatarView } from "@/components/avatar-editor";
+import { getAvatar } from "@/lib/avatar";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "บัญชีของฉัน — Mister Bamrungsuk" };
@@ -49,7 +51,7 @@ export default async function AccountPage() {
   return (
     <div className="pb-6">
       <div className="flex items-center gap-[14px]" style={{ padding: "22px 16px 14px", margin: tier ? "10px 12px 0" : undefined, borderRadius: tier ? 20 : undefined, background: tier ? TIER_LOOK[tier].bg : undefined, boxShadow: tier ? `0 0 0 1.5px ${TIER_LOOK[tier].ring}` : undefined }}>
-        <div className="w-16 h-16 rounded-full grid place-items-center font-semibold text-[26px] shrink-0" style={{ border: `${tier ? 2 : 1}px solid ${GOLD}`, color: GOLD, background: tier ? "rgba(0,0,0,.25)" : undefined }}>{(p.name || me.email).slice(0, 1)}</div>
+        <Link href="/profile/edit" aria-label="แก้รูปโปรไฟล์" className="shrink-0"><AvatarView as="customer" letter={p.name || me.email} size={64} meta={await getAvatar("customer", me.sub).then((a) => (a ? { pos: a.pos, zoom: a.zoom, v: Date.parse(a.updated_at) } : null)).catch(() => null)} /></Link>
         <div className="flex-1 min-w-0"><div className="font-semibold text-[20px] truncate">{p.name || me.email}</div>
           {tier ? <div className="text-[12.5px] font-semibold tracking-[.18em]" style={{ color: TIER_LOOK[tier].text }}>{TIER_LOOK[tier].label} · {pts.total.toLocaleString("th-TH")} แต้ม</div> : <div className="text-[13px] font-light text-[#d9c9b4]">สมาชิกตั้งแต่ {since}</div>}</div>
         <Link href="/work-with-us" className="h-10 px-4 rounded-full text-[13px] font-light grid place-items-center hover:text-[#e8c472]" style={{ border: `1px solid ${GOLD}`, color: GOLD }}>สมัครเป็นเพื่อน</Link>

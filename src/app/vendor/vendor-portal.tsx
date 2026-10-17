@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Logo } from "@/components/ui";
 import { OwnerWallet } from "@/components/owner-wallet";
+import { AvatarEditor, AvatarView } from "@/components/avatar-editor";
 import { CARRIERS, CLAIM_NOTE, ORDER_STATUS_LABEL, baht, carrierName, flaggedClaims, imageUrl, type Product } from "@/lib/market/config";
 import type { VendorData } from "@/lib/market/vendor-data";
 
@@ -80,7 +81,7 @@ export function VendorAccept({ t, email, shop }: { t: string; email: string; sho
   );
 }
 
-const TABS = [["orders", "คำสั่งซื้อ"], ["products", "สินค้า"], ["wallet", "กระเป๋าเงิน / ถอน"], ["payout", "รายงานยอดขาย"]] as const;
+const TABS = [["orders", "คำสั่งซื้อ"], ["products", "สินค้า"], ["wallet", "กระเป๋าเงิน / ถอน"], ["payout", "รายงานยอดขาย"], ["profile", "รูปโปรไฟล์ร้าน"]] as const;
 
 export function VendorPortal({ email, initial }: { email: string; initial: VendorData }) {
   const [d, setD] = useState(initial);
@@ -97,6 +98,7 @@ export function VendorPortal({ email, initial }: { email: string; initial: Vendo
       <header className="sticky top-0 z-30 bg-ink-900/90 backdrop-blur-xl border-b border-ink-600">
         <div className="max-w-6xl mx-auto flex items-center gap-3 px-4 h-14">
           <Logo size={26} />
+          <button type="button" onClick={() => setTab("profile")} aria-label="รูปโปรไฟล์ร้าน"><AvatarView as="vendor" letter={d.vendor.name} size={32} /></button>
           <div className="min-w-0"><p className="text-sm font-semibold truncate">{d.vendor.name}</p><p className="text-[11px] text-[#9a8a85] truncate">{email}</p></div>
           <Link href={`/shop/${d.vendor.slug}`} className="ml-auto text-xs text-gold-300 hidden sm:inline">ดูหน้าร้าน ↗</Link>
           <button onClick={logout} className="chip h-8 px-3 text-xs">ออกจากระบบ</button>
@@ -111,6 +113,7 @@ export function VendorPortal({ email, initial }: { email: string; initial: Vendo
         {tab === "products" && <Products d={d} reload={reload} setMsg={setMsg} />}
         {tab === "wallet" && <div className="max-w-[560px]"><OwnerWallet api="/api/market/vendor/wallet" source="ส่วนของร้านจากออเดอร์ที่สำเร็จ (หัก GP แล้ว รวมค่าส่ง)" /></div>}
         {tab === "payout" && <Payout d={d} />}
+        {tab === "profile" && <section className="max-w-[420px] rounded-2xl border border-ink-600 p-5 flex flex-col items-center gap-2"><b className="self-start">รูปโปรไฟล์ / โลโก้ร้าน</b><AvatarEditor as="vendor" letter={d.vendor.name} size={140} /></section>}
       </div>
     </>
   );
