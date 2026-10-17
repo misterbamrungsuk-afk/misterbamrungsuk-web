@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { SmartBack } from "@/components/smart-back";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { savePlace } from "@/lib/market/place-pick";
 import { useRouter } from "next/navigation";
@@ -21,10 +22,10 @@ const HROW = "flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scro
 
 export function Back({ href, glass = false }: { href: string; glass?: boolean }) {
   return (
-    <Link href={href} aria-label="ย้อนกลับ" className="w-11 h-11 shrink-0 rounded-full grid place-items-center text-[#f3ead9]"
+    <SmartBack href={href} className="w-11 h-11 shrink-0 rounded-full grid place-items-center text-[#f3ead9]"
       style={glass ? { border: "1px solid rgba(246,239,228,.3)", background: "rgba(0,0,0,.45)" } : { border: `1px solid ${BD}` }}>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6" /></svg>
-    </Link>
+    </SmartBack>
   );
 }
 
@@ -71,7 +72,7 @@ export function VenueListView({ type, items }: { type: "โรงแรม" | "�
     <main className="min-h-dvh bg-[#171211] text-[#f3ead9] mb-v7 mb-c">
       <div className="max-w-[480px] md:max-w-[760px] lg:max-w-[1120px] mx-auto">
         <SiteHeader />
-        <LuxHeader back="/market" eyebrow={hotel ? "HOTEL PARTNERS" : "SPA PARTNERS"} title={hotel ? "โรงแรมพาร์ทเนอร์" : "สปาพาร์ทเนอร์"} />
+        <LuxHeader back="/stay" eyebrow={hotel ? "HOTEL PARTNERS" : "SPA PARTNERS"} title={hotel ? "โรงแรมพาร์ทเนอร์" : "สปาพาร์ทเนอร์"} />
         <div className="px-[18px] pt-3.5 pb-6 flex flex-col gap-3">
           <div className={HROW} role="group" aria-label="กรองตามจังหวัด">
             {provs.map((p) => <button key={p} type="button" onClick={() => setProv(p)} aria-pressed={prov === p} className={CHIP} style={chipStyle(prov === p)}>{p}</button>)}

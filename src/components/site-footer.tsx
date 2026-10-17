@@ -9,7 +9,7 @@ import { LINE_OA_ID } from "@/lib/join/config";
 const filled = (v: string) => (v && !v.startsWith("[") ? v : "");
 
 const COLS: { title: string; links: [string, string][] }[] = [
-  { title: "สำหรับลูกค้า", links: [["/", "ค้นหาเพื่อนกินเที่ยว"], ["/map", "แผนที่"], ["/quick", "เรียกด่วน"], ["/market", "โรงแรม · สปา"], ["/products", "สินค้า"], ["/orders/track", "ติดตามคำสั่งซื้อ"]] },
+  { title: "สำหรับลูกค้า", links: [["/", "ค้นหาเพื่อนกินเที่ยว"], ["/map", "แผนที่"], ["/quick", "เรียกด่วน"], ["/stay", "โรงแรม · สปา"], ["/market", "Marketplace"], ["/orders/track", "ติดตามคำสั่งซื้อ"]] },
   { title: "ร่วมงานกับเรา", links: [["/join", "สมัคร Part-Time"], ["/join/earnings", "รายได้ Part-Time"], ["/join/showcase", "หน้าตัวอย่างแอป"], ["/join/me", "เข้าโปรไฟล์ Part-Time"], ["/partner", "พาร์ทเนอร์สปา · โรงแรม"], ["/vendor", "เปิดร้านค้ากับเรา"]] },
   { title: "ช่วยเหลือและนโยบาย", links: [["/page/terms", "ข้อกำหนดการใช้งาน"], ["/join/privacy", "นโยบายความเป็นส่วนตัว (PDPA)"], ["/policy", "กฎเกณฑ์และความปลอดภัย"], ["/sos", "SOS ฉุกเฉิน"]] },
 ];

@@ -1,5 +1,6 @@
 "use client";
 
+import { canGoBack } from "@/components/smart-back";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/i18n/provider";
@@ -56,7 +57,7 @@ export default function SOSPage() {
   function cancel() {
     if (timer.current) { clearInterval(timer.current); timer.current = null; }
     if (countdown != null) { setCountdown(null); return; }
-    if (window.history.length > 1) router.back(); else router.push("/home");
+    if (canGoBack()) router.back(); else router.push("/");
   }
 
   function share() {

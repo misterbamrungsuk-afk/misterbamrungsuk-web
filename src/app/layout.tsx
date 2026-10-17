@@ -5,6 +5,7 @@ import { I18nProvider } from "@/i18n/provider";
 import { PwaRegister } from "@/components/pwa-register";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { CookieConsent } from "@/components/cookie-consent";
+import { NavTrack } from "@/components/smart-back";
 
 const plex = IBM_Plex_Sans_Thai({ subsets: ["thai", "latin"], weight: ["400", "500", "600", "700"], variable: "--font-plex" });
 const kanit = Kanit({ subsets: ["thai", "latin"], weight: ["500", "600", "700", "800"], variable: "--font-kanit" });
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <PwaRegister />
         <ScrollReveal />
         <CookieConsent />
+        <NavTrack />
       </body>
     </html>
   );

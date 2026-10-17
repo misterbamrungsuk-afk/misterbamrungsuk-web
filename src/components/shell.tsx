@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { SmartBack } from "@/components/smart-back";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/i18n/provider";
 import { Logo } from "./ui";
@@ -84,9 +85,9 @@ export function TopBar({ title, back, right, notis = 0 }: { title?: ReactNode; b
     <header className="sticky top-0 z-30" style={{ background: "#251d1b" }}>
       <div className="flex items-center gap-3 px-4 h-16">
         {back ? (
-          <Link href={back} className="w-11 h-11 shrink-0 rounded-full bg-[#211a18] grid place-items-center text-[#f3ead9] hover:text-[#f3ead9]" aria-label="ย้อนกลับ">
+          <SmartBack href={back} className="w-11 h-11 shrink-0 rounded-full bg-[#211a18] grid place-items-center text-[#f3ead9] hover:text-[#f3ead9]">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><path d="M15 5l-7 7 7 7" strokeLinecap="round"/></svg>
-          </Link>
+          </SmartBack>
         ) : (
           <Link href="/" aria-label="หน้าแรก"><Logo size={30} /></Link>
         )}

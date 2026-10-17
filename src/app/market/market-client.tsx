@@ -6,7 +6,7 @@ import { imageUrl, type Banner } from "@/lib/market/config";
 import { CartBar, Chip, LINE, MProductCard, Toast, useToast, type CardP } from "../products/m-kit";
 
 // แบนเนอร์โปรโมชัน (แอดมินจัดการ) — เลื่อนเองทุก 5 วิ + ปุ่ม ‹ › + จุด (ตามบอร์ด Market)
-export function MarketBanner({ banners, fallback }: { banners: Banner[]; fallback: string[] }) {
+export function MarketBanner({ banners, fallback, tall = false }: { banners: Banner[]; fallback: string[]; tall?: boolean }) {
   const [i, setI] = useState(0);
   const n = banners.length;
   useEffect(() => {
@@ -34,7 +34,7 @@ export function MarketBanner({ banners, fallback }: { banners: Banner[]; fallbac
     </>
   );
   return (
-    <div className="mx-[18px] mt-3.5 relative h-[132px] rounded-[18px] overflow-hidden border" style={{ borderColor: LINE }} aria-roledescription="carousel" aria-label="โปรโมชัน">
+    <div className={`mx-[18px] relative rounded-[18px] overflow-hidden border ${tall ? "mt-1 h-[190px] md:h-[260px] lg:h-[300px]" : "mt-3.5 h-[132px]"}`} style={{ borderColor: LINE }} aria-roledescription="carousel" aria-label="โปรโมชัน">
       {b.link ? <Link href={b.link} className="absolute inset-0 text-[#f3ead9]">{body}</Link> : body}
       {n > 1 && (
         <div className="absolute right-2 bottom-1.5 flex items-center z-10">

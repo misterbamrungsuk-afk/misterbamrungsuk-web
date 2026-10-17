@@ -2,6 +2,7 @@
 
 // บอร์ด C-Report "รายงาน" — เลือกเหตุผล · เล่าเหตุการณ์ · บล็อกผู้ใช้นี้ด้วย · ทีมงานตรวจภายใน 24 ชม. (ผู้ถูกรายงานไม่รู้ว่าใครรายงาน)
 // เปิดจากห้องแชท/หน้านัด (?booking=) หรือหน้าโปรไฟล์ (?pid=&nick=)
+import { canGoBack } from "@/components/smart-back";
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -30,7 +31,7 @@ function ReportForm() {
   return (
     <div className="min-h-dvh" style={{ background: "#171211" }}>
       <header className="flex items-center gap-3 h-[68px] px-4" style={{ background: "#251d1b" }}>
-        <button type="button" onClick={() => router.back()} aria-label="ย้อนกลับ" className="w-11 h-11 rounded-full bg-[#211a18] grid place-items-center text-[#f3ead9] shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg></button>
+        <button type="button" onClick={() => (canGoBack() ? router.back() : router.push("/"))} aria-label="ย้อนกลับ" className="w-11 h-11 rounded-full bg-[#211a18] grid place-items-center text-[#f3ead9] shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg></button>
         <h1 className="m-0 flex-1 font-semibold text-[18px]">รายงาน{nick ? ` · ${nick}` : ""}</h1>
       </header>
       <main className="flex flex-col gap-4 pb-[170px]" style={{ padding: "20px 16px 0" }}>

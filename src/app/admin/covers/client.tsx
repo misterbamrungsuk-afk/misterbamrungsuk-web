@@ -181,7 +181,7 @@ export function CoversAdmin({ initial, defaults, configured }: { initial: State;
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           {([
             ["partner_hero", "ปกหน้าพาร์ทเนอร์", "ปกหน้าพาร์ทเนอร์ สปา · โรงแรม", "หน้า /partner · 1 รูป · ขนาดคงที่ สี่เหลี่ยมจัตุรัส 1:1 · 1200×1200 px", "w-[120px] aspect-square"],
-            ["market_hero", "ปกหน้า Marketplace", "ปกหน้า Marketplace", "หน้าแรก Marketplace · 1 รูป · ขนาดคงที่ แนวนอน 4:3 · 1600×1200 px", "w-[140px] aspect-[4/3]"],
+            ["market_hero", "ปกหน้าโรงแรม · สปา", "ปกหน้าโรงแรม · สปา", "หน้า /stay โรงแรม · สปา · 1 รูป · ขนาดคงที่ แนวนอน 4:3 · 1600×1200 px", "w-[140px] aspect-[4/3]"],
           ] as const).map(([slot, alt, t, h, size]) => (
             <section key={slot} className={`${card} flex gap-3.5 items-center`} {...dropProps(slot)}>
               {single(slot)

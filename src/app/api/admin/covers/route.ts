@@ -13,7 +13,7 @@ async function allowed() {
 const deny = () => NextResponse.json({ ok: false, error: "ไม่มีสิทธิ์" }, { status: 401 });
 const bad = (error: string, status = 400) => NextResponse.json({ ok: false, error }, { status });
 function revalidate() {
-  for (const p of ["/", "/join", "/partner", "/market"]) revalidatePath(p);
+  for (const p of ["/", "/join", "/partner", "/market", "/stay"]) revalidatePath(p);
 }
 
 export async function GET() {

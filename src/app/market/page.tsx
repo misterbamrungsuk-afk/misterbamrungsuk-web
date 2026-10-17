@@ -2,7 +2,6 @@
 import Link from "next/link";
 import { shopCatalog } from "@/lib/market/catalog";
 import { SAMPLE_NOTE } from "@/lib/market/mock";
-import { marketPartners } from "@/lib/market/partners";
 import { getCovers } from "@/lib/covers";
 import { SiteFooter } from "@/components/site-footer";
 import { BoxIcon, CartCount, CartIcon, LINE, RED_GRAD } from "../products/m-kit";
@@ -10,19 +9,18 @@ import { SiteHeader } from "@/components/site-header";
 import { MarketBanner, MarketShop } from "./market-client";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Mister Bamrungsuk — Marketplace โรงแรม · สปา · สินค้า" };
+export const metadata = { title: "Marketplace สินค้า — Mister Bamrungsuk" };
 
-const FALLBACK = ["/brand/hotel1.jpg", "/brand/venue.jpg", "/brand/hotel2.jpg", "/brand/venue.jpg"];
+const FALLBACK = ["/brand/market/gold-box.jpg", "/brand/market/body-oil-lavender.jpg", "/brand/home/ad-oil.jpg"];
 const TRUST = ["ของแท้", "มี อย.", "นำเข้าถูกต้อง", "ร้านตรวจสอบแล้ว"];
 
-// หน้าแรก Marketplace (ตามบอร์ด Market) — hero + แบนเนอร์ + โรงแรม/สปาพาร์ทเนอร์ + สินค้าคัดสรร + สมัครพาร์ทเนอร์
+// Marketplace = สินค้าอย่างเดียว — สไลด์โฆษณาสินค้าบนสุด + สินค้าแนะนำ + สินค้าคัดสรร (โรงแรม/สปาแยกไป /stay)
 export default async function MarketHome() {
   // ยังไม่มีสินค้าจริง → แคตตาล็อกตัวอย่างตามบอร์ด (catalog.ts)
-  const [cat, partners] = await Promise.all([shopCatalog(), marketPartners()]);
+  const cat = await shopCatalog();
   const { products, vendors, banners, categories, featured } = cat;
   // รูปจากแอดมิน "รูปหน้าปก": แบนเนอร์ แทนรูปของแบนเนอร์ตามลำดับ (ข้อความ/ลิงก์คงเดิม) · รูปเกินจำนวนแบนเนอร์ = แบนเนอร์รูปล้วน
-  const [heroImgs, bannerImgs] = await Promise.all([getCovers("market_hero"), getCovers("market_banner")]);
-  const hero = heroImgs[0] || "/brand/venue.jpg";
+  const bannerImgs = await getCovers("market_banner");
   const slides = (bannerImgs.length
     ? bannerImgs.map((image, k) => (banners[k] ? { ...banners[k], image } : { id: "cover-" + k, title: "", subtitle: "", image, link: "", sort: k, active: true }))
       .concat(banners.slice(bannerImgs.length))
@@ -32,7 +30,6 @@ export default async function MarketHome() {
     return { ...p, vendor_name: v?.name ?? "", vendor_slug: v?.slug ?? "", kind: categories.find((c) => c.id === p.category_id)?.name ?? "" };
   });
   const firstVendor = vendors.find((v) => products.some((p) => p.vendor_id === v.id));
-  const img = (cover: string | undefined, k: number) => cover || FALLBACK[k % FALLBACK.length];
   const ql = "lux-card min-h-11 grid place-items-center rounded-xl border bg-[#211a18] text-[#f3ead9] text-[12.5px] font-semibold text-center";
   const sec = (eb: string, title: string, href: string) => (
     <div className="flex justify-between items-end mx-[18px] mt-[22px] mb-2.5">
@@ -48,19 +45,7 @@ export default async function MarketHome() {
             <Link href="/orders/track" aria-label="ติดตามคำสั่งซื้อ" className={circle}><BoxIcon /></Link>
             <Link href="/cart" aria-label="ตะกร้าสินค้า" className={circle}><CartIcon /><CartCount /></Link>
           </div>} />
-      <div className="relative h-[300px] lg:h-[380px]">
-        <img src={hero} alt="" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(14,10,10,.35) 0%, rgba(14,10,10,.6) 55%, #171211 100%)" }} />
-        <div className="absolute left-[18px] right-[18px] bottom-3.5 lg:left-8 lg:bottom-8 lg:max-w-[520px]">
-          <p className="text-[11.5px] tracking-[2.5px] text-[#e8c472] font-semibold">เพื่อนกิน เพื่อนเที่ยว · MARKETPLACE</p>
-          <h1 className="mt-1.5 mb-1 font-lux font-bold text-[28px] leading-[1.3]">โรงแรม สปา และของดี<br />ที่เราคัดมาให้</h1>
-          <p className="mb-3 text-[13px] text-[#d9c9b4]">พาร์ทเนอร์ที่ทำงานร่วมกับ Mister Bamrungsuk</p>
-          <div className="flex gap-2.5">
-            <Link href="/" className="btn-red-lux flex-1 h-12 rounded-[14px] border grid place-items-center text-white font-lux font-semibold text-[15px]" style={{ background: RED_GRAD, borderColor: "rgba(232,196,114,.55)" }}>หาเพื่อน</Link>
-            <Link href="/join" className="flex-1 h-12 rounded-[14px] border border-[#e8c472] bg-[rgba(14,10,10,.6)] grid place-items-center text-[#e8c472] font-lux font-semibold text-[15px]">สมัคร Part-Time</Link>
-          </div>
-        </div>
-      </div>
+      {slides.length > 0 && <MarketBanner banners={slides} fallback={FALLBACK} tall />}
 
       {featured && (
         <Link href={`/products/${featured.id}`} aria-label={`${featured.title} สินค้าแนะนำ`} className="lux-card block mx-[18px] mt-3.5 rounded-[18px] overflow-hidden border bg-[#211a18] text-[#f3ead9] md:flex md:items-stretch" style={{ borderColor: LINE }}>
@@ -75,8 +60,6 @@ export default async function MarketHome() {
         </Link>
       )}
 
-      {slides.length > 0 && <MarketBanner banners={slides} fallback={FALLBACK} />}
-
       <div className="mx-[18px] mt-3 grid grid-cols-4 gap-1.5 lg:gap-3">
         {TRUST.map((t) => (
           <div key={t} className="flex flex-col items-center gap-1 px-1 py-2 rounded-xl bg-[#211a18] border text-[#7fd6a3] text-center" style={{ borderColor: LINE }}>
@@ -90,47 +73,13 @@ export default async function MarketHome() {
         <p className="text-xs text-[#d9c9b4] leading-normal"><b className="text-[#e8c472]">แพ็กมิดชิดทุกออเดอร์</b> · กล่องสีพื้น ไม่ระบุชื่อสินค้าหรือชื่อร้านบนหน้ากล่อง</p>
       </div>
 
-      <nav className="mx-[18px] mt-3.5 grid grid-cols-3 lg:grid-cols-6 gap-2" aria-label="เมนู Marketplace">
-        <Link href="/hotels" className={ql} style={{ borderColor: LINE }}>โรงแรม</Link>
-        <Link href="/spas" className={ql} style={{ borderColor: LINE }}>สปา</Link>
+      <nav className="mx-[18px] mt-3.5 grid grid-cols-2 lg:grid-cols-4 gap-2" aria-label="เมนู Marketplace">
         <Link href="/products" className={ql} style={{ borderColor: LINE }}>สินค้าทั้งหมด</Link>
         <Link href={firstVendor ? `/shop/${firstVendor.slug || firstVendor.id}` : "/products"} className={ql} style={{ borderColor: LINE }}>ร้านแนะนำ</Link>
         <Link href="/orders/track" className={ql} style={{ borderColor: LINE }}>ติดตามคำสั่งซื้อ</Link>
         <Link href="/policy" className={ql} style={{ borderColor: LINE }}>นโยบายร้าน</Link>
       </nav>
 
-      {partners.hotels.length > 0 && (
-        <>
-          {sec("HOTEL PARTNERS", "โรงแรมพาร์ทเนอร์", "/hotels")}
-          <div className="flex gap-3 overflow-x-auto no-scrollbar px-[18px] lg:grid lg:grid-cols-3 lg:overflow-visible">
-            {partners.hotels.map((h, k) => (
-              <Link key={h.id} href={`/hotels/${h.id}`} className="lux-card shrink-0 w-[220px] lg:w-auto rounded-2xl overflow-hidden bg-[#211a18] border text-[#f3ead9]" style={{ borderColor: LINE }}>
-                <img src={img(h.cover, k)} alt={h.name} className="w-full h-[120px] object-cover block" />
-                <div className="px-3 py-2.5"><div className="font-lux font-semibold text-sm">{h.name}</div><div className="text-xs text-[#d9c9b4]">{h.area}</div><div className="text-xs text-[#e8c472] mt-1">ส่วนลดสมาชิก [รอกำหนด]</div></div>
-              </Link>
-            ))}
-          </div>
-        </>
-      )}
-
-      {partners.spas.length > 0 && (
-        <>
-          {sec("SPA PARTNERS", "สปาพาร์ทเนอร์", "/spas")}
-          <div className="flex flex-col gap-2.5 px-[18px] md:grid md:grid-cols-2 lg:grid-cols-3">
-            {partners.spas.slice(0, 3).map((s, k) => (
-              <Link key={s.id} href={`/spas/${s.id}`} className="lux-card flex gap-3 p-2.5 rounded-2xl bg-[#211a18] border text-[#f3ead9]" style={{ borderColor: LINE }}>
-                <img src={img(s.cover, k + 1)} alt={s.name} className="w-[76px] h-[76px] rounded-xl object-cover shrink-0" />
-                <div className="min-w-0">
-                  <div className="font-lux font-semibold text-[14.5px]">{s.name}</div>
-                  <div className="text-xs text-[#d9c9b4]">{s.type} · {s.area}</div>
-                  <div className="mt-1.5"><span className="inline-flex items-center gap-[5px] px-[9px] py-[3px] rounded-full border border-[rgba(212,175,55,.55)] bg-[rgba(232,196,114,.18)] text-[#e8c472] text-[11px] font-semibold"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden><path d="m5 12 5 5 9-10" /></svg>ทำงานร่วมกับ Mister Bamrungsuk</span></div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </>
-      )}
-      {(partners.hotels.some((r) => r.sample) || partners.spas.some((r) => r.sample)) && <p className="text-[11px] text-[#b5a596] mx-[18px] mt-2">* ข้อมูลตัวอย่าง รอรายชื่อพาร์ทเนอร์จริง</p>}
 
       {sec("SHOP", "สินค้าคัดสรร", "/products")}
       <MarketShop products={rows} hide={featured?.id} categories={categories.map((c) => ({ id: c.id, name: c.name, slug: c.slug }))} />
@@ -138,7 +87,7 @@ export default async function MarketHome() {
 
       <div className="mx-[18px] mt-[22px] p-[18px] rounded-[18px] border" style={{ borderColor: "rgba(232,196,114,.55)", background: "linear-gradient(135deg, #2a1418, #211a18)" }}>
         <p className="text-[11.5px] tracking-[2.5px] text-[#e8c472] font-semibold">BECOME A PARTNER</p>
-        <h2 className="font-lux font-semibold text-[18px] my-1">โรงแรม สปา หรือแบรนด์สินค้า<br />อยากร่วมงานกับเรา?</h2>
+        <h2 className="font-lux font-semibold text-[18px] my-1">แบรนด์สินค้า อยากขายกับเรา?</h2>
         <p className="mb-3 text-[12.5px] text-[#d9c9b4]">ลงร้านบน Marketplace รับลูกค้าจากสมาชิกของเรา</p>
         <Link href="/partner" className="btn-red-lux grid place-items-center h-12 rounded-[14px] border text-white font-lux font-semibold" style={{ background: RED_GRAD, borderColor: "rgba(232,196,114,.55)" }}>สมัครเป็นพาร์ทเนอร์</Link>
         <Link href="/vendor" className="block text-center text-[12.5px] pt-3 text-[#e8c472]">เป็นร้านค้าอยู่แล้ว? เข้าพอร์ทัลร้านค้า →</Link>

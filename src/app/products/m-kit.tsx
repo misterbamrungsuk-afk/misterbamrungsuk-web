@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { SmartBack } from "@/components/smart-back";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MAX_QTY, baht, imageUrl, type Product } from "@/lib/market/config";
 import { readCart, useCart, writeCart } from "./market-ui";
@@ -38,7 +39,7 @@ export function MHeader({ back, eyebrow, title, cart = true, onBack }: { back?: 
     <header className="sticky top-0 z-30 bg-[#171211] flex items-center gap-3 px-[18px] py-4 h-[77px] border-b" style={{ borderColor: LINE }}>
       {onBack
         ? <button type="button" onClick={onBack} aria-label="ย้อนกลับ" className={circle} style={{ borderColor: LINE }}>{backIcon}</button>
-        : <Link href={back ?? "/market"} aria-label="ย้อนกลับ" className={circle} style={{ borderColor: LINE }}>{backIcon}</Link>}
+        : <SmartBack href={back ?? "/market"} className={circle} style={{ borderColor: LINE }}>{backIcon}</SmartBack>}
       <div className="flex-1 min-w-0">
         <p className="text-[11.5px] tracking-[2.5px] text-[#e8c472] font-semibold">{eyebrow}</p>
         <h1 className="m-0 font-lux font-semibold text-[20px] truncate">{title}</h1>

@@ -43,8 +43,6 @@ export function MarketFooter() {
         </div>
         <nav className="flex flex-col gap-1.5 text-ink-300">
           <Link className={link} href="/products">สินค้าทั้งหมด</Link>
-          <Link className={link} href="/hotels">โรงแรมพาร์ทเนอร์</Link>
-          <Link className={link} href="/spas">สปาพาร์ทเนอร์</Link>
           <Link className={link} href="/orders/track">ติดตามคำสั่งซื้อ</Link>
           <Link className={link} href="/vendor">สำหรับร้านค้า</Link>
         </nav>

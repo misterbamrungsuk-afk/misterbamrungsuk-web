@@ -198,7 +198,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
           {/* ลูกค้าล็อกอินแล้ว: ทางไปเลือกซื้อบริการและสินค้า (สีครีมอ่อน) */}
           {me && (
             <nav aria-label="ซื้อบริการและสินค้า" className="grid grid-cols-2 gap-2 md:gap-3" style={{ margin: "14px 18px 0" }}>
-              {([["/market", "โรงแรม · สปา", "ราคาสมาชิก", "M3 21V8l9-5 9 5v13M9 21v-6h6v6M3 21h18"], ["/products", "สินค้า", "ส่งถึงบ้าน", "M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"]] as const).map(([h, t, sub, d]) => (
+              {([["/stay", "โรงแรม · สปา", "ราคาสมาชิก", "M3 21V8l9-5 9 5v13M9 21v-6h6v6M3 21h18"], ["/market", "สินค้า", "ส่งถึงบ้าน", "M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"]] as const).map(([h, t, sub, d]) => (
                 <Link key={h} href={h} className="flex items-center gap-2.5 rounded-2xl text-[#1b130b] hover:text-[#1b130b] active:scale-[.98] transition-transform" style={{ padding: "12px 12px", minHeight: 64, background: "#f3ead9" }}>
                   <span className="grid place-items-center w-10 h-10 rounded-xl shrink-0" style={{ background: "rgba(143,94,0,0.12)", color: "#8f5e00" }}><Svg d={d} size={20} /></span>
                   <span className="min-w-0 leading-[1.35]"><span className="block font-semibold text-[15px]">{t}</span><span className="block text-[12px] text-[#5a4a42] truncate">{sub}</span></span>

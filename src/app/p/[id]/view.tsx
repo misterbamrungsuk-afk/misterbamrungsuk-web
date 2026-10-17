@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { BrandBar } from "@/components/brand-bar";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { SmartBack } from "@/components/smart-back";
 import { priceOf, type Act, type Person } from "@/lib/home/people";
 
 const LABEL: Record<Act, string> = { eat: "กิน & เที่ยว", massage: "นวดผ่อนคลาย", cafe: "คาเฟ่", photo: "ถ่ายรูป", movie: "ดูหนัง", gym: "ออกกำลัง", chill: "นั่งชิล" };
@@ -41,9 +42,9 @@ export function ProfileView({ p, reviews = [] }: { p: Person; reviews?: Rv[] }) 
         <div className="relative h-[380px] md:h-[520px] lg:h-[640px] lg:sticky lg:top-[84px] rounded-[24px] lg:rounded-[28px] overflow-hidden mx-[18px] mt-1 lg:mx-0 lg:mt-0" style={p.boost ? { border: "2px solid #e8c472", boxShadow: "0 0 0 1px rgba(255,241,201,.35), 0 12px 36px rgba(232,196,114,.3)" } : undefined}>
           <img src={pics[pic] ?? p.img} alt={p.nick} className="w-full h-full object-cover block" style={pic === 0 && p.pos ? { objectPosition: p.pos } : undefined} />
           <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(23,18,17,.35) 0%, rgba(23,18,17,0) 30%, rgba(23,18,17,0) 60%, #171211 100%)" }} />
-          <Link href="/" aria-label="ย้อนกลับ" className={`absolute top-[14px] left-[14px] ${round} text-[#f3ead9] hover:text-[#f3ead9]`} style={glass}>
+          <SmartBack href="/" className={`absolute top-[14px] left-[14px] ${round} text-[#f3ead9] hover:text-[#f3ead9]`} style={glass}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
-          </Link>
+          </SmartBack>
           <button type="button" onClick={toggleFav} aria-pressed={fav} aria-label="บันทึกเป็นคนโปรด" className={`absolute top-[14px] right-[14px] ${round}`} style={{ ...glass, color: fav ? "#ef8a97" : "#f3ead9" }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill={fav ? "#c9283d" : "none"} stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 20s-7-4.4-9-9a4.8 4.8 0 0 1 9-3 4.8 4.8 0 0 1 9 3c-2 4.6-9 9-9 9z" /></svg>
           </button>

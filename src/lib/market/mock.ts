@@ -73,7 +73,7 @@ export const MOCK_FEATURED = { id: "mock-jz", image: IMG("joopz-plus-feature.jpg
 
 /** แบนเนอร์ตัวอย่าง (บอร์ด Market) — ลิงก์ไปสินค้าตัวอย่าง จึงใช้เฉพาะตอนแคตตาล็อกเป็นตัวอย่าง */
 export const MOCK_BANNERS: Banner[] = [
-  { id: "mock-b-ship", title: "ส่งฟรีเมื่อซื้อครบ ฿1,500", subtitle: "โปรตัวอย่าง · เงื่อนไขจริงรอประกาศ", image: IMG("banner-room.jpg"), link: "/products", sort: 1, active: true },
+  { id: "mock-b-ship", title: "ส่งฟรีเมื่อซื้อครบ ฿1,500", subtitle: "โปรตัวอย่าง · เงื่อนไขจริงรอประกาศ", image: IMG("ginseng-gold.jpg"), link: "/products", sort: 1, active: true },
   { id: "mock-b-gift", title: "ชุดของขวัญ Gold Box", subtitle: "฿1,990 · กล่องของขวัญโทนทอง (ตัวอย่าง)", image: IMG("gold-box.jpg"), link: "/products/mock-gb", sort: 2, active: true },
   { id: "mock-b-spa", title: "Body Oil จาก Siam Serenity Spa", subtitle: "฿650 · สปาที่บ้าน (ตัวอย่าง)", image: IMG("body-oil-lavender.jpg"), link: "/products/mock-bo", sort: 3, active: true },
 ];

@@ -10,7 +10,7 @@ export async function gateToken(password: string) {
 /** Marketplace v2 สาธารณะ: โรงแรม/สปา/หน้าร้าน/ติดตามออเดอร์/นโยบาย + พอร์ทัลร้านค้า (มีล็อกอินของตัวเอง) */
 export function marketPublic(p: string) {
   const under = (b: string) => p === b || p.startsWith(`${b}/`);
-  return under("/hotels") || under("/spas") || under("/shop") || under("/policy") || under("/vendor") || p === "/orders/track";
+  return under("/stay") || under("/hotels") || under("/spas") || under("/shop") || under("/policy") || under("/vendor") || p === "/orders/track";
 }
 
 // หน้าที่เปิดได้โดยไม่ต้องใส่รหัส (หน้ารับสมัครมีผู้สมัครจริงใช้อยู่)

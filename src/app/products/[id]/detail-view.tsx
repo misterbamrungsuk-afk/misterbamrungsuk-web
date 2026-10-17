@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { SmartBack } from "@/components/smart-back";
 import { useState } from "react";
 import { AGE_NOTICE, GENERAL_WARNING, MAX_QTY, imageUrl } from "@/lib/market/config";
 import { useCart } from "../market-ui";
@@ -60,7 +61,7 @@ export function ProductDetailView({ p, kind, vendor, bundle, bundleAuto, related
           ? <img src={imgs[view] ?? imgs[0]} alt={p.name} className="absolute inset-0 w-full h-full object-cover" />
           : <Bottle id={p.id} w={130} h={210} />}
         <div className="absolute top-4 left-[18px] right-[18px] flex justify-between z-10">
-          <Link href="/products" aria-label="ย้อนกลับ" className={circle}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="m15 18-6-6 6-6" /></svg></Link>
+          <SmartBack href="/market" className={circle}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="m15 18-6-6 6-6" /></svg></SmartBack>
           <Link href="/cart" aria-label="ตะกร้า" className={circle}><CartIcon /><CartCount /></Link>
         </div>
         {imgs.length > 1 && (
