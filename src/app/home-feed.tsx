@@ -3,10 +3,11 @@
 
 // หน้าแรก · ดูเพื่อนในระบบ (บอร์ด Benefits + ป๊อปอัป BenefitsPopup) — ถอดตามบอร์ด
 // มือถือ = ตามบอร์ด 390 · md+ การ์ด 3 คอลัมน์ · กดการ์ด → โปรไฟล์ตัวอย่าง /p/[id] (บอร์ด C-Profile) → แชทตัวอย่าง (บอร์ด C-ChatRoom)
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { PEOPLE, priceOf, type Person } from "@/lib/home/people";
 import { TabBar } from "@/components/shell";
+import { SiteFooter } from "@/components/site-footer";
 
 const GOLD = "#e8c472";
 const ACTS = [
@@ -31,18 +32,30 @@ const provOf = (p: P) => p.prov || "กรุงเทพฯ";
 const ageOf = (p: P) => p.age;
 
 const AD = { img: "/brand/home/ad-spa.jpg", kind: "สปาพาร์ทเนอร์ · สีลม", name: "บำรุงสุข สปา", offer: "สมาชิกลด 20%" };
+// สไลด์โฆษณาบนสุด (3 รูป · เลื่อนเองทุก 5 วิ · ปัดได้ · กดจุดได้)
+const SLIDES = [
+  { ...AD, href: "/spas" },
+  { img: "/brand/hotel1.jpg", kind: "โรงแรมพาร์ทเนอร์ · สาทร", name: "The Sathorn Retreat", offer: "ห้องพักราคาสมาชิก", href: "/hotels" },
+  { img: "/brand/hotel2.jpg", kind: "รีสอร์ทพาร์ทเนอร์ · หัวหิน", name: "Seaside Villa", offer: "พักริมทะเล ลด 15% สำหรับสมาชิก", href: "/hotels" },
+];
 const sel: React.CSSProperties = { height: 50, width: "100%", borderRadius: 12, background: "rgba(0,0,0,0.3)", color: "#fff7e8", colorScheme: "dark", fontSize: 15, padding: "0 14px" };
 const Svg = ({ d, size = 20, sw = 1.8 }: { d: string; size?: number; sw?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
 );
 
 // การ์ดทั้งหน้า: แดงเลือดหมูแบบการ์ดสปาหน้า /work-with-us (#2c1a1f) แต่เข้มกว่า (ผู้ใช้สั่ง 17 ต.ค.)
-const CARD_BG = "#221317";
+const CARD_BG = "linear-gradient(180deg, #4d1f2a 0%, #37151d 100%)";
+const CARD_BD = "1px solid rgba(232,196,114,.22)";
 
 /** mode "home" = หน้าแรกลูกค้า (เมนูลูกค้า) · "sample" = หน้าตัวอย่างสำหรับผู้สนใจร่วมทีม (เพื่อนตัวอย่าง + เมนูรับสมัคร)
  *  people = Part-Time จริง (ถ้ามี) · ไม่มีคนจริง → ใช้ตัวอย่าง 20 คน */
 export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", me = null, unread = 0 }: { showEarnings?: boolean; people?: Person[]; mode?: "home" | "sample"; me?: { name: string } | null; unread?: number }) {
   const sample = mode === "sample";
+  const slider = useRef<HTMLDivElement>(null);
+  const [slide, setSlide] = useState(0);
+  const go = (i: number) => { const el = slider.current; if (el) el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" }); };
+  const onSlide = () => { const el = slider.current; if (el) setSlide(Math.round(el.scrollLeft / Math.max(1, el.clientWidth))); };
+  useEffect(() => { const t = setInterval(() => go((Math.round((slider.current?.scrollLeft ?? 0) / Math.max(1, slider.current?.clientWidth ?? 1)) + 1) % SLIDES.length), 5000); return () => clearInterval(t); }, []);
   const [acts, setActs] = useState<Act[]>([]);
   const [sort, setSort] = useState<Sort>("top");
   const [ad, setAd] = useState(false);
@@ -71,10 +84,10 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
   const clear = () => { setActs([]); setF({ reg: "", prov: "", spot: "", type: "", tier: "", act: "", aMin: "20", aMax: "50" }); };
 
   const card = (p: P, i = 0) => (
-    <Link key={p.id} href={sample && !p.real ? `/p/${p.id}?ex=1` : `/p/${p.id}`} style={{ order: i * 2, background: CARD_BG }} className="block rounded-[18px] overflow-hidden text-inherit hover:text-inherit">
+    <Link key={p.id} href={sample && !p.real ? `/p/${p.id}?ex=1` : `/p/${p.id}`} style={{ order: i * 2, background: CARD_BG, border: CARD_BD }} className="block rounded-[18px] overflow-hidden text-inherit hover:text-inherit">
       <div className="relative h-[176px] md:h-auto md:aspect-[4/5] lg:aspect-square">
         <img src={p.img} alt={p.nick} loading="lazy" className="w-full h-full object-cover block" style={p.pos ? { objectPosition: p.pos } : undefined} />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(251,251,251,0) 55%, rgba(34,19,23,0.9))" }} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(251,251,251,0) 55%, rgba(55,21,29,0.95))" }} />
         {p.top && <div className="absolute top-2 left-2 flex"><span style={{ display: "inline-flex", alignItems: "center", height: 18, padding: "0 7px", borderRadius: 4, background: "linear-gradient(135deg, #fff1c9 0%, #e8c472 45%, #a8781f 100%)", color: "#1b130b", fontWeight: 700, fontSize: 9.5, letterSpacing: ".2em", boxShadow: "inset 0 0 0 1px rgba(255,241,201,.5), 0 2px 6px rgba(0,0,0,.35)" }}>TOP</span></div>}
         <div className="absolute left-[10px] bottom-2 text-[13px] font-light text-[#f3ead9]">{p.prov ? `${p.area} · ${p.prov}` : p.area}</div>
       </div>
@@ -88,7 +101,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
 
   return (
     <div className="mb-v7 min-h-dvh relative" style={{ background: "#171211", color: "#f3ead9" }}>
-      <div className="mx-auto w-full max-w-[1200px] md:px-4" style={{ paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}>
+      <div className="mx-auto w-full max-w-[1200px] md:px-4">
         {/* หัว */}
         <div className="flex items-center justify-between" style={{ padding: "14px 18px 8px" }}>
           <Link href="/" aria-label="Mister Bamrungsuk · หน้าแรก" className="flex items-center gap-[10px] hover:text-inherit">
@@ -112,20 +125,30 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
           </Link>
         </div>
 
-        {/* โฆษณาบนสุด */}
+        {/* โฆษณาบนสุด — สไลด์ */}
         <div className="flex flex-col gap-2" style={{ margin: "6px 18px 0" }}>
-          <Link href="/market" className="relative block rounded-[18px] overflow-hidden aspect-[16/9] md:aspect-[16/5]">
-            <img src={AD.img} alt={AD.name} className="w-full h-full object-cover block" />
-            <span className="absolute inset-0" style={{ background: "linear-gradient(rgba(20,16,15,0) 40%, rgba(20,16,15,0.9))" }} />
-            <span className="absolute top-[10px] left-[10px] text-[11.5px] font-light text-white rounded-full" style={{ padding: "2px 9px", background: "rgba(20,16,15,0.7)" }}>โฆษณา</span>
-            <span className="absolute flex flex-col text-[#f3ead9]" style={{ left: 14, right: 14, bottom: 12 }}>
-              <span className="text-[13px] text-white font-light">{AD.kind}</span>
-              <span className="font-semibold text-[18px]">{AD.name}</span>
-              <span className="text-[13.5px] text-white">{AD.offer}</span>
-            </span>
-          </Link>
+          <div ref={slider} onScroll={onSlide} className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar rounded-[18px]" aria-roledescription="carousel" aria-label="โฆษณา">
+            {SLIDES.map((x, i) => (
+              <Link key={x.name} href={x.href} aria-label={`โฆษณา ${i + 1}/${SLIDES.length} · ${x.name}`} className="relative block shrink-0 w-full snap-start overflow-hidden aspect-[16/9] md:aspect-[16/5]">
+                <img src={x.img} alt={x.name} loading={i ? "lazy" : "eager"} className="w-full h-full object-cover block" />
+                <span className="absolute inset-0" style={{ background: "linear-gradient(rgba(20,16,15,0) 40%, rgba(20,16,15,0.9))" }} />
+                <span className="absolute top-[10px] left-[10px] text-[11.5px] font-light text-white rounded-full" style={{ padding: "2px 9px", background: "rgba(20,16,15,0.7)" }}>โฆษณา</span>
+                <span className="absolute flex flex-col text-[#f3ead9]" style={{ left: 14, right: 14, bottom: 12 }}>
+                  <span className="text-[13px] text-white font-light">{x.kind}</span>
+                  <span className="font-semibold text-[18px]">{x.name}</span>
+                  <span className="text-[13.5px] text-white">{x.offer}</span>
+                </span>
+              </Link>
+            ))}
+          </div>
           <div className="flex justify-between items-center">
-            <span className="flex gap-[5px]" aria-hidden="true"><span className="w-[18px] h-[5px] rounded-[3px] bg-[#e8c472]" /><span className="w-[5px] h-[5px] rounded-[3px] bg-[rgba(243,234,217,.25)]" /><span className="w-[5px] h-[5px] rounded-[3px] bg-[rgba(243,234,217,.25)]" /></span>
+            <span className="flex items-center">
+              {SLIDES.map((x, i) => (
+                <button key={x.name} type="button" onClick={() => go(i)} aria-label={`ดูโฆษณาที่ ${i + 1}`} aria-current={slide === i} className="h-8 px-[3px] grid place-items-center">
+                  <span className="block h-[5px] rounded-[3px] transition-all" style={{ width: slide === i ? 18 : 5, background: slide === i ? GOLD : "rgba(243,234,217,.3)" }} />
+                </button>
+              ))}
+            </span>
             <Link href="/partner" className="tap text-[13px] text-[#f3ead9] font-light hover:text-[#f3ead9]">โฆษณากับเรา ›</Link>
           </div>
         </div>
@@ -168,14 +191,14 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
 
         {/* ค้นหา + ตัวกรอง */}
         <div className="flex gap-[10px]" style={{ margin: "14px 18px 0" }}>
-          <label className="flex-1 min-w-0 h-12 rounded-[14px] bg-[#272013] flex items-center gap-[10px] px-[14px] text-[#b5a596] text-[14px]">
+          <label className="flex-1 min-w-0 h-12 rounded-[14px] bg-[#3d1922] border border-[rgba(232,196,114,.22)] flex items-center gap-[10px] px-[14px] text-[#b5a596] text-[14px]">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
             <input value={f.spot} onChange={set("spot")} placeholder="ค้นหาชื่อ ย่าน หรือกิจกรรม" aria-label="ค้นหา" className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[#f3ead9] placeholder:text-[#b5a596]" style={{ fontSize: 14 }} />
           </label>
-          <Link href="/map" aria-label="ดูบนแผนที่" className="grid place-items-center w-12 h-12 shrink-0 rounded-[14px] text-[#e8c472] hover:text-[#e8c472]" style={{ background: "rgba(232,196,114,0.16)" }}>
+          <Link href="/map" aria-label="ดูบนแผนที่" className="grid place-items-center w-12 h-12 shrink-0 rounded-[14px] text-[#e8c472] hover:text-[#e8c472]" style={{ background: "rgba(232,196,114,0.24)" }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" /></svg>
           </Link>
-          <button type="button" onClick={() => setFOpen(true)} aria-label="ตัวกรอง" className="relative grid place-items-center w-12 h-12 shrink-0 rounded-[14px] text-[#e8c472] p-0" style={{ background: "rgba(232,196,114,0.16)" }}>
+          <button type="button" onClick={() => setFOpen(true)} aria-label="ตัวกรอง" className="relative grid place-items-center w-12 h-12 shrink-0 rounded-[14px] text-[#e8c472] p-0" style={{ background: "rgba(232,196,114,0.24)" }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0" /><circle cx="16" cy="6" r="2" /><circle cx="10" cy="12" r="2" /><circle cx="18" cy="18" r="2" /></svg>
             {nF > 0 && <span className="absolute grid place-items-center rounded-full bg-[#b0182c] text-white font-bold" style={{ top: -6, right: -6, minWidth: 18, height: 18, padding: "0 5px", fontSize: 11.5 }}>{nF}</span>}
           </button>
@@ -187,7 +210,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
             const on = acts.includes(a.id);
             return (
               <button key={a.id} type="button" aria-pressed={on} onClick={() => setActs((x) => (on ? x.filter((y) => y !== a.id) : [...x, a.id]))}
-                className="flex flex-col items-center justify-center gap-[5px] rounded-2xl font-light flex-[0_0_70px] md:flex-1 md:text-[13px]!" style={{ minWidth: 70, height: 72, fontSize: 11.5, background: on ? "rgba(232,196,114,0.16)" : CARD_BG, color: on ? GOLD : "#f3ead9" }}>
+                className="flex flex-col items-center justify-center gap-[5px] rounded-2xl font-light flex-[0_0_70px] md:flex-1 md:text-[13px]!" style={{ minWidth: 70, height: 72, fontSize: 11.5, background: on ? "rgba(232,196,114,0.22)" : CARD_BG, border: on ? "1px solid #e8c472" : CARD_BD, color: on ? GOLD : "#f3ead9" }}>
                 <Svg d={a.icon} size={22} sw={1.6} />{a.label}
               </button>
             );
@@ -198,7 +221,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
         <div className="flex gap-2 overflow-x-auto no-scrollbar" style={{ padding: "12px 18px 0" }}>
           {SORTS.map(([id, label]) => {
             const on = sort === id;
-            return <button key={id} type="button" aria-pressed={on} onClick={() => setSort(id)} className="shrink-0 rounded-full font-semibold" style={{ height: 40, padding: "0 16px", fontSize: 13.5, background: on ? GOLD : "transparent", color: on ? "#1b130b" : "#f3ead9" }}>{label}</button>;
+            return <button key={id} type="button" aria-pressed={on} onClick={() => setSort(id)} className="shrink-0 rounded-full font-semibold" style={{ height: 40, padding: "0 16px", fontSize: 13.5, background: on ? GOLD : "#3d1922", border: on ? "1px solid #e8c472" : CARD_BD, color: on ? "#1b130b" : "#f3ead9" }}>{label}</button>;
           })}
         </div>
 
@@ -238,6 +261,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
           <Link href="/partner" className="self-end tap text-[13.5px] text-[#f3ead9] hover:text-[#f3ead9]">โฆษณากับเรา ›</Link>
         </div>
       </div>
+      <div style={{ paddingBottom: "calc(80px + env(safe-area-inset-bottom))" }} className="md:pb-0!"><SiteFooter /></div>
 
       {/* เมนูล่าง: หน้าตัวอย่าง = เมนูรับสมัคร · หน้าแรก = เมนูลูกค้า */}
       {sample ? <nav aria-label="เมนูหลัก" className="md:hidden fixed bottom-0 inset-x-0 z-40 mx-auto max-w-[640px] grid grid-cols-5 items-center text-center font-light text-[#b5a596] border-t border-[rgba(243,234,217,0.07)] bg-[#251d1b] md:rounded-t-2xl"

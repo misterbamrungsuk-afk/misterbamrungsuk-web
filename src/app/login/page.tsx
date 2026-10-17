@@ -41,27 +41,26 @@ export default function LoginPage() {
   const ok = !!email.trim() && password.length > 0;
 
   return (
-    <main className="mb-v7 relative min-h-dvh overflow-hidden md:grid md:grid-cols-2" style={{ background: "#171211", color: "#f3ead9", lineHeight: "normal" }}>
-      {/* รูปบน (มือถือ) / ครึ่งซ้าย (จอคอม) */}
-      <div className="absolute inset-x-0 top-0 h-[470px] md:relative md:h-auto md:min-h-dvh" aria-hidden="true">
+    <main className="mb-v7 relative min-h-dvh overflow-hidden md:grid md:grid-cols-2 md:items-center" style={{ background: "#171211", color: "#f3ead9", lineHeight: "normal" }}>
+      {/* ภาพแบรนด์ (Mister Bamrungsuk by Madame Gor) บนพื้นดำ — มือถือ: บนสุดกลางจอ · จอคอม: ครึ่งซ้ายเต็มความสูง */}
+      <Link href="/" aria-label="Mister Bamrungsuk · หน้าแรก" className="relative flex items-center justify-center md:min-h-dvh hover:text-inherit"
+        style={{ background: "radial-gradient(60% 50% at 50% 45%, rgba(176,24,44,.28) 0%, rgba(232,196,114,.08) 40%, rgba(8,6,6,0) 72%), #080606", padding: "calc(28px + env(safe-area-inset-top)) 24px 18px" }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/brand/home/login-hero.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 md:hidden" style={{ background: "linear-gradient(180deg, rgba(23,18,17,.15) 0%, rgba(23,18,17,.5) 45%, #171211 100%)" }} />
-        <div className="absolute inset-0 hidden md:block" style={{ background: "linear-gradient(90deg, rgba(23,18,17,0) 55%, #171211 100%)" }} />
-      </div>
+        <img src="/brand/logo.png" alt="Mister Bamrungsuk by Madame Gor" className="w-[min(68vw,280px)] md:w-[min(34vw,520px)] h-auto object-contain" style={{ filter: "drop-shadow(0 18px 40px rgba(0,0,0,.6))" }} />
+        <span className="absolute inset-x-0 bottom-0 h-6 md:hidden" style={{ background: "linear-gradient(180deg, rgba(8,6,6,0), #171211)" }} aria-hidden="true" />
+      </Link>
 
-      <div className="relative z-10 flex flex-col min-h-dvh md:min-h-0 md:justify-center mx-auto w-full max-w-[480px]">
-        <div className="flex items-center md:absolute md:top-0 md:left-0" style={{ padding: "16px 20px" }}>
+      <div className="relative z-10 flex flex-col md:justify-center mx-auto w-full max-w-[480px] md:py-10">
+        <div className="hidden" style={{ padding: "16px 20px" }}>
           <Link href="/" aria-label="Mister Bamrungsuk · หน้าแรก" className="flex items-center gap-[10px] hover:text-inherit">
             <img src="/brand/logo.png" alt="" width={46} height={46} className="w-[46px] h-[46px] object-contain" />
             <span className="font-brand text-[16px] text-[#e8c472]">Mister Bamrungsuk</span>
           </Link>
         </div>
 
-        <div className="flex-1 md:flex-none" />
-        <section className="flex flex-col gap-[14px]" style={{ padding: "24px 20px calc(26px + env(safe-area-inset-bottom))" }}>
+        <section className="flex flex-col gap-[14px]" style={{ padding: "8px 20px calc(26px + env(safe-area-inset-bottom))" }}>
           <div className="flex items-center gap-2 text-[12px] font-semibold text-[#e8c472]" style={{ letterSpacing: 3 }}><span className="w-[22px] h-px bg-[#e8c472]" />MISTER BAMRUNGSUK</div>
-          <h1 className="m-0 font-bold text-[32px] leading-[1.3]" style={{ textWrap: "balance" }}>เพื่อนกิน เพื่อนเที่ยว<span className="block mt-[37px] text-[#e8c472]">ในแบบของคุณ</span></h1>
+          <h1 className="m-0 font-bold text-[32px] leading-[1.3]" style={{ textWrap: "balance" }}>เพื่อนกิน เพื่อนเที่ยว<span className="block mt-1 text-[#e8c472]">ในแบบของคุณ</span></h1>
           <p className="m-0 text-[14px] text-[#d9c9b4] leading-[1.6]" style={{ textShadow: "0 1px 8px rgba(0,0,0,.6)" }}>เพื่อนทุกคนผ่านการยืนยันตัวตน จ่ายปลอดภัย เงินพักไว้กับเราจนจบนัด</p>
           <form onSubmit={emailLogin} className="flex flex-col gap-[10px]">
             <label className="flex flex-col gap-[5px] text-[12px] text-[#d9c9b4] font-light">อีเมล
