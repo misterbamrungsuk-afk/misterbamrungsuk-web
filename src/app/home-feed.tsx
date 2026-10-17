@@ -111,7 +111,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
           <nav aria-label="เมนูหลัก (จอคอม)" className="hidden md:flex items-center gap-1 ml-auto mr-3 text-[14px] font-light">
             {(sample
               ? [["/join/showcase", "ดูเพื่อน"], ["/map", "แผนที่"], [showEarnings ? "/join/earnings" : "/join", "รายได้"], ["/policy", "กฎเกณฑ์"], ["/work-with-us", "ร่วมทีม"]]
-              : [["/", "หน้าแรก"], ["/map", "แผนที่"], ["/quick", "เรียกด่วน"], ["/chat", "แชท"]]).map(([h, l], i) => (
+              : [["/", "หน้าแรก"], ["/map", "แผนที่"]]).map(([h, l], i) => (
               <Link key={h} href={h} aria-current={i === 0 ? "page" : undefined} className={`px-3 min-h-10 inline-flex items-center rounded-full ${i === 0 ? "text-[#e8c472] hover:text-[#e8c472]" : "text-[#d9c9b4] hover:text-[#f3ead9]"}`}>{l}</Link>
             ))}
             {sample ? <Link href="/join" className="ml-2 px-5 min-h-10 inline-flex items-center rounded-full bg-[#e8c472] text-[#1b130b] font-semibold hover:text-[#1b130b]">สมัครร่วมทีม</Link>
