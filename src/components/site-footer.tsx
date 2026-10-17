@@ -25,7 +25,7 @@ export function SiteFooter() {
       {/* มือถือ: แบบย่อ */}
       <div className="md:hidden px-[18px] pt-5 pb-4 flex flex-col gap-2.5 text-[13px] text-[#d8c8b8]">
         <span className="inline-flex items-center gap-2"><img src="/brand/logo.png" alt="" className="w-8 h-8 object-contain" /><span className="font-brand text-[14px] text-[#e8c472]">Mister Bamrungsuk</span></span>
-        <span>{phone && <>โทร {phone} · </>}LINE <b className="font-semibold text-[#e8c472] select-all">{LINE_OA_ID}</b></span>
+        <span>{phone && <>โทร {phone} · </>}LINE <span className="select-all">{LINE_OA_ID}</span></span>
         <nav aria-label="ลิงก์สำคัญ" className="flex flex-wrap gap-x-4">
           {[["/page/terms", "ข้อกำหนด"], ["/join/privacy", "ความเป็นส่วนตัว"], ["/policy", "กฎเกณฑ์"], ["/work-with-us", "ร่วมงานกับเรา"]].map(([h, l]) => <Link key={h} href={h} className="min-h-9 inline-flex items-center text-[#d8c8b8] hover:text-[#f6efe4]">{l}</Link>)}
         </nav>
@@ -42,7 +42,7 @@ export function SiteFooter() {
             {phone && <span>โทร {phone}</span>}
             {email && <span className="break-all">{email}</span>}
           </div>
-          <span className="text-[#d8c8b8]">LINE <b className="font-semibold text-[#e8c472] select-all">{LINE_OA_ID}</b></span>
+          <span className="text-[#d8c8b8]">LINE <span className="select-all">{LINE_OA_ID}</span></span>
         </div>
         {COLS.map((c) => (
           <nav key={c.title} aria-label={c.title} className="flex flex-col min-w-0">
