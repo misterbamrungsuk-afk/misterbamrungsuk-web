@@ -1,4 +1,5 @@
 import { avatarFile } from "@/lib/avatar";
+import { fileHeaders } from "@/lib/file-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,5 +11,5 @@ export async function GET(req: Request) {
   if ((t !== "partner" && t !== "vendor") || !id || id.length > 80) return new Response("not found", { status: 404 });
   const f = await avatarFile(t, id);
   if (!f) return new Response("not found", { status: 404 });
-  return new Response(new Uint8Array(f.data), { headers: { "Content-Type": f.type, "Cache-Control": "public, max-age=86400, immutable" } });
+  return new Response(new Uint8Array(f.data), { headers: fileHeaders(f.type, "public, max-age=86400, immutable") });
 }

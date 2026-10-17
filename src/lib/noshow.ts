@@ -1,5 +1,6 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
+import { verifiedType } from "@/lib/file-guard";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { store } from "./server-store";
 import { NOSHOW_POINTS, PAYOUT_PERCENT, type ClaimStatus, type Evidence, type NoShowClaim } from "./noshow-rules";
@@ -49,9 +50,12 @@ export async function savePhoto(key: string, side: "provider" | "customer", file
   if (!ext || file.size > 8 * 1024 * 1024) return null;
   const path = `${key.replace(/[^0-9a-zA-Z-]/g, "") || "x"}/${side}-${Date.now()}.${ext}`;
   const data = Buffer.from(await file.arrayBuffer());
-  if (noshowDemo()) { demo.files.set(path, { type: file.type, data }); return path; }
-  const { error } = await db().storage.from("noshow").upload(path, data, { contentType: file.type, upsert: false });
-  if (error) { console.warn("noshow upload (bucket missing? run 0002_noshow.sql) — keeping in memory:", error.message); demo.files.set(path, { type: file.type, data }); }
+  let type: string;
+  try { type = verifiedType(data); } catch { return null; }
+  if (type !== file.type) return null;
+  if (noshowDemo()) { demo.files.set(path, { type, data }); return path; }
+  const { error } = await db().storage.from("noshow").upload(path, data, { contentType: type, upsert: false });
+  if (error) { console.warn("noshow upload (bucket missing? run 0002_noshow.sql) — keeping in memory:", error.message); demo.files.set(path, { type, data }); }
   return path;
 }
 

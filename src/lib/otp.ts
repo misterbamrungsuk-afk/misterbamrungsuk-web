@@ -1,5 +1,6 @@
 import "server-only";
 import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
+import { sessionSecret } from "@/lib/session-secret";
 import { customersEnabled, sbHeaders } from "./customer/auth";
 
 // OTP ยืนยันเบอร์โทร — ไม่ผูกกับผู้ให้บริการ SMS (SmsProvider) ตอนนี้มี ThaiBulkSMS
@@ -43,12 +44,7 @@ export function normalizePhone(raw: string): string | null {
 }
 
 // โหมดจริงห้ามใช้ secret สำรอง (ปลอมโทเคนได้) — ไม่ตั้ง ADMIN_SESSION_SECRET = ล้มทันที
-const secret = () => {
-  const v = process.env.ADMIN_SESSION_SECRET;
-  if (v) return v;
-  if (process.env.VERCEL_ENV === "production") throw new Error("ADMIN_SESSION_SECRET is not set");
-  return "hamoo-demo-secret";
-};
+const secret = () => sessionSecret();
 const hashCode = (phone: string, code: string) => createHmac("sha256", secret()).update(`otp:${phone}:${code}`).digest("hex");
 
 type Row = { id: string; phone: string; ip: string; code_hash: string; attempts: number; expires_at: string; verified_at: string | null; created_at: string };

@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { EXT_OF, verifiedType } from "@/lib/file-guard";
 import type { SlipCheck } from "@/lib/slip2go";
 
 // กระเป๋าเงิน (ledger บัญชีคู่) — ทุกการเคลื่อนไหวเงินผ่าน post() → Postgres function wallet_post (supabase/wallet/0001_wallet.sql)
@@ -157,10 +158,11 @@ export async function ledgerSum(): Promise<number> {
 // ── เติมเงิน ──
 const extOf = (f: File) => (f.type === "image/png" ? "png" : f.type === "image/webp" ? "webp" : "jpg");
 export async function saveSlip(customerId: string, f: File): Promise<string> {
-  const path = `wallet/${customerId.replace(/[^a-zA-Z0-9_-]/g, "_")}/${Date.now()}.${extOf(f)}`;
   const data = Buffer.from(await f.arrayBuffer());
-  if (isDemo) { demo.files.set(path, { type: f.type, data }); return path; }
-  const { error } = await db().storage.from("slips").upload(path, data, { contentType: f.type, upsert: false });
+  const type = verifiedType(data);
+  const path = `wallet/${customerId.replace(/[^a-zA-Z0-9_-]/g, "_")}/${Date.now()}.${EXT_OF[type]}`;
+  if (isDemo) { demo.files.set(path, { type, data }); return path; }
+  const { error } = await db().storage.from("slips").upload(path, data, { contentType: type, upsert: false });
   if (error) throw error;
   return path;
 }

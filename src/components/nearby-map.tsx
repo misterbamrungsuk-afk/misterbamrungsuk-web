@@ -4,6 +4,9 @@ import "leaflet/dist/leaflet.css";
 import { useEffect, useRef } from "react";
 import type { Map as LeafletMap, Circle, Marker } from "leaflet";
 
+// ข้อความจากผู้ใช้ก่อนใส่ใน HTML ของหมุดแผนที่ (กัน XSS)
+const esc = (s: unknown) => String(s ?? "").replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+
 export interface MapPoint {
   id: string;
   lat: number;
@@ -47,10 +50,10 @@ export default function NearbyMap({ points, me, height = 400 }: { points: MapPoi
           html: `
             <div class="pin-wrap">
               <div class="pin ${isFriend ? "" : "pin-job"}">
-                ${p.avatar ? `<img src="${p.avatar}" alt="" />` : ""}
-                <span class="pin-badge">${p.emoji ?? (isFriend ? "👤" : "💼")}</span>
+                ${p.avatar ? `<img src="${esc(p.avatar)}" alt="" />` : ""}
+                <span class="pin-badge">${esc(p.emoji ?? (isFriend ? "👤" : "💼"))}</span>
               </div>
-              ${p.price ? `<span class="pin-price">${p.price}</span>` : ""}
+              ${p.price ? `<span class="pin-price">${esc(p.price)}</span>` : ""}
             </div>`,
           iconSize: [64, 66],
           iconAnchor: [32, 42], // ปลายหมุดชี้ตรงพิกัดจริง (หมุดสูง 42px)
@@ -60,8 +63,8 @@ export default function NearbyMap({ points, me, height = 400 }: { points: MapPoi
           .addTo(map.current)
           .bindPopup(
             `<div style="min-width:150px">
-              <b style="font-size:13px">${isFriend ? "👤" : "💼"} ${p.label}${p.verified ? ' <span style="color:#e0a400">✓</span>' : ""}</b><br/>
-              <span style="font-size:11px;color:#a8a8bd">${p.sub}</span>
+              <b style="font-size:13px">${isFriend ? "👤" : "💼"} ${esc(p.label)}${p.verified ? ' <span style="color:#e0a400">✓</span>' : ""}</b><br/>
+              <span style="font-size:11px;color:#a8a8bd">${esc(p.sub)}</span>
             </div>`
           );
       }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { fileHeaders } from "@/lib/file-guard";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
 import { PHOTO_RE, decideClaim, listClaims, readPhoto } from "@/lib/noshow";
@@ -18,7 +19,7 @@ export async function GET(req: Request) {
     if (!PHOTO_RE.test(photo)) return new Response("bad path", { status: 400 });
     const f = await readPhoto(photo);
     if (!f) return new Response("not found", { status: 404 });
-    return new Response(new Uint8Array(f.data), { headers: { "Content-Type": f.type, "Cache-Control": "private, no-store" } });
+    return new Response(new Uint8Array(f.data), { headers: fileHeaders(f.type, "private, no-store") });
   }
   return NextResponse.json({ ok: true, claims: await listClaims() });
 }

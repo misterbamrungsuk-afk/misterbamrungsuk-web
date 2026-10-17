@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { fileHeaders } from "@/lib/file-guard";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
 import { MemberError, approveSalesPayout, createExternalRep, creditMembership, rejectMembership, settleSalesPayout, signSalesLink } from "@/lib/member";
@@ -16,7 +17,7 @@ export async function GET(req: Request) {
   const p = await getPurchase(new URL(req.url).searchParams.get("slip") ?? "");
   const f = p?.slip_path ? await readFile(p.slip_path) : null;
   if (!f) return new Response("not found", { status: 404 });
-  return new Response(new Uint8Array(f.data), { headers: { "Content-Type": f.type, "Cache-Control": "private, no-store" } });
+  return new Response(new Uint8Array(f.data), { headers: fileHeaders(f.type, "private, no-store") });
 }
 
 // แอดมิน: approve / reject (สลิปเปิดเมม) · rep_create / rep_toggle / rep_link · payout_paid / payout_failed

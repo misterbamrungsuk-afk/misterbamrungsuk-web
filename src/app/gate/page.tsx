@@ -15,7 +15,8 @@ export default function GatePage() {
     const d = await r.json().catch(() => ({}));
     if (r.ok) {
       const next = new URLSearchParams(location.search).get("next") || "/";
-      location.href = next.startsWith("/") ? next : "/";
+      // เฉพาะ path ในเว็บเรา — กัน //evil.com และ /\evil.com (open redirect)
+      location.href = /^\/(?![\/\\])/.test(next) ? next : "/";
     } else { setErr(d.error || "รหัสไม่ถูกต้อง"); setBusy(false); }
   }
 

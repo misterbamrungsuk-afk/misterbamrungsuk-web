@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
+import { createHash, timingSafeEqual } from "node:crypto";
 import { GATE_COOKIE, gateToken } from "@/lib/site-gate";
 
 const tries = new Map<string, { n: number; at: number }>();
+
+// เทียบรหัสแบบใช้เวลาคงที่ (กันเดาจากเวลาตอบกลับ)
+const same = (a: string, b: string) => { const x = createHash("sha256").update(a).digest(), y = createHash("sha256").update(b).digest(); return timingSafeEqual(x, y); };
 
 export async function POST(req: Request) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
@@ -10,7 +14,7 @@ export async function POST(req: Request) {
 
   const { password } = await req.json().catch(() => ({ password: "" }));
   const want = process.env.SITE_PASSWORD;
-  if (!want || typeof password !== "string" || password !== want) {
+  if (!want || typeof password !== "string" || !same(password, want)) {
     tries.set(ip, { n: (t && Date.now() - t.at < 10 * 60_000 ? t.n : 0) + 1, at: Date.now() });
     return NextResponse.json({ ok: false, error: "รหัสไม่ถูกต้อง" }, { status: 401 });
   }

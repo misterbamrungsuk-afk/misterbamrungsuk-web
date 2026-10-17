@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { fileHeaders } from "@/lib/file-guard";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
 import { currentPartner } from "@/lib/partner/auth";
 import { PATH_RE, readPartnerFile } from "@/lib/partner/portal";
@@ -20,5 +21,5 @@ export async function GET(req: Request) {
   }
   const f = await readPartnerFile(path);
   if (!f) return new Response("not found", { status: 404 });
-  return new Response(new Uint8Array(f.data), { headers: { "Content-Type": f.type, "Cache-Control": isSlip ? "private, no-store" : "public, max-age=86400" } });
+  return new Response(new Uint8Array(f.data), { headers: fileHeaders(f.type, isSlip ? "private, no-store" : "public, max-age=86400") });
 }

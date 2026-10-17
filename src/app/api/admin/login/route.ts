@@ -24,6 +24,9 @@ export async function POST(req: Request) {
   }
 
   const body = (await req.json().catch(() => ({}))) as { email?: string; password?: string };
+  // ต่อบัญชี (ทุก IP รวมกัน) — กันสุ่มรหัสบัญชีเดียวจากหลาย IP
+  const who = String(body.email ?? "").trim().toLowerCase().slice(0, 120);
+  if (who && (await limited(`adme:${who}`, 8, 30 * 60_000))) return NextResponse.json({ error: "บัญชีนี้ถูกพักการเข้าสู่ระบบชั่วคราว 30 นาที (ลองผิดหลายครั้ง)" }, { status: 429 });
   const role = checkLogin(String(body.email ?? ""), String(body.password ?? ""));
   if (!role) {
     const cur = rec && rec.until > now ? rec : { n: 0, until: now + WINDOW };
@@ -31,6 +34,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" }, { status: 401 });
   }
   attempts.delete(ip);
+  // บันทึกทุกการเข้าสู่ระบบแอดมิน (ตรวจย้อนหลัง / เห็นทันทีถ้ามีคนแปลกหน้าเข้า)
+  await import("@/lib/bookings").then((m) => m.notify({ user_type: "admin", user_id: "ceo", kind: "admin_login", title: `เข้าสู่ระบบแอดมิน: ${who} (${role})`, body: `IP ${ip} · ${(req.headers.get("user-agent") ?? "").slice(0, 120)}`, url: "/admin/audit" })).catch(() => {});
 
   const token = await signSession(String(body.email).trim().toLowerCase(), role);
   if (!token) return NextResponse.json({ error: "ยังไม่ได้ตั้ง ADMIN_SESSION_SECRET" }, { status: 503 });

@@ -1,4 +1,5 @@
 import { readFile } from "@/lib/join/store";
+import { fileHeaders } from "@/lib/file-guard";
 import { findLiveByPublicId, photoPaths } from "@/lib/home/live";
 
 export const runtime = "nodejs";
@@ -14,5 +15,5 @@ export async function GET(req: Request) {
   if (!a || !path) return new Response("not found", { status: 404 });
   const f = await readFile(path);
   if (!f) return new Response("not found", { status: 404 });
-  return new Response(new Uint8Array(f.data), { headers: { "Content-Type": f.type, "Cache-Control": "public, max-age=300, s-maxage=300" } });
+  return new Response(new Uint8Array(f.data), { headers: fileHeaders(f.type, "public, max-age=300, s-maxage=300") });
 }

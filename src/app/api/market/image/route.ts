@@ -1,4 +1,5 @@
 import { FILE_RE, readFile } from "@/lib/market/store";
+import { fileHeaders } from "@/lib/file-guard";
 
 export const runtime = "nodejs";
 
@@ -8,5 +9,5 @@ export async function GET(req: Request) {
   if (!FILE_RE.test(p) || !(p.startsWith("products/") || p.startsWith("banners/"))) return new Response("not found", { status: 404 });
   const f = await readFile(p);
   if (!f) return new Response("not found", { status: 404 });
-  return new Response(new Uint8Array(f.data), { headers: { "Content-Type": f.type, "Cache-Control": "public, max-age=86400" } });
+  return new Response(new Uint8Array(f.data), { headers: fileHeaders(f.type, "public, max-age=86400") });
 }

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { fileHeaders } from "@/lib/file-guard";
 import { marketAdmin } from "@/lib/market/admin";
 import { listOrders, listPayouts, listVendors, readFile, recordPayout, reportCsv, saveFile, vendorReport } from "@/lib/market/store";
 
@@ -15,12 +16,12 @@ export async function GET(req: Request) {
     const p = payouts.find((x) => x.id === sp.get("slip"));
     const f = p?.slip_path ? await readFile(p.slip_path) : null;
     if (!f) return new Response("not found", { status: 404 });
-    return new Response(new Uint8Array(f.data), { headers: { "Content-Type": f.type, "Cache-Control": "private, no-store" } });
+    return new Response(new Uint8Array(f.data), { headers: fileHeaders(f.type, "private, no-store") });
   }
   let rows = vendorReport(orders, vendors, payouts, sp.get("vendor") || undefined);
   if (sp.get("month")) rows = rows.filter((r) => r.month === sp.get("month"));
   if (sp.get("format") === "csv")
-    return new Response(reportCsv(rows), { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="market-payout-${sp.get("month") || "all"}.csv"` } });
+    return new Response(reportCsv(rows), { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="market-payout-${(sp.get("month") || "all").replace(/[^\w-]/g, "")}.csv"` } });
   return NextResponse.json({ ok: true, rows });
 }
 

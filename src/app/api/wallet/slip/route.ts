@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { fileHeaders } from "@/lib/file-guard";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
 import { getTopup, readSlip } from "@/lib/wallet";
@@ -13,5 +14,5 @@ export async function GET(req: Request) {
   if (!t?.slip_path) return new NextResponse("not found", { status: 404 });
   const f = await readSlip(t.slip_path);
   if (!f) return new NextResponse("not found", { status: 404 });
-  return new NextResponse(new Uint8Array(f.data), { headers: { "Content-Type": f.type, "Cache-Control": "private, no-store" } });
+  return new NextResponse(new Uint8Array(f.data), { headers: fileHeaders(f.type, "private, no-store") });
 }

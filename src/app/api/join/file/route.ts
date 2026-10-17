@@ -1,4 +1,5 @@
 import { canResume } from "@/lib/join/resume";
+import { fileHeaders } from "@/lib/file-guard";
 import { getByMb, readFile } from "@/lib/join/store";
 
 export const runtime = "nodejs";
@@ -15,5 +16,5 @@ export async function GET(req: Request) {
   if (!row || !path.startsWith(`${row.id}/`)) return new Response("forbidden", { status: 403 });
   const f = await readFile(path);
   if (!f) return new Response("not found", { status: 404 });
-  return new Response(new Uint8Array(f.data), { headers: { "Content-Type": f.type, "Cache-Control": "private, max-age=300" } });
+  return new Response(new Uint8Array(f.data), { headers: fileHeaders(f.type, "private, max-age=300") });
 }

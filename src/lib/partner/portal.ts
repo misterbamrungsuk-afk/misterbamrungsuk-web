@@ -1,5 +1,6 @@
 import "server-only";
 import { PARTNER_PACKAGES, type PartnerPackageKey } from "./config";
+import { EXT_OF, verifiedType } from "@/lib/file-guard";
 import { db, endDateFor, getPartner, isDemo, updatePartner } from "./store";
 import { DEFAULT_HOURS, type BookingStatus, type Listing, type PartnerBooking, type Purchase } from "./portal-types";
 
@@ -21,11 +22,12 @@ const extOf = (f: File) => (f.type === "image/png" ? "png" : f.type === "image/w
 
 /** kind: slips | listing | qc → path `${pid}/${kind}/${uuid}.ext` */
 export async function putPartnerFile(pid: string, kind: "slips" | "listing" | "qc", file: File): Promise<string> {
-  const path = `${pid}/${kind}/${crypto.randomUUID()}.${extOf(file)}`;
   const data = Buffer.from(await file.arrayBuffer());
-  if (isDemo) demo.files.set(path, { type: file.type, data });
+  const type = verifiedType(data, kind === "qc" ? ["image/jpeg", "image/png", "image/webp", "application/pdf"] : ["image/jpeg", "image/png", "image/webp"]);
+  const path = `${pid}/${kind}/${crypto.randomUUID()}.${EXT_OF[type]}`;
+  if (isDemo) demo.files.set(path, { type, data });
   else {
-    const { error } = await db().storage.from(BUCKET).upload(path, data, { contentType: file.type, upsert: false });
+    const { error } = await db().storage.from(BUCKET).upload(path, data, { contentType: type, upsert: false });
     if (error) throw error;
   }
   return path;

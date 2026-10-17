@@ -1,4 +1,5 @@
 import { marketAdmin } from "@/lib/market/admin";
+import { fileHeaders } from "@/lib/file-guard";
 import { getOrder, readFile } from "@/lib/market/store";
 
 export const runtime = "nodejs";
@@ -9,5 +10,5 @@ export async function GET(req: Request) {
   const o = await getOrder(new URL(req.url).searchParams.get("id") ?? "");
   const f = o?.slip_path ? await readFile(o.slip_path) : null;
   if (!f) return new Response("not found", { status: 404 });
-  return new Response(new Uint8Array(f.data), { headers: { "Content-Type": f.type, "Cache-Control": "private, no-store" } });
+  return new Response(new Uint8Array(f.data), { headers: fileHeaders(f.type, "private, no-store") });
 }

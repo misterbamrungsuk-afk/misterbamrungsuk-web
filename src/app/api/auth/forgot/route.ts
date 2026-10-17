@@ -1,5 +1,6 @@
 import { limited } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
+import { siteUrl } from "@/lib/site-url";
 import { clientIp, customersEnabled, findCustomer, isEmail, signReset } from "@/lib/customer/auth";
 import { emailEnabled, sendEmail } from "@/lib/email";
 
@@ -17,7 +18,7 @@ export async function POST(req: Request) {
     try {
       const c = await findCustomer(email);
       if (c) {
-        const base = process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin;
+        const base = siteUrl(req);
         const link = `${base}/auth/reset?t=${encodeURIComponent(signReset(c))}`;
         await sendEmail({
           to: email, subject: "ตั้งรหัสผ่านใหม่ · Mister Bamrungsuk",

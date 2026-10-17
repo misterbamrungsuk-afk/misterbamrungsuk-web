@@ -1,5 +1,6 @@
 import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { sessionSecret } from "@/lib/session-secret";
 import { cookies } from "next/headers";
 
 // โทเคนต่อขั้นตอน KYC/บัญชี หลังสมัคร — ลงลายเซ็น HMAC (ADMIN_SESSION_SECRET) อายุ 30 วัน
@@ -8,12 +9,7 @@ export const RESUME_COOKIE = "mb_resume";
 export const RESUME_TTL_MS = 30 * 24 * 3600_000;
 
 // โหมดจริงห้ามใช้ secret สำรอง (ปลอมโทเคนได้) — ไม่ตั้ง ADMIN_SESSION_SECRET = ล้มทันที
-const secret = () => {
-  const v = process.env.ADMIN_SESSION_SECRET;
-  if (v) return v;
-  if (process.env.VERCEL_ENV === "production") throw new Error("ADMIN_SESSION_SECRET is not set");
-  return "hamoo-demo-secret";
-};
+const secret = () => sessionSecret();
 const sign = (body: string) => createHmac("sha256", secret()).update(`resume:${body}`).digest("base64url");
 
 export function signResume(mb: string) {

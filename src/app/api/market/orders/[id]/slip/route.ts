@@ -17,6 +17,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (o.status !== "pending") return NextResponse.json({ ok: false, error: "คำสั่งซื้อนี้ตรวจแล้ว" }, { status: 409 });
   const file = fd.get("slip");
   if (!(file instanceof File)) return NextResponse.json({ ok: false, error: "แนบสลิป", fields: ["slip"] }, { status: 400 });
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 8 * 1024 * 1024) return NextResponse.json({ ok: false, error: "รับเฉพาะรูป JPG/PNG/WebP ไม่เกิน 8MB", fields: ["slip"] }, { status: 400 });
   const slipCheck = await verifySlip(file, Number(o.total) || 0);
   if (slipCheck?.verdict === "dup") return NextResponse.json({ ok: false, error: "สลิปนี้เคยถูกใช้แล้ว กรุณาแนบสลิปของการโอนครั้งนี้", fields: ["slip"] }, { status: 400 });
   if (slipCheck?.verdict === "acct") return NextResponse.json({ ok: false, error: "สลิปนี้โอนเข้าบัญชีที่ไม่ใช่ของ Mister Bamrungsuk กรุณาโอนผ่าน QR ในหน้านี้ แล้วแนบสลิปใหม่", fields: ["slip"] }, { status: 400 });

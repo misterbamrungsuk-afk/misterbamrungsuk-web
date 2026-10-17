@@ -72,8 +72,11 @@ export const COLUMNS = [
   "กิจกรรม", "ใบรับรองนวด", "เวลาที่สะดวก", "รุ่นอบรม", "กลุ่ม LINE", "พื้นที่ที่สะดวก", "พื้นที่ที่ไม่สะดวก",
 ];
 
+/** กันสูตรในชีต (formula injection): ข้อความที่ผู้สมัครกรอกขึ้นต้น = + - @ tab CR → ใส่ ' นำหน้า (ชีตแสดงเป็นข้อความ ไม่รันสูตร) */
+const safeCell = (v: string | number) => (typeof v === "string" && /^[=+\-@\t\r]/.test(v) ? `'${v}` : v);
+
 export function applicantRow(a: Applicant): (string | number)[] {
-  return [
+  return ([
     a.mb_code, new Date(a.created_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" }), a.status, PACKAGES[a.package].name, a.amount,
     a.title, a.first_name, a.last_name, a.nickname, a.birthdate ?? "", a.weight, a.height, a.nationality, a.ethnicity, a.religion,
     a.education, a.start_date ?? "", a.marital, `'${a.tel}`, a.line_id, a.email || "-",
@@ -87,5 +90,5 @@ export function applicantRow(a: Applicant): (string | number)[] {
       x.cohort ? `รุ่น ${x.cohort}` : "-", x.line_joined ? "เข้าแล้ว" : "ยังไม่เข้า",
       (x.areas ?? []).join(", ") || "-", x.no_area || "-",
     ])(extraOf(a)),
-  ];
+  ] as (string | number)[]).map(safeCell);
 }

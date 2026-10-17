@@ -4,6 +4,9 @@ import "leaflet/dist/leaflet.css";
 import { useEffect, useRef } from "react";
 import type { Map as LeafletMap, Marker, Polyline } from "leaflet";
 
+// ข้อความจากผู้ใช้ก่อนใส่ใน HTML ของหมุดแผนที่ (กัน XSS)
+const esc = (s: unknown) => String(s ?? "").replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+
 export default function LiveMap({
   points, myPos, height = 320, followIdx, className = "", providerAvatar, providerName = "เพื่อนของคุณ",
 }: {
@@ -46,12 +49,12 @@ export default function LiveMap({
         icon: L.divIcon({
           className: "hamoo-pin",
           html: `<div class="pin-wrap">
-            <div class="pin">${providerAvatar ? `<img src="${providerAvatar}" alt="" />` : ""}<span class="pin-badge">🛵</span></div>
-            <span class="pin-price">${providerName}</span>
+            <div class="pin">${providerAvatar ? `<img src="${esc(providerAvatar)}" alt="" />` : ""}<span class="pin-badge">🛵</span></div>
+            <span class="pin-price">${esc(providerName)}</span>
           </div>`,
           iconSize: [64, 66], iconAnchor: [32, 42], popupAnchor: [0, -44],
         }),
-      }).addTo(map.current).bindPopup(`<b>${providerName}</b><br/><span style="font-size:11px;color:#a8a8bd">กำลังเดินทางมาหาคุณ</span>`);
+      }).addTo(map.current).bindPopup(`<b>${esc(providerName)}</b><br/><span style="font-size:11px;color:#a8a8bd">กำลังเดินทางมาหาคุณ</span>`);
 
       line.current = L.polyline(points.map((p) => [p.lat, p.lng] as [number, number]), {
         color: "#e5484d", weight: 3.5, opacity: 0.85, dashArray: "1 8", lineCap: "round",

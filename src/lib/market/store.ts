@@ -1,5 +1,6 @@
 import { sessionSecret } from "@/lib/session-secret";
 import "server-only";
+import { verifiedType } from "@/lib/file-guard";
 import { createHmac, randomInt, randomUUID, timingSafeEqual } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { SAMPLE_BLOCK, isMockId } from "./mock";
@@ -198,11 +199,14 @@ export async function saveFile(folder: "products" | "slips" | "payouts" | "banne
   if (!ext || file.size > 8 * 1024 * 1024) return null;
   const path = `${folder}/${Date.now()}-${randomInt(1e6)}.${ext}`;
   const data = Buffer.from(await file.arrayBuffer());
-  if (marketDemo()) { mem.files.set(path, { type: file.type, data }); return path; }
-  const { error } = await db().storage.from("market").upload(path, data, { contentType: file.type, upsert: false });
+  let type: string;
+  try { type = verifiedType(data); } catch { return null; }
+  if (type !== file.type) return null;
+  if (marketDemo()) { mem.files.set(path, { type, data }); return path; }
+  const { error } = await db().storage.from("market").upload(path, data, { contentType: type, upsert: false });
   if (error) {
     console.warn("[market] upload failed (bucket missing? run market/0001) — keeping in memory:", error.message);
-    mem.files.set(path, { type: file.type, data });
+    mem.files.set(path, { type, data });
   }
   return path;
 }
@@ -500,7 +504,7 @@ export function vendorReport(orders: Order[], vendors: Vendor[], payouts: Payout
 }
 export const reportCsv = (rows: ReportRow[]) => {
   const head = ["month", "vendor", "orders", "gross", "discount", "gp", "shipping", "payout_due", "gp_pending_amount", "paid_at", "paid_ref"];
-  const esc = (v: unknown) => { const s = String(v ?? ""); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  const esc = (v: unknown) => { let s = String(v ?? ""); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
   return "﻿" + [head, ...rows.map((r) => [r.month, r.vendor, r.orders, r.gross, r.discount, r.gp, r.shipping, r.payout, r.pendingGp, r.paid?.paid_at ?? "", r.paid?.ref ?? ""])].map((l) => l.map(esc).join(",")).join("\n");
 };
 

@@ -9,6 +9,16 @@ import { GATE_COOKIE, gateExempt, gateToken, marketPublic } from "@/lib/site-gat
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // กัน CSRF: คำสั่งที่เปลี่ยนข้อมูล (POST/PUT/PATCH/DELETE) ต้องมาจากหน้าเว็บของเราเอง
+  // เบราว์เซอร์ส่ง Origin / Sec-Fetch-Site มาเสมอ — มาจากเว็บอื่น = ปฏิเสธ · ไม่มี header (เซิร์ฟเวอร์เรียก/cron) = ผ่านไปตรวจสิทธิ์ตามปกติ
+  if (pathname.startsWith("/api") && !["GET", "HEAD", "OPTIONS"].includes(request.method)) {
+    const origin = request.headers.get("origin");
+    const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+    let foreign = request.headers.get("sec-fetch-site") === "cross-site";
+    if (origin) { try { foreign ||= new URL(origin).host !== host; } catch { foreign = true; } }
+    if (foreign) return NextResponse.json({ ok: false, error: "forbidden origin" }, { status: 403 });
+  }
+
   // รหัสเข้าเว็บ (ตั้ง SITE_PASSWORD) — ล็อกทุกหน้า ยกเว้นหน้ารับสมัคร /join
   const sitePw = process.env.SITE_PASSWORD;
   if (sitePw && !gateExempt(pathname) && request.cookies.get(GATE_COOKIE)?.value !== (await gateToken(sitePw))) {

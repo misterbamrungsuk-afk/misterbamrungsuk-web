@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { verifiedType } from "@/lib/file-guard";
 import type { PackageKey } from "./config";
 import type { SlipCheck } from "@/lib/slip2go";
 
@@ -190,8 +191,9 @@ const extOf = (f: File) => (f.type === "image/png" ? "png" : f.type === "image/w
 
 export async function putFile(path: string, file: File) {
   const data = Buffer.from(await file.arrayBuffer());
-  if (isDemo) return void demo.files.set(path, { type: file.type, data });
-  const { error } = await db().storage.from("applicants").upload(path, data, { contentType: file.type, upsert: false });
+  const type = verifiedType(data);
+  if (isDemo) return void demo.files.set(path, { type, data });
+  const { error } = await db().storage.from("applicants").upload(path, data, { contentType: type, upsert: false });
   if (error) throw error;
 }
 

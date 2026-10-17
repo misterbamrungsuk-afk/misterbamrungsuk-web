@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { fileHeaders } from "@/lib/file-guard";
 import { cookies } from "next/headers";
 import { currentCustomer, clientIp, rateLimited } from "@/lib/customer/auth";
 import { currentPartner } from "@/lib/partner/auth";
@@ -27,7 +28,7 @@ export async function GET(req: Request) {
   if (u.searchParams.get("img")) {
     const f = await avatarFile(as, id);
     if (!f) return new Response("not found", { status: 404 });
-    return new Response(new Uint8Array(f.data), { headers: { "Content-Type": f.type, "Cache-Control": "private, max-age=86400" } });
+    return new Response(new Uint8Array(f.data), { headers: fileHeaders(f.type, "private, max-age=86400") });
   }
   const a = await getAvatar(as, id).catch(() => null);
   return NextResponse.json({ ok: true, avatar: a ? { pos: a.pos, zoom: a.zoom, v: Date.parse(a.updated_at) } : null });

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { fileHeaders } from "@/lib/file-guard";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
 import { BoostError, decideBoost, listBoosts } from "@/lib/join/boost";
@@ -16,7 +17,7 @@ export async function GET(req: Request) {
   const b = (await listBoosts()).find((x) => x.id === id);
   const f = b?.slip_path ? await readFile(b.slip_path) : null;
   if (!f) return new Response("not found", { status: 404 });
-  return new Response(new Uint8Array(f.data), { headers: { "Content-Type": f.type, "Cache-Control": "private, no-store" } });
+  return new Response(new Uint8Array(f.data), { headers: fileHeaders(f.type, "private, no-store") });
 }
 
 export async function POST(req: Request) {
