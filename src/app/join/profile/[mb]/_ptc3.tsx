@@ -3,14 +3,18 @@
 // งานเข้า (บอร์ด P-Incoming) + แชทกับลูกค้า — ใช้ข้อมูลการจองจริง (/api/pt/bookings)
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TravelShare } from "./travel-share";
+import { NoShowReport } from "./noshow-report";
 import { ChatNotice } from "@/components/chat-notice";
 import Link from "next/link";
+import { BOOKING_STATUS_TH } from "@/lib/join/pt-ui";
 
 const GOLD = "#e8c472";
+/** อีเวนต์ในหน้า: รับเรียกด่วนแล้ว → ให้รายการงานโหลดใหม่ทันที */
+const JOBS_RELOAD = "pt:jobs-reload";
 const LN = "rgba(243,234,217,0.07)";
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US");
 type B = { id: string; code: string; status: string; starts_at: string; hours: number; total_satang: number; price_satang: number; place: { label: string; detail: string; lat?: number; lng?: number }; note: string | null; expires_at: string | null; customer_name: string | null; pt_done_at?: string | null };
-const fmt = (iso: string) => new Date(iso).toLocaleString("th-TH", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+const fmt = (iso: string) => new Date(iso).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 const q = (mb: string, t: string) => `mb=${encodeURIComponent(mb)}${t ? `&t=${encodeURIComponent(t)}` : ""}`;
 
 export function PtIncoming({ mb, t }: { mb: string; t: string }) {
@@ -21,8 +25,11 @@ export function PtIncoming({ mb, t }: { mb: string; t: string }) {
   const [now, setNow] = useState(Date.now());
   const load = useCallback(() => fetch(`/api/pt/bookings?${q(mb, t)}`, { cache: "no-store" }).then((r) => r.json()).then((d) => (d?.ok ? setRows(d.bookings) : (setErr(d?.error || ""), setRows([])))).catch(() => setRows([])), [mb, t]);
   useEffect(() => { load(); const i = setInterval(() => { setNow(Date.now()); if (document.visibilityState === "visible") load(); }, 15000); return () => clearInterval(i); }, [load]);
+  // รับเรียกด่วนสำเร็จ (PtQuick) → โหลดรายการใหม่ทันที ไม่ต้องรอรอบ 15 วิ
+  useEffect(() => { const f = () => load(); window.addEventListener(JOBS_RELOAD, f); return () => window.removeEventListener(JOBS_RELOAD, f); }, [load]);
+  const [ask, setAsk] = useState(""); // id งานที่กำลังยืนยัน "ไม่สะดวก"
   const act = async (id: string, accept: boolean) => {
-    setBusy(id);
+    setBusy(id); setAsk("");
     const r = await fetch(`/api/pt/bookings/${id}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mb, t, accept, reason: reason[id] ?? "" }) }).catch(() => null);
     const d = await r?.json().catch(() => null);
     setBusy("");
@@ -40,8 +47,12 @@ export function PtIncoming({ mb, t }: { mb: string; t: string }) {
     if (!d?.ok) setErr(d?.error || "บันทึกไม่สำเร็จ");
     load();
   };
-  const incoming = (rows ?? []).filter((b) => b.status === "requested");
-  const upcoming = (rows ?? []).filter((b) => ["accepted", "checked_in", "cancel_requested"].includes(b.status));
+  const byStart = (a: B, b: B) => a.starts_at.localeCompare(b.starts_at);
+  const incoming = (rows ?? []).filter((b) => b.status === "requested").sort(byStart);
+  const upcoming = (rows ?? []).filter((b) => ["accepted", "checked_in", "cancel_requested"].includes(b.status)).sort(byStart);
+  const disputed = (rows ?? []).filter((b) => b.status === "disputed").sort(byStart);
+  // ประวัติงาน: ใหม่ → เก่า
+  const history = (rows ?? []).filter((b) => ["completed", "declined", "expired", "cancelled", "refunded"].includes(b.status)).sort((a, b) => b.starts_at.localeCompare(a.starts_at));
 
   return (
     <section className="flex flex-col gap-3 px-4 pb-4">
@@ -60,10 +71,22 @@ export function PtIncoming({ mb, t }: { mb: string; t: string }) {
             {b.note && <div className="rounded-xl bg-[#251d1b] text-[13px]" style={{ padding: "8px 12px" }}>ลูกค้าฝากบอก: {b.note}</div>}
             <div className="flex justify-between"><span className="text-[#d9c9b4]">ค่าบริการ</span><b style={{ color: GOLD }}>{baht(b.price_satang)}</b></div>
             <input value={reason[b.id] ?? ""} onChange={(e) => setReason({ ...reason, [b.id]: e.target.value })} maxLength={200} placeholder="เหตุผลถ้าไม่สะดวก (ไม่บังคับ)" className="h-11 rounded-xl bg-[#251d1b] px-3 text-[15px] text-[#f3ead9] outline-none placeholder:text-[#b5a596]" />
-            <div className="grid grid-cols-2 gap-2">
-              <button type="button" disabled={!!busy} onClick={() => act(b.id, false)} className="h-12 rounded-[14px] text-[#f3ead9] disabled:opacity-50" style={{ border: `1px solid ${LN}` }}>ไม่สะดวก</button>
-              <button type="button" disabled={!!busy} onClick={() => act(b.id, true)} className="h-12 rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold disabled:opacity-50">{busy === b.id ? "กำลังบันทึก…" : "รับงาน"}</button>
-            </div>
+            {ask === b.id ? (
+              // ยืนยันในหน้า (ไม่ใช้ window.confirm) + เตือนกติกาการปฏิเสธงานตามสัญญา
+              <div role="dialog" aria-label="ยืนยันไม่สะดวกรับงาน" className="rounded-[14px] flex flex-col gap-2" style={{ padding: 12, background: "rgba(240,163,90,.1)", border: "1px solid rgba(240,163,90,.5)" }}>
+                <b className="font-semibold text-[15px]">ยืนยันว่าไม่สะดวกรับงานนี้?</b>
+                <span className="text-[13px] font-light text-[#f6c38e] leading-[1.55]">ตามสัญญา Part-Time ไม่ควรปฏิเสธลูกค้าโดยไม่มีเหตุอันควร · ปฏิเสธบ่อยมีผลต่ออันดับโปรไฟล์และการคืนค่าการันตี · ลูกค้าได้เงินคืนเต็มจำนวนทันที</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <button type="button" onClick={() => setAsk("")} className="h-11 rounded-xl text-[14px] font-semibold" style={{ background: "rgba(243,234,217,0.1)" }}>กลับไปก่อน</button>
+                  <button type="button" disabled={!!busy} onClick={() => act(b.id, false)} className="h-11 rounded-xl text-[14px] font-semibold text-white disabled:opacity-50" style={{ background: "#a3283c" }}>{busy === b.id ? "กำลังบันทึก…" : "ยืนยันไม่สะดวก"}</button>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <button type="button" disabled={!!busy} onClick={() => setAsk(b.id)} className="h-12 rounded-[14px] text-[#f3ead9] disabled:opacity-50" style={{ border: `1px solid ${LN}` }}>ไม่สะดวก</button>
+                <button type="button" disabled={!!busy} onClick={() => act(b.id, true)} className="h-12 rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold disabled:opacity-50">{busy === b.id ? "กำลังบันทึก…" : "รับงาน"}</button>
+              </div>
+            )}
           </div>
         );
       })}
@@ -71,25 +94,58 @@ export function PtIncoming({ mb, t }: { mb: string; t: string }) {
       {upcoming.map((b) => {
         const chat = `/join/profile/${mb}/chat/${b.id}${t ? `?t=${encodeURIComponent(t)}` : ""}`;
         const soon = Date.parse(b.starts_at) - now < 2 * 3600_000;
+        const started = Date.parse(b.starts_at) <= now;
+        const hm = new Date(b.starts_at).toLocaleTimeString("th-TH", { timeZone: "Asia/Bangkok", hour: "2-digit", minute: "2-digit" });
+        // ปุ่มที่กดไม่ได้ต้องบอกเหตุผลเป็นตัวอักษร (ไม่ใช่แค่ title) — ตรงกับกติกาฝั่งเซิร์ฟเวอร์ (checkIn / ptDone)
+        const why = b.status === "accepted" ? (!soon ? "เช็กอินได้ตั้งแต่ 2 ชม. ก่อนนัด · จบงานได้หลังเช็กอินและถึงเวลานัด" : "กด \"ถึงจุดนัด\" เมื่อถึงที่นัด แล้วจึงจบงานได้")
+          : b.status === "checked_in" && !b.pt_done_at && !started ? `จบงานได้ตั้งแต่เวลานัด ${hm} น.`
+          : b.pt_done_at ? "แจ้งจบงานแล้ว · รอลูกค้ายืนยันและรีวิว" : "";
         return (
           <div key={b.id} className="rounded-[20px] bg-[#211a18] flex flex-col gap-2" style={{ padding: 14, border: `1px solid ${LN}` }}>
             <b className="font-medium">{fmt(b.starts_at)} · {b.hours} ชม.</b>
             <span className="text-[13px] font-light text-[#d9c9b4]">{b.place.label} {b.place.detail}{b.status === "cancel_requested" ? " · ลูกค้าขอยกเลิก รอทีมงาน" : b.status === "checked_in" ? " · ถึงจุดนัดแล้ว" : ""}</span>
             {b.status === "accepted" && <TravelShare mb={mb} t={t} id={b.id} startsAt={b.starts_at} dest={b.place} />}
             <div className="grid grid-cols-3 gap-2">
-              {b.status === "accepted" && <button type="button" disabled={!!busy || !soon} onClick={() => act2(b.id, "checkin")} title={soon ? "" : "เช็กอินได้ก่อนเวลานัด 2 ชม."} className="h-11 rounded-xl bg-[#e8c472] text-[#1b130b] text-[13px] font-semibold disabled:opacity-40">ถึงจุดนัด</button>}
-              {(b.status === "checked_in" || b.status === "accepted") && <button type="button" disabled={!!busy || b.status !== "checked_in" || !!b.pt_done_at} onClick={() => act2(b.id, "done")} className="h-11 rounded-xl text-[13px] font-semibold disabled:opacity-40" style={{ border: `1px solid ${GOLD}`, color: GOLD }}>{b.pt_done_at ? "รอลูกค้ายืนยัน" : "จบงาน"}</button>}
+              {b.status === "accepted" && <button type="button" disabled={!!busy || !soon} onClick={() => act2(b.id, "checkin")} className="h-11 rounded-xl bg-[#e8c472] text-[#1b130b] text-[13px] font-semibold disabled:opacity-40">ถึงจุดนัด</button>}
+              {(b.status === "checked_in" || b.status === "accepted") && <button type="button" disabled={!!busy || b.status !== "checked_in" || !!b.pt_done_at || !started} onClick={() => act2(b.id, "done")} className="h-11 rounded-xl text-[13px] font-semibold disabled:opacity-40" style={{ border: `1px solid ${GOLD}`, color: GOLD }}>{b.pt_done_at ? "รอลูกค้ายืนยัน" : "จบงาน"}</button>}
               <Link href={chat} className="h-11 rounded-xl text-[13px] grid place-items-center text-[#f3ead9] hover:text-[#f3ead9] col-start-3" style={{ border: `1px solid ${LN}` }}>แชท</Link>
             </div>
+            {why && b.status !== "cancel_requested" && <span className="text-[12px] font-light text-[#b5a596] leading-[1.5]">{why}</span>}
+            {b.status === "checked_in" && <NoShowReport mb={mb} t={t} id={b.id} onDone={load} />}
           </div>
         );
       })}
+      {!!disputed.length && <h3 className="m-0 mt-2 text-[15px] font-medium">อยู่ระหว่างตรวจสอบ</h3>}
+      {disputed.map((b) => (
+        <div key={b.id} className="rounded-[20px] flex flex-col gap-1.5" style={{ padding: 14, background: "rgba(240,163,90,.08)", border: "1px solid rgba(240,163,90,.55)" }}>
+          <div className="flex justify-between items-center gap-2"><b className="font-medium">{fmt(b.starts_at)} · {b.hours} ชม.</b><span className="text-[12px] font-semibold text-[#f6c38e] shrink-0">{b.code}</span></div>
+          <span className="text-[13.5px] font-semibold text-[#f6c38e]">อยู่ระหว่างตรวจสอบโดยทีมงาน</span>
+          <span className="text-[13px] font-light text-[#d9c9b4]">ลูกค้าแจ้งปัญหาของนัดนี้ · เงินพักไว้จนทีมงานตัดสิน (ปกติภายใน 48 ชม.) · มีข้อมูลเพิ่ม แจ้งทีมงานทาง LINE</span>
+          <NoShowReport mb={mb} t={t} id={b.id} onDone={load} />
+        </div>
+      ))}
+      {!!history.length && (
+        <details className="mt-2 rounded-[20px] bg-[#211a18]" style={{ border: `1px solid ${LN}` }}>
+          <summary className="list-none cursor-pointer min-h-12 flex items-center justify-between text-[15px] font-medium [&::-webkit-details-marker]:hidden" style={{ padding: "0 14px" }}>ประวัติงาน<span className="text-[13px] font-light" style={{ color: GOLD }}>{history.length} งาน ›</span></summary>
+          <div className="flex flex-col" style={{ padding: "0 14px 8px" }}>
+            {history.map((b) => {
+              const [label, color] = BOOKING_STATUS_TH[b.status] ?? [b.status, "#b5a596"];
+              return (
+                <div key={b.id} className="flex justify-between items-center gap-3 text-[14px]" style={{ padding: "10px 0", borderTop: `1px solid ${LN}` }}>
+                  <span className="flex flex-col min-w-0"><span className="truncate">{fmt(b.starts_at)} · {b.hours} ชม.</span><span className="text-[12px] font-light text-[#b5a596] truncate">{b.code} · {b.place.label}</span></span>
+                  <span className="flex flex-col items-end shrink-0"><span className="tabular-nums font-semibold">{baht(b.price_satang)}</span><span className="text-[12px]" style={{ color }}>{label}</span></span>
+                </div>
+              );
+            })}
+          </div>
+        </details>
+      )}
     </section>
   );
 }
 
-type M = { id: number; sender_type: "customer" | "parttime" | "system"; body: string; blocked: boolean; created_at: string };
-export function PtChat({ mb, t, id }: { mb: string; t: string; id: string }) {
+type M ={ id: number; sender_type: "customer" | "parttime" | "system"; body: string; blocked: boolean; created_at: string };
+export function PtChat({ mb, t, id, quick = [] }: { mb: string; t: string; id: string; /** ข้อความตอบกลับเร็วที่บันทึกไว้ (หน้าตั้งค่า) */ quick?: string[] }) {
   const [ms, setMs] = useState<M[]>([]);
   const [text, setText] = useState("");
   const [warn, setWarn] = useState("");
@@ -127,6 +183,12 @@ export function PtChat({ mb, t, id }: { mb: string; t: string; id: string }) {
         <div ref={end} />
       </div>
       {warn && <p role="alert" className="m-0 px-4 pb-1 text-[12.5px] text-[#ff8a9a]">{warn}</p>}
+      {/* ชิปข้อความตอบกลับเร็ว — แตะแล้วใส่ลงช่องพิมพ์ (แก้ก่อนส่งได้) */}
+      {open && !!quick.length && (
+        <div className="sticky bottom-[154px] lg:bottom-[70px] flex gap-2 overflow-x-auto px-4 py-2" style={{ background: "#171211" }} aria-label="ข้อความตอบกลับเร็ว">
+          {quick.map((qr) => <button key={qr} type="button" onClick={() => setText((x) => (x.trim() ? `${x.trim()} ${qr}` : qr).slice(0, 1000))} className="shrink-0 min-h-10 max-w-[240px] truncate rounded-full text-[13px] text-[#e8c472] px-3.5" style={{ background: "rgba(232,196,114,0.14)", border: "1px solid rgba(232,196,114,0.35)" }}>{qr}</button>)}
+        </div>
+      )}
       <form onSubmit={(e) => { e.preventDefault(); send(); }} className="sticky bottom-[84px] lg:bottom-0 flex gap-2 items-center px-4 py-3" style={{ background: "#171211", borderTop: `1px solid ${LN}` }}>
         <input value={text} onChange={(e) => setText(e.target.value)} disabled={!open} maxLength={1000} placeholder={open ? "พิมพ์ข้อความ" : "แชทของนัดนี้ปิดแล้ว"} aria-label="พิมพ์ข้อความ" className="flex-1 min-w-0 h-[46px] rounded-full bg-[#211a18] px-4 text-[16px] text-[#f3ead9] outline-none placeholder:text-[#b5a596]" style={{ border: `1px solid ${LN}` }} />
         <button type="submit" disabled={!text.trim() || !open} aria-label="ส่ง" className="w-[46px] h-[46px] rounded-full bg-[#e8c472] text-[#1b130b] grid place-items-center disabled:opacity-45"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z" /></svg></button>
@@ -186,7 +248,8 @@ export function PtQuick({ mb, t }: { mb: string; t: string }) {
     const r = await fetch("/api/pt/quick", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mb, t, id }) }).catch(() => null);
     const d = await r?.json().catch(() => null);
     setBusy("");
-    setMsg(d?.ok ? { ok: true, text: `ได้นัดแล้ว ${d.booking.code} · เริ่ม ${new Date(d.booking.starts_at).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })} น.`, href: `/join/profile/${mb}/chat/${d.booking.id}${t ? `?t=${encodeURIComponent(t)}` : ""}` } : { ok: false, text: d?.error || "รับนัดไม่สำเร็จ" });
+    if (d?.ok) window.dispatchEvent(new Event(JOBS_RELOAD));
+    setMsg(d?.ok ? { ok: true, text: `ได้นัดแล้ว ${d.booking.code} · เริ่ม ${new Date(d.booking.starts_at).toLocaleTimeString("th-TH", { timeZone: "Asia/Bangkok", hour: "2-digit", minute: "2-digit" })} น.`, href: `/join/profile/${mb}/chat/${d.booking.id}${t ? `?t=${encodeURIComponent(t)}` : ""}` } : { ok: false, text: d?.error || "รับนัดไม่สำเร็จ" });
     load();
   };
   const live = rows.filter((r) => Date.parse(r.expires_at) > now);

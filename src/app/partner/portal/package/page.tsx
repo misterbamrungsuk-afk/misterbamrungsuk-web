@@ -1,21 +1,22 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LINE_OA_ID, lineAddUrl } from "@/lib/join/config";
 import { currentPartner } from "@/lib/partner/auth";
 import { PARTNER_PACKAGES, PACKAGE_INCLUDES, baht } from "@/lib/partner/config";
 import { listPurchases } from "@/lib/partner/portal";
 import { CLIP_LABEL, CLIP_STATUSES, PURCHASE_LABEL } from "@/lib/partner/portal-types";
-import { QC_LABEL, daysLeft } from "@/lib/partner/status";
+import { QC_LABEL, daysLeft, planDays } from "@/lib/partner/status";
 import { RenewBox } from "./client";
 
 export const dynamic = "force-dynamic";
-const d = (s: string | null) => (s ? new Date(`${s.slice(0, 10)}T00:00:00+07:00`).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" }) : "—");
+const d = (s: string | null) => (s ? new Date(`${s.slice(0, 10)}T00:00:00+07:00`).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", day: "numeric", month: "short", year: "numeric" }) : "—");
 
 export default async function PartnerPackagePage() {
   const p = await currentPartner();
   if (!p) redirect("/partner/login");
   const purchases = await listPurchases(p.id).catch(() => []);
   const left = daysLeft(p.ends_at);
-  const total = p.starts_at && p.ends_at ? Math.round((Date.parse(p.ends_at) - Date.parse(p.starts_at)) / 86400_000) : null;
+  const total = planDays(p.starts_at, p.ends_at);
   const clipIdx = p.clip_status ? CLIP_STATUSES.indexOf(p.clip_status) : -1;
   const pending = purchases.find((x) => x.status === "pending");
 
@@ -35,7 +36,7 @@ export default async function PartnerPackagePage() {
         ) : (
           <p className="mt-2 text-sm text-ink-300">{pending ? `รอตรวจสลิป ${pending.invoice_no}` : "ยังไม่มีแผนโปรโมทที่ใช้งาน"}</p>
         )}
-        <p className="text-xs text-[#9a8a85] mt-3">แพลตฟอร์มหัก {p.platform_pct ?? "[รอกำหนด]"}% ต่อการจอง</p>
+        {p.platform_pct != null && <p className="text-xs text-[#9a8a85] mt-3">แพลตฟอร์มหัก {p.platform_pct}% ต่อการจอง</p>}
       </section>
 
       <section className="mt-6">
@@ -67,7 +68,7 @@ export default async function PartnerPackagePage() {
             {purchases.map((x) => (
               <li key={x.id} className="rounded-2xl border border-ink-600 bg-ink-800/60 px-4 py-3 flex justify-between gap-3 text-sm">
                 <div className="min-w-0"><p className="font-medium truncate">{x.invoice_no}</p><p className="text-xs text-ink-300">{new Date(x.created_at).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", day: "numeric", month: "short", year: "2-digit" })} · แผนโปรโมท {PARTNER_PACKAGES[x.package].label}</p></div>
-                <div className="text-right shrink-0"><p className="font-display text-gold-300">฿{baht(x.amount)}</p><p className={`text-xs ${x.status === "paid" ? "text-emerald-300" : x.status === "rejected" ? "text-crimson-300" : "text-ink-300"}`}>{PURCHASE_LABEL[x.status]}</p></div>
+                <div className="text-right shrink-0"><p className="font-display text-gold-300">฿{baht(x.amount)}</p><p className={`text-xs ${x.status === "paid" ? "text-emerald-300" : x.status === "rejected" ? "text-crimson-300" : "text-ink-300"}`}>{PURCHASE_LABEL[x.status]}</p>{x.status !== "rejected" && <Link href={`/partner/portal/package/receipt/${x.id}`} className="inline-flex min-h-10 items-center text-xs text-gold-300 underline">{x.status === "paid" ? "ใบเสร็จ / PDF" : "ใบแจ้งหนี้"}</Link>}</div>
               </li>
             ))}
           </ul>

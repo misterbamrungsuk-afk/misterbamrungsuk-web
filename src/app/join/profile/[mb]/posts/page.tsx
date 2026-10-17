@@ -6,6 +6,7 @@ import { TRAINING } from "@/lib/join/training";
 import { Forbidden } from "../../../_kyc/ui";
 import { PtHead, PtNav, PtPage, baht, loadPt, ptHref } from "../_pt";
 import { ListingForm } from "../_ptc2";
+import { GATE_MSG, GATE_SHORT, isPtActive } from "@/lib/join/pt-ui";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "โพสต์ของฉัน — Mister Bamrungsuk" };
@@ -31,7 +32,7 @@ export default async function PostsPage({ params, searchParams }: { params: Prom
         <div className="flex flex-col gap-[18px] min-w-0">
           <div className="rounded-2xl bg-[#211a18] flex items-center gap-2.5" style={{ padding: "12px 14px", border: "1px solid rgba(243,234,217,0.07)" }}>
             <span className="w-2 h-2 rounded-full shrink-0" style={{ background: l?.hidden ? "#b5a596" : "#e8c472" }} />
-            <div className="flex-grow text-[14px]">{!l ? "ยังไม่ได้สร้างโพสต์" : l.hidden ? "ซ่อนอยู่ชั่วคราว" : "บันทึกแล้ว"} · ลูกค้าเห็นเมื่อเปิดบริการ {TRAINING.openService}</div>
+            <div className="flex-grow text-[14px]">{!l ? "ยังไม่ได้สร้างโพสต์" : l.hidden ? "ซ่อนอยู่ชั่วคราว" : c.x.listed ? "แสดงต่อลูกค้าอยู่" : "บันทึกแล้ว"}{c.x.listed ? "" : ` · ลูกค้าเห็นเมื่อเปิดบริการ ${TRAINING.openService}`}</div>
           </div>
           <div className="flex flex-col gap-1.5">
             <span className="text-[13px] text-[#d9c9b4]">รูปภาพ · 6 รูปแรกจากรูปโปรไฟล์</span>
@@ -56,7 +57,10 @@ export default async function PostsPage({ params, searchParams }: { params: Prom
           </div>
           <span className="text-[12px] font-light text-[#b5a596] -mt-2">ราคาตามระดับ {top ? "TOP" : "Silver"} · ทีมงานเป็นผู้กำหนด</span>
         </div>
-        <ListingForm mb={c.mb} t={c.t} init={l ?? null} previewHref={ptHref(c)} />
+        {/* ยังไม่อนุมัติ/ยังไม่เปิดโปรไฟล์ → ลงโพสต์ไม่ได้ (API ตอบ 409) */}
+        {isPtActive(c.x)
+          ? <ListingForm mb={c.mb} t={c.t} init={l ?? null} previewHref={ptHref(c)} />
+          : <div className="rounded-[18px] bg-[#211a18] flex flex-col gap-1" style={{ padding: 16 }}><b className="font-semibold text-[#e8c472]">{GATE_SHORT}</b><span className="text-[14px] font-light text-[#d9c9b4]">{GATE_MSG} · ระหว่างนี้จัดรูปและการ์ดโปรไฟล์ให้พร้อมได้เลย</span></div>}
       </div>
       <PtNav c={c} active="jobs" />
     </PtPage>

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { Cohort, CohortStatus } from "@/lib/join/cohorts";
+import { useConfirm } from "../confirm";
 
 export type Member = { id: string; cohort: string; name: string; code: string; att: Record<number, boolean> };
 
@@ -34,6 +35,8 @@ export function CohortsClient({ initialCohorts, initialMembers, taken = {} }: { 
   const [form, setForm] = useState({ name: `กลุ่ม ${initialCohorts.length + 1}`, date_text: "รอประกาศ", venue: "MB Studio ทองหล่อ", sessions: "5", capacity: "50" });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [edit, setEdit] = useState<null | { name: string; date_text: string; venue: string; sessions: string; capacity: string; status: CohortStatus }>(null);
+  const [confirmUi, ask] = useConfirm();
 
   const cur = cohorts[sel];
   const sessions = cur?.sessions ?? 5;
@@ -75,6 +78,30 @@ export function CohortsClient({ initialCohorts, initialMembers, taken = {} }: { 
     setForm((f) => ({ ...f, name: `กลุ่ม ${cohorts.length + 2}` }));
   }
 
+  async function saveEdit() {
+    if (!cur || !edit) return;
+    if (!edit.name.trim()) { setErr("กรอกชื่อกลุ่ม"); return; }
+    setBusy(true); setErr("");
+    const r = await fetch("/api/admin/cohorts", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ key: cur.key, ...edit, sessions: Number(edit.sessions), capacity: Number(edit.capacity) }) }).catch(() => null);
+    const j = r ? await r.json().catch(() => null) : null;
+    setBusy(false);
+    if (!j?.ok) { setErr(r?.status === 401 ? "หมดเวลาเข้าสู่ระบบ · เข้าสู่ระบบใหม่" : j?.error ?? "บันทึกไม่สำเร็จ"); return; }
+    setCohorts((cs) => cs.map((c) => (c.key === cur.key ? j.cohort : c)));
+    setEdit(null);
+  }
+
+  async function remove() {
+    if (!cur) return;
+    if (!(await ask({ title: `ลบ ${cur.name}?`, body: "ลบได้เฉพาะกลุ่มที่ยังไม่มีผู้สมัคร · ย้อนกลับไม่ได้", ok: "ลบกลุ่ม", danger: true }))) return;
+    setBusy(true); setErr("");
+    const r = await fetch(`/api/admin/cohorts?key=${encodeURIComponent(cur.key)}`, { method: "DELETE" }).catch(() => null);
+    const j = r ? await r.json().catch(() => null) : null;
+    setBusy(false);
+    if (!j?.ok) { setErr(j?.error ?? "ลบไม่สำเร็จ"); return; }
+    setCohorts((cs) => cs.filter((c) => c.key !== cur.key));
+    setSel(0); setEdit(null);
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18, color: "#f6efe4", fontFamily: "var(--font-cormorant), var(--font-plex), sans-serif", fontVariantNumeric: "lining-nums" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
@@ -85,6 +112,7 @@ export function CohortsClient({ initialCohorts, initialMembers, taken = {} }: { 
         <button type="button" onClick={() => setCreating((c) => !c)} style={RED_BTN}>{creating ? "ปิด" : "สร้างกลุ่มใหม่"}</button>
       </div>
 
+      {confirmUi}
       {err && <p role="alert" style={{ margin: 0, fontSize: 12, color: "#ff8a9a" }}>{err}</p>}
 
       {creating && (
@@ -131,6 +159,28 @@ export function CohortsClient({ initialCohorts, initialMembers, taken = {} }: { 
         </div>
 
         <div style={{ ...CARD, display: "flex", flexDirection: "column", gap: 12, minWidth: 0 }}>
+          {cur && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "flex-end" }}>
+              <button type="button" onClick={() => setEdit(edit ? null : { name: cur.name, date_text: cur.date_text, venue: cur.venue, sessions: String(cur.sessions), capacity: String(cur.capacity), status: cur.status })}
+                style={{ minHeight: 44, padding: "0 14px", borderRadius: 12, fontSize: 13, border: `1px solid ${GOLD_BD}`, background: "#21191a", color: "#ffd76a", cursor: "pointer", fontFamily: "inherit" }}>{edit ? "ยกเลิกแก้ไข" : "แก้ไขกลุ่มนี้"}</button>
+              {!rows.length && <button type="button" disabled={busy} onClick={remove}
+                style={{ minHeight: 44, padding: "0 14px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(201,40,61,.6)", background: "transparent", color: "#fecaca", cursor: "pointer", fontFamily: "inherit" }}>ลบกลุ่ม</button>}
+            </div>
+          )}
+          {cur && edit && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" style={{ gap: 10, alignItems: "end", paddingBottom: 12, borderBottom: `1px solid ${GOLD_BD}` }}>
+              <label><p style={LBL}>ชื่อกลุ่ม</p><input style={IN} value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} /></label>
+              <label><p style={LBL}>วันเริ่ม</p><input style={IN} value={edit.date_text} onChange={(e) => setEdit({ ...edit, date_text: e.target.value })} /></label>
+              <label><p style={LBL}>สถานที่</p><input style={IN} value={edit.venue} onChange={(e) => setEdit({ ...edit, venue: e.target.value })} /></label>
+              <label><p style={LBL}>จำนวนรอบ</p><input style={IN} type="number" min={1} max={10} value={edit.sessions} onChange={(e) => setEdit({ ...edit, sessions: e.target.value })} /></label>
+              <label><p style={LBL}>ที่นั่ง</p><input style={IN} type="number" min={1} max={500} value={edit.capacity} onChange={(e) => setEdit({ ...edit, capacity: e.target.value })} /></label>
+              <label><p style={LBL}>สถานะ</p>
+                <select style={IN} value={edit.status} onChange={(e) => setEdit({ ...edit, status: e.target.value as CohortStatus })}>
+                  {(["draft", "open", "done"] as const).map((k) => <option key={k} value={k}>{STATUS_LABEL[k]}</option>)}
+                </select></label>
+              <button type="button" disabled={busy} onClick={saveEdit} style={{ ...RED_BTN, height: 48, opacity: busy ? 0.6 : 1 }}>{busy ? "กำลังบันทึก…" : "บันทึกการแก้ไข"}</button>
+            </div>
+          )}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ minWidth: 0 }}>
               <div style={{ fontFamily: HEAD, fontWeight: 600, fontSize: 18 }}>เช็กชื่อ · {cur?.name ?? "-"}</div>

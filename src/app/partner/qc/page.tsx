@@ -26,7 +26,9 @@ export default async function PartnerQcPage({ searchParams }: { searchParams: Pr
         ) : (
           <p className="text-sm text-[#cdbfb3] text-center pt-6">กรุณา <Link href="/partner/login">เข้าสู่ระบบพาร์ทเนอร์</Link> หรือเปิดลิงก์จากหน้าสมัครสำเร็จ</p>
         )}
-        <Link href="/partner/login" className="text-[13px] text-center p-1">เข้าสู่ระบบพอร์ทัลพาร์ทเนอร์</Link>
+        {p && !p.password_hash && t
+          ? <Link href={`/partner/register${q}`} className="min-h-11 grid place-items-center text-[13px] text-center p-1">ตั้งรหัสผ่าน / เข้าสู่ระบบพอร์ทัล</Link>
+          : <Link href="/partner/login" className="min-h-11 grid place-items-center text-[13px] text-center p-1">เข้าสู่ระบบพอร์ทัลพาร์ทเนอร์</Link>}
       </div>
     </Shell>
   );

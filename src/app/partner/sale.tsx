@@ -7,7 +7,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { BRAND } from "@/lib/join/config";
 import { SiteHeader } from "@/components/site-header";
 import {
-  BOOKING_COMMISSION, PACKAGE_KEYS, PARTNER_APPLY_TYPES, PARTNER_PACKAGES, SELL_PRICE_NOTE, baht,
+  BOOKING_COMMISSION, isTbd, PACKAGE_KEYS, PARTNER_APPLY_TYPES, PARTNER_PACKAGES, SELL_PRICE_NOTE, baht,
   type PartnerPackageKey,
 } from "@/lib/partner/config";
 
@@ -25,9 +25,9 @@ const WHY = [
 const CONDS = [
   ["มาตรฐานการนวดเทียบเท่า Bamrungsuk", "ผ่านการตรวจมาตรฐานจากทีมงานก่อนเปิดขาย"],
   ["ยินยอมให้ทีมงาน QC", "ตรวจก่อนเริ่ม และสุ่ม QC ตลอดระยะแผนโปรโมท"],
-  ["รับจองผ่านแพลตฟอร์ม", `เราหัก ${BOOKING_COMMISSION}% ต่อ booking ที่มาจากแพลตฟอร์ม`],
-  ["ราคาขายผ่านแพลตฟอร์ม", `เราช่วย mark up ราคา · ราคาขายต่อบริการ ${SELL_PRICE_NOTE}`],
-  ["ชำระค่าป้ายแบรนด์", "พาร์ทเนอร์ชำระค่าป้ายแบรนด์ [รอกำหนด]"],
+  ["รับจองผ่านแพลตฟอร์ม", isTbd(BOOKING_COMMISSION) ? "เรารับจองให้ · อัตราหักต่อ booking แจ้งก่อนทำสัญญา" : `เราหัก ${BOOKING_COMMISSION}% ต่อ booking ที่มาจากแพลตฟอร์ม`],
+  ["ราคาขายผ่านแพลตฟอร์ม", isTbd(SELL_PRICE_NOTE) ? "เราช่วย mark up ราคาขายต่อบริการให้เหมาะกับตลาดพรีเมียม" : `เราช่วย mark up ราคา · ราคาขายต่อบริการ ${SELL_PRICE_NOTE}`],
+  ["ชำระค่าป้ายแบรนด์", "พาร์ทเนอร์ชำระค่าป้ายแบรนด์ · แจ้งยอดก่อนทำสัญญา"],
 ];
 const KINDS = [
   ["/brand/venue.jpg", "สปา", "เดย์สปา · สปาเพื่อสุขภาพ · ทั่วประเทศ"],
@@ -35,10 +35,10 @@ const KINDS = [
 ];
 const STEPS = ["ส่งใบสมัคร", "ชำระแผนโปรโมท (QR + สลิป)", "นัด QC สถานที่ · มาตรฐานเทียบเท่า Bamrungsuk", "ทำสัญญา + ป้ายแบรนด์ · ถ่ายคลิปโปรโมท", "เปิดแสดงบนแพลตฟอร์ม"];
 const FAQ = [
-  ["หักค่าธรรมเนียมเท่าไร", `หัก ${BOOKING_COMMISSION}% ต่อ booking ที่มาจากแพลตฟอร์ม (กำลังสรุปอัตรา)`],
+  ["หักค่าธรรมเนียมเท่าไร", isTbd(BOOKING_COMMISSION) ? "ทีมงานแจ้งอัตราหักต่อ booking ให้ก่อนทำสัญญา" : `หัก ${BOOKING_COMMISSION}% ต่อ booking ที่มาจากแพลตฟอร์ม`],
   ["โรงแรมสมัครได้ไหม", "ได้ ทั้งโรงแรมที่มีสปาและโรงแรมที่ต้องการขายห้องพัก/แผนโปรโมทผ่านแพลตฟอร์ม"],
   ["QC ตรวจอะไรบ้าง", "มาตรฐานการนวด ความสะอาด ห้อง/สถานที่ ใบอนุญาต และเอกสาร"],
-  ["ค่าป้ายแบรนด์เท่าไร", "ค่าป้ายแบรนด์ [รอกำหนด] แจ้งให้ทราบก่อนทำสัญญา"],
+  ["ค่าป้ายแบรนด์เท่าไร", "ทีมงานแจ้งค่าป้ายแบรนด์ให้ทราบก่อนทำสัญญา"],
 ];
 
 type Form = {
@@ -150,9 +150,9 @@ export function PartnerSalePage({ hero }: { hero?: string }) {
                     </span>
                     <span className="font-lux text-[17px] font-semibold">แผนโปรโมทพาร์ทเนอร์ {p.label}</span>
                     <span className="text-[13px]">ค่าแผนโปรโมท <span className="font-lux text-[24px] font-bold text-[#ffd76a]">{p.price == null ? "ติดต่อทีมงาน" : `฿${baht(p.price)}`}</span> บาท</span>
-                    <span className="text-[12.5px] leading-[1.6] text-[#d3c7bc]"><b className="text-[#ffd76a]">[รอกำหนด ฿]</b> ค่าป้ายแบรนด์ (ชำระเพิ่ม)</span>
-                    <span className="text-[12.5px] leading-[1.6] text-[#d3c7bc]"><b className="text-[#ffd76a]">{BOOKING_COMMISSION}%</b> การหักต่อ booking ที่มาจากแพลตฟอร์ม</span>
-                    <span className="text-[12.5px] leading-[1.6] text-[#d3c7bc]"><b className="text-[#ffd76a]">{SELL_PRICE_NOTE}</b> ราคาขายต่อบริการ (ช่วย mark up ให้)</span>
+                    <span className="text-[12.5px] leading-[1.6] text-[#d3c7bc]">ค่าป้ายแบรนด์ชำระเพิ่ม (แจ้งยอดก่อนทำสัญญา)</span>
+                    {!isTbd(BOOKING_COMMISSION) && <span className="text-[12.5px] leading-[1.6] text-[#d3c7bc]"><b className="text-[#ffd76a]">{BOOKING_COMMISSION}%</b> การหักต่อ booking ที่มาจากแพลตฟอร์ม</span>}
+                    <span className="text-[12.5px] leading-[1.6] text-[#d3c7bc]">{isTbd(SELL_PRICE_NOTE) ? "ช่วย mark up ราคาขายต่อบริการให้" : <><b className="text-[#ffd76a]">{SELL_PRICE_NOTE}</b> ราคาขายต่อบริการ (ช่วย mark up ให้)</>}</span>
                     <span className="rounded-[10px] border border-[rgba(240,200,90,.65)] bg-[rgba(240,200,90,.18)] px-2.5 py-2 text-[12px] leading-[1.7] text-[#eed58a]">สิ่งที่ได้รับ: คลิปโปรโมท 1 คลิปลง IG &amp; FB ของแบรนด์ · สุ่ม QC · โปรโมทผ่านแพลตฟอร์ม · ป้าย “ทำงานร่วมกับ Mister Bamrungsuk”</span>
                     <span className="text-[12px] text-[#cdbfb3]">ระยะเวลาแสดงบนแพลตฟอร์ม {p.label}</span>
                   </button>
@@ -185,7 +185,7 @@ export function PartnerSalePage({ hero }: { hero?: string }) {
               <div className="flex flex-col gap-1 px-3.5 py-3">
                 <div className="flex justify-between gap-2"><span className="font-lux text-[16px] font-semibold">Siam Serenity Spa</span><span className="text-[12px] text-[#ffd76a]">★ 4.9</span></div>
                 <div className="text-[12px] text-[#cdbfb3]">เชียงใหม่ · นิมมานเหมินท์ · ผ่าน QC มาตรฐาน</div>
-                <div className="mt-1.5 flex items-center justify-between"><span className="text-[12.5px]">นวดอโรมา 90 นาที</span><span className="font-lux font-bold text-[#ffd76a]">{SELL_PRICE_NOTE}</span></div>
+                <div className="mt-1.5 flex items-center justify-between"><span className="text-[12.5px]">นวดอโรมา 90 นาที</span><span className="font-lux font-bold text-[#ffd76a]">{isTbd(SELL_PRICE_NOTE) ? "฿1,290" : SELL_PRICE_NOTE}</span></div>
               </div>
             </div>
           </section>

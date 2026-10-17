@@ -155,8 +155,8 @@ function PayInner() {
               </div>
               <input className={inCls} placeholder="ชื่อเล่น" aria-label="ชื่อเล่น" value={who.nickname} onChange={(e) => setW("nickname", e.target.value)} />
               {otpOff
-                ? <input className={inCls} inputMode="tel" autoComplete="tel" maxLength={10} placeholder="เบอร์มือถือ 08x-xxx-xxxx" aria-label="เบอร์โทรศัพท์" value={who.tel} onChange={(e) => setW("tel", e.target.value.replace(/\D/g, ""))} />
-                : <OtpStep phone={who.tel} onPhone={(v) => { setW("tel", v); setPhoneOk(false); }} verified={phoneOk} onVerified={() => { setPhoneOk(true); setErr(""); }} inputCls={inCls} />}
+                ? <input className={inCls} inputMode="tel" autoComplete="tel" placeholder="เบอร์มือถือ 08x-xxx-xxxx" aria-label="เบอร์โทรศัพท์" value={who.tel} onChange={(e) => setW("tel", e.target.value.replace(/\D/g, "").slice(0, 10))} />
+                : <OtpStep phone={who.tel} onPhone={(v) => { setW("tel", v.replace(/\D/g, "").slice(0, 10)); setPhoneOk(false); }} verified={phoneOk} onVerified={() => { setPhoneOk(true); setErr(""); }} inputCls={inCls} />}
               {phoneOk && !otpOff && <div className="text-[13px] text-[#7fd6a3]">✓ ยืนยันเบอร์แล้ว</div>}
             </div>
             <div className="flex flex-col bg-[#251d1b]" style={{ ...box, gap: 13 }}>
@@ -204,7 +204,7 @@ function PayInner() {
         <div role="dialog" aria-modal="true" aria-labelledby="paidT" className="fixed inset-0 z-50 flex justify-center items-center" style={{ background: "rgba(10,7,6,0.78)", padding: 20 }}>
           <div className="w-full max-w-[400px] rounded-[20px] bg-[#1b2322] flex flex-col items-center gap-[14px] text-center" style={{ padding: "28px 20px 20px" }}>
             <div className="w-[72px] h-[72px] rounded-full bg-[#e8c472] text-[#1b130b] grid place-items-center"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg></div>
-            <div id="paidT" className="font-semibold text-[22px] leading-[1.35] text-[#e8c472]">ชำระเงินเรียบร้อย</div>
+            <div id="paidT" className="font-semibold text-[22px] leading-[1.35] text-[#e8c472]">ได้รับข้อมูลแล้ว · รอทีมงานตรวจ</div>
             <p className="m-0 text-[15px] leading-[1.7]">ได้รับสลิปแล้ว ทีมงานตรวจภายใน 2 ชม. (09:00–22:00)<br />ระหว่างนี้ไปกรอกรายละเอียดในโปรไฟล์ได้เลย</p>
             <Link href={`/join/profile/${done}`} className={cta + " hover:text-[#1b130b]"}>ไปที่โปรไฟล์ของฉัน</Link>
           </div>

@@ -14,7 +14,7 @@ const WHY_ICONS = [
 ];
 const WHY = WHY_JOIN.map((w, i) => ({ ...w, icon: WHY_ICONS[i] }));
 
-const baht = (n: number) => n.toLocaleString("th-TH");
+const baht = (n: number) => n.toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
 
 function useReveal() {
   useEffect(() => {

@@ -10,7 +10,7 @@ const ok = (n, c, x = '') => { if (!c) fails++; console.log((c ? 'PASS ' : 'FAIL
 const J = (r) => r.json();
 const ADM = { cookie: 'mord_admin=' + adm, 'content-type': 'application/json' };
 const sess = (e) => { const b = Buffer.from(JSON.stringify({ sub: 'demo:' + e, email: e, exp: Date.now() + 3600e3 })).toString('base64url'); return 'hamoo_session=' + b + '.' + crypto.createHmac('sha256', KEY).update(b).digest('base64url'); };
-const body = Buffer.from(JSON.stringify({ mb, exp: Date.now() + 3600_000 })).toString('base64url');
+const body = Buffer.from(JSON.stringify({ mb, iat: Date.now(), exp: Date.now() + 3600_000 })).toString('base64url');
 const T = body + '.' + crypto.createHmac('sha256', KEY).update('resume:' + body).digest('base64url');
 const geo = (fill, tok = T) => { const fd = new FormData(); fd.set('mb', mb); if (tok) fd.set('t', tok); fd.set('step', 'geo'); for (const [k, v] of Object.entries(fill)) fd.set(k, v); return fetch(B + '/api/join/profile', { method: 'POST', body: fd }); };
 const C = { cookie: sess('trk@test.local'), 'content-type': 'application/json' };
@@ -71,6 +71,8 @@ const ptAct = (id, extra) => fetch(B + `/api/pt/bookings/${id}`, { method: 'POST
   ok('cannot start more than 2 h before', !j.ok && /2 ชม/.test(j.error || ''), j.error);
   ok('PT clears area', (await J(await geo({ clear: '1' }))).geo === null);
   // เก็บกวาด: ปิดนัดทั้งสองให้พ้นสถานะ "ไม่ว่าง" (ชุดถัดไปจองช่วงเวลาเดียวกันได้)
+  // จบนัดได้หลังเวลาเริ่มเท่านั้น → เลื่อนเวลานัดย้อนหลัง (โหมดสาธิต)
+  await fetch(B + '/api/admin/bookings', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'demo_shift', id, minutes: 300 }) });
   await ptAct(id, { action: 'done' });
   j = await J(await fetch(B + `/api/bookings/${id}/complete`, { method: 'POST', headers: C, body: JSON.stringify({ rating: 5 }) })); ok('cleanup: complete near booking', j.ok, j.error);
   await fetch(B + `/api/bookings/${id2}/cancel`, { method: 'POST', headers: C, body: JSON.stringify({ reason: 'ทดสอบ' }) });

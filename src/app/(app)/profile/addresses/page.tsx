@@ -48,7 +48,7 @@ export default function AddressesPage() {
             <div className="flex flex-col items-end gap-1 text-[12.5px] font-light shrink-0">
               <button type="button" onClick={() => { setEdit(a.id); setF({ label: a.label, detail: a.detail, note: a.note }); }} className="text-[#d9c9b4]">แก้ไข</button>
               {!a.primary && <button type="button" disabled={busy} onClick={() => save(list.map((x) => ({ ...x, primary: x.id === a.id })), "ตั้งเป็นที่อยู่หลักแล้ว")} style={{ color: GOLD }}>ตั้งเป็นหลัก</button>}
-              <button type="button" disabled={busy} onClick={() => save(list.filter((x) => x.id !== a.id), "ลบที่อยู่แล้ว")} className="text-[#ff8a9a]">ลบ</button>
+              <button type="button" disabled={busy} onClick={() => { if (confirm(`ลบที่อยู่ "${a.label}"?`)) save(list.filter((x) => x.id !== a.id), "ลบที่อยู่แล้ว"); }} className="text-[#ff8a9a]">ลบ</button>
             </div>
           </div>
         ))}

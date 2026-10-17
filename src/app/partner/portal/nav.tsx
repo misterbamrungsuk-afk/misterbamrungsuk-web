@@ -14,13 +14,13 @@ const TABS = [
 export function PortalNav() {
   const path = usePathname();
   return (
-    <nav aria-label="เมนูพาร์ทเนอร์" className="fixed bottom-0 inset-x-0 z-30">
-      <div className="max-w-[480px] mx-auto grid grid-cols-5 border-t border-ink-600 bg-ink-900/95 backdrop-blur pb-[env(safe-area-inset-bottom)]">
+    <nav aria-label="เมนูพาร์ทเนอร์" className="fixed bottom-0 inset-x-0 z-30 md:static md:mt-3 md:px-5">
+      <div className="max-w-[480px] mx-auto grid grid-cols-5 border-t border-ink-600 bg-ink-900/95 backdrop-blur pb-[env(safe-area-inset-bottom)] md:max-w-none md:border md:rounded-2xl md:pb-0 md:overflow-hidden">
         {TABS.map((t) => {
           const on = t.href === "/partner/portal" ? path === t.href : path.startsWith(t.href);
           return (
             <Link key={t.href} href={t.href} aria-current={on ? "page" : undefined}
-              className={`flex flex-col items-center gap-1 py-2.5 text-[11px] ${on ? "text-gold-300" : "text-ink-300"}`}>
+              className={`flex flex-col md:flex-row md:justify-center items-center gap-1 md:gap-2 py-2.5 md:py-3 text-[12px] md:text-sm ${on ? "text-gold-300 md:bg-gold-500/10" : "text-ink-300"}`}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><path d={t.d} /></svg>
               {t.label}
             </Link>
@@ -34,7 +34,7 @@ export function PortalNav() {
 export function LogoutButton() {
   const router = useRouter();
   return (
-    <button type="button" className="text-xs text-[#9a8a85] hover:text-gold-300 ml-2"
+    <button type="button" className="shrink-0 min-h-10 px-2 text-xs text-[#9a8a85] hover:text-gold-300 ml-1"
       onClick={async () => { await fetch("/api/partner/auth/logout", { method: "POST" }).catch(() => null); router.replace("/partner/login"); }}>
       ออก
     </button>

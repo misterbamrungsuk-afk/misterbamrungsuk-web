@@ -7,7 +7,9 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminLoginPage({ searchParams }: { searchParams: Promise<{ next?: string; denied?: string }> }) {
   const sp = await searchParams;
-  const demo = usingDemoAccounts();
+  // กล่องบัญชีสาธิตแสดงเฉพาะโหมดเดโมจริง ๆ — ตั้งบัญชีจริง (ADMIN_ACCOUNTS / ADMIN_PASSWORD) แล้วซ่อนทั้งกล่อง
+  const demo = usingDemoAccounts() && adminLoginEnabled();
+  const demoRoles = Object.keys(DEMO_ADMIN_EMAILS) as AdminRole[];
   // ป้องกัน open redirect: รับเฉพาะ path ภายใน /admin
   const next = sp.next?.startsWith("/admin") && !sp.next.startsWith("//") ? sp.next : "";
 
@@ -35,8 +37,8 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
         )}
         {demo && (
           <div className="rounded-2xl border border-[rgba(240,200,90,.38)] bg-[#241717] p-4 text-sm flex flex-col gap-1.5">
-            <p className="font-semibold text-[#f0c75a]">โหมดสาธิต · บัญชีทดลอง 4 บทบาท</p>
-            {(Object.keys(DEMO_ADMIN_EMAILS) as AdminRole[]).map((r) => (
+            <p className="font-semibold text-[#f0c75a]">โหมดสาธิต · บัญชีทดลอง {demoRoles.length} บทบาท</p>
+            {demoRoles.map((r) => (
               <p key={r} className="text-[#d3c7bc]"><span className="text-[#cdbfb3]">{ROLE_LABEL[r]}:</span> {DEMO_ADMIN_EMAILS[r]}</p>
             ))}
             <p className="text-xs text-[#cdbfb3] mt-1">รหัสผ่านตามค่า ADMIN_DEMO_PASSWORD ใน .env.example · โหมดจริงบัญชีเหล่านี้ใช้ไม่ได้</p>
@@ -47,6 +49,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
       <section className="hidden lg:flex flex-col justify-center gap-4 px-14 border-l border-[rgba(240,200,90,.38)]">
         <h2 className="font-lux font-bold text-2xl">บทบาทและสิทธิ์</h2>
         <p className="text-sm text-[#cdbfb3] -mt-2">แต่ละคนเห็นเฉพาะแท็บที่บทบาทอนุญาต</p>
+        {/* CEO เข้าได้ทุกหน้า (canAccess) — ติ๊กทุกแถว */}
         <table className="text-sm w-full max-w-2xl">
           <thead><tr className="text-[#cdbfb3] text-xs"><th className="text-left py-2 font-medium">สิทธิ์</th>{(Object.keys(ROLE_LABEL) as AdminRole[]).map((r) => <th key={r} className="py-2 font-medium">{ROLE_LABEL[r]}</th>)}</tr></thead>
           <tbody>
@@ -61,7 +64,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
             ].map(([label, roles]) => (
               <tr key={label as string} className="border-t border-[rgba(240,200,90,.25)]">
                 <td className="py-2.5">{label as string}</td>
-                {(Object.keys(ROLE_LABEL) as AdminRole[]).map((r) => <td key={r} className={`text-center ${(roles as string[]).includes(r) ? "text-[#f0c75a]" : "text-[#3a2a28]"}`}>●</td>)}
+                {(Object.keys(ROLE_LABEL) as AdminRole[]).map((r) => <td key={r} className={`text-center ${r === "ceo" || (roles as string[]).includes(r) ? "text-[#f0c75a]" : "text-[#3a2a28]"}`}>●</td>)}
               </tr>
             ))}
           </tbody>

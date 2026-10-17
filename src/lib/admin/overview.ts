@@ -10,11 +10,15 @@ const safe = async <T,>(p: Promise<T>, fb: T): Promise<T> => p.catch(() => fb);
 const bkkDay = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: "Asia/Bangkok" });
 
 export async function overview() {
-  const [bookings, bal, topups, wds, apps, alerts, recon, mp, pr] = await Promise.all([
+  const [bookings, bal, topups, wds, apps, alerts, recon, mp, pr, boosts, mko, reps] = await Promise.all([
     safe(listAll(5000), []), safe(allBalances(), []), safe(listTopups({ status: "pending", limit: 500 }), []), safe(listWithdrawals(), []),
     safe(listApplicants(), []), safe(listAdminNotices(100), []), safe(reconcile(), null as Recon | null),
     safe((await import("@/lib/member/store")).listPurchases({ status: "pending" }), []),
     safe((await import("@/lib/payouts")).listPayoutRequests({ status: ["requested", "approved"] }), []),
+    // คิวเพิ่ม (อ่านรายการเดียวต่อแหล่ง — ถูก): โปรโมทรอตรวจ · ออเดอร์ร้านค้ารอยืนยันสลิป · รายงานผู้ใช้ที่ยังเปิด
+    safe((await import("@/lib/join/boost")).listBoosts(), []),
+    safe((await import("@/lib/market/store")).listOrders(), []),
+    safe((await import("@/lib/reports")).listReports(), []),
   ]);
   const today = bkkDay(new Date()), month = today.slice(0, 7);
   const pf = (bucket: string) => bal.filter((r) => r.owner_type === "platform" && r.owner_id === PLATFORM && r.bucket === bucket).reduce((s, r) => s + r.balance, 0);
@@ -44,6 +48,13 @@ export async function overview() {
       kyc: apps.filter((a) => extraOf(a).kyc_status === "submitted").length,
       slips: apps.filter((a) => a.status === "pending_slip").length,
       applicants: apps.filter((a) => a.status === "verified").length,
+      boosts: boosts.filter((b) => b.status === "pending").length,
+      ownerRequested: pr.filter((w) => w.status === "requested").length,
+      ownerApproved: pr.filter((w) => w.status === "approved").length,
+      marketOrders: mko.filter((o) => o.status === "pending" && !!o.slip_path).length,
+      reports: reps.filter((r) => r.status === "open").length,
+      // ฝ่าฝืนแชท = แจ้งเตือนทีมงานที่ยังไม่อ่าน (ไม่ต้องสแกนข้อความทั้งหมด)
+      chatViolations: alerts.filter((a) => a.kind === "chat_violation" && !a.read_at).length,
     },
     alerts: { open: alerts.filter((a) => !a.read_at).length, sos: alerts.filter((a) => a.kind === "sos" && !a.read_at), latest: alerts.slice(0, 5) },
     recon,

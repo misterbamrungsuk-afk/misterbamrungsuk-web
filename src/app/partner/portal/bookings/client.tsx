@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Sheet } from "@/components/ui";
 import { baht } from "@/lib/partner/config";
-import { BOOKING_LABEL, BOOKING_STATUSES, split, type BookingStatus, type PartnerBooking } from "@/lib/partner/portal-types";
+import { BOOKING_LABEL, BOOKING_STATUSES, customerLabel, split, type BookingStatus, type PartnerBooking } from "@/lib/partner/portal-types";
 
 const when = (iso: string) => new Date(iso).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 const TONE: Record<BookingStatus, string> = {
@@ -18,6 +18,7 @@ export function BookingsClient({ initial, rooms, partnerPct }: { initial: Partne
   const [room, setRoom] = useState(rooms[0]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [askFull, setAskFull] = useState(false);
 
   const shown = rows.filter((b) => b.status === tab);
   const sel = rows.find((b) => b.id === openId) ?? null;
@@ -28,6 +29,7 @@ export function BookingsClient({ initial, rooms, partnerPct }: { initial: Partne
     setOpenId(b.id);
     setRoom(b.room && rooms.includes(b.room) ? b.room : rooms[0]);
     setErr("");
+    setAskFull(false);
   };
   const act = async (action: "confirm" | "full") => {
     if (!sel) return;
@@ -38,6 +40,7 @@ export function BookingsClient({ initial, rooms, partnerPct }: { initial: Partne
     setBusy(false);
     if (!out?.ok || !out.row) return setErr(out?.error ?? "ทำรายการไม่สำเร็จ");
     setRows((rs) => rs.map((x) => (x.id === out.row!.id ? out.row! : x)));
+    setAskFull(false);
     setOpenId(null);
   };
 
@@ -58,7 +61,7 @@ export function BookingsClient({ initial, rooms, partnerPct }: { initial: Partne
               <button onClick={() => open(b)} className="w-full text-left rounded-2xl border border-ink-600 bg-ink-800/60 px-4 py-3 hover:border-gold-500 flex justify-between gap-3">
                 <div className="min-w-0">
                   <p className="font-medium truncate">{b.parttime_name}</p>
-                  <p className="text-xs text-ink-300 truncate">ลูกค้า {b.customer_name} · {b.hours} ชม.{b.room ? ` · ${b.room}` : ""}</p>
+                  <p className="text-xs text-ink-300 truncate">{customerLabel(b.customer_name)} · {b.hours} ชม.{b.addon ? ` · ${b.addon}` : ""}{b.room ? ` · ${b.room}` : ""}</p>
                   <p className="text-xs text-[#9a8a85] mt-0.5">{when(b.start_time)} · {b.booking_ref}</p>
                 </div>
                 <div className="text-right shrink-0">
@@ -75,12 +78,13 @@ export function BookingsClient({ initial, rooms, partnerPct }: { initial: Partne
         {sel && (
           <div className="text-sm">
             <div className="flex justify-between gap-3">
-              <div><p className="font-semibold text-base">{sel.parttime_name}</p><p className="text-ink-300">ลูกค้า {sel.customer_name} · {sel.hours} ชม.</p></div>
+              <div><p className="font-semibold text-base">{sel.parttime_name}</p><p className="text-ink-300">{customerLabel(sel.customer_name)} · {sel.hours} ชม.</p></div>
               <span className={`h-fit text-[11px] border rounded-full px-2 py-0.5 ${TONE[sel.status]}`}>{BOOKING_LABEL[sel.status]}</span>
             </div>
             <dl className="grid grid-cols-[90px_1fr] gap-y-1.5 mt-4">
               <dt className="text-ink-300">วัน-เวลา</dt><dd>{when(sel.start_time)}</dd>
-              <dt className="text-ink-300">บริการเสริม</dt><dd>{sel.addon || "—"}</dd>
+              <dt className="text-ink-300">บริการ/ห้อง</dt><dd>{sel.addon || "—"}</dd>
+              <dt className="text-ink-300">ฝากบอก</dt><dd className="whitespace-pre-wrap [overflow-wrap:anywhere]">{sel.note || "—"}</dd>
               {sel.room && <><dt className="text-ink-300">ห้อง</dt><dd>{sel.room}</dd></>}
             </dl>
 
@@ -97,16 +101,26 @@ export function BookingsClient({ initial, rooms, partnerPct }: { initial: Partne
 
             <div className="mt-5 rounded-2xl bg-ink-900/60 px-4 py-3 space-y-1.5">
               <div className="flex justify-between"><span className="text-ink-300">ยอดค่าห้อง/บริการ</span><span className="font-display">฿{baht(sel.amount)}</span></div>
-              <div className="flex justify-between"><span className="text-ink-300">หักแพลตฟอร์ม {pct == null ? "[รอกำหนด]" : `${pct}`}%</span><span className="font-display">{sp ? `-฿${baht(sp.fee)}` : "[รอกำหนด]"}</span></div>
-              <div className="flex justify-between border-t border-ink-600 pt-1.5"><span>ร้านได้รับ</span><span className="font-display text-gold-300">{sp ? `฿${baht(sp.net)}` : "คำนวณเมื่อกำหนด %"}</span></div>
+              {sp && <div className="flex justify-between"><span className="text-ink-300">หักแพลตฟอร์ม {pct}%</span><span className="font-display">-฿{baht(sp.fee)}</span></div>}
+              <div className="flex justify-between border-t border-ink-600 pt-1.5"><span>ร้านได้รับ</span><span className="font-display text-gold-300">฿{baht(sp ? sp.net : sel.amount)}</span></div>
             </div>
 
             {err && <p role="alert" className="text-crimson-300 mt-3">{err}</p>}
             {(sel.status === "pending" || sel.status === "confirmed") ? (
-              <div className="grid grid-cols-2 gap-2 mt-5">
-                <button disabled={busy} onClick={() => act("full")} className="btn-ghost min-h-12 rounded-full">แจ้งห้องเต็ม</button>
-                <button disabled={busy} onClick={() => act("confirm")} className="btn-crimson min-h-12 rounded-full font-semibold">ยืนยัน · {room}</button>
-              </div>
+              askFull ? (
+                <div role="alertdialog" aria-label="ยืนยันแจ้งห้องเต็ม" className="mt-5 rounded-2xl border border-crimson-500/60 bg-crimson-500/10 p-3">
+                  <p className="text-sm">แจ้งห้องเต็มสำหรับ {sel.booking_ref}? ลูกค้าและเพื่อนจะได้รับแจ้ง และทีมงานจะประสานเปลี่ยนสถานที่/เวลา</p>
+                  <div className="grid grid-cols-2 gap-2 mt-3">
+                    <button disabled={busy} onClick={() => setAskFull(false)} className="btn-ghost min-h-12 rounded-full">ไม่ใช่ กลับ</button>
+                    <button disabled={busy} onClick={() => act("full")} className="btn-crimson min-h-12 rounded-full font-semibold">{busy ? "กำลังแจ้ง…" : "ยืนยัน ห้องเต็ม"}</button>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2 mt-5">
+                  <button disabled={busy} onClick={() => setAskFull(true)} className="btn-ghost min-h-12 rounded-full">แจ้งห้องเต็ม</button>
+                  <button disabled={busy} onClick={() => act("confirm")} className="btn-crimson min-h-12 rounded-full font-semibold">ยืนยัน · {room}</button>
+                </div>
+              )
             ) : (
               <button onClick={() => setOpenId(null)} className="btn-ghost w-full min-h-12 rounded-full mt-5">ปิด</button>
             )}

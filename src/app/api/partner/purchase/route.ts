@@ -3,7 +3,7 @@ import { limited } from "@/lib/rate-limit";
 import { clientIp } from "@/lib/customer/auth";
 import { PACKAGE_KEYS, PARTNER_PACKAGES, type PartnerPackageKey } from "@/lib/partner/config";
 import { currentPartner, verifyApplyToken } from "@/lib/partner/auth";
-import { IMAGE_TYPES, MAX_FILE, createPurchase, putPartnerFile } from "@/lib/partner/portal";
+import { IMAGE_TYPES, MAX_FILE, PurchaseError, createPurchase, pendingPurchase, putPartnerFile } from "@/lib/partner/portal";
 import { db, getPartner, isDemo } from "@/lib/partner/store";
 import { verifySlip } from "@/lib/slip2go";
 import { notifyPurchase } from "@/lib/partner/notify";
@@ -24,6 +24,10 @@ export async function POST(req: Request) {
   const tokenPid = verifyApplyToken(String(form.get("token") ?? ""));
   const partner = tokenPid ? await getPartner(tokenPid) : await currentPartner();
   if (!partner) return bad("กรุณาเข้าสู่ระบบ", 401);
+
+  // กันส่งสลิปซ้ำ: มีรายการรอตรวจอยู่แล้ว = ไม่รับเพิ่ม (ก่อนตรวจ/อัปโหลดสลิป)
+  const open = await pendingPurchase(partner.id).catch(() => null);
+  if (open) return NextResponse.json({ ok: false, error: `มีสลิปรอตรวจอยู่แล้ว (${open.invoice_no}) · ทีมงานตรวจภายใน 24 ชม. ถ้าแนบผิด ติดต่อทีมงานทาง LINE`, code: "pending", invoice_no: open.invoice_no }, { status: 409 });
 
   const pkg = String(form.get("package") ?? "") as PartnerPackageKey;
   if (!PACKAGE_KEYS.includes(pkg)) return bad("เลือกแผนโปรโมท");
@@ -48,6 +52,7 @@ export async function POST(req: Request) {
     void notifyPurchase(partner, row);
     return NextResponse.json({ ok: true, invoice_no: row.invoice_no });
   } catch (e) {
+    if (e instanceof PurchaseError) return bad(e.message, 409);
     console.error("partner purchase", e);
     return bad("ระบบขัดข้อง กรุณาลองใหม่", 500);
   }

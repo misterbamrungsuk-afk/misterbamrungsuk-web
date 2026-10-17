@@ -6,7 +6,8 @@ import { extraOf, type Applicant } from "@/lib/join/store";
 import { getLiveApplicants, publicId } from "@/lib/home/live";
 import { hasContact } from "@/lib/join/contact-guard";
 import { ACTIVITIES } from "@/lib/posts";
-import { BookingError, createBooking, isDemo, listForParttime, notify, priceFor, respond, type Place, type PlaceType } from "./index";
+import { inThailand } from "@/lib/geo";
+import { BookingError, createBooking, isDemo, listForParttime, notify, priceFor, requirePin, respond, type Booking, type Place, type PlaceType } from "./index";
 
 // เรียกด่วน (บอร์ด C-QuickCall): ลูกค้าส่งคำขอ → กันเงิน (ยอดสูงสุดของเพื่อนที่ถูกเชิญ) → แจ้งเพื่อนที่ว่างวันนี้
 // → เพื่อนคนแรกที่กดรับ = ได้นัด (คืนเงินที่กันไว้ แล้วจอง + ตอบรับตามราคาจริงของคนนั้นทันที)
@@ -64,24 +65,64 @@ const qmove = (q: QuickCall, from: QuickCall["status"][], patch: Partial<QuickCa
 /** ยอดที่กันไว้ของเรียกด่วนที่ยังเปิดอยู่ (โหมดสาธิต — กระทบยอด) */
 export const openHolds = () => demo.filter((q) => q.status === "open").reduce((s, q) => s + q.hold_satang, 0);
 
-/** หมดเวลา = คืนเงิน (ประมวลผลตอนอ่าน + cron) */
+/** แจ้ง Part-Time ที่ถูกเชิญว่าคำขอนี้ปิดแล้ว (หมดเวลา/มีคนรับ/ลูกค้ายกเลิก) — กันกดรับของที่ไม่มีแล้ว */
+async function notifyClosed(q: QuickCall, why: "expired" | "taken" | "cancelled", except?: string) {
+  const apps = await getLiveApplicants().catch(() => [] as Applicant[]);
+  const body = why === "taken" ? "มีเพื่อนรับนัดนี้ไปแล้ว" : why === "expired" ? "หมดเวลารับแล้ว" : "ลูกค้ายกเลิกการเรียก";
+  for (const pid of q.invited) {
+    if (pid === except) continue;
+    const mb = apps.find((a) => a.id === pid)?.mb_code;
+    await notify({ user_type: "parttime", user_id: pid, kind: "quick_closed", title: `เรียกด่วน ${q.code} ปิดแล้ว`, body, url: mb ? `/join/profile/${mb}/jobs` : null }).catch(() => {});
+  }
+}
+
+/** หมดเวลา = คืนเงิน (ประมวลผลตอนอ่าน + cron) · ค้างที่ "matched" แต่ไม่มีนัด (ระบบล่มกลางทางตอนรับ) = กู้คืน */
 async function sweep(rows: QuickCall[]): Promise<QuickCall[]> {
   const out: QuickCall[] = [];
   for (const q of rows) {
     if (q.status === "open" && Date.parse(q.expires_at) < Date.now()) {
       const r = await qmove(q, ["open"], { status: "expired" }, true, "system", `quick-release:${q.id}`).catch((e) => { console.error("quick sweep", e); return null; });
-      if (r) await notify({ user_type: "customer", user_id: q.customer_id, kind: "quick_expired", title: "ยังไม่มีเพื่อนรับเรียกด่วน", body: "คืนเงินที่กันไว้เข้ากระเป๋าแล้ว · ลองเลือกเพื่อนแล้วนัดล่วงหน้าได้", url: "/quick" });
+      if (r) {
+        await notify({ user_type: "customer", user_id: q.customer_id, kind: "quick_expired", title: "ยังไม่มีเพื่อนรับเรียกด่วน", body: "คืนเงินที่กันไว้เข้ากระเป๋าแล้ว · ลองเลือกเพื่อนแล้วนัดล่วงหน้าได้", url: "/quick" });
+        await notifyClosed(q, "expired");
+      }
+      out.push(r ?? q);
+    } else if (q.status === "matched" && !q.booking_id && Date.parse(q.expires_at) + 5 * 60_000 < Date.now()) {
+      // ค้าง matched โดยไม่มีเลขนัด = ระบบล่มก่อนสร้างนัด → เงินยังเป็นของเรียกด่วนใน held → คืนลูกค้า
+      // (มีเลขนัดแล้ว = อาจย้ายเงินไปแล้ว ห้ามคืนซ้ำ — ปล่อยให้ทีมงานตรวจ)
+      const r = await qmove(q, ["matched"], { status: "expired", matched_parttime: null }, true, "system:recover", `quick-release:${q.id}`).catch((e) => { console.error("quick recover", e); return null; });
+      if (r) await notify({ user_type: "customer", user_id: q.customer_id, kind: "quick_failed", title: "เรียกด่วนไม่สำเร็จ", body: "คืนเงินที่กันไว้เข้ากระเป๋าแล้ว", url: "/quick" });
       out.push(r ?? q);
     } else out.push(q);
   }
   return out;
 }
 export async function sweepAll() {
-  const rows = isDemo ? demo.filter((q) => q.status === "open") : (((await db().from("quick_calls").select().eq("status", "open").limit(500)).data ?? []) as QuickCall[]);
-  return sweep(rows);
+  const rows = isDemo ? demo.filter((q) => q.status === "open" || (q.status === "matched" && !q.booking_id)) : (((await db().from("quick_calls").select().in("status", ["open", "matched"]).is("booking_id", null).limit(500)).data ?? []) as QuickCall[]);
+  return sweep(rows.filter((q) => q.status === "open" || Date.parse(q.expires_at) + 5 * 60_000 < Date.now()));
 }
 
-export type QuickInput = { activity: string; hours: 3 | 5; place: { type: string; detail: string }; note: string; blocked?: string[] };
+export type QuickInput = { activity: string; hours: 3 | 5; place: { type: string; detail: string; lat?: unknown; lng?: unknown }; note: string; blocked?: string[] };
+
+/** เพื่อนที่จะถูกเชิญจริง (ว่างวันนี้ · ไม่ถูกบล็อก · ไม่มีนัดชนเวลา) + ราคา — ใช้ทั้งตอนเรียกและหน้าฟอร์ม (ตัวเลขบนหน้าตรงกับที่กันจริง) */
+export async function quickCandidates(hours: 3 | 5, blocked: string[]): Promise<{ a: Applicant; price: number }[]> {
+  const start = Date.parse(quickStart());
+  const cands: { a: Applicant; price: number }[] = [];
+  for (const { a } of await freeToday()) {
+    if (blocked.includes(publicId(a.mb_code))) continue; // ลูกค้าบล็อกไว้ = ไม่เชิญ
+    if (extraOf(a).work?.paused) continue;
+    const clash = (await listForParttime(a.id)).some((b) => ["requested", "accepted", "checked_in"].includes(b.status) && Math.abs(Date.parse(b.starts_at) - start) < Math.max(b.hours, hours) * 3600_000);
+    if (!clash) cands.push({ a, price: (await priceFor(a, hours)) * 100 });
+    if (cands.length >= MAX_INVITE) break;
+  }
+  return cands;
+}
+/** สรุปสำหรับหน้าฟอร์ม: จำนวนเพื่อนที่จะเห็นคำขอ + ยอดที่จะกัน (ราคาสูงสุดในกลุ่ม) ต่อระยะเวลา */
+export async function quickPreview(blocked: string[]) {
+  const [c3, c5] = await Promise.all([quickCandidates(3, blocked), quickCandidates(5, blocked)]);
+  const max = (c: { price: number }[]) => (c.length ? Math.max(...c.map((x) => x.price)) : 0);
+  return { count: { 3: c3.length, 5: c5.length }, hold: { 3: max(c3), 5: max(c5) } };
+}
 export async function createQuick(cust: { sub: string; email: string; name?: string }, input: QuickInput): Promise<QuickCall> {
   if (!ACTIVITIES.includes(input.activity)) throw new BookingError("เลือกกิจกรรม");
   const type = input.place.type as PlaceType;
@@ -93,22 +134,18 @@ export async function createQuick(cust: { sub: string; email: string; name?: str
   const mine = isDemo ? demo.filter((q) => q.customer_id === cust.sub) : (((await db().from("quick_calls").select().eq("customer_id", cust.sub).eq("status", "open")).data ?? []) as QuickCall[]);
   if ((await sweep(mine)).some((q) => q.status === "open")) throw new BookingError("มีเรียกด่วนที่รอเพื่อนรับอยู่แล้ว", "open");
 
+  // หมุดจุดนัด (ไม่บังคับ) — ส่งต่อให้การจองเพื่อคิดระยะ/เวลาถึงตอนเพื่อนเดินทาง
+  const pin = { lat: Math.round(Number(input.place.lat) * 1e5) / 1e5, lng: Math.round(Number(input.place.lng) * 1e5) / 1e5 };
+  if (requirePin() && !inThailand(pin)) throw new BookingError("กดใช้ตำแหน่งปัจจุบัน หรือปักหมุดจุดนัดก่อนเรียก", "pin");
   // เชิญเพื่อนที่ว่างวันนี้และไม่มีนัดชนเวลา
-  const start = Date.parse(quickStart());
-  const cands: { a: Applicant; price: number }[] = [];
-  for (const { a } of await freeToday()) {
-    if (input.blocked?.includes(publicId(a.mb_code))) continue; // ลูกค้าบล็อกไว้ = ไม่เชิญ
-    const clash = (await listForParttime(a.id)).some((b) => ["requested", "accepted", "checked_in"].includes(b.status) && Math.abs(Date.parse(b.starts_at) - start) < Math.max(b.hours, input.hours) * 3600_000);
-    if (!clash) cands.push({ a, price: (await priceFor(a, input.hours)) * 100 });
-    if (cands.length >= MAX_INVITE) break;
-  }
+  const cands = await quickCandidates(input.hours, input.blocked ?? []);
   if (!cands.length) throw new BookingError("ตอนนี้ยังไม่มีเพื่อนว่างรับเรียกด่วน · ลองเลือกเพื่อนแล้วนัดล่วงหน้า", "none");
   const hold = Math.max(...cands.map((c) => c.price));
   const bal = await balances("customer", cust.sub);
   if ((bal.available ?? 0) < hold) throw new BookingError("ยอดในกระเป๋าไม่พอ", "funds", { need: hold, available: bal.available ?? 0, short: hold - (bal.available ?? 0) });
 
   const m = await getMoney();
-  const place: Place = { type, label: LABEL[type], detail };
+  const place: Place = { type, label: LABEL[type], detail, ...(inThailand(pin) ? pin : {}) };
   const row = await insert({
     code: code(), customer_id: cust.sub, customer_email: cust.email, customer_name: cust.name ?? null, activity: input.activity, hours: input.hours, place, note: note || null,
     hold_satang: hold, invited: cands.map((c) => c.a.id), status: "expired", matched_parttime: null, booking_id: null, expires_at: now(),
@@ -146,6 +183,7 @@ export async function cancelQuick(id: string, sub: string) {
   if (!q || q.customer_id !== sub) throw new BookingError("ไม่พบคำขอ", "notfound");
   const r = await qmove(q, ["open"], { status: "cancelled" }, true, `customer:${sub}`, `quick-release:${q.id}`);
   if (!r) throw new BookingError("คำขอนี้ปิดไปแล้ว", "state");
+  await notifyClosed(q, "cancelled");
   return r;
 }
 
@@ -159,24 +197,42 @@ export async function openForParttime(a: Applicant): Promise<{ q: QuickCall; pri
   return out;
 }
 
-/** Part-Time กดรับ — คนแรกเท่านั้น (เงื่อนไข open → matched ในฐาน) แล้วจอง + ตอบรับทันทีตามราคาจริง */
+/** Part-Time กดรับ — คนแรกเท่านั้น (เงื่อนไข open → matched ในฐาน = ล็อก ยังไม่ย้ายเงิน) แล้วจอง + ตอบรับทันทีตามราคาจริง
+ *  เงินกันของเรียกด่วนย้ายเป็นเงินกันของนัดในรายการเดียวกับการเปิดนัด (ส่วนต่างคืน available)
+ *  สร้างนัดไม่สำเร็จ = ปลดล็อกกลับเป็น open (เงินยังกันไว้) ให้เพื่อนคนอื่นที่ถูกเชิญรับต่อได้ */
 export async function acceptQuick(id: string, a: Applicant) {
   const q = await get(id);
   if (!q || !q.invited.includes(a.id)) throw new BookingError("ไม่พบคำขอนี้", "notfound");
   if (q.status !== "open" || Date.parse(q.expires_at) < Date.now()) throw new BookingError(q.status === "matched" ? "มีเพื่อนรับนัดนี้ไปแล้ว" : "คำขอนี้หมดเวลาแล้ว", "state");
-  const r = await qmove(q, ["open"], { status: "matched", matched_parttime: a.id }, true, `parttime:${a.id}`, `quick-release:${q.id}`);
-  if (!r) throw new BookingError("มีเพื่อนรับนัดนี้ไปแล้ว", "state");
+  const lock = await qmove(q, ["open"], { status: "matched", matched_parttime: a.id }, false, `parttime:${a.id}`, "");
+  if (!lock) throw new BookingError("มีเพื่อนรับนัดนี้ไปแล้ว", "state");
+  const setBookingId = async (bid: string | null) => {
+    if (isDemo) { const x = demo.find((y) => y.id === q.id); if (x) x.booking_id = bid; }
+    else { const { error } = await db().from("quick_calls").update({ booking_id: bid }).eq("id", q.id); if (error) throw error; }
+  };
+  let b: Booking;
   try {
-    const b = await createBooking({ sub: q.customer_id, email: q.customer_email ?? "", name: q.customer_name ?? undefined },
-      { pid: publicId(a.mb_code), hours: q.hours, starts_at: quickStart(), place: q.place, note: [`เรียกด่วน · ${q.activity}`, q.note].filter(Boolean).join(" · ") }, async () => a);
+    b = await createBooking({ sub: q.customer_id, email: q.customer_email ?? "", name: q.customer_name ?? undefined },
+      { pid: publicId(a.mb_code), hours: q.hours, starts_at: quickStart(), place: q.place, note: [`เรียกด่วน · ${q.activity}`, q.note].filter(Boolean).join(" · ") }, async () => a, 0,
+      { quick: { hold: q.hold_satang, onInsert: (row) => setBookingId(row.id) } });
+  } catch (e) {
+    // ปลดล็อก: เงินกันยังอยู่ครบ (ยังไม่ย้าย) → เปิดให้คนอื่นรับต่อ · หมดเวลาไปแล้วระหว่างนี้ = sweep คืนเงินตามปกติ
+    await setBookingId(null).catch((x) => console.error("quick unlock booking_id", x));
+    const back = await qmove(q, ["matched"], { status: "open", matched_parttime: null }, false, "system", "").catch((x) => { console.error("quick unlock", x); return null; });
+    if (back) await sweep([back]).catch(() => {});
+    const why = e instanceof BookingError ? e.message : "ระบบขัดข้อง";
+    if (!(e instanceof BookingError)) console.error("quick accept", e);
+    throw new BookingError(`รับนัดไม่สำเร็จ · ${why}`, "accept_failed");
+  }
+  try {
     const acc = await respond(b.id, a.id, true);
-    if (isDemo) { const x = demo.find((y) => y.id === q.id); if (x) x.booking_id = b.id; } else await db().from("quick_calls").update({ booking_id: b.id }).eq("id", q.id);
     await notify({ user_type: "customer", user_id: q.customer_id, kind: "quick_matched", title: `${a.nickname ?? "เพื่อน"} รับเรียกด่วนแล้ว`, body: `${b.code} · เริ่ม ${new Date(b.starts_at).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Bangkok" })} น.`, url: `/order/${b.id}` });
+    await notifyClosed(q, "taken", a.id);
     return acc;
   } catch (e) {
-    // เงินกันไว้คืนเข้ากระเป๋าแล้ว (ขั้นบน) — แจ้งลูกค้าให้ลองใหม่ / เลือกเพื่อนเอง
-    await notify({ user_type: "customer", user_id: q.customer_id, kind: "quick_failed", title: "เรียกด่วนไม่สำเร็จ", body: `${e instanceof BookingError ? e.message : "ระบบขัดข้อง"} · คืนเงินเข้ากระเป๋าแล้ว`, url: "/quick" });
-    throw e instanceof BookingError ? e : new BookingError("รับนัดไม่สำเร็จ กรุณาลองใหม่");
+    // นัดเปิดแล้ว (เงินเป็นของนัด) แต่ยืนยันไม่ผ่าน → นัดค้างเป็นคำขอ Part-Time กดรับในหน้างานได้ / หมดเวลาคืนเงินเอง
+    console.error("quick respond", e);
+    throw new BookingError("สร้างนัดแล้วแต่ยืนยันไม่สำเร็จ · กดรับงานนี้ในรายการงานอีกครั้ง", "state");
   }
 }
 

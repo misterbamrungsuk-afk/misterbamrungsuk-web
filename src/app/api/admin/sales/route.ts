@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { fileHeaders } from "@/lib/file-guard";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
-import { MemberError, approveSalesPayout, createExternalRep, creditMembership, rejectMembership, settleSalesPayout, signSalesLink } from "@/lib/member";
+import { MemberError, approveSalesPayout, createExternalRep, creditMembership, rejectMembership, settleSalesPayout, signSalesLink, updateExternalRep } from "@/lib/member";
 import { getPurchase, patchRep, findRep, listPayouts } from "@/lib/member/store";
 import { getMemberSettings, saveMemberSettings, validateMember, TIER_IDS, type MemberSettings } from "@/lib/member/tiers";
 import { readFile } from "@/lib/join/store";
@@ -33,10 +33,11 @@ export async function POST(req: Request) {
     if (act === "approve") return NextResponse.json({ ok: true, row: await creditMembership(id, actor) });
     if (act === "reject") return NextResponse.json({ ok: true, row: await rejectMembership(id, actor, String(b.reason ?? "")) });
     if (act === "rep_create") {
-      const bank = b.bank as { bank?: string; account?: string; name?: string } | undefined;
-      const r = await createExternalRep({ name: String(b.name ?? ""), phone: String(b.phone ?? ""), bank: bank?.account ? { bank: String(bank.bank ?? ""), account: String(bank.account).replace(/[^\d-]/g, ""), name: String(bank.name ?? "") } : null }, s.email);
+      // ต้องมีบัญชีรับค่าคอม (ธนาคาร + เลขบัญชี + ชื่อบัญชี) — ไม่งั้น Sale Man ขอรับค่าคอมไม่ได้
+      const r = await createExternalRep({ name: String(b.name ?? ""), phone: String(b.phone ?? ""), bank: b.bank }, s.email);
       return NextResponse.json({ ok: true, rep: r, link: `${new URL(req.url).origin}/sales/go?t=${encodeURIComponent(signSalesLink(r.id))}` });
     }
+    if (act === "rep_update") return NextResponse.json({ ok: true, rep: await updateExternalRep(id, { name: b.name, phone: b.phone, bank: b.bank }) });
     if (act === "rep_toggle") { const r = await findRep({ id }); if (!r) throw new MemberError("ไม่พบ Sale Man"); return NextResponse.json({ ok: true, rep: await patchRep(id, { active: !r.active }) }); }
     if (act === "rep_link") { const r = await findRep({ id }); if (!r || r.kind !== "external") throw new MemberError("ไม่พบ Sale Man"); return NextResponse.json({ ok: true, link: `${new URL(req.url).origin}/sales/go?t=${encodeURIComponent(signSalesLink(r.id))}` }); }
     if (act === "payout_approve") return NextResponse.json({ ok: true, row: await approveSalesPayout(id, `ceo:${s.email}`) });

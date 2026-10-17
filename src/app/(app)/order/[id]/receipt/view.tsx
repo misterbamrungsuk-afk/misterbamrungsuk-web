@@ -9,7 +9,7 @@ const LN = "rgba(243,234,217,0.07)";
 type Doc = { no: string; issuer: { name: string; taxId: string; address: string; email: string; phone: string }; buyer: string; lines: [string, number][]; total: number; paidAt: string; code: string; email: string };
 const baht = (s: number) => (s < 0 ? "−฿" : "฿") + (Math.abs(s) / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-export function ReceiptView({ id, doc }: { id: string; doc: Doc }) {
+export function ReceiptView({ id, doc, canInvoice = true }: { id: string; doc: Doc; canInvoice?: boolean }) {
   const [tab, setTab] = useState<"view" | "form">("view");
   const [kind, setKind] = useState<"person" | "corp">("person");
   const [f, setF] = useState({ name: "", tax_id: "", branch: "สำนักงานใหญ่ (00000)", address: "", email: doc.email });
@@ -48,6 +48,9 @@ export function ReceiptView({ id, doc }: { id: string; doc: Doc }) {
             </div>
             <SavePdfButton targetId="receipt-doc" fileName={`ใบเสร็จ-${doc.no}`} />
           </>
+        ) : !canInvoice ? (
+          // ใบกำกับภาษีออกได้หลังนัดจบและมียอดที่เก็บจริง (เซิร์ฟเวอร์ตรวจซ้ำ)
+          <p className="m-0 rounded-2xl bg-[#211a18] text-[14px] text-[#d9c9b4]" style={{ padding: 16, border: `1px solid ${LN}` }}>ขอใบกำกับภาษีได้หลังนัดจบแล้ว · ถ้าคืนเงินเต็มจำนวนจะไม่มียอดให้ออกใบกำกับ</p>
         ) : (
           <div className="flex flex-col gap-3">
             <div className="grid grid-cols-2 gap-2">{([["person", "บุคคลธรรมดา"], ["corp", "นิติบุคคล"]] as const).map(([k, l]) => <button key={k} type="button" onClick={() => setKind(k)} className="min-h-12 rounded-xl bg-[#211a18] text-[13px]" style={{ border: `1px solid ${kind === k ? GOLD : "rgba(232,196,114,0.14)"}`, color: kind === k ? GOLD : "#d9c9b4" }}>{l}</button>)}</div>

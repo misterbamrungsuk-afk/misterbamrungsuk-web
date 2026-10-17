@@ -11,7 +11,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!me) return NextResponse.json({ ok: false, error: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
   const b = (await req.json().catch(() => ({}))) as { rating?: number; tags?: string[]; again?: string; body?: string; tip?: number };
   try {
-    const r = await customerComplete((await params).id, me.sub, { rating: Number(b.rating) || 0, tags: Array.isArray(b.tags) ? b.tags.map(String) : [], again: String(b.again ?? ""), body: String(b.body ?? ""), tip: Math.min(100000, Math.max(0, Number(b.tip) || 0)) });
+    const r = await customerComplete((await params).id, me.sub, { rating: Number(b.rating) || 0, tags: Array.isArray(b.tags) ? b.tags.map(String) : [], again: String(b.again ?? ""), body: String(b.body ?? ""), tip: Number(b.tip) || 0 /* ขอบเขตตรวจใน customerComplete (0–TIP_MAX บาทเต็ม) */ });
     return NextResponse.json({ ok: true, status: r.status });
   } catch (e) {
     if (e instanceof BookingError) return NextResponse.json({ ok: false, error: e.message }, { status: e.code === "notfound" ? 404 : 409 });

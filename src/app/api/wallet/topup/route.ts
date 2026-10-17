@@ -1,4 +1,5 @@
 import { limited } from "@/lib/rate-limit";
+import { FileTypeError, verifiedType } from "@/lib/file-guard";
 import { NextResponse } from "next/server";
 import { clientIp, currentCustomer } from "@/lib/customer/auth";
 import { verifySlip } from "@/lib/slip2go";
@@ -24,6 +25,8 @@ export async function POST(req: Request) {
   if (!(f instanceof File) || f.size === 0) return bad("กรุณาแนบสลิป");
   if (!TYPES.includes(f.type) || f.size > 5 * 1024 * 1024) return bad("สลิปต้องเป็นรูป JPG/PNG/WEBP ไม่เกิน 5MB");
 
+  // ตรวจเนื้อไฟล์จริงก่อนส่งไป Slip2Go (กันไฟล์ปลอม + ไม่เปลืองโควตาตรวจสลิป)
+  try { verifiedType(new Uint8Array(await f.slice(0, 16).arrayBuffer())); } catch (e) { return bad(e instanceof FileTypeError ? e.message : "สลิปต้องเป็นรูปภาพ"); }
   const check = await verifySlip(f, amount);
   if (check?.verdict === "dup" || (await transRefUsed(check?.trans_ref))) return bad("สลิปนี้เคยถูกใช้แล้ว กรุณาแนบสลิปของการโอนครั้งนี้");
   if (check?.verdict === "acct") return bad("สลิปนี้โอนเข้าบัญชีที่ไม่ใช่ของ Mister Bamrungsuk กรุณาโอนผ่าน QR ในหน้านี้");

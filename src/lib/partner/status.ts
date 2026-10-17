@@ -11,7 +11,12 @@ export const QC_LABEL: Record<PartnerQc, string> = { pending: "รอตรว�
 /** จำนวนวันที่เหลือจนถึง ends_at (null ถ้ายังไม่กำหนด) */
 export function daysLeft(ends: string | null, now = Date.now()): number | null {
   if (!ends) return null;
-  return Math.ceil((Date.parse(`${ends}T23:59:59+07:00`) - now) / 86_400_000);
+  return Math.ceil((Date.parse(`${ends.slice(0, 10)}T23:59:59+07:00`) - now) / 86_400_000);
+}
+/** ความยาวแผน (วัน) นับรวมวันเริ่มและวันสิ้นสุด — ตรงกับ daysLeft (นับถึงสิ้นวัน ends) จึงไม่เกิด "เหลือ 93 / 92 วัน" */
+export function planDays(starts: string | null | undefined, ends: string | null | undefined): number | null {
+  if (!starts || !ends) return null;
+  return Math.round((Date.parse(`${ends.slice(0, 10)}T00:00:00Z`) - Date.parse(`${starts.slice(0, 10)}T00:00:00Z`)) / 86_400_000) + 1;
 }
 
 // ── นัด QC สถานที่ (migration 0005_qc) ──

@@ -5,7 +5,7 @@ import { decideOrder, getSettings, type OrderAction } from "@/lib/market/store";
 
 export const runtime = "nodejs";
 
-const ACTIONS: OrderAction[] = ["confirm", "reject", "ship", "done", "regp"];
+const ACTIONS: OrderAction[] = ["confirm", "reject", "ship", "done", "regp", "refunded"];
 
 // ยืนยันสลิป (คิด GP อัตโนมัติ) / ปฏิเสธ / ใส่เลขพัสดุ / ปิดงาน / คำนวณ GP ใหม่
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {

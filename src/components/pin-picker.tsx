@@ -40,7 +40,7 @@ export function PinPicker({ value, onChange, height = 220, zoom = 15, hint = "�
 
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="relative rounded-2xl overflow-hidden" style={{ height, border: "1px solid rgba(243,234,217,.12)" }}>
+      <div className="relative isolate rounded-2xl overflow-hidden" style={{ height, border: "1px solid rgba(243,234,217,.12)" }}>
         <div ref={el} className="absolute inset-0 z-0" />
         {/* หมุดกลางจอ */}
         <svg className="absolute left-1/2 top-1/2 z-[400] pointer-events-none" style={{ transform: "translate(-50%, -100%)" }} width="34" height="44" viewBox="0 0 34 44" aria-hidden="true">

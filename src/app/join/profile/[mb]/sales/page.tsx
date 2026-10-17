@@ -5,6 +5,7 @@ import { PtHead, PtNav, PtPage, loadPt, ptHref } from "../_pt";
 import { repForParttime, repSummary } from "@/lib/member";
 import { getMemberSettings } from "@/lib/member/tiers";
 import { SalesBoard } from "@/components/sales-board";
+import { GATE_MSG, GATE_SHORT, isPtActive } from "@/lib/join/pt-ui";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "ชวนเปิดเมม · ค่าคอม — Mister Bamrungsuk" };
@@ -14,6 +15,14 @@ export default async function PtSalesPage({ params, searchParams }: { params: Pr
   const c = await loadPt(params, searchParams);
   if (c === "forbidden") return <Forbidden />;
   if (!c) notFound();
+  // ยังไม่อนุมัติ/ยังไม่เปิดโปรไฟล์ → ยังไม่ออกโค้ดชวนเปิดเมม (API ตอบ 409 เหมือนกัน)
+  if (!isPtActive(c.x)) return (
+    <PtPage>
+      <PtHead back={ptHref(c)} title="ชวนเปิดเมม · ค่าคอม" />
+      <main className="px-4 max-w-[560px]"><div className="rounded-[18px] bg-[#211a18] flex flex-col gap-1" style={{ padding: 16 }}><b className="font-semibold text-[#e8c472]">{GATE_SHORT}</b><span className="text-[14px] font-light text-[#d9c9b4]">{GATE_MSG} · หลังจากนั้นจะได้โค้ด/ลิงก์ของตัวเองสำหรับชวนลูกค้าเปิดเมม</span></div></main>
+      <PtNav c={c} active="earnings" />
+    </PtPage>
+  );
   const [rep, cfg] = await Promise.all([repForParttime(c.row), getMemberSettings()]);
   const sum = await repSummary(rep);
   const h = await headers();

@@ -10,7 +10,7 @@ const GOLD = "#e8c472";
 const LN = "rgba(243,234,217,0.07)";
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US");
 type B = { id: string; code: string; status: string; starts_at: string; hours: number; total_satang: number; place: { label: string; detail: string }; expires_at: string | null; pt: { nick: string; img: string } };
-const when = (iso: string) => new Date(iso).toLocaleString("th-TH", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+const when = (iso: string) => new Date(iso).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
 function Success() {
   const id = useSearchParams().get("id") ?? "";

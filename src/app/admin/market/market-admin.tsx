@@ -10,7 +10,7 @@ type Data = AdminData;
 
 const TONE: Record<OrderStatus, "gold" | "red" | "muted" | "green"> = { pending: "gold", paid: "green", shipped: "green", done: "muted", rejected: "red" };
 const TABS = [["orders", "คำสั่งซื้อ"], ["products", "สินค้า"], ["vendors", "ร้านค้า / GP"], ["payouts", "รายงาน / โอนเงินร้าน"], ["accounts", "บัญชีร้านค้า"], ["categories", "หมวดหมู่"], ["banners", "แบนเนอร์"], ["promos", "โค้ดส่วนลด"], ["reviews", "รีวิว"], ["settings", "ค่าส่ง / นโยบาย"]] as const;
-const dt = (s: string | null) => (s ? new Date(s).toLocaleString("th-TH", { dateStyle: "short", timeStyle: "short" }) : "—");
+const dt = (s: string | null) => (s ? new Date(s).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", dateStyle: "short", timeStyle: "short" }) : "—");
 const money = (n: number | null) => (n == null ? "รอกำหนด" : `฿${n.toLocaleString("th-TH", { maximumFractionDigits: 2 })}`);
 
 export function MarketAdmin({ initial }: { initial: Data }) {
@@ -47,16 +47,13 @@ function Orders({ d, reload, setMsg }: Sub) {
   const [filter, setFilter] = useState<OrderStatus | "all">("all");
   const [track, setTrack] = useState<Record<string, string>>({});
   const [carrier, setCarrier] = useState<Record<string, string>>({});
-  const act = async (o: Order, action: string) => {
-    let reason: string | undefined;
-    if (action === "reject") {
-      const r = prompt(`ปฏิเสธคำสั่งซื้อ ${o.order_no} — เหตุผล (ผู้ซื้อจะเห็นในหน้าติดตาม)`, "สลิปไม่ถูกต้อง / ยอดเงินไม่ตรง");
-      if (r === null) return;
-      reason = r;
-    }
-    const r = await fetch(`/api/market/admin/orders/${o.id}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, tracking_no: track[o.id], carrier: carrier[o.id] ?? "thaipost", reason }) });
+  // ยืนยันในหน้า (แทน confirm/prompt) ก่อน ยืนยันชำระ / ปิดงาน / ปฏิเสธ / บันทึกคืนเงิน
+  const [ask, setAsk] = useState<{ id: string; action: string; reason: string } | null>(null);
+  const act = async (o: Order, action: string, reason?: string) => {
+    setAsk(null);
+    const r = await fetch(`/api/market/admin/orders/${o.id}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, tracking_no: track[o.id], carrier: carrier[o.id] ?? "thaipost", reason, ...(action === "refunded" && reason ? { note: reason } : {}) }) });
     const out = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string; order?: Order };
-    setMsg(out.ok ? `${o.order_no}: ${ORDER_STATUS_LABEL[out.order!.status]} · GP ${money(out.order!.gp_amount)}` : out.error || "ไม่สำเร็จ");
+    setMsg(out.ok ? `${o.order_no}: ${ORDER_STATUS_LABEL[out.order!.status]}${action === "reject" && o.slip_path ? ` · ต้องคืนเงินผู้ซื้อ ฿${baht(o.total)}` : action === "refunded" ? " · บันทึกคืนเงินแล้ว" : ` · GP ${money(out.order!.gp_amount)}`}` : out.error || "ไม่สำเร็จ");
     await reload();
   };
   const rows = d.orders.filter((o) => filter === "all" || o.status === filter);
@@ -82,6 +79,8 @@ function Orders({ d, reload, setMsg }: Sub) {
               <p className="text-xs text-[#9a8a85] mt-2">สั่ง {dt(o.created_at)} · ยืนยัน {dt(o.paid_at)}{o.tracking_no ? ` · พัสดุ ${carrierName(o.carrier)} ${o.tracking_no}` : ""}{o.decided_by ? ` · โดย ${o.decided_by}` : ""}</p>
               {Object.keys(o.vendor_tracking ?? {}).length > 0 && <p className="text-xs text-[#9a8a85]">เลขพัสดุจากร้าน: {Object.entries(o.vendor_tracking ?? {}).map(([vid, t]) => `${d.vendors.find((v) => v.id === vid)?.name ?? vid}: ${t.tracking_no}`).join(" · ")}</p>}
               {o.reject_reason && <p className="text-xs text-crimson-300">เหตุผลที่ปฏิเสธ: {o.reject_reason}</p>}
+              {o.admin_note?.startsWith("[ต้องคืนเงินผู้ซื้อ") && <p className="text-xs font-semibold text-[#fca5a5]">⚠ {o.admin_note.slice(1, o.admin_note.indexOf("]"))} (โอนคืนนอกระบบ แล้วกดบันทึกคืนเงิน)</p>}
+              {o.admin_note?.startsWith("[คืนเงินผู้ซื้อแล้ว") && <p className="text-xs text-emerald-300">✓ {o.admin_note.slice(1, o.admin_note.indexOf("]"))}</p>}
             </div>
             <div className="text-sm min-w-[180px]">
               <p className="flex justify-between gap-4"><span className="text-ink-300">ยอดสินค้า</span><span>฿{baht(o.subtotal ?? o.total)}</span></p>
@@ -99,8 +98,9 @@ function Orders({ d, reload, setMsg }: Sub) {
             )}
           </div>
           <div className="flex flex-wrap gap-2 mt-3">
-            {o.status === "pending" && <button disabled={!o.slip_path} onClick={() => act(o, "confirm")} className="btn-crimson h-9 px-4 rounded-full text-sm disabled:opacity-40">ยืนยันชำระ (คิด GP)</button>}
-            {(o.status === "pending" || o.status === "paid") && <button onClick={() => act(o, "reject")} className="chip h-9 px-4">ปฏิเสธ</button>}
+            {o.status === "pending" && <button disabled={!o.slip_path} onClick={() => setAsk({ id: o.id, action: "confirm", reason: "" })} className="btn-crimson h-10 px-4 rounded-full text-sm disabled:opacity-40">ยืนยันชำระ (คิด GP)</button>}
+            {(o.status === "pending" || o.status === "paid") && <button onClick={() => setAsk({ id: o.id, action: "reject", reason: "" })} className="chip h-10 px-4">ปฏิเสธ</button>}
+            {o.status === "rejected" && o.admin_note?.startsWith("[ต้องคืนเงินผู้ซื้อ") && <button onClick={() => setAsk({ id: o.id, action: "refunded", reason: "" })} className="chip h-10 px-4">บันทึกคืนเงินแล้ว</button>}
             {o.status === "paid" && (
               <>
                 <select value={carrier[o.id] ?? "thaipost"} onChange={(e) => setCarrier({ ...carrier, [o.id]: e.target.value })} className="input-dark h-9 text-sm" aria-label="ขนส่ง">
@@ -110,9 +110,19 @@ function Orders({ d, reload, setMsg }: Sub) {
                 <button onClick={() => act(o, "ship")} className="btn-crimson h-9 px-4 rounded-full text-sm">บันทึกจัดส่ง</button>
               </>
             )}
-            {o.status === "shipped" && <button onClick={() => act(o, "done")} className="chip h-9 px-4">ปิดงาน (สำเร็จ)</button>}
+            {o.status === "shipped" && <button onClick={() => setAsk({ id: o.id, action: "done", reason: "" })} className="chip h-10 px-4">ปิดงาน (สำเร็จ)</button>}
             {["paid", "shipped", "done"].includes(o.status) && o.gp_amount == null && <button onClick={() => act(o, "regp")} className="chip h-9 px-4">คำนวณ GP ใหม่</button>}
           </div>
+          {ask?.id === o.id && (
+            <div role="alertdialog" aria-label="ยืนยันรายการ" className="mt-3 rounded-xl border border-gold-500/50 p-3 flex flex-col gap-2 text-sm">
+              <p className="m-0">{ask.action === "confirm" ? `ยืนยันว่าได้รับเงิน ฿${baht(o.total)} ของ ${o.order_no} แล้ว? (คิด GP + ตัดสต็อก + แจ้งผู้ซื้อ)` : ask.action === "done" ? `ปิดงาน ${o.order_no} เป็นสำเร็จ? ส่วนของร้านจะเข้ากระเป๋าร้านทันที` : ask.action === "refunded" ? `ยืนยันว่าโอนคืนเงิน ฿${baht(o.total)} ให้ผู้ซื้อ ${o.buyer_name} แล้ว?` : `ปฏิเสธ ${o.order_no}?${o.slip_path ? ` ผู้ซื้อโอนแล้ว ฿${baht(o.total)} — ระบบจะติดป้าย "ต้องคืนเงินผู้ซื้อ"` : ""}`}</p>
+              {(ask.action === "reject" || ask.action === "refunded") && <input autoFocus value={ask.reason} onChange={(e) => setAsk({ ...ask, reason: e.target.value })} placeholder={ask.action === "reject" ? "เหตุผล (บังคับ · ผู้ซื้อเห็นในหน้าติดตาม)" : "หมายเหตุการโอนคืน เช่น เลขอ้างอิง"} className="input-dark h-10 w-full" />}
+              <div className="flex gap-2">
+                <button onClick={() => setAsk(null)} className="chip h-10 px-4">ยกเลิก</button>
+                <button disabled={ask.action === "reject" && !ask.reason.trim()} onClick={() => act(o, ask.action, ask.reason.trim() || undefined)} className="btn-crimson h-10 px-5 rounded-full text-sm disabled:opacity-40">ยืนยัน</button>
+              </div>
+            </div>
+          )}
         </Card>
       ))}
     </>
@@ -122,6 +132,14 @@ function Orders({ d, reload, setMsg }: Sub) {
 const EMPTY = { id: "", vendor_id: "", name: "", description: "", warning: "", price: "", stock: "0", fda_no: "", category_id: "", bundle_ids: [] as string[], published: false, approved: true, age_restricted: true, images: [] as string[] };
 
 function Products({ d, reload, setMsg }: Sub) {
+  const [delId, setDelId] = useState("");
+  const del = async (id: string) => {
+    setDelId("");
+    const r = await fetch(`/api/market/admin/products?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+    const out = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string; archived?: boolean };
+    setMsg(out.ok ? (out.archived ? "สินค้านี้เคยมีออเดอร์ — ซ่อนจากหน้าเว็บแทนการลบ" : "ลบสินค้าแล้ว") : out.error || "ไม่สำเร็จ");
+    if (out.ok) await reload();
+  };
   const [f, setF] = useState(EMPTY);
   const [files, setFiles] = useState<FileList | null>(null);
   const [busy, setBusy] = useState(false);
@@ -161,7 +179,10 @@ function Products({ d, reload, setMsg }: Sub) {
               <p className="text-xs text-ink-300">{d.vendors.find((v) => v.id === p.vendor_id)?.name} · ฿{baht(p.price)} · สต็อก {p.stock} · อย. {p.fda_no || "—"}</p>
             </div>
             <Pill tone={p.published ? (p.approved === false ? "gold" : "green") : "muted"}>{!p.published ? "ฉบับร่าง" : p.approved === false ? "รออนุมัติ" : "เผยแพร่"}</Pill>
-            <button onClick={() => edit(p)} className="chip h-8 px-3 text-xs">แก้ไข</button>
+            <button onClick={() => edit(p)} className="chip h-10 px-3 text-xs">แก้ไข</button>
+            {delId === p.id
+              ? <span className="flex gap-1"><button onClick={() => setDelId("")} className="chip h-10 px-3 text-xs">ไม่ลบ</button><button onClick={() => del(p.id)} className="btn-crimson h-10 px-3 rounded-full text-xs">ยืนยันลบ</button></span>
+              : <button onClick={() => setDelId(p.id)} className="chip h-10 px-3 text-xs">ลบ</button>}
           </Card>
         ))}
       </div>
@@ -222,6 +243,14 @@ function Products({ d, reload, setMsg }: Sub) {
 function Vendors({ d, reload, setMsg }: Sub) {
   const [edit, setEdit] = useState<Record<string, { name: string; contact: string; gp: string; slug: string; description: string }>>({});
   const [n, setN] = useState({ name: "", contact: "", gp: "", slug: "", description: "" });
+  const [delId, setDelId] = useState("");
+  const del = async (id: string) => {
+    setDelId("");
+    const r = await fetch(`/api/market/admin/vendors?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+    const out = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string; archived?: boolean };
+    setMsg(out.ok ? (out.archived ? "ร้านนี้มีออเดอร์แล้ว — ซ่อนสินค้าทั้งร้านแทนการลบ" : "ลบร้านค้าแล้ว") : out.error || "ไม่สำเร็จ");
+    if (out.ok) await reload();
+  };
   const save = async (body: { id?: string; name: string; contact: string; gp: string; slug: string; description: string }) => {
     const r = await fetch("/api/market/admin/vendors", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: body.id, name: body.name, contact: body.contact, gp_pct: body.gp === "" ? null : Number(body.gp), slug: body.slug || undefined, description: body.description }) });
     const out = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string };
@@ -231,6 +260,7 @@ function Vendors({ d, reload, setMsg }: Sub) {
   };
   return (
     <Card>
+      <p className="text-xs text-ink-300 mb-1">ลบร้าน: ร้านที่เคยมีออเดอร์จะถูก "เก็บเข้าคลัง" (ซ่อนสินค้าทั้งร้าน) แทนการลบ เพื่อเก็บประวัติบัญชี</p>
       <p className="text-xs text-ink-300 mb-3">GP % ว่าง = [รอกำหนด] — คำสั่งซื้อที่ยืนยันระหว่างนั้นจะเก็บ GP เป็น “รอกำหนด” และกด “คำนวณ GP ใหม่” ได้ภายหลัง</p>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -246,7 +276,11 @@ function Vendors({ d, reload, setMsg }: Sub) {
                   <td className="pr-2"><input className="input-dark h-9 w-24" placeholder="รอกำหนด" inputMode="decimal" value={e.gp} onChange={(x) => set({ gp: x.target.value })} /></td>
                   <td className="pr-2"><input className="input-dark h-9 w-32" value={e.slug} onChange={(x) => set({ slug: x.target.value })} /></td>
                   <td className="pr-2"><input className="input-dark h-9 w-full min-w-40" placeholder="[รอกำหนด]" value={e.description} onChange={(x) => set({ description: x.target.value })} /></td>
-                  <td><button onClick={() => save({ id: v.id, ...e })} className="chip h-9 px-3">บันทึก</button></td>
+                  <td className="whitespace-nowrap"><button onClick={() => save({ id: v.id, ...e })} className="chip h-10 px-3">บันทึก</button>{" "}
+                    {delId === v.id
+                      ? <><button onClick={() => setDelId("")} className="chip h-10 px-3">ไม่ลบ</button> <button onClick={() => del(v.id)} className="btn-crimson h-10 px-3 rounded-full text-sm">ยืนยันลบร้าน</button></>
+                      : <button onClick={() => setDelId(v.id)} className="chip h-10 px-3">ลบ</button>}
+                  </td>
                 </tr>
               );
             })}

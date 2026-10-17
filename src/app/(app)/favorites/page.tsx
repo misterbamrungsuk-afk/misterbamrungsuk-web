@@ -6,6 +6,7 @@ import { currentCustomer } from "@/lib/customer/auth";
 import { getProfile } from "@/lib/customer/profile";
 import { getLivePeople } from "@/lib/home/live";
 import { PEOPLE, priceOf } from "@/lib/home/people";
+import { SavedVenues } from "./venues";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "เพื่อนที่ถูกใจ — Mister Bamrungsuk" };
@@ -42,6 +43,7 @@ export default async function FavoritesPage() {
           </div>
         )}
       </div>
+      <SavedVenues />
     </div>
   );
 }

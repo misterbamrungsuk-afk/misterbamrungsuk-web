@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { FileTypeError, verifiedType } from "@/lib/file-guard";
 import { cookies } from "next/headers";
 import { currentCustomer } from "@/lib/customer/auth";
 import { getProfile } from "@/lib/customer/profile";
@@ -32,10 +33,12 @@ export async function POST(req: Request) {
   const slip = fd?.get("slip");
   if (!(slip instanceof File) || !slip.size) return NextResponse.json({ ok: false, error: "แนบสลิปการโอน" }, { status: 400 });
   if (slip.size > 8 * 1024 * 1024 || !/^image\/(jpeg|png|webp)$/.test(slip.type)) return NextResponse.json({ ok: false, error: "สลิปต้องเป็นรูป JPG/PNG/WEBP ไม่เกิน 8MB" }, { status: 400 });
+  try { verifiedType(new Uint8Array(await slip.slice(0, 16).arrayBuffer())); } catch (e) { return NextResponse.json({ ok: false, error: e instanceof FileTypeError ? e.message : "สลิปต้องเป็นรูปภาพ" }, { status: 400 }); }
   try {
     const p = await buyMembership(me, String(fd?.get("tier") ?? ""), slip, String(fd?.get("ref") ?? "") || (await cookies()).get("mb_ref")?.value || null);
     return NextResponse.json({ ok: true, status: p.status, id: p.id });
   } catch (e) {
+    if (e instanceof FileTypeError) return NextResponse.json({ ok: false, error: e.message }, { status: 400 });
     if (e instanceof MemberError) return NextResponse.json({ ok: false, error: e.message }, { status: 400 });
     console.error("membership buy", e);
     return NextResponse.json({ ok: false, error: "ระบบขัดข้อง" }, { status: 500 });

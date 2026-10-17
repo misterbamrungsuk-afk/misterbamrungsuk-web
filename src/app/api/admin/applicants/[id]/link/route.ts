@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { siteUrl } from "@/lib/site-url";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
 import { extraOf, getById, saveProfile } from "@/lib/join/store";
+import { linkMinters, type Minter } from "@/lib/admin/link-minters";
 import { signResume } from "@/lib/join/resume";
 
 export const runtime = "nodejs";
@@ -27,7 +28,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const x = extraOf(row);
   const fix = x.kyc_status === "rejected" && Object.keys(x.kyc_reason ?? {}).length > 0;
   const base = siteUrl(req);
-  await saveProfile(row.id, { link_by: { email: s.email, at: new Date().toISOString() } });
+  const me: Minter = { email: s.email.trim().toLowerCase(), at: new Date().toISOString() };
+  // เก็บทุกคนที่ออกลิงก์ใน 30 วัน (ไม่ใช่แค่คนล่าสุด) — กัน A ออกลิงก์ → B ออกทับ → A อนุมัติ KYC เองได้
+  const all = [...linkMinters(row).filter((m) => m.email !== me.email), me];
+  await saveProfile(row.id, { link_by: me });
+  // link_by_all ต้องเพิ่มใน store.ts (Extra + extraOf + EXTRA_ONLY_KEYS) — ก่อนเพิ่ม DB จริงจะไม่รับคีย์นี้ จึงแยกบันทึกและไม่ให้ล้มทั้งคำขอ
+  await saveProfile(row.id, { link_by_all: all }).catch((e) => console.error("link_by_all", (e as Error)?.message));
   const url = `${base}/join/go?t=${encodeURIComponent(signResume(row.mb_code))}${fix ? "&to=rejected" : ""}`;
   return NextResponse.json({ ok: true, url, fix, mb: row.mb_code, nickname: row.nickname });
 }

@@ -29,7 +29,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   const clock = sec >= 86400 ? `${Math.floor(sec / 86400)} วัน ${Math.floor((sec % 86400) / 3600)} ชม.` : `${String(Math.floor(sec / 3600)).padStart(2, "0")}:${String(Math.floor((sec % 3600) / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
   const qa = "flex-1 h-16 rounded-2xl bg-[#211a18] text-[#f3ead9] text-[12px] flex flex-col items-center justify-center gap-1 hover:text-[#f3ead9]";
   return (
-    <div className="min-h-dvh pb-[150px]" style={{ background: "#171211" }}>
+    <div className="min-h-dvh pb-[210px]" style={{ background: "#171211" }}>
       <div className="flex items-center gap-[10px]" style={{ padding: 16 }}>
         <Link href={`/order/${id}`} aria-label="ย้อนกลับ" className="shrink-0"><img src={b.pt.img} alt="" className="w-[42px] h-[42px] rounded-full object-cover" style={{ border: `1px solid ${GOLD}` }} /></Link>
         <div className="flex-1 min-w-0"><b className="font-medium">{before ? `รอเจอ${b.pt.nick}` : `กำลังใช้เวลากับ${b.pt.nick}`}</b><div className="text-[12px] font-light text-[#d9c9b4] truncate">{b.place.label} {b.place.detail} · {b.hours} ชม.</div></div>
@@ -43,7 +43,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <div className="text-[13px] font-light text-[#d9c9b4]">{before ? "เริ่มนัดในอีก" : left ? "เหลืออีก" : "ครบเวลานัดแล้ว"}</div>
           <div className="font-semibold leading-[1.1] tabular-nums" style={{ fontSize: sec >= 86400 ? 34 : 48 }} aria-live="off">{left || before ? clock : "00:00:00"}</div>
-          <div className="text-[13px] font-light" style={{ color: GOLD }}>{before ? new Date(start).toLocaleString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) + " น." : `ผ่านไป ${hm(passed)}`}</div>
+          <div className="text-[13px] font-light" style={{ color: GOLD }}>{before ? new Date(start).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) + " น." : `ผ่านไป ${hm(passed)}`}</div>
         </div>
       </div>
       <div className="flex gap-2" style={{ margin: "28px 16px 0" }}>
@@ -56,8 +56,14 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
         <span>เงินยังพักไว้กับเรา จะโอนให้{b.pt.nick}เมื่อคุณยืนยันว่าจบนัด</span>
       </div>
       <div className="fixed left-0 right-0 bottom-0 mx-auto max-w-[480px] flex flex-col gap-2 z-40" style={{ padding: "12px 16px calc(20px + env(safe-area-inset-bottom))", background: "linear-gradient(180deg, rgba(23,18,17,0), #171211 30%)" }}>
-        {before ? <span className="h-[52px] rounded-2xl grid place-items-center text-[14px] text-[#b5a596]" style={{ border: `1px solid ${LN}` }}>จบนัดได้หลังถึงเวลานัด</span>
-          : <Link href={`/order/${id}/complete`} className="h-[52px] rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[16px] grid place-items-center hover:text-[#1b130b]">จบนัดหมาย</Link>}
+        {/* ตรงกับกติกาเซิร์ฟเวอร์ (customerComplete): ลูกค้ากดจบนัดได้ตั้งแต่เวลาเริ่มนัด ไม่ต้องรอครบชั่วโมง */}
+        {Date.parse(b.starts_at) > now ? <>
+          <button type="button" disabled aria-describedby="end-why" className="h-[52px] rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[16px] opacity-40">จบนัดหมาย</button>
+          <p id="end-why" className="m-0 text-center text-[12.5px] text-[#d9c9b4]">ยังไม่ถึงเวลานัด · กดจบนัดได้ตั้งแต่ {new Date(Date.parse(b.starts_at)).toLocaleTimeString("th-TH", { timeZone: "Asia/Bangkok", hour: "2-digit", minute: "2-digit" })} น.</p>
+        </> : <>
+          <Link href={`/order/${id}/complete`} className="h-[52px] rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[16px] grid place-items-center hover:text-[#1b130b]">จบนัดหมาย</Link>
+          <p className="m-0 text-center text-[12.5px] text-[#d9c9b4]">จบก่อนครบ {b.hours} ชม. ได้ · ถ้าเพื่อนแจ้งจบงานแล้วคุณไม่ตอบ ระบบยืนยันให้อัตโนมัติ</p>
+        </>}
         <p className="m-0 text-center text-[12px] font-light text-[#d9c9b4]">มีเหตุฉุกเฉินกด SOS · ทีมงานได้รับแจ้งพร้อมตำแหน่งที่คุณส่งทันที</p>
       </div>
     </div>

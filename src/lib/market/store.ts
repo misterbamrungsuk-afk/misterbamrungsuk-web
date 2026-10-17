@@ -5,7 +5,7 @@ import { createHmac, randomInt, randomUUID, timingSafeEqual } from "node:crypto"
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { SAMPLE_BLOCK, isMockId } from "./mock";
 import {
-  DEFAULT_SETTINGS, promoDiscount, shippingFor, slugify,
+  DEFAULT_SETTINGS, baht, promoDiscount, shippingFor, slugify,
   type Banner, type Category, type MarketSettings, type Order, type OrderItem, type OrderStatus, type Payout,
   type Product, type Promo, type Review, type Vendor, type VendorAccount, type VendorSplit,
 } from "./config";
@@ -112,6 +112,7 @@ function deleteT(k: Key, id: string): Promise<boolean> {
 }
 
 // ── vendors ──
+const asciiSlug = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || `shop-${randomUUID().slice(0, 6)}`;
 export const listVendors = () =>
   q<Vendor[]>(() => db().from("market_vendors").select("*").order("created_at"), () => mem.vendors).then((r) => r.map(normVendor));
 export const getVendorBySlug = async (slug: string) => (await listVendors()).find((v) => v.slug === slug || v.id === slug) ?? null;
@@ -121,7 +122,8 @@ export async function upsertVendor(v: { id?: string; name: string; contact?: str
   const row: Partial<Vendor> = { name: v.name, contact: v.contact ?? "", gp_pct: v.gp_pct ?? null };
   if (v.description !== undefined) row.description = v.description.slice(0, 2000);
   if (v.slug !== undefined || !v.id) {
-    const slug = slugify(v.slug || v.name);
+    // ร้านใหม่ = slug ภาษาอังกฤษ/ตัวเลขเท่านั้น (ชื่อไทยล้วน → shop-xxxxxx) ลิงก์ /shop/… อ่าน/แชร์ง่าย · ร้านเดิมคง slug เดิม
+    const slug = !v.id ? asciiSlug(v.slug || v.name) : slugify(v.slug || v.name);
     if (all.some((x) => x.slug === slug && x.id !== v.id)) throw new Error("slug ร้านซ้ำ");
     row.slug = slug;
   }
@@ -155,6 +157,31 @@ export async function saveProduct(p: Omit<Product, "id" | "created_at"> & { id?:
   }
   const full: Product = { ...row, id: randomUUID(), created_at: now() };
   return q<Product>(() => db().from("market_products").insert(full).select().single(), () => (mem.products.push(full), full)).then(normProduct);
+}
+
+/** ลบสินค้า — เคยอยู่ในออเดอร์แล้ว = ลบไม่ได้ (ประวัติบัญชี) → ซ่อนจากหน้าเว็บแทน */
+export async function removeProduct(id: string): Promise<{ deleted: boolean; archived: boolean }> {
+  const p = await getProduct(id);
+  if (!p) throw new Error("ไม่พบสินค้า");
+  if ((await listOrders()).some((o) => o.items.some((i) => i.product_id === id))) {
+    await q(() => db().from("market_products").update({ published: false }).eq("id", id).select().single(), () => { const r = mem.products.find((x) => x.id === id); if (r) r.published = false; return r; });
+    return { deleted: false, archived: true };
+  }
+  await q(() => db().from("market_products").delete().eq("id", id).then((r) => ({ data: true, error: r.error })), () => { const i = mem.products.findIndex((x) => x.id === id); if (i >= 0) mem.products.splice(i, 1); return true; });
+  return { deleted: true, archived: false };
+}
+/** ลบร้าน — มีออเดอร์แล้ว = ซ่อนสินค้าทั้งร้านแทน (กระเป๋า/รายงานยังอ้างอิงได้) · ไม่มี = ลบสินค้า บัญชีร้าน และร้าน */
+export async function removeVendor(id: string): Promise<{ deleted: boolean; archived: boolean }> {
+  if (!(await listVendors()).some((v) => v.id === id)) throw new Error("ไม่พบร้านค้า");
+  const mine = (await listProducts()).filter((p) => p.vendor_id === id);
+  if ((await listOrders()).some((o) => o.items.some((i) => i.vendor_id === id))) {
+    for (const p of mine) if (p.published) await saveProduct({ ...p, published: false });
+    return { deleted: false, archived: true };
+  }
+  for (const p of mine) await removeProduct(p.id);
+  for (const a of (await listAccounts()).filter((x) => x.vendor_id === id)) await deleteAccount(a.id);
+  await q(() => db().from("market_vendors").delete().eq("id", id).then((r) => ({ data: true, error: r.error })), () => { const i = mem.vendors.findIndex((x) => x.id === id); if (i >= 0) mem.vendors.splice(i, 1); return true; });
+  return { deleted: true, archived: false };
 }
 
 async function adjustStock(items: OrderItem[], sign: 1 | -1) {
@@ -401,13 +428,16 @@ export function computeGp(o: Pick<Order, "items" | "discount" | "shipping_fee">,
   return { gp_pct: net ? r2((gp / net) * 100) : 0, gp_amount: r2(gp), vendor_amount: r2(split.reduce((a, s) => a + s.payout!, 0)), vendor_split: split };
 }
 
-export type OrderAction = "confirm" | "reject" | "ship" | "done" | "regp";
+export type OrderAction = "confirm" | "reject" | "ship" | "done" | "regp" | "refunded";
+/** ป้ายใน admin_note: ปฏิเสธออเดอร์ที่ผู้ซื้อโอนแล้ว (มีสลิป) → ต้องคืนเงินนอกระบบ · คืนแล้วเปลี่ยนป้าย */
+export const REFUND_DUE = "[ต้องคืนเงินผู้ซื้อ";
+export const REFUND_DONE = "[คืนเงินผู้ซื้อแล้ว";
 
 /** แอดมินเปลี่ยนสถานะ — ยืนยันชำระ = คำนวณ GP + ตัดสต็อก; ปฏิเสธหลังยืนยัน = คืนสต็อก; regp = คำนวณ GP ใหม่ (หลังตั้ง %) */
 export async function decideOrder(id: string, action: OrderAction, admin: string, extra: { tracking_no?: string; carrier?: string; note?: string; reason?: string } = {}): Promise<Order> {
   const o = await getOrder(id);
   if (!o) throw new Error("ไม่พบคำสั่งซื้อ");
-  const allow: Record<OrderAction, OrderStatus[]> = { confirm: ["pending"], reject: ["pending", "paid"], ship: ["paid"], done: ["shipped"], regp: ["paid", "shipped", "done"] };
+  const allow: Record<OrderAction, OrderStatus[]> = { confirm: ["pending"], reject: ["pending", "paid"], ship: ["paid"], done: ["shipped"], regp: ["paid", "shipped", "done"], refunded: ["rejected"] };
   if (!allow[action].includes(o.status)) throw new Error(`สถานะปัจจุบัน (${o.status}) ทำรายการนี้ไม่ได้`);
   const patch: Partial<Order> = { decided_by: admin };
   if (extra.note !== undefined) patch.admin_note = extra.note.slice(0, 500) || null;
@@ -418,8 +448,18 @@ export async function decideOrder(id: string, action: OrderAction, admin: string
     Object.assign(patch, computeGp(o, await listVendors()));
     if (o.status === "done") { const out = await patchOrder(id, patch); await creditVendors(out, admin).catch((e) => console.error("market credit", e)); return out; }
   } else if (action === "reject") {
+    const reason = (extra.reason ?? "").trim().slice(0, 300);
+    if (!reason) throw new Error("ระบุเหตุผลที่ปฏิเสธ");
     patch.status = "rejected";
-    patch.reject_reason = (extra.reason ?? "").trim().slice(0, 300) || null;
+    patch.reject_reason = reason;
+    // ล้างส่วนแบ่ง/GP — ออเดอร์ที่ปฏิเสธต้องไม่ถูกนับเป็นยอดขาย/ค้างจ่ายร้าน
+    Object.assign(patch, { gp_amount: null, vendor_amount: null, vendor_split: null });
+    // ผู้ซื้อโอนแล้ว (มีสลิป) = เงินอยู่นอกระบบ → ติดป้ายต้องคืนเงินพร้อมยอด ให้แอดมินตามคืน
+    if (o.slip_path) patch.admin_note = `${REFUND_DUE} ฿${baht(Number(o.total))}] ${extra.note ?? o.admin_note ?? ""}`.trim().slice(0, 500);
+  } else if (action === "refunded") {
+    const cur = o.admin_note ?? "";
+    if (!cur.startsWith(REFUND_DUE)) throw new Error("ออเดอร์นี้ไม่มีรายการต้องคืนเงิน");
+    patch.admin_note = `${REFUND_DONE} ฿${baht(Number(o.total))} · ${new Date(Date.now() + 7 * 3600_000).toISOString().slice(0, 10)}${extra.note ? ` · ${extra.note}` : ""}] ${cur.replace(/^\[[^\]]*\]\s*/, "")}`.slice(0, 500);
 
   } else if (action === "ship") {
     if (!extra.tracking_no?.trim()) throw new Error("ใส่เลขพัสดุ");

@@ -40,16 +40,26 @@ async function completedThisMonth(parttime_id: string): Promise<number> {
  *  เฉพาะนัดที่ยังดำเนินอยู่ (accepted/checked_in) — ข้อพิพาท/ขอยกเลิก ต้องให้แอดมินตัดสิน (adminResolve) เท่านั้น
  *  ทิปตัดจากกระเป๋าลูกค้าไม่ได้ (ยอดไม่พอ) = จบงานโดยไม่มีทิป · pt_pending_satang = ยอดที่เข้า PT.pending จริง */
 /** ค่าห้องเข้ากระเป๋าของสปาพาร์ทเนอร์เจ้านั้นโดยตรง (ถอนเองผ่านพอร์ทัล) · สถานที่ที่ไม่ใช่พาร์ทเนอร์ = ค้างจ่ายรวมของบริษัท */
-function roomLeg(b: Booking, amount: number): Leg {
+/** ค่าห้องสปา → กระเป๋าพาร์ทเนอร์ หัก % แพลตฟอร์ม (ตามที่ตกลงกับพาร์ทเนอร์ · snapshot ตอนรับนัด) เข้า revenue
+ *  สปาที่ไม่ใช่พาร์ทเนอร์ในระบบ = พักไว้ partner_payable ทั้งก้อน */
+async function roomLegs(b: Booking, amount: number): Promise<Leg[]> {
+  if (!amount) return [];
   const pid = b.place?.spa_id;
   const ok = !!pid && (/^[0-9a-f-]{36}$/.test(pid) || !process.env.SUPABASE_URL);
-  return ok ? { owner_type: "partner", owner_id: pid!, bucket: "available", amount } : { owner_type: "platform", owner_id: PLATFORM, bucket: "partner_payable", amount };
+  if (!ok) return [{ owner_type: "platform", owner_id: PLATFORM, bucket: "partner_payable", amount }];
+  const pct = await (await import("@/lib/partner/portal")).bookingPlatformPct(b.code, pid!).catch(() => 0);
+  const keep = Math.round(amount * pct / 100);
+  return [
+    { owner_type: "partner", owner_id: pid!, bucket: "available", amount: amount - keep },
+    { owner_type: "platform", owner_id: PLATFORM, bucket: "revenue", amount: keep },
+  ].filter((l) => l.amount !== 0) as Leg[];
 }
 
 async function split(b: Booking, actor: string, tip: number): Promise<Booking> {
   const cfg = await getEarnings();
   const pct = pctFor(cfg.tiers, (await completedThisMonth(b.parttime_id)) + 1);
   const ptShare = Math.round(b.price_satang * pct / 100);
+  const room = await roomLegs(b, b.room_fee_satang ?? 0);
   const run = async (t: number) => {
     const tipPt = Math.round(t * cfg.tipPct / 100);
     const legs: Leg[] = [
@@ -57,7 +67,7 @@ async function split(b: Booking, actor: string, tip: number): Promise<Booking> {
       { owner_type: "parttime", owner_id: b.parttime_id, bucket: "pending", amount: ptShare + tipPt },
       { owner_type: "platform", owner_id: PLATFORM, bucket: "revenue", amount: b.price_satang - ptShare + (t - tipPt) },
     ];
-    if (b.room_fee_satang) legs.push(roomLeg(b, b.room_fee_satang));
+    legs.push(...room);
     if (t > 0) legs.push({ owner_type: "customer", owner_id: b.customer_id, bucket: "available", amount: -t });
     return moveBooking(b.id, ["accepted", "checked_in"], { status: "completed", completed_at: now(), share_pct: pct, tip_satang: t, pt_pending_satang: ptShare + tipPt },
       { kind: "split", ref: { type: "booking", id: b.id }, idem: `split:${b.id}`, note: `แบ่งเงินนัด ${b.code} · ส่วนแบ่ง ${pct}%${t ? ` · ทิป ฿${t / 100}` : ""}`, actor, legs: legs.filter((l) => l.amount !== 0) });
@@ -146,13 +156,21 @@ export async function ptDone(id: string, parttime_id: string) {
   return r;
 }
 
+/** ทิปสูงสุดต่อนัด (บาท) — หน้า "จบนัด" ใช้ค่าเดียวกัน */
+export const TIP_MAX = 5000;
 /** ลูกค้ายืนยันจบงาน + รีวิว + ทิป (บอร์ด C-Complete) */
 export async function customerComplete(id: string, customer_id: string, rv: { rating: number; tags: string[]; again: string; body: string; tip: number }) {
   const b = await getBooking(id);
   if (!b || b.customer_id !== customer_id) throw new BookingError("ไม่พบการจอง", "notfound");
   if (!["accepted", "checked_in"].includes(b.status)) throw new BookingError("ยืนยันจบงานไม่ได้ในสถานะนี้", "state");
   if (Date.parse(b.starts_at) > Date.now()) throw new BookingError("ยังไม่ถึงเวลานัด · กดจบงานได้หลังเริ่มนัด");
-  const tip = Math.max(0, Math.round(rv.tip) * 100);
+  // รีวิวเป็นข้อความสาธารณะ — ห้ามมีช่องทางติดต่อ (กติกาเดียวกับแชท) · ปฏิเสธทั้งคำขอ ไม่จบงานโดยทิ้งรีวิว
+  const { hasContact } = await import("@/lib/join/contact-guard");
+  if (rv.body && hasContact(rv.body)) throw new BookingError("รีวิวห้ามมีเบอร์โทร LINE ลิงก์ หรือช่องทางติดต่อ · แก้ข้อความแล้วส่งใหม่", "contact");
+  // ทิปเป็นบาทเต็ม 0–TIP_MAX (กันพิมพ์ผิดหลักจนตัดเงินก้อนใหญ่)
+  const tipBaht = Math.round(Number(rv.tip) || 0);
+  if (tipBaht < 0 || tipBaht > TIP_MAX) throw new BookingError(`ทิปได้ 0–${TIP_MAX.toLocaleString()} บาท`, "tip");
+  const tip = tipBaht * 100;
   if (tip > 0 && ((await balances("customer", customer_id)).available ?? 0) < tip) throw new BookingError("ยอดในกระเป๋าไม่พอสำหรับทิป");
   const r = await split(b, `customer:${customer_id}`, tip);
   if (rv.rating >= 1 && rv.rating <= 5) await saveReview({ booking_id: b.id, parttime_id: b.parttime_id, customer_id, rating: Math.round(rv.rating), tags: rv.tags.slice(0, 6).map((t) => t.slice(0, 20)), again: rv.again.slice(0, 10) || null, body: rv.body.trim().slice(0, 500) || null, hidden: false, created_at: now() });
@@ -162,25 +180,20 @@ export async function dispute(id: string, customer_id: string, text: string) {
   const b = await getBooking(id);
   if (!b || b.customer_id !== customer_id) throw new BookingError("ไม่พบการจอง", "notfound");
   if (!text.trim()) throw new BookingError("เล่าปัญหาสั้น ๆ ให้ทีมงานทราบ");
+  // ก่อนเริ่มนัด (ยังไม่เช็กอิน) = ใช้ "ยกเลิก / เปลี่ยนเวลา" ตามกติกา ไม่ใช่แจ้งปัญหา (กันเลี่ยงกติกายกเลิก)
+  if (b.status === "accepted" && Date.parse(b.starts_at) > Date.now()) throw new BookingError("ยังไม่ถึงเวลานัด · ถ้าไม่สะดวกให้กด ยกเลิก / เปลี่ยนเวลา", "state");
   const r = await transition(b.id, ["accepted", "checked_in"], { status: "disputed", resolution: { dispute: text.slice(0, 1000), at: now() } });
   if (!r) throw new BookingError("แจ้งปัญหาไม่ได้ในสถานะนี้ · ติดต่อทีมงานทาง LINE", "state");
   await addEvent(b.id, "disputed", `customer:${customer_id}`, { text });
   await notify({ user_type: "admin", user_id: "ops", kind: "dispute", title: `ลูกค้าแจ้งปัญหา ${b.code}`, body: text.slice(0, 300), url: "/admin/orders" });
+  // Part-Time ต้องรู้ว่างานนี้ถูกแจ้งปัญหา (เงินพักไว้จนทีมงานตัดสิน)
+  await notify({ user_type: "parttime", user_id: b.parttime_id, kind: "booking_disputed", title: `ลูกค้าแจ้งปัญหา ${b.code}`, body: "ทีมงานกำลังตรวจสอบ · รายได้งานนี้พักไว้จนกว่าจะตัดสิน", url: `/join/profile/${b.parttime_mb}/jobs` });
   return r;
 }
 
-/** แอดมินตัดสินคำขอยกเลิก/ข้อพิพาท: refundPct = % ยอดรวมที่คืนลูกค้า · ส่วนที่เหลือแบ่งตามปกติ · reject = กลับเป็นยืนยันแล้ว */
-export async function adminResolve(id: string, admin: string, d: { action: "refund" | "reject"; refundPct: number; note: string }) {
-  const b = await getBooking(id);
-  if (!b) throw new BookingError("ไม่พบการจอง", "notfound");
-  if (!["cancel_requested", "disputed"].includes(b.status)) throw new BookingError("การจองนี้ไม่ได้รอตัดสิน", "state");
-  if (d.action === "reject") {
-    const r = await transition(b.id, ["cancel_requested", "disputed"], { status: "accepted", resolution: { ...(b.resolution ?? {}), decided: "reject", note: d.note, by: admin, at: now() } });
-    await addEvent(b.id, "resolve_reject", admin, d);
-    await notify({ user_type: "customer", user_id: b.customer_id, kind: "booking_resolved", title: `ผลพิจารณา ${b.code}`, body: d.note || "นัดยังคงอยู่ตามเดิม", url: `/order/${b.id}` });
-    return r;
-  }
-  const pct = Math.max(0, Math.min(100, Math.round(d.refundPct)));
+/** คำนวณผลตัดสินแบบคืนลูกค้า pct% (ใช้ทั้งตัดสินจริงและให้แอดมินดูก่อนยืนยัน) */
+async function refundMath(b: Booking, refundPct: number) {
+  const pct = Math.max(0, Math.min(100, Math.round(refundPct)));
   const refund = Math.round(b.total_satang * pct / 100);
   // ส่วนที่ไม่คืน: ค่าห้องตามสัดส่วน → ค้างจ่ายพาร์ทเนอร์ · ค่าบริการ → แบ่ง PT ตามขั้น + รายได้บริษัท
   const roomKeep = Math.round(b.room_fee_satang * (100 - pct) / 100);
@@ -188,21 +201,88 @@ export async function adminResolve(id: string, admin: string, d: { action: "refu
   const cfg = await getEarnings();
   const sharePct = pctFor(cfg.tiers, (await completedThisMonth(b.parttime_id)) + 1);
   const ptShare = Math.round(serviceKeep * sharePct / 100);
+  return { pct, refund, roomKeep, serviceKeep, sharePct, ptShare, revenue: serviceKeep - ptShare };
+}
+/** แอดมินดูตัวเลขก่อนยืนยันผลตัดสิน */
+export async function resolvePreview(id: string, refundPct: number) {
+  const b = await getBooking(id);
+  if (!b) throw new BookingError("ไม่พบการจอง", "notfound");
+  const m = await refundMath(b, refundPct);
+  return { total: b.total_satang, refund: m.refund, pt: m.ptShare, share_pct: m.sharePct, room: m.roomKeep, revenue: m.revenue, back_to: b.checked_in_at ? "checked_in" : "accepted" };
+}
+
+/** แอดมินตัดสินคำขอยกเลิก/ข้อพิพาท: refundPct = % ยอดรวมที่คืนลูกค้า · ส่วนที่เหลือแบ่งตามปกติ
+ *  reject = นัดกลับไปสถานะเดิม (เช็กอินแล้ว = ระหว่างนัด ไม่ให้เช็กอินหาย) */
+export async function adminResolve(id: string, admin: string, d: { action: "refund" | "reject"; refundPct: number; note: string }) {
+  const b = await getBooking(id);
+  if (!b) throw new BookingError("ไม่พบการจอง", "notfound");
+  if (!["cancel_requested", "disputed"].includes(b.status)) throw new BookingError("การจองนี้ไม่ได้รอตัดสิน", "state");
+  // คำร้องผิดนัดตัดสินที่แท็บ "ผิดนัด" (มีกติกาเงิน + ใบเตือนของมันเอง) — กันตัดสินซ้อนสองทาง
+  if (b.status === "disputed" && b.resolution?.noshow && !admin.startsWith("auto:")) throw new BookingError("นัดนี้เป็นคำร้องผิดนัด · ตัดสินที่แท็บ \"ผิดนัด\"", "state");
+  const wasCancel = b.status === "cancel_requested";
+  const ptUrl = `/join/profile/${b.parttime_mb}/jobs`;
+  if (d.action === "reject") {
+    const back = b.checked_in_at ? "checked_in" : "accepted";
+    const r = await transition(b.id, ["cancel_requested", "disputed"], { status: back, resolution: { ...(b.resolution ?? {}), decided: "reject", note: d.note, by: admin, at: now() } });
+    if (!r) throw new BookingError("การจองนี้ถูกตัดสินไปแล้ว", "state");
+    await addEvent(b.id, "resolve_reject", admin, { ...d, back });
+    await notify({ user_type: "customer", user_id: b.customer_id, kind: "booking_resolved", title: `ผลพิจารณา ${b.code}`, body: d.note || "นัดยังคงอยู่ตามเดิม", url: `/order/${b.id}` });
+    await notify({ user_type: "parttime", user_id: b.parttime_id, kind: "booking_resolved", title: `ผลพิจารณา ${b.code}`, body: `${wasCancel ? "ไม่อนุมัติการยกเลิก" : "ยกคำร้องของลูกค้า"} · นัดยังคงอยู่ตามเดิม`, url: ptUrl });
+    return r;
+  }
+  const { pct, refund, roomKeep, serviceKeep, sharePct, ptShare } = await refundMath(b, d.refundPct);
   const legs: Leg[] = [
     { owner_type: "platform", owner_id: PLATFORM, bucket: "escrow", amount: -b.total_satang },
     { owner_type: "customer", owner_id: b.customer_id, bucket: "available", amount: refund },
     { owner_type: "parttime", owner_id: b.parttime_id, bucket: "pending", amount: ptShare },
     { owner_type: "platform", owner_id: PLATFORM, bucket: "revenue", amount: serviceKeep - ptShare },
-    roomLeg(b, roomKeep),
+    ...(await roomLegs(b, roomKeep)),
   ];
   const r = await moveBooking(b.id, ["cancel_requested", "disputed"], {
     status: pct === 100 ? "refunded" : "completed", completed_at: now(), share_pct: pct === 100 ? 0 : sharePct, pt_pending_satang: ptShare,
-    resolution: { ...(b.resolution ?? {}), decided: "refund", refund_pct: pct, refund_satang: refund, pt_satang: ptShare, room_satang: roomKeep, note: d.note, by: admin, at: now() },
+    // cancelled = มาจากคำขอยกเลิก (สถานะเงินเป็น completed แต่หน้าเว็บต้องแสดงว่า "ยกเลิก" ไม่ใช่ "นัดเสร็จสิ้น")
+    resolution: { ...(b.resolution ?? {}), decided: "refund", cancelled: wasCancel, refund_pct: pct, refund_satang: refund, pt_satang: ptShare, room_satang: roomKeep, note: d.note, by: admin, at: now() },
     ...(ptShare ? {} : { matured_at: now() }),
   }, { kind: pct === 100 ? "refund" : "split", ref: { type: "booking", id: b.id }, idem: `resolve:${b.id}`, note: `ผลพิจารณา ${b.code} · คืนลูกค้า ${pct}%`, actor: admin, legs: legs.filter((l) => l.amount !== 0) });
   if (!r) throw new BookingError("การจองนี้ถูกตัดสินไปแล้ว", "state");
   await addEvent(b.id, "resolve_refund", admin, { pct, refund, ptShare });
-  await notify({ user_type: "customer", user_id: b.customer_id, kind: "booking_resolved", title: `ผลพิจารณา ${b.code}`, body: refund ? `คืนเงิน ${(refund / 100).toLocaleString()} บาทเข้ากระเป๋าแล้ว` : d.note, url: `/order/${b.id}` });
+  const custBody = refund ? `คืนเงิน ${(refund / 100).toLocaleString()} บาทเข้ากระเป๋าแล้ว` : wasCancel ? "ยกเลิก · ไม่คืนเงินตามกติกาการยกเลิก" : d.note;
+  await notify({ user_type: "customer", user_id: b.customer_id, kind: "booking_resolved", title: `ผลพิจารณา ${b.code}`, body: custBody, url: `/order/${b.id}` });
+  // ยกเลิกอัตโนมัติตามกติกา: cancelByCustomer แจ้ง Part-Time เองแล้ว
+  if (!admin.startsWith("auto:")) await notify({ user_type: "parttime", user_id: b.parttime_id, kind: "booking_resolved", title: `ผลพิจารณา ${b.code}`, body: ptShare ? `ลูกค้าได้คืน ${pct}% · คุณได้ส่วนแบ่ง ฿${(ptShare / 100).toLocaleString()} (รอปล่อยเงิน)` : `คืนลูกค้า ${pct}% · งานนี้ไม่มีรายได้`, url: ptUrl });
+  return r;
+}
+
+/** ตัดสินคำร้องผิดนัด (no-show) — ย้ายเงินจาก escrow ของนัดนี้ (idem เดียวกับ adminResolve = ตัดสินได้ครั้งเดียว)
+ *  ลูกค้าไม่มา: เก็บเต็มจำนวน · Part-Time ได้ payoutPct% ของค่าบริการ · ค่าห้องให้สปา · ที่เหลือรายได้บริษัท
+ *  Part-Time ไม่มา: คืนลูกค้า 100% */
+export async function settleNoShow(id: string, decision: "customer_no_show" | "provider_no_show", admin: string, payoutPct: number) {
+  const b = await getBooking(id);
+  if (!b) throw new BookingError("ไม่พบการจอง", "notfound");
+  const tag = `noshow:${decision}`;
+  if (b.resolution?.decided === tag) return b; // ลงเงินไปแล้ว (เรียกซ้ำหลังบันทึกคำร้องไม่สำเร็จ)
+  if (b.status !== "disputed") throw new BookingError("การจองนี้ถูกตัดสิน/เปลี่ยนสถานะไปแล้ว", "state");
+  const provider = decision === "provider_no_show";
+  const ptShare = provider ? 0 : Math.round(b.price_satang * payoutPct / 100);
+  const legs: Leg[] = provider ? [
+    { owner_type: "platform", owner_id: PLATFORM, bucket: "escrow", amount: -b.total_satang },
+    { owner_type: "customer", owner_id: b.customer_id, bucket: "available", amount: b.total_satang },
+  ] : [
+    { owner_type: "platform", owner_id: PLATFORM, bucket: "escrow", amount: -b.total_satang },
+    { owner_type: "parttime", owner_id: b.parttime_id, bucket: "pending", amount: ptShare },
+    { owner_type: "platform", owner_id: PLATFORM, bucket: "revenue", amount: b.price_satang - ptShare },
+    ...(await roomLegs(b, b.room_fee_satang ?? 0)),
+  ];
+  const refund = provider ? b.total_satang : 0;
+  const r = await moveBooking(b.id, ["disputed"], {
+    status: provider ? "refunded" : "completed", completed_at: now(), share_pct: provider ? 0 : payoutPct, pt_pending_satang: ptShare,
+    resolution: { ...(b.resolution ?? {}), decided: tag, refund_pct: provider ? 100 : 0, refund_satang: refund, pt_satang: ptShare, room_satang: provider ? 0 : b.room_fee_satang, by: admin, at: now() },
+    ...(ptShare ? {} : { matured_at: now() }),
+  }, { kind: provider ? "refund" : "split", ref: { type: "booking", id: b.id }, idem: `resolve:${b.id}`, note: `ผิดนัด ${b.code} · ${provider ? "Part-Time ไม่มา คืน 100%" : `ลูกค้าไม่มา · Part-Time ${payoutPct}%`}`, actor: admin, legs: legs.filter((l) => l.amount !== 0) });
+  if (!r) throw new BookingError("การจองนี้ถูกตัดสินไปแล้ว", "state");
+  await addEvent(b.id, "noshow_decided", admin, { decision, refund, ptShare });
+  await notify({ user_type: "customer", user_id: b.customer_id, kind: "noshow_decided", title: `ผลตัดสินผิดนัด ${b.code}`, body: provider ? `เพื่อนไม่มาตามนัด · คืนเงิน ${(refund / 100).toLocaleString()} บาทเข้ากระเป๋าแล้ว` : "ทีมงานตรวจหลักฐานแล้ว: ลูกค้าไม่มาตามนัด · ไม่คืนเงินตามกติกา", url: `/order/${b.id}` });
+  await notify({ user_type: "parttime", user_id: b.parttime_id, kind: "noshow_decided", title: `ผลตัดสินผิดนัด ${b.code}`, body: provider ? "ทีมงานตัดสิน: คุณไม่มาตามนัด · คืนเงินลูกค้า + ใบเตือน 1 ครั้ง" : `ลูกค้าไม่มาตามนัด · คุณได้ ฿${(ptShare / 100).toLocaleString()} (${payoutPct}% รอปล่อยเงิน)`, url: `/join/profile/${b.parttime_mb}/jobs` });
   return r;
 }
 

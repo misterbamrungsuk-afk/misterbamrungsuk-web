@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { marketAdmin } from "@/lib/market/admin";
-import { upsertVendor } from "@/lib/market/store";
+import { removeVendor, upsertVendor } from "@/lib/market/store";
 
 export const runtime = "nodejs";
 
@@ -22,4 +22,11 @@ export async function POST(req: Request) {
   } catch (e) {
     return NextResponse.json({ ok: false, error: (e as Error).message }, { status: 400 });
   }
+}
+
+// ลบร้าน (?id=) — มีออเดอร์แล้ว = ซ่อนสินค้าทั้งร้านแทน (archived)
+export async function DELETE(req: Request) {
+  if (!(await marketAdmin())) return NextResponse.json({ ok: false }, { status: 401 });
+  try { return NextResponse.json({ ok: true, ...(await removeVendor(new URL(req.url).searchParams.get("id") ?? "")) }); }
+  catch (e) { return NextResponse.json({ ok: false, error: (e as Error).message }, { status: 400 }); }
 }

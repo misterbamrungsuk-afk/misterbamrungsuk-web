@@ -5,6 +5,8 @@ import { currentParttime } from "@/lib/bookings/auth";
 import { balances } from "@/lib/wallet";
 import { BOOST_PLANS, BoostError, activeBoosts, buyBoostWithSlip, buyBoostWithWallet, listBoosts } from "@/lib/join/boost";
 import { notify } from "@/lib/bookings";
+import { extraOf } from "@/lib/join/store";
+import { GATE_MSG, isPtActive } from "@/lib/join/pt-ui";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,7 +17,7 @@ export async function GET(req: Request) {
   const a = await currentParttime(u.searchParams.get("mb") ?? "", u.searchParams.get("t"));
   if (!a) return NextResponse.json({ ok: false }, { status: 403 });
   const [act, list, w] = await Promise.all([activeBoosts(), listBoosts(), balances("parttime", a.id).catch(() => ({} as Record<string, number>))]);
-  return NextResponse.json({ ok: true, plans: BOOST_PLANS, until: act.get(a.id) ?? null, pending: list.filter((b) => b.parttime_id === a.id && b.status === "pending").length, available: (w.available ?? 0) + (w.boost_credit ?? 0), boostCredit: w.boost_credit ?? 0 });
+  return NextResponse.json({ ok: true, active: isPtActive(extraOf(a)), plans: BOOST_PLANS, until: act.get(a.id) ?? null, pending: list.filter((b) => b.parttime_id === a.id && b.status === "pending").length, available: (w.available ?? 0) + (w.boost_credit ?? 0), boostCredit: w.boost_credit ?? 0 });
 }
 
 export async function POST(req: Request) {
@@ -25,6 +27,8 @@ export async function POST(req: Request) {
   const b = multipart ? { mb: String(fd?.get("mb") ?? ""), t: String(fd?.get("t") ?? ""), plan: String(fd?.get("plan") ?? "") } : ((await req.json().catch(() => ({}))) as { mb?: string; t?: string; plan?: string; pay?: string });
   const a = await currentParttime(String(b.mb ?? ""), b.t || null);
   if (!a) return NextResponse.json({ ok: false }, { status: 403 });
+  // โปรโมทได้เฉพาะ Part-Time ที่อนุมัติและเปิดโปรไฟล์แล้ว (ยังไม่แสดงต่อลูกค้า = จ่ายไปก็ไม่มีผล)
+  if (!isPtActive(extraOf(a))) return NextResponse.json({ ok: false, error: GATE_MSG }, { status: 409 });
   try {
     if (multipart) {
       const slip = fd?.get("slip");

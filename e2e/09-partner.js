@@ -10,7 +10,7 @@ const ok = (n, c, x = '') => { if (!c) fails++; console.log((c ? 'PASS ' : 'FAIL
 const ADM = { cookie: 'mord_admin=' + adm, 'content-type': 'application/json' };
 const sign = (p) => { const b = Buffer.from(JSON.stringify(p)).toString('base64url'); return b + '.' + crypto.createHmac('sha256', KEY).update(b).digest('base64url'); };
 const C1 = { cookie: 'hamoo_session=' + sign({ sub: 'demo:spa@test.local', email: 'spa@test.local', exp: Date.now() + 3600e3 }), 'content-type': 'application/json' };
-const T = (() => { const b = Buffer.from(JSON.stringify({ mb, exp: Date.now() + 3600_000 })).toString('base64url'); return b + '.' + crypto.createHmac('sha256', KEY).update('resume:' + b).digest('base64url'); })();
+const T = (() => { const b = Buffer.from(JSON.stringify({ mb, iat: Date.now(), exp: Date.now() + 3600_000 })).toString('base64url'); return b + '.' + crypto.createHmac('sha256', KEY).update('resume:' + b).digest('base64url'); })();
 const img = fs.readFileSync(WEB + '/public/brand/home/p-n04.jpg');
 const J = (r) => r.json();
 (async () => {
@@ -20,7 +20,7 @@ const J = (r) => r.json();
   const list = await J(await fetch(B + '/api/admin/partners', { headers: ADM }));
   const p = (list.rows || list.partners || list).find?.((x) => x.email.startsWith('spa-owner'));
   ok('partner found', !!p, JSON.stringify(Object.keys(list)).slice(0, 80));
-  r = await fetch(B + `/api/admin/partners/${p.id}`, { method: 'PATCH', headers: ADM, body: JSON.stringify({ account_status: 'active', status: 'active' }) }); j = await J(r); ok('activate partner', j.ok, j.error);
+  r = await fetch(B + `/api/admin/partners/${p.id}`, { method: 'PATCH', headers: ADM, body: JSON.stringify({ account_status: 'active', status: 'active', qc_status: 'passed' }) }); j = await J(r); ok('activate partner', j.ok, j.error);
   const PC = { cookie: 'mb_partner=' + sign({ k: 'ps', pid: p.id, exp: Date.now() + 3600e3 }), 'content-type': 'application/json' };
   // ลูกค้าเติมเงินแล้วจองที่สปานี้
   const fd = new FormData(); fd.set('amount', '20000'); fd.set('slip', new File([img], 's.jpg', { type: 'image/jpeg' }));
@@ -41,8 +41,11 @@ const J = (r) => r.json();
   const n = await J(await fetch(B + '/api/notifications', { headers: C1 }));
   ok('customer notified spa full', JSON.stringify(n).includes('แจ้งห้องเต็ม'));
   // แอดมินคืนเงินเต็ม → พอร์ทัลเป็น "ยกเลิก"
-  await fetch(B + `/api/bookings/${id}/cancel`, { method: 'POST', headers: C1, body: JSON.stringify({ reason: 'ห้องเต็ม' }) });
-  r = await fetch(B + '/api/admin/bookings', { method: 'POST', headers: ADM, body: JSON.stringify({ id, action: 'refund', refund_pct: 100, note: 'สปาเต็ม' }) }); ok('admin refund', (await J(r)).ok);
+  const cx = await J(await fetch(B + `/api/bookings/${id}/cancel`, { method: 'POST', headers: C1, body: JSON.stringify({ reason: 'ห้องเต็ม' }) }));
+  // ยกเลิกล่วงหน้านาน = คืนเงินอัตโนมัติตามกติกา · ไม่งั้นแอดมินคืนเต็ม
+  const auto = (await J(await fetch(B + `/api/bookings/${id}`, { headers: C1 }))).booking.status === 'refunded';
+  if (!auto) { r = await fetch(B + '/api/admin/bookings', { method: 'POST', headers: ADM, body: JSON.stringify({ id, action: 'refund', refund_pct: 100, note: 'สปาเต็ม' }) }); }
+  ok('refunded (auto rule or admin)', auto || (await J(r)).ok, JSON.stringify(cx).slice(0, 120));
   t = (await (await fetch(B + '/partner/portal/bookings', { headers: PC })).text()).replace(/\\"/g, '"');
   ok('portal row cancelled', new RegExp(`"booking_ref":"${bk.code}"[^}]*"status":"cancelled"`).test(t));
   console.log(fails ? fails + ' FAILED' : 'ALL PASS');

@@ -42,7 +42,7 @@ export const ADDRESSES = [
 
 export function thaiDate(iso: string) {
   const d = new Date(`${iso}T00:00:00`);
-  return d.toLocaleDateString("th-TH", { weekday: "short", day: "numeric", month: "short" });
+  return d.toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", weekday: "short", day: "numeric", month: "short" });
 }
 
 // ── บล็อกชั่วโมง (หน่วยขายเดียว: 3 / 5 ชม.) ── ไม่มี add-on และไม่มีมัดจำ ลูกค้าจ่ายเต็มตอนจอง

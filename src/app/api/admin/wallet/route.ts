@@ -3,7 +3,8 @@ import { cookies } from "next/headers";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
 import { getMoney, saveMoney, validateMoney } from "@/lib/wallet/settings";
 import { notify } from "@/lib/bookings";
-import { WalletError, adjust, allBalances, creditTopup, getTopup, ledgerSum, listTopups, rejectTopup, type OwnerType } from "@/lib/wallet";
+import { WalletError, adjust, allBalances, creditTopup, getTopup, ledgerSum, listTopups, rejectTopup } from "@/lib/wallet";
+import { ADJUST_BUCKETS, isAdjOwner, ownerExists } from "@/lib/payouts/owners";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -57,11 +58,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, money: await saveMoney(next, s.email, String(b.note ?? "").slice(0, 200)) });
     }
     if (b.action === "adjust") {
-      const owner_type = String(b.owner_type) as OwnerType;
-      if (!["customer", "parttime", "partner", "vendor", "sales"].includes(owner_type)) return NextResponse.json({ ok: false, error: "ประเภทบัญชีไม่ถูกต้อง" }, { status: 400 });
+      const owner_type = String(b.owner_type);
+      if (!isAdjOwner(owner_type)) return NextResponse.json({ ok: false, error: "ประเภทบัญชีไม่ถูกต้อง" }, { status: 400 });
+      // ช่องที่ปรับได้ต่อประเภท — held/escrow/withdrawing ผูกกับการจอง/คำขอถอน ปรับมือแล้วกระทบยอดไม่ตรง
+      const bucket = String(b.bucket ?? "available");
+      if (!ADJUST_BUCKETS[owner_type].includes(bucket)) return NextResponse.json({ ok: false, error: `ช่อง ${bucket} ปรับยอดไม่ได้ (ได้: ${ADJUST_BUCKETS[owner_type].join(", ")})` }, { status: 400 });
+      const owner_id = String(b.owner_id ?? "").slice(0, 100);
+      if (!(await ownerExists(owner_type, owner_id))) return NextResponse.json({ ok: false, error: "ไม่พบบัญชีเจ้าของนี้ · เลือกจากรายชื่อ" }, { status: 400 });
       const amt = Math.round(Number(b.amount_baht) * 100);
       if (!Number.isFinite(amt) || amt === 0 || Math.abs(amt) > 10_000_000) return NextResponse.json({ ok: false, error: "จำนวนเงินไม่ถูกต้อง" }, { status: 400 });
-      const tx = await adjust({ owner_type, owner_id: String(b.owner_id ?? "").slice(0, 100), bucket: String(b.bucket ?? "available").slice(0, 30) }, amt, String(b.reason ?? ""), actor, String(b.idem ?? crypto.randomUUID()));
+      if (!String(b.reason ?? "").trim()) return NextResponse.json({ ok: false, error: "ระบุเหตุผล" }, { status: 400 });
+      const tx = await adjust({ owner_type, owner_id, bucket }, amt, String(b.reason ?? ""), actor, String(b.idem ?? crypto.randomUUID()));
       return NextResponse.json({ ok: true, tx });
     }
     return NextResponse.json({ ok: false, error: "ไม่รู้จักคำสั่ง" }, { status: 400 });

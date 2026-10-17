@@ -16,6 +16,10 @@ type P = Product & { vendor_name: string };
 type Placed = { id: string; order_no: string; total: number; token: string; track?: string; phone?: string };
 type Price = { subtotal: number; discount: number; code: string | null; promo_error: string | null; shipping_fee: number; shipping_tbd: boolean; free_threshold: number | null; delivery_days: string; total: number };
 const PLACED_KEY = "mb_cart_order";
+// ออเดอร์ที่รอแนบสลิป: เก็บใน localStorage (ปิดแท็บแล้วกลับมาแนบต่อได้) · token เป็นสิทธิ์เฉพาะออเดอร์นี้
+const savePlaced = (p: Placed) => { try { localStorage.setItem(PLACED_KEY, JSON.stringify(p)); } catch {} };
+const loadPlaced = (): Placed | null => { try { return JSON.parse(localStorage.getItem(PLACED_KEY) ?? sessionStorage.getItem(PLACED_KEY) ?? "null") as Placed | null; } catch { return null; } };
+const clearPlaced = () => { try { localStorage.removeItem(PLACED_KEY); sessionStorage.removeItem(PLACED_KEY); } catch {} };
 // ยังไม่มีสินค้าจริง (API คืนว่าง) → หน้าร้านแสดงสินค้าตัวอย่าง จึงให้ตะกร้ารู้จักสินค้าตัวอย่างด้วย — แต่สั่งซื้อไม่ได้
 const MOCK_P: P[] = MOCK_PRODUCTS.map((p) => ({ ...p, vendor_name: MOCK_VENDORS.find((v) => v.id === p.vendor_id)?.name ?? "" }));
 
@@ -47,14 +51,36 @@ export function CartFlow() {
   const [codeInput, setCodeInput] = useState("");
   const [code, setCode] = useState("");
   const [price, setPrice] = useState<Price | null>(null);
+  const [otpOn, setOtpOn] = useState(true);
+  // ออเดอร์ที่สร้างแล้วแต่ยังไม่แนบสลิป (กดแก้ไข/สลิปอัปไม่ผ่าน) — เก็บไว้ให้กลับมาแนบสลิปต่อได้ ไม่ต้องสั่งใหม่
+  const [unpaid, setUnpaid] = useState<Placed | null>(null);
 
   useEffect(() => {
     fetch("/api/market/products").then((r) => r.json()).then((d: { products?: P[] }) => setProducts(d.products?.length ? d.products : MOCK_P)).catch(() => setProducts([]));
-    fetch("/api/otp/verify").then((r) => r.json()).then((d: { phone?: string | null }) => { if (d.phone) { setPhone(d.phone); setVerified(true); } }).catch(() => {});
-    try {
-      const saved = JSON.parse(sessionStorage.getItem(PLACED_KEY) ?? "null") as Placed | null;
-      if (saved?.id) { setPlaced(saved); setStep("pay"); }
-    } catch {}
+    fetch("/api/otp/verify", { cache: "no-store" }).then((r) => r.json()).then((d: { phone?: string | null; required?: boolean }) => { if (d.required === false) setOtpOn(false); if (d.phone) { setPhone(d.phone); setVerified(true); } }).catch(() => {});
+    // ล็อกอินอยู่ → เติมชื่อ/เบอร์/ที่อยู่หลักจากโปรไฟล์ให้ (แก้ได้)
+    fetch("/api/me?soft=1", { cache: "no-store" }).then((r) => r.json()).then((d: { ok?: boolean; profile?: { name?: string; phone?: string | null; addresses?: { detail?: string; note?: string; primary?: boolean }[] } }) => {
+      if (!d?.ok || !d.profile) return;
+      const pf = d.profile;
+      setName((v) => v || pf.name || "");
+      setPhone((v) => v || String(pf.phone ?? ""));
+      const a = pf.addresses?.find((x) => x.primary) ?? pf.addresses?.[0];
+      if (a?.detail) setAddress((v) => v || [a.detail, a.note].filter(Boolean).join(" ").slice(0, 400));
+    }).catch(() => {});
+    const resume = new URLSearchParams(location.search);
+    const rid = resume.get("resume"), rt = resume.get("t");
+    if (rid && rt) {
+      // มาจากหน้าติดตาม "แนบสลิปต่อ" → เปิดหน้าชำระของออเดอร์เดิม
+      fetch(`/api/market/track?id=${encodeURIComponent(rid)}&t=${encodeURIComponent(rt)}`, { cache: "no-store" }).then((r) => r.json()).then((d: { ok?: boolean; order?: { id: string; order_no: string; total: number; status: string; has_slip: boolean } }) => {
+        if (d.ok && d.order && d.order.status === "pending" && !d.order.has_slip) {
+          const p = { id: d.order.id, order_no: d.order.order_no, total: d.order.total, token: rt, track: `/orders/track?id=${d.order.id}&t=${encodeURIComponent(rt)}` };
+          setPlaced(p); setStep("pay"); savePlaced(p);
+        } else if (d.ok) setErr("คำสั่งซื้อนี้แนบสลิปแล้ว · ดูสถานะที่หน้าติดตาม");
+      }).catch(() => {});
+      return;
+    }
+    const saved = loadPlaced();
+    if (saved?.id) { setPlaced(saved); setStep("pay"); }
   }, []);
 
   const rows = useMemo(() => lines.map((l) => ({ l, p: products?.find((x) => x.id === l.id) })).filter((r): r is { l: typeof r.l; p: P } => !!r.p), [lines, products]);
@@ -90,7 +116,8 @@ export function CartFlow() {
       if (!res.ok || !d.ok) { setTs(""); setTsKey((k) => k + 1); throw new Error(d.error || "สั่งซื้อไม่สำเร็จ"); }
       const p = { id: d.id!, order_no: d.order_no!, total: d.total!, token: d.token!, track: d.track, phone };
       setPlaced(p);
-      try { sessionStorage.setItem(PLACED_KEY, JSON.stringify(p)); } catch {}
+      savePlaced(p);
+      setUnpaid(null);
       setStep("pay");
       window.scrollTo({ top: 0 });
     } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
@@ -114,20 +141,22 @@ export function CartFlow() {
       const d = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; fields?: string[] };
       if (!res.ok || !d.ok) {
         const m = d.error || "ส่งสลิปไม่สำเร็จ";
-        if (d.fields?.includes("slip")) setSlipErr(m); else setErr(m);
+        // ออเดอร์ยังอยู่ (เก็บไว้แล้ว) — แนบสลิปใหม่แล้วกดส่งอีกครั้งได้เลย
+        if (d.fields?.includes("slip")) setSlipErr(`${m} · แนบสลิปใหม่แล้วกดส่งอีกครั้งได้`); else setErr(`${m} · คำสั่งซื้อ ${placed.order_no} ยังอยู่ ลองส่งใหม่ได้`);
         return;
       }
-      try { sessionStorage.removeItem(PLACED_KEY); } catch {}
+      clearPlaced();
       writeCart([]);
       setStep("done");
       window.scrollTo({ top: 0 });
-    } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
+    } catch { setErr(`ส่งสลิปไม่สำเร็จ (เครือข่าย) · คำสั่งซื้อ ${placed.order_no} ยังอยู่ กดส่งอีกครั้งได้`); } finally { setBusy(false); }
   };
-  // แก้ไข: ยกเลิกออเดอร์ที่ยังไม่แนบสลิป (คงค้างเป็น "รอตรวจสลิป" ไม่มีสลิป) แล้วกลับไปแก้ตะกร้า
+  // แก้ไข: กลับไปแก้ตะกร้า — ออเดอร์เดิม (ยังไม่มีสลิป) เก็บไว้ ให้กลับมาแนบสลิปต่อได้จากแถบด้านบน/หน้าติดตาม
   const editOrder = () => {
-    try { sessionStorage.removeItem(PLACED_KEY); } catch {}
+    setUnpaid(placed);
     setPlaced(null); setSlip(""); setSlipErr(""); setErr(""); setStep("cart");
   };
+  const resumeOrder = () => { if (!unpaid) return; setPlaced(unpaid); setUnpaid(null); setStep("pay"); window.scrollTo({ top: 0 }); };
 
   const head = step === "cart" ? ["CART · 1/2", "ตะกร้าและที่อยู่"] : step === "pay" ? ["PAYMENT · 2/2", "ชำระเงิน"] : ["ORDER PLACED", "สำเร็จ"];
   const bottomBar = "fixed z-30 bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] md:max-w-[760px] px-[18px] pt-3 pb-[22px] border-t bg-[#171211]";
@@ -141,6 +170,15 @@ export function CartFlow() {
       {step === "cart" && (
         <>
           <div className="px-[18px] py-3.5 flex flex-col gap-3">
+            {unpaid && (
+              <div className={`${card} flex flex-col gap-2 text-[13px]`} style={{ borderColor: "rgba(232,196,114,.55)", background: "#1d1712" }}>
+                <span>คำสั่งซื้อ <b className="text-[#e8c472]">{unpaid.order_no}</b> ({fmt(unpaid.total)}) ยังไม่ได้แนบสลิป</span>
+                <div className="flex gap-2">
+                  <button type="button" onClick={resumeOrder} className="flex-1 min-h-11 rounded-xl bg-[#e8c472] text-[#1b130b] font-semibold">แนบสลิปต่อ</button>
+                  <button type="button" onClick={() => { setUnpaid(null); clearPlaced(); }} className="min-h-11 px-3 rounded-xl border text-[#d9c9b4]" style={{ borderColor: LINE }}>สั่งใหม่แทน</button>
+                </div>
+              </div>
+            )}
             {products == null && <p className="text-sm text-[#d9c9b4]">กำลังโหลด…</p>}
             {rows.map(({ l, p }) => {
               const src = imageUrl(p.images[0]);
@@ -191,7 +229,7 @@ export function CartFlow() {
                 <label className={fl}>ชื่อผู้รับ<input className={fi} style={bdOf(name)} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder="แตะเพื่อกรอกชื่อผู้รับ" /></label>
                 <label className={fl}>ที่อยู่<input className={fi} style={bdOf(address)} value={address} onChange={(e) => setAddress(e.target.value)} autoComplete="street-address" placeholder="บ้านเลขที่ ซอย ถนน แขวง" /></label>
                 <label className={fl}>เขต · จังหวัด · รหัสไปรษณีย์<input className={fi} style={bdOf(area)} value={area} onChange={(e) => setArea(e.target.value)} autoComplete="address-level2" placeholder="เขต · จังหวัด · รหัสไปรษณีย์" /></label>
-                <div className={`${fl} ${otpSkin}`}>เบอร์มือถือ (รับ OTP)
+                <div className={`${fl} ${otpSkin}`}>{otpOn ? "เบอร์มือถือ (รับ OTP)" : "เบอร์มือถือ (ใช้ติดต่อและแจ้งเลขพัสดุ)"}
                   {verified ? <p className="!text-[#7fd6a3] text-[13px]">✓ ยืนยันเบอร์ {phone} แล้ว</p> : <OtpStep phone={phone} onPhone={setPhone} verified={verified} onVerified={() => setVerified(true)} inputCls={`${fi} flex-1 border-[rgba(232,196,114,.38)]`} />}
                 </div>
                 <button type="button" role="checkbox" aria-checked={age} onClick={() => setAge(!age)} className="flex gap-2.5 items-start text-left text-[#d9c9b4] text-[13px] py-1.5 min-h-11">
@@ -209,15 +247,15 @@ export function CartFlow() {
                 </div>
                 <div className="flex gap-2.5 items-center px-3 py-2.5 rounded-[14px] bg-[#1d1712] border border-[rgba(227,195,92,.35)] text-xs text-[#d9c9b4] leading-normal">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e8c472" strokeWidth="1.6" className="shrink-0" aria-hidden><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z" /><path d="M3 7.5 12 12l9-4.5M12 12v9" /></svg>
-                  <span><b className="text-[#e8c472]">แพ็กมิดชิด</b> · กล่องสีพื้น ไม่ระบุชื่อสินค้าหรือชื่อร้านบนหน้ากล่อง · ชื่อผู้ส่งบนใบปะหน้า: [รอกำหนด]</span>
+                  <span><b className="text-[#e8c472]">แพ็กมิดชิด</b> · กล่องสีพื้น ไม่ระบุชื่อสินค้าหรือชื่อร้านบนหน้ากล่อง</span>
                 </div>
                 <div className="rounded-[14px] border border-[#b0182c]/50 bg-[#b0182c]/5 px-3 py-2.5 text-[11.5px] text-[#d9c9b4] leading-relaxed">{GENERAL_WARNING}</div>
                 <div className={`${card} text-[13px] flex flex-col gap-1.5`} style={{ borderColor: LINE }}>
                   <div className="flex justify-between"><span className="text-[#d9c9b4]">ค่าสินค้า</span><span>{fmt(subtotal)}</span></div>
-                  <div className="flex justify-between"><span className="text-[#d9c9b4]">ค่าจัดส่ง</span><span>{price?.shipping_tbd ? "฿0 [รอกำหนด]" : price?.shipping_fee ? fmt(price.shipping_fee) : "ฟรี"}</span></div>
+                  <div className="flex justify-between"><span className="text-[#d9c9b4]">ค่าจัดส่ง</span><span>{price?.shipping_tbd ? "ยังไม่คิดค่าส่ง" : price?.shipping_fee ? fmt(price.shipping_fee) : "ฟรี"}</span></div>
                   {!!price?.discount && <div className="flex justify-between text-[#7fd6a3]"><span>ส่วนลด {price.code}</span><span>−{fmt(price.discount)}</span></div>}
                   <div className="flex justify-between border-t pt-1.5 font-lux text-base" style={{ borderColor: LINE }}><span>รวม</span><span className="text-[#e8c472]">{fmt(total)}</span></div>
-                  <p className="text-[11.5px] text-[#b5a596]">จัดส่งภายในประมาณ {price?.delivery_days || "[รอกำหนด]"} หลังยืนยันการชำระ</p>
+                  {price?.delivery_days && <p className="text-[12px] text-[#b5a596]">จัดส่งภายในประมาณ {price.delivery_days} หลังยืนยันการชำระ</p>}
                 </div>
                 <Turnstile key={tsKey} onToken={setTs} />
                 <p className="text-[11.5px] text-[#b5a596] leading-relaxed">การสั่งซื้อถือว่ายอมรับ <Link href="/policy/returns" className="text-[#e8c472]">นโยบายคืนสินค้า</Link> · <Link href="/policy/shipping" className="text-[#e8c472]">การจัดส่ง</Link> · <Link href="/policy/privacy-shop" className="text-[#e8c472]">ความเป็นส่วนตัว</Link></p>

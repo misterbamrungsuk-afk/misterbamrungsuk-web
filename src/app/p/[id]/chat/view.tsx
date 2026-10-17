@@ -31,7 +31,7 @@ export function ChatView({ p }: { p: Person }) {
     e.preventDefault();
     const v = text.trim();
     if (!v) return;
-    const now = new Date().toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+    const now = new Date().toLocaleTimeString("th-TH", { timeZone: "Asia/Bangkok", hour: "2-digit", minute: "2-digit" });
     setMsgs((m) => [...m, { me: true, text: v, time: `${now} · ส่งแล้ว` }]);
     setText("");
     setTyping(true);

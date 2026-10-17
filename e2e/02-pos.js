@@ -5,7 +5,7 @@ const env = fs.readFileSync(WEB + '/.env.local', 'utf8');
 const secret = (/^ADMIN_SESSION_SECRET=(.*)$/m.exec(env)?.[1] || '').trim().replace(/^["']|["']$/g, '') || 'hamoo-demo-secret';
 const { adm } = require('./_tok');
 const B = 'http://localhost:3210', mb = 'MB-2610001';
-const body = Buffer.from(JSON.stringify({ mb, exp: Date.now() + 3600_000 })).toString('base64url');
+const body = Buffer.from(JSON.stringify({ mb, iat: Date.now(), exp: Date.now() + 3600_000 })).toString('base64url');
 const t = body + '.' + crypto.createHmac('sha256', secret).update('resume:' + body).digest('base64url');
 let fails = 0;
 const ok = (n, c, x = '') => { if (!c) fails++; console.log((c ? 'PASS ' : 'FAIL ') + n + (x ? ' · ' + x : '')); };

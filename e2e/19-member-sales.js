@@ -11,7 +11,7 @@ const J = (r) => r.json();
 const ADM = { cookie: 'mord_admin=' + adm, 'content-type': 'application/json' };
 const SUP = { cookie: 'mord_admin=' + sup, 'content-type': 'application/json' };
 const sess = (e) => { const b = Buffer.from(JSON.stringify({ sub: 'demo:' + e, email: e, exp: Date.now() + 3600e3 })).toString('base64url'); return 'hamoo_session=' + b + '.' + crypto.createHmac('sha256', KEY).update(b).digest('base64url'); };
-const body = Buffer.from(JSON.stringify({ mb, exp: Date.now() + 3600_000 })).toString('base64url');
+const body = Buffer.from(JSON.stringify({ mb, iat: Date.now(), exp: Date.now() + 3600_000 })).toString('base64url');
 const T = body + '.' + crypto.createHmac('sha256', KEY).update('resume:' + body).digest('base64url');
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
 const buy = (email, tier, ref) => { const fd = new FormData(); fd.append('tier', tier); fd.append('slip', new Blob([PNG], { type: 'image/png' }), 's.png'); if (ref) fd.append('ref', ref); return fetch(B + '/api/membership', { method: 'POST', headers: { cookie: sess(email) }, body: fd }); };
@@ -71,7 +71,8 @@ const pend = async (email) => { const t = await (await fetch(B + '/admin/sales',
   r = await fetch(B + '/api/admin/sales', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'settings', member: { tiers: { gold: { credit: 40000 } } } }) }); ok('invalid settings refused (credit < pay)', r.status === 400);
   // โค้ดปลอม = เปิดเมมได้แต่ไม่มีค่าคอม · ไม่มีสลิป = ไม่รับ
   const m3 = `memc${Date.now() % 1e6}@test.local`;
-  j = await J(await buy(m3, 'gold', 'ZZZZZZ')); r = await J(await fetch(B + '/api/admin/sales', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'approve', id: j.id }) })); ok('unknown ref = no commission', r.ok && !r.row.referrer_id);
+  j = await J(await buy(m3, 'gold', 'ZZZZZZ')); ok('typed unknown ref refused', !j.ok);
+  j = await J(await buy(m3, 'gold', '')); r = await J(await fetch(B + '/api/admin/sales', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'approve', id: j.id }) })); ok('no ref = no commission', r.ok && !r.row.referrer_id);
   ok('reject needs pending', (await fetch(B + '/api/admin/sales', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'reject', id: j.id, reason: 'x' }) })).status === 409);
   // แต้ม: ลูกค้าที่จบนัดในชุดก่อน ๆ ได้แต้มแล้ว
   g = await J(await fetch(B + '/api/membership', { headers: { cookie: sess('buyer@test.local') } })); ok('points awarded on completed booking', g.me.points > 0, String(g.me.points));

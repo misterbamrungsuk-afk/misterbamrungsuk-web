@@ -44,6 +44,8 @@ export async function middleware(request: NextRequest) {
     // ถอดรหัส %xx ก่อนตรวจสิทธิ์ (กัน /admin/w%61llet หลุดไปเข้ากฎ /admin กว้าง ๆ)
     let path = pathname;
     try { path = decodeURIComponent(pathname); } catch { path = "/admin"; }
+    // อักขระควบคุม (%00 ฯลฯ) ใน path = ไม่ใช่หน้าจริง → 404 (กันหลุดกฎสิทธิ์/500)
+    if (/[\x00-\x1f]/.test(path)) return new NextResponse("not found", { status: 404 });
     if (!canAccess(admin.role, path)) {
       const url = request.nextUrl.clone();
       url.pathname = homeFor(admin.role);

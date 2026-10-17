@@ -52,7 +52,7 @@ export default async function StayHome() {
             {partners.hotels.map((h, k) => (
               <Link key={h.id} href={`/hotels/${h.id}`} className="lux-card shrink-0 w-[220px] lg:w-auto rounded-2xl overflow-hidden bg-[#211a18] border text-[#f3ead9]" style={{ borderColor: LINE }}>
                 <span className="relative block"><img src={img(h.cover, k)} alt={h.name} className="w-full h-[120px] lg:h-[180px] object-cover block" />{logo.get(h.id) && <LogoBadge logo={logo.get(h.id)!} size={38} className="absolute right-2.5 -bottom-4" />}</span>
-                <div className="px-3 py-2.5"><div className="font-lux font-semibold text-sm">{h.name}</div><div className="text-xs text-[#d9c9b4]">{h.area}</div><div className="text-xs text-[#e8c472] mt-1">ส่วนลดสมาชิก [รอกำหนด]</div></div>
+                <div className="px-3 py-2.5"><div className="font-lux font-semibold text-sm">{h.name}</div><div className="text-xs text-[#d9c9b4]">{h.area}</div></div>
               </Link>
             ))}
           </div>
@@ -68,7 +68,7 @@ export default async function StayHome() {
                 {logo.get(s.id) ? <LogoBadge logo={logo.get(s.id)!} size={76} /> : <img src={img(s.cover, k + 1)} alt={s.name} className="w-[76px] h-[76px] rounded-xl object-cover shrink-0" />}
                 <div className="min-w-0">
                   <div className="font-lux font-semibold text-[14.5px]">{s.name}</div>
-                  <div className="text-xs text-[#d9c9b4]">{s.type} · {s.area}</div>
+                  <div className="text-xs text-[#d9c9b4]">{s.label} · {s.area}</div>
                   <div className="mt-1.5"><span className="inline-flex items-center gap-[5px] px-[9px] py-[3px] rounded-full border border-[rgba(212,175,55,.55)] bg-[rgba(232,196,114,.18)] text-[#e8c472] text-[12px] font-semibold"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden><path d="m5 12 5 5 9-10" /></svg>ทำงานร่วมกับ Mister Bamrungsuk</span></div>
                 </div>
               </Link>

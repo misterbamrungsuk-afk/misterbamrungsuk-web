@@ -28,7 +28,7 @@ export function PtGeoCard({ mb, t, init, fallback }: { mb: string; t: string | n
     <section className="rounded-[20px] bg-[#211a18] flex flex-col gap-2.5" style={{ padding: 16, border: `1px solid ${LN}` }}>
       <b className="text-[16px] font-semibold">ฉันอยู่แถวไหน (แสดงบนแผนที่)</b>
       <p className="m-0 text-[13px] font-light text-[#d9c9b4]">ลูกค้าเห็นแค่ย่านโดยประมาณ (ระบบปัดเป็นช่องประมาณ 1 กม.) ไม่เห็นตำแหน่งจริงของคุณ · ตำแหน่งจริงจะเห็นเฉพาะตอนคุณกด &quot;เริ่มเดินทาง&quot; ไปหาลูกค้าที่จ่ายเงินแล้ว</p>
-      <p className="m-0 text-[14px]">ตอนนี้: <b style={{ color: GOLD }}>{geo ? `แถว${geo.label}` : fallback}</b>{geo && <span className="text-[12px] font-light text-[#b5a596]"> · ตั้งเมื่อ {new Date(geo.at).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}</span>}</p>
+      <p className="m-0 text-[14px]">ตอนนี้: <b style={{ color: GOLD }}>{geo ? `แถว${geo.label}` : fallback}</b>{geo && <span className="text-[12px] font-light text-[#b5a596]"> · ตั้งเมื่อ {new Date(geo.at).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", day: "numeric", month: "short" })}</span>}</p>
       {edit ? (
         <>
           <PinPicker value={geo ? { lat: geo.lat, lng: geo.lng } : null} onChange={(p, acc) => setPin({ p, acc })} height={210} zoom={14} hint="กด 'ใช้ตำแหน่งฉัน' หรือเลื่อนแผนที่ให้หมุดอยู่แถวที่คุณรับงาน" />

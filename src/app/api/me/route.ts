@@ -7,9 +7,10 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 // โปรไฟล์ลูกค้า (บอร์ด C-Account / C-EditProfile) — GET = ข้อมูล + ตัวนับ · POST = แก้ชื่อ / ผู้ติดต่อฉุกเฉิน / เพื่อนที่ถูกใจ
-export async function GET() {
+export async function GET(req: Request) {
   const me = await currentCustomer();
-  if (!me) return NextResponse.json({ ok: false }, { status: 401 });
+  // ?soft=1 = หน้าสาธารณะเช็กว่าล็อกอินไหม (ไม่ล็อกอิน = 200 guest แทน 401 ให้ console สะอาด)
+  if (!me) return new URL(req.url).searchParams.get("soft") ? NextResponse.json({ ok: false, guest: true }) : NextResponse.json({ ok: false }, { status: 401 });
   const p = await getProfile(me.sub, me.email);
   const [bookings, notices] = await Promise.all([listForCustomer(me.sub).catch(() => []), listNotices("customer", me.sub).catch(() => [])]);
   return NextResponse.json({ ok: true, profile: { ...p, id: undefined }, counts: { bookings: bookings.length, favorites: p.favorites.length, unread: notices.filter((n) => !n.read_at).length } });

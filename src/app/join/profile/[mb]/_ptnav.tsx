@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { NoticeBadge } from "./_ptbadge";
 
 // เมนู Part-Time 5 ปุ่ม (ตามบอร์ด) — มือถือ: แถบล่าง · จอคอม (lg): แถบเมนูซ้าย พร้อมโลโก้กลับหน้าแรก
 // ไฟล์นี้ไม่มีโค้ดฝั่งเซิร์ฟเวอร์ ใช้ได้ทั้งหน้า server และ client (หน้าโปรไฟล์หลัก)
@@ -8,7 +9,7 @@ export const ptHref = (c: { mb: string; q: string }, sub = "") => `/join/profile
 export type PtKey = "home" | "schedule" | "jobs" | "earnings" | "settings";
 const GEAR = "M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z";
 
-export function PtNav({ c, active }: { c: { mb: string; q: string }; active: PtKey }) {
+export function PtNav({ c, active, unread }: { c: { mb: string; q: string }; active: PtKey; unread?: number }) {
   const items: [PtKey, string, string, React.ReactNode][] = [
     ["home", "หน้าหลัก", "", <path key="p" d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />],
     ["schedule", "ตาราง", "schedule", <><rect x="4" y="5" width="16" height="16" rx="2" /><path d="M8 3v4M16 3v4M4 10h16" /></>],
@@ -27,7 +28,7 @@ export function PtNav({ c, active }: { c: { mb: string; q: string }; active: PtK
         <Link key={k} href={ptHref(c, sub)} aria-current={active === k ? "page" : undefined}
           className="flex flex-col items-center justify-center gap-[3px] h-full hover:text-[#f3ead9] lg:mx-3 lg:rounded-2xl lg:gap-1.5"
           style={{ color: active === k ? "#e8c472" : "inherit", background: active === k ? "var(--pt-on, transparent)" : undefined }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{icon}</svg>{label}
+          <span className="relative"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{icon}</svg>{k === "home" && <NoticeBadge mb={c.mb} q={c.q} initial={unread} />}</span>{label}
         </Link>
       ))}
     </nav>

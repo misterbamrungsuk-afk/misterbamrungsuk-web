@@ -7,6 +7,7 @@ import { inThailand, snapCell } from "@/lib/geo";
 import { nearestArea } from "@/lib/home/geo";
 import { extraOf, getByMb, saveProfile, clearFixes } from "@/lib/join/store";
 import { CONTACT_MSG, hasContact } from "@/lib/join/contact-guard";
+import { CERT_MSG, GATE_MSG, dropMassage, isPtActive } from "@/lib/join/pt-ui";
 
 export const runtime = "nodejs";
 
@@ -16,6 +17,7 @@ const MAX_FILE = 10 * 1024 * 1024;
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const WEEK_DAYS = ["จ", "อ", "พ", "พฤ", "ศ", "ส", "อา"];
 const PERIODS = ["กลางวัน", "กลางคืน"];
+const DAY_TH: Record<string, string> = { "จ": "จันทร์", "อ": "อังคาร", "พ": "พุธ", "พฤ": "พฤหัส", "ศ": "ศุกร์", "ส": "เสาร์", "อา": "อาทิตย์" };
 const HOUR_BANDS: Record<string, number> = { "3–4 ชม.": 4, "5–6 ชม.": 6, "7–8 ชม.": 8, "มากกว่า 8 ชม.": 10 };
 const bad = (error: string, status = 400, fields?: string[]) => NextResponse.json({ ok: false, error, fields }, { status });
 const isDate = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v));
@@ -100,6 +102,8 @@ export async function POST(req: Request) {
         await saveProfile(row.id, { post: cur ? { ...cur, open: false } : null });
         return NextResponse.json({ ok: true });
       }
+      // ยังไม่อนุมัติ/ยังไม่เปิดโปรไฟล์ → ลงประกาศไม่ได้ (ปิดประกาศเดิมได้เสมอ)
+      if (!isPtActive(x)) return bad(GATE_MSG, 409);
       const text = s("text", 160), time = s("time", 40), zone = s("zone", 80);
       if (hasContact(text) || hasContact(zone)) return bad(CONTACT_MSG, 400, ["text"]);
       if (!text || !time || !zone) return bad("กรอกกิจกรรม เวลา และโซนให้ครบ", 400, ["text", "time", "zone"]);
@@ -110,9 +114,13 @@ export async function POST(req: Request) {
     if (step === "work") {
       let raw: Record<string, { on?: unknown; from?: unknown; to?: unknown }> = {};
       try { raw = JSON.parse(s("days", 2000) || "{}"); } catch { return bad("ข้อมูลเวลาไม่ถูกต้อง"); }
-      const hm = (v: unknown, d: string) => (typeof v === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(v) ? v : d);
+      // เวลาแบบ 24 ชม. ทีละ 30 นาที · เวลาเลิกใส่ "24:00" (เที่ยงคืน) ได้ · วันที่เปิดต้องเลิกหลังเริ่ม
+      const hm = (v: unknown, d: string, end = false) => (typeof v === "string" && (/^([01]\d|2[0-3]):[0-5]\d$/.test(v) || (end && v === "24:00")) ? v : d);
+      const mins = (v: string) => Number(v.slice(0, 2)) * 60 + Number(v.slice(3));
       const days: Record<string, { on: boolean; from: string; to: string }> = {};
-      for (const d of WEEK_DAYS) days[d] = { on: raw[d]?.on === true, from: hm(raw[d]?.from, "17:00"), to: hm(raw[d]?.to, "23:00") };
+      for (const d of WEEK_DAYS) days[d] = { on: raw[d]?.on === true, from: hm(raw[d]?.from, "17:00"), to: hm(raw[d]?.to, "23:00", true) };
+      const badDay = WEEK_DAYS.find((d) => days[d].on && mins(days[d].to) <= mins(days[d].from));
+      if (badDay) return bad(`วัน${DAY_TH[badDay]}: เวลาเลิกต้องหลังเวลาเริ่ม`, 400, ["days"]);
       const radius = Math.min(20, Math.max(2, Math.round(Number(s("radius_km")) || 8)));
       const on = WEEK_DAYS.filter((d) => days[d].on);
       const av = x.availability ?? { slots: [], days: null, hours: null };
@@ -121,6 +129,7 @@ export async function POST(req: Request) {
     }
     // โพสต์โปรไฟล์ (บอร์ด P-Posts)
     if (step === "listing") {
+      if (!isPtActive(x)) return bad(GATE_MSG, 409);
       const title = s("title", 80), rules = s("rules", 600);
       if (!title) return bad("กรอกหัวข้อโพสต์", 400, ["title"]);
       if (hasContact(title) || hasContact(rules)) return bad(CONTACT_MSG, 400, ["title"]);
@@ -130,6 +139,13 @@ export async function POST(req: Request) {
     // ขอลบบัญชีและข้อมูล (PDPA) — แอดมินดำเนินการและติดต่อกลับ
     if (step === "delete_request") {
       await saveProfile(row.id, { delete_requested_at: new Date().toISOString() });
+      return NextResponse.json({ ok: true });
+    }
+    // ยกเลิกคำขอลบบัญชีที่ยังรอดำเนินการ → โปรไฟล์กลับมาแสดงตามปกติ (isLive ดู delete_requested_at)
+    if (step === "delete_cancel") {
+      if (!x.delete_requested_at) return NextResponse.json({ ok: true });
+      await saveProfile(row.id, { delete_requested_at: null });
+      await import("@/lib/bookings").then((m) => m.notify({ user_type: "admin", user_id: "kyc", kind: "delete_cancel", title: `${row.mb_code} ยกเลิกคำขอลบบัญชี`, body: row.nickname, url: "/admin/applicants" })).catch(() => {});
       return NextResponse.json({ ok: true });
     }
 
@@ -159,10 +175,10 @@ export async function POST(req: Request) {
     }
 
     if (step === "card") {
-      await saveProfile(row.id, {
-        card: { activities: uniq(form.getAll("activities"), 20, 40), places: uniq(form.getAll("places"), 10, 40), partner_spas: uniq(form.getAll("partner_spas"), 10, 60), skills: uniq(form.getAll("skills"), 10, 40) },
-      });
-      return NextResponse.json({ ok: true });
+      // นวดผ่อนคลายขึ้นการ์ดได้เมื่อมีใบรับรองการนวด (cert_doc) เท่านั้น — ไม่มี = ตัดออกก่อนบันทึก แล้วบอกหน้าเว็บว่าตัดอะไร
+      const { card, dropped } = dropMassage({ activities: uniq(form.getAll("activities"), 20, 40), places: uniq(form.getAll("places"), 10, 40), partner_spas: uniq(form.getAll("partner_spas"), 10, 60), skills: uniq(form.getAll("skills"), 10, 40) }, !!row.docs.cert_doc);
+      await saveProfile(row.id, { card });
+      return NextResponse.json({ ok: true, card, dropped, ...(dropped.length ? { warning: CERT_MSG } : {}) });
     }
     return bad("ไม่รู้จักขั้นตอนนี้");
   } catch (e) {

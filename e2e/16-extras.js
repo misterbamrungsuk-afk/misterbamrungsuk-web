@@ -11,7 +11,7 @@ const J = (r) => r.json();
 const ADM = { cookie: 'mord_admin=' + adm, 'content-type': 'application/json' };
 const sign = (p) => { const b = Buffer.from(JSON.stringify(p)).toString('base64url'); return b + '.' + crypto.createHmac('sha256', KEY).update(b).digest('base64url'); };
 const C = { cookie: 'hamoo_session=' + sign({ sub: 'demo:extras@test.local', email: 'extras@test.local', exp: Date.now() + 3600e3 }), 'content-type': 'application/json' };
-const T = (() => { const b = Buffer.from(JSON.stringify({ mb, exp: Date.now() + 3600e3 })).toString('base64url'); return b + '.' + crypto.createHmac('sha256', KEY).update('resume:' + b).digest('base64url'); })();
+const T = (() => { const b = Buffer.from(JSON.stringify({ mb, iat: Date.now(), exp: Date.now() + 3600e3 })).toString('base64url'); return b + '.' + crypto.createHmac('sha256', KEY).update('resume:' + b).digest('base64url'); })();
 const img = fs.readFileSync(WEB + '/public/brand/home/p-n04.jpg');
 const me = (body) => fetch(B + '/api/me', { method: 'POST', headers: C, body: JSON.stringify(body) }).then(J);
 (async () => {
@@ -25,11 +25,15 @@ const me = (body) => fetch(B + '/api/me', { method: 'POST', headers: C, body: JS
   let j = await J(await fetch(B + '/api/bookings', { method: 'POST', headers: C, body: JSON.stringify({ pid, hours: 3, starts_at: d.toISOString(), place: { type: 'cafe', detail: 'คาเฟ่' }, note: '' }) }));
   ok('booking', j.ok, j.error); const bid = j.id;
   await fetch(B + `/api/pt/bookings/${bid}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mb, t: T, accept: true }) });
+  // ขอใบกำกับภาษีได้เฉพาะนัดที่จบแล้ว → เลื่อนเวลานัดย้อนหลัง (โหมดสาธิต) · เช็กอิน · ลูกค้าจบนัด
+  await fetch(B + '/api/admin/bookings', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'demo_shift', id: bid, minutes: 25 * 1440 + 240 }) });
+  await fetch(B + `/api/pt/bookings/${bid}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mb, t: T, action: 'checkin' }) });
+  ok('complete for invoice', (await J(await fetch(B + `/api/bookings/${bid}/complete`, { method: 'POST', headers: C, body: JSON.stringify({ rating: 5 }) }))).ok);
   // C-Receipt
   let r = await fetch(B + `/order/${bid}/receipt`, { headers: C }); let t = (await r.text()).replace(/<!-- -->/g, '');
   ok('receipt page', r.status === 200 && t.includes('ใบเสร็จรับเงิน') && t.includes('RC-'));
   r = await fetch(B + `/api/bookings/${bid}/invoice`, { method: 'POST', headers: C, body: JSON.stringify({ kind: 'person', name: 'ทดสอบ', tax_id: '123', address: 'กทม', email: 'a@b.co' }) }); ok('invoice bad tax id', r.status === 400);
-  r = await fetch(B + `/api/bookings/${bid}/invoice`, { method: 'POST', headers: C, body: JSON.stringify({ kind: 'corp', name: 'บจก. ทดสอบ', tax_id: '0105561234567', branch: 'สำนักงานใหญ่', address: 'กทม 10110', email: 'tax@test.local' }) }); ok('invoice request', (await J(r)).ok);
+  r = await fetch(B + `/api/bookings/${bid}/invoice`, { method: 'POST', headers: C, body: JSON.stringify({ kind: 'corp', name: 'บจก. ทดสอบ', tax_id: '0105561234560', branch: 'สำนักงานใหญ่', address: 'กทม 10110', email: 'tax@test.local' }) }); ok('invoice request', (await J(r)).ok);
   j = await J(await fetch(B + '/api/admin/alerts', { headers: ADM })); ok('admin gets tax invoice alert', j.items.some((n) => n.kind === 'tax_invoice'));
   // C-InSession
   r = await fetch(B + `/order/${bid}/session`, { headers: C }); ok('session page', r.status === 200);

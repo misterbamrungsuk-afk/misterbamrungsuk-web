@@ -5,6 +5,7 @@ import { getById, extraOf, type Applicant } from "@/lib/join/store";
 import { getEarnings } from "@/lib/join/earnings-settings";
 import { isLive, publicId } from "@/lib/home/live";
 import { hasContact } from "@/lib/join/contact-guard";
+import { inThailand } from "@/lib/geo";
 
 // การจองลูกค้า ↔ Part-Time (supabase/booking/0001_booking.sql) — เงินเดินผ่าน wallet:
 // ส่งคำขอ: ลูกค้า.available → ลูกค้า.held · ตอบรับ: held → บริษัท.escrow · ปฏิเสธ/หมดเวลา/ยกเลิกก่อนตอบรับ: held → available
@@ -87,7 +88,10 @@ export async function addEvent(booking_id: string, type: string, actor: string |
   if (isDemo) { demo.events.push({ booking_id, type, actor, data, created_at: now() }); return; }
   await db().from("booking_events").insert({ booking_id, type, actor, data });
 }
+// ลิงก์ปลายทางของแจ้งเตือนแอดมินที่ส่งมาไม่มี url (กดแล้วต้องพาไปหน้าที่จัดการเรื่องนั้นได้)
+const ADMIN_URL: Record<string, string> = { customer_delete: "/admin/members", noshow: "/admin/orders?tab=noshow", dispute: "/admin/orders", cancel_req: "/admin/orders" };
 export async function notify(n: Omit<Notice, "id" | "read_at" | "created_at">) {
+  if (n.user_type === "admin" && !n.url) n = { ...n, url: ADMIN_URL[n.kind] ?? "/admin" };
   if (isDemo) demo.notices.unshift({ ...n, id: demo.notices.length + 1, read_at: null, created_at: now() });
   else await db().from("notifications").insert(n).then(({ error }) => { if (error) console.error("notify", error.message); });
   // web push ไปทุกอุปกรณ์ที่ผู้ใช้เปิดรับไว้ (#16)
@@ -172,23 +176,66 @@ async function releaseHold(b: Booking, to: "declined" | "expired" | "cancelled",
   await addEvent(b.id, to, actor);
   const msg = to === "declined" ? `${b.parttime_nick ?? "เพื่อน"} ไม่สะดวกนัดนี้ · คืนเงินเข้ากระเป๋าแล้ว` : to === "expired" ? "เพื่อนไม่ได้ตอบรับภายในเวลา · คืนเงินเข้ากระเป๋าแล้ว" : "ยกเลิกคำขอแล้ว · คืนเงินเข้ากระเป๋าแล้ว";
   await notify({ user_type: "customer", user_id: b.customer_id, kind: `booking_${to}`, title: `นัด ${b.code}`, body: msg, url: `/order/${b.id}` });
+  // Part-Time: คำขอที่หมดเวลา/ลูกค้ายกเลิก ไม่ควรค้างเหมือนยังกดรับได้
+  if (to !== "declined") await notify({ user_type: "parttime", user_id: b.parttime_id, kind: `booking_${to}`, title: to === "expired" ? `คำขอ ${b.code} หมดเวลาตอบรับ` : `ลูกค้ายกเลิกคำขอ ${b.code}`, body: to === "expired" ? `ไม่ได้ตอบภายใน ${RESPOND_MINUTES} นาที · คืนเงินลูกค้าแล้ว` : "คำขอนี้ปิดแล้ว", url: `/join/profile/${b.parttime_mb}/jobs` });
   return r;
 }
 
 export type CreateInput = { pid: string; hours: 3 | 5; starts_at: string; place: Place; note: string };
+/** quick = จองจากเรียกด่วน: เงินกันไว้แล้วใน held (hold) → ย้ายเป็นเงินกันของนัดนี้ ส่วนต่างคืน available ในรายการเดียว
+ *  onInsert = บันทึกเลขการจองลงคำขอเรียกด่วนก่อนย้ายเงิน (กู้คืนได้ถ้าระบบล่มกลางทาง) */
+export type CreateOpts = { quick?: { hold: number; onInsert: (b: Booking) => Promise<void> } };
+
+// วันในสัปดาห์ตามเวลาไทย (ตรงกับคีย์ใน work.days ของ Part-Time)
+const TH_DAY = ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"];
+const toMin = (hm: string) => Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3, 5));
+/** เวลานัดอยู่นอกตารางรับงานที่ Part-Time ตั้งไว้ไหม — คืนข้อความเหตุผล หรือ null = รับได้
+ *  ยังไม่ตั้งตาราง (ไม่มีวันไหนเปิด) = รับได้ทุกเวลา · ช่วงข้ามเที่ยงคืน (เช่น 20:00–02:00) นับเป็นของวันที่เริ่ม */
+export function outsideWork(a: Applicant, startMs: number): string | null {
+  const days = extraOf(a).work?.days;
+  if (!days || !Object.values(days).some((d) => d?.on)) return null;
+  const t = new Date(startMs + 7 * 3600_000); // เวลาไทย (UTC+7 ไม่มี DST)
+  const di = t.getUTCDay(), m = t.getUTCHours() * 60 + t.getUTCMinutes();
+  const today = days[TH_DAY[di]], yest = days[TH_DAY[(di + 6) % 7]];
+  if (today?.on) {
+    const f = toMin(today.from), e = toMin(today.to);
+    if (e > f ? m >= f && m < e : m >= f) return null;
+  }
+  if (yest?.on) {
+    const f = toMin(yest.from), e = toMin(yest.to);
+    if (e <= f && m < e) return null;
+  }
+  return today?.on ? `เพื่อนรับงานวันนี้ช่วง ${today.from}–${today.to} น. · เลือกเวลาในช่วงนี้` : `เพื่อนไม่รับงานวัน${TH_DAY[di]} · เลือกวันอื่น`;
+}
+/** บังคับปักหมุดจุดนัด (ยกเว้นสปาพาร์ทเนอร์) เฉพาะเมื่อตั้ง REQUIRE_PIN=1 — ชุดทดสอบเดิมจองโดยไม่ปักหมุด */
+export const requirePin = () => process.env.REQUIRE_PIN === "1";
+
 /** ลูกค้าส่งคำขอนัด — กันเงินจากกระเป๋า (ยอดไม่พอ → BookingError code=funds พร้อมยอดที่ขาด) */
-export async function createBooking(cust: { sub: string; email: string; name?: string }, input: CreateInput, findPt: (pid: string) => Promise<Applicant | null>, roomFee = 0): Promise<Booking> {
+export async function createBooking(cust: { sub: string; email: string; name?: string }, input: CreateInput, findPt: (pid: string) => Promise<Applicant | null>, roomFee = 0, opts: CreateOpts = {}): Promise<Booking> {
+  // ระยะเวลาต้องเป็น 3 หรือ 5 ชม. เท่านั้น (ไม่แปลงค่าเอง — ราคาคิดตามนี้)
+  if (Number(input.hours) !== 3 && Number(input.hours) !== 5) throw new BookingError("เลือกระยะเวลา 3 หรือ 5 ชม.", "hours");
   const a = await findPt(input.pid);
+  if (a && extraOf(a).work?.paused) throw new BookingError("เพื่อนพักรับงานชั่วคราว · ลองเลือกเพื่อนคนอื่น", "paused");
   if (!a || !isLive(a)) throw new BookingError("เพื่อนคนนี้ยังไม่เปิดรับงาน", "unavailable");
   const start = Date.parse(input.starts_at);
   if (!Number.isFinite(start) || start < Date.now() + 60 * 60_000 || start > Date.now() + 60 * 86400_000) throw new BookingError("เลือกเวลานัดล่วงหน้าอย่างน้อย 1 ชม. และไม่เกิน 60 วัน");
+  // เรียกด่วน: Part-Time กดรับเอง = ยืนยันว่าว่างตอนนี้ ไม่ต้องเทียบตารางรับงาน
+  if (!opts.quick) { const why = outsideWork(a, start); if (why) throw new BookingError(why, "hours_off"); }
+  if (input.place.type !== "spa" && !inThailand(input.place)) {
+    if (requirePin()) throw new BookingError("ปักหมุดจุดนัดบนแผนที่ก่อนส่งคำขอ", "pin");
+    console.info("booking without map pin", input.place.type, a.mb_code); // ไม่มีหมุด = เพื่อนนำทาง/ETA ไม่ได้
+  }
   const clash = (await listForParttime(a.id)).some((b) => ["requested", "accepted", "checked_in"].includes(b.status) && Math.abs(Date.parse(b.starts_at) - start) < Math.max(b.hours, input.hours) * 3600_000);
   if (clash) throw new BookingError("ช่วงเวลานี้เพื่อนมีนัดแล้ว ลองเลือกเวลาอื่น", "clash");
   if (input.note && hasContact(input.note)) throw new BookingError("ข้อความฝากถึงเพื่อนห้ามมีเบอร์โทร LINE หรือช่องทางติดต่อ");
   const price = (await priceFor(a, input.hours)) * 100;
   const total = price + Math.max(0, Math.round(roomFee)) * 100;
-  const bal = await balances("customer", cust.sub);
-  if ((bal.available ?? 0) < total) throw new BookingError("ยอดในกระเป๋าไม่พอ", "funds", { need: total, available: bal.available ?? 0, short: total - (bal.available ?? 0) });
+  if (opts.quick) {
+    if (total > opts.quick.hold) throw new BookingError("ราคานัดเกินยอดที่ลูกค้ากันไว้", "funds");
+  } else {
+    const bal = await balances("customer", cust.sub);
+    if ((bal.available ?? 0) < total) throw new BookingError("ยอดในกระเป๋าไม่พอ", "funds", { need: total, available: bal.available ?? 0, short: total - (bal.available ?? 0) });
+  }
 
   const b = await insertBooking({
     code: code(), customer_id: cust.sub, customer_email: cust.email, customer_name: cust.name ?? null, parttime_id: a.id, parttime_mb: a.mb_code, parttime_nick: a.nickname,
@@ -200,10 +247,20 @@ export async function createBooking(cust: { sub: string; email: string; name?: s
   // แถวเริ่มเป็น cancelled แล้วเปิดเป็น requested พร้อมกันเงิน (อะตอมมิก) — กันเงินไม่ได้ = ไม่มีคำขอค้างให้เพื่อนกดรับ
   let opened: Booking | null;
   try {
-    opened = await moveBooking(b.id, ["cancelled"], { status: "requested" }, { kind: "hold", ref: ref(b), idem: `hold:${b.id}`, note: `กันเงินนัด ${b.code}`, actor: `customer:${cust.sub}`, legs: [
+    let tx: MoveTx | null;
+    if (opts.quick) {
+      await opts.quick.onInsert(b);
+      // เงินอยู่ใน held แล้ว (กันไว้ตอนเรียกด่วน) → คงไว้เท่าราคานัด · ส่วนต่างคืน available
+      const diff = opts.quick.hold - total;
+      tx = diff > 0 ? { kind: "release", ref: ref(b), idem: `hold:${b.id}`, note: `ส่วนต่างเรียกด่วน · ${b.code}`, actor: `customer:${cust.sub}`, legs: [
+        { owner_type: "customer", owner_id: cust.sub, bucket: "held", amount: -diff },
+        { owner_type: "customer", owner_id: cust.sub, bucket: "available", amount: diff },
+      ] } : null;
+    } else tx = { kind: "hold", ref: ref(b), idem: `hold:${b.id}`, note: `กันเงินนัด ${b.code}`, actor: `customer:${cust.sub}`, legs: [
       { owner_type: "customer", owner_id: cust.sub, bucket: "available", amount: -total },
       { owner_type: "customer", owner_id: cust.sub, bucket: "held", amount: total },
-    ] });
+    ] };
+    opened = await moveBooking(b.id, ["cancelled"], { status: "requested" }, tx);
   } catch (e) {
     await transition(b.id, ["cancelled"], { cancelled_at: now() }).catch(() => null);
     if (e instanceof WalletError) throw new BookingError("ยอดในกระเป๋าไม่พอ", "funds", { need: total });
@@ -291,7 +348,7 @@ export async function sendMessage(b: Booking, sender_type: Message["sender_type"
     if (n > 0 && n % limit === 0) await notify({ user_type: "admin", user_id: "cs", kind: "chat_violation", title: `แชทฝ่าฝืน ${n} ครั้ง · ${b.code}`, body: `${sender_type === "customer" ? `ลูกค้า ${b.customer_email ?? ""}` : `Part-Time ${b.parttime_mb}`} · ล่าสุด: ${text.slice(0, 120)}`, url: `/admin/chats/${b.id}` });
   }
   if (!blocked && sender_type !== "system") {
-    const to = sender_type === "customer" ? { user_type: "parttime" as const, user_id: b.parttime_id, url: `/join/profile/${b.parttime_mb}/jobs` } : { user_type: "customer" as const, user_id: b.customer_id, url: `/chat/${b.id}` };
+    const to = sender_type === "customer" ? { user_type: "parttime" as const, user_id: b.parttime_id, url: `/join/profile/${b.parttime_mb}/chat/${b.id}` } : { user_type: "customer" as const, user_id: b.customer_id, url: `/chat/${b.id}` };
     await notify({ ...to, kind: "message", title: sender_type === "customer" ? "ข้อความใหม่จากลูกค้า" : `ข้อความใหม่จาก ${b.parttime_nick ?? "เพื่อน"}`, body: text.slice(0, 80) });
   }
   return m;
@@ -334,4 +391,17 @@ export async function recentMessages(limit = 5000): Promise<Message[]> {
   const { data, error } = await db().from("messages").select().order("id", { ascending: false }).limit(limit);
   if (error) throw error;
   return (data ?? []) as Message[];
+}
+
+/** ทดสอบเท่านั้น (โหมดสาธิต + ไม่ใช่ production): เลื่อนเวลานัด/เช็กอิน/มาถึง ย้อนหลัง N นาที — ให้ e2e ทดสอบกติกาที่ต้องรอเวลา (ผิดนัด 15 นาที) */
+export async function demoShift(id: string, minutes: number): Promise<Booking | null> {
+  if (!isDemo || process.env.NODE_ENV === "production" || process.env.VERCEL_ENV) return null;
+  const b = demo.bookings.find((x) => x.id === id);
+  if (!b) return null;
+  const ms = Math.round(minutes) * 60_000;
+  const back = (iso: string | null | undefined) => (iso ? new Date(Date.parse(iso) - ms).toISOString() : iso ?? null);
+  b.starts_at = back(b.starts_at)!; b.checked_in_at = back(b.checked_in_at); b.accepted_at = back(b.accepted_at);
+  const a = await import("@/lib/arrival").then((m) => m.getArrival(id)).catch(() => null);
+  if (a) a.arrived_at = back(a.arrived_at)!; // หน่วยความจำ: แก้ที่ object เดิม
+  return b;
 }

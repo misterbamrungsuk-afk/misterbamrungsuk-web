@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { BOOKING_COMMISSION, PACKAGE_KEYS, PARTNER_PACKAGES, baht, type PartnerPackageKey } from "@/lib/partner/config";
+import { BOOKING_COMMISSION, isTbd, PACKAGE_KEYS, PARTNER_PACKAGES, baht, type PartnerPackageKey } from "@/lib/partner/config";
 import { PartnerPayBox } from "../pay-box";
 
 // หน้าชำระแผนโปรโมทหลังสมัคร — ตามบอร์ด PartnerPay.dc.html (เลือกแผนโปรโมท → สรุปยอด → QR + สลิป → รอตรวจ)
@@ -23,7 +23,7 @@ function Row({ n, v, muted = true }: { n: string; v: string; muted?: boolean }) 
 export function SignupPay({ token, business, type, initial, hasPassword }: { token: string; business: string; type: string; initial: PartnerPackageKey; hasPassword: boolean }) {
   const [pkg, setPkg] = useState<PartnerPackageKey>(initial);
   const [invoice, setInvoice] = useState("");
-  const [round, setRound] = useState(0);
+  const [round] = useState(0);
   const t = encodeURIComponent(token);
 
   if (invoice)
@@ -47,7 +47,7 @@ export function SignupPay({ token, business, type, initial, hasPassword }: { tok
         <Link href={hasPassword ? "/partner/portal" : `/partner/register?t=${t}`} className="p-2 text-[13px] text-[#ffd76a]">
           {hasPassword ? "เข้าสู่พอร์ทัลพาร์ทเนอร์" : "ตั้งรหัสผ่าน / เข้าสู่ระบบพอร์ทัล"}
         </Link>
-        <button type="button" onClick={() => { setInvoice(""); setRound((r) => r + 1); }} className="h-12 w-full rounded-[14px] border bg-[#241717] text-[14px] font-semibold text-[#ffd76a]" style={{ borderColor: LINE }}>ส่งสลิปใหม่</button>
+        {/* ส่งสลิปซ้ำไม่ได้ระหว่างรอตรวจ (ระบบกันรายการซ้อน) — แนบผิดให้ติดต่อทีมงาน */}
         <Link href="/partner" className="p-2 text-[13px] text-[#ffd76a]">กลับหน้าพาร์ทเนอร์</Link>
       </div>
     );
@@ -80,16 +80,17 @@ export function SignupPay({ token, business, type, initial, hasPassword }: { tok
         <div className="flex min-w-0 flex-col gap-2">
           <div className="text-[12px] text-[#cdbfb3]">รายการ</div>
           <Row muted={false} n={`แผนโปรโมทพาร์ทเนอร์ ${sel.label}`} v={price(pkg)} />
-          <Row muted={false} n="ค่าป้ายแบรนด์" v="[รอกำหนด]" />
         </div>
         <div className="flex min-w-0 flex-col gap-2">
           <div className="text-[12px] text-[#cdbfb3]">สิ่งที่ได้</div>
           <ul className="m-0 flex flex-col gap-1 pl-4">{PERKS.map((p) => <li key={p} className="[overflow-wrap:anywhere]">{p}</li>)}</ul>
         </div>
-        <div className="flex min-w-0 flex-col gap-2">
-          <div className="text-[12px] text-[#cdbfb3]">การหักต่อ booking</div>
-          <div>หัก {BOOKING_COMMISSION}% ต่อ booking ที่มาจากแพลตฟอร์ม</div>
-        </div>
+        {!isTbd(BOOKING_COMMISSION) && (
+          <div className="flex min-w-0 flex-col gap-2">
+            <div className="text-[12px] text-[#cdbfb3]">การหักต่อ booking</div>
+            <div>หัก {BOOKING_COMMISSION}% ต่อ booking ที่มาจากแพลตฟอร์ม</div>
+          </div>
+        )}
         <div className="flex items-baseline justify-between gap-4 border-t pt-4" style={{ borderColor: LINE }}>
           <span>ยอดชำระ</span>
           <span className="font-lux whitespace-nowrap text-right text-[24px] font-semibold text-[#f0c75a]">{price(pkg)}</span>

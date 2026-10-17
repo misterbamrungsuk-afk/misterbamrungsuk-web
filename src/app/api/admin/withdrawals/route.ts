@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
 import { BookingError } from "@/lib/bookings";
+import { withdrawInfo } from "@/lib/admin/withdraw-info";
 import { approveWithdrawal, getWithdrawal, listWithdrawals, makeBatch, markFailed, markPaid, rejectWithdrawal } from "@/lib/bookings/day";
 
 export const runtime = "nodejs";
@@ -25,7 +26,9 @@ export async function GET(req: Request) {
       const body = "﻿" + [["ธนาคาร", "เลขบัญชี", "ชื่อบัญชี", "ยอดโอนสุทธิ", "รหัส MB", "อ้างอิง"].map(esc).join(","), ...lines].join("\r\n");
       return new NextResponse(body, { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="payout-${String(csv).replace(/[^\w-]/g, "")}.csv"`, "Cache-Control": "no-store" } });
     }
-    return NextResponse.json({ ok: true, withdrawals: rows });
+    // ชื่อ PT + ป้ายบัญชีใหม่ (เทียบกับบัญชีที่โอนสำเร็จครั้งล่าสุด) สำหรับรายการที่ยังไม่จบ
+    const info = await withdrawInfo(rows, rows).catch(() => ({}));
+    return NextResponse.json({ ok: true, withdrawals: rows, info });
   } catch (e) {
     console.error("admin withdrawals", e);
     return NextResponse.json({ ok: false, error: "ระบบกระเป๋าเงินยังไม่เปิดใช้งาน" }, { status: 503 });

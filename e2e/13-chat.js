@@ -11,7 +11,7 @@ const J = (r) => r.json();
 const ADM = { cookie: 'mord_admin=' + adm, 'content-type': 'application/json' };
 const sign = (p) => { const b = Buffer.from(JSON.stringify(p)).toString('base64url'); return b + '.' + crypto.createHmac('sha256', KEY).update(b).digest('base64url'); };
 const C1 = { cookie: 'hamoo_session=' + sign({ sub: 'demo:chat@test.local', email: 'chat@test.local', exp: Date.now() + 3600e3 }), 'content-type': 'application/json' };
-const T = (() => { const b = Buffer.from(JSON.stringify({ mb, exp: Date.now() + 3600e3 })).toString('base64url'); return b + '.' + crypto.createHmac('sha256', KEY).update('resume:' + b).digest('base64url'); })();
+const T = (() => { const b = Buffer.from(JSON.stringify({ mb, iat: Date.now(), exp: Date.now() + 3600e3 })).toString('base64url'); return b + '.' + crypto.createHmac('sha256', KEY).update('resume:' + b).digest('base64url'); })();
 const img = fs.readFileSync(WEB + '/public/brand/home/p-n04.jpg');
 (async () => {
   const fd = new FormData(); fd.set('amount', '20000'); fd.set('slip', new File([img], 's.jpg', { type: 'image/jpeg' }));

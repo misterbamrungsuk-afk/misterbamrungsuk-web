@@ -31,7 +31,7 @@ export default async function DocsPage({ params, searchParams }: { params: Promi
           </div>
         ) : paid.map((w) => (
           <Link key={w.id} href={`/join/profile/${c.mb}/docs/${w.id}${c.q}`} className="rounded-[18px] bg-[#251d1b] flex items-center gap-3 text-[#f3ead9] hover:text-[#f3ead9]" style={{ padding: 14 }}>
-            <span className="flex-1 min-w-0"><span className="block font-semibold">ใบเสร็จรับเงิน WR-{w.id.slice(0, 8).toUpperCase()}</span><span className="block text-[12.5px] font-light text-[#b5a596]">{new Date(w.paid_at ?? w.created_at).toLocaleDateString("th-TH", { dateStyle: "medium" })} · ค่าธรรมเนียม {baht(w.fee_satang)} · ถอน {baht(w.amount_satang)}</span></span>
+            <span className="flex-1 min-w-0"><span className="block font-semibold">ใบเสร็จรับเงิน WR-{w.id.slice(0, 8).toUpperCase()}</span><span className="block text-[12.5px] font-light text-[#b5a596]">{new Date(w.paid_at ?? w.created_at).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", dateStyle: "medium" })} · ค่าธรรมเนียม {baht(w.fee_satang)} · ถอน {baht(w.amount_satang)}</span></span>
             <span className="text-[13px] font-semibold text-[#e8c472]">PDF ›</span>
           </Link>
         ))}

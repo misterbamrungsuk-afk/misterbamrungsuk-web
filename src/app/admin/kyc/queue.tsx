@@ -10,7 +10,7 @@ const GOLD = "#f0c75a";
 const TABS: [KycStatus, string, string][] = [["submitted", "รอตรวจเอกสาร", "#eed58a"], ["rejected", "ตีกลับ · รอแก้", "#fca5a5"], ["approved", "อนุมัติแล้ว", "#4ade80"]];
 const thTime = (iso?: string | null) => (iso ? new Date(iso).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", dateStyle: "short", timeStyle: "short" }) : "—");
 
-export function KycQueue({ initial }: { initial: Applicant[] }) {
+export function KycQueue({ initial, canLink = true }: { initial: Applicant[]; canLink?: boolean }) {
   const router = useRouter();
   const [rows, setRows] = useState(initial);
   const [tab, setTab] = useState<KycStatus>("submitted");
@@ -60,7 +60,7 @@ export function KycQueue({ initial }: { initial: Applicant[] }) {
               <div className="min-w-0"><div className="font-lux font-semibold text-[17px] truncate">{sel.first_name} {sel.last_name}</div><div className="text-[#ffd76a] text-xs">{sel.mb_code} · สาย {sel.package}</div></div>
             </div>
             <div className="h-px bg-[rgba(240,200,90,.38)]" />
-            <KycPanel key={sel.id} row={sel} onSaved={(row) => { setRows((rs) => rs.map((x) => (x.id === row.id ? row : x))); router.refresh(); }} />
+            <KycPanel key={sel.id} row={sel} canLink={canLink} onSaved={(row) => { setRows((rs) => rs.map((x) => (x.id === row.id ? row : x))); router.refresh(); }} />
           </>
         ) : <p className="py-10 text-center text-[#9a8a85]">เลือกผู้สมัครจากตารางเพื่อตรวจเอกสาร</p>}
       </aside>

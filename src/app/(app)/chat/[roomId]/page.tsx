@@ -11,7 +11,7 @@ const LN = "rgba(243,234,217,0.07)";
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US");
 type M = { id: number; sender_type: "customer" | "parttime" | "system"; body: string; blocked: boolean; created_at: string };
 type B = { id: string; code: string; status: string; starts_at: string; hours: number; total_satang: number; place: { label: string }; pt: { nick: string; img: string; pid: string } };
-const time = (iso: string) => new Date(iso).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+const time = (iso: string) => new Date(iso).toLocaleTimeString("th-TH", { timeZone: "Asia/Bangkok", hour: "2-digit", minute: "2-digit" });
 
 export default function ChatRoom({ params }: { params: Promise<{ roomId: string }> }) {
   const { roomId } = use(params);
@@ -64,7 +64,7 @@ export default function ChatRoom({ params }: { params: Promise<{ roomId: string 
       {b && (
         <Link href={`/order/${b.id}`} className="flex items-center gap-[10px] rounded-[14px] text-[#f3ead9] hover:text-[#f3ead9]" style={{ margin: "10px 12px 0", padding: "10px 12px", border: "1px solid rgba(212,175,55,.4)", background: "rgba(212,175,55,.06)" }}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="1.8" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
-          <div className="flex-1 text-[13px] font-light"><b style={{ color: GOLD }}>{b.status === "requested" ? `กันเงิน ${baht(b.total_satang)} · รอ${b.pt.nick}ตอบรับ` : `ชำระแล้ว ${baht(b.total_satang)} · เงินพักไว้กับเราจนจบนัด`}</b><br /><span className="text-[#d9c9b4]">{b.place.label} {b.hours} ชม. · {new Date(b.starts_at).toLocaleString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span></div>
+          <div className="flex-1 text-[13px] font-light"><b style={{ color: GOLD }}>{b.status === "requested" ? `กันเงิน ${baht(b.total_satang)} · รอ${b.pt.nick}ตอบรับ` : `ชำระแล้ว ${baht(b.total_satang)} · เงินพักไว้กับเราจนจบนัด`}</b><br /><span className="text-[#d9c9b4]">{b.place.label} {b.hours} ชม. · {new Date(b.starts_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span></div>
         </Link>
       )}
       <div className="flex-1 overflow-y-auto flex flex-col gap-2" style={{ padding: "14px 12px" }}>

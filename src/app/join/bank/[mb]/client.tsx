@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BANK_GROUPS, ALL_BANKS } from "@/lib/join/banks";
 import { BottomBar, ctaStyle } from "../../_kyc/ui";
+import { dataUrlToFile, resizeImage } from "@/lib/join/form";
 
 const GOLD = "#e8c472";
 const lb: React.CSSProperties = { display: "block", fontSize: 13, color: "#f3ead9", marginBottom: 6 };
@@ -25,10 +26,19 @@ export function BankForm({ mb, t, initial, fix = false }: { mb: string; t: strin
   const digits = account.replace(/\D/g, "");
   const hasBook = !!book || initial.hasBook;
 
-  const pickBook = (f?: File) => {
+  const [shrinking, setShrinking] = useState(false);
+  // รูปสมุดบัญชีจากกล้องมือถือมักเกิน 5MB → ย่อในเครื่องก่อนส่ง (เหมือนหน้ารูปโปรไฟล์)
+  const pickBook = async (f?: File) => {
     if (!f) return;
-    if (!["image/jpeg", "image/png", "image/webp"].includes(f.type) || f.size > 5 * 1024 * 1024) return setError("รูป JPG/PNG/WEBP ไม่เกิน 5MB");
-    setError(""); setBook(f); setBookUrl((o) => { if (o) URL.revokeObjectURL(o); return URL.createObjectURL(f); });
+    if (!f.type.startsWith("image/")) return setError("รับเฉพาะไฟล์รูปภาพ JPG/PNG/WEBP");
+    setShrinking(true); setError("");
+    try {
+      const small = await dataUrlToFile(await resizeImage(f, 1600, 0.85), "bankbook.jpg");
+      if (small.size > 5 * 1024 * 1024) throw new Error("รูปใหญ่เกินไปแม้ย่อแล้ว · ลองถ่ายใหม่หรือเลือกรูปอื่น");
+      setBook(small); setBookUrl((o) => { if (o) URL.revokeObjectURL(o); return URL.createObjectURL(small); });
+    } catch (e) {
+      setError(e instanceof Error && e.message ? e.message : "ไฟล์นี้เปิดเป็นรูปไม่ได้ · เลือกรูป JPG/PNG อีกครั้ง");
+    } finally { setShrinking(false); }
   };
 
   const submit = async () => {
@@ -65,7 +75,7 @@ export function BankForm({ mb, t, initial, fix = false }: { mb: string; t: strin
           </select>
         </label>
         <label className="block"><span style={lb}>เลขบัญชี</span>
-          <input className={inCls} inputMode="numeric" autoComplete="off" maxLength={17} value={account} onChange={(e) => setAccount(e.target.value.replace(/[^\d-]/g, ""))} placeholder="xxx-x-xxxxx-x" />
+          <input className={inCls} inputMode="numeric" autoComplete="off" value={account} onChange={(e) => setAccount(e.target.value.replace(/[^\d-]/g, "").slice(0, 17))} placeholder="xxx-x-xxxxx-x" />
         </label>
         <label className="block"><span style={lb}>ชื่อบัญชี (ต้องตรงกับบัตรประชาชน)</span>
           <input className={inCls} value={name} onChange={(e) => setName(e.target.value)} placeholder="ชื่อ-นามสกุลตามบัตร" />
@@ -91,7 +101,7 @@ export function BankForm({ mb, t, initial, fix = false }: { mb: string; t: strin
       </div>
       <BottomBar>
         {error && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{error}</p>}
-        <button type="button" onClick={submit} disabled={busy} style={{ ...ctaStyle, opacity: busy ? 0.6 : 1 }}>{busy ? "กำลังส่ง…" : "ยืนยัน · ส่งใบสมัคร"}</button>
+        <button type="button" onClick={submit} disabled={busy || shrinking} style={{ ...ctaStyle, opacity: busy || shrinking ? 0.6 : 1 }}>{shrinking ? "กำลังย่อรูป…" : busy ? "กำลังส่ง…" : "ยืนยัน · ส่งใบสมัคร"}</button>
       </BottomBar>
     </>
   );

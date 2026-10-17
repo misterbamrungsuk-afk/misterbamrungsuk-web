@@ -13,7 +13,7 @@ export type VenueCard = { id: string; name: string; province: string; area: stri
 export type VenueFull = {
   id: string; name: string; type: "โรงแรม" | "สปา"; province: string; area: string; sample: boolean; description: string;
   gallery: string[]; facts: string[]; services: { name: string; desc: string; price: number; base: number }[];
-  tel: string; telLabel: string; line: string; map: string; logo?: Logo | null;
+  tel: string; telLabel: string; line: string; map: string; logo?: Logo | null; address?: string;
 };
 
 const BD = "rgba(232,196,114,.38)";
@@ -99,7 +99,7 @@ export function VenueListView({ type, items }: { type: "โรงแรม" | "�
                 <div className="text-[12.5px] text-[#d9c9b4]">{h.province} · {h.area}</div>
                 <div className="flex justify-between items-baseline gap-2 mt-1.5 text-[12.5px]">
                   <span className="text-[#d9c9b4]">{h.tags}</span>
-                  <span className="font-lux font-semibold text-[#e8c472] text-[14px] shrink-0">{h.price != null ? `เริ่ม ${fmt(h.price)}${hotel ? "/คืน" : ""}` : "ราคา [รอกำหนด]"}</span>
+                  {h.price != null && <span className="font-lux font-semibold text-[#e8c472] text-[14px] shrink-0">{`เริ่ม ${fmt(h.price)}${hotel ? "/คืน" : ""}`}</span>}
                 </div>
               </div>
             </Link>
@@ -107,11 +107,11 @@ export function VenueListView({ type, items }: { type: "โรงแรม" | "�
           </div>
           {!list.length && (
             <div className="p-3.5 rounded-2xl bg-[#211a18] text-center text-[#d9c9b4] text-[13px] leading-[1.7]" style={{ border: `1px solid ${BD}` }}>
-              ยังไม่มี{hotel ? "โรงแรม" : "สปา"}พาร์ทเนอร์ใน{prov}<br />เปิดรับพาร์ทเนอร์ [รอกำหนด] · <Link href="/partner" className="text-[#e8c472]">สมัครเป็นพาร์ทเนอร์</Link>
+              ยังไม่มี{hotel ? "โรงแรม" : "สปา"}พาร์ทเนอร์ใน{prov}<br /><Link href="/partner" className="text-[#e8c472]">สมัครเป็นพาร์ทเนอร์</Link>
             </div>
           )}
           <div className="text-[11.5px] text-[#b5a596] leading-[1.6]">
-            {items.some((i) => i.sample) ? "ข้อมูลและราคาเป็นตัวอย่าง รอรายชื่อพาร์ทเนอร์จริง · " : ""}ราคาจริงและส่วนลดสมาชิก [รอกำหนด]
+            {items.some((i) => i.sample) ? "ข้อมูลและราคาเป็นตัวอย่าง รอรายชื่อพาร์ทเนอร์จริง" : "ราคาอาจเปลี่ยนแปลงตามที่พาร์ทเนอร์แจ้ง"}
           </div>
         </div>
       </div>
@@ -151,14 +151,15 @@ export function VenueDetailView({ v }: { v: VenueFull }) {
     try { const s = new Set<string>(JSON.parse(localStorage.getItem("mb_fav_venues") ?? "[]")); if (on) s.add(v.id); else s.delete(v.id); localStorage.setItem("mb_fav_venues", JSON.stringify([...s])); } catch {}
     flash(on ? `บันทึก${noun}นี้แล้ว` : "นำออกจากที่บันทึกแล้ว");
   };
-  const meet = () => { savePlace({ kind: hotel ? "hotel" : "spa", id: v.id, name: v.name, area: v.area }); router.push(`/home?place=${encodeURIComponent(v.id)}`); };
+  // เก็บสถานที่ไว้ → เลือกเพื่อนจากหน้าแรก → หน้านัด (/book/[id]) เปิดมาเป็นสปานี้ให้อัตโนมัติ
+  const meet = () => { savePlace({ kind: hotel ? "hotel" : "spa", id: v.id, name: v.name, area: v.area }); router.push(hotel ? "/" : `/?spa=${encodeURIComponent(v.id)}`); };
   const canReq = !!date && !!(v.line || v.tel);
   // ยังไม่มีระบบจองในแพลตฟอร์ม → ส่งคำขอผ่าน LINE ของสถานที่ (หรือโทร)
   const sendReq = () => {
     if (!date) return;
     if (v.line) window.open(v.line, "_blank", "noopener");
     else if (v.tel) window.location.href = `tel:${v.tel}`;
-    else return flash(`ช่องทางจองของ${noun}นี้ [รอกำหนด]`);
+    else return flash(`${noun}นี้ยังไม่ได้เปิดช่องทางติดต่อ · กด "นัดเพื่อนที่นี่" เพื่อจองผ่านแพลตฟอร์ม`);
     setSheet(false);
   };
 
@@ -196,7 +197,7 @@ export function VenueDetailView({ v }: { v: VenueFull }) {
             <h1 className="mt-2 mb-0.5 font-lux font-bold text-[24px] flex items-center gap-2.5">{v.logo && <LogoBadge logo={v.logo} size={44} />}{v.name}</h1>
             <div className="text-[12.5px] text-[#d9c9b4]">{v.province} · {v.area}</div>
           </div>
-          <div className={HROW}>{v.facts.map((t) => <span key={t} className="shrink-0 px-2.5 py-1.5 rounded-[10px] bg-[#211a18] text-[11.5px] text-[#d9c9b4]" style={{ border: `1px solid ${BD}` }}>{t}</span>)}</div>
+          {v.facts.length > 0 && <div className="flex flex-wrap gap-2">{v.facts.map((t) => <span key={t} className="max-w-full px-2.5 py-1.5 rounded-[10px] bg-[#211a18] text-[12px] text-[#d9c9b4] [overflow-wrap:anywhere]" style={{ border: `1px solid ${BD}` }}>{t}</span>)}</div>}
           {v.description && <p className="m-0 text-[13px] text-[#d9c9b4] leading-[1.7] whitespace-pre-line">{v.description}</p>}
           <div className="font-lux font-semibold text-[16px] mt-1">{hotel ? "ห้องพักและราคา" : "บริการและราคา"}</div>
           {v.services.length ? (
@@ -215,13 +216,13 @@ export function VenueDetailView({ v }: { v: VenueFull }) {
                 );
               })}
             </div>
-          ) : <div className="text-[13px] text-[#d9c9b4]">ราคา [รอกำหนด] — สอบถาม{noun}โดยตรง</div>}
-          <div className="text-[11.5px] text-[#b5a596]">{v.sample ? "ราคาตัวอย่าง · " : ""}ราคาสมาชิก Mister Bamrungsuk [รอกำหนด]</div>
+          ) : <div className="text-[13px] text-[#d9c9b4]">สอบถามราคากับ{noun}โดยตรง</div>}
+          {v.sample && <div className="text-[12px] text-[#b5a596]">ราคาตัวอย่าง</div>}
           <div className="p-3.5 rounded-2xl bg-[#211a18] flex flex-col gap-2.5" style={{ border: `1px solid ${BD}` }}>
             <div className="h-[110px] rounded-xl overflow-hidden bg-[#21191a]">
               <svg width="100%" height="110" viewBox="0 0 320 110" preserveAspectRatio="xMidYMid slice" aria-label="แผนที่ตำแหน่ง"><rect width="320" height="110" fill="#1d1717" /><path d="M0 70 C80 50 140 95 220 62 S300 40 320 48" stroke="#2c3a4a" strokeWidth="18" fill="none" /><path d="M40 0v110M150 0v110M260 0v110M0 30h320M0 90h320" stroke="#2a2224" strokeWidth="5" /><circle cx="160" cy="52" r="14" fill="#b0182c" opacity=".3" /><path d="M160 34c-7 0-12 5-12 12 0 9 12 20 12 20s12-11 12-20c0-7-5-12-12-12z" fill="#c21d33" stroke="#e8c472" /><circle cx="160" cy="46" r="4" fill="#fff" /></svg>
             </div>
-            <div className="text-[12.5px] text-[#d9c9b4]">{v.area} · {v.province} · ที่อยู่เต็ม [รอกำหนด]</div>
+            <div className="text-[12.5px] text-[#d9c9b4]">{v.address || `${v.area} · ${v.province}`}</div>
             <a href={v.map} target="_blank" rel="noreferrer" className="min-h-11 rounded-xl bg-[#21191a] text-[#e8c472] font-semibold grid place-items-center no-underline" style={{ border: `1px solid ${BD}` }}>เปิดใน Google Maps ↗</a>
           </div>
           <div className="text-[12px] text-[#b5a596] leading-[1.6]">อยากหาเพื่อนไปด้วย? กด &quot;นัดเพื่อนที่นี่&quot; เพื่อเลือก Part-Time และตั้งสถานที่นัดเป็น{noun}นี้</div>
@@ -249,11 +250,11 @@ export function VenueDetailView({ v }: { v: VenueFull }) {
             </button>
             <div className="flex gap-2">
               {v.line ? <a href={v.line} target="_blank" rel="noreferrer" className="flex-1 h-12 rounded-[14px] bg-[#211a18] text-[#e8c472] text-[14px] font-semibold grid place-items-center no-underline" style={{ border: `1px solid ${BD}` }}>LINE</a>
-                : <span className="flex-1 h-12 rounded-[14px] bg-[#211a18] text-[#e8c472] text-[14px] font-semibold grid place-items-center opacity-60" style={{ border: `1px solid ${BD}` }}>LINE [รอกำหนด]</span>}
+                : null}
               {v.tel ? <a href={`tel:${v.tel}`} className="flex-1 h-12 rounded-[14px] bg-[#211a18] text-[#e8c472] text-[14px] font-semibold grid place-items-center no-underline" style={{ border: `1px solid ${BD}` }}>โทร {v.telLabel}</a>
-                : <span className="flex-1 h-12 rounded-[14px] bg-[#211a18] text-[#e8c472] text-[14px] font-semibold grid place-items-center opacity-60" style={{ border: `1px solid ${BD}` }}>โทร [รอกำหนด]</span>}
+                : null}
             </div>
-            <div className="text-[11.5px] text-[#b5a596]">{noun}ยืนยันการจองและรับชำระเอง · Mister Bamrungsuk ไม่เก็บเงินในขั้นตอนนี้ [รอกำหนด]</div>
+            <div className="text-[12px] text-[#b5a596]">{!v.line && !v.tel ? `${noun}นี้ยังไม่เปิดช่องทางติดต่อโดยตรง · ` : ""}{noun}ยืนยันการจองและรับชำระเอง · Mister Bamrungsuk ไม่เก็บเงินในขั้นตอนนี้</div>
           </div>
         </div>
       )}

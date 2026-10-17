@@ -3,8 +3,7 @@ import { getLiveApplicants, getLivePeople, publicId, mainPos } from "@/lib/home/
 import { personById } from "@/lib/home/people";
 import { extraOf, type Applicant } from "@/lib/join/store";
 import { listForParttime, priceFor } from "@/lib/bookings";
-import { listPartners } from "@/lib/partner/store";
-import { PARTNER_SPAS } from "@/lib/booking";
+import { bookableSpas } from "@/lib/market/partners";
 import { BookFlow, type Avail } from "./flow";
 import { currentCustomer } from "@/lib/customer/auth";
 import { getProfile } from "@/lib/customer/profile";
@@ -31,8 +30,9 @@ function availOf(a: Applicant): Avail {
 }
 
 // บอร์ด C-Booking → C-Schedule → C-Checkout · จองได้เฉพาะ Part-Time จริงที่เปิดรับงาน · คนตัวอย่างแสดงข้อความแจ้ง
-export default async function BookPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function BookPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ spa?: string }> }) {
   const { id } = await params;
+  const { spa: spaPick } = await searchParams;
   const live = /^r[0-9a-f]{10}$/.test(id) ? (await getLiveApplicants().catch(() => [])).find((a) => publicId(a.mb_code) === id) : undefined;
   if (!live) {
     const sample = personById(id);
@@ -48,10 +48,10 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
   const [p3, p5, theirs] = await Promise.all([priceFor(live, 3), priceFor(live, 5), listForParttime(live.id).catch(() => [])]);
   // ช่วงที่เพื่อนมีนัดแล้ว (เฉพาะเวลา ไม่ส่งข้อมูลลูกค้าคนอื่น) → ขีดฆ่าในหน้าเลือกเวลา ตรงกับเงื่อนไขกันนัดซ้อนฝั่งเซิร์ฟเวอร์
   const busy = theirs.filter((b) => ["requested", "accepted", "checked_in"].includes(b.status) && Date.parse(b.starts_at) > Date.now() - 24 * 3600_000).map((b) => ({ s: Date.parse(b.starts_at), h: b.hours }));
-  const real = await listPartners().then((l) => l.filter((x) => x.type === "สปา" && (x.account_status === "active" || x.status === "active")).map((x) => ({ id: x.id, name: x.business_name, area: x.province, price: 0 }))).catch(() => []);
-  const spas = (real.length ? real : PARTNER_SPAS).map((s) => ({ id: s.id, name: s.name, area: s.area, price: s.price }));
+  // สปาทุกประเภทที่เปิดแสดง + บริการให้เลือก (ราคาบริการ = ค่าห้อง) · โลโก้/ปก/ย่านของร้านจริง
+  const spas = await bookableSpas(true).catch(() => []);
   const me = await currentCustomer().catch(() => null);
   const prof = me ? await getProfile(me.sub, me.email).catch(() => null) : null;
   if (prof?.blocked.includes(id)) return <div className="text-center" style={{ padding: "80px 24px" }}><p className="text-[#d9c9b4]">คุณบล็อกเพื่อนคนนี้ไว้ · ยกเลิกบล็อกได้ที่ บัญชี › ผู้ใช้ที่บล็อก</p><Link href="/profile/blocked" className="text-[#e8c472]">จัดการผู้ใช้ที่บล็อก</Link></div>;
-  return <BookFlow p={{ id, nick: person.nick, img: person.img, pos: mainPos(live) ?? null, area: person.area, rating: person.rating }} price={{ 3: p3, 5: p5 }} avail={availOf(live)} busy={busy} spas={spas} saved={prof?.addresses ?? []} />;
+  return <BookFlow p={{ id, nick: person.nick, img: person.img, pos: mainPos(live) ?? null, area: person.area, rating: person.rating }} price={{ 3: p3, 5: p5 }} avail={availOf(live)} busy={busy} spas={spas} initialSpa={typeof spaPick === "string" ? spaPick.slice(0, 64) : undefined} saved={prof?.addresses ?? []} />;
 }

@@ -16,7 +16,7 @@ export async function POST() {
   const at = new Date().toISOString();
   try {
     await updateProfile(me.sub, me.email, { delete_requested_at: at });
-    await notify({ user_type: "admin", user_id: "pdpa", kind: "customer_delete", title: "ลูกค้าขอลบบัญชี", body: me.email, url: null });
+    await notify({ user_type: "admin", user_id: "pdpa", kind: "customer_delete", title: "ลูกค้าขอลบบัญชี", body: me.email, url: "/admin/members" });
     forgetSession(me.sub);
     // ขอลบแล้ว = ออกจากระบบทุกเครื่อง (session ถูกเพิกถอนที่ currentCustomer) · ทีมงานลบข้อมูลภายใน 30 วัน
     const res = NextResponse.json({ ok: true, at, signedOut: true });

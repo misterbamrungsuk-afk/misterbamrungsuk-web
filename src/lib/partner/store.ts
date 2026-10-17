@@ -43,7 +43,7 @@ export interface Partner extends PartnerInput {
   qc_docs?: QcDocs | null;
   qc_status?: QcStatus | null;
 }
-export type PartnerPatch = Partial<Pick<Partner, "status" | "qc" | "package" | "starts_at" | "ends_at" | "amount" | "notes" | "password_hash" | "account_status" | "clip_status" | "clip_note" | "platform_pct" | "qc_slot" | "qc_docs" | "qc_status">>;
+export type PartnerPatch = Partial<Pick<Partner, "business_name" | "type" | "status" | "qc" | "package" | "starts_at" | "ends_at" | "amount" | "notes" | "password_hash" | "account_status" | "clip_status" | "clip_note" | "platform_pct" | "qc_slot" | "qc_docs" | "qc_status">>;
 
 export const isDemo = !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY;
 let sb: SupabaseClient | null = null;
@@ -100,6 +100,15 @@ export async function getPartner(id: string): Promise<Partner | null> {
   const { data, error } = await db().from("partners").select("*").eq("id", id).maybeSingle();
   if (error) throw error;
   return (data as Partner) ?? null;
+}
+
+/** พาร์ทเนอร์ทุกรายการที่ใช้อีเมลนี้ (กันสมัครซ้ำ) */
+export async function findPartnersByEmail(email: string): Promise<Partner[]> {
+  const e = email.trim().toLowerCase();
+  if (isDemo) return demo.filter((x) => x.email.toLowerCase() === e);
+  const { data, error } = await db().from("partners").select("*").ilike("email", e).limit(5);
+  if (error) throw error;
+  return data as Partner[];
 }
 
 /** พาร์ทเนอร์ที่ตั้งรหัสผ่านแล้วด้วยอีเมลนี้ */

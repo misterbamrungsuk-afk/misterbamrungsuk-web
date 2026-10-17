@@ -27,13 +27,14 @@ export function PartnerPayBox({ pkg, token, onDone, requireAgree = false, showAm
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [slipErr, setSlipErr] = useState("");
+  const [round, setRound] = useState(0);
 
   useEffect(() => {
     setQr("");
     if (price == null) return;
     const payload = promptPayPayload(BANK.promptPayId, price);
     if (payload) QRCode.toDataURL(payload, { margin: 1, width: 480, errorCorrectionLevel: "M" }).then(setQr).catch(() => setQr(""));
-  }, [price]);
+  }, [price, round]);
 
   useEffect(() => {
     const t = setInterval(() => setSec((s) => (s > 0 ? s - 1 : 0)), 1000);
@@ -110,7 +111,7 @@ export function PartnerPayBox({ pkg, token, onDone, requireAgree = false, showAm
             </div>
             <div className="text-center text-[12px] text-[#cdbfb3] [overflow-wrap:anywhere]">{BANK.accountName} · บัญชีรับเงิน {BANK.accountNo}</div>
             {expired && (
-              <button type="button" onClick={() => setSec(QR_TTL)} className="h-12 w-full rounded-[14px] border bg-[#241717] text-[14px] font-semibold text-[#ffd76a]" style={{ borderColor: LINE }}>สร้าง QR ใหม่</button>
+              <button type="button" onClick={() => { setSec(QR_TTL); setRound((r) => r + 1); }} className="h-12 w-full rounded-[14px] border bg-[#241717] text-[14px] font-semibold text-[#ffd76a]" style={{ borderColor: LINE }}>สร้าง QR ใหม่</button>
             )}
           </>
         ) : (
@@ -143,7 +144,7 @@ export function PartnerPayBox({ pkg, token, onDone, requireAgree = false, showAm
           className="flex w-full min-w-0 items-start gap-2.5 border-0 bg-transparent px-0 py-1 text-left text-[13px] leading-[1.5] text-[#f6efe4]">
           <span className="grid h-[22px] w-[22px] shrink-0 place-items-center rounded-md text-[14px] font-bold text-[#0e0a0a]"
             style={{ border: `1.5px solid ${agree ? "#f0c75a" : "#5a4a4d"}`, background: agree ? "#f0c75a" : "transparent" }}>{agree ? "✓" : ""}</span>
-          <span className="min-w-0">ยอมรับเงื่อนไขพาร์ทเนอร์ (QC มาตรฐานเดียวกับบำรุงสุข · หัก {BOOKING_COMMISSION}% ต่อ booking)</span>
+          <span className="min-w-0">ยอมรับเงื่อนไขพาร์ทเนอร์ (QC มาตรฐานเดียวกับบำรุงสุข{/รอกำหนด/.test(BOOKING_COMMISSION) ? " · อัตราหักต่อ booking ตามสัญญา" : ` · หัก ${BOOKING_COMMISSION}% ต่อ booking`})</span>
         </button>
       )}
 

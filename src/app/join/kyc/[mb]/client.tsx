@@ -5,8 +5,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BottomBar, ctaStyle } from "../../_kyc/ui";
+import { dataUrlToFile, resizeImage } from "@/lib/join/form";
 
-const OK_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const box: React.CSSProperties = { padding: 20, borderRadius: 16, display: "flex", flexDirection: "column", gap: 16, minWidth: 0 };
 const area = "rounded-xl flex flex-col items-center justify-center gap-2 overflow-hidden text-[#f3ead9] cursor-pointer";
 
@@ -14,13 +14,22 @@ function useImage() {
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState<string | null>(null);
   const [err, setErr] = useState("");
-  const pick = (f: File | undefined) => {
+  const [busy, setBusy] = useState(false);
+  // รูปจากมือถือมักเกิน 5MB → ย่อในเครื่องก่อนส่ง (ด้านยาว 1600px ยังอ่านตัวอักษรบนบัตรได้ชัด) เหมือนหน้ารูปโปรไฟล์
+  const pick = async (f: File | undefined) => {
     if (!f) return;
-    if (!OK_TYPES.includes(f.type) || f.size > 5 * 1024 * 1024) { setErr("รูป JPG/PNG/WEBP ไม่เกิน 5MB"); return; }
-    setErr(""); setFile(f);
-    setUrl((old) => { if (old) URL.revokeObjectURL(old); return URL.createObjectURL(f); });
+    if (!f.type.startsWith("image/")) { setErr("รับเฉพาะไฟล์รูปภาพ JPG/PNG/WEBP"); return; }
+    setBusy(true); setErr("");
+    try {
+      const small = await dataUrlToFile(await resizeImage(f, 1600, 0.85), "kyc.jpg");
+      if (small.size > 5 * 1024 * 1024) throw new Error("รูปใหญ่เกินไปแม้ย่อแล้ว · ลองถ่ายใหม่หรือเลือกรูปอื่น");
+      setFile(small);
+      setUrl((old) => { if (old) URL.revokeObjectURL(old); return URL.createObjectURL(small); });
+    } catch (e) {
+      setErr(e instanceof Error && e.message ? e.message : "ไฟล์นี้เปิดเป็นรูปไม่ได้ · เลือกรูป JPG/PNG อีกครั้ง");
+    } finally { setBusy(false); }
   };
-  return { file, url, err, pick };
+  return { file, url, err, pick, busy };
 }
 
 const cam = (
@@ -97,7 +106,7 @@ export function KycForm({ mb, t, has, redo, fix }: { mb: string; t: string; has:
       </div>
       <BottomBar>
         {error && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{error}</p>}
-        <button type="button" onClick={submit} disabled={busy} style={{ ...ctaStyle, opacity: busy ? 0.6 : 1 }}>{busy ? "กำลังอัปโหลด…" : fix ? "ส่งรายการที่แก้ไข" : "ถัดไป · บัญชีรับเงิน"}</button>
+        <button type="button" onClick={submit} disabled={busy || card.busy || selfie.busy || copy.busy} style={{ ...ctaStyle, opacity: busy || card.busy || selfie.busy || copy.busy ? 0.6 : 1 }}>{card.busy || selfie.busy || copy.busy ? "กำลังย่อรูป…" : busy ? "กำลังอัปโหลด…" : fix ? "ส่งรายการที่แก้ไข" : "ถัดไป · บัญชีรับเงิน"}</button>
       </BottomBar>
     </>
   );

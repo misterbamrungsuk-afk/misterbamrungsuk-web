@@ -115,7 +115,7 @@ export interface PtWork { days: Record<string, { on: boolean; from: string; to: 
 export interface PtListing { title: string; rules: string; hidden: boolean; updated_at: string }
 export interface PtPost { text: string; time: string; zone: string; open: boolean; created_at: string }
 
-export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents" | "talents_other" | "activities_other" | "areas" | "no_area" | "slip_check" | "invite" | "kyc_status" | "kyc_reason" | "kyc_submitted_at" | "bank_book_path"> & { attendance?: Record<string, boolean>; photos?: string[]; card?: ProfileCard | null; form_done?: number[]; tier?: "top" | "silver"; pt_settings?: PtSettings | null; post?: PtPost | null; listing?: PtListing | null; work?: PtWork | null; listed?: boolean; delete_requested_at?: string | null; bank_consents?: { terms: boolean; pdpa: boolean; profile: boolean; at: string } | null; /** ตำแหน่งรูปในกรอบ (object-position "x% y%") ต่อ path รูป */ photo_pos?: Record<string, string> | null; /** ย่านที่ Part-Time ตั้งเองให้แสดงบนแผนที่ (ปัดเป็นช่อง ~1 กม. แล้ว ไม่ใช่ตำแหน่งจริง) */ geo?: PtGeo | null; /** แอดมินที่ออกลิงก์เข้าโปรไฟล์ล่าสุด (คนนี้อนุมัติ KYC ผู้สมัครคนนี้ไม่ได้) */ link_by?: { email: string; at: string } | null; /** โทเคนเข้าโปรไฟล์ที่ออกก่อนเวลานี้ใช้ไม่ได้ (ออกจากระบบทุกเครื่อง / แอดมินยกเลิกลิงก์) */ tokens_after?: string | null; /** เปลี่ยนบัญชีรับเงินหลังอนุมัติแล้ว — รอแอดมินตรวจบัญชีใหม่ (ถอนเงินไม่ได้จนตรวจ) · prev = บัญชีเดิม */ bank_review?: { at: string; prev: { bank: string; bank_account: string; bank_account_name: string; bank_book_path: string | null } } | null };
+export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents" | "talents_other" | "activities_other" | "areas" | "no_area" | "slip_check" | "invite" | "kyc_status" | "kyc_reason" | "kyc_submitted_at" | "bank_book_path"> & { attendance?: Record<string, boolean>; photos?: string[]; card?: ProfileCard | null; form_done?: number[]; tier?: "top" | "silver"; pt_settings?: PtSettings | null; post?: PtPost | null; listing?: PtListing | null; work?: PtWork | null; listed?: boolean; delete_requested_at?: string | null; bank_consents?: { terms: boolean; pdpa: boolean; profile: boolean; at: string } | null; /** ตำแหน่งรูปในกรอบ (object-position "x% y%") ต่อ path รูป */ photo_pos?: Record<string, string> | null; /** ย่านที่ Part-Time ตั้งเองให้แสดงบนแผนที่ (ปัดเป็นช่อง ~1 กม. แล้ว ไม่ใช่ตำแหน่งจริง) */ geo?: PtGeo | null; /** แอดมินที่ออกลิงก์เข้าโปรไฟล์ล่าสุด (คนนี้อนุมัติ KYC ผู้สมัครคนนี้ไม่ได้) */ link_by?: { email: string; at: string } | null; /** โทเคนเข้าโปรไฟล์ที่ออกก่อนเวลานี้ใช้ไม่ได้ (ออกจากระบบทุกเครื่อง / แอดมินยกเลิกลิงก์) */ tokens_after?: string | null; /** เปลี่ยนบัญชีรับเงินหลังอนุมัติแล้ว — รอแอดมินตรวจบัญชีใหม่ (ถอนเงินไม่ได้จนตรวจ) · prev = บัญชีเดิม */ bank_review?: { at: string; prev: { bank: string; bank_account: string; bank_account_name: string; bank_book_path: string | null } } | null; /** เวลาที่แก้รายการที่ทีมงานตีกลับครบทุกรายการล่าสุด (หน้า /join/rejected แยก "ส่งแก้ไขครบแล้ว" กับ "ไม่มีรายการต้องแก้") */ fixes_done_at?: string | null; /** แอดมินทุกคนที่เคยออกลิงก์ให้ผู้สมัครคนนี้ (กันอนุมัติ KYC เอง) */ link_by_all?: { email: string; at: string }[] | null; /** เหตุผลล่าสุดที่ไม่อนุมัติสลิปค่าสมัคร */ slip_reject?: { reason: string; by: string; at: string } | null };
 export type PtGeo = { lat: number; lng: number; label: string; src: "gps" | "pin"; at: string };
 
 /** รวมคอลัมน์ 0003 กับ docs.extra — คอลัมน์จริงมาก่อน */
@@ -151,6 +151,9 @@ export function extraOf(a: Applicant): Extra {
     link_by: x.link_by ?? null,
     tokens_after: x.tokens_after ?? null,
     bank_review: x.bank_review ?? null,
+    fixes_done_at: x.fixes_done_at ?? null,
+    link_by_all: x.link_by_all ?? null,
+    slip_reject: x.slip_reject ?? null,
     slip_check: x.slip_check ?? null,
     invite: x.invite ?? null,
     kyc_status: a.kyc_status && a.kyc_status !== "none" ? a.kyc_status : x.kyc_status ?? a.kyc_status ?? "none",
@@ -295,7 +298,7 @@ export async function updateExtra(id: string, patch: Pick<Extra, "cohort" | "lin
 
 const KYC_EXTRA_KEYS = ["kyc_status", "kyc_reason", "kyc_submitted_at", "bank_book_path"];
 /** เก็บใน docs.extra อย่างเดียว (ไม่มีคอลัมน์) */
-const EXTRA_ONLY_KEYS = ["bank_review", "tokens_after", "link_by", "geo", "photo_pos", "slip_check", "pt_settings", "post", "listing", "work", "listed", "delete_requested_at", "tier", "bank_consents", "areas", "no_area", "availability", "massage_cert", "ack_hours", "ack_no_refuse", "photos", "card", "form_done"];
+const EXTRA_ONLY_KEYS = ["link_by_all", "slip_reject", "fixes_done_at", "bank_review", "tokens_after", "link_by", "geo", "photo_pos", "slip_check", "pt_settings", "post", "listing", "work", "listed", "delete_requested_at", "tier", "bank_consents", "areas", "no_area", "availability", "massage_cert", "ack_hours", "ack_no_refuse", "photos", "card", "form_done"];
 
 /** เขียนคอลัมน์ + docs (path ไฟล์ และ extra สำรอง) — คอลัมน์ 0006 ยังไม่มีก็เขียนเฉพาะคอลัมน์เดิม + docs */
 async function patchApplicant(id: string, allCols: Record<string, unknown>, docPaths: Partial<Record<DocKind, string>> = {}): Promise<Applicant | null> {
@@ -386,7 +389,8 @@ export async function clearFixes(row: Applicant, keys: string[]) {
   for (const k of keys) if (k in rest) { delete rest[k]; changed = true; }
   if (!changed) return;
   if (Object.keys(rest).length) return patchApplicant(row.id, { kyc_reason: rest });
-  return patchApplicant(row.id, { kyc_status: row.bank_account ? "submitted" : "none", kyc_reason: null, kyc_submitted_at: new Date().toISOString() });
+  const at = new Date().toISOString();
+  return patchApplicant(row.id, { kyc_status: row.bank_account ? "submitted" : "none", kyc_reason: null, kyc_submitted_at: at, fixes_done_at: at });
 }
 /** เหตุผลที่ยังค้าง ยกเว้นรายการที่กำลังแก้ */
 export function fixesExcept(row: Applicant, keys: string[]): KycReason | null {

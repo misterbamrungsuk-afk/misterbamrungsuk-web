@@ -139,7 +139,7 @@ export function QcClient({ token, business, initialSlot, initialDocs, passed }: 
                 <div className="flex flex-wrap gap-1.5 text-[11px]">
                   {list.map((path, i) => (
                     <span key={path} className="inline-flex items-center gap-1 rounded-full border border-[rgba(240,200,90,.38)] pl-2 pr-1 py-0.5">
-                      <a href={fileUrl(path)} target="_blank" rel="noopener noreferrer">ไฟล์ {i + 1}</a>
+                      <a href={fileUrl(path, token || undefined)} target="_blank" rel="noopener noreferrer">ไฟล์ {i + 1}</a>
                       <button type="button" aria-label="ลบไฟล์" onClick={() => remove(x.key, path)} className="w-5 h-5 text-[#cdbfb3]">×</button>
                     </span>
                   ))}

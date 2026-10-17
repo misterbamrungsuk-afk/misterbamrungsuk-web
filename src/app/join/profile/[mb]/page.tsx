@@ -7,7 +7,9 @@ import { ageFrom } from "@/lib/join/form";
 import { Forbidden } from "../../_kyc/ui";
 import { ProfileHub, type HubData } from "./client";
 import { FIX_ITEMS } from "@/lib/join/fixes";
-import { ptWallet } from "@/lib/bookings/day";
+import { ptWallet, ratingSummary } from "@/lib/bookings/day";
+import { listForParttime, listNotices } from "@/lib/bookings";
+import { isPtActive } from "@/lib/join/pt-ui";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "โปรไฟล์ของฉัน — Mister Bamrungsuk" };
@@ -35,7 +37,17 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
   const w = await ptWallet(row.id).catch(() => null);
   const m0 = new Date(); m0.setDate(1); m0.setHours(0, 0, 0, 0);
   const month = (w?.history ?? []).filter((h) => h.kind === "split" && h.bucket === "pending" && Date.parse(h.created_at) >= +m0).reduce((t, h) => t + h.amount, 0);
+  // งานถัดไป (ยืนยันแล้ว/ถึงจุดนัดแล้ว ที่ยังไม่จบ) · รีวิวจริง · แจ้งเตือนที่ยังไม่อ่าน — ล้มก็แสดงว่าง ไม่ให้หน้าหลักพัง
+  const [jobs, rate, notices] = await Promise.all([listForParttime(row.id).catch(() => []), ratingSummary([row.id]).catch(() => new Map<string, { avg: number; count: number }>()), listNotices("parttime", row.id).catch(() => [])]);
+  const nowMs = Date.now();
+  const nx = jobs.filter((b) => ["accepted", "checked_in"].includes(b.status) && Date.parse(b.starts_at) + b.hours * 3600_000 > nowMs).sort((a, b) => a.starts_at.localeCompare(b.starts_at))[0];
+  const r = rate.get(row.id);
   const data: HubData = {
+    next: nx ? { when: new Date(nx.starts_at).toLocaleString("th-TH", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Bangkok" }) + " น.", place: [nx.place?.label, nx.place?.detail].filter(Boolean).join(" · "), hours: nx.hours } : null,
+    pendingJobs: jobs.filter((b) => b.status === "requested").length,
+    rating: r ? { avg: Math.round(r.avg * 10) / 10, count: r.count } : null,
+    unread: notices.filter((n) => !n.read_at).length,
+    active: isPtActive(x), kycApproved: kyc === "approved", listed: !!x.listed, hasCert: !!row.docs.cert_doc, deleteRequested: x.delete_requested_at ?? null,
     wallet: { available: (w?.available ?? 0) / 100, pending: (w?.pending ?? 0) / 100, month: month / 100 },
     mb, t: t ?? "", nickname: row.nickname, fullName: `${row.first_name} ${row.last_name}`,
     statusLine: x.invite ? `คำเชิญพิเศษ · ไม่เก็บค่าการันตี · ${row.status === "verified" ? "ชำระค่าอบรมแล้ว" : "ส่งสลิปแล้ว · รอทีมงานตรวจ"}` : `สมัครปกติ · ${row.status === "verified" ? "ชำระค่าการันตีแล้ว" : "ส่งสลิปแล้ว · รอทีมงานตรวจ"}`,

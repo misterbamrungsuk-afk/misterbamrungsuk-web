@@ -51,7 +51,8 @@ export async function POST(req: Request) {
   if (!(await verifyTurnstile(s("turnstile", 2048), ip))) return bad(TURNSTILE_ERROR, 403);
 
   const pkg = s("package") as PackageKey;
-  const tel = s("tel").replace(/[-\s]/g, "");
+  // ตัดทุกอย่างที่ไม่ใช่ตัวเลขก่อน (วาง "abc081-234-5678" ก็ได้ 0812345678) แล้วตรวจ 10 หลักด้านล่าง
+  const tel = s("tel").replace(/\D/g, "");
 
   const errors: string[] = [];
   if (!(pkg in PACKAGES)) errors.push("package");

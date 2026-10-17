@@ -1,4 +1,5 @@
 "use client";
+import { LINE_OA_ID } from "@/lib/join/config";
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -8,8 +9,8 @@ import { carrierLink, carrierName } from "@/lib/market/config";
 import type { PublicOrder } from "@/lib/market/buyer";
 import { LINE, RED_GRAD, Toast, fmt, useToast } from "../../products/m-kit";
 
-const dt = (s: string | null) => (s ? new Date(s).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" }) : "");
-const d8 = (s: string) => new Date(s).toLocaleDateString("th-TH", { dateStyle: "medium" });
+const dt = (s: string | null) => (s ? new Date(s).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", dateStyle: "medium", timeStyle: "short" }) : "");
+const d8 = (s: string) => new Date(s).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", dateStyle: "medium" });
 const fl = "flex flex-col gap-[5px] text-xs text-[#d9c9b4]";
 const fi = "h-12 w-full rounded-[14px] bg-[#211a18] px-3.5 text-sm text-[#f3ead9] placeholder:text-[#b5a596] border outline-none focus:border-[#e8c472]";
 const card = "p-3.5 rounded-2xl bg-[#211a18] border";
@@ -74,10 +75,12 @@ export function TrackView() {
   const [busy, setBusy] = useState(false);
   const { text, flash } = useToast();
 
+  const [account, setAccount] = useState("");
   const loadMine = useCallback(() =>
-    fetch("/api/market/track?mine=1", { cache: "no-store" }).then((r) => r.json()).then((d: { ok?: boolean; orders?: PublicOrder[]; phone?: string }) => {
-      if (d.ok) { setVerified(true); setMine(d.orders ?? []); if (d.phone) setPhone(d.phone); }
-    }).catch(() => {}), []);
+    fetch("/api/market/track?mine=1", { cache: "no-store" }).then((r) => r.json()).then((d: { ok?: boolean; orders?: PublicOrder[]; phone?: string | null; account?: string | null }) => {
+      // ล็อกอินอยู่ = เห็นออเดอร์ของบัญชีโดยไม่ต้อง OTP (ค้นด้วยเลขยังต้องยืนยันเบอร์)
+      if (d.ok) { setMine(d.orders ?? []); if (d.phone) { setPhone(d.phone); setVerified(true); } if (d.account) { setAccount(d.account); setTab((t) => (t === "find" && !sp.get("id") ? "mine" : t)); } }
+    }).catch(() => {}), [sp]);
 
   useEffect(() => {
     const id = sp.get("id"), t = sp.get("t");
@@ -160,28 +163,29 @@ export function TrackView() {
             );
           })}
           <div className={`${card} text-[12.5px] text-[#d9c9b4] leading-relaxed`} style={{ background: "#1d1712", borderColor: "rgba(227,195,92,.35)" }}>แพ็กมิดชิด · กล่องสีพื้น ไม่ระบุชื่อสินค้าหรือชื่อร้านบนหน้ากล่อง</div>
+          {order.resume && <Link href={order.resume} className={cta} style={ctaStyle}>แนบสลิป / ชำระต่อ</Link>}
           {order.status === "shipped" && <button type="button" onClick={receive} disabled={busy} className={cta} style={ctaStyle}>{busy ? "กำลังบันทึก…" : "ได้รับสินค้าแล้ว"}</button>}
           {order.status === "done" && order.items[0] && <Link href={`/products/${order.items[0].product_id}#reviews`} className={ghost} style={{ borderColor: LINE }}>เขียนรีวิวสินค้า</Link>}
           <button type="button" onClick={() => { setOrder(null); setLink(null); setErr(""); }} className={ghost} style={{ borderColor: LINE }}>ค้นหาคำสั่งซื้ออื่น</button>
-          <p className="text-[12.5px] text-[#d9c9b4]">มีปัญหากับสินค้า? <Link href="/policy/returns" className="text-[#e8c472]">นโยบายคืนสินค้า</Link> · ติดต่อ LINE [รอกำหนด]</p>
+          <p className="text-[12.5px] text-[#d9c9b4]">มีปัญหากับสินค้า? <Link href="/policy/returns" className="text-[#e8c472]">นโยบายคืนสินค้า</Link> · ติดต่อทีมงานทาง LINE {LINE_OA_ID}</p>
         </>
       )}
 
       {tab === "mine" && (
-        !verified ? (
+        !verified && !account ? (
           <>
             <p className="text-[12.5px] text-[#d9c9b4] leading-relaxed">ยืนยันเบอร์ที่ใช้สั่งซื้อด้วย OTP เพื่อดูคำสั่งซื้อทั้งหมดของเบอร์นี้</p>
             <div className={otpSkin}><OtpStep phone={phone} onPhone={setPhone} verified={verified} onVerified={() => { setVerified(true); loadMine(); }} inputCls={`${fi} flex-1 border-[rgba(232,196,114,.38)]`} /></div>
           </>
         ) : (
           <>
-            <div className={`${card} flex items-center justify-between text-[12.5px]`} style={{ borderColor: LINE }}><span className="text-[#d9c9b4]">เบอร์ที่ยืนยันแล้ว</span><span>{phone}</span></div>
-            {mine && !mine.length && <p className="text-[13px] text-[#d9c9b4]">ยังไม่มีคำสั่งซื้อของเบอร์นี้</p>}
+            <div className={`${card} flex items-center justify-between gap-2 text-[12.5px]`} style={{ borderColor: LINE }}><span className="text-[#d9c9b4]">{verified ? "เบอร์ที่ยืนยันแล้ว" : "บัญชีที่ล็อกอิน"}</span><span className="truncate">{verified ? phone : account}</span></div>
+            {mine && !mine.length && <p className="text-[13px] text-[#d9c9b4]">ยังไม่มีคำสั่งซื้อ{verified ? "ของเบอร์นี้" : "ของบัญชีนี้"}</p>}
             {mine?.map((o) => (
               <button key={o.id} type="button" onClick={() => { setOrder(o); setLink(null); setTab("find"); window.scrollTo({ top: 0 }); }} className={`${card} lux-card flex flex-col gap-1 text-left text-[#f3ead9] w-full`} style={{ borderColor: LINE }}>
                 <span className="flex justify-between w-full gap-2"><span className="font-lux text-[#e8c472]">{o.order_no}</span><span className="text-[11.5px] font-semibold" style={{ color: ST[o.status][1] }}>{ST[o.status][0]}</span></span>
                 <span className="text-[12.5px] text-[#d9c9b4] line-clamp-1">{d8(o.created_at)} · {itemsText(o)}</span>
-                <span className="flex justify-between w-full text-[13px]"><span>{fmt(o.total)}</span><span className="text-[#e8c472]">ดูสถานะ →</span></span>
+                <span className="flex justify-between w-full text-[13px]"><span>{fmt(o.total)}</span><span className="text-[#e8c472]">{o.resume ? "แนบสลิปต่อ →" : "ดูสถานะ →"}</span></span>
               </button>
             ))}
             <Link href="/products" className={ghost} style={{ borderColor: LINE }}>เลือกซื้อสินค้าต่อ</Link>

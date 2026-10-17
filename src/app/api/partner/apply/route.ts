@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { limited as dbLimited } from "@/lib/rate-limit";
 import { PACKAGE_KEYS, PARTNER_APPLY_TYPES, PARTNER_TYPES, type PartnerPackageKey } from "@/lib/partner/config";
-import { createPartner } from "@/lib/partner/store";
+import { createPartner, findPartnersByEmail } from "@/lib/partner/store";
 import { notifyAdmin, syncPartnerSheet } from "@/lib/partner/notify";
 import { signApplyToken } from "@/lib/partner/auth";
 import { TURNSTILE_ERROR, verifyTurnstile } from "@/lib/turnstile";
@@ -44,6 +44,15 @@ export async function POST(req: Request) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email)) return bad("อีเมลไม่ถูกต้อง");
   if (!PACKAGE_KEYS.includes(input.package)) return bad("เลือกแผนโปรโมทที่สนใจ");
   if (b.consent !== true) return bad("กรุณายินยอมการเก็บข้อมูล (PDPA)");
+
+  // อีเมลนี้สมัครไว้แล้ว = ไม่สร้างซ้ำ → ให้เข้าสู่ระบบ หรือขอลิงก์ตั้งรหัสผ่านจากทีมงาน
+  const dup = await findPartnersByEmail(input.email).catch(() => [] as Awaited<ReturnType<typeof findPartnersByEmail>>);
+  if (dup.length) {
+    const hasLogin = dup.some((x) => !!x.password_hash);
+    return NextResponse.json({ ok: false, code: "exists", fields: ["email"], error: hasLogin
+      ? "อีเมลนี้เป็นพาร์ทเนอร์อยู่แล้ว · เข้าสู่ระบบที่ /partner/login (ลืมรหัสผ่าน ติดต่อทีมงานทาง LINE เพื่อขอลิงก์ตั้งรหัสใหม่)"
+      : "อีเมลนี้ส่งใบสมัครไว้แล้ว · ไม่ต้องสมัครซ้ำ ติดต่อทีมงานทาง LINE เพื่อขอลิงก์ตั้งรหัสผ่าน/ชำระแผนโปรโมท" }, { status: 409 });
+  }
 
   try {
     const row = await createPartner({ ...input, consented_at: new Date().toISOString(), ip });

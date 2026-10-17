@@ -9,7 +9,7 @@ const ok = (n, c, x = '') => { if (!c) fails++; console.log((c ? 'PASS ' : 'FAIL
 const sess = (sub, email) => { const b = Buffer.from(JSON.stringify({ sub, email, exp: Date.now() + 3600e3 })).toString('base64url'); return 'hamoo_session=' + b + '.' + crypto.createHmac('sha256', KEY).update(b).digest('base64url'); };
 const C1 = { cookie: sess('demo:buyer@test.local', 'buyer@test.local'), 'content-type': 'application/json' };
 const C3 = { cookie: sess('demo:fresh@test.local', 'fresh@test.local'), 'content-type': 'application/json' };
-const body = Buffer.from(JSON.stringify({ mb, exp: Date.now() + 3600_000 })).toString('base64url');
+const body = Buffer.from(JSON.stringify({ mb, iat: Date.now(), exp: Date.now() + 3600_000 })).toString('base64url');
 const T = body + '.' + crypto.createHmac('sha256', KEY).update('resume:' + body).digest('base64url');
 const J = (r) => r.json();
 (async () => {

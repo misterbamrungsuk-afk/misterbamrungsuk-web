@@ -3,7 +3,9 @@
 // ส่วนที่กดได้ของหน้า ข้อความตอบกลับเร็ว (บอร์ด P-QuickReplies) และ โพสต์ของฉัน (บอร์ด P-Posts)
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { CONTACT_MSG, hasContact } from "@/lib/join/contact-guard";
+import { AUTO_REPLY_DEFAULT, QUICK_DEFAULT } from "@/lib/join/pt-ui";
 import type { PtListing, PtSettings } from "@/lib/join/store";
 
 const GOLD = "#e8c472";
@@ -20,8 +22,8 @@ async function post(mb: string, t: string, step: string, fill: (fd: FormData) =>
 /** บอร์ด P-QuickReplies — ตอบอัตโนมัติเมื่อไม่ว่าง (สวิตช์ + ข้อความ) · ข้อความที่บันทึกไว้ สูงสุด 10 (แก้ / ลบ / เพิ่ม) */
 export function QuickReplies({ mb, t, init }: { mb: string; t: string; init: PtSettings | null }) {
   const [on, setOn] = useState(init?.auto_reply_on ?? false);
-  const [auto, setAuto] = useState(init?.auto_reply || "ขอบคุณที่ทักมานะครับ ตอนนี้ยังไม่สะดวก จะรีบตอบภายใน 1 ชม.");
-  const [list, setList] = useState<string[]>(init?.quick_replies?.length ? init.quick_replies : ["ถึงจุดนัดแล้วครับ รออยู่หน้าล็อบบี้", "กำลังเดินทาง อีกประมาณ 10 นาที", "ขอบคุณที่จองนะครับ เจอกันวันนัด"]);
+  const [auto, setAuto] = useState(init?.auto_reply || AUTO_REPLY_DEFAULT);
+  const [list, setList] = useState<string[]>(init?.quick_replies?.length ? init.quick_replies : QUICK_DEFAULT);
   const [edit, setEdit] = useState<number | null>(null);
   const [draft, setDraft] = useState("");
   const [st, setSt] = useState("");
@@ -86,6 +88,8 @@ export function ListingForm({ mb, t, init, previewHref }: { mb: string; t: strin
   const [rules, setRules] = useState(init?.rules || RULES_DEFAULT);
   const [hidden, setHidden] = useState(init?.hidden ?? false);
   const [st, setSt] = useState("");
+  const [saved, setSaved] = useState<PtListing | null>(init);
+  const router = useRouter();
   const bad = hasContact(title) || hasContact(rules);
   const save = async () => {
     if (!title.trim()) { setSt("กรอกหัวข้อโพสต์"); return; }
@@ -93,6 +97,8 @@ export function ListingForm({ mb, t, init, previewHref }: { mb: string; t: strin
     setSt("busy");
     const err = await post(mb, t, "listing", (fd) => { fd.set("title", title); fd.set("rules", rules); fd.set("hidden", String(hidden)); });
     setSt(err ?? "ok");
+    // บันทึกแล้วแสดงโพสต์ที่บันทึกทันที + รีเฟรชสถานะด้านบนของหน้า (ไม่ต้องโหลดหน้าใหม่เอง)
+    if (!err) { setSaved({ title: title.trim(), rules: rules.trim(), hidden, updated_at: new Date().toISOString() }); router.refresh(); }
   };
   const inp = "w-full rounded-[14px] border border-[rgba(243,234,217,0.07)] bg-[#211a18] text-[15px] text-[#f3ead9] outline-none focus:border-[#e8c472] placeholder:text-[#b5a596]";
   return (
@@ -111,6 +117,13 @@ export function ListingForm({ mb, t, init, previewHref }: { mb: string; t: strin
         <button type="button" onClick={save} disabled={st === "busy"} className="flex-grow h-[54px] rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[16px]">{st === "busy" ? "กำลังบันทึก…" : st === "ok" ? "✓ บันทึกแล้ว" : "บันทึกโพสต์"}</button>
       </div>
       {st && !["ok", "busy"].includes(st) && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{st}</p>}
+      {saved && (
+        <div className="rounded-[18px] bg-[#211a18] flex flex-col gap-1.5" style={{ padding: 14, border: "1px solid rgba(232,196,114,0.35)" }}>
+          <div className="flex justify-between items-center gap-2"><span className="text-[12px] font-light text-[#b5a596]">โพสต์ที่บันทึกไว้</span><span className="text-[12px]" style={{ color: saved.hidden ? "#b5a596" : GOLD }}>{saved.hidden ? "ซ่อนอยู่" : "แสดงอยู่"} · {new Date(saved.updated_at).toLocaleString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Bangkok" })}</span></div>
+          <b className="font-semibold text-[16px] break-words">{saved.title}</b>
+          <p className="m-0 text-[13px] font-light text-[#d9c9b4] whitespace-pre-line break-words">{saved.rules}</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -118,19 +131,34 @@ export function ListingForm({ mb, t, init, previewHref }: { mb: string; t: strin
 /** บอร์ด P-Availability — เวลาทำงานรายวัน (เปิด/ปิด + เวลาเริ่ม–เลิก) · รัศมีรับงาน 2–20 กม. · พักงานชั่วคราว */
 const DAY_NAMES: [string, string][] = [["จ", "จันทร์"], ["อ", "อังคาร"], ["พ", "พุธ"], ["พฤ", "พฤหัส"], ["ศ", "ศุกร์"], ["ส", "เสาร์"], ["อา", "อาทิตย์"]];
 type WorkDays = Record<string, { on: boolean; from: string; to: string }>;
+const HALF_HOURS = Array.from({ length: 48 }, (_, i) => `${String(Math.floor(i / 2)).padStart(2, "0")}:${i % 2 ? "30" : "00"}`);
+const toMin = (v: string) => Number(v.slice(0, 2)) * 60 + Number(v.slice(3, 5));
 export function WorkForm({ mb, t, init }: { mb: string; t: string; init: { days: WorkDays; radius_km: number; paused: boolean } }) {
   const [days, setDays] = useState<WorkDays>(init.days);
   const [radius, setRadius] = useState(init.radius_km);
   const [paused, setPaused] = useState(init.paused);
   const [st, setSt] = useState("");
   const set = (d: string, v: Partial<WorkDays[string]>) => { setDays((x) => ({ ...x, [d]: { ...x[d], ...v } })); setSt(""); };
+  const badDay = DAY_NAMES.find(([d]) => days[d].on && toMin(days[d].to) <= toMin(days[d].from));
   const save = async () => {
+    if (badDay) { setSt(`วัน${badDay[1]}: เวลาเลิกต้องหลังเวลาเริ่ม`); return; }
     setSt("busy");
     const err = await post(mb, t, "work", (fd) => { fd.set("days", JSON.stringify(days)); fd.set("radius_km", String(radius)); fd.set("paused", String(paused)); });
     setSt(err ?? "ok");
   };
   const tg = (on: boolean) => <span className="w-11 h-[26px] rounded-full relative shrink-0 inline-block" style={{ background: on ? GOLD : "rgba(243,234,217,0.07)" }}><span className="absolute top-[3px] w-5 h-5 rounded-full transition-all" style={{ left: on ? 21 : 3, background: on ? "#fff" : "#d9c9b4" }} /></span>;
-  const tm = "h-10 w-[108px] min-w-0 rounded-[10px] bg-[#251d1b] text-[13px] text-[#f3ead9] px-1 outline-none border border-transparent focus:border-[#e8c472]";
+  const tm = "h-11 w-[76px] min-w-0 rounded-[10px] bg-[#251d1b] text-[14px] text-[#f3ead9] px-1.5 outline-none border border-transparent focus:border-[#e8c472] tabular-nums";
+  // เลือกเวลาแบบ 24 ชม. ทีละ 30 นาที (input type=time บนมือถือเป็น AM/PM และล้นจอ 390px)
+  const sel = (d: string, k: "from" | "to", name: string) => {
+    const v = days[d][k];
+    const opts = k === "from" ? HALF_HOURS : [...HALF_HOURS.slice(1), "24:00"];
+    return (
+      <select aria-label={`${k === "from" ? "เริ่ม" : "เลิก"} ${name}`} value={v} onChange={(e) => set(d, { [k]: e.target.value })} className={tm} style={{ colorScheme: "dark" }}>
+        {!opts.includes(v) && <option value={v}>{v}</option>}
+        {opts.map((o) => <option key={o} value={o}>{o}</option>)}
+      </select>
+    );
+  };
   const pct = ((radius - 2) / 18) * 100;
   return (
     <div className="flex flex-col gap-3.5">
@@ -138,12 +166,15 @@ export function WorkForm({ mb, t, init }: { mb: string; t: string; init: { days:
         {DAY_NAMES.map(([d, name], i) => {
           const v = days[d];
           return (
-            <div key={d} className="flex items-center gap-2 text-[14px]" style={{ padding: "12px 14px", borderBottom: i < 6 ? "1px solid rgba(243,234,217,0.07)" : undefined, color: v.on ? "#f3ead9" : "#d9c9b4" }}>
-              <span className="w-[46px] shrink-0">{name}</span>
-              <button type="button" role="switch" aria-checked={v.on} aria-label={`รับงานวัน${name}`} onClick={() => set(d, { on: !v.on })} className="h-11 -my-2 grid place-items-center">{tg(v.on)}</button>
-              {v.on
-                ? <span className="ml-auto flex gap-1.5"><input type="time" aria-label={`เริ่ม ${name}`} value={v.from} onChange={(e) => set(d, { from: e.target.value })} className={tm} style={{ colorScheme: "dark" }} /><input type="time" aria-label={`เลิก ${name}`} value={v.to} onChange={(e) => set(d, { to: e.target.value })} className={tm} style={{ colorScheme: "dark" }} /></span>
-                : <span className="ml-auto text-[13px] font-light">หยุด</span>}
+            <div key={d} style={{ padding: "12px 14px", borderBottom: i < 6 ? "1px solid rgba(243,234,217,0.07)" : undefined, color: v.on ? "#f3ead9" : "#d9c9b4" }}>
+              <div className="flex items-center gap-2 text-[14px]">
+                <span className="w-[46px] shrink-0">{name}</span>
+                <button type="button" role="switch" aria-checked={v.on} aria-label={`รับงานวัน${name}`} onClick={() => set(d, { on: !v.on })} className="h-11 -my-2 grid place-items-center">{tg(v.on)}</button>
+                {v.on
+                  ? <span className="ml-auto flex items-center gap-1">{sel(d, "from", name)}<span aria-hidden="true" className="text-[#b5a596]">–</span>{sel(d, "to", name)}</span>
+                  : <span className="ml-auto text-[13px] font-light">หยุด</span>}
+              </div>
+              {v.on && toMin(v.to) <= toMin(v.from) && <p role="alert" className="m-0 mt-1.5 text-[12.5px] text-[#ff8a9a] text-right">เวลาเลิกต้องหลังเวลาเริ่ม</p>}
             </div>
           );
         })}
@@ -156,7 +187,8 @@ export function WorkForm({ mb, t, init }: { mb: string; t: string; init: { days:
       <button type="button" role="switch" aria-checked={paused} onClick={() => { setPaused(!paused); setSt(""); }} className="flex items-center gap-3 bg-[#211a18] rounded-2xl text-[14px] text-left text-[#f3ead9]" style={{ padding: 14, border: "1px solid rgba(243,234,217,0.07)" }}>
         <span className="flex-grow">พักงานชั่วคราว<span className="block text-[12px] text-[#d9c9b4] font-light">หยุดรับงานด่วน และซ่อนคุณจากแผนที่ไว้ก่อน</span></span>{tg(paused)}
       </button>
-      <button type="button" onClick={save} disabled={st === "busy"} className="h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[17px]">{st === "busy" ? "กำลังบันทึก…" : st === "ok" ? "✓ บันทึกแล้ว" : "บันทึก"}</button>
+      <button type="button" onClick={save} disabled={st === "busy" || !!badDay} className="h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[17px] disabled:opacity-50">{st === "busy" ? "กำลังบันทึก…" : st === "ok" ? "✓ บันทึกแล้ว" : "บันทึก"}</button>
+      {badDay && <p className="m-0 -mt-2 text-[12.5px] text-[#ff8a9a] text-center">{`แก้เวลาวัน${badDay[1]}ก่อน: เวลาเลิกต้องหลังเวลาเริ่ม`}</p>}
       {st && !["ok", "busy"].includes(st) && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{st}</p>}
     </div>
   );

@@ -44,7 +44,7 @@ const up = (cookie, as, extra = {}, file = new File([img], 'a.jpg', { type: 'ima
   const VC = (acc.headers.get('set-cookie') || '').split(';')[0];
   j = await up(VC, 'vendor', { pos: '60% 40%' }); ok('vendor uploads logo with position', j.ok && j.avatar.pos === '60% 40%', j.error);
   // Sale Man ภายนอก
-  const rep = await J(await fetch(B + '/api/admin/sales', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'rep_create', name: 'เซลส์รูป', phone: '0811111111' }) }));
+  const rep = await J(await fetch(B + '/api/admin/sales', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'rep_create', name: 'เซลส์รูป', phone: '0811111111', bank: { bank: 'กสิกรไทย', account: '123-4-56789-1', name: 'เซลส์รูป' } }) }));
   const go = await fetch(B + '/sales/go?t=' + encodeURIComponent(decodeURIComponent(rep.link.split('t=')[1])), { redirect: 'manual' });
   const SC = (go.headers.get('set-cookie') || '').split(';')[0];
   j = await up(SC, 'sales'); ok('sale man uploads', j.ok, j.error);

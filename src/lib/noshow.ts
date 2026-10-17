@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { verifiedType } from "@/lib/file-guard";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { store } from "./server-store";
+import { STRIKE_EXPIRE_DAYS } from "./strikes";
 import { NOSHOW_POINTS, PAYOUT_PERCENT, type ClaimStatus, type Evidence, type NoShowClaim } from "./noshow-rules";
 
 // ที่เก็บคำร้องผิดนัด (no-show)
@@ -82,6 +83,8 @@ export async function listClaims(): Promise<NoShowClaim[]> {
   return data as NoShowClaim[];
 }
 
+/** คำร้องผิดนัดของการจองนี้ (ถ้ามี) */
+export async function claimFor(bookingId: string) { return byBooking(bookingId); }
 async function byBooking(bookingId: string): Promise<NoShowClaim | null> {
   if (noshowDemo()) return demo.rows.find((r) => r.booking_id === bookingId) ?? null;
   const { data, error } = await db().from("noshow_claims").select("*").eq("booking_id", bookingId).maybeSingle();
@@ -130,10 +133,18 @@ export async function decideClaim(id: string, decision: Exclude<ClaimStatus, "pe
   const c = (await listClaims()).find((r) => r.id === id);
   if (!c || c.status !== "pending") return null;
   const providerFault = decision === "provider_no_show";
+  let payout = providerFault ? 0 : Math.round((Number(c.amount) * PAYOUT_PERCENT) / 100);
+  let refund = providerFault ? Number(c.amount) : 0;
+  // คำร้องที่ผูกกับการจองจริง → ย้ายเงินจาก escrow ของนัดนั้นก่อน (พลาด = ไม่บันทึกผล ให้แอดมินลองใหม่)
+  if (/^[0-9a-f-]{36}$/.test(c.booking_id)) {
+    const b = await (await import("./bookings/day")).settleNoShow(c.booking_id, decision, admin, PAYOUT_PERCENT);
+    const res = (b.resolution ?? {}) as { pt_satang?: number; refund_satang?: number };
+    payout = (res.pt_satang ?? 0) / 100;
+    refund = (res.refund_satang ?? 0) / 100;
+  }
   const patch: Partial<NoShowClaim> = {
     status: decision, on_hold: false, decided_by: admin, decided_at: new Date().toISOString(),
-    payout_amount: providerFault ? 0 : Math.round((Number(c.amount) * PAYOUT_PERCENT) / 100),
-    refund_amount: providerFault ? Number(c.amount) : 0,
+    payout_amount: payout, refund_amount: refund,
     strike_added: providerFault, points_deducted: providerFault ? NOSHOW_POINTS : 0,
   };
   if (noshowDemo()) {
@@ -185,4 +196,12 @@ export async function strikeCounts(expireDays: number): Promise<Record<string, n
   const out: Record<string, number> = {};
   for (const s of await strikeRows()) if (s.created_at >= since) out[s.provider_id] = (out[s.provider_id] ?? 0) + 1;
   return out;
+}
+
+/** ใบเตือนของ Part-Time คนนี้ที่ยังไม่หมดอายุ (parttime_id = applicant id) — ใช้แสดงในหน้าใบเตือนของ Part-Time
+ *  count = จำนวนใบ · points = คะแนนที่ถูกหักรวม · strikes = รายการ (ใหม่ → เก่า) */
+export async function strikesFor(parttime_id: string, expireDays = STRIKE_EXPIRE_DAYS): Promise<{ count: number; points: number; strikes: ProviderStrike[] }> {
+  const since = new Date(Date.now() - expireDays * 86400_000).toISOString();
+  const strikes = (await listStrikes(parttime_id)).filter((s) => s.created_at >= since);
+  return { count: strikes.length, points: strikes.reduce((t, s) => t + (s.points || 0), 0), strikes };
 }

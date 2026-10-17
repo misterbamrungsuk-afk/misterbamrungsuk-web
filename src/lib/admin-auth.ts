@@ -50,7 +50,8 @@ export function canAccess(role: AdminRole, path: string) {
 
 /** หน้าแรกที่บทบาทนี้เข้าได้ (ใช้ตอนถูกปฏิเสธสิทธิ์) */
 export function homeFor(role: AdminRole) {
-  return role === "kyc" ? "/admin/kyc" : role === "cs" ? "/admin/cs" : "/admin";
+  // cs ไปหน้าตรวจงานตรง ๆ — ถ้าพาไป /admin/cs (หน้า redirect) ?denied=1 จะหลุดระหว่างทาง
+  return role === "kyc" ? "/admin/kyc" : role === "cs" ? "/admin/orders" : "/admin";
 }
 
 export type AdminSession = { email: string; role: AdminRole; exp: number };

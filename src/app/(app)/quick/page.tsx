@@ -4,8 +4,7 @@ import { myBlocked } from "@/lib/customer/profile";
 import { getLivePeople, publicId } from "@/lib/home/live";
 import { priceOf } from "@/lib/home/people";
 import { currentCustomer } from "@/lib/customer/auth";
-import { freeToday } from "@/lib/bookings/quick";
-import { priceFor } from "@/lib/bookings";
+import { freeToday, quickPreview } from "@/lib/bookings/quick";
 import { ACTIVITIES } from "@/lib/posts";
 import { QuickCall } from "./call";
 
@@ -20,8 +19,8 @@ export default async function QuickPage() {
   const [free, people, me] = await Promise.all([freeToday(), getLivePeople().catch(() => []), currentCustomer().catch(() => null)]);
   const blocked = await myBlocked();
   const rows = free.filter(({ a }) => !blocked.has(publicId(a.mb_code))).map(({ a, note, hot }) => { const p = people.find((y) => y.id === publicId(a.mb_code)); return p ? { p, note, hot } : null; }).filter((r) => !!r);
-  const est = { 3: 0, 5: 0 };
-  for (const { a } of free.slice(0, 20)) { est[3] = Math.max(est[3], (await priceFor(a, 3)) * 100); est[5] = Math.max(est[5], (await priceFor(a, 5)) * 100); }
+  // ตัวเลขบนฟอร์ม = กลุ่มเดียวกับที่ระบบจะเชิญจริง (ไม่ถูกบล็อก · ไม่มีนัดชนเวลา) → ยอดกันและจำนวนเพื่อนตรงกับหลังกดเรียก
+  const pv = await quickPreview([...blocked]).catch(() => ({ count: { 3: 0, 5: 0 }, hold: { 3: 0, 5: 0 } }));
 
   return (
     <div className="pb-6">
@@ -30,7 +29,7 @@ export default async function QuickPage() {
         <h1 className="m-0 font-semibold text-[19px]">เรียกด่วน</h1>
         <span className="ml-auto h-7 px-3 rounded-full text-[12px] font-semibold flex items-center gap-1.5 text-[#FF8A97]" style={{ border: "1px solid #c9283d" }}><span className="w-[7px] h-[7px] rounded-full bg-[#c9283d]" />สด</span>
       </div>
-      <QuickCall loggedIn={!!me} free={free.length} est={est} activities={ACTIVITIES} />
+      <QuickCall loggedIn={!!me} free={pv.count} est={pv.hold} activities={ACTIVITIES} />
       <div className="text-center" style={{ padding: "26px 24px 0" }}>
         <div className="font-semibold text-[18px]">หรือเลือกเพื่อนที่ว่างวันนี้เอง</div>
         <div className="text-[13px] text-[#d9c9b4] mt-1">นัดล่วงหน้าอย่างน้อย 1 ชม. · เพื่อนตอบภายใน 30 นาที</div>

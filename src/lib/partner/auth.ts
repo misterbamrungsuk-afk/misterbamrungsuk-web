@@ -38,6 +38,19 @@ export const partnerCookieOptions = {
 export const signApplyToken = (pid: string) => sign({ k: "pa", pid, exp: Date.now() + 14 * 86400_000 });
 export const verifyApplyToken = (t: string | null | undefined) => verify<{ pid: string; exp: number }>(t ?? undefined, "pa")?.pid ?? null;
 
+/** ลิงก์ตั้ง/รีเซ็ตรหัสผ่านที่แอดมินส่งให้ (อายุ 7 วัน) — ผูกกับรหัสผ่านปัจจุบัน (fp) ใช้ได้ครั้งเดียว: ตั้งรหัสแล้วลิงก์เก่าหมดอายุทันที */
+const fpOf = (hash: string | null | undefined) => (hash ? createHmac("sha256", secret()).update(`pfp:${hash}`).digest("base64url").slice(0, 12) : "none");
+export const signResetToken = (pid: string, hash: string | null | undefined) => sign({ k: "pr", pid, fp: fpOf(hash), exp: Date.now() + 7 * 86400_000 });
+/** token ที่ใช้หน้า /partner/register: ใบสมัคร (pa — ตั้งครั้งแรก) หรือรีเซ็ตจากแอดมิน (pr) */
+export function readRegisterToken(t: string | null | undefined): { pid: string; reset: boolean; fp?: string } | null {
+  const a = verify<{ pid: string; exp: number }>(t ?? undefined, "pa");
+  if (a) return { pid: a.pid, reset: false };
+  const r = verify<{ pid: string; fp: string; exp: number }>(t ?? undefined, "pr");
+  return r ? { pid: r.pid, reset: true, fp: r.fp } : null;
+}
+/** ลิงก์รีเซ็ตยังใช้ได้กับรหัสผ่านปัจจุบันไหม */
+export const resetStillValid = (fp: string | undefined, hash: string | null | undefined) => !!fp && fp === fpOf(hash);
+
 /** พาร์ทเนอร์ที่ล็อกอินอยู่ (null = ไม่ได้ล็อกอิน / ถูกลบ) */
 export async function currentPartner(): Promise<Partner | null> {
   const s = verify<{ pid: string; exp: number }>((await cookies()).get(PARTNER_COOKIE)?.value, "ps");

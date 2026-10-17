@@ -5,6 +5,7 @@ import { baht } from "@/components/ui";
 import { site } from "@/lib/site";
 import { CLAIM_STATUS_LABEL, NOSHOW_DECISION_HOURS, NOSHOW_POINTS, PAYOUT_PERCENT, type Evidence, type NoShowClaim } from "@/lib/noshow-rules";
 import { Card, Pill } from "../admin-nav";
+import { useConfirm } from "../confirm";
 
 const km = (a: Evidence["gps"], b: Evidence["gps"]) => {
   if (!a || !b) return null;
@@ -13,6 +14,8 @@ const km = (a: Evidence["gps"], b: Evidence["gps"]) => {
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLng / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(h));
 };
+// รหัสที่อ่านง่าย: คำร้องจากการจองจริงเก็บ uuid ของนัด → แสดง 8 ตัวแรก
+const label = (c: NoShowClaim) => (/^[0-9a-f-]{36}$/.test(c.booking_id) ? `นัด ${c.booking_id.slice(0, 8)}` : c.booking_id);
 const time = (iso: string) => new Date(iso).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
 function Side({ title, ev }: { title: string; ev: Evidence | null }) {
@@ -43,7 +46,9 @@ function Side({ title, ev }: { title: string; ev: Evidence | null }) {
 }
 
 // คำร้องผิดนัด — เทียบหลักฐานสองฝ่าย แล้วตัดสิน (เงินพักไว้จนกว่าจะตัดสิน)
-export function NoShowClaims({ onToast }: { onToast: (m: string) => void }) {
+// canDecide = สิทธิ์การเงิน (ตัดสิน = ย้ายเงินจริงจาก escrow ของนัด) · ไม่มี = ดูหลักฐานได้อย่างเดียว
+export function NoShowClaims({ onToast, canDecide = true }: { onToast: (m: string) => void; canDecide?: boolean }) {
+  const [confirmUi, ask] = useConfirm();
   const [claims, setClaims] = useState<NoShowClaim[] | null>(null);
   const [busy, setBusy] = useState("");
 
@@ -52,14 +57,16 @@ export function NoShowClaims({ onToast }: { onToast: (m: string) => void }) {
 
   const decide = async (c: NoShowClaim, decision: "customer_no_show" | "provider_no_show") => {
     const msg = decision === "customer_no_show"
-      ? `ยืนยัน: ลูกค้าไม่มา → จ่าย Part-Time ${PAYOUT_PERCENT}% (${baht(Math.round(c.amount * PAYOUT_PERCENT / 100))})`
+      ? `ยืนยัน: ลูกค้าไม่มา → ไม่คืนลูกค้า · จ่าย Part-Time ${PAYOUT_PERCENT}% ของค่าบริการ (ไม่เกิน ${baht(Math.round(c.amount * PAYOUT_PERCENT / 100))}) · ค่าห้องสปา (ถ้ามี) ให้สปา`
       : `ยืนยัน: Part-Time ไม่มา → คืนลูกค้า 100% (${baht(c.amount)}) + strike 1 + หัก ${NOSHOW_POINTS} คะแนน`;
-    if (!window.confirm(msg)) return;
+    // ยืนยันในหน้า (ไม่ใช้ window.confirm) พร้อมผลเงินที่จะเกิดขึ้น
+    if (!(await ask({ title: `ตัดสินผิดนัด ${label(c)}`, body: `${msg}
+แจ้งผลลูกค้าและ Part-Time ทันที · ย้อนกลับไม่ได้`, ok: "ยืนยันและย้ายเงิน", danger: decision === "provider_no_show" }))) return;
     setBusy(c.id);
     const r = await fetch("/api/admin/noshow", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: c.id, decision }) });
     const d = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string };
     setBusy("");
-    onToast(d.ok ? `ตัดสิน ${c.booking_id} แล้ว` : d.error || "ไม่สำเร็จ");
+    onToast(d.ok ? `ตัดสิน ${label(c)} แล้ว` : d.error || "ไม่สำเร็จ");
     load();
   };
 
@@ -68,6 +75,8 @@ export function NoShowClaims({ onToast }: { onToast: (m: string) => void }) {
 
   return (
     <div className="flex flex-col gap-3">
+      {confirmUi}
+      {!canDecide && <p className="text-xs text-[#eed58a]">ดูหลักฐานได้อย่างเดียว · การตัดสิน (ย้ายเงิน) ต้องใช้สิทธิ์ฝ่ายการเงิน</p>}
       <p className="text-xs text-ink-300">ตรวจหลักฐานทั้งสองฝ่ายภายใน {NOSHOW_DECISION_HOURS} ชม. · ระหว่างนี้เงินพักไว้ ยังไม่จ่าย/คืนใคร · ค่าธรรมเนียม {site.commissionPercent}%</p>
       {claims.map((c) => {
         const d = km(c.provider_evidence?.gps ?? null, c.customer_evidence?.gps ?? null);
@@ -75,7 +84,7 @@ export function NoShowClaims({ onToast }: { onToast: (m: string) => void }) {
         return (
           <Card key={c.id} className="flex flex-col gap-3">
             <div className="flex flex-wrap justify-between items-center gap-2">
-              <b className="font-display font-semibold text-lg">{c.booking_id} · {baht(c.amount)}</b>
+              <b className="font-display font-semibold text-lg">{label(c)} · {baht(c.amount)}</b>
               <span className="flex gap-1.5">
                 {c.on_hold && <Pill tone="gold">เงินพักไว้</Pill>}
                 <Pill tone={pending ? "gold" : "green"}>{CLAIM_STATUS_LABEL[c.status]}</Pill>
@@ -86,12 +95,12 @@ export function NoShowClaims({ onToast }: { onToast: (m: string) => void }) {
               <Side title="ฝั่ง Part-Time (แจ้งลูกค้าไม่มา)" ev={c.provider_evidence} />
               <Side title="ฝั่งลูกค้า (แจ้งเพื่อนไม่มา)" ev={c.customer_evidence} />
             </div>
-            {pending ? (
+            {pending && canDecide ? (
               <div className="flex flex-col sm:flex-row gap-2">
                 <button disabled={!!busy} onClick={() => decide(c, "customer_no_show")} className="flex-1 h-11 rounded-xl border border-gold-500 text-gold-300 disabled:opacity-40">ลูกค้าไม่มา · จ่าย Part-Time {PAYOUT_PERCENT}%</button>
                 <button disabled={!!busy} onClick={() => decide(c, "provider_no_show")} className="flex-1 h-11 rounded-xl bg-crimson-500 text-white font-semibold disabled:opacity-40">Part-Time ไม่มา · คืน 100% + strike</button>
               </div>
-            ) : (
+            ) : pending ? <p className="text-sm text-ink-300">รอฝ่ายการเงินตัดสิน</p> : (
               <p className="text-sm text-ink-200">
                 {c.status === "customer_no_show" ? `จ่าย Part-Time ${baht(c.payout_amount ?? 0)} (${PAYOUT_PERCENT}%)` : `คืนลูกค้า ${baht(c.refund_amount ?? 0)} (100%) · strike +1 · หัก ${c.points_deducted} คะแนน`}
                 <span className="text-ink-300"> · โดย {c.decided_by} {c.decided_at ? time(c.decided_at) : ""}</span>

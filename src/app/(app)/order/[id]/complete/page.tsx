@@ -9,7 +9,9 @@ import { useRouter } from "next/navigation";
 const GOLD = "#e8c472";
 const LN = "rgba(243,234,217,0.07)";
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US");
-const TAGS = ["ตรงเวลา", "คุยสนุก", "สุภาพ", "ดูแลดี", "ถ่ายรูปสวย"];
+// ทิปสูงสุด = TIP_MAX ใน lib/bookings/day.ts (เซิร์ฟเวอร์ตรวจซ้ำ)
+const TIP_MAX = 5000;
+const TAGS =["ตรงเวลา", "คุยสนุก", "สุภาพ", "ดูแลดี", "ถ่ายรูปสวย"];
 const LBL = ["", "ไม่ประทับใจ", "พอใช้", "โอเค", "ดีมาก", "ประทับใจสุด ๆ"];
 type B = { id: string; status: string; starts_at: string; hours: number; total_satang: number; pt: { pid: string; nick: string; img: string } };
 
@@ -20,6 +22,7 @@ export default function CompletePage({ params }: { params: Promise<{ id: string 
   const [rating, setRating] = useState(5);
   const [tags, setTags] = useState<string[]>(["ตรงเวลา"]);
   const [tip, setTip] = useState(0);
+  const [custom, setCustom] = useState("");
   const [again, setAgain] = useState("yes");
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -35,11 +38,14 @@ export default function CompletePage({ params }: { params: Promise<{ id: string 
   };
   if (!b) return <p className="text-center" style={{ padding: "80px 24px", color: err ? "#ff8a9a" : "#b5a596" }}>{err || "กำลังโหลด…"}</p>;
   const s = new Date(b.starts_at), e = new Date(s.getTime() + b.hours * 3600_000);
-  const hm = (d: Date) => d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+  const hm = (d: Date) => d.toLocaleTimeString("th-TH", { timeZone: "Asia/Bangkok", hour: "2-digit", minute: "2-digit" });
   const can = ["accepted", "checked_in"].includes(b.status);
+  // ตรงกับเซิร์ฟเวอร์: กดจบนัดได้ตั้งแต่เวลาเริ่มนัด
+  const early = Date.parse(b.starts_at) > Date.now();
+  const tipBad = tip < 0 || tip > TIP_MAX || !Number.isInteger(tip);
 
   return (
-    <div className="min-h-dvh pb-[150px]" style={{ background: "#171211" }}>
+    <div className="min-h-dvh pb-[190px]" style={{ background: "#171211" }}>
       <div className="flex flex-col items-center text-center" style={{ padding: "30px 20px 0" }}>
         <img src={b.pt.img} alt="" className="w-[84px] h-[84px] rounded-full object-cover" style={{ border: `2px solid ${GOLD}` }} />
         <h1 className="m-0 mt-3 font-semibold text-[24px]">จบนัดกับ{b.pt.nick}แล้ว</h1>
@@ -58,7 +64,13 @@ export default function CompletePage({ params }: { params: Promise<{ id: string 
         </div>
         <div style={{ margin: "20px 16px 0" }}>
           <div className="text-[14px] mb-2">ให้ทิป{b.pt.nick} <span className="text-[12px] font-light text-[#d9c9b4]">· หักจากกระเป๋าเงิน</span></div>
-          <div className="flex gap-2" role="radiogroup">{[0, 100, 200, 300].map((v) => <button key={v} type="button" role="radio" aria-checked={tip === v} onClick={() => setTip(v)} className="flex-1 h-[46px] rounded-xl text-[15px]" style={{ border: `1px solid ${tip === v ? GOLD : LN}`, color: tip === v ? GOLD : "#f3ead9", background: tip === v ? "rgba(232,196,114,0.16)" : "transparent" }}>{v ? `฿${v}` : "ไม่ให้"}</button>)}</div>
+          <div className="flex gap-2" role="radiogroup">{[0, 100, 200, 300].map((v) => { const on = !custom && tip === v; return <button key={v} type="button" role="radio" aria-checked={on} onClick={() => { setTip(v); setCustom(""); }} className="flex-1 h-[46px] rounded-xl text-[15px]" style={{ border: `1px solid ${on ? GOLD : LN}`, color: on ? GOLD : "#f3ead9", background: on ? "rgba(232,196,114,0.16)" : "transparent" }}>{v ? `฿${v}` : "ไม่ให้"}</button>; })}</div>
+          {/* ทิปจำนวนอื่น (บาทเต็ม) */}
+          <label className="flex items-center gap-2 mt-2 h-12 rounded-xl bg-[#251d1b] px-[14px]" style={{ border: `1px solid ${custom ? GOLD : LN}` }}>
+            <span className="text-[14px] text-[#d9c9b4] shrink-0">ระบุเอง ฿</span>
+            <input value={custom} onChange={(e) => { const v = e.target.value.replace(/\D/g, "").slice(0, 5); setCustom(v); setTip(v ? Number(v) : 0); }} inputMode="numeric" placeholder="เช่น 150" aria-label="ทิประบุจำนวนเอง (บาท)" className="flex-1 min-w-0 bg-transparent text-[16px] text-[#f3ead9] outline-none placeholder:text-[#b5a596]" />
+          </label>
+          {tipBad && <p role="alert" className="m-0 mt-1 text-[12px] text-[#ff8a9a]">ทิปได้ 0–{TIP_MAX.toLocaleString()} บาท</p>}
         </div>
         <div className="flex justify-between items-center rounded-2xl" style={{ margin: "18px 16px 0", padding: 14, border: `1px solid ${GOLD}`, background: "rgba(212,175,55,.05)" }}>
           <span className="text-[14px]">ยอดที่พักไว้กับเรา</span>
@@ -66,7 +78,8 @@ export default function CompletePage({ params }: { params: Promise<{ id: string 
         </div>
         {err && <p role="alert" className="text-[13px] text-[#ff8a9a]" style={{ margin: "12px 16px 0" }}>{err}</p>}
         <div className="fixed left-0 right-0 bottom-0 mx-auto max-w-[480px] flex flex-col gap-[10px]" style={{ padding: "12px 16px calc(24px + env(safe-area-inset-bottom))", background: "linear-gradient(180deg, rgba(23,18,17,0), #171211 25%)" }}>
-          <button type="button" disabled={busy} onClick={submit} className="h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[17px] disabled:opacity-50">{busy ? "กำลังยืนยัน…" : `ยืนยันจบนัด และโอนให้${b.pt.nick}`}</button>
+          <button type="button" disabled={busy || early || tipBad} onClick={submit} className="h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[17px] disabled:opacity-50">{busy ? "กำลังยืนยัน…" : `ยืนยันจบนัด และโอนให้${b.pt.nick}`}</button>
+          {early && <p className="m-0 text-center text-[12.5px] text-[#d9c9b4]">ยังไม่ถึงเวลานัด · กดจบนัดได้ตั้งแต่ {hm(s)} น.</p>}
           <div className="flex justify-between text-[13px] font-light"><Link href={`/order/${id}/dispute`} className="text-[#d9c9b4]">มีปัญหา? แจ้งเราได้</Link><Link href={`/book/${b.pt.pid}`} style={{ color: GOLD }}>จอง{b.pt.nick}อีกครั้ง</Link></div>
         </div>
       </>}

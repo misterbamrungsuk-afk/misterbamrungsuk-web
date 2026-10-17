@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { canResume } from "@/lib/join/resume";
 import { PACKAGES, lineAddUrl } from "@/lib/join/config";
 import { extraOf, getByMb } from "@/lib/join/store";
-import { TRAINING, TRAINING_SESSIONS } from "@/lib/join/training";
+import { TRAINING, sessionsLabel } from "@/lib/join/training";
 import { Forbidden } from "../../_kyc/ui";
 import { CopyButton } from "./client";
 
@@ -28,7 +28,7 @@ export default async function DonePage({ params, searchParams }: { params: Promi
 
   const P = PACKAGES[row.package];
   const group = x.cohort ? `กลุ่ม ${x.cohort}` : TRAINING.group;
-  const info: [string, string][] = [["วันอบรม", TRAINING.window], ["สถานที่", TRAINING.venue], ["จำนวนรอบ", `${TRAINING_SESSIONS.length} รอบ · เช็กชื่อทุกรอบ`], ["เปิดให้บริการ", TRAINING.openService]];
+  const info: [string, string][] = [["วันอบรม", TRAINING.window], ["สถานที่", TRAINING.venue], ["จำนวนรอบ", `${sessionsLabel(row.package)} · ทีมงานเช็กชื่อที่หน้างาน`], ["เปิดให้บริการ", TRAINING.openService]];
   const fee = x.invite
     ? `สมัครผ่านลิงก์เชิญ · ชำระเฉพาะค่าอบรม ${baht(P.training)} ไม่เก็บค่าการันตี`
     : row.package === "B"
@@ -41,7 +41,7 @@ export default async function DonePage({ params, searchParams }: { params: Promi
         <div className="text-center">
           <div className="text-[12px] tracking-[2.5px] text-[#e8c472] font-light">ยินดีต้อนรับ Part-Time ใหม่</div>
           <h1 className="font-semibold text-[26px] text-[#e8c472]" style={{ margin: "8px 0 0" }}>ส่งใบสมัครเรียบร้อย</h1>
-          <p className="text-[13px] text-[#d9c9b4] font-light" style={{ margin: "8px 0 0" }}>{row.status === "verified" ? "ชำระเงินและยืนยันตัวตนเรียบร้อย" : "ชำระเงินและยืนยันตัวตนเรียบร้อย · รอทีมงานตรวจสอบ"}</p>
+          <p className="text-[13px] text-[#d9c9b4] font-light" style={{ margin: "8px 0 0" }}>{row.status === "verified" && x.kyc_status === "approved" ? "ชำระเงินและยืนยันตัวตนเรียบร้อย" : "ได้รับข้อมูลแล้ว · รอทีมงานตรวจ"}</p>
           <p className="text-[13px] text-[#d9c9b4] font-light" style={{ margin: "4px 0 0" }}>{`ยินดีต้อนรับสู่ Mister Bamrungsuk คุณ${row.nickname}`}</p>
         </div>
         <div className="grid gap-4 md:grid-cols-2 md:items-start">

@@ -20,7 +20,7 @@ const LABEL: Record<string, [string, string]> = {
 const when = (iso: string) => {
   const d = new Date(iso), today = new Date();
   const same = d.toDateString() === today.toDateString();
-  return (same ? "วันนี้ " : d.toLocaleDateString("th-TH", { day: "numeric", month: "short" }) + " ") + d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+  return (same ? "วันนี้ " : d.toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", day: "numeric", month: "short" }) + " ") + d.toLocaleTimeString("th-TH", { timeZone: "Asia/Bangkok", hour: "2-digit", minute: "2-digit" });
 };
 
 export default function OrdersPage() {

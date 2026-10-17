@@ -4,7 +4,7 @@
 // เบราว์เซอร์ในแอป (LINE ฯลฯ) ที่ดาวน์โหลดไฟล์ไม่ได้ → เปิด PDF ในแท็บใหม่ให้กดบันทึก/แชร์เอง
 import { useState } from "react";
 
-export function SavePdfButton({ targetId, fileName }: { targetId: string; fileName: string }) {
+export function SavePdfButton({ targetId, fileName, label = "ดาวน์โหลดใบเสร็จ (PDF)" }: { targetId: string; fileName: string; label?: string }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const save = async () => {
@@ -38,7 +38,7 @@ export function SavePdfButton({ targetId, fileName }: { targetId: string; fileNa
   };
   return (
     <span className="flex flex-col items-end gap-1">
-      <button type="button" onClick={save} disabled={busy} className="btn-gold-lux no-print h-11 px-6 rounded-full text-[14px] disabled:opacity-60">{busy ? "กำลังสร้าง PDF…" : "ดาวน์โหลดใบเสร็จ (PDF)"}</button>
+      <button type="button" onClick={save} disabled={busy} className="btn-gold-lux no-print h-11 px-6 rounded-full text-[14px] disabled:opacity-60">{busy ? "กำลังสร้าง PDF…" : label}</button>
       {err && <span role="alert" className="text-[12px] text-[#b3122a]">{err}</span>}
     </span>
   );

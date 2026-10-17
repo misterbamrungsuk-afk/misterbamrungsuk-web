@@ -3,6 +3,7 @@ import { extraOf, getById, listApplicants, saveProfile, setKyc, setTier, updateA
 import { listCohorts } from "@/lib/join/cohorts";
 import { appendToSheet } from "@/lib/join/sheets";
 import { FIX_KEYS } from "@/lib/join/fixes";
+import { linkMinters } from "@/lib/admin/link-minters";
 
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, canAccess, verifySession, type AdminRole } from "@/lib/admin-auth";
@@ -16,7 +17,7 @@ const STATUSES: ApplicantStatus[] = ["pending_slip", "verified", "rejected", "re
 
 type Body = {
   listed?: boolean; status?: ApplicantStatus; sync?: boolean; cohort?: string | null; line_joined?: boolean;
-  tier?: "top" | "silver";
+  tier?: "top" | "silver"; reason?: string;
   kyc_status?: "approved" | "rejected"; kyc_reason?: Partial<Record<string, string>> | null;
 };
 
@@ -45,8 +46,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (!canAccess(r, "/admin/kyc")) return NextResponse.json({ ok: false, error: "ตัดสิน KYC ได้เฉพาะฝ่าย KYC" }, { status: 403 });
     const me = await session();
     const cur = await getById(id);
-    const lb = cur ? extraOf(cur).link_by : null;
-    if (body.kyc_status === "approved" && r !== "ceo" && lb && me && lb.email === me.email && Date.now() - Date.parse(lb.at) < 30 * 86400_000)
+    // เทียบกับทุกคนที่เคยออกลิงก์ใน 30 วัน (ไม่ใช่แค่คนล่าสุด) · อีเมลตัวพิมพ์เล็ก
+    const mine = !!me && !!cur && linkMinters(cur).some((m) => m.email === me.email.trim().toLowerCase());
+    if (body.kyc_status === "approved" && r !== "ceo" && mine)
       return NextResponse.json({ ok: false, error: "คุณเป็นคนออกลิงก์เข้าโปรไฟล์ให้ผู้สมัครคนนี้ · ให้แอดมินคนอื่นอนุมัติ KYC" }, { status: 403 });
     if (body.kyc_status !== "approved" && body.kyc_status !== "rejected") return NextResponse.json({ ok: false }, { status: 400 });
     let reason: KycReason | null = null;
@@ -96,6 +98,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ ok });
   }
   if (!body.status || !STATUSES.includes(body.status)) return NextResponse.json({ ok: false }, { status: 400 });
+  // ปฏิเสธสลิป = ต้องมีเหตุผล (ผู้สมัครเห็นในแจ้งเตือน จะได้รู้ว่าต้องส่งอะไรใหม่)
+  const reason = String(body.reason ?? "").trim().slice(0, 300);
+  if (body.status === "rejected" && !reason) return NextResponse.json({ ok: false, error: "ระบุเหตุผลที่ปฏิเสธสลิป" }, { status: 400 });
   const row = await updateApplicant(id, { status: body.status });
+  if (row && body.status === "rejected") {
+    const by = (await session())?.email ?? "";
+    // slip_reject ต้องเพิ่มใน store.ts (EXTRA_ONLY_KEYS) — ก่อนนั้นบันทึกไม่ได้ก็ไม่ให้ล้ม (เหตุผลยังไปถึงผู้สมัครทางแจ้งเตือน)
+    await saveProfile(row.id, { slip_reject: { reason, by, at: new Date().toISOString() } }).catch((e) => console.error("slip_reject", (e as Error)?.message));
+    await import("@/lib/bookings").then((m) => m.notify({ user_type: "parttime", user_id: row.id, kind: "slip_rejected", title: "สลิปชำระเงินไม่ผ่านการตรวจ", body: reason, url: `/join/profile/${row.mb_code}` })).catch(() => {});
+  }
   return row ? NextResponse.json({ ok: true, row: { ...row, ...extraOf(row) } }) : NextResponse.json({ ok: false }, { status: 404 });
 }

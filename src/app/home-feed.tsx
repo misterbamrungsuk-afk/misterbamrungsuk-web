@@ -4,6 +4,7 @@
 // หน้าแรก · ดูเพื่อนในระบบ (บอร์ด Benefits + ป๊อปอัป BenefitsPopup) — ถอดตามบอร์ด
 // มือถือ = ตามบอร์ด 390 · md+ การ์ด 3 คอลัมน์ · กดการ์ด → โปรไฟล์ตัวอย่าง /p/[id] (บอร์ด C-Profile) → แชทตัวอย่าง (บอร์ด C-ChatRoom)
 import { useEffect, useMemo, useRef, useState } from "react";
+import { readConsent } from "@/lib/consent";
 import Link from "next/link";
 import { PEOPLE, priceOf, type Person } from "@/lib/home/people";
 import { TabBar } from "@/components/shell";
@@ -67,6 +68,9 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
   const sample = mode === "sample";
   const slider = useRef<HTMLDivElement>(null);
   const [slide, setSlide] = useState(0);
+  // จุดแดงที่กระดิ่ง = มีแจ้งเตือนที่ยังไม่อ่านจริง (ไม่ได้ล็อกอิน = ไม่มีจุด)
+  const [unreadN, setUnreadN] = useState(0);
+  useEffect(() => { if (!me) return; fetch("/api/notifications", { cache: "no-store" }).then((r) => r.json()).then((d) => setUnreadN((d?.notices ?? []).filter((n: { read_at: string | null }) => !n.read_at).length)).catch(() => {}); }, [me]);
   const go = (i: number) => { const el = slider.current; if (el) el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" }); };
   const onSlide = () => { const el = slider.current; if (el) setSlide(Math.round(el.scrollLeft / Math.max(1, el.clientWidth))); };
   const nSlides = SLIDES.length + (memberTier ? 0 : 1);
@@ -79,7 +83,12 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
 
   // ป๊อปอัปโฆษณาตอนเปิดแอป (บอร์ด BenefitsPopup) — ครั้งเดียวต่อ session
   useEffect(() => {
-    try { if (!sessionStorage.getItem("mb_home_ad")) { setAd(true); sessionStorage.setItem("mb_home_ad", "1"); } } catch { setAd(true); }
+    // รอให้ตอบแถบคุกกี้ก่อน (ไม่เปิดซ้อนกันตอนเข้าครั้งแรก) — เช็กทุก 1 วิ สูงสุด 2 นาที
+    let n = 0;
+    const show = () => { try { if (!sessionStorage.getItem("mb_home_ad")) { setAd(true); sessionStorage.setItem("mb_home_ad", "1"); } } catch { setAd(true); } };
+    if (!!readConsent()) { show(); return; }
+    const t = setInterval(() => { if (!!readConsent()) { clearInterval(t); setTimeout(show, 600); } else if (++n > 120) clearInterval(t); }, 1000);
+    return () => clearInterval(t);
   }, []);
   const closeAd = () => setAd(false);
 
@@ -127,7 +136,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
           <nav aria-label="เมนูหลัก (จอคอม)" className="hidden md:flex items-center gap-1 ml-auto mr-3 text-[14px] font-light">
             {(sample
               ? [["/join/showcase", "ดูเพื่อน"], ["/map", "แผนที่"], [showEarnings ? "/join/earnings" : "/join", "รายได้"], ["/policy", "กฎเกณฑ์"], ["/work-with-us", "ร่วมทีม"]]
-              : [["/", "หน้าแรก"], ["/map", "แผนที่"]]).map(([h, l], i) => (
+              : [["/", "หน้าแรก"], ["/map", "แผนที่"], ...(me ? [["/orders", "นัดของฉัน"]] : [])]).map(([h, l], i) => (
               <Link key={h} href={h} aria-current={i === 0 ? "page" : undefined} className={`px-3 min-h-10 inline-flex items-center rounded-full ${i === 0 ? "text-[#e8c472] hover:text-[#e8c472]" : "text-[#d9c9b4] hover:text-[#f3ead9]"}`}>{l}</Link>
             ))}
             {sample ? <Link href="/join" className="ml-2 px-5 min-h-10 inline-flex items-center rounded-full bg-[#e8c472] text-[#1b130b] font-semibold hover:text-[#1b130b]">สมัครร่วมทีม</Link>
@@ -135,9 +144,9 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
               : <><Link href="/auth/register" className="ml-2 px-5 min-h-10 inline-flex items-center rounded-full bg-[#e8c472] text-[#1b130b] font-semibold hover:text-[#1b130b]">สมัครทันที</Link>
                 <Link href="/login" className="px-3 min-h-10 inline-flex items-center rounded-full text-[#d9c9b4] hover:text-[#f3ead9]">เข้าสู่ระบบ</Link></>}
           </nav>
-          <Link href={me ? "/notifications" : "/login"} aria-label="การแจ้งเตือน" className="relative grid place-items-center w-11 h-11 rounded-full text-[#f3ead9] hover:text-[#f3ead9]" style={{ background: "rgba(232,196,114,0.16)" }}>
+          <Link href={me ? "/notifications" : "/login?next=/notifications"} aria-label="การแจ้งเตือน" className="relative grid place-items-center w-11 h-11 rounded-full text-[#f3ead9] hover:text-[#f3ead9]" style={{ background: "rgba(232,196,114,0.16)" }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10 21h4" /></svg>
-            <span className="absolute w-2 h-2 rounded-full bg-[#c9283d]" style={{ top: 9, right: 10 }} />
+            {unreadN > 0 && <span className="absolute w-2 h-2 rounded-full bg-[#c9283d]" style={{ top: 9, right: 10 }} aria-label={`ยังไม่อ่าน ${unreadN}`} />}
           </Link>
         </div>
 
@@ -182,7 +191,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
         </div>
 
         <div style={{ padding: "10px 18px 0" }}>
-          {!sample && me && <p className="m-0 mb-1 text-[15px] text-[#d9c9b4]">สวัสดี คุณ{me.name.split(" ")[0]} 👋</p>}
+          {!sample && me && <p className="m-0 mb-1 text-[15px] text-[#d9c9b4]">สวัสดี คุณ{me.name.replace(/^คุณ\s*/, "").split(" ")[0]} 👋</p>}
           {sample && <div className="mb-2 inline-flex items-center gap-2 rounded-full text-[12.5px] font-semibold" style={{ padding: "5px 12px", background: "rgba(232,196,114,0.16)", color: GOLD }}>หน้าตัวอย่าง · สิ่งที่ลูกค้าเห็นในแอป</div>}
           <h1 className="m-0 mt-0.5 font-bold text-[26px] md:text-[32px] leading-[1.3] text-[#e8c472]" style={{ textWrap: "balance" }}>{sample ? "เพื่อนกินเที่ยวในแอปของเรา" : "เลือกเพื่อนของคุณ"}</h1>
         </div>

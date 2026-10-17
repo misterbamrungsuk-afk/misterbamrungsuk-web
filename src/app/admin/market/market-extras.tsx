@@ -68,7 +68,7 @@ function Payouts({ d, reload, setMsg }: Sub) {
                     <td className="text-right font-semibold">{money(r.payout)}</td><td className="text-right">{r.pendingGp ? money(r.pendingGp) : "—"}</td>
                     <td className="pl-3 text-right min-w-[220px]">
                       {r.paid ? (
-                        <span className="text-xs text-emerald-300">โอนแล้ว {new Date(r.paid.paid_at).toLocaleDateString("th-TH")} · {r.paid.ref}{r.paid.slip_path && <> · <a className="underline" target="_blank" rel="noreferrer" href={`/api/market/admin/payouts?slip=${r.paid.id}`}>สลิป</a></>}</span>
+                        <span className="text-xs text-emerald-300">โอนแล้ว {new Date(r.paid.paid_at).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" })} · {r.paid.ref}{r.paid.slip_path && <> · <a className="underline" target="_blank" rel="noreferrer" href={`/api/market/admin/payouts?slip=${r.paid.id}`}>สลิป</a></>}</span>
                       ) : form?.key === key ? (
                         <div className="flex flex-col gap-1.5 items-end">
                           <input type="date" value={form.paid_at} onChange={(e) => setForm({ ...form, paid_at: e.target.value })} className="input-dark h-8 text-xs" aria-label="วันที่โอน" />
@@ -122,7 +122,7 @@ function Accounts({ d, reload, setMsg }: Sub) {
             <tr key={a.id} className="border-t border-ink-600">
               <td className="py-2">{a.email}</td><td>{d.vendors.find((v) => v.id === a.vendor_id)?.name}</td>
               <td><Pill tone={a.active ? "green" : "gold"}>{a.active ? "ใช้งาน" : "รอตั้งรหัส"}</Pill></td>
-              <td className="text-xs text-ink-300">{a.last_login_at ? new Date(a.last_login_at).toLocaleString("th-TH") : "—"}</td>
+              <td className="text-xs text-ink-300">{a.last_login_at ? new Date(a.last_login_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" }) : "—"}</td>
               <td className="text-right whitespace-nowrap"><button onClick={() => invite(a.vendor_id, a.email)} className="chip h-8 px-3 text-xs">ลิงก์ใหม่</button> <button onClick={() => del(a.id)} className="chip h-8 px-3 text-xs">ลบ</button></td>
             </tr>
           ))}
@@ -238,7 +238,7 @@ function Promos({ d, reload, setMsg }: Sub) {
               <tr key={p.id} className="border-t border-ink-600">
                 <td className="py-2 font-semibold tracking-wider">{p.code}</td>
                 <td>{p.kind === "percent" ? `${p.value}%` : `฿${baht(p.value)}`}</td><td>฿{baht(p.min_spend)}</td>
-                <td className="text-xs">{p.expires_at ? new Date(p.expires_at).toLocaleDateString("th-TH") : "ไม่หมดอายุ"}</td>
+                <td className="text-xs">{p.expires_at ? new Date(p.expires_at).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" }) : "ไม่หมดอายุ"}</td>
                 <td>{p.used_count}{p.usage_limit != null ? ` / ${p.usage_limit}` : ""}</td>
                 <td><Pill tone={p.active ? "green" : "muted"}>{p.active ? "ใช้ได้" : "ปิด"}</Pill></td>
                 <td className="text-right whitespace-nowrap">
@@ -282,7 +282,7 @@ function Reviews({ d, reload, setMsg }: Sub) {
           <div className="flex-1 min-w-0">
             <p className="text-sm"><span className="text-gold-400">{"★".repeat(r.stars)}</span> <b>{r.name}</b> · {d.products.find((p) => p.id === r.product_id)?.name ?? r.product_id}</p>
             {r.text && <p className="text-sm text-ink-200 mt-1 whitespace-pre-line">{r.text}</p>}
-            <p className="text-xs text-[#9a8a85] mt-1">{new Date(r.created_at).toLocaleString("th-TH")} · 0{r.phone.slice(2, 4)}-xxx-{r.phone.slice(-4)} · ออเดอร์ {d.orders.find((o) => o.id === r.order_id)?.order_no ?? "—"}</p>
+            <p className="text-xs text-[#9a8a85] mt-1">{new Date(r.created_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })} · 0{r.phone.slice(2, 4)}-xxx-{r.phone.slice(-4)} · ออเดอร์ {d.orders.find((o) => o.id === r.order_id)?.order_no ?? "—"}</p>
           </div>
           <Pill tone={r.hidden ? "muted" : "green"}>{r.hidden ? "ซ่อน" : "แสดง"}</Pill>
           <button onClick={() => toggle(r.id, !r.hidden)} className="chip h-8 px-3 text-xs">{r.hidden ? "แสดง" : "ซ่อน"}</button>

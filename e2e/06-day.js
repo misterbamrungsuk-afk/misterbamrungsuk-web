@@ -11,7 +11,7 @@ const ok = (n, c, x = '') => { if (!c) fails++; console.log((c ? 'PASS ' : 'FAIL
 const ADM = { cookie: 'mord_admin=' + adm, 'content-type': 'application/json' };
 const sess = (sub, email) => { const b = Buffer.from(JSON.stringify({ sub, email, exp: Date.now() + 3600e3 })).toString('base64url'); return 'hamoo_session=' + b + '.' + crypto.createHmac('sha256', KEY).update(b).digest('base64url'); };
 const C1 = { cookie: sess('demo:buyer@test.local', 'buyer@test.local'), 'content-type': 'application/json' };
-const body = Buffer.from(JSON.stringify({ mb, exp: Date.now() + 3600_000 })).toString('base64url');
+const body = Buffer.from(JSON.stringify({ mb, iat: Date.now(), exp: Date.now() + 3600_000 })).toString('base64url');
 const T = body + '.' + crypto.createHmac('sha256', KEY).update('resume:' + body).digest('base64url');
 const J = (r) => r.json();
 const PT = (id, action) => fetch(B + `/api/pt/bookings/${id}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mb, t: T, action }) });
@@ -27,6 +27,8 @@ const ptw = () => fetch(B + `/api/pt/wallet?mb=${mb}&t=${encodeURIComponent(T)}`
   let r = await fetch(B + `/api/bookings/${id}/complete`, { method: 'POST', headers: C1, body: JSON.stringify({ rating: 5 }) }); ok('complete before start/checkin refused', r.status === 409);
   ok('pt checkin', (await J(await PT(id, 'checkin'))).ok);
   ok('pt done before start refused', (await PT(id, 'done')).status >= 400); // จบงานได้หลังเวลานัดเท่านั้น (ผลตรวจความปลอดภัย)
+  // ลูกค้าจบนัดได้หลังเวลาเริ่มเท่านั้น → เลื่อนเวลานัดย้อนหลัง (โหมดสาธิต)
+  await fetch(B + '/api/admin/bookings', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'demo_shift', id, minutes: 120 }) });
   const bk = (await J(await fetch(B + `/api/bookings/${id}`, { headers: C1 }))).booking;
   let w0 = await J(await fetch(B + '/api/wallet', { headers: C1 }));
   r = await fetch(B + `/api/bookings/${id}/complete`, { method: 'POST', headers: C1, body: JSON.stringify({ rating: 5, tags: ['ตรงเวลา'], again: 'yes', body: 'ดีมาก', tip: 200 }) });
@@ -71,6 +73,9 @@ const ptw = () => fetch(B + `/api/pt/wallet?mb=${mb}&t=${encodeURIComponent(T)}`
   // ข้อพิพาท → แอดมินคืน 50%
   j = await J(await fetch(B + '/api/bookings', { method: 'POST', headers: C1, body: JSON.stringify({ pid, hours: 3, starts_at: new Date(Date.now() + 4 * 86400_000).toISOString(), place: { type: 'mall', detail: 'ห้าง' }, note: '' }) })); const id2 = j.id;
   await PT(id2, 'accept');
+  // เปิดข้อพิพาทได้หลังถึงเวลานัด/เช็กอินแล้วเท่านั้น → เลื่อนเวลานัดย้อนหลัง (โหมดสาธิต) แล้วเช็กอิน
+  await fetch(B + '/api/admin/bookings', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'demo_shift', id: id2, minutes: 4 * 1440 + 30 }) });
+  await PT(id2, 'checkin');
   r = await fetch(B + `/api/bookings/${id2}/dispute`, { method: 'POST', headers: C1, body: JSON.stringify({ topic: 'ไม่มาตามนัด', text: 'รอ 30 นาทีไม่มา' }) }); ok('dispute', (await J(r)).status === 'disputed');
   r = await fetch(B + '/api/admin/bookings', { method: 'POST', headers: ADM, body: JSON.stringify({ id: id2, action: 'refund', refund_pct: 50 }) }); ok('resolve needs note', r.status === 400);
   w0 = await J(await fetch(B + '/api/wallet', { headers: C1 }));

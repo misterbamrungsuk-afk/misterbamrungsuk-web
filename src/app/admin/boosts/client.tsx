@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Boost } from "@/lib/join/boost";
+import { EXPIRED, useConfirm } from "../confirm";
 
 const LINE = "rgba(240,200,90,.25)";
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("th-TH");
@@ -13,18 +14,25 @@ export function BoostsClient({ list }: { list: Boost[] }) {
   const [busy, setBusy] = useState("");
   const [note, setNote] = useState<Record<string, string>>({});
   const [msg, setMsg] = useState("");
+  const [confirmUi, ask] = useConfirm();
   const pending = list.filter((b) => b.status === "pending");
   const active = list.filter((b) => b.status === "active" && b.ends_at && Date.parse(b.ends_at) > Date.now());
   const act = async (id: string, approve: boolean) => {
+    const b = list.find((x) => x.id === id);
+    if (b && !(await ask(approve
+      ? { title: "เปิดโปรโมทโปรไฟล์?", body: `${b.mb} · ${baht(b.price_satang)} · ${b.days} วัน
+เช็กว่าเงินเข้าบัญชีร้านจริงก่อน`, ok: "เปิดโปรโมท" }
+      : { title: "ไม่อนุมัติสลิปโปรโมท?", body: `${b.mb} · เหตุผล: ${note[id] ?? ""}`, ok: "ไม่อนุมัติ", danger: true }))) return;
     setBusy(id); setMsg("");
     const r = await fetch("/api/admin/boosts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, approve, note: note[id] }) }).catch(() => null);
     const j = await r?.json().catch(() => null);
-    setBusy(""); setMsg(j?.ok ? (approve ? "เปิดโปรโมทแล้ว" : "ไม่อนุมัติแล้ว") : j?.error || "ไม่สำเร็จ");
+    setBusy(""); setMsg(r?.status === 401 ? EXPIRED : j?.ok ? (approve ? "เปิดโปรโมทแล้ว" : "ไม่อนุมัติแล้ว") : j?.error || "ไม่สำเร็จ");
     if (j?.ok) router.refresh();
   };
   return (
     <div className="flex flex-col gap-4 text-[13.5px]">
-      {msg && <p role="status" className="m-0 text-[#f0c75a]">{msg}</p>}
+      {msg && <p role="status" className="m-0 text-[#f0c75a]">{msg}{msg === EXPIRED && <> · <a href="/admin-login" className="underline">ไปหน้าเข้าสู่ระบบ</a></>}</p>}
+      {confirmUi}
       <h2 className="m-0 text-[16px] font-semibold">สลิปรอตรวจ ({pending.length})</h2>
       {!pending.length && <p className="m-0 text-[#9a8a85]">ไม่มีสลิปรอตรวจ</p>}
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">

@@ -12,5 +12,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const who = await bookingActor((await params).id, u.searchParams.get("mb"), u.searchParams.get("t"));
   if (!who) return NextResponse.json({ ok: false, error: "ไม่พบการจอง" }, { status: 404 });
   const { b, role } = who;
-  return NextResponse.json({ ok: true, role, booking: role === "customer" ? { ...b, pt: ptPublic(b), parttime_id: undefined, parttime_mb: undefined, cancel_refund_pct: b.status === "accepted" ? cancelRefundPct(await getMoney(), b.starts_at) : null } : { ...b, customer_email: undefined, customer_id: undefined } });
+  const money = await getMoney();
+  // ลูกค้าเห็นยอดคืนจริงก่อนยืนยันยกเลิก (กติกาอัตโนมัติ) หรือข้อความกติกาที่ทีมงานใช้พิจารณา
+  return NextResponse.json({ ok: true, role, booking: role === "customer" ? { ...b, pt: ptPublic(b), parttime_id: undefined, parttime_mb: undefined, cancel_refund_pct: b.status === "accepted" ? cancelRefundPct(money, b.starts_at) : null, cancel_rule: money.cancelRule } : { ...b, customer_email: undefined, customer_id: undefined } });
 }

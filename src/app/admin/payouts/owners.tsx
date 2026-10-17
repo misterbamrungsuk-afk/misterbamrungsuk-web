@@ -2,6 +2,7 @@
 
 // โอนให้พาร์ทเนอร์ / ร้านค้า — แสดงคำขอที่ CEO อนุมัติแล้ว → แอดมินโอนเข้าบัญชี แล้วกด "โอนแล้ว" · โอนไม่สำเร็จ = คืนยอดเข้ากระเป๋า
 import { useEffect, useState } from "react";
+import { EXPIRED, useConfirm } from "../confirm";
 
 type Bank = { bank: string; account: string; name: string };
 type R = { id: string; owner_type: "partner" | "vendor"; owner_id: string; owner_name: string; amount_satang: number; bank: Bank; status: string; note: string | null; created_at: string; approved_at: string | null; paid_at: string | null };
@@ -17,19 +18,30 @@ export function OwnerPayouts() {
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState("");
   const [fail, setFail] = useState<Record<string, string>>({});
+  const [confirmUi, ask] = useConfirm();
   const load = () => fetch("/api/admin/payout-requests", { cache: "no-store" }).then((r) => r.json()).then((j) => setD(j?.ok ? j : { requests: [], wallets: [] })).catch(() => setD({ requests: [], wallets: [] }));
   useEffect(() => { load(); }, []);
   const act = async (id: string, action: "paid" | "failed", label: string) => {
+    const x = d?.requests.find((r) => r.id === id);
+    // โอนแล้ว/โอนไม่สำเร็จ = ปิดรายการเงิน ย้อนไม่ได้ → ยืนยันก่อน
+    if (x && !(await ask(action === "paid"
+      ? { title: "บันทึกว่าโอนแล้ว?", body: `${x.owner_name} · ${baht(x.amount_satang)}
+${x.bank.bank} ${x.bank.account} · ${x.bank.name}
+กดหลังเงินออกจากบัญชีบริษัทจริงเท่านั้น`, ok: "โอนแล้ว" }
+      : { title: "บันทึกว่าโอนไม่สำเร็จ?", body: `${x.owner_name} · ${baht(x.amount_satang)}
+เหตุผล: ${fail[id] ?? ""}
+ยอดจะคืนเข้ากระเป๋า`, ok: "โอนไม่สำเร็จ", danger: true }))) return;
     setBusy(id); setMsg("");
-    const r = await fetch("/api/admin/payout-requests", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, id, note: fail[id] }) });
-    const j = await r.json().catch(() => ({}));
-    setBusy(""); setMsg(j.ok ? label : j.error ?? "บันทึกไม่สำเร็จ"); load();
+    const r = await fetch("/api/admin/payout-requests", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, id, note: fail[id] }) }).catch(() => null);
+    const j = (await r?.json().catch(() => ({}))) ?? {};
+    setBusy(""); setMsg(r?.status === 401 ? EXPIRED : j.ok ? label : j.error ?? "บันทึกไม่สำเร็จ"); load();
   };
   if (!d) return <p className="text-[#9a8a85]">กำลังโหลด…</p>;
   const name = (t: string, id: string) => d.requests.find((r) => r.owner_type === t && r.owner_id === id)?.owner_name ?? id.slice(0, 8);
   return (
     <div className="flex flex-col gap-4">
-      {msg && <p className="m-0 rounded-xl px-3 py-2 text-[13.5px]" style={{ background: "rgba(240,199,90,.1)", color: GOLD }} role="status">{msg}</p>}
+      {msg && <p className="m-0 rounded-xl px-3 py-2 text-[13.5px]" style={{ background: "rgba(240,199,90,.1)", color: GOLD }} role="status">{msg}{msg === EXPIRED && <> · <a href="/admin-login" className="underline">ไปหน้าเข้าสู่ระบบ</a></>}</p>}
+      {confirmUi}
       {(["partner", "vendor"] as const).map((t) => {
         const ready = d.requests.filter((r) => r.owner_type === t && r.status === "approved");
         const wait = d.requests.filter((r) => r.owner_type === t && r.status === "requested").length;

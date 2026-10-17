@@ -71,7 +71,7 @@ export default async function DocPage({ params, searchParams }: { params: Promis
 
       <div className="no-print mx-auto max-w-[210mm] flex justify-between items-center gap-3 mb-4 flex-wrap">
         <span className="flex gap-4 flex-wrap"><a href={`/join/done/${row.mb_code}${q}`} className="text-[13px] text-[#5a4a40] underline underline-offset-2">← กลับหน้าสมัครสำเร็จ</a><a href={`/join/receipt/${row.mb_code}${q}`} className="text-[13px] text-[#7e0a1e] underline underline-offset-2">ใบเสร็จรับเงิน ›</a></span>
-        <SavePdfButton targetId="doc-sheet" fileName={`ใบยืนยันการสมัคร-${row.mb_code}`} />
+        <SavePdfButton targetId="doc-sheet" fileName={`ใบยืนยันการสมัคร-${row.mb_code}`} label="ดาวน์โหลดใบยืนยันการสมัคร (PDF)" />
       </div>
 
       <article id="doc-sheet" className="doc-sheet mx-auto w-full max-w-[210mm] min-h-[297mm] bg-white text-[#1d1414] shadow-[0_6px_30px_rgba(0,0,0,.18)] px-[14mm] py-[12mm] text-[13px] leading-relaxed">

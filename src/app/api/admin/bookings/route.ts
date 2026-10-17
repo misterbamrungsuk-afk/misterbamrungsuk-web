@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
-import { BookingError, listAll } from "@/lib/bookings";
-import { adminResolve } from "@/lib/bookings/day";
+import { BookingError, demoShift, listAll } from "@/lib/bookings";
+import { adminResolve, resolvePreview } from "@/lib/bookings/day";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,7 +16,14 @@ async function admin() {
 // GET ?arrival=<id> = จุดที่ Part-Time กด "ถึงจุดนัด" (GPS) + ระยะจากหมุดจุดนัด · ไม่มี = รายการการจองทั้งหมด
 export async function GET(req: Request) {
   if (!(await admin())) return NextResponse.json({ ok: false }, { status: 401 });
-  const aid = new URL(req.url).searchParams.get("arrival");
+  const sp = new URL(req.url).searchParams;
+  // ?preview=<id>&pct=N = ตัวเลขก่อนยืนยันผลตัดสิน (ลูกค้าได้คืน · Part-Time ได้ · สถานะที่จะกลับไปถ้ายกคำร้อง)
+  const pv = sp.get("preview");
+  if (pv) {
+    try { return NextResponse.json({ ok: true, preview: await resolvePreview(pv, Number(sp.get("pct")) || 0) }); }
+    catch (e) { return NextResponse.json({ ok: false, error: e instanceof BookingError ? e.message : "คำนวณไม่สำเร็จ" }, { status: 404 }); }
+  }
+  const aid = sp.get("arrival");
   if (aid) {
     const [{ getArrival }, { getBooking }, { inThailand, km }] = await Promise.all([import("@/lib/arrival"), import("@/lib/bookings"), import("@/lib/geo")]);
     const [a, bk] = await Promise.all([getArrival(aid).catch(() => null), getBooking(aid)]);
@@ -32,7 +39,12 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const s = await admin();
   if (!s || !canAccess(s.role, "/admin/wallet")) return NextResponse.json({ ok: false, error: "เฉพาะฝ่ายการเงิน" }, { status: 401 });
-  const b = (await req.json().catch(() => ({}))) as { id?: string; action?: string; refund_pct?: number; note?: string };
+  const b = (await req.json().catch(() => ({}))) as { id?: string; action?: string; refund_pct?: number; note?: string; minutes?: number };
+  // ทดสอบ e2e เท่านั้น: โหมดสาธิตเลื่อนเวลานัดย้อนหลัง (production/ฐานจริง = 404)
+  if (b.action === "demo_shift") {
+    const r = await demoShift(String(b.id ?? ""), Number(b.minutes) || 0);
+    return r ? NextResponse.json({ ok: true, starts_at: r.starts_at }) : NextResponse.json({ ok: false }, { status: 404 });
+  }
   if (b.action !== "refund" && b.action !== "reject") return NextResponse.json({ ok: false, error: "ไม่รู้จักคำสั่ง" }, { status: 400 });
   if (!String(b.note ?? "").trim()) return NextResponse.json({ ok: false, error: "ระบุเหตุผล/บันทึก" }, { status: 400 });
   try {

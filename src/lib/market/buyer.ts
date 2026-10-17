@@ -18,4 +18,4 @@ export const publicOrder = (o: Order) => ({
   reject_reason: o.status === "rejected" ? o.reject_reason ?? null : null,
   created_at: o.created_at, paid_at: o.paid_at, shipped_at: o.shipped_at ?? null, done_at: o.done_at ?? null,
 });
-export type PublicOrder = ReturnType<typeof publicOrder>;
+export type PublicOrder = ReturnType<typeof publicOrder> & { /** ลิงก์แนบสลิปต่อ (ออเดอร์ยังไม่มีสลิป) */ resume?: string | null };

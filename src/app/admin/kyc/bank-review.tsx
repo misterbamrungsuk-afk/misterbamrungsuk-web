@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { EXPIRED, useConfirm } from "../confirm";
 
 // Part-Time ที่อนุมัติแล้วเปลี่ยนบัญชีรับเงิน → ยังรับงานได้ แต่ถอนไม่ได้จนแอดมินตรวจบัญชีใหม่ (ชื่อบัญชีต้องตรงชื่อในบัตร)
 type Row = { id: string; mb_code: string; first_name: string; last_name: string; nickname: string; bank: string; bank_account: string; bank_account_name: string; bank_book_path: string | null; bank_review: { at: string; prev: { bank: string; bank_account: string; bank_account_name: string } } };
@@ -12,19 +13,26 @@ export function BankReview({ rows }: { rows: Row[] }) {
   const router = useRouter();
   const [busy, setBusy] = useState("");
   const [msg, setMsg] = useState("");
+  const [confirmUi, ask] = useConfirm();
   if (!rows.length) return null;
   const act = async (id: string, decision: "approved" | "rejected") => {
+    const r0 = rows.find((x) => x.id === id);
+    // อนุมัติบัญชีใหม่ = เงินถอนออกไปบัญชีนี้ได้ทันที → ยืนยันก่อน
+    if (decision === "approved" && r0 && !(await ask({ title: "อนุมัติบัญชีรับเงินใหม่?", body: `${r0.mb_code} · ${r0.first_name} ${r0.last_name}
+${r0.bank} ${r0.bank_account} · ${r0.bank_account_name}
+ชื่อบัญชีต้องตรงกับชื่อในบัตรประชาชน`, ok: "อนุมัติบัญชีใหม่" }))) return;
     setBusy(id); setMsg("");
-    const r = await fetch(`/api/admin/applicants/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ bank_review: decision }) });
-    const d = await r.json().catch(() => ({}));
-    setBusy(""); setMsg(d.ok ? (decision === "approved" ? "อนุมัติบัญชีใหม่แล้ว · ถอนเงินได้" : "ไม่อนุมัติ · กลับไปใช้บัญชีเดิม") : d.error ?? "บันทึกไม่สำเร็จ");
+    const r = await fetch(`/api/admin/applicants/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ bank_review: decision }) }).catch(() => null);
+    const d = (await r?.json().catch(() => ({}))) ?? {};
+    setBusy(""); setMsg(r?.status === 401 ? EXPIRED : d.ok ? (decision === "approved" ? "อนุมัติบัญชีใหม่แล้ว · ถอนเงินได้" : "ไม่อนุมัติ · กลับไปใช้บัญชีเดิม") : d.error ?? "บันทึกไม่สำเร็จ");
     if (d.ok) router.refresh();
   };
   return (
     <section className="rounded-2xl border p-3.5 flex flex-col gap-2.5" style={{ borderColor: "#f0a35a", background: "rgba(240,163,90,.06)" }}>
       <b className="text-[15px]">เปลี่ยนบัญชีรับเงิน · รอตรวจ ({rows.length})</b>
       <p className="m-0 text-[12.5px] text-[#cdbfb3]">ยังรับงานได้ตามปกติ แต่ถอนเงินไม่ได้จนกว่าจะตรวจ · ชื่อบัญชีต้องตรงกับชื่อในบัตรประชาชน</p>
-      {msg && <p className="m-0 text-[13px] text-[#f0c75a]" role="status">{msg}</p>}
+      {msg && <p className="m-0 text-[13px] text-[#f0c75a]" role="status">{msg}{msg === EXPIRED && <> · <a href="/admin-login" className="underline">ไปหน้าเข้าสู่ระบบ</a></>}</p>}
+      {confirmUi}
       {rows.map((r) => (
         <div key={r.id} className="rounded-xl border p-3 flex flex-wrap gap-3 items-center" style={{ borderColor: LN }}>
           <span className="flex-1 min-w-[240px] text-[13px]">

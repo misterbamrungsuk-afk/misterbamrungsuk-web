@@ -48,7 +48,7 @@ export function PromosClient({ initial }: { initial: PromoCode[] }) {
           <div key={c.code} className={`rounded-xl border border-ink-600 p-3 flex flex-wrap gap-3 items-center ${c.active ? "" : "opacity-50"}`}>
             <b className="tracking-[1.5px] text-[#f0c75a]">{c.code}</b>
             <span>{baht(c.amount_satang)} · ใช้แล้ว {c.used}/{c.max_uses}</span>
-            <span className="text-ink-300">{c.expires_at ? `หมดอายุ ${new Date(c.expires_at).toLocaleDateString("th-TH")}` : "ไม่หมดอายุ"}{c.note ? ` · ${c.note}` : ""}</span>
+            <span className="text-ink-300">{c.expires_at ? `หมดอายุ ${new Date(c.expires_at).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" })}` : "ไม่หมดอายุ"}{c.note ? ` · ${c.note}` : ""}</span>
             <button type="button" onClick={() => toggle(c)} className="ml-auto chip h-8 px-3">{c.active ? "ปิดโค้ด" : "เปิดโค้ด"}</button>
           </div>
         ))}
@@ -58,7 +58,7 @@ export function PromosClient({ initial }: { initial: PromoCode[] }) {
         {gifts.map((c) => (
           <div key={c.code} className="rounded-xl border border-ink-600 p-3 flex flex-wrap gap-3 items-center">
             <b className="tracking-[1.5px] text-[#f0c75a]">{c.code}</b><span>{baht(c.amount_satang)}</span>
-            <span className="text-ink-300">{c.used >= c.max_uses ? "ใช้แล้ว" : "ยังไม่ใช้"} · จาก {c.from_customer}{c.to_name ? ` ถึง ${c.to_name}` : ""} · {new Date(c.created_at).toLocaleDateString("th-TH")}</span>
+            <span className="text-ink-300">{c.used >= c.max_uses ? "ใช้แล้ว" : "ยังไม่ใช้"} · จาก {c.from_customer}{c.to_name ? ` ถึง ${c.to_name}` : ""} · {new Date(c.created_at).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" })}</span>
           </div>
         ))}
       </section>

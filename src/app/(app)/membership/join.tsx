@@ -15,11 +15,25 @@ export function JoinMember({ tiers, current, refCode, initial }: { tiers: Record
   const [ref, setRef] = useState(refCode ?? "");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  // ตรวจโค้ดผู้แนะนำก่อนส่ง — โค้ดผิด/ปิดแล้ว ต้องแก้หรือลบก่อน (ไม่ทิ้งเงียบ ๆ)
+  const [refState, setRefState] = useState<{ code: string; valid: boolean; name: string | null } | null>(null);
+  useEffect(() => {
+    const c = ref.trim();
+    if (c.length < 4) { setRefState(null); return; }
+    const t = setTimeout(() => {
+      fetch(`/api/sales/ref?code=${encodeURIComponent(c)}`, { cache: "no-store" }).then((r) => r.json())
+        .then((d: { ok?: boolean; valid?: boolean; name?: string | null }) => { if (d?.ok) setRefState({ code: c, valid: !!d.valid, name: d.name ?? null }); }).catch(() => {});
+    }, 400);
+    return () => clearTimeout(t);
+  }, [ref]);
+  const refBad = !!ref.trim() && (ref.trim().length < 4 || (refState?.code === ref.trim() && !refState.valid));
+  const refChecking = !!ref.trim() && ref.trim().length >= 4 && refState?.code !== ref.trim();
   useEffect(() => { if (!refCode) { const m = document.cookie.match(/(?:^|; )mb_ref=([A-Z0-9]+)/); if (m) setRef(m[1]); } }, [refCode]);
   const t = tiers[tier];
   const options = (["gold", "black"] as const).filter((k) => !current || (current === "gold" && k === "black"));
   const send = async () => {
     if (!slip) return;
+    if (refBad) return setMsg({ ok: false, text: "โค้ดผู้แนะนำไม่ถูกต้องหรือปิดใช้แล้ว · แก้โค้ด หรือลบออกก่อนส่ง" });
     setBusy(true); setMsg(null);
     const fd = new FormData(); fd.append("tier", tier); fd.append("slip", slip); if (ref.trim()) fd.append("ref", ref.trim().toUpperCase());
     const r = await fetch("/api/membership", { method: "POST", body: fd }).catch(() => null);
@@ -42,13 +56,15 @@ export function JoinMember({ tiers, current, refCode, initial }: { tiers: Record
       <div className="text-[14px] text-[#d9c9b4]">โอน <b className="text-[#f3ead9]">{baht(t.pay)}</b> ได้เครดิต <b className="text-[#e8c472]">{baht(t.credit)}</b> เข้ากระเป๋าทันทีที่สลิปผ่าน</div>
       <PromptPayCard amount={t.pay} />
       <label className="flex flex-col gap-1.5 text-[13px] text-[#d9c9b4]">โค้ดผู้แนะนำ (ถ้ามี)
-        <input value={ref} onChange={(e) => setRef(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12))} placeholder="เช่น MB7K2Q" className="h-12 rounded-xl px-3 bg-[#171211] text-[16px] text-[#f3ead9] outline-none" style={{ border: "1px solid rgba(243,234,217,.12)" }} />
+        <input value={ref} onChange={(e) => setRef(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12))} placeholder="เช่น MB7K2Q" className="h-12 rounded-xl px-3 bg-[#171211] text-[16px] text-[#f3ead9] outline-none" aria-invalid={refBad} style={{ border: `1px solid ${refBad ? "#ff8a9a" : "rgba(243,234,217,.12)"}` }} />
+        {refBad && <span role="alert" className="text-[12.5px] text-[#ff8a9a]">โค้ดนี้ไม่ถูกต้องหรือปิดใช้แล้ว · แก้ให้ถูก หรือ <button type="button" onClick={() => setRef("")} className="underline">ลบโค้ด</button></span>}
+        {!refBad && refState?.valid && refState.code === ref.trim() && <span className="text-[12.5px] text-[#7fd6a3]">✓ โค้ดใช้ได้{refState.name ? ` · ผู้แนะนำ ${refState.name}` : ""}</span>}
       </label>
       <label className="min-h-[52px] rounded-xl flex items-center justify-center text-[14px] text-[#e8c472] cursor-pointer" style={{ border: "1px dashed rgba(232,196,114,.6)" }}>
         {slip ? `แนบแล้ว: ${slip.name.slice(0, 30)}` : "แนบสลิปการโอน"}
         <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => setSlip(e.target.files?.[0] ?? null)} />
       </label>
-      <button type="button" disabled={busy || !slip} onClick={send} className="h-[52px] rounded-full font-semibold bg-[#e8c472] text-[#1b130b] disabled:opacity-40">{busy ? "กำลังตรวจสลิป…" : `ยืนยันเปิดเมม ${t.name}`}</button>
+      <button type="button" disabled={busy || !slip || refBad || refChecking} onClick={send} className="h-[52px] rounded-full font-semibold bg-[#e8c472] text-[#1b130b] disabled:opacity-40">{busy ? "กำลังตรวจสลิป…" : `ยืนยันเปิดเมม ${t.name}`}</button>
       {msg && <p role="status" className="m-0 text-[14px]" style={{ color: msg.ok ? "#7fd6a3" : "#ff8a9a" }}>{msg.text}</p>}
       <p className="m-0 text-[12px] text-[#9a8a85]">เครดิตใช้จ่ายในแอปได้ทุกบริการ · ไม่สามารถถอนเป็นเงินสด · ใบเสร็จรับเงินออกให้อัตโนมัติ</p>
     </section>

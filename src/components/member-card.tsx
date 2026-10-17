@@ -8,7 +8,7 @@ export const TIER_LOOK: Record<CardTier, { bg: string; ring: string; label: stri
 
 export function MemberCard({ tier, name, no, since, points, sample = false, className = "" }: { tier: CardTier; name: string; no?: string | null; since?: string | null; points?: number; sample?: boolean; className?: string }) {
   const L = TIER_LOOK[tier];
-  const year = since ? new Date(since).toLocaleDateString("th-TH", { month: "short", year: "2-digit" }) : "—";
+  const year = since ? new Date(since).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", month: "short", year: "2-digit" }) : "—";
   return (
     <div className={`@container relative w-full max-w-[380px] aspect-[1.586] rounded-[18px] overflow-hidden text-left ${className}`}
       style={{ background: L.bg, boxShadow: `0 0 0 1.5px ${L.ring}, 0 14px 40px rgba(0,0,0,.45)`, color: L.text }}>

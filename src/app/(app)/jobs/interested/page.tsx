@@ -31,7 +31,7 @@ export default async function InterestedPage({ searchParams }: { searchParams: P
       </header>
       <main className="flex flex-col gap-4" style={{ padding: "20px 16px 0" }}>
         <div className="rounded-2xl bg-[#211a18]" style={{ padding: 16 }}>
-          <div className="flex justify-between items-center gap-3"><span className="font-semibold">{post.activity} · {new Date(post.starts_at).toLocaleString("th-TH", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {post.hours} ชม.</span>
+          <div className="flex justify-between items-center gap-3"><span className="font-semibold">{post.activity} · {new Date(post.starts_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {post.hours} ชม.</span>
             <span className="text-[12px] font-semibold rounded-full shrink-0" style={{ padding: "2px 10px", background: open ? "rgba(29,159,77,.14)" : "rgba(243,234,217,.07)", color: open ? "#7fd6a3" : "#b5a596" }}>{open ? `เปิดอยู่ · ${left} ชม.` : "ปิดแล้ว"}</span></div>
           <div className="text-[13px] font-light text-[#d9c9b4]">{post.area}{post.note ? ` · ${post.note}` : ""}</div>
         </div>

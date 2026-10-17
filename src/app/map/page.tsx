@@ -4,6 +4,7 @@ import { getLivePeople } from "@/lib/home/live";
 import { coordsOf, jitter, jitterSmall } from "@/lib/home/geo";
 import { listPartners, stripSecret } from "@/lib/partner/store";
 import { PARTNER_SPAS } from "@/lib/booking";
+import { isPublicPartner, isSpaType } from "@/lib/partner/kind";
 import { MapView, type MapPerson, type MapVenue } from "./view";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +20,7 @@ export default async function MapPage() {
   });
   let venues: MapVenue[] = [];
   try {
-    venues = (await listPartners()).map(stripSecret).filter((v) => v.type === "สปา" && (v.account_status === "active" || v.status === "active"))
+    venues = (await listPartners()).map(stripSecret).filter((v) => isSpaType(v.type) && isPublicPartner(v))
       .map((v) => { const [lat, lng] = jitter(coordsOf(v.province), v.id); return { id: v.id, name: v.business_name, area: v.province, lat, lng }; });
   } catch { venues = []; }
   if (!venues.length) venues = PARTNER_SPAS.map((v) => { const [lat, lng] = jitter(coordsOf(v.area), v.id); return { id: v.id, name: v.name, area: v.area, lat, lng, sample: true }; });

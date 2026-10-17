@@ -51,18 +51,9 @@ export function ModeSwitch() {
       remember("provider");
       return router.push("/provider");
     }
-    // แอดมิน: โหมดเดโมเข้าด้วยบัญชีสาธิต super ให้ทันที; โหมดจริงถ้ายังไม่ล็อกอิน middleware จะพาไปหน้าล็อกอินเอง
-    // (เช็ก session ก่อน เพื่อไม่ให้การลองบัญชีสาธิตไปนับเป็นการเดารหัสผิดเมื่อตั้งบัญชีจริงไว้)
+    // แอดมิน: ไปหน้า /admin เฉย ๆ — ยังไม่ล็อกอิน middleware พาไปหน้าเข้าสู่ระบบเอง
+    // (ไม่ฝังบัญชีสาธิตในโค้ดฝั่งเบราว์เซอร์ และไม่ยิงล็อกอินอัตโนมัติ ซึ่งนับเป็นการเดารหัสผิดเมื่อมีบัญชีจริง)
     setBusy(true);
-    const probe = await fetch("/admin", { method: "HEAD", redirect: "manual" }).catch(() => null);
-    const loggedIn = probe?.ok === true;
-    if (!loggedIn) {
-      await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: "super@mord.demo", password: "mord-demo" }),
-      }).catch(() => null);
-    }
     window.location.href = "/admin";
   };
 

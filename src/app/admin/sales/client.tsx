@@ -19,6 +19,10 @@ export function SalesAdmin({ isCeo, cfg, purchases, reps, payouts }: { isCeo: bo
   const [nr, setNr] = useState({ name: "", phone: "", bank: "", account: "", acctName: "" });
   const [link, setLink] = useState("");
   const [m, setM] = useState(cfg);
+  // ยืนยันในหน้าก่อนทำรายการเงิน (อนุมัติ/ไม่อนุมัติ/โอนแล้ว/ไม่สำเร็จ)
+  const [ask, setAsk] = useState<{ body: Record<string, unknown>; ok: string; text: string } | null>(null);
+  const [edit, setEdit] = useState<{ id: string; name: string; phone: string; bank: string; account: string; acctName: string } | null>(null);
+  const confirmThen = (body: Record<string, unknown>, ok: string, text: string) => setAsk({ body, ok, text });
   const call = async (body: Record<string, unknown>, ok: string) => {
     setBusy(String(body.id ?? body.action)); setMsg(null);
     const r = await fetch("/api/admin/sales", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).catch(() => null);
@@ -34,6 +38,13 @@ export function SalesAdmin({ isCeo, cfg, purchases, reps, payouts }: { isCeo: bo
   return (
     <div className="flex flex-col gap-4 text-[13.5px]">
       {msg && <p role="status" className="m-0" style={{ color: msg.ok ? "#4ade80" : "#fca5a5" }}>{msg.text}</p>}
+      {ask && (
+        <div role="alertdialog" aria-label="ยืนยันรายการ" className="sticky top-2 z-20 rounded-2xl border p-3 flex flex-wrap items-center gap-2" style={{ borderColor: "#e8c472", background: "#211a18" }}>
+          <span className="flex-1 min-w-[200px]">{ask.text}</span>
+          <button type="button" onClick={() => setAsk(null)} className="h-10 px-4 rounded-lg border" style={{ borderColor: LINE }}>ยกเลิก</button>
+          <button type="button" disabled={!!busy} onClick={async () => { const a = ask; setAsk(null); await call(a.body, a.ok); }} className="h-10 px-4 rounded-lg font-semibold text-[#1b130b] bg-[#e8c472] disabled:opacity-40">ยืนยัน</button>
+        </div>
+      )}
 
       <section className={sec} style={{ borderColor: LINE }}>
         <b className="text-[16px]">สลิปเปิดเมมรอตรวจ ({pending.length})</b>
@@ -51,8 +62,8 @@ export function SalesAdmin({ isCeo, cfg, purchases, reps, payouts }: { isCeo: bo
                 <span className="text-[12px] text-[#9a8a85]">Slip2Go: {p.slip_check ? `${p.slip_check.verdict} ${p.slip_check.message}`.slice(0, 60) : "ไม่ได้ตรวจ"}</span>
                 <input value={note[p.id] ?? ""} onChange={(e) => setNote({ ...note, [p.id]: e.target.value })} placeholder="เหตุผล (ถ้าไม่อนุมัติ)" className={inp} style={{ borderColor: LINE }} />
                 <div className="flex gap-2">
-                  <button type="button" disabled={!!busy} onClick={() => call({ action: "approve", id: p.id }, "เปิดเมมแล้ว · เครดิตเข้ากระเป๋าลูกค้า")} className="h-9 px-3 rounded-lg font-semibold text-[#1b130b] bg-[#e8c472] disabled:opacity-40">อนุมัติเปิดเมม</button>
-                  <button type="button" disabled={!!busy || !(note[p.id] ?? "").trim()} onClick={() => call({ action: "reject", id: p.id, reason: note[p.id] }, "ไม่อนุมัติแล้ว")} className="h-9 px-3 rounded-lg border text-[#fecaca] disabled:opacity-40" style={{ borderColor: "rgba(201,40,61,.6)" }}>ไม่อนุมัติ</button>
+                  <button type="button" disabled={!!busy} onClick={() => confirmThen({ action: "approve", id: p.id }, "เปิดเมมแล้ว · เครดิตเข้ากระเป๋าลูกค้า", `อนุมัติเปิดเมม ${p.customer_email} · เครดิต ${baht(p.credit_satang)} เข้ากระเป๋าลูกค้า?`)} className="h-9 px-3 rounded-lg font-semibold text-[#1b130b] bg-[#e8c472] disabled:opacity-40">อนุมัติเปิดเมม</button>
+                  <button type="button" disabled={!!busy || !(note[p.id] ?? "").trim()} onClick={() => confirmThen({ action: "reject", id: p.id, reason: note[p.id] }, "ไม่อนุมัติแล้ว", `ไม่อนุมัติสลิปของ ${p.customer_email}? (${note[p.id]})`)} className="h-9 px-3 rounded-lg border text-[#fecaca] disabled:opacity-40" style={{ borderColor: "rgba(201,40,61,.6)" }}>ไม่อนุมัติ</button>
                 </div>
               </div>
             </div>
@@ -69,9 +80,9 @@ export function SalesAdmin({ isCeo, cfg, purchases, reps, payouts }: { isCeo: bo
             <span className="flex-1 min-w-[200px]"><b>{repName(w.rep_id)}</b> · {baht(w.amount_satang)}<span className="block text-[12px] text-[#9a8a85]">{w.bank ? `${w.bank.bank} · ${w.bank.account} · ${w.bank.name}` : "ไม่มีบัญชี"} · {dt(w.created_at)}</span></span>
             <span className="text-[12.5px]" style={{ color: w.status === "paid" ? "#4ade80" : w.status === "failed" ? "#fca5a5" : "#f0c75a" }}>{w.status === "requested" ? "รอ CEO อนุมัติ" : w.status === "approved" ? "CEO อนุมัติแล้ว · รอโอน" : w.status === "paid" ? "โอนแล้ว" : "ไม่สำเร็จ"}</span>
             {w.status === "approved" && <>
-              <button type="button" disabled={!!busy} onClick={() => call({ action: "payout_paid", id: w.id }, "บันทึกโอนแล้ว")} className="h-9 px-3 rounded-lg font-semibold text-[#1b130b] bg-[#e8c472]">✓ โอนแล้ว</button>
+              <button type="button" disabled={!!busy} onClick={() => confirmThen({ action: "payout_paid", id: w.id }, "บันทึกโอนแล้ว", `ยืนยันว่าโอน ${baht(w.amount_satang)} ให้ ${repName(w.rep_id)} แล้ว?`)} className="h-9 px-3 rounded-lg font-semibold text-[#1b130b] bg-[#e8c472]">✓ โอนแล้ว</button>
               <input value={note[w.id] ?? ""} onChange={(e) => setNote({ ...note, [w.id]: e.target.value })} placeholder="สาเหตุโอนไม่สำเร็จ" className={`${inp} w-44`} style={{ borderColor: LINE }} />
-              <button type="button" disabled={!!busy || !(note[w.id] ?? "").trim()} onClick={() => call({ action: "payout_failed", id: w.id, note: note[w.id] }, "คืนยอดให้ Sale Man แล้ว")} className="h-9 px-3 rounded-lg border text-[#fecaca] disabled:opacity-40" style={{ borderColor: "rgba(201,40,61,.6)" }}>ไม่สำเร็จ</button>
+              <button type="button" disabled={!!busy || !(note[w.id] ?? "").trim()} onClick={() => confirmThen({ action: "payout_failed", id: w.id, note: note[w.id] }, "คืนยอดให้ Sale Man แล้ว", `บันทึกโอนไม่สำเร็จ และคืนยอด ${baht(w.amount_satang)} ให้ ${repName(w.rep_id)}?`)} className="h-9 px-3 rounded-lg border text-[#fecaca] disabled:opacity-40" style={{ borderColor: "rgba(201,40,61,.6)" }}>ไม่สำเร็จ</button>
             </>}
           </div>
         ))}
@@ -83,10 +94,11 @@ export function SalesAdmin({ isCeo, cfg, purchases, reps, payouts }: { isCeo: bo
           <input value={nr.name} onChange={(e) => setNr({ ...nr, name: e.target.value })} placeholder="ชื่อ Sale Man" className={inp} style={{ borderColor: LINE }} />
           <input value={nr.phone} onChange={(e) => setNr({ ...nr, phone: e.target.value })} placeholder="เบอร์โทร" className={inp} style={{ borderColor: LINE }} />
           <input value={nr.bank} onChange={(e) => setNr({ ...nr, bank: e.target.value })} placeholder="ธนาคาร" className={inp} style={{ borderColor: LINE }} />
-          <input value={nr.account} onChange={(e) => setNr({ ...nr, account: e.target.value })} placeholder="เลขบัญชี" className={inp} style={{ borderColor: LINE }} />
+          <input value={nr.account} onChange={(e) => setNr({ ...nr, account: e.target.value })} placeholder="เลขบัญชี (10–15 หลัก)" inputMode="numeric" className={inp} style={{ borderColor: LINE }} />
           <input value={nr.acctName} onChange={(e) => setNr({ ...nr, acctName: e.target.value })} placeholder="ชื่อบัญชี" className={inp} style={{ borderColor: LINE }} />
-          <button type="button" disabled={!!busy || !nr.name.trim()} onClick={async () => { const j = await call({ action: "rep_create", name: nr.name, phone: nr.phone, bank: { bank: nr.bank, account: nr.account, name: nr.acctName } }, "สร้าง Sale Man แล้ว · ส่งลิงก์ด้านล่างให้เขา"); if (j?.ok) setNr({ name: "", phone: "", bank: "", account: "", acctName: "" }); }} className="h-10 px-4 rounded-xl font-semibold text-white bg-crimson-500 disabled:opacity-40">สร้าง Sale Man</button>
+          <button type="button" disabled={!!busy || !nr.name.trim() || !nr.bank.trim() || nr.account.replace(/\D/g, "").length < 10 || !nr.acctName.trim()} title="ต้องกรอกชื่อ + บัญชีรับค่าคอมให้ครบ" onClick={async () => { const j = await call({ action: "rep_create", name: nr.name, phone: nr.phone, bank: { bank: nr.bank, account: nr.account, name: nr.acctName } }, "สร้าง Sale Man แล้ว · ส่งลิงก์ด้านล่างให้เขา"); if (j?.ok) setNr({ name: "", phone: "", bank: "", account: "", acctName: "" }); }} className="h-10 px-4 rounded-xl font-semibold text-white bg-crimson-500 disabled:opacity-40">สร้าง Sale Man</button>
         </div>
+        <span className="text-[12px] text-[#9a8a85]">Sale Man ภายนอกต้องมีบัญชีรับค่าคอม (ธนาคาร · เลขบัญชี · ชื่อบัญชี) — ไม่มีบัญชีจะขอรับค่าคอมไม่ได้</span>
         {link && <div className="rounded-xl p-3 text-[12.5px] break-all" style={{ background: "#130e0e" }}>ลิงก์เข้าแดชบอร์ด (อายุ 90 วัน): <span className="select-all text-[#f0c75a]">{link}</span></div>}
         <div className="rounded-xl border overflow-x-auto" style={{ borderColor: LINE }}>
           <div className="min-w-[720px]">
@@ -94,15 +106,28 @@ export function SalesAdmin({ isCeo, cfg, purchases, reps, payouts }: { isCeo: bo
             {!reps.length && <p className="m-0 p-4 text-center text-[#9a8a85]">ยังไม่มี Sale Man · Part-Time ได้โค้ดอัตโนมัติเมื่อเปิดหน้า &quot;ชวนเปิดเมม&quot;</p>}
             {reps.map((r) => (
               <div key={r.id} className="grid grid-cols-[100px_minmax(0,1fr)_90px_80px_110px_200px] gap-2 px-3 py-2 border-t items-center" style={{ borderColor: LINE, opacity: r.active ? 1 : 0.5 }}>
-                <b className="text-[#ffd76a] tracking-wider">{r.code}</b><span className="truncate">{r.name || "-"}{r.phone ? ` · ${r.phone}` : ""}</span><span>{r.kind === "parttime" ? "Part-Time" : "ภายนอก"}</span><span>{r.count} คน</span><span>{baht(r.earned)}</span>
+                <b className="text-[#ffd76a] tracking-wider">{r.code}</b><span className="truncate">{r.name || "-"}{r.phone ? ` · ${r.phone}` : ""}{r.kind === "external" ? (r.bank?.account ? ` · ${r.bank.bank} ••${r.bank.account.slice(-4)}` : " · ⚠ ไม่มีบัญชี") : ""}</span><span>{r.kind === "parttime" ? "Part-Time" : "ภายนอก"}</span><span>{r.count} คน</span><span>{baht(r.earned)}</span>
                 <span className="flex gap-1.5">
                   {r.kind === "external" && <button type="button" disabled={!!busy} onClick={() => call({ action: "rep_link", id: r.id }, "สร้างลิงก์ใหม่แล้ว")} className="h-8 px-2.5 rounded-lg border text-[12px]" style={{ borderColor: LINE }}>ลิงก์เข้า</button>}
+                  {r.kind === "external" && <button type="button" disabled={!!busy} onClick={() => setEdit({ id: r.id, name: r.name, phone: r.phone ?? "", bank: r.bank?.bank ?? "", account: r.bank?.account ?? "", acctName: r.bank?.name ?? "" })} className="h-8 px-2.5 rounded-lg border text-[12px]" style={{ borderColor: LINE }}>แก้ไข</button>}
                   <button type="button" disabled={!!busy} onClick={() => call({ action: "rep_toggle", id: r.id }, r.active ? "ปิดโค้ดแล้ว" : "เปิดโค้ดแล้ว")} className="h-8 px-2.5 rounded-lg border text-[12px]" style={{ borderColor: LINE }}>{r.active ? "ปิดโค้ด" : "เปิดโค้ด"}</button>
                 </span>
               </div>
             ))}
           </div>
         </div>
+        {edit && (
+          <div className="rounded-xl border p-3 grid gap-2 md:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto_auto] items-end" style={{ borderColor: "#e8c472" }}>
+            <b className="md:col-span-7">แก้ไข Sale Man</b>
+            <input value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} placeholder="ชื่อ" aria-label="ชื่อ" className={inp} style={{ borderColor: LINE }} />
+            <input value={edit.phone} onChange={(e) => setEdit({ ...edit, phone: e.target.value })} placeholder="เบอร์โทร" aria-label="เบอร์โทร" className={inp} style={{ borderColor: LINE }} />
+            <input value={edit.bank} onChange={(e) => setEdit({ ...edit, bank: e.target.value })} placeholder="ธนาคาร" aria-label="ธนาคาร" className={inp} style={{ borderColor: LINE }} />
+            <input value={edit.account} onChange={(e) => setEdit({ ...edit, account: e.target.value })} placeholder="เลขบัญชี" inputMode="numeric" aria-label="เลขบัญชี" className={inp} style={{ borderColor: LINE }} />
+            <input value={edit.acctName} onChange={(e) => setEdit({ ...edit, acctName: e.target.value })} placeholder="ชื่อบัญชี" aria-label="ชื่อบัญชี" className={inp} style={{ borderColor: LINE }} />
+            <button type="button" onClick={() => setEdit(null)} className="h-10 px-4 rounded-xl border" style={{ borderColor: LINE }}>ยกเลิก</button>
+            <button type="button" disabled={!!busy} onClick={async () => { const j = await call({ action: "rep_update", id: edit.id, name: edit.name, phone: edit.phone, bank: { bank: edit.bank, account: edit.account, name: edit.acctName } }, "บันทึก Sale Man แล้ว"); if (j?.ok) setEdit(null); }} className="h-10 px-4 rounded-xl font-semibold text-white bg-crimson-500 disabled:opacity-40">บันทึก</button>
+          </div>
+        )}
       </section>
 
       <section className={sec} style={{ borderColor: LINE }}>

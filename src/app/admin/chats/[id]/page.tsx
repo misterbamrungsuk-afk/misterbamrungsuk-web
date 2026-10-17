@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getBooking, listMessages } from "@/lib/bookings";
 import { PageHead } from "../../admin-nav";
+import { WarnBox } from "./warn";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "แชทของนัด — แอดมิน" };
@@ -19,6 +20,7 @@ export default async function ChatTranscript({ params }: { params: Promise<{ id:
     <>
       <PageHead title={`แชท ${b.code}`} sub={`${b.customer_name ?? ""} ${b.customer_email ?? ""} ↔ ${b.parttime_nick ?? ""} (${b.parttime_mb}) · สถานะ ${b.status} · ${ms.length} ข้อความ`} right={<Link href="/admin/chats" className="chip h-9 px-3.5 inline-flex items-center">← ทุกห้อง</Link>} />
       <div className="max-w-[760px] flex flex-col gap-2">
+        <WarnBox bookingId={b.id} />
         {ms.map((m) => (
           <div key={m.id} className={`rounded-xl border p-3 text-[13.5px] ${m.blocked ? "border-crimson-500 bg-crimson-500/10" : m.sender_type === "system" ? "border-ink-600 bg-transparent text-ink-300" : "border-ink-600 bg-ink-800"}`}>
             <div className="flex justify-between gap-2 text-[11.5px] text-[#9a8a85] mb-1">

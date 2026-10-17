@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { fileHeaders } from "@/lib/file-guard";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
-import { currentPartner } from "@/lib/partner/auth";
+import { currentPartner, verifyApplyToken } from "@/lib/partner/auth";
 import { PATH_RE, readPartnerFile } from "@/lib/partner/portal";
 
 export const runtime = "nodejs";
@@ -10,13 +10,15 @@ export const runtime = "nodejs";
 // - รูปหน้าร้าน (…/listing/…): เปิดได้ทุกคน (ลูกค้าเห็นการ์ด)
 // - สลิป (…/slips/…): เฉพาะเจ้าของ หรือแอดมินที่มีสิทธิ์ /admin/partners
 export async function GET(req: Request) {
-  const path = new URL(req.url).searchParams.get("path") ?? "";
+  const u = new URL(req.url);
+  const path = u.searchParams.get("path") ?? "";
   const m = PATH_RE.exec(path);
   if (!m) return new Response("bad path", { status: 400 });
   const isSlip = m[2] !== "listing"; // สลิป + เอกสาร QC = ส่วนตัว
   if (isSlip) {
     const admin = await verifySession((await cookies()).get(ADMIN_COOKIE)?.value);
-    const ok = (admin && canAccess(admin.role, "/admin/partners")) || (await currentPartner())?.id === m[1];
+    // ผู้สมัครที่ยังไม่ตั้งรหัสผ่านถือ token ?t= จากหน้า QC/สมัครสำเร็จ (ตัวเดียวกับที่หน้า QC ใช้) — เปิดได้เฉพาะไฟล์ของตัวเอง
+    const ok = (admin && canAccess(admin.role, "/admin/partners")) || verifyApplyToken(u.searchParams.get("t")) === m[1] || (await currentPartner())?.id === m[1];
     if (!ok) return new Response("unauthorized", { status: 401 });
   }
   const f = await readPartnerFile(path);

@@ -10,7 +10,7 @@ export const metadata = { title: "รีวิวทั้งหมด — Miste
 
 const GOLD = "#e8c472";
 const LN = "rgba(243,234,217,0.07)";
-const ago = (iso: string) => { const d = Math.floor((Date.now() - Date.parse(iso)) / 86400e3); return d < 1 ? "วันนี้" : d < 7 ? `${d} วันก่อน` : d < 30 ? `${Math.floor(d / 7)} สัปดาห์ก่อน` : new Date(iso).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" }); };
+const ago = (iso: string) => { const d = Math.floor((Date.now() - Date.parse(iso)) / 86400e3); return d < 1 ? "วันนี้" : d < 7 ? `${d} วันก่อน` : d < 30 ? `${Math.floor(d / 7)} สัปดาห์ก่อน` : new Date(iso).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", day: "numeric", month: "short", year: "2-digit" }); };
 
 // บอร์ด C-Reviews "รีวิวของ…" — คะแนนเฉลี่ย + กราฟแท่ง 5 ระดับ · กรอง ทั้งหมด / ★5 / ★4 / ต่ำกว่า 4 · รีวิวจากลูกค้าที่จองจริงเท่านั้น
 export default async function ReviewsPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ f?: string }> }) {

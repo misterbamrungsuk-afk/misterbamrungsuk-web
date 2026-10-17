@@ -1,4 +1,5 @@
 "use client";
+import { lineAddUrl } from "@/lib/join/config";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -18,11 +19,10 @@ const ago = (iso: string) => {
   const d = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
   return d < 1 ? "วันนี้" : d < 7 ? `${d} วันก่อน` : d < 30 ? `${Math.floor(d / 7)} สัปดาห์ก่อน` : `${Math.floor(d / 30)} เดือนก่อน`;
 };
+// แสดงเฉพาะสิ่งที่ตรวจจริง — ไม่แสดงเลขเอกสาร/ที่อยู่ที่ยังไม่ได้กำหนด
 const DOCS = (n: number) => [
-  ["ทะเบียนพาณิชย์", "✓ ตรวจแล้ว · เลข [รอกำหนด]", "#7fd6a3"],
-  ["ใบอนุญาตนำเข้าอาหาร", "✓ ตรวจแล้ว · เลข [รอกำหนด]", "#7fd6a3"],
+  ["ทะเบียนพาณิชย์", "✓ ตรวจแล้ว", "#7fd6a3"],
   ["เลข อย. สินค้าทุกชิ้น", `✓ ${n}/${n} รายการ`, "#7fd6a3"],
-  ["ที่อยู่ร้าน", "[รอกำหนด]", "#d9c9b4"],
 ];
 const TABS = [["products", "สินค้า"], ["about", "เกี่ยวกับร้าน"], ["reviews", "รีวิว"]] as const;
 type Tab = (typeof TABS)[number][0];
@@ -74,11 +74,10 @@ export function ShopView({ vendor, products, reviews, avg, count }: { vendor: { 
           <div className="flex flex-wrap gap-2 text-[12px] text-[#d9c9b4]">
             <span>สินค้า {products.length}</span>
             {count > 0 && <><span>·</span><span>★ {avg.toFixed(1)} ({count} รีวิว)</span></>}
-            <span>·</span><span>ผู้ติดตาม [รอกำหนด]</span>
           </div>
           <div className="flex gap-2">
             <button type="button" onClick={toggleFollow} aria-pressed={follow} className={`flex-1 h-11 rounded-xl text-white font-semibold ${follow ? "" : "btn-red-lux"}`} style={follow ? { background: "#2f5e45", border: "1px solid #3f8f63" } : undefined}>{follow ? "ติดตามแล้ว ✓" : "+ ติดตามร้าน"}</button>
-            <button type="button" onClick={() => flash("แชทกับร้าน · ช่องทางจริง [รอกำหนด]")} className="flex-1 h-11 rounded-xl bg-[#211a18] text-[#e8c472] font-semibold" style={{ border: `1px solid ${BD}` }}>แชทกับร้าน</button>
+            <button type="button" onClick={() => { window.open(lineAddUrl(), "_blank", "noopener"); flash("ติดต่อร้านผ่านทีมงาน Mister Bamrungsuk ทาง LINE"); }} className="flex-1 h-11 rounded-xl bg-[#211a18] text-[#e8c472] font-semibold" style={{ border: `1px solid ${BD}` }}>แชทกับร้าน</button>
           </div>
           <div role="tablist" className="flex" style={{ borderBottom: `1px solid ${BD}` }}>
             {TABS.map(([k, label]) => <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className="flex-1 min-h-[46px] bg-transparent text-[13.5px] font-semibold" style={{ borderBottom: `2px solid ${tab === k ? "#e8c472" : "transparent"}`, color: tab === k ? "#f3ead9" : "#d9c9b4" }}>{label}</button>)}
@@ -114,14 +113,14 @@ export function ShopView({ vendor, products, reviews, avg, count }: { vendor: { 
           ) : <div className={`${CARD} text-center text-[13px] text-[#d9c9b4]`} style={{ border: `1px solid ${BD}` }}>ร้านนี้ยังไม่มีสินค้าที่เผยแพร่</div>)}
 
           {tab === "about" && <>
-            <div className={`${CARD} text-[13px] text-[#d9c9b4] leading-[1.7] whitespace-pre-line`} style={{ border: `1px solid ${BD}` }}>{vendor.description || "คำอธิบายร้าน [รอกำหนด]"}</div>
+            <div className={`${CARD} text-[13px] text-[#d9c9b4] leading-[1.7] whitespace-pre-line`} style={{ border: `1px solid ${BD}` }}>{vendor.description || `${vendor.name} · ร้านค้าพาร์ทเนอร์ของ Mister Bamrungsuk`}</div>
             <div className={`${CARD} flex flex-col gap-2 text-[12.5px]`} style={{ border: `1px solid ${BD}` }}>
               <div className="font-lux font-semibold text-[14px]">เอกสารที่ Mister Bamrungsuk ตรวจแล้ว</div>
               {DOCS(products.length).map(([k, val, c]) => (
                 <div key={k} className="flex justify-between gap-2.5 pt-2" style={{ borderTop: `1px solid ${BD}` }}><span className="text-[#d9c9b4]">{k}</span><span className="text-right" style={{ color: c }}>{val}</span></div>
               ))}
             </div>
-            <div className={`${CARD} text-[12.5px] text-[#d9c9b4] leading-[1.7]`} style={{ border: `1px solid ${BD}` }}>ส่งจาก: [รอกำหนด] · จัดส่งภายใน 2–4 วันทำการ · แพ็กมิดชิดทุกออเดอร์<br /><Link href="/policy" className="text-[#e8c472]">นโยบายคืนสินค้าและการจัดส่ง</Link></div>
+            <div className={`${CARD} text-[12.5px] text-[#d9c9b4] leading-[1.7]`} style={{ border: `1px solid ${BD}` }}>จัดส่งภายใน 2–4 วันทำการ · แพ็กมิดชิดทุกออเดอร์<br /><Link href="/policy" className="text-[#e8c472]">นโยบายคืนสินค้าและการจัดส่ง</Link></div>
           </>}
 
           {tab === "reviews" && <>

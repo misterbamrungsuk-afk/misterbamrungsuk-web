@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { dataUrlToFile, resizeImage } from "@/lib/join/form";
-import { PARTNER_TYPES, baht } from "@/lib/partner/config";
-import { AMENITIES, DAYS, DEFAULT_HOURS, fileUrl, type DayHours, type Listing, type ServiceItem } from "@/lib/partner/portal-types";
+import { baht } from "@/lib/partner/config";
+import { LISTING_TYPES } from "@/lib/partner/kind";
+import { AMENITIES, DAYS, DEFAULT_HOURS, fileUrl, type DayHours, type Listing, type ListingContact, type ServiceItem } from "@/lib/partner/portal-types";
 
 async function upload(file: File): Promise<string> {
   if (!file.type.startsWith("image/")) throw new Error("รับเฉพาะไฟล์รูปภาพ");
@@ -16,7 +17,7 @@ async function upload(file: File): Promise<string> {
   return out.path;
 }
 
-export function ListingClient({ initial, name, canPublish }: { initial: Listing; name: string; canPublish: boolean }) {
+export function ListingClient({ initial, name, canPublish, qcOk = true }: { initial: Listing; name: string; canPublish: boolean; qcOk?: boolean }) {
   const [l, setL] = useState<Listing>({ ...initial, hours: initial.hours?.length === 7 ? initial.hours : DEFAULT_HOURS });
   const [busy, setBusy] = useState(false);
   const [up, setUp] = useState(false);
@@ -54,6 +55,8 @@ export function ListingClient({ initial, name, canPublish }: { initial: Listing;
   };
 
   const services: ServiceItem[] = l.services ?? [];
+  const contact: ListingContact = l.contact ?? {};
+  const setContact = (patch: Partial<ListingContact>) => set("contact", { ...contact, ...patch });
   const setSvc = (i: number, patch: Partial<ServiceItem>) => set("services", services.map((x, j) => (j === i ? { ...x, ...patch } : x)));
 
   const openDays = l.hours.filter((h) => h.open);
@@ -108,11 +111,24 @@ export function ListingClient({ initial, name, canPublish }: { initial: Listing;
         <div>
           <span className={lab}>ประเภทธุรกิจ</span>
           <div className="flex flex-wrap gap-2">
-            {PARTNER_TYPES.map((t) => <button key={t} type="button" onClick={() => set("type", t)} className={`chip h-9 px-3.5 ${l.type === t ? "chip-gold" : ""}`}>{t}</button>)}
+            {LISTING_TYPES.map((t) => <button key={t} type="button" onClick={() => set("type", t)} className={`chip h-9 px-3.5 ${l.type === t ? "chip-gold" : ""}`}>{t}</button>)}
           </div>
         </div>
 
         <div><label className={lab} htmlFor="area">ย่าน / ที่ตั้ง</label><input id="area" className="input-dark w-full" value={l.area ?? ""} onChange={(e) => set("area", e.target.value)} /></div>
+        <div className="rounded-2xl border border-ink-600 p-4 flex flex-col gap-3">
+          <div><span className="block text-sm">ช่องทางติดต่อบนหน้าร้าน</span><span className="text-xs text-[#9a8a85]">ลูกค้าเห็นข้อมูลนี้ — ไม่ใช้เบอร์ส่วนตัวในใบสมัคร · เว้นว่างได้</span></div>
+          <div className="grid grid-cols-2 gap-2">
+            <div><label className={lab} htmlFor="cphone">เบอร์ร้าน</label><input id="cphone" inputMode="tel" className="input-dark w-full" value={contact.phone ?? ""} onChange={(e) => setContact({ phone: e.target.value })} placeholder="02-xxx-xxxx" /></div>
+            <div><label className={lab} htmlFor="cline">LINE ร้าน</label><input id="cline" className="input-dark w-full" value={contact.line_id ?? ""} onChange={(e) => setContact({ line_id: e.target.value })} placeholder="@yourspa" /></div>
+          </div>
+          <div><label className={lab} htmlFor="caddr">ที่อยู่ร้าน</label><textarea id="caddr" rows={2} className="input-dark w-full" value={contact.address ?? ""} onChange={(e) => setContact({ address: e.target.value })} placeholder="เลขที่ ถนน แขวง เขต จังหวัด" /></div>
+          <div><label className={lab} htmlFor="cmap">ลิงก์ Google Maps</label><input id="cmap" inputMode="url" className="input-dark w-full" value={contact.map_url ?? ""} onChange={(e) => setContact({ map_url: e.target.value.trim() })} placeholder="https://maps.app.goo.gl/…" /></div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button type="button" className="btn-ghost min-h-10 rounded-full px-4 text-sm" onClick={() => navigator.geolocation?.getCurrentPosition((g) => setContact({ lat: Math.round(g.coords.latitude * 1e5) / 1e5, lng: Math.round(g.coords.longitude * 1e5) / 1e5 }), () => setMsg("เปิดสิทธิ์ตำแหน่งก่อน หรือใส่ลิงก์ Google Maps แทน"))}>📍 ปักหมุดตำแหน่งร้าน (ตำแหน่งปัจจุบัน)</button>
+            {contact.lat != null && contact.lng != null && <span className="text-xs text-ink-300">หมุด {contact.lat}, {contact.lng} · <button type="button" className="underline" onClick={() => setContact({ lat: null, lng: null })}>ลบหมุด</button></span>}
+          </div>
+        </div>
         <div><label className={lab} htmlFor="desc">คำอธิบายร้าน</label><textarea id="desc" rows={4} className="input-dark w-full" value={l.description ?? ""} onChange={(e) => set("description", e.target.value)} /></div>
 
         <div id="hours" className="scroll-mt-20">
@@ -144,7 +160,7 @@ export function ListingClient({ initial, name, canPublish }: { initial: Listing;
 
         <div>
           <span className={lab}>รายการบริการ · ราคาสปา → ราคาบนแพลตฟอร์ม</span>
-          <p className="text-xs text-[#9a8a85] mb-2">กรอกชื่อบริการ เวลา และราคาฐานของสปา · ราคาขายบนแพลตฟอร์ม (mark up) ทีมงานเป็นผู้กำหนด — ตอนนี้ [รอกำหนด]</p>
+          <p className="text-xs text-[#9a8a85] mb-2">กรอกชื่อบริการ/ห้อง เวลา และราคาฐานของสปา · ลูกค้าเลือกรายการนี้ตอนนัดเพื่อนที่ร้าน · ราคาขายบนแพลตฟอร์มทีมงานเป็นผู้กำหนด (ยังไม่กำหนด = ใช้ราคาฐาน)</p>
           <div className="space-y-2">
             {services.map((x, i) => (
               <div key={i} className="rounded-2xl border border-ink-600 p-3 space-y-2">
@@ -153,11 +169,11 @@ export function ListingClient({ initial, name, canPublish }: { initial: Listing;
                   <button type="button" aria-label="ลบบริการ" onClick={() => set("services", services.filter((_, j) => j !== i))} className="w-10 shrink-0 rounded-full border border-ink-600">✕</button>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <input className="input-dark w-20" inputMode="numeric" value={x.minutes || ""} placeholder="นาที" onChange={(e) => setSvc(i, { minutes: +e.target.value.replace(/D/g, "") || 0 })} aria-label="เวลา (นาที)" />
+                  <input className="input-dark w-20" inputMode="numeric" value={x.minutes || ""} placeholder="นาที" onChange={(e) => setSvc(i, { minutes: +e.target.value.replace(/\D/g, "") || 0 })} aria-label="เวลา (นาที)" />
                   <span className="text-[#9a8a85]">นาที · ฿</span>
-                  <input className="input-dark w-24" inputMode="numeric" value={x.base_price || ""} placeholder="ราคาสปา" onChange={(e) => setSvc(i, { base_price: +e.target.value.replace(/D/g, "") || 0 })} aria-label="ราคาฐานของสปา" />
+                  <input className="input-dark w-24" inputMode="numeric" value={x.base_price || ""} placeholder="ราคาสปา" onChange={(e) => setSvc(i, { base_price: +e.target.value.replace(/\D/g, "") || 0 })} aria-label="ราคาฐานของสปา" />
                   <span className="text-[#9a8a85]">→</span>
-                  <span className="text-gold-300 whitespace-nowrap">{x.platform_price != null ? `฿${baht(x.platform_price)}` : "[รอกำหนด]"}</span>
+                  <span className="text-gold-300 whitespace-nowrap">{x.platform_price != null ? `฿${baht(x.platform_price)}` : x.base_price ? `฿${baht(x.base_price)}` : "—"}</span>
                 </div>
               </div>
             ))}
@@ -178,7 +194,7 @@ export function ListingClient({ initial, name, canPublish }: { initial: Listing;
         </div>
 
         <label className="flex items-center justify-between gap-3 rounded-2xl border border-ink-600 px-4 py-3">
-          <span><span className="block text-sm">เปิดแสดงหน้าร้าน</span><span className="text-xs text-[#9a8a85]">{canPublish ? "ลูกค้าจะเห็นร้านของคุณ" : "เปิดได้หลังทีมงานอนุมัติบัญชี"}</span></span>
+          <span><span className="block text-sm">เปิดแสดงหน้าร้าน</span><span className="text-xs text-[#9a8a85]">{!canPublish ? "เปิดได้หลังทีมงานอนุมัติบัญชี" : !qcOk ? "รอผ่าน QC ก่อนเปิดแสดง — ลูกค้าจะเห็นร้านหลังทีมงานตรวจ QC ผ่าน" : "ลูกค้าจะเห็นร้านของคุณ"}</span></span>
           <input type="checkbox" checked={l.published} disabled={!canPublish} onChange={(e) => set("published", e.target.checked)} className="accent-[#d4af37] w-5 h-5" />
         </label>
 

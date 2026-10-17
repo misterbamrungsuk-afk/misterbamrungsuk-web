@@ -16,6 +16,7 @@ export function PartnerLoginForm({ forgotHref }: { forgotHref: string }) {
   const [show, setShow] = useState(false);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  const [forgot, setForgot] = useState(false);
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
@@ -42,9 +43,17 @@ export function PartnerLoginForm({ forgotHref }: { forgotHref: string }) {
       {err && <p role="alert" className="m-0 text-xs text-[#ef6b7b]">{err}</p>}
       <button disabled={busy} className={CTA}>{busy ? "กำลังเข้าสู่ระบบ…" : "เข้าสู่ระบบ"}</button>
       <div className="flex justify-between text-[13px]">
-        <a href={forgotHref} target="_blank" rel="noopener noreferrer" className="min-h-11 flex items-center !text-[#cdbfb3]">ลืมรหัสผ่าน?</a>
+        <button type="button" onClick={() => setForgot((v) => !v)} aria-expanded={forgot} className="min-h-11 flex items-center text-[#cdbfb3]">ลืมรหัสผ่าน / ยังไม่ได้ตั้งรหัส?</button>
         <Link href="/partner#apply" className="min-h-11 flex items-center">สมัครพาร์ทเนอร์</Link>
       </div>
+      {forgot && (
+        <div role="region" aria-label="วิธีตั้งรหัสผ่านใหม่" className="rounded-2xl bg-[#241717] border border-[rgba(240,200,90,.38)] p-3.5 flex flex-col gap-2 text-[13px] text-[#cdbfb3]">
+          <b className="text-[#f0c75a]">ตั้งรหัสผ่านใหม่ / ตั้งครั้งแรก</b>
+          <span>1) ยังไม่เคยตั้งรหัส: เปิดลิงก์ "ตั้งรหัสผ่าน / เข้าสู่ระบบพอร์ทัล" ในหน้าสมัครสำเร็จ (ลิงก์ที่ได้หลังส่งใบสมัคร)</span>
+          <span>2) ลืมรหัสผ่าน หรือลิงก์หมดอายุ: ติดต่อทีมพาร์ทเนอร์ทาง LINE แจ้งชื่อธุรกิจ + อีเมลที่สมัคร ทีมงานจะส่ง "ลิงก์ตั้งรหัสผ่านใหม่" ให้ (ใช้ได้ 7 วัน ครั้งเดียว)</span>
+          <a href={forgotHref} target="_blank" rel="noopener noreferrer" className="min-h-12 rounded-[14px] bg-[#06c755] !text-white font-semibold grid place-items-center no-underline">ขอลิงก์ตั้งรหัสผ่านทาง LINE</a>
+        </div>
+      )}
     </form>
   );
 }

@@ -17,6 +17,7 @@ export function SalesBoard({ who, mb, t, summary, link, tiers, boostMult }: { wh
   const router = useRouter();
   const [copied, setCopied] = useState("");
   const [busy, setBusy] = useState("");
+  const [sure, setSure] = useState(""); // แปลงเป็นวงเงินโปรโมท = ถอนเป็นเงินไม่ได้อีก → ยืนยันในหน้าก่อน
   const [amt, setAmt] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const copy = async (v: string, k: string) => { try { await navigator.clipboard.writeText(v); setCopied(k); setTimeout(() => setCopied(""), 1500); } catch { setCopied(""); } };
@@ -81,7 +82,11 @@ export function SalesBoard({ who, mb, t, summary, link, tiers, boostMult }: { wh
             <b style={{ color: GOLD }}>{r.status === "credited" ? baht(r.commission) : "—"}</b>
             {who === "parttime" && r.status === "credited" && (r.mode === "boost"
               ? <span className="text-[12px] rounded-full px-2 py-0.5" style={{ background: "rgba(232,196,114,.18)", color: GOLD }}>เป็นวงเงินโปรโมทแล้ว</span>
-              : <button type="button" disabled={!!busy} onClick={() => toBoost(r.id)} className="h-9 px-3 rounded-lg text-[12.5px] font-semibold disabled:opacity-40" style={{ background: "rgba(232,196,114,.18)", color: GOLD }}>{busy === r.id ? "…" : `แปลงเป็นโปรโมท ×${boostMult}`}</button>)}
+              : sure === r.id
+                ? <span className="flex flex-wrap items-center gap-1.5 text-[12px]"><span className="text-[#d9c9b4]">ได้วงเงินโปรโมท {baht(r.commission * boostMult)} · ถอนเป็นเงินไม่ได้</span>
+                    <button type="button" disabled={!!busy} onClick={() => { setSure(""); toBoost(r.id); }} className="h-9 px-3 rounded-lg font-semibold text-[#1a1206] disabled:opacity-40" style={{ background: GOLD }}>{busy === r.id ? "…" : "ยืนยันแปลง"}</button>
+                    <button type="button" onClick={() => setSure("")} className="h-9 px-2.5 rounded-lg text-[#d9c9b4]">ยกเลิก</button></span>
+                : <button type="button" disabled={!!busy} onClick={() => setSure(r.id)} className="h-9 px-3 rounded-lg text-[12.5px] font-semibold disabled:opacity-40" style={{ background: "rgba(232,196,114,.18)", color: GOLD }}>{busy === r.id ? "…" : `แปลงเป็นโปรโมท ×${boostMult}`}</button>)}
           </div>
         ))}
       </section>

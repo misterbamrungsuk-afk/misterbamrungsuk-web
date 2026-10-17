@@ -34,7 +34,7 @@ export default async function AccountPage() {
   const unread = notices.filter((n) => !n.read_at).length;
   const tier = p.member_tier ?? null;
   const pts = await pointsOf(me.sub).catch(() => ({ total: 0, rows: [] }));
-  const since = new Date(p.created_at).toLocaleDateString("th-TH", { month: "short", year: "numeric" });
+  const since = new Date(p.created_at).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", month: "short", year: "numeric" });
   const menu: [string, string, string, React.ReactNode?][] = [
     ["/wallet", "M3 7h18v12H3zM16 13h2M3 7l3-3h12l3 3", "กระเป๋าเงิน", <span key="w" className="text-[13px] font-light" style={{ color: GOLD }}>฿{((bal.available ?? 0) / 100).toLocaleString("en-US")}</span>],
     ["/orders", "M12 7v5l3 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z", "นัดของฉัน"],

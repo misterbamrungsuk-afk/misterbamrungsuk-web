@@ -14,7 +14,7 @@ const card = "p-3.5 rounded-2xl bg-[#211a18] border";
 const stars = (n: number) => "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(0, 5 - n);
 const ago = (iso: string) => {
   const d = Math.floor((Date.now() - Date.parse(iso)) / 86_400_000);
-  return d < 1 ? "วันนี้" : d < 7 ? `${d} วันก่อน` : d < 30 ? `${Math.floor(d / 7)} สัปดาห์ก่อน` : d < 365 ? `${Math.floor(d / 30)} เดือนก่อน` : new Date(iso).toLocaleDateString("th-TH");
+  return d < 1 ? "วันนี้" : d < 7 ? `${d} วันก่อน` : d < 30 ? `${Math.floor(d / 7)} สัปดาห์ก่อน` : d < 365 ? `${Math.floor(d / 30)} เดือนก่อน` : new Date(iso).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" });
 };
 
 export function ProductDetailView({ p, kind, vendor, bundle, bundleAuto, related, reviews, ship }: {
@@ -38,7 +38,7 @@ export function ProductDetailView({ p, kind, vendor, bundle, bundleAuto, related
   const shown = more ? rl : rl.slice(0, 2);
   const bSel = [p, ...bundle.filter((b) => bun[b.id])];
   const bSum = bSel.reduce((s, b) => s + b.price, 0);
-  const shipText = ship.fee == null ? "[รอกำหนด]" : ship.fee === 0 ? "ส่งฟรี" : `${fmt(ship.fee)}${ship.free != null ? ` · ส่งฟรีเมื่อครบ ${fmt(ship.free)}` : ""}`;
+  const shipText = ship.fee == null ? "ทีมงานแจ้งค่าส่ง (ถ้ามี)" : ship.fee === 0 ? "ส่งฟรี" : `${fmt(ship.fee)}${ship.free != null ? ` · ส่งฟรีเมื่อครบ ${fmt(ship.free)}` : ""}`;
 
   const flash = (t: string) => { setAdded(t); setTimeout(() => setAdded(""), 2500); };
   const add = () => {
@@ -101,7 +101,7 @@ export function ProductDetailView({ p, kind, vendor, bundle, bundleAuto, related
         </div>
         <div className={`${card} flex flex-col gap-2 text-[12.5px]`} style={{ borderColor: LINE }}>
           <div className="flex justify-between gap-3"><span className="text-[#d9c9b4]">จัดส่งถึง</span><span>ทั่วประเทศ</span></div>
-          <div className="flex justify-between gap-3"><span className="text-[#d9c9b4]">ได้รับประมาณ</span><span className="text-right">{ship.days || "[รอกำหนด]"} หลังยืนยันสลิป</span></div>
+          {ship.days && <div className="flex justify-between gap-3"><span className="text-[#d9c9b4]">ได้รับประมาณ</span><span className="text-right">{ship.days} หลังยืนยันสลิป</span></div>}
           <div className="flex justify-between gap-3"><span className="text-[#d9c9b4]">ค่าส่ง</span><span className="text-right">{shipText}</span></div>
           <div className="flex gap-2 items-center pt-2 border-t text-[#d9c9b4]" style={{ borderColor: LINE }}><span className="text-[#e8c472]"><BoxIcon /></span>แพ็กมิดชิด · กล่องสีพื้น ไม่ระบุชื่อสินค้าหรือชื่อร้านบนกล่อง</div>
         </div>

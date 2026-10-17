@@ -47,6 +47,36 @@ export async function createCohort(input: CohortInput): Promise<Cohort> {
   return row;
 }
 
+/** แก้ข้อมูลกลุ่ม (ชื่อ/วัน/สถานที่/รอบ/ที่นั่ง/สถานะ) · "อบรมเสร็จแล้ว" = ปิดกลุ่ม (เก็บประวัติไว้) */
+export async function updateCohort(key: string, input: Partial<CohortInput>): Promise<Cohort> {
+  const cur = (await listCohorts()).find((c) => c.key === key);
+  if (!cur) throw new Error("ไม่พบกลุ่มนี้");
+  const row: Cohort = {
+    ...cur,
+    ...(input.name?.trim() ? { name: input.name.trim() } : {}),
+    ...(input.date_text !== undefined ? { date_text: input.date_text.trim() || "รอประกาศ" } : {}),
+    ...(input.venue !== undefined ? { venue: input.venue.trim() } : {}),
+    ...(input.sessions ? { sessions: Math.min(10, Math.max(1, Math.round(input.sessions))) } : {}),
+    ...(input.capacity ? { capacity: Math.min(500, Math.max(1, Math.round(input.capacity))) } : {}),
+    ...(input.status ? { status: input.status } : {}),
+  };
+  if (isDemo) { const l = demo(); l[l.findIndex((c) => c.key === key)] = row; return row; }
+  // กลุ่มจาก config (ยังไม่อยู่ใน DB) → upsert ให้มีแถวจริง
+  const { error } = await db().from("join_cohorts").upsert(row, { onConflict: "key" });
+  if (error) throw error;
+  return row;
+}
+
+/** ลบกลุ่ม — ได้เฉพาะกลุ่มที่ยังไม่มีผู้สมัครถูกจัดเข้า (มีคนแล้ว = ใช้ "อบรมเสร็จแล้ว" แทน) */
+export async function deleteCohort(key: string): Promise<void> {
+  const { listApplicants, extraOf } = await import("./store");
+  const used = (await listApplicants()).some((a) => extraOf(a).cohort === key);
+  if (used) throw new Error("กลุ่มนี้มีผู้สมัครแล้ว ลบไม่ได้ · เปลี่ยนสถานะเป็น \"อบรมเสร็จแล้ว\" แทน");
+  if (isDemo) { g.__mbCohortsDemo = demo().filter((c) => c.key !== key); return; }
+  const { error } = await db().from("join_cohorts").delete().eq("key", key);
+  if (error) throw error;
+}
+
 /** ที่นั่งที่ถูกใช้จริงต่อกลุ่ม (ใช้ทั้งหน้า /join และหน้าแอดมิน ให้ตัวเลขตรงกัน)
  *  = ผู้สมัครที่ยัง active (รอตรวจสลิป/ผ่านแล้ว) ที่จัดเข้ากลุ่มนั้น + คนที่ยังไม่ถูกจัดกลุ่ม (เติมเข้ากลุ่ม "เปิดรับสมัคร" แรกที่ยังว่าง)
  *  ผู้สมัครในกลุ่มที่อบรมเสร็จแล้ว/ร่าง นับเฉพาะคนที่จัดเข้ากลุ่มนั้นแล้ว */

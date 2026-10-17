@@ -3,6 +3,11 @@ import { PARTNER_PACKAGES, type PartnerPackageKey } from "./config";
 import { EXT_OF, verifiedType } from "@/lib/file-guard";
 import { db, endDateFor, getPartner, isDemo, updatePartner } from "./store";
 import { DEFAULT_HOURS, type BookingStatus, type Listing, type PartnerBooking, type Purchase } from "./portal-types";
+import { qcPassed } from "./kind";
+
+/** คอลัมน์ใหม่ (0006_business.sql) ยังไม่ถูกรัน → PostgREST ตอบ PGRST204 / 42703 — ใช้ลองใหม่แบบไม่ส่งคอลัมน์นั้น */
+const missingCol = (e: unknown) => { const x = e as { code?: string; message?: string } | null; return x?.code === "PGRST204" || x?.code === "42703" || /column/i.test(String(x?.message ?? "")); };
+export class PurchaseError extends Error {}
 
 // ข้อมูลพอร์ทัลพาร์ทเนอร์ (migration 0002_portal.sql) — Supabase service role หรือโหมดเดโมในหน่วยความจำ
 // ไฟล์ (สลิป/รูปหน้าร้าน) อยู่ใน bucket private "partners" → เสิร์ฟผ่าน /api/partner/file
@@ -60,7 +65,12 @@ export async function saveListing(l: Listing): Promise<Listing> {
     demo.listings.set(l.partner_id, row);
     return row;
   }
-  const { data, error } = await db().from("partner_listings").upsert(row, { onConflict: "partner_id" }).select().single();
+  let { data, error } = await db().from("partner_listings").upsert(row, { onConflict: "partner_id" }).select().single();
+  // ยังไม่รัน 0006 (ไม่มีคอลัมน์ contact) → บันทึกส่วนอื่นได้ก่อน
+  if (error && missingCol(error) && "contact" in row) {
+    const { contact: _c, ...rest } = row; void _c;
+    ({ data, error } = await db().from("partner_listings").upsert(rest, { onConflict: "partner_id" }).select().single());
+  }
   if (error) throw error;
   return data as Listing;
 }
@@ -71,9 +81,17 @@ function invoiceNo() {
   return `PI-${String(th.getUTCFullYear()).slice(2)}${String(th.getUTCMonth() + 1).padStart(2, "0")}${String(th.getUTCDate()).padStart(2, "0")}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
 }
 
+/** สลิปที่ยังรอตรวจของพาร์ทเนอร์นี้ (ถ้ามี) — กันส่งซ้ำ */
+export async function pendingPurchase(pid: string): Promise<Purchase | null> {
+  return (await listPurchases(pid)).find((x) => x.status === "pending") ?? null;
+}
+
 export async function createPurchase(pid: string, pkg: PartnerPackageKey, slip: string): Promise<Purchase> {
   const price = PARTNER_PACKAGES[pkg].price;
   if (price == null) throw new Error("package has no price");
+  // มีสลิปรอตรวจอยู่แล้ว = ไม่สร้างรายการใหม่ (กดซ้ำ / ส่งสลิปซ้อน)
+  const open = await pendingPurchase(pid);
+  if (open) throw new PurchaseError(`มีสลิปรอตรวจอยู่แล้ว (${open.invoice_no}) · ทีมงานตรวจภายใน 24 ชม. ถ้าแนบผิด ติดต่อทีมงานทาง LINE`);
   const row: Purchase = {
     id: crypto.randomUUID(), partner_id: pid, invoice_no: invoiceNo(), package: pkg, amount: price, slip_url: slip,
     status: "pending", starts_at: null, ends_at: null, note: null, created_at: new Date().toISOString(), decided_at: null,
@@ -119,13 +137,15 @@ export async function decidePurchase(id: string, action: "approve" | "reject", n
     const start = p.ends_at && p.ends_at >= t ? nextDay(p.ends_at) : t;
     patch.starts_at = start;
     patch.ends_at = endDateFor(start, cur.package);
+    // จ่ายแล้วแต่ยังไม่ผ่าน QC = อนุมัติบัญชี (เข้าพอร์ทัล/แก้หน้าร้านได้) แต่ยังไม่เปิดแสดง — เปิดเมื่อแอดมินกดผ่าน QC
+    const live = qcPassed(p);
     await updatePartner(p.id, {
       package: cur.package,
       starts_at: p.ends_at && p.ends_at >= t && p.starts_at ? p.starts_at : start,
       ends_at: patch.ends_at,
       amount: (p.amount || 0) + cur.amount,
-      status: "active",
-      account_status: "active",
+      status: live ? "active" : p.status === "rejected" || p.status === "expired" ? p.status : "qc",
+      account_status: live ? "active" : "approved",
     });
   }
   if (all) {
@@ -138,6 +158,19 @@ export async function decidePurchase(id: string, action: "approve" | "reject", n
 }
 
 // ── การจอง ──
+/** % ที่แพลตฟอร์มเก็บจากค่าห้องของการจองนี้ (snapshot ตอนเพื่อนตอบรับ ใน partner_bookings) · ไม่มี = % ปัจจุบันของพาร์ทเนอร์ · ไม่ตั้ง = 0
+ *  ใช้ใน lib/bookings/day.ts (roomLeg) เพื่อแบ่ง ค่าห้อง → พาร์ทเนอร์ (100−%) / รายได้บริษัท (%) */
+export async function bookingPlatformPct(code: string, pid: string): Promise<number> {
+  let pct: number | null = null;
+  if (isDemo) pct = demo.bookings.find((x) => x.booking_ref === code)?.platform_pct ?? null;
+  else {
+    const { data } = await db().from("partner_bookings").select("platform_pct").eq("booking_ref", code).maybeSingle();
+    pct = (data as { platform_pct: number | null } | null)?.platform_pct ?? null;
+  }
+  if (pct == null) pct = (await getPartner(pid).catch(() => null))?.platform_pct ?? null;
+  const n = Number(pct ?? 0);
+  return Number.isFinite(n) ? Math.max(0, Math.min(100, n)) : 0;
+}
 export async function listBookings(pid: string, sinceIso?: string): Promise<PartnerBooking[]> {
   if (isDemo) return demo.bookings.filter((b) => b.partner_id === pid && (!sinceIso || b.start_time >= sinceIso)).sort((a, b) => a.start_time.localeCompare(b.start_time));
   let q = db().from("partner_bookings").select("*").eq("partner_id", pid).order("start_time", { ascending: true }).limit(500);
@@ -162,13 +195,17 @@ export async function actOnBooking(pid: string, id: string, status: Extract<Book
 
 /** การจองจริงที่ลูกค้าเลือกสปาพาร์ทเนอร์ (#26) — เพื่อนตอบรับ = เข้าพอร์ทัลเป็น "รอยืนยัน" · จบ = เสร็จสิ้น · ยกเลิก/คืนเงิน = ยกเลิก
  *  ไม่ทับสถานะที่พาร์ทเนอร์ตั้งเอง (ยืนยัน/ห้องเต็ม) ระหว่างนัดยังเดินอยู่ · ไม่ส่งข้อมูลติดต่อลูกค้า */
-export async function syncSpaBooking(b: { code: string; status: string; starts_at: string; hours: number; room_fee_satang: number; customer_name: string | null; parttime_nick: string | null; place: { spa_id?: string } }) {
+export async function syncSpaBooking(b: { code: string; status: string; starts_at: string; hours: number; room_fee_satang: number; customer_name: string | null; parttime_nick: string | null; note?: string | null; place: { spa_id?: string } }) {
   const pid = b.place.spa_id;
   if (!pid || (!isDemo && !/^[0-9a-f-]{36}$/.test(pid))) return;
   const to: BookingStatus | null = b.status === "accepted" ? "pending" : b.status === "completed" ? "done" : ["refunded", "cancelled"].includes(b.status) ? "cancelled" : null;
   if (!to) return;
   const nowIso = new Date().toISOString();
-  const row = { partner_id: pid, booking_ref: b.code, customer_name: (b.customer_name ?? "ลูกค้า").split(/\s+/)[0].slice(0, 40), parttime_name: b.parttime_nick ?? "เพื่อน", start_time: b.starts_at, hours: b.hours, room: null, addon: null, status: to, amount: Math.round(b.room_fee_satang / 100), platform_pct: null };
+  // บริการที่ลูกค้าเลือก (place.spa_service) → ช่อง addon · % แพลตฟอร์ม = ค่าที่แอดมินตั้งให้พาร์ทเนอร์ ณ ตอนจอง
+  const svc = String((b.place as { spa_service?: unknown }).spa_service ?? "").slice(0, 80) || null;
+  const pct = to === "pending" ? (await getPartner(pid).catch(() => null))?.platform_pct ?? null : null;
+  const first = String(b.customer_name ?? "").trim().split(/\s+/)[0]?.slice(0, 40) ?? "";
+  const row = { partner_id: pid, booking_ref: b.code, customer_name: first, parttime_name: b.parttime_nick ?? "เพื่อน", start_time: b.starts_at, hours: b.hours, room: null, addon: svc, status: to, amount: Math.round(b.room_fee_satang / 100), platform_pct: pct == null ? null : Number(pct), note: String(b.note ?? "").trim().slice(0, 300) || null };
   if (isDemo) {
     const cur = demo.bookings.find((x) => x.booking_ref === b.code);
     if (cur) { if (to !== "pending") Object.assign(cur, { status: to }); }
@@ -176,7 +213,8 @@ export async function syncSpaBooking(b: { code: string; status: string; starts_a
     return;
   }
   if (to === "pending") {
-    const { error } = await db().from("partner_bookings").upsert(row, { onConflict: "booking_ref", ignoreDuplicates: true });
+    let { error } = await db().from("partner_bookings").upsert(row, { onConflict: "booking_ref", ignoreDuplicates: true });
+    if (error && missingCol(error)) { const { note: _n, ...rest } = row; void _n; ({ error } = await db().from("partner_bookings").upsert(rest, { onConflict: "booking_ref", ignoreDuplicates: true })); }
     if (error) throw error;
   } else {
     const { error } = await db().from("partner_bookings").update({ status: to, updated_at: nowIso }).eq("booking_ref", b.code);

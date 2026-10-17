@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { fileHeaders } from "@/lib/file-guard";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
+import { BookingError } from "@/lib/bookings";
 import { PHOTO_RE, decideClaim, listClaims, readPhoto } from "@/lib/noshow";
 
 export const runtime = "nodejs";
@@ -28,12 +29,15 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const s = await admin();
   if (!s) return NextResponse.json({ ok: false }, { status: 401 });
+  // ตัดสิน = ย้ายเงิน → เฉพาะผู้มีสิทธิ์การเงิน (เหมือนตัดสินข้อพิพาท)
+  if (!canAccess(s.role, "/admin/wallet")) return NextResponse.json({ ok: false, error: "เฉพาะฝ่ายการเงิน" }, { status: 403 });
   const b = (await req.json().catch(() => ({}))) as { id?: string; decision?: string };
   if (!b.id || (b.decision !== "customer_no_show" && b.decision !== "provider_no_show")) return NextResponse.json({ ok: false, error: "bad request" }, { status: 400 });
   try {
     const claim = await decideClaim(b.id, b.decision, s.email);
     return claim ? NextResponse.json({ ok: true, claim }) : NextResponse.json({ ok: false, error: "ตัดสินไปแล้วหรือไม่พบ" }, { status: 409 });
   } catch (e) {
+    if (e instanceof BookingError) return NextResponse.json({ ok: false, error: e.message }, { status: 409 });
     console.error("noshow decide", e);
     return NextResponse.json({ ok: false, error: "ระบบขัดข้อง" }, { status: 500 });
   }

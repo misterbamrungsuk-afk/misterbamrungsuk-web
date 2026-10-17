@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Member } from "@/lib/customer/admin";
+import { EXPIRED, useConfirm } from "../confirm";
 
 export type Row = Member & { bookings: number; done: number; open: number; available: number; held: number; reported: number };
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("th-TH");
@@ -16,15 +17,24 @@ export function MembersClient({ rows }: { rows: Row[] }) {
   const [reason, setReason] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [confirmUi, ask] = useConfirm();
   const t = q.trim().toLowerCase();
   const list = rows.filter((r) => (f === "del" ? r.delete_requested_at && !r.deleted_at : f === "sus" ? r.suspended_at : true) && (!t || [r.name, r.email, r.phone ?? ""].some((x) => x.toLowerCase().includes(t))));
   const m = rows.find((r) => r.id === sel) ?? null;
   const act = async (action: string) => {
     if (!m) return;
+    // ลบข้อมูล (PDPA) ย้อนกลับไม่ได้ · ระงับ = ออกจากระบบทุกเครื่องทันที → ยืนยันก่อน
+    if (action === "erase" && !(await ask({ title: "ลบข้อมูลส่วนบุคคล (PDPA)?", body: `${m.name || "-"} · ${m.email}
+ชื่อ อีเมล เบอร์ และข้อมูลส่วนตัวจะถูกลบถาวร ย้อนกลับไม่ได้
+เก็บไว้เฉพาะรหัสอ้างอิงบัญชีเงิน/การจอง`, ok: "ลบข้อมูลถาวร", danger: true }))) return;
+    if (action === "suspend" && !(await ask({ title: "ระงับบัญชีนี้?", body: `${m.name || "-"} · ${m.email}
+เหตุผล: ${reason.trim()}
+ผู้ใช้จะถูกออกจากระบบทุกเครื่องทันที`, ok: "ระงับบัญชี", danger: true }))) return;
     setBusy(true); setMsg(null);
     const r = await fetch("/api/admin/members", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, id: m.id, reason }) }).catch(() => null);
     const j = await r?.json().catch(() => null);
     setBusy(false);
+    if (r?.status === 401) { setMsg({ ok: false, text: EXPIRED }); return; }
     setMsg(j?.ok ? { ok: true, text: action === "erase" ? "ลบข้อมูลส่วนบุคคลแล้ว" : action === "suspend" ? "ระงับบัญชีแล้ว · ออกจากระบบทุกเครื่อง" : "คืนสิทธิ์แล้ว" } : { ok: false, text: j?.error || "ทำรายการไม่สำเร็จ" });
     if (j?.ok) { setReason(""); router.refresh(); }
   };
@@ -75,10 +85,11 @@ export function MembersClient({ rows }: { rows: Row[] }) {
                 {m.delete_requested_at && <button type="button" disabled={busy} onClick={() => act("erase")} className="h-10 rounded-xl border border-[#c4b5fd] text-[#c4b5fd] font-semibold disabled:opacity-40">ลบข้อมูลส่วนบุคคล (PDPA)</button>}
               </>
             )}
-            {msg && <p role="status" className="m-0" style={{ color: msg.ok ? "#4ade80" : "#fca5a5" }}>{msg.text}</p>}
+            {msg && <p role="status" className="m-0" style={{ color: msg.ok ? "#4ade80" : "#fca5a5" }}>{msg.text}{msg.text === EXPIRED && <> · <a href="/admin-login" className="underline text-[#ffd76a]">ไปหน้าเข้าสู่ระบบ</a></>}</p>}
           </>
         )}
       </aside>
+      {confirmUi}
     </div>
   );
 }

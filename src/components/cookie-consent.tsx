@@ -1,10 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { readConsent, saveConsent } from "@/lib/consent";
+
+// หน้าทีมงาน (/admin*, /admin-login) ไม่ขอความยินยอม — ไม่ใช่หน้าลูกค้า และแบนเนอร์บังปุ่มด้านล่าง
+const isStaff = (p: string | null) => !!p && (p === "/admin" || p.startsWith("/admin/") || p.startsWith("/admin-login"));
 
 // แบนเนอร์ขอความยินยอมคุกกี้ (PDPA) — analytics/pixel โหลดได้หลัง hasConsent() เท่านั้น
 export function CookieConsent() {
+  const path = usePathname();
+  if (isStaff(path)) return null;
+  return <ConsentBanner />;
+}
+
+function ConsentBanner() {
   const [open, setOpen] = useState(false);
   const [settings, setSettings] = useState(false);
   const [analytics, setAnalytics] = useState(false);

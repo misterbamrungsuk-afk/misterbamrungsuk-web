@@ -28,8 +28,9 @@ export default async function RejectedPage({ params, searchParams }: { params: P
     <Page>
       <div className="flex flex-col items-center text-center" style={{ padding: "64px 20px 0" }}>
         <div className="w-20 h-20 rounded-full grid place-items-center text-[#e8c472] text-[34px]" style={{ background: "rgba(232,196,114,.14)" }} aria-hidden="true">✓</div>
-        <h1 className="font-semibold text-[24px] text-[#e8c472]" style={{ margin: "16px 0 0" }}>ส่งแก้ไขครบแล้ว</h1>
-        <p style={{ margin: "8px 0 0" }}>ทีมงานจะตรวจอีกครั้งภายใน 24 ชม. และแจ้งผลทาง LINE</p>
+        {/* "ส่งแก้ไขครบแล้ว" เฉพาะคนที่เคยถูกตีกลับแล้วแก้ครบจริง · ไม่เคยถูกขอให้แก้ = บอกตามสถานะ */}
+        <h1 className="font-semibold text-[24px] text-[#e8c472]" style={{ margin: "16px 0 0" }}>{x.fixes_done_at && x.kyc_status !== "approved" ? "ส่งแก้ไขครบแล้ว" : "ไม่มีรายการที่ต้องแก้ไข"}</h1>
+        <p style={{ margin: "8px 0 0" }}>{x.kyc_status === "approved" ? "เอกสารผ่านการตรวจจากทีมงานแล้ว" : x.fixes_done_at || x.kyc_status === "submitted" ? "ทีมงานจะตรวจอีกครั้งภายใน 24 ชม. และแจ้งผลทาง LINE" : "ทีมงานยังไม่ได้ขอให้แก้ไขเอกสารใด ๆ · กรอกใบสมัครต่อได้ที่โปรไฟล์ของฉัน"}</p>
       </div>
       <BottomBar><Link href={`/join/profile/${mb}${q}`} style={ctaStyle} className="hover:text-[#1b130b]">ไปที่โปรไฟล์ของฉัน</Link></BottomBar>
     </Page>

@@ -8,7 +8,7 @@ import { putFile, listApplicants } from "@/lib/join/store";
 import { sessionSecret } from "@/lib/session-secret";
 import { getMemberSettings, isTier, type TierId } from "./tiers";
 import {
-  addPoints, demo, dropPayout, findRep, getPurchase, insertPayout, insertPurchase, insertRep, listPayouts, listPurchases, now, patchPayout, patchPurchase, transRefTaken,
+  addPoints, demo, dropPayout, findRep, patchRep, getPurchase, insertPayout, insertPurchase, insertRep, listPayouts, listPurchases, now, patchPayout, patchPurchase, transRefTaken,
   type MemberPurchase, type SalesPayout, type SalesRep,
 } from "./store";
 
@@ -33,6 +33,12 @@ export async function buyMembership(me: { sub: string; email: string }, tierId: 
   if (!cfg.enabled) throw new MemberError("ยังไม่เปิดขายเมมเบอร์");
   if (!isTier(tierId)) throw new MemberError("เลือกระดับเมมเบอร์");
   const t = cfg.tiers[tierId];
+  // โค้ดผู้แนะนำที่ลูกค้าพิมพ์เอง แต่ไม่มี/ปิดใช้แล้ว → แจ้งก่อนรับเงิน (เดิมถูกทิ้งเงียบ ๆ) · โค้ดเก่าจาก cookie ลิงก์แนะนำ = ข้ามได้
+  const typed = String(refCode ?? "").trim().toUpperCase();
+  if (typed) {
+    const fromLink = (await import("next/headers").then(async (h) => (await h.cookies()).get("mb_ref")?.value ?? "").catch(() => "")).toUpperCase();
+    if (typed !== fromLink && !(await referrerOf(typed))) throw new MemberError(`โค้ดผู้แนะนำ ${typed} ไม่ถูกต้องหรือปิดใช้แล้ว · แก้โค้ด หรือลบออกแล้วส่งใหม่`);
+  }
   const check = await verifySlip(slip, t.pay);
   if (check?.verdict === "dup") throw new MemberError("สลิปนี้เคยใช้แล้ว");
   if (check?.verdict === "acct") throw new MemberError("สลิปนี้โอนเข้าบัญชีอื่น กรุณาโอนผ่าน QR ในหน้านี้");
@@ -148,10 +154,34 @@ async function uniqueCode() { for (let i = 0; i < 8; i++) { const c = newCode();
 export async function repForParttime(a: { id: string; nickname?: string | null; first_name?: string | null; tel?: string | null }): Promise<SalesRep> {
   return (await findRep({ parttime_id: a.id })) ?? insertRep({ code: await uniqueCode(), kind: "parttime", parttime_id: a.id, name: a.nickname || a.first_name || "", phone: a.tel ?? null, bank: null, active: true, created_by: "auto" });
 }
-export async function createExternalRep(input: { name: string; phone: string; bank: SalesRep["bank"] }, by: string): Promise<SalesRep> {
-  if (!input.name.trim()) throw new MemberError("กรอกชื่อ Sale Man");
-  return insertRep({ code: await uniqueCode(), kind: "external", parttime_id: null, name: input.name.trim().slice(0, 80), phone: input.phone.trim().slice(0, 20) || null, bank: input.bank, active: true, created_by: by });
+/** บัญชีรับค่าคอม: ต้องมีธนาคาร + เลขบัญชี 10–15 หลัก + ชื่อบัญชี (ไม่มี = ขอรับค่าคอมไม่ได้) */
+export function cleanBank(b: unknown): NonNullable<SalesRep["bank"]> {
+  const x = (b ?? {}) as { bank?: unknown; account?: unknown; name?: unknown };
+  const bank = String(x.bank ?? "").trim().slice(0, 60), account = String(x.account ?? "").replace(/\D/g, ""), name = String(x.name ?? "").trim().slice(0, 80);
+  if (!bank) throw new MemberError("กรอกธนาคารของ Sale Man");
+  if (account.length < 10 || account.length > 15) throw new MemberError("เลขบัญชีต้องเป็นตัวเลข 10–15 หลัก");
+  if (!name) throw new MemberError("กรอกชื่อบัญชี");
+  return { bank, account, name };
 }
+export async function createExternalRep(input: { name: string; phone: string; bank: unknown }, by: string): Promise<SalesRep> {
+  if (!input.name.trim()) throw new MemberError("กรอกชื่อ Sale Man");
+  const bank = cleanBank(input.bank);
+  return insertRep({ code: await uniqueCode(), kind: "external", parttime_id: null, name: input.name.trim().slice(0, 80), phone: input.phone.replace(/[^\d+]/g, "").slice(0, 20) || null, bank, active: true, created_by: by });
+}
+/** แอดมินแก้ชื่อ/เบอร์/บัญชีของ Sale Man ภายนอก */
+export async function updateExternalRep(id: string, input: { name?: unknown; phone?: unknown; bank?: unknown }): Promise<SalesRep> {
+  const r = await findRep({ id });
+  if (!r || r.kind !== "external") throw new MemberError("ไม่พบ Sale Man");
+  const patch: Partial<SalesRep> = {};
+  if (input.name !== undefined) { const n = String(input.name ?? "").trim().slice(0, 80); if (!n) throw new MemberError("กรอกชื่อ Sale Man"); patch.name = n; }
+  if (input.phone !== undefined) patch.phone = String(input.phone ?? "").replace(/[^\d+]/g, "").slice(0, 20) || null;
+  if (input.bank !== undefined) patch.bank = cleanBank(input.bank);
+  const out = await patchRep(id, patch);
+  if (!out) throw new MemberError("ไม่พบ Sale Man");
+  return out;
+}
+/** เลขบัญชีแบบปิดบัง เช่น xxx-x-x4978-9 → "••••••9789" */
+export const maskAccount = (acct: string | null | undefined) => { const d = String(acct ?? "").replace(/\D/g, ""); return d ? `••••••${d.slice(-4)}` : ""; };
 
 /** สรุปผลงาน Sale Man: คนที่ชวน (ชื่อปิดบางส่วน) + ค่าคอม + ยอดในกระเป๋า */
 export async function repSummary(rep: SalesRep) {

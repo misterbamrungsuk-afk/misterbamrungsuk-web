@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Applicant, ApplicantStatus } from "@/lib/join/store";
 import type { SlipVerdict } from "@/lib/slip2go";
+import { FlashMsg, useConfirm, useFlash } from "../confirm";
 
 // ตามบอร์ด AdminSlips.dc.html (1280px)
 const GOLD = "#f0c75a";
@@ -51,23 +52,32 @@ export function SlipQueue({ initial, live }: { initial: Applicant[]; live: boole
   const [tab, setTab] = useState<Tab>("all");
   const [open, setOpen] = useState<string | null>(initial.find((r) => r.status === "pending_slip")?.id ?? initial[0]?.id ?? null);
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState("");
+  const { msg, flash, fromRes } = useFlash();
+  const [confirmUi, ask] = useConfirm();
+  const [reason, setReason] = useState("");
 
   const shown = useMemo(() => rows.filter((r) => tab === "all" || tabOf(r) === tab), [rows, tab]);
   const count = (t: Tab) => rows.filter((r) => t === "all" || tabOf(r) === t).length;
   const sel = rows.find((r) => r.id === open) ?? null;
 
-  const setStatus = async (id: string, status: ApplicantStatus) => {
+  const setStatus = async (r: Applicant, status: ApplicantStatus) => {
+    const why = reason.trim();
+    if (status === "rejected" && !why) { flash("ระบุเหตุผลที่ปฏิเสธก่อน (ผู้สมัครเห็นข้อความนี้)", { ok: false }); return; }
+    const sure = status === "verified"
+      ? await ask({ title: "ยืนยันรับเงิน?", body: `${r.first_name} ${r.last_name} (${r.mb_code}) · ${fmt(r.amount)}${verdictOf(r) !== "ok" ? "\n⚠ Slip2Go ไม่ได้ยืนยันว่าตรง — เช็กยอดเข้าบัญชีร้านจริงก่อน" : ""}`, ok: "ยืนยันรับเงิน" })
+      : await ask({ title: "ปฏิเสธสลิปนี้?", body: `${r.first_name} ${r.last_name} (${r.mb_code})\nเหตุผล: ${why}\nผู้สมัครจะได้รับแจ้งให้ส่งสลิปใหม่`, ok: "ปฏิเสธสลิป", danger: true });
+    if (!sure) return;
+    const id = r.id;
     setBusy(true);
-    const res = await fetch(`/api/admin/applicants/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
-    const data = (await res.json().catch(() => ({}))) as { row?: Applicant };
+    const res = await fetch(`/api/admin/applicants/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(status === "rejected" ? { status, reason: why } : { status }) }).catch(() => null);
+    const data = ((await res?.json().catch(() => ({}))) ?? {}) as { row?: Applicant; error?: string };
     setBusy(false);
     if (data.row) {
-      setRows((r) => r.map((x) => (x.id === id ? { ...x, status: data.row!.status } : x)));
-      setMsg(status === "verified" ? "ยืนยันรับเงินแล้ว" : "ปฏิเสธสลิปแล้ว · แจ้งผู้สมัครให้ส่งสลิปใหม่");
+      setRows((x) => x.map((y) => (y.id === id ? { ...y, status: data.row!.status } : y)));
+      flash(status === "verified" ? "ยืนยันรับเงินแล้ว" : "ปฏิเสธสลิปแล้ว · แจ้งเหตุผลให้ผู้สมัครส่งสลิปใหม่แล้ว", { ok: true });
+      setReason("");
       router.refresh();
-    } else setMsg("บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง");
-    setTimeout(() => setMsg(""), 2500);
+    } else fromRes(res, data.error ?? "บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง", false);
   };
 
   const v = sel ? verdictOf(sel) : "none";
@@ -105,14 +115,14 @@ export function SlipQueue({ initial, live }: { initial: Applicant[]; live: boole
             </button>
           ))}
         </div>
-        {msg && <p role="status" className="text-sm text-[#eed58a]">{msg}</p>}
+        <FlashMsg msg={msg} />
         <div className="rounded-2xl border border-[rgba(240,200,90,.38)] overflow-x-auto text-[13px]">
           <div className="min-w-[660px]">
             <div className={`${GRID} px-3.5 py-2.5 bg-[#130e0e] text-[#9a8a85] text-xs`}><span>รหัส MB</span><span>ผู้ส่งสลิป</span><span>สายงาน</span><span>ยอดที่ต้องจ่าย</span><span>ผล Slip2Go</span><span>สถานะแอดมิน</span></div>
             {shown.map((r) => {
               const st = statusOf(r);
               return (
-                <button key={r.id} onClick={() => setOpen(r.id)} className={`w-full ${GRID} px-3.5 py-[11px] border-t border-[rgba(240,200,90,.25)] text-left items-center`}
+                <button key={r.id} onClick={() => { setOpen(r.id); setReason(""); }} className={`w-full ${GRID} px-3.5 py-[11px] border-t border-[rgba(240,200,90,.25)] text-left items-center`}
                   style={{ background: open === r.id ? "rgba(240,200,90,.14)" : "transparent" }}>
                   <span className="text-[#ffd76a]">{r.mb_code}</span>
                   <span className="min-w-0 pr-2"><span className="block leading-snug">{r.first_name} {r.last_name}{r.nickname ? ` (${r.nickname})` : ""}</span><span className="block text-[11px] text-[#9a8a85]">ส่ง {thTime(r.created_at, true)}</span></span>
@@ -143,15 +153,21 @@ export function SlipQueue({ initial, live }: { initial: Applicant[]; live: boole
             {checks.map(([k, val, fg]) => <div key={k} className="flex justify-between gap-2.5 text-[12.5px]"><span className="text-[#cdbfb3] shrink-0">{k}</span><span className="text-right break-all" style={{ color: fg }}>{val}</span></div>)}
             {warn && <div role="alert" className="px-3 py-2.5 rounded-xl border border-[rgba(239,68,68,.5)] bg-[rgba(239,68,68,.1)] text-[#fecaca] text-[12.5px] leading-[1.55]">{warn}{sel.slip_check?.message && v !== "ok" ? ` (${sel.slip_check.message})` : ""}</div>}
             {sel.status === "pending_slip" ? (
-              <div className="mt-auto grid grid-cols-2 gap-2">
-                <button disabled={busy} onClick={() => setStatus(sel.id, "rejected")} className="h-11 rounded-full border border-[rgba(201,40,61,.6)] bg-[rgba(176,24,44,.15)] text-[#fecaca] font-semibold disabled:opacity-50">ปฏิเสธ · แจ้งส่งใหม่</button>
-                <button disabled={busy} onClick={() => setStatus(sel.id, "verified")} className="btn-red-lux h-11 rounded-full !border-[1.5px] !border-[#ffd76a] disabled:opacity-50">ยืนยันรับเงิน</button>
+              <div className="mt-auto flex flex-col gap-2">
+                <label className="text-[12px] text-[#cdbfb3]" htmlFor="slip-why">เหตุผลถ้าปฏิเสธ (ผู้สมัครเห็น)</label>
+                <div className="flex flex-wrap gap-1">{["ยอดไม่ตรง", "สลิปไม่ชัด", "ไม่พบรายการโอน", "โอนเข้าบัญชีอื่น", "สลิปซ้ำ"].map((p) => <button key={p} type="button" onClick={() => setReason(p)} className="h-7 px-2.5 rounded-full border text-[11.5px]" style={{ borderColor: reason === p ? GOLD : "rgba(240,200,90,.3)", color: reason === p ? GOLD : "#cdbfb3" }}>{p}</button>)}</div>
+                <input id="slip-why" value={reason} onChange={(e) => setReason(e.target.value)} maxLength={300} placeholder="เช่น ยอดโอนขาด ฿500" className="h-9 rounded-lg border border-[rgba(240,200,90,.38)] bg-[#130e0e] px-2.5 text-[12.5px] text-[#f6efe4] outline-none focus:border-[#f0c75a]" />
+                <div className="grid grid-cols-2 gap-2">
+                  <button disabled={busy || !reason.trim()} onClick={() => setStatus(sel, "rejected")} className="h-11 rounded-full border border-[rgba(201,40,61,.6)] bg-[rgba(176,24,44,.15)] text-[#fecaca] font-semibold disabled:opacity-50">ปฏิเสธ · แจ้งส่งใหม่</button>
+                  <button disabled={busy} onClick={() => setStatus(sel, "verified")} className="btn-red-lux h-11 rounded-full !border-[1.5px] !border-[#ffd76a] disabled:opacity-50">ยืนยันรับเงิน</button>
+                </div>
               </div>
             ) : <p className="mt-auto text-center" style={{ color: statusOf(sel)[1] }}>{statusOf(sel)[0]}</p>}
             <div className="text-[11px] text-[#9a8a85] text-center">ยืนยันแล้วผู้สมัครไปขั้นยืนยันตัวตน (KYC) ต่อได้</div>
           </>
         ) : <p className="py-10 text-center text-[#9a8a85]">เลือกสลิปในตารางเพื่อดูรายละเอียด</p>}
       </aside>
+      {confirmUi}
     </div>
   );
 }

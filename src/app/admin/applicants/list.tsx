@@ -8,6 +8,9 @@ import type { Applicant as ApplicantBase, ApplicantStatus, CriminalCheck, Extra 
 /** แถวที่หน้า page ส่งมา = คอลัมน์ + docs.extra (extraOf) */
 type Applicant = ApplicantBase & Extra;
 import { KYC_LABEL, KycPanel } from "../kyc/kyc-panel";
+import { FlashMsg, useConfirm, useFlash } from "../confirm";
+import { csvCell } from "@/lib/csv";
+import { canAccess, type AdminRole } from "@/lib/admin-auth";
 
 // ตามบอร์ด AdminApplicants.dc.html (1280px) — ยอดรวมนับเฉพาะผู้สมัครที่ชำระแล้ว (verified)
 const GOLD = "#f0c75a";
@@ -34,14 +37,22 @@ const G = (k: PackageKey) => feeBreakdown(k)[0].amount;
 const T = (k: PackageKey) => feeBreakdown(k)[1].amount;
 const GRID = "grid grid-cols-[110px_minmax(0,1.4fr)_100px_100px_90px_120px_100px]";
 
-export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial: Applicant[]; cohorts: { key: string; name: string }[]; initialPkg: Pkg; note: string }) {
+/** ค้นหาจาก ชื่อ ชื่อเล่น รหัส MB เบอร์ อีเมล LINE */
+const hit = (r: Applicant, t: string) => !t || [r.first_name, r.last_name, `${r.first_name} ${r.last_name}`, r.nickname, r.mb_code, r.tel, r.tel?.replace(/\D/g, ""), r.email, r.line_id].some((x) => !!x && x.toLowerCase().includes(t));
+
+export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { initial: Applicant[]; cohorts: { key: string; name: string }[]; initialPkg: Pkg; note: string; role: AdminRole }) {
   const router = useRouter();
   const [rows, setRows] = useState(initial);
   const [pkg, setPkg] = useState<Pkg>(initialPkg);
   const [filter, setFilter] = useState<Filter>(() => initial.some(isTodo) ? "todo" : "verified");
   const [showDocs, setShowDocs] = useState(false);
-  const [msg, setMsg] = useState("");
-  const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(""), 2500); };
+  const { msg, flash, fromRes } = useFlash();
+  const [confirmUi, ask] = useConfirm();
+  const [q, setQ] = useState("");
+  const [rejecting, setRejecting] = useState(false);
+  const [reason, setReason] = useState("");
+  // ตัดสิน KYC ได้เฉพาะบทบาทที่เข้า /admin/kyc ได้ (API ก็ปฏิเสธ) — ไม่แสดงปุ่มที่กดแล้วโดนปฏิเสธ
+  const canKyc = canAccess(role, "/admin/kyc");
   const cohortName = (k?: string | null) => cohorts.find((c) => c.key === k)?.name ?? "—";
 
   const paid = rows.filter((r) => r.status === "verified");
@@ -51,33 +62,53 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
   const fx = (k: Pkg, f: (p: PackageKey) => number) => k === "A" ? `A ${nA}×${fmt(f("A"))}` : k === "B" ? `B ${nB}×${fmt(f("B"))}` : `A ${nA}×${fmt(f("A"))} + B ${nB}×${fmt(f("B"))}`;
   const notLine = paid.filter((r) => !r.line_joined).length;
 
-  const shown = useMemo(() => rows.filter((r) => (pkg === "all" || r.package === pkg) && match(r, filter)), [rows, pkg, filter]);
+  const t = q.trim().toLowerCase();
+  const shown = useMemo(() => rows.filter((r) => (pkg === "all" || r.package === pkg) && match(r, filter) && hit(r, t)), [rows, pkg, filter, t]);
   const [open, setOpen] = useState<string | null>(shown[0]?.id ?? null);
-  const sel = (shown.find((r) => r.id === open) ?? shown[0] ?? rows.find((r) => r.id === open)) ?? null;
+  // pin = คนที่เพิ่งกดทำรายการ — ถ้าย้ายออกจากแท็บปัจจุบัน แผงยังค้างที่คนเดิม (ไม่สลับไปคนอื่นเงียบ ๆ แล้วกดผิดคน)
+  const [pin, setPin] = useState<string | null>(null);
+  const inShown = shown.find((r) => r.id === open);
+  const sel = (inShown ?? (pin && pin === open ? rows.find((r) => r.id === pin) : undefined) ?? shown[0]) ?? null;
+  const movedTo = sel && !inShown && sel.id === pin ? FILTERS.find(([k]) => k !== "all" && match(sel, k))?.[1] ?? "ทั้งหมด" : null;
+  const pick = (id: string | null) => { setOpen(id); setPin(null); setShowDocs(false); setRejecting(false); setReason(""); };
 
   const patch = async (id: string, body: Record<string, unknown>) => {
-    const res = await fetch(`/api/admin/applicants/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-    const data = (await res.json().catch(() => ({}))) as { ok?: boolean; row?: Applicant };
+    setPin(id); setOpen(id);
+    const res = await fetch(`/api/admin/applicants/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).catch(() => null);
+    const data = ((await res?.json().catch(() => ({}))) ?? {}) as { ok?: boolean; row?: Applicant; error?: string };
     if (data.row) setRows((r) => r.map((x) => (x.id === id ? data.row! : x)));
-    return data;
+    return { ...data, res };
   };
-  const act = async (id: string, body: { status?: ApplicantStatus; sync?: boolean }) => {
+  /** แจ้งผล: 401 = เซสชันหมดอายุ · ไม่สำเร็จใช้ข้อความจาก API */
+  const say = (d: { ok?: boolean; error?: string; res: Response | null }, okText: string, failText = "บันทึกไม่สำเร็จ") => fromRes(d.res, d.ok ? okText : d.error ?? failText, !!d.ok);
+  const act = async (id: string, body: { status?: ApplicantStatus; sync?: boolean; reason?: string }) => {
     const d = await patch(id, body);
-    if (body.sync) { flash(d.ok ? "sync ชีตสำเร็จ" : "sync ชีตไม่สำเร็จ ตรวจการตั้งค่า Google Sheet"); if (d.ok) setRows((r) => r.map((x) => (x.id === id ? { ...x, sheet_synced: true } : x))); }
-    else flash(d.row ? `บันทึกสถานะ: ${LABEL[d.row.status]}` : "บันทึกไม่สำเร็จ");
+    if (body.sync) { say(d, "sync ชีตสำเร็จ", "sync ชีตไม่สำเร็จ ตรวจการตั้งค่า Google Sheet"); if (d.ok) setRows((r) => r.map((x) => (x.id === id ? { ...x, sheet_synced: true } : x))); }
+    else say({ ...d, ok: !!d.row }, d.row ? `บันทึกสถานะ: ${LABEL[d.row.status]}` : "");
+    if (d.row) { setRejecting(false); setReason(""); }
     router.refresh();
   };
-  const setListed = async (id: string, listed: boolean) => { const d = (await patch(id, { listed })) as { ok?: boolean; error?: string }; flash(d.ok ? (listed ? "แสดงบนหน้าแรกแล้ว" : "ซ่อนจากหน้าแรกแล้ว") : d.error ?? "บันทึกไม่สำเร็จ"); };
-  const setTier = async (id: string, tier: "top" | "silver") => { const d = await patch(id, { tier }); flash(d.ok ? `ตั้งระดับ ${tier === "top" ? "TOP" : "Silver"} แล้ว` : "บันทึกไม่สำเร็จ"); };
-  const assign = async (id: string, cohort: string | null) => { const d = await patch(id, { cohort }); flash(d.ok ? `จัดเข้า${cohort ? cohortName(cohort) : " (ไม่ระบุกลุ่ม)"}` : "บันทึกไม่สำเร็จ"); };
-  const setLine = async (id: string, v: boolean) => { const d = await patch(id, { line_joined: v }); flash(d.ok ? (v ? "บันทึก: เข้ากลุ่ม LINE แล้ว" : "บันทึก: ยังไม่เข้ากลุ่ม") : "บันทึกไม่สำเร็จ"); router.refresh(); };
+  const verifySlip = async (r: Applicant) => { if (await ask({ title: "ยืนยันสลิปชำระเงิน?", body: `${fullName(r)} (${r.mb_code}) · ${fmt(r.amount)}\nเช็กว่าเงินเข้าบัญชีร้านจริงก่อนยืนยัน`, ok: "ยืนยันรับเงิน" })) act(r.id, { status: "verified" }); };
+  const rejectSlip = async (r: Applicant) => { const why = reason.trim(); if (!why) return; if (await ask({ title: "ปฏิเสธสลิปนี้?", body: `${fullName(r)} (${r.mb_code})\nเหตุผล: ${why}\nผู้สมัครจะได้รับแจ้งเหตุผลนี้`, ok: "ปฏิเสธสลิป", danger: true })) act(r.id, { status: "rejected", reason: why }); };
+  const refund = async (r: Applicant) => { if (await ask({ title: "บันทึกว่าคืนเงินแล้ว?", body: `${fullName(r)} (${r.mb_code}) · ${fmt(r.amount)}\nสถานะจะเปลี่ยนเป็น "คืนเงินแล้ว" — โอนคืนจริงก่อนกด`, ok: "บันทึกคืนเงิน", danger: true })) act(r.id, { status: "refunded" }); };
+  const revokeLinks = async (r: Applicant) => {
+    if (!(await ask({ title: "ยกเลิกลิงก์เข้าโปรไฟล์ทั้งหมด?", body: `ลิงก์และคุกกี้เข้าโปรไฟล์ทุกอันที่เคยออกให้ ${fullName(r)} (${r.mb_code}) จะใช้ไม่ได้ทันที\nผู้สมัครต้องใช้ลิงก์ใหม่จากทีมงาน`, ok: "ยกเลิกลิงก์ทั้งหมด", danger: true }))) return;
+    setPin(r.id);
+    const res = await fetch(`/api/admin/applicants/${r.id}/link`, { method: "DELETE" }).catch(() => null);
+    const d = (await res?.json().catch(() => null)) as { ok?: boolean } | null;
+    fromRes(res, d?.ok ? "ยกเลิกลิงก์เข้าโปรไฟล์ทั้งหมดแล้ว" : "ยกเลิกลิงก์ไม่สำเร็จ", !!d?.ok);
+  };
+  const setListed = async (id: string, listed: boolean) => { const d = await patch(id, { listed }); say(d, listed ? "แสดงบนหน้าแรกแล้ว" : "ซ่อนจากหน้าแรกแล้ว"); };
+  const setTier = async (id: string, tier: "top" | "silver") => { const d = await patch(id, { tier }); say(d, `ตั้งระดับ ${tier === "top" ? "TOP" : "Silver"} แล้ว`); };
+  const assign = async (id: string, cohort: string | null) => { const d = await patch(id, { cohort }); say(d, `จัดเข้า${cohort ? cohortName(cohort) : " (ไม่ระบุกลุ่ม)"}`); };
+  const setLine = async (id: string, v: boolean) => { const d = await patch(id, { line_joined: v }); say(d, v ? "บันทึก: เข้ากลุ่ม LINE แล้ว" : "บันทึก: ยังไม่เข้ากลุ่ม"); router.refresh(); };
   const copyLine = async (r: Applicant) => {
     const text = `สวัสดีค่ะคุณ${r.nickname} (${r.mb_code}) ลิงก์เข้ากลุ่ม LINE Mister Bamrungsuk: ${lineAddUrl()}`;
-    try { await navigator.clipboard.writeText(text); flash("คัดลอกข้อความลิงก์กลุ่ม LINE แล้ว"); } catch { flash(text); }
+    try { await navigator.clipboard.writeText(text); flash("คัดลอกข้อความลิงก์กลุ่ม LINE แล้ว", { ok: true }); } catch { flash(text, { keep: true }); }
   };
   const exportCsv = () => {
     const head = ["รหัส MB", "ชื่อ", "ชื่อเล่น", "สายงาน", "ยอดชำระ", "สถานะ", "กลุ่ม", "กลุ่ม LINE", "ตรวจประวัติ", "KYC", "โทร", "LINE ID", "อีเมล", "สมัครเมื่อ"];
-    const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const esc = (v: unknown) => csvCell(v); // กันสูตร Excel (= + - @ นำหน้า) แบบเดียวกับไฟล์ส่งออกฝั่งเซิร์ฟเวอร์
     const lines = shown.map((r) => [r.mb_code, fullName(r), r.nickname, r.package, r.amount, LABEL[r.status], cohortName(r.cohort), r.line_joined ? "เข้าแล้ว" : "ยังไม่เข้า", CRIMINAL[r.criminal_check ?? "pending"][0], r.kyc_status ?? "none", r.tel, r.line_id, r.email, thTime(r.created_at)].map(esc).join(","));
     const blob = new Blob(["﻿" + [head.map(esc).join(","), ...lines].join("\r\n")], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");
@@ -95,16 +126,17 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
             <div className="text-[11px] tracking-[2.5px] text-[#f0c75a] font-semibold">APPLICANTS</div>
             <h1 className="mt-0.5 font-lux font-bold text-2xl">ผู้สมัคร · ตรวจข้อมูลและเอกสาร</h1>
           </div>
-          <div className="flex gap-2 items-center">
+          <div className="flex flex-wrap gap-2 items-center">
+            <input value={q} onChange={(e) => { setQ(e.target.value); setPin(null); }} placeholder="ค้นหาชื่อ · รหัส MB · เบอร์ · อีเมล" aria-label="ค้นหาผู้สมัคร" className="h-10 w-64 max-w-full rounded-full border border-[rgba(240,200,90,.38)] bg-[#130e0e] px-4 text-[13px] text-[#f6efe4] outline-none focus:border-[#f0c75a]" />
             <button onClick={exportCsv} className="h-10 px-4 rounded-full border border-[rgba(240,200,90,.38)] text-[#d3c7bc] hover:text-[#f6efe4]">ส่งออกไฟล์ Excel / CSV</button>
           </div>
         </div>
         <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="สถานะ">
           {FILTERS.map(([k, l]) => {
             const on = filter === k;
-            const n = rows.filter((r) => (pkg === "all" || r.package === pkg) && match(r, k)).length;
+            const n = rows.filter((r) => (pkg === "all" || r.package === pkg) && match(r, k) && hit(r, t)).length;
             const hot = (k === "todo" || k === "fix") && n > 0;
-            return <button key={k} role="tab" aria-selected={on} onClick={() => setFilter(k)} className="h-9 px-3.5 rounded-full border text-[12.5px] font-semibold flex items-center gap-1.5"
+            return <button key={k} role="tab" aria-selected={on} onClick={() => { setFilter(k); setPin(null); }} className="h-9 px-3.5 rounded-full border text-[12.5px] font-semibold flex items-center gap-1.5"
               style={{ borderColor: on ? GOLD : LINE_BD, background: on ? GOLD : "transparent", color: on ? "#1a1206" : "#d3c7bc" }}>{l}<span className="min-w-5 h-5 px-1.5 rounded-full text-[11px] grid place-items-center" style={{ background: on ? "rgba(26,18,6,.15)" : hot ? (k === "todo" ? "#c8102e" : "rgba(239,68,68,.25)") : "rgba(240,200,90,.14)", color: on ? "#1a1206" : hot ? "#fff" : "#cdbfb3" }}>{n}</span></button>;
           })}
         </div>
@@ -114,7 +146,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
           {PKG_TABS.map(([k, code, name]) => {
             const on = pkg === k;
             return (
-              <button key={k} onClick={() => setPkg(k)} aria-pressed={on} className="px-4 py-3.5 rounded-2xl border-[1.5px] text-left flex flex-col gap-1"
+              <button key={k} onClick={() => { setPkg(k); setPin(null); }} aria-pressed={on} className="px-4 py-3.5 rounded-2xl border-[1.5px] text-left flex flex-col gap-1"
                 style={{ borderColor: on ? GOLD : LINE_BD, background: on ? "rgba(240,200,90,.14)" : "#241717", boxShadow: on ? "0 0 0 3px rgba(240,200,90,.15)" : "none" }}>
                 <span className="flex justify-between items-center w-full"><span className="text-[11px] tracking-[1.5px] text-[#f0c75a] font-semibold">{code}</span><span className="text-xs text-[#cdbfb3]">{nOf(k)} คน</span></span>
                 <span className="font-lux font-semibold text-[15px]">{name}</span>
@@ -130,7 +162,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
           <div className="px-4 py-3 border-l border-[rgba(240,200,90,.25)] bg-[rgba(176,24,44,.12)]"><div className="text-[11.5px] text-[#cdbfb3]">ยอดรวม · {PN[pkg]}</div><div className="font-lux font-bold text-xl text-[#ffd76a]">{fmt(sumOf(pkg, G) + sumOf(pkg, T))}</div><div className="text-[11.5px] text-[#9a8a85]">{nOf(pkg)} คน</div></div>
           <div className="px-4 py-3 border-l border-[rgba(240,200,90,.25)]"><div className="text-[11.5px] text-[#cdbfb3]">ยังไม่เข้ากลุ่ม LINE</div><div className="font-lux font-bold text-xl text-[#eed58a]">{notLine} คน</div><div className="text-[11.5px] text-[#9a8a85]">โควตา {QUOTA} คน</div></div>
         </div>
-        {msg && <p role="status" className="text-sm text-[#eed58a]">{msg}</p>}
+        <FlashMsg msg={msg} />
 
         <div className="rounded-2xl border border-[rgba(240,200,90,.38)] overflow-x-auto text-[13px]">
           <div className="min-w-[740px]">
@@ -138,7 +170,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
             {shown.map((r) => {
               const c = CRIMINAL[r.criminal_check ?? "pending"];
               return (
-                <button key={r.id} onClick={() => { setOpen(r.id); setShowDocs(false); }} className={`w-full ${GRID} px-3.5 py-[11px] border-t border-[rgba(240,200,90,.38)] text-left items-center`}
+                <button key={r.id} onClick={() => pick(r.id)} className={`w-full ${GRID} px-3.5 py-[11px] border-t border-[rgba(240,200,90,.38)] text-left items-center`}
                   style={{ background: sel?.id === r.id ? "rgba(240,200,90,.16)" : "transparent" }}>
                   <span className="text-[#ffd76a]">{r.mb_code}</span>
                   <span className="truncate pr-2">{r.first_name} {r.last_name}</span>
@@ -158,6 +190,12 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
       <aside className="w-full lg:w-[300px] shrink-0 p-[18px] rounded-[18px] border border-[rgba(245,210,110,.85)] bg-[#241717] flex flex-col gap-2.5 text-[13px] lg:sticky lg:top-[22px] lg:min-h-[calc(100dvh-44px)] max-h-[calc(100dvh-44px)] overflow-y-auto">
         {sel ? (
           <>
+            {movedTo && (
+              <p role="status" className="m-0 rounded-xl border border-[rgba(240,200,90,.55)] bg-[rgba(240,200,90,.1)] px-3 py-2 text-[12.5px] text-[#ffd76a] flex justify-between gap-2 items-center">
+                <span>ย้ายไปแท็บ “{movedTo}” แล้ว · แผงนี้ยังเป็นคนเดิม</span>
+                <button type="button" onClick={() => pick(shown[0]?.id ?? null)} className="shrink-0 underline text-[#d3c7bc]">คนถัดไป</button>
+              </p>
+            )}
             <div className="flex gap-3 items-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={sel.photos?.[0] ? file(sel.photos[0]) : sel.docs.photo ? file(sel.docs.photo) : ""} alt="" className="w-14 h-14 rounded-[14px] object-cover bg-[#130e0e]" />
@@ -198,11 +236,19 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
               <span className="w-[42px] h-6 rounded-full relative" style={{ background: sel.line_joined ? "#06c755" : LINE_BD }}><span className="absolute top-[3px] w-[18px] h-[18px] rounded-full bg-white transition-all" style={{ left: sel.line_joined ? 21 : 3 }} /></span>
             </button>
             <div className="flex flex-wrap gap-1.5">
-              {sel.status !== "verified" && <button onClick={() => act(sel.id, { status: "verified" })} className="btn-red-lux h-9 px-3.5 rounded-full text-[12.5px]">ยืนยันสลิป</button>}
-              {sel.status === "pending_slip" && <button onClick={() => act(sel.id, { status: "rejected" })} className="h-9 px-3.5 rounded-full border border-[rgba(201,40,61,.6)] text-[#fecaca] text-[12.5px]">ปฏิเสธ</button>}
-              {sel.status === "verified" && <button onClick={() => act(sel.id, { status: "refunded" })} className="h-9 px-3.5 rounded-full border border-[rgba(240,200,90,.38)] text-[#d3c7bc] text-[12.5px]">บันทึกคืนเงิน</button>}
+              {sel.status !== "verified" && <button onClick={() => verifySlip(sel)} className="btn-red-lux h-9 px-3.5 rounded-full text-[12.5px]">ยืนยันสลิป</button>}
+              {sel.status === "pending_slip" && <button onClick={() => setRejecting((v) => !v)} aria-expanded={rejecting} className="h-9 px-3.5 rounded-full border border-[rgba(201,40,61,.6)] text-[#fecaca] text-[12.5px]">ปฏิเสธ</button>}
+              {sel.status === "verified" && <button onClick={() => refund(sel)} className="h-9 px-3.5 rounded-full border border-[rgba(240,200,90,.38)] text-[#d3c7bc] text-[12.5px]">บันทึกคืนเงิน</button>}
               {!sel.sheet_synced && <button onClick={() => act(sel.id, { sync: true })} className="h-9 px-3.5 rounded-full border border-[rgba(240,200,90,.38)] text-[#d3c7bc] text-[12.5px]">sync ชีต</button>}
             </div>
+            {rejecting && sel.status === "pending_slip" && (
+              <div className="flex flex-col gap-1.5 rounded-xl border border-[rgba(201,40,61,.55)] bg-[rgba(176,24,44,.1)] p-2.5">
+                <label className="text-[12px] text-[#cdbfb3]" htmlFor="slip-reason">เหตุผลที่ปฏิเสธสลิป (ผู้สมัครเห็น)</label>
+                <div className="flex flex-wrap gap-1">{["ยอดไม่ตรง", "สลิปไม่ชัด", "ไม่พบรายการโอน", "โอนเข้าบัญชีอื่น"].map((p) => <button key={p} type="button" onClick={() => setReason(p)} className="h-7 px-2.5 rounded-full border text-[11.5px]" style={{ borderColor: reason === p ? GOLD : "rgba(240,200,90,.3)", color: reason === p ? GOLD : "#cdbfb3" }}>{p}</button>)}</div>
+                <input id="slip-reason" value={reason} onChange={(e) => setReason(e.target.value)} maxLength={300} placeholder="เช่น ยอดโอนขาด ฿500" className="h-9 rounded-lg border border-[rgba(240,200,90,.38)] bg-[#130e0e] px-2.5 text-[12.5px] text-[#f6efe4] outline-none focus:border-[#f0c75a]" />
+                <button type="button" disabled={!reason.trim()} onClick={() => rejectSlip(sel)} className="h-9 rounded-full border border-[rgba(201,40,61,.6)] bg-[rgba(176,24,44,.3)] text-[#fecaca] text-[12.5px] font-semibold disabled:opacity-40">ปฏิเสธสลิป · แจ้งผู้สมัคร</button>
+              </div>
+            )}
             <button onClick={() => copyLine(sel)} className="mt-auto h-[46px] rounded-full bg-[#06c755] text-white font-semibold">คัดลอกลิงก์กลุ่ม LINE</button>
             <button onClick={() => setShowDocs((v) => !v)} aria-expanded={showDocs} className="h-11 rounded-full border border-[rgba(240,200,90,.38)] text-[#d3c7bc]">{showDocs ? "ซ่อนสลิปและเอกสาร" : "ดูสลิปและเอกสาร"}</button>
 
@@ -240,12 +286,14 @@ export function ApplicantList({ initial, cohorts, initialPkg, note }: { initial:
             {(
               <>
                 <div className="h-px bg-[rgba(240,200,90,.38)]" />
-                <KycPanel key={sel.id} row={sel} onSaved={(row) => setRows((rs) => rs.map((x) => (x.id === row.id ? row : x)))} />
+                <KycPanel key={sel.id} row={sel} canDecide={canKyc}onSaved={(row) => { setPin(row.id); setOpen(row.id); setRows((rs) => rs.map((x) => (x.id === row.id ? row : x))); }} />
+                <button type="button" onClick={() => revokeLinks(sel)} className="h-10 rounded-full border border-[rgba(201,40,61,.6)] text-[#fecaca] text-[12.5px]">ยกเลิกลิงก์เข้าโปรไฟล์ทั้งหมด</button>
               </>
             )}
           </>
         ) : <p className="py-10 text-center text-[#9a8a85]">เลือกผู้สมัครจากตารางเพื่อดูรายละเอียด</p>}
       </aside>
+      {confirmUi}
     </div>
   );
 }

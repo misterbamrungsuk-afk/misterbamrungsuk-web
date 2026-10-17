@@ -48,7 +48,10 @@ export default async function PartnerDone({ searchParams }: { searchParams: Prom
         </div>
         <LineButton href={lineAddUrl()} />
         <Link href={`/partner/qc${q}`} className={`${CTA} !text-white no-underline`}>นัด QC สถานที่</Link>
-        <Link href="/partner/login" className="text-[13px] text-center p-1">เข้าสู่ระบบพอร์ทัลพาร์ทเนอร์</Link>
+        {/* ยังไม่ตั้งรหัสผ่าน = ไปตั้งรหัสด้วย token เดิม (กันทางตัน) · ตั้งแล้ว = เข้าสู่ระบบ */}
+        {!p.password_hash && t
+          ? <Link href={`/partner/register${q}`} className="min-h-12 rounded-[14px] border border-[rgba(240,200,90,.38)] bg-[#241717] grid place-items-center text-sm font-semibold no-underline">ตั้งรหัสผ่าน / เข้าสู่ระบบพอร์ทัล</Link>
+          : <Link href="/partner/login" className="min-h-11 grid place-items-center text-[13px] text-center p-1">เข้าสู่ระบบพอร์ทัลพาร์ทเนอร์</Link>}
       </div>
     </Shell>
   );

@@ -20,7 +20,7 @@ export function PhotosClient({ mb, t, initial }: { mb: string; t: string; initia
     const res = await fetch("/api/join/photos", body instanceof FormData ? { method: "POST", body } : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mb, t, ...body }) }).catch(() => null);
     const data = (await res?.json().catch(() => null)) as { ok?: boolean; photos?: string[]; error?: string } | null;
     setBusy(false);
-    if (res?.ok && data?.photos) setPhotos(data.photos); else setErr(data?.error ?? "บันทึกไม่สำเร็จ กรุณาลองใหม่");
+    if (res?.ok && data?.photos) { setPhotos(data.photos); setSaved(true); } else setErr(data?.error ?? "บันทึกไม่สำเร็จ กรุณาลองใหม่");
   };
   const add = async (f?: File) => {
     if (!f) return;
@@ -71,8 +71,9 @@ export function PhotosClient({ mb, t, initial }: { mb: string; t: string; initia
             <span>• รูปทำกิจกรรมที่รับ เช่น คาเฟ่ ท่องเที่ยว</span>
           </div>
           {err && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{err}</p>}
-          <button type="button" onClick={() => setSaved(true)} disabled={busy || !photos.length} className="h-[52px] rounded-[14px] bg-[#e8c472] text-[#1b130b] text-[15px] font-semibold w-full" style={{ opacity: busy || !photos.length ? 0.45 : 1 }}>{busy ? "กำลังอัปโหลด…" : saved ? "บันทึกแล้ว · ทีมงานจะตรวจรูปให้" : "บันทึกรูป"}</button>
-          <Link href={`/join/profile/${mb}${q}`} className="h-12 rounded-[14px] text-[#e8c472] text-[14px] font-semibold grid place-items-center hover:text-[#e8c472]" style={{ background: "rgba(232,196,114,0.16)" }}>กลับไปโปรไฟล์</Link>
+          {/* ทุกการเพิ่ม/ลบ/ตั้งรูปหลักบันทึกทันทีอยู่แล้ว → ไม่มีปุ่ม "บันทึก" หลอก แค่บอกสถานะ + ปุ่มกลับ */}
+          <p role="status" className="m-0 text-[13px] font-light text-center" style={{ color: busy ? "#e8c472" : saved ? "#7fd6a3" : "#b5a596" }}>{busy ? "กำลังอัปโหลด…" : saved ? "✓ บันทึกแล้ว · ทีมงานจะตรวจรูปให้" : "บันทึกอัตโนมัติทุกครั้งที่เพิ่ม ลบ หรือตั้งรูปหลัก"}</p>
+          <Link href={`/join/profile/${mb}${q}`} className="h-[52px] rounded-[14px] bg-[#e8c472] text-[#1b130b] text-[15px] font-semibold grid place-items-center hover:text-[#1b130b]">เสร็จแล้ว · กลับไปโปรไฟล์</Link>
         </div>
       </div>
     </div>

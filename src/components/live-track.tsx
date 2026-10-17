@@ -67,7 +67,7 @@ export function LiveTrack({ id, nick, img, startsAt }: { id: string; nick: strin
             </span>
             <span className={`text-[11.5px] shrink-0 ${tr.stale ? "text-[#ff8a9a]" : "text-[#b5a596]"}`}>อัปเดต {ago(tr.at)}</span>
           </div>
-          <div ref={el} className="rounded-2xl overflow-hidden z-0" style={{ height: 220, border: `1px solid ${LN}` }} />
+          <div ref={el} className="relative isolate rounded-2xl overflow-hidden z-0" style={{ height: 220, border: `1px solid ${LN}` }} />
           {tr.stale && <p className="m-0 text-[12px] text-[#ff8a9a]">ตำแหน่งไม่อัปเดตเกิน 10 นาที (สัญญาณหรือเพื่อนปิดหน้าจอ) · ทักแชทถามเพื่อนได้</p>}
           {!d.dest && <p className="m-0 text-[12px] font-light text-[#b5a596]">นัดนี้ไม่ได้ปักหมุดจุดนัด จึงคำนวณเวลาถึงไม่ได้</p>}
         </>

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { currentParttime } from "@/lib/bookings/auth";
 import { PostError, addInterest, interestsFor, listOpen } from "@/lib/posts";
+import { extraOf } from "@/lib/join/store";
+import { GATE_MSG, isPtActive } from "@/lib/join/pt-ui";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,6 +24,8 @@ export async function POST(req: Request) {
   const b = (await req.json().catch(() => ({}))) as { mb?: string; t?: string; post_id?: string; message?: string };
   const a = await currentParttime(String(b.mb ?? ""), b.t);
   if (!a) return NextResponse.json({ ok: false }, { status: 403 });
+  // ยังไม่อนุมัติ/ยังไม่เปิดโปรไฟล์ → ลูกค้ายังจองไม่ได้ จึงไม่ให้กดสนใจโพสต์
+  if (!isPtActive(extraOf(a))) return NextResponse.json({ ok: false, error: GATE_MSG }, { status: 409 });
   try {
     await addInterest(String(b.post_id ?? ""), a, String(b.message ?? ""));
     return NextResponse.json({ ok: true });

@@ -12,7 +12,9 @@ import { promptPayPayload } from "@/lib/join/promptpay";
 const GOLD = "#e8c472";
 const LN = "rgba(243,234,217,0.07)";
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US", { maximumFractionDigits: 2 });
-const KIND: Record<string, string> = { topup: "เติมเงิน", hold: "กันเงินรอเพื่อนตอบรับ", confirm: "ชำระค่านัด", release: "คืนเงินที่กันไว้", refund: "คืนเงิน", adjust: "ปรับยอดโดยทีมงาน", reversal: "รายการกลับ", split: "สรุปยอดหลังจบนัด", promo: "รับเครดิตจากโค้ด", gift: "ซื้อบัตรของขวัญ" };
+const KIND: Record<string, string> = { topup: "เติมเงิน", hold: "กันเงินรอเพื่อนตอบรับ", confirm: "ชำระค่านัด", release: "คืนเงินที่กันไว้", refund: "คืนเงิน", adjust: "ปรับยอดโดยทีมงาน", reversal: "รายการกลับ", split: "สรุปยอดหลังจบนัด", promo: "รับเครดิตจากโค้ด", gift: "ซื้อบัตรของขวัญ", member: "เปิดเมมเบอร์ (รวมเครดิตโบนัส)" };
+// หมายเหตุที่ลูกค้าเห็น: ตัดข้อมูลภายใน (ส่วนแบ่ง % ของเพื่อน ฯลฯ) เหลือรหัสนัด
+const custNote = (k: string, n: string | null) => (n && (k === "split" || k === "refund") ? /BK-[A-Z0-9]+/.exec(n)?.[0] ?? null : n);
 type H = { tx_id: number; kind: string; note: string | null; bucket: string; amount: number; created_at: string };
 /** รวมขาของรายการบัญชีคู่ให้เหลือ 1 แถวต่อธุรกรรม — ลูกค้าเห็นเฉพาะยอดที่ใช้ได้เปลี่ยนเท่าไร (เงินกันไว้แสดงเป็นหมายเหตุ) */
 function rowsOf(history: H[]) {
@@ -124,7 +126,7 @@ export default function WalletPage() {
             <div className="rounded-2xl bg-[#211a18] text-center text-[13px] font-light text-[#d9c9b4]" style={{ padding: 24 }}>ยังไม่มีรายการ · เติมเงินเพื่อเริ่มนัดเพื่อนได้เลย</div>
           ) : rowsOf(w.history).map((h) => (
             <div key={h.tx_id} className="flex justify-between items-center gap-3 rounded-2xl bg-[#211a18]" style={{ padding: "12px 14px" }}>
-              <span className="flex flex-col min-w-0"><span className="text-[14px]">{h.label}</span><span className="text-[12px] font-light text-[#b5a596]">{new Date(h.created_at).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}{h.note ? ` · ${h.note}` : ""}</span></span>
+              <span className="flex flex-col min-w-0"><span className="text-[14px]">{h.label}</span><span className="text-[12px] font-light text-[#b5a596]">{new Date(h.created_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", dateStyle: "medium", timeStyle: "short" })}{custNote(h.kind, h.note) ? ` · ${custNote(h.kind, h.note)}` : ""}</span></span>
               {h.amount !== 0
                 ? <span className="shrink-0 font-semibold tabular-nums" style={{ color: h.amount > 0 ? "#7fd6a3" : "#f3ead9" }}>{h.amount > 0 ? "+" : "−"}{baht(Math.abs(h.amount))}</span>
                 : <span className="shrink-0 flex flex-col items-end tabular-nums"><span className="font-semibold text-[#d9c9b4]">{baht(Math.abs(h.held))}</span><span className="text-[11.5px] font-light text-[#b5a596]">{h.held > 0 ? "กันไว้" : "จากยอดที่กันไว้"}</span></span>}

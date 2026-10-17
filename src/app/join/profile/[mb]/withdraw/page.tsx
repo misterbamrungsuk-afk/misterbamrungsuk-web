@@ -5,6 +5,7 @@ import { WithdrawForm } from "../_ptc";
 import { listWithdrawals, ptWallet } from "@/lib/bookings/day";
 import { getMoney } from "@/lib/wallet/settings";
 import { extraOf } from "@/lib/join/store";
+import { GATE_MSG, isPtActive } from "@/lib/join/pt-ui";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "ถอนเงิน — Mister Bamrungsuk" };
@@ -34,12 +35,12 @@ export default async function WithdrawPage({ params, searchParams }: { params: P
             <div className={box} style={{ padding: "8px 12px", background: "rgba(243,234,217,0.07)" }}><div className="text-[12px] text-[#b5a596] font-light">ถอนแล้วเดือนนี้</div><div className="text-[15px] font-semibold tabular-nums">{baht(paidMonth / 100)}</div></div>
           </div>
         </div>
-        <WithdrawForm avail={Math.floor(w.available / 100)} acct={acct} bankHref={`/join/bank/${c.mb}${c.q}`} mb={c.mb} t={c.t} rules={{ min: m.minWithdraw, feePct: m.feePct, whtPct: m.whtPct }} kycOk={extraOf(c.row).kyc_status === "approved"} />
+        <WithdrawForm avail={Math.floor(w.available / 100)} acct={acct} bankHref={`/join/bank/${c.mb}${c.q}`} mb={c.mb} t={c.t} rules={{ min: m.minWithdraw, feePct: m.feePct, whtPct: m.whtPct }} kycOk={extraOf(c.row).kyc_status === "approved"} gate={extraOf(c.row).kyc_status === "approved" && !isPtActive(extraOf(c.row)) ? GATE_MSG : ""} />
         <div>
           <div className="font-medium text-[16px]" style={{ margin: "4px 0 2px" }}>ประวัติการถอน</div>
           {!ws.length ? <div className="text-[14px] font-light text-[#b5a596]" style={{ padding: "11px 0" }}>ยังไม่มีรายการ</div> : ws.map((x) => (
             <div key={x.id} className="flex justify-between items-center gap-3 text-[14px]" style={{ padding: "11px 0", borderBottom: "1px solid rgba(243,234,217,0.07)" }}>
-              <span className="flex flex-col"><span>{baht(x.amount_satang / 100)} → รับ {baht(x.net_satang / 100)}</span><span className="text-[12px] font-light text-[#b5a596]">{new Date(x.created_at).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}</span></span>
+              <span className="flex flex-col"><span>{baht(x.amount_satang / 100)} → รับ {baht(x.net_satang / 100)}</span><span className="text-[12px] font-light text-[#b5a596]">{new Date(x.created_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", dateStyle: "medium", timeStyle: "short" })}</span></span>
               <span className="text-[12.5px] font-semibold" style={{ color: ST[x.status][1] }}>{ST[x.status][0]}</span>
             </div>
           ))}

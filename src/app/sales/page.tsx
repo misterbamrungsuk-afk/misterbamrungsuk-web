@@ -9,13 +9,14 @@ export const metadata = { title: "Sale Man · ชวนเปิดเมม ร
 const baht = (n: number) => "฿" + n.toLocaleString("th-TH");
 
 // หน้าขาย Sale Man — อธิบายค่าคอม + วิธีสมัคร (ทีมงานสร้างบัญชีแล้วส่งลิงก์เข้าแดชบอร์ด) · Part-Time ใช้หน้าในโปรไฟล์ของตัวเอง
-export default async function SalesLanding({ searchParams }: { searchParams: Promise<{ expired?: string }> }) {
+export default async function SalesLanding({ searchParams }: { searchParams: Promise<{ expired?: string; out?: string }> }) {
   const sp = await searchParams;
   const cfg = await getMemberSettings();
   return (
     <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9" }}>
       <BrandBar />
       <main className="mx-auto w-full max-w-[880px] flex flex-col gap-4" style={{ padding: "12px 18px 0" }}>
+        {sp.out && <p className="m-0 rounded-xl text-[14px] text-[#7fd6a3]" style={{ padding: 12, background: "rgba(60,170,110,.12)" }}>ออกจากระบบ Sale Man แล้ว · เข้าใหม่ด้วยลิงก์จากทีมงาน</p>}
         {sp.expired && <p className="m-0 rounded-xl text-[14px] text-[#ff8a9a]" style={{ padding: 12, background: "rgba(201,40,61,.12)" }}>ลิงก์เข้าแดชบอร์ดหมดอายุหรือไม่ถูกต้อง · ขอลิงก์ใหม่จากทีมงาน</p>}
         <section className="rounded-[22px] flex flex-col gap-2" style={{ padding: "20px 18px", background: "radial-gradient(80% 120% at 90% 0%, rgba(232,196,114,.22), rgba(0,0,0,0) 60%), linear-gradient(140deg, #3a0a14, #1c0d10 60%)", border: "1px solid rgba(232,196,114,.45)" }}>
           <span className="text-[12px] tracking-[.24em] font-semibold text-[#e8c472]">SALE MAN</span>

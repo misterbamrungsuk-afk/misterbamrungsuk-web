@@ -4,6 +4,7 @@
 import { useRef, useState } from "react";
 import { SLOTS, type CoverRow, type CoverSlot } from "@/lib/covers-config";
 import { cropToSlot } from "@/lib/covers-crop";
+import { EXPIRED, useConfirm } from "../confirm";
 
 type State = Record<CoverSlot, CoverRow[]>;
 
@@ -24,6 +25,7 @@ export function CoversAdmin({ initial, defaults, configured }: { initial: State;
   const [p, setP] = useState(0);
   const [drag, setDrag] = useState<CoverSlot | null>(null);
   const inputs = useRef<Partial<Record<CoverSlot, HTMLInputElement | null>>>({});
+  const [confirmUi, ask] = useConfirm();
 
   const urls = (slot: CoverSlot) => (s[slot].length ? s[slot].map((r) => r.url) : defaults[slot]);
 
@@ -59,10 +61,12 @@ export function CoversAdmin({ initial, defaults, configured }: { initial: State;
   }
 
   async function remove(slot: CoverSlot, id: string) {
+    // ลบรูปจริงจากคลัง (ย้อนกลับไม่ได้ ต้องอัปโหลดใหม่)
+    if (!(await ask({ title: "ลบรูปนี้?", body: "รูปจะถูกลบจากคลังทันที · ถ้าต้องการกลับมาต้องอัปโหลดใหม่", ok: "ลบรูป", danger: true }))) return;
     setErr("");
     setSaved(false);
     const res = await fetch(`/api/admin/covers?id=${encodeURIComponent(id)}`, { method: "DELETE" });
-    if (!res.ok) { setErr("ลบไม่สำเร็จ"); return; }
+    if (!res.ok) { setErr(res.status === 401 ? EXPIRED : "ลบไม่สำเร็จ"); return; }
     setS((x) => ({ ...x, [slot]: x[slot].filter((r) => r.id !== id) }));
     setP(0);
     setSaved(true);
@@ -256,6 +260,7 @@ export function CoversAdmin({ initial, defaults, configured }: { initial: State;
         </div>
         <button type="button" onClick={publish} className="btn-red-lux w-[260px] h-[46px] rounded-full border-[1.5px] border-[#ffd76a] text-white font-semibold">บันทึกและขึ้นเว็บ</button>
       </aside>
+      {confirmUi}
     </div>
   );
 }

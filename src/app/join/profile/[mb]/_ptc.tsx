@@ -6,6 +6,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Tier } from "@/lib/join/earnings-shared";
 import type { PtPost, PtSettings } from "@/lib/join/store";
+// ข้อความสำเร็จรูปเริ่มต้นใช้ชุดเดียวกับหน้าข้อความตอบกลับเร็ว (ผู้ชาย · "ครับ")
+import { QUICK_DEFAULT } from "@/lib/join/pt-ui";
 
 const GOLD = "#e8c472";
 const baht = (n: number) => "฿" + Math.round(n).toLocaleString("en-US");
@@ -24,9 +26,9 @@ async function post(mb: string, t: string, step: string, fill: (fd: FormData) =>
 const caseLabel = (t: Tier) => (t.max === null ? `${t.min} เคสขึ้นไป` : `${Math.max(1, t.min)}–${t.max} เคส`);
 
 /** บอร์ด MyEarnings — การ์ด "ภารกิจเดือนนี้" (ส่วนแบ่งตอนนี้ · เคสเดือนนี้ ± · หมุดขั้น) + ตาราง "ส่วนแบ่ง" + "รายได้ประมาณการเดือนนี้"
- *  เคสจริงยังเป็น 0 — ปุ่ม ± ใช้ลองคำนวณ (ไม่บันทึก) */
-export function EarnBoard({ price, tiers, top }: { price: number; tiers: Tier[]; top: boolean }) {
-  const [c, setC] = useState(0);
+ *  เริ่มจากเคสจริงเดือนนี้ (งานที่จบแล้ว) — ปุ่ม ± ใช้ลองคำนวณ (ไม่บันทึก) */
+export function EarnBoard({ price, tiers, top, real = 0 }: { price: number; tiers: Tier[]; top: boolean; real?: number }) {
+  const [c, setC] = useState(real);
   const cur = tiers.reduce((p, t, i) => (c >= t.min ? i : p), 0);
   const col = (i: number) => COL[Math.min(i, COL.length - 1)];
   const pct = tiers[cur]?.pct ?? 0;
@@ -97,7 +99,7 @@ export function EarnBoard({ price, tiers, top }: { price: number; tiers: Tier[];
         </div>
         <div className="flex gap-2.5 text-[13px] font-light mt-1.5 text-center">{["ส.1", "ส.2", "ส.3", "ส.4"].map((w, i) => <span key={w} className="flex-1" style={{ color: i === 3 ? GOLD : undefined }}>{w}</span>)}</div>
         <div className="flex justify-between text-[13px] font-light mt-3 pt-2.5 border-t border-[rgba(243,234,217,0.07)]"><span>{c} เคส × {baht(per)}</span><span className="tabular-nums">{baht(per * c)}</span></div>
-        <div className="text-[12px] font-light text-[#b5a596] mt-2">ยังไม่มีเคสจริง · กด − / + ด้านบนเพื่อลองคำนวณ</div>
+        <div className="text-[12px] font-light text-[#b5a596] mt-2">{real ? `เคสจริงเดือนนี้ ${real} เคส` : "ยังไม่มีเคสจริงเดือนนี้"}{c !== real ? ` · กำลังลองคำนวณ ${c} เคส` : " · กด − / + ด้านบนเพื่อลองคำนวณ"}</div>
       </div>
     </>
   );
@@ -106,14 +108,16 @@ export function EarnBoard({ price, tiers, top }: { price: number; tiers: Tier[];
 export type Acct = { short: string; logo: string; name: string; no: string };
 
 /** บอร์ด Withdraw — กรอกจำนวน · บัญชีปลายทาง · ค่าธรรมเนียม 3% + หัก ณ ที่จ่าย 3% · ขั้นต่ำ ฿500 */
-export function WithdrawForm({ avail, acct, bankHref, mb, t, rules = { min: 500, feePct: 3, whtPct: 3 }, kycOk = true }: { avail: number; acct: Acct | null; bankHref: string; mb?: string; t?: string; rules?: { min: number; feePct: number; whtPct: number }; kycOk?: boolean }) {
+export function WithdrawForm({ avail, acct, bankHref, mb, t, rules = { min: 500, feePct: 3, whtPct: 3 }, kycOk = true, gate = "" }: { avail: number; acct: Acct | null; bankHref: string; mb?: string; t?: string; rules?: { min: number; feePct: number; whtPct: number }; kycOk?: boolean; /** เหตุผลที่ยังถอนไม่ได้ (ยังไม่อนุมัติ/ยังไม่เปิดโปรไฟล์) — มีค่า = ปิดฟอร์ม */ gate?: string }) {
   const router = useRouter();
   const [amt, setAmt] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; t: string } | null>(null);
   const n = Math.floor(Number(amt) || 0);
-  const ok = n >= rules.min && n <= avail && !!acct && kycOk;
-  const hint = !kycOk ? "ถอนได้หลังทีมงานอนุมัติเอกสารยืนยันตัวตน" : avail < rules.min ? `ยอดถอนได้ไม่ถึงขั้นต่ำ ${baht(rules.min)}` : n > avail ? `เกินยอดถอนได้ (${baht(avail)})` : n > 0 && n < rules.min ? `ถอนขั้นต่ำ ${baht(rules.min)}` : `ถอนได้สูงสุด ${baht(avail)}`;
+  const ok = n >= rules.min && n <= avail && !!acct && kycOk && !gate;
+  // เหตุผลเจาะจงที่ยังกดถอนไม่ได้ — แสดงทั้งใต้ช่องกรอกและบนปุ่ม
+  const why = gate ? gate : !kycOk ? "ถอนได้หลังทีมงานอนุมัติเอกสารยืนยันตัวตน" : !acct ? "เพิ่มบัญชีรับเงินก่อน" : n > avail ? `เกินยอดที่ถอนได้ · ถอนได้สูงสุด ${baht(avail)}` : n > 0 && n < rules.min ? `ต่ำกว่าขั้นต่ำ · ถอนขั้นต่ำ ${baht(rules.min)}` : avail < rules.min ? `ยอดถอนได้ ${baht(avail)} ยังไม่ถึงขั้นต่ำ ${baht(rules.min)}` : "";
+  const hint = why || `ถอนได้ ${baht(rules.min)} – ${baht(avail)}`;
   const base = ok ? n : 0, fee = Math.round(base * rules.feePct / 100), wht = Math.round(base * rules.whtPct / 100);
   const submit = async () => {
     if (!ok || !mb) return;
@@ -134,7 +138,7 @@ export function WithdrawForm({ avail, acct, bankHref, mb, t, rules = { min: 500,
           <input inputMode="numeric" value={amt} placeholder="0" aria-label="จำนวนเงิน" onChange={(e) => setAmt(e.target.value.replace(/\D/g, "").slice(0, 9))} className="flex-1 min-w-0 h-full bg-transparent text-[#f3ead9] text-[26px] font-semibold outline-none" />
           <button type="button" onClick={() => setAmt(String(avail))} className="shrink-0 h-[38px] rounded-[10px] text-[14px] font-semibold" style={{ padding: "0 16px", background: allOn ? GOLD : "rgba(243,234,217,0.1)", color: allOn ? "#1b130b" : GOLD }}>ทั้งหมด</button>
         </div>
-        <div className="text-[12.5px] mt-2 font-light" style={{ color: ok || n === 0 ? "#b5a596" : "#e8936a" }}>{hint}</div>
+        <div role={why && n > 0 ? "alert" : undefined} className="text-[12.5px] mt-2 font-light" style={{ color: !why || (n === 0 && !gate && kycOk) ? "#b5a596" : "#e8936a" }}>{hint}</div>
       </div>
 
       <div className="rounded-[20px] bg-[#251d1b]" style={{ padding: 16 }}>
@@ -153,19 +157,18 @@ export function WithdrawForm({ avail, acct, bankHref, mb, t, rules = { min: 500,
           <div key={l} className="flex justify-between items-center gap-2.5 text-[14px]"><span className="text-[#b5a596]">{l}</span><span className="tabular-nums" style={{ color: c || undefined }}>{v}</span></div>
         ))}
         <div className="flex justify-between items-center gap-2.5 text-[15px] pt-1.5 mt-0.5"><span className="font-semibold">ได้รับจริง</span><span className="font-bold text-[18px] text-[#e8c472] tabular-nums">{baht(base - fee - wht)}</span></div>
-        <div className="text-[12.5px] text-[#b5a596] font-light">ระบบออกใบเสร็จ/ใบกำกับภาษีและใบหัก ณ ที่จ่ายให้อัตโนมัติ ดูได้ที่หน้ารายได้ · เงินเข้าในรอบโอนถัดไป · ถอนขั้นต่ำ {baht(rules.min)}</div>
+        <div className="text-[12.5px] text-[#b5a596] font-light">ระบบหักภาษี ณ ที่จ่าย {rules.whtPct}% จากยอดถอน และออกใบเสร็จค่าธรรมเนียมแพลตฟอร์ม (เลขที่ WR-…) ให้อัตโนมัติเมื่อโอนสำเร็จ ดูได้ที่หน้าเอกสาร · เงินเข้าในรอบโอนถัดไป · ถอนขั้นต่ำ {baht(rules.min)}</div>
       </div>
 
       {msg && <p role="status" className="m-0 text-[13px]" style={{ color: msg.ok ? "#7fd6a3" : "#ff8a9a" }}>{msg.t}</p>}
       <button type="button" disabled={!ok || busy} onClick={submit} className="w-full h-[54px] rounded-2xl text-[16px] font-semibold" style={{ background: ok ? GOLD : "rgba(243,234,217,0.08)", color: ok ? "#1b130b" : "#b5a596" }}>
-        {busy ? "กำลังส่งคำขอ…" : ok ? `ยืนยันถอน ${baht(n)} · รับ ${baht(n - fee - wht)}` : "ใส่จำนวนเงินที่ต้องการถอน"}
+        {busy ? "กำลังส่งคำขอ…" : ok ? `ยืนยันถอน ${baht(n)} · รับ ${baht(n - fee - wht)}` : why || "ใส่จำนวนเงินที่ต้องการถอน"}
       </button>
     </>
   );
 }
 
 /** บอร์ด ProviderSettings — การ์ด "ตอบกลับอัตโนมัติ" (สวิตช์ · ข้อความ · ข้อความสำเร็จรูป + เพิ่ม) */
-const QUICK_DEFAULT = ["ได้รับการจองแล้วค่ะ", "กำลังเดินทางค่ะ", "ถึงแล้วค่ะ"];
 export function SettingsForm({ mb, t, init }: { mb: string; t: string; init: PtSettings | null }) {
   const [on, setOn] = useState(init?.auto_reply_on ?? false);
   const [text, setText] = useState(init?.auto_reply ?? "");
@@ -189,7 +192,7 @@ export function SettingsForm({ mb, t, init }: { mb: string; t: string; init: PtS
           <span className="absolute top-[3px] w-[22px] h-[22px] rounded-[22px] transition-all" style={{ left: on ? 23 : 3, background: on ? "#000" : "#f3ead9" }} />
         </button>
       </div>
-      <textarea aria-label="ข้อความตอบกลับอัตโนมัติ" maxLength={300} value={text} placeholder="เช่น สวัสดีค่ะ ขอทราบวัน เวลา สถานที่ และกิจกรรมที่อยากทำด้วยกันหน่อยค่ะ" onChange={(e) => { setText(e.target.value); ch(); }}
+      <textarea aria-label="ข้อความตอบกลับอัตโนมัติ" maxLength={300} value={text} placeholder="เช่น สวัสดีครับ ขอทราบวัน เวลา สถานที่ และกิจกรรมที่อยากทำด้วยกันหน่อยครับ" onChange={(e) => { setText(e.target.value); ch(); }}
         className="h-[84px] rounded-[14px] text-[14px] leading-[1.5] outline-none resize-none text-[#f3ead9] placeholder:text-[#b5a596]" style={{ padding: "10px 12px", background: "rgba(232,196,114,0.16)" }} />
       <div className="text-[13px] font-light">ข้อความสำเร็จรูป</div>
       <div className="flex flex-wrap gap-2">
@@ -217,25 +220,49 @@ export function SettingsForm({ mb, t, init }: { mb: string; t: string; init: PtS
 export function AccountLinks({ mb, t, reviewsHref, quickHref, strikesHref, deleteRequested }: { mb: string; t: string; reviewsHref: string; quickHref: string; strikesHref: string; deleteRequested: string | null }) {
   const router = useRouter();
   const [ask, setAsk] = useState(false);
+  const [askAll, setAskAll] = useState(false);
   const [reqAt, setReqAt] = useState(deleteRequested);
   const [err, setErr] = useState("");
-  const logout = async (all = false) => { await fetch("/api/join/logout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ all }) }).catch(() => null); router.push("/work-with-us"); };
+  const [busy, setBusy] = useState(false);
+  const logout = async (all = false) => { setBusy(true); await fetch("/api/join/logout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ all }) }).catch(() => null); router.push("/work-with-us"); };
   const del = async () => {
     const e = await post(mb, t, "delete_request", () => {});
     if (e) { setErr(e); return; }
     setReqAt(new Date().toISOString()); setAsk(false);
   };
+  // ยกเลิกคำขอลบที่ยังรอดำเนินการ → โปรไฟล์กลับมาแสดงตามปกติ
+  const undoDel = async () => {
+    setBusy(true); setErr("");
+    const e = await post(mb, t, "delete_cancel", () => {});
+    setBusy(false);
+    if (e) setErr(e); else setReqAt(null);
+  };
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap justify-center gap-x-[18px] text-[13px] font-light" style={{ padding: "4px 0 8px" }}>
         <button type="button" onClick={() => logout()} className="min-h-11 text-[#d9c9b4]">ออกจากระบบ</button>
-        <button type="button" onClick={() => logout(true)} title="ลิงก์และเครื่องอื่นที่เคยเข้าจะใช้ไม่ได้ ต้องขอลิงก์ใหม่จากทีมงาน" className="min-h-11 text-[#d9c9b4]">ออกจากระบบทุกเครื่อง</button>
+        <button type="button" onClick={() => { setAskAll(true); setAsk(false); }} aria-expanded={askAll} className="min-h-11 text-[#d9c9b4]">ออกจากระบบทุกเครื่อง</button>
         <Link href={quickHref} className="min-h-11 flex items-center text-[#e8c472]">ข้อความตอบกลับเร็ว</Link>
         <Link href={strikesHref} className="min-h-11 flex items-center text-[#e8c472]">สถานะบัญชี</Link>
         <Link href={reviewsHref} className="min-h-11 flex items-center text-[#e8c472]">รีวิวของฉัน</Link>
-        {!reqAt && <button type="button" onClick={() => setAsk(true)} className="min-h-11 text-[#ff8a9a]">ลบบัญชี (PDPA)</button>}
+        {!reqAt && <button type="button" onClick={() => { setAsk(true); setAskAll(false); }} className="min-h-11 text-[#ff8a9a]">ลบบัญชี (PDPA)</button>}
       </div>
-      {reqAt && <p className="m-0 rounded-[14px] text-[13px] font-light text-[#d9c9b4] text-center" style={{ padding: "10px 14px", background: "rgba(255,138,154,0.08)" }}>ส่งคำขอลบบัญชีแล้ว ({new Date(reqAt).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" })}) · ทีมงานจะติดต่อยืนยันภายใน 30 วัน ตาม PDPA</p>}
+      {askAll && (
+        <div role="dialog" aria-label="ยืนยันออกจากระบบทุกเครื่อง" className="rounded-[20px] bg-[#211a18] flex flex-col gap-2.5" style={{ padding: 16 }}>
+          <div className="text-[16px] font-semibold">ออกจากระบบทุกเครื่อง?</div>
+          <p className="m-0 text-[13.5px] font-light text-[#d9c9b4]">ลิงก์เข้าโปรไฟล์และทุกเครื่องที่เคยเข้า (รวมเครื่องนี้) จะใช้ไม่ได้ทันที · ต้องขอลิงก์ใหม่จากทีมงานทาง LINE จึงจะเข้าได้อีก</p>
+          <div className="grid grid-cols-2 gap-2">
+            <button type="button" onClick={() => setAskAll(false)} className="h-11 rounded-xl text-[14px] font-semibold" style={{ background: "rgba(243,234,217,0.1)" }}>ยกเลิก</button>
+            <button type="button" onClick={() => logout(true)} disabled={busy} className="h-11 rounded-xl text-[14px] font-semibold text-white disabled:opacity-50" style={{ background: "#a3283c" }}>{busy ? "กำลังออก…" : "ยืนยันออกทุกเครื่อง"}</button>
+          </div>
+        </div>
+      )}
+      {reqAt && (
+        <div className="rounded-[14px] flex flex-col items-center gap-2 text-center" style={{ padding: "10px 14px", background: "rgba(255,138,154,0.08)" }}>
+          <p className="m-0 text-[13px] font-light text-[#d9c9b4]">ส่งคำขอลบบัญชีแล้ว ({new Date(reqAt).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" })}) · ทีมงานจะติดต่อยืนยันภายใน 30 วัน ตาม PDPA · ระหว่างนี้ลูกค้าจะไม่เห็นโปรไฟล์</p>
+          <button type="button" onClick={undoDel} disabled={busy} className="min-h-11 px-4 rounded-xl text-[14px] font-semibold text-[#e8c472] disabled:opacity-50" style={{ background: "rgba(232,196,114,0.16)" }}>{busy ? "กำลังยกเลิก…" : "ยกเลิกคำขอลบบัญชี"}</button>
+        </div>
+      )}
       {ask && !reqAt && (
         <div role="dialog" aria-label="ยืนยันลบบัญชี" className="rounded-[20px] bg-[#211a18] flex flex-col gap-2.5" style={{ padding: 16 }}>
           <div className="text-[16px] font-semibold">ขอลบบัญชีและข้อมูลส่วนตัว?</div>

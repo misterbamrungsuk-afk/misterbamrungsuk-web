@@ -17,3 +17,14 @@ export const TRAINING_SESSIONS = [
   { session: 4, day: "16", mon: "พ.ย.", title: "มาตรฐานการนวด (เพื่อนกินเที่ยว · นวด)", meta: "11:00–14:00 · MB Studio ทองหล่อ" },
   { session: 5, day: "16", mon: "พ.ย.", title: "ทดสอบ & ถ่ายรูปโปรไฟล์", meta: "14:30–17:00 · MB Studio ทองหล่อ" },
 ] as const;
+
+/** รอบมาตรฐานการนวด — บังคับเฉพาะสายนวด (แพ็กเกจ B) ไม่นับเป็นรอบหลัก */
+export const MASSAGE_SESSION = 4;
+/** รอบหลัก (ทุกคนต้องเข้า) = ทุกรอบยกเว้นรอบการนวด → จำนวนเท่ากับ TRAINING.requiredCore */
+export const CORE_SESSIONS = TRAINING_SESSIONS.filter((s) => s.session !== MASSAGE_SESSION).map((s) => s.session as number);
+/** รอบที่ผู้สมัครคนนี้ต้องเข้า (สายนวดเพิ่มรอบการนวด) */
+export const sessionsFor = (pkg: string) => TRAINING_SESSIONS.filter((s) => s.session !== MASSAGE_SESSION || pkg === "B");
+/** เข้ารอบหลักครบตามเกณฑ์แล้ว (เริ่มรับงานได้) */
+export const coreDone = (att: Record<number, boolean>) => CORE_SESSIONS.filter((n) => att[n]).length >= TRAINING.requiredCore;
+/** ข้อความจำนวนรอบ (ให้ตรงกันทุกหน้า) */
+export const sessionsLabel = (pkg: string) => `${TRAINING.requiredCore} รอบหลัก${pkg === "B" ? " + รอบมาตรฐานการนวด 1 รอบ" : ""}`;

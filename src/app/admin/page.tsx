@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
 import { overview, systemChecks } from "@/lib/admin/overview";
 import { Card, PageHead, Pill } from "./admin-nav";
 import { PingButton } from "./ping-button";
@@ -10,18 +12,26 @@ const baht = (s: number) => "฿" + (s / 100).toLocaleString("th-TH", { maximumF
 
 export default async function AdminHome() {
   const [o, checks] = [await overview(), systemChecks()];
+  const role = (await verifySession((await cookies()).get(ADMIN_COOKIE)?.value))?.role;
   const q = o.queues, m = o.money, b = o.bookings;
-  const todo: [string, number, string, string?][] = [
+  const all: [string, number, string, string?][] = [
     ["ตัดสินยกเลิก / ข้อพิพาท", b.decide, "/admin/orders", "red"],
     ["SOS / แจ้งเตือนค้าง", o.alerts.open, "/admin/audit", "red"],
+    ["รายงานผู้ใช้รอตรวจ", q.reports, "/admin/reports", "red"],
+    ["แชทฝ่าฝืนคำห้าม (ยังไม่อ่าน)", q.chatViolations, "/admin/chats?f=flag"],
     ["เติมเงินรอตรวจสลิป", q.topups, "/admin/wallet"],
-    ["คำขอถอนรอ CEO อนุมัติ", q.withdrawRequested, "/admin/payroll"],
+    ["คำขอถอน Part-Time รอ CEO อนุมัติ", q.withdrawRequested - q.ownerRequested, "/admin/payroll"],
+    ["คำขอถอนพาร์ทเนอร์ / ร้านค้า รอ CEO", q.ownerRequested, "/admin/payroll"],
     ["CEO อนุมัติแล้ว · รอโอน", q.withdrawApproved, "/admin/payouts"],
-    ["สลิปเปิดเมมรอตรวจ", q.memberSlips, "/admin/sales"],
     ["รอบโอนรอยืนยัน", q.withdrawBatched, "/admin/payouts"],
+    ["สลิปเปิดเมมรอตรวจ", q.memberSlips, "/admin/sales"],
+    ["ออเดอร์ร้านค้ารอยืนยันชำระ", q.marketOrders, "/admin/market"],
+    ["โปรโมทโปรไฟล์รอตรวจสลิป", q.boosts, "/admin/boosts"],
     ["KYC รอตรวจ", q.kyc, "/admin/kyc"],
     ["สลิปผู้สมัครรอตรวจ", q.slips, "/admin/slips"],
   ];
+  // แสดงเฉพาะคิวที่บทบาทนี้เปิดหน้าได้ (กดแล้วไม่โดนเด้ง ?denied=1)
+  const todo = role ? all.filter(([, , href]) => canAccess(role, href.split("?")[0])) : [];
   return (
     <>
       <PageHead title="ภาพรวม" sub={`ข้อมูลจริง ณ ${new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}`} />
@@ -32,9 +42,9 @@ export default async function AdminHome() {
           <span className="text-sm text-crimson-200 shrink-0">รับเรื่อง →</span>
         </Link>
       ))}
-      {o.recon && !o.recon.ok && (
-        <Link href="/admin/wallet" className="mb-3 block rounded-2xl border border-amber-500 bg-amber-500/10 px-4 py-3 text-sm"><b>⚠ ยอดเงินไม่ตรง {o.recon.issues.length} รายการ</b> · {o.recon.issues[0]}</Link>
-      )}
+      {o.recon && !o.recon.ok && (role && canAccess(role, "/admin/wallet")
+        ? <Link href="/admin/wallet" className="mb-3 block rounded-2xl border border-amber-500 bg-amber-500/10 px-4 py-3 text-sm"><b>⚠ ยอดเงินไม่ตรง {o.recon.issues.length} รายการ</b> · {o.recon.issues[0]}</Link>
+        : <p className="mb-3 rounded-2xl border border-amber-500 bg-amber-500/10 px-4 py-3 text-sm"><b>⚠ ยอดเงินไม่ตรง {o.recon.issues.length} รายการ</b> · แจ้งฝ่ายการเงินตรวจ</p>)}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card><p className="text-xs text-ink-300">นัดวันนี้</p><p className="font-display font-semibold text-2xl mt-1">{b.today}</p><p className="text-xs text-ink-300 mt-1">รอตอบรับ {b.waiting} · กำลังดำเนิน {b.live}</p></Card>
@@ -46,6 +56,7 @@ export default async function AdminHome() {
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] mt-4">
         <Card>
           <h2 className="font-semibold mb-2">งานที่ต้องทำ</h2>
+          {!todo.length && <p className="text-sm text-ink-300">ไม่มีคิวงานสำหรับบทบาทนี้</p>}
           {todo.map(([label, n, href, tone]) => (
             <Link key={label} href={href} className="flex justify-between items-center py-2.5 border-b border-ink-600 last:border-0"><span>{label}</span><Pill tone={n ? (tone === "red" ? "red" : "gold") : "muted"}>{n}</Pill></Link>
           ))}

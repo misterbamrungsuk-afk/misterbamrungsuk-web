@@ -9,7 +9,7 @@ import { CARRIERS, CLAIM_NOTE, ORDER_STATUS_LABEL, baht, carrierName, flaggedCla
 import type { VendorData } from "@/lib/market/vendor-data";
 
 const money = (n: number | null | undefined) => (n == null ? "รอกำหนด" : `฿${n.toLocaleString("th-TH", { maximumFractionDigits: 2 })}`);
-const dt = (s: string | null) => (s ? new Date(s).toLocaleString("th-TH", { dateStyle: "short", timeStyle: "short" }) : "—");
+const dt = (s: string | null) => (s ? new Date(s).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", dateStyle: "short", timeStyle: "short" }) : "—");
 const card = "rounded-2xl border border-ink-600 bg-ink-800 p-4";
 const lbl = "block text-xs text-ink-300 mb-1";
 
@@ -81,12 +81,15 @@ export function VendorAccept({ t, email, shop }: { t: string; email: string; sho
   );
 }
 
-const TABS = [["orders", "คำสั่งซื้อ"], ["products", "สินค้า"], ["wallet", "กระเป๋าเงิน / ถอน"], ["payout", "รายงานยอดขาย"], ["profile", "รูปโปรไฟล์ร้าน"]] as const;
+const TABS = [["orders", "คำสั่งซื้อ"], ["products", "สินค้า"], ["wallet", "กระเป๋าเงิน / ถอน"], ["payout", "รายงานยอดขาย"], ["profile", "ข้อมูลร้าน / โลโก้"]] as const;
+type LogoMeta = Parameters<typeof AvatarView>[0]["meta"];
 
 export function VendorPortal({ email, initial }: { email: string; initial: VendorData }) {
   const [d, setD] = useState(initial);
   const [tab, setTab] = useState<(typeof TABS)[number][0]>("orders");
   const [msg, setMsg] = useState("");
+  // โลโก้ที่เพิ่งอัป → อัปเดตรูปในหัวทันที (ไม่ต้องรีเฟรช)
+  const [logo, setLogo] = useState<LogoMeta>(undefined);
   const reload = async () => {
     const r = await fetch("/api/market/vendor", { cache: "no-store" });
     if (r.ok) setD((await r.json()) as VendorData);
@@ -96,30 +99,62 @@ export function VendorPortal({ email, initial }: { email: string; initial: Vendo
   return (
     <>
       <header className="sticky top-0 z-30 bg-ink-900/90 backdrop-blur-xl border-b border-ink-600">
-        <div className="max-w-6xl mx-auto flex items-center gap-3 px-4 h-14">
-          <Logo size={26} />
-          <button type="button" onClick={() => setTab("profile")} aria-label="รูปโปรไฟล์ร้าน"><AvatarView as="vendor" letter={d.vendor.name} size={32} /></button>
-          <div className="min-w-0"><p className="text-sm font-semibold truncate">{d.vendor.name}</p><p className="text-[11px] text-[#9a8a85] truncate">{email}</p></div>
-          <Link href={`/shop/${d.vendor.slug}`} className="ml-auto text-xs text-gold-300 hidden sm:inline">ดูหน้าร้าน ↗</Link>
-          <button onClick={logout} className="chip h-8 px-3 text-xs">ออกจากระบบ</button>
+        <div className="max-w-6xl mx-auto flex items-center gap-2 sm:gap-3 px-3 sm:px-4 h-14">
+          <span className="hidden sm:inline-flex shrink-0"><Logo size={26} /></span>
+          <button type="button" onClick={() => setTab("profile")} aria-label="ข้อมูลร้าน / โลโก้" className="shrink-0"><AvatarView as="vendor" letter={d.vendor.name} size={32} meta={logo} /></button>
+          <div className="min-w-0 flex-1"><p className="text-sm font-semibold truncate">{d.vendor.name}</p><p className="text-[12px] text-[#9a8a85] truncate">{email}</p></div>
+          <Link href={`/shop/${d.vendor.slug}`} className="shrink-0 min-h-10 inline-flex items-center px-1 text-xs text-gold-300 whitespace-nowrap" aria-label="ดูหน้าร้าน">หน้าร้าน ↗</Link>
+          <button onClick={logout} className="chip shrink-0 h-10 px-3 text-xs whitespace-nowrap" aria-label="ออกจากระบบ">ออก</button>
         </div>
       </header>
       <div className="max-w-6xl mx-auto px-4 py-6 flex flex-col gap-4">
         <div className="flex flex-wrap gap-2">
-          {TABS.map(([k, l]) => <button key={k} onClick={() => setTab(k)} className={`chip h-9 px-3.5 ${tab === k ? "chip-red" : ""}`}>{l}{k === "orders" && toShip ? ` (${toShip} รอส่ง)` : ""}</button>)}
+          {TABS.map(([k, l]) => <button key={k} onClick={() => setTab(k)} className={`chip h-10 px-3.5 ${tab === k ? "chip-red" : ""}`}>{l}{k === "orders" && toShip ? ` (${toShip} รอส่ง)` : ""}</button>)}
         </div>
         {msg && <p role="status" className="rounded-2xl border border-gold-500/40 px-4 py-2 text-sm">{msg}</p>}
         {tab === "orders" && <Orders d={d} reload={reload} setMsg={setMsg} />}
         {tab === "products" && <Products d={d} reload={reload} setMsg={setMsg} />}
         {tab === "wallet" && <div className="max-w-[560px]"><OwnerWallet api="/api/market/vendor/wallet" source="ส่วนของร้านจากออเดอร์ที่สำเร็จ (หัก GP แล้ว รวมค่าส่ง)" /></div>}
         {tab === "payout" && <Payout d={d} />}
-        {tab === "profile" && <section className="max-w-[420px] rounded-2xl border border-ink-600 p-5 flex flex-col items-center gap-2"><b className="self-start">รูปโปรไฟล์ / โลโก้ร้าน</b><span className="text-xs text-ink-300 self-start">แสดงบนหน้าร้านค้าสาธารณะ</span><AvatarEditor as="vendor" letter={d.vendor.name} size={140} /></section>}
+        {tab === "profile" && (
+          <div className="grid gap-4 md:grid-cols-[360px_1fr] items-start">
+            <section className="rounded-2xl border border-ink-600 p-5 flex flex-col items-center gap-2"><b className="self-start">รูปโปรไฟล์ / โลโก้ร้าน</b><span className="text-xs text-ink-300 self-start">แสดงบนหน้าร้านค้าสาธารณะ</span><AvatarEditor as="vendor" letter={d.vendor.name} size={140} onChange={(m) => setLogo(m)} /></section>
+            <ShopInfo d={d} reload={reload} setMsg={setMsg} />
+          </div>
+        )}
       </div>
     </>
   );
 }
 
 type Sub = { d: VendorData; reload: () => Promise<void>; setMsg: (s: string) => void };
+
+/** ร้านแก้ชื่อ/คำอธิบาย/ช่องทางติดต่อเอง (ลิงก์หน้าร้านคงเดิม) — ทีมงานได้รับแจ้งทุกครั้งที่แก้ */
+function ShopInfo({ d, reload, setMsg }: Sub) {
+  const [f, setF] = useState({ name: d.vendor.name, description: d.vendor.description ?? "", contact: d.vendor.contact ?? "" });
+  const [busy, setBusy] = useState(false);
+  const dirty = f.name !== d.vendor.name || f.description !== (d.vendor.description ?? "") || f.contact !== (d.vendor.contact ?? "");
+  const save = async () => {
+    setBusy(true);
+    const out = await post("/api/market/vendor", f);
+    setBusy(false);
+    setMsg(out.ok ? "บันทึกข้อมูลร้านแล้ว" : out.error || "บันทึกไม่สำเร็จ");
+    if (out.ok) await reload();
+  };
+  return (
+    <section className={card}>
+      <h3 className="font-semibold">ข้อมูลร้าน</h3>
+      <p className="text-xs text-[#9a8a85] mt-1">แสดงบนหน้าร้าน /shop/{d.vendor.slug} · ห้ามใส่คำโฆษณาเกินจริง</p>
+      <div className="flex flex-col gap-3 mt-3">
+        <div><label className={lbl} htmlFor="vs-name">ชื่อร้าน *</label><input id="vs-name" className="input-dark w-full" maxLength={80} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
+        <div><label className={lbl} htmlFor="vs-desc">คำอธิบายร้าน</label><textarea id="vs-desc" rows={4} maxLength={2000} className="input-dark w-full" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} /></div>
+        <div><label className={lbl} htmlFor="vs-contact">ช่องทางติดต่อ (เบอร์ / LINE / อีเมล)</label><input id="vs-contact" className="input-dark w-full" maxLength={200} value={f.contact} onChange={(e) => setF({ ...f, contact: e.target.value })} /></div>
+        {flaggedClaims(`${f.name} ${f.description}`).length > 0 && <p className="text-xs text-crimson-300">พบคำที่อาจเข้าข่ายโฆษณาเกินจริง: {flaggedClaims(`${f.name} ${f.description}`).join(", ")}</p>}
+        <button onClick={save} disabled={busy || !dirty || f.name.trim().length < 2} className="btn-crimson h-11 rounded-full text-sm disabled:opacity-50">{busy ? "กำลังบันทึก…" : "บันทึกข้อมูลร้าน"}</button>
+      </div>
+    </section>
+  );
+}
 
 function Orders({ d, reload, setMsg }: Sub) {
   const [f, setF] = useState<Record<string, { no: string; carrier: string }>>({});
@@ -172,7 +207,8 @@ function Orders({ d, reload, setMsg }: Sub) {
   );
 }
 
-const EMPTY = { id: "", name: "", description: "", warning: "", price: "", stock: "0", fda_no: "", category_id: "", published: false, age_restricted: true, images: [] as string[] };
+// จำกัดอายุ 20+ ค่าเริ่มต้น = ไม่ติ๊ก (ร้านเลือกเองเฉพาะสินค้าที่ต้องจำกัด)
+const EMPTY = { id: "", name: "", description: "", warning: "", price: "", stock: "0", fda_no: "", category_id: "", published: false, age_restricted: false, images: [] as string[] };
 
 function Products({ d, reload, setMsg }: Sub) {
   const [f, setF] = useState(EMPTY);
@@ -249,9 +285,14 @@ function Products({ d, reload, setMsg }: Sub) {
               ))}
             </div>
           )}
-          <div><label className={lbl}>รูปสินค้า</label><input type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={(e) => setFiles(e.target.files)} className="text-sm" /></div>
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={f.age_restricted} onChange={(e) => setF({ ...f, age_restricted: e.target.checked })} /> จำกัดอายุ 20+</label>
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={f.published} onChange={(e) => setF({ ...f, published: e.target.checked })} /> ขอเผยแพร่บนหน้าเว็บ</label>
+          <div><span className={lbl}>รูปสินค้า</span>
+            <label className="min-h-12 rounded-xl border border-dashed border-ink-500 hover:border-gold-500 flex items-center justify-center gap-2 px-3 text-sm text-gold-300 cursor-pointer">
+              {files?.length ? `✓ เลือกแล้ว ${files.length} รูป · แตะเพื่อเปลี่ยน` : "+ เลือกรูปสินค้า (JPG/PNG/WebP)"}
+              <input type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={(e) => setFiles(e.target.files)} className="sr-only" />
+            </label>
+          </div>
+          <label className="flex items-center gap-2 text-sm min-h-10"><input type="checkbox" className="w-4 h-4" checked={f.age_restricted} onChange={(e) => setF({ ...f, age_restricted: e.target.checked })} /> จำกัดอายุ 20+</label>
+          <label className="flex items-center gap-2 text-sm min-h-10"><input type="checkbox" className="w-4 h-4" checked={f.published} onChange={(e) => setF({ ...f, published: e.target.checked })} /> ขอเผยแพร่บนหน้าเว็บ</label>
           <div className="flex gap-2">
             <button onClick={save} disabled={busy} className="btn-crimson h-10 px-5 rounded-full text-sm flex-1">{busy ? "กำลังบันทึก…" : "บันทึก"}</button>
             {f.id && <button onClick={() => setF(EMPTY)} className="chip h-10 px-4">ยกเลิก</button>}
@@ -280,7 +321,7 @@ function Payout({ d }: { d: VendorData }) {
                     <td className="py-2">{r.month}</td><td className="text-right">{r.orders}</td><td className="text-right">{money(r.gross)}</td>
                     <td className="text-right">{money(r.discount)}</td><td className="text-right">{r.pendingGp ? "รอกำหนด" : money(r.gp)}</td><td className="text-right">{money(r.shipping)}</td>
                     <td className="text-right font-semibold text-gold-300">{r.pendingGp ? "รอกำหนด" : money(r.payout)}</td>
-                    <td className="text-right text-xs">{r.paid ? <span className="text-emerald-300">โอนแล้ว {new Date(r.paid.paid_at).toLocaleDateString("th-TH")} · {r.paid.ref}</span> : <span className="text-ink-300">เข้ากระเป๋าเมื่อออเดอร์สำเร็จ</span>}</td>
+                    <td className="text-right text-xs">{r.paid ? <span className="text-emerald-300">โอนแล้ว {new Date(r.paid.paid_at).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" })} · {r.paid.ref}</span> : <span className="text-ink-300">เข้ากระเป๋าเมื่อออเดอร์สำเร็จ</span>}</td>
                   </tr>
                 ))}
               </tbody>
@@ -291,7 +332,7 @@ function Payout({ d }: { d: VendorData }) {
       {d.payouts.length > 0 && (
         <section className={card}>
           <h3 className="font-semibold mb-2">ประวัติการโอน</h3>
-          <ul className="text-sm flex flex-col gap-1">{d.payouts.map((p) => <li key={p.id} className="flex justify-between"><span>{p.month} · อ้างอิง {p.ref}</span><span className="text-gold-300">{money(p.amount)} · {new Date(p.paid_at).toLocaleDateString("th-TH")}</span></li>)}</ul>
+          <ul className="text-sm flex flex-col gap-1">{d.payouts.map((p) => <li key={p.id} className="flex justify-between"><span>{p.month} · อ้างอิง {p.ref}</span><span className="text-gold-300">{money(p.amount)} · {new Date(p.paid_at).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok" })}</span></li>)}</ul>
         </section>
       )}
     </div>

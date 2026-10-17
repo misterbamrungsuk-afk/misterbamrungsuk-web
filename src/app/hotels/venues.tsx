@@ -31,14 +31,15 @@ export async function VenueDetail({ type, id }: { type: PartnerKind; id: string 
   if (!p) notFound();
   const tel = p.tel.replace(/[^\d+]/g, "");
   const line = p.line_id ? `https://line.me/R/ti/p/${encodeURIComponent(p.line_id.startsWith("@") ? p.line_id : `~${p.line_id}`)}` : "";
-  const facts = [p.hours || (type === "สปา" ? "เวลาเปิด [รอกำหนด]" : "เช็กอิน/เช็กเอาต์ [รอกำหนด]"), p.amenities.join(" · "), "ส่วนลดสมาชิก [รอกำหนด]"].filter(Boolean);
+  // ไม่แสดงค่าที่ยังไม่ได้กำหนด ([รอกำหนด]) ต่อลูกค้า — มีข้อมูลจริงเท่านั้น
+  const facts = [p.hours, p.label && p.label !== type ? p.label : "", p.amenities.join(" · ")].filter(Boolean);
   const v: VenueFull = {
     id: p.id, name: p.name, type, province: p.province, area: p.area, sample: !!p.sample, description: p.description,
     gallery: p.gallery.length ? p.gallery : FALLBACK[type],
     facts,
     services: p.services.map((s) => ({ name: s.name, desc: s.minutes >= 600 ? "ค้างคืน" : `${s.minutes} นาที`, price: s.platform_price ?? s.base_price, base: s.base_price })),
-    tel, telLabel: p.tel, line, logo: p.sample ? null : await publicLogo("partner", p.id),
-    map: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${p.name.replace(/\(ตัวอย่าง\)/, "").trim()} ${p.area} ${p.province}`)}`,
+    tel, telLabel: p.tel, line, logo: p.sample ? null : await publicLogo("partner", p.id), address: p.address,
+    map: p.map_url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${p.name.replace(/\(ตัวอย่าง\)/, "").trim()} ${p.address || `${p.area} ${p.province}`}`)}`,
   };
   return <VenueDetailView v={v} />;
 }

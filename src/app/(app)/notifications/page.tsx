@@ -10,7 +10,7 @@ const LN = "rgba(243,234,217,0.07)";
 type N = { id: number; kind: string; title: string; body: string | null; url: string | null; read_at: string | null; created_at: string };
 const ago = (iso: string) => {
   const m = Math.round((Date.now() - Date.parse(iso)) / 60000);
-  return m < 1 ? "เมื่อสักครู่" : m < 60 ? `${m} นาทีที่แล้ว` : m < 1440 ? `${Math.round(m / 60)} ชม.ที่แล้ว` : new Date(iso).toLocaleDateString("th-TH", { day: "numeric", month: "short" });
+  return m < 1 ? "เมื่อสักครู่" : m < 60 ? `${m} นาทีที่แล้ว` : m < 1440 ? `${Math.round(m / 60)} ชม.ที่แล้ว` : new Date(iso).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", day: "numeric", month: "short" });
 };
 
 export default function NotificationsPage() {

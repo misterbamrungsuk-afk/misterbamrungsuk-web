@@ -21,11 +21,11 @@ export function ProfileView({ p, reviews = [] }: { p: Person; reviews?: Rv[] }) 
   const [fav, setFav] = useState(false);
   const router = useRouter();
   // หัวใจ = บันทึกเพื่อนที่ถูกใจในบัญชี (ยังไม่ล็อกอิน → หน้าเข้าสู่ระบบ)
-  useEffect(() => { fetch("/api/me", { cache: "no-store" }).then((r) => r.json()).then((d) => d?.ok && setFav(d.profile.favorites.includes(p.id))).catch(() => {}); }, [p.id]);
+  useEffect(() => { fetch("/api/me?soft=1", { cache: "no-store" }).then((r) => r.json()).then((d) => d?.ok && setFav(d.profile.favorites.includes(p.id))).catch(() => {}); }, [p.id]);
   const toggleFav = async () => {
     const next = !fav; setFav(next);
     const r = await fetch("/api/me", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ favorite: p.id, on: next }) }).catch(() => null);
-    if (r?.status === 401) { setFav(!next); router.push("/login"); }
+    if (r?.status === 401) { setFav(!next); router.push(`/login?next=${encodeURIComponent(`/p/${p.id}`)}`); }
   };
   const [pic, setPic] = useState(0);
   const pics = p.real && p.photos ? Array.from({ length: p.photos }, (_, i) => `/api/public/pt-photo?id=${p.id}&i=${i}`) : [p.img];
@@ -98,7 +98,7 @@ export function ProfileView({ p, reviews = [] }: { p: Person; reviews?: Rv[] }) 
             <h2 className="m-0 mb-2 font-semibold text-[17px]">รีวิว</h2>
             {p.real ? (!reviews.length ? <div className="rounded-[14px] bg-[#211a18] text-[13px] font-light text-[#d9c9b4]" style={{ padding: 12, border: line }}>ยังไม่มีรีวิว · รีวิวจะขึ้นหลังจบนัดแรก</div> : <div className="flex flex-col gap-2">
               <div className="flex items-baseline gap-2"><span className="font-bold text-[32px] text-[#e8c472] leading-none">{avg}</span><span className="text-[12px] font-light text-[#d9c9b4]">จาก {reviews.length} รีวิว (ลูกค้าที่จองจริง)</span></div>
-              {reviews.slice(0, 6).map((r, i) => <div key={i} className="rounded-[14px] bg-[#211a18] text-[13px]" style={{ padding: 12, border: line }}><div className="text-[#e8c472] text-[12px]">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)} · {new Date(r.created_at).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}{r.tags.length ? ` · ${r.tags.join(" · ")}` : ""}</div>{r.body && <div className="font-light mt-1">{r.body}</div>}</div>)}
+              {reviews.slice(0, 6).map((r, i) => <div key={i} className="rounded-[14px] bg-[#211a18] text-[13px]" style={{ padding: 12, border: line }}><div className="text-[#e8c472] text-[12px]">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)} · {new Date(r.created_at).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", day: "numeric", month: "short" })}{r.tags.length ? ` · ${r.tags.join(" · ")}` : ""}</div>{r.body && <div className="font-light mt-1">{r.body}</div>}</div>)}
               <Link href={`/p/${p.id}/reviews`} className="self-start tap text-[13px] font-light text-[#e8c472]">ดูรีวิวทั้งหมด ›</Link>
             </div>) : <>
             <div className="flex gap-4 items-center">

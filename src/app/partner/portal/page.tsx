@@ -3,8 +3,9 @@ import { redirect } from "next/navigation";
 import { currentPartner } from "@/lib/partner/auth";
 import { PARTNER_PACKAGES, baht } from "@/lib/partner/config";
 import { getListing, listBookings, listPurchases } from "@/lib/partner/portal";
-import { ACCOUNT_LABEL, BOOKING_LABEL, type PartnerBooking } from "@/lib/partner/portal-types";
-import { daysLeft } from "@/lib/partner/status";
+import { ACCOUNT_LABEL, BOOKING_LABEL, customerLabel, type PartnerBooking } from "@/lib/partner/portal-types";
+import { qcPassed } from "@/lib/partner/kind";
+import { daysLeft, planDays } from "@/lib/partner/status";
 import { KpiTabs, type KpiSet } from "./kpi";
 
 export const dynamic = "force-dynamic";
@@ -41,7 +42,10 @@ export default async function PortalHome() {
   const sets = { today: kpis(rows, today), "7d": kpis(rows, today - 6 * 86400_000), month: kpis(rows, month) };
   const upcoming = rows.filter((b) => Date.parse(b.start_time) >= now && (b.status === "pending" || b.status === "confirmed")).slice(0, 4);
   const left = daysLeft(p.ends_at);
-  const total = p.starts_at && p.ends_at ? Math.round((Date.parse(p.ends_at) - Date.parse(p.starts_at)) / 86400_000) : null;
+  const total = planDays(p.starts_at, p.ends_at);
+  // จ่ายแล้วแต่ยังไม่ผ่าน QC = ยังไม่เปิดแสดงต่อลูกค้า
+  const waitQc = !qcPassed(p) && (p.account_status === "approved" || p.account_status === "active");
+  const live = !!listing?.published && qcPassed(p) && p.account_status === "active";
   const pendingPay = purchases.some((x) => x.status === "pending");
   const hour = new Date(now + TZ).getUTCHours();
   const greet = hour < 12 ? "สวัสดีตอนเช้า" : hour < 17 ? "สวัสดีตอนบ่าย" : "สวัสดีตอนเย็น";
@@ -52,7 +56,7 @@ export default async function PortalHome() {
         <p className="text-sm text-ink-300">{greet}</p>
         <h1 className="font-display text-2xl font-semibold">{p.business_name}</h1>
         <p className="text-xs mt-1">
-          <span className={listing?.published ? "text-emerald-300" : "text-[#9a8a85]"}>● {listing?.published ? "เปิดแสดงอยู่" : "ยังไม่เปิดแสดง"}</span>
+          <span className={live ? "text-emerald-300" : "text-[#9a8a85]"}>● {live ? "เปิดแสดงอยู่" : waitQc ? "รอผ่าน QC ก่อนเปิดแสดง" : "ยังไม่เปิดแสดง"}</span>
           <span className="text-[#9a8a85]"> · บัญชี{ACCOUNT_LABEL[p.account_status ?? "pending"]}</span>
         </p>
       </section>
@@ -77,7 +81,7 @@ export default async function PortalHome() {
           <ul className="mt-3 space-y-2">
             {upcoming.map((b) => (
               <li key={b.id} className="rounded-2xl border border-ink-600 bg-ink-800/60 px-4 py-3 flex justify-between gap-3">
-                <div className="min-w-0"><p className="font-medium truncate">{b.parttime_name}</p><p className="text-xs text-ink-300 truncate">ลูกค้า {b.customer_name} · {b.hours} ชม.</p></div>
+                <div className="min-w-0"><p className="font-medium truncate">{b.parttime_name}</p><p className="text-xs text-ink-300 truncate">{customerLabel(b.customer_name)} · {b.hours} ชม.{b.addon ? ` · ${b.addon}` : ""}</p></div>
                 <div className="text-right shrink-0"><p className="text-sm">{timeTh(b.start_time)}</p><p className="text-xs text-[#9a8a85]">{b.room ?? BOOKING_LABEL[b.status]}</p></div>
               </li>
             ))}
