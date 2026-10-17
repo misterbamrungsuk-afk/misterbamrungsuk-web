@@ -1,10 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { CONTROLLER } from "@/lib/join/legal";
-import { lineAddUrl } from "@/lib/join/config";
+import { LINE_OA_ID } from "@/lib/join/config";
 
 // ขอบล่างของหน้าสาธารณะ (หน้าแรก · Marketplace · พาร์ทเนอร์ · ร่วมงานกับเรา)
-// จอคอม = 4 คอลัมน์ (แบรนด์+ติดต่อ · สำหรับลูกค้า · ร่วมงานกับเรา · ช่วยเหลือและนโยบาย) · มือถือ = เรียงลงมา 2 คอลัมน์
+// จอคอม = 4 คอลัมน์ (แบรนด์+ติดต่อ · สำหรับลูกค้า · ร่วมงานกับเรา · ช่วยเหลือและนโยบาย) · มือถือ = แบบย่อ (ติดต่อ 1 บรรทัด + ลิงก์สำคัญ 1 แถว)
 // ข้อมูลบริษัทมาจาก CONTROLLER ใน lib/join/legal.ts — ค่าที่ยังเป็น [placeholder] จะไม่แสดง
 const filled = (v: string) => (v && !v.startsWith("[") ? v : "");
 
@@ -21,9 +21,18 @@ export function SiteFooter() {
   const phone = filled(CONTROLLER.phone);
   const link = "text-[#d8c8b8] hover:text-[#f6efe4] min-h-9 inline-flex items-center";
   return (
-    <footer className="mt-10 border-t border-[rgba(201,162,74,.35)]" style={{ background: "linear-gradient(180deg, rgba(43,22,28,.55), rgba(23,18,17,0))" }}>
-      <div className="mx-auto w-full max-w-[1200px] px-[18px] md:px-8 pt-8 pb-6 grid gap-8 grid-cols-2 md:grid-cols-[1.4fr_1fr_1fr_1fr] text-[13.5px]">
-        <div className="col-span-2 md:col-span-1 flex flex-col gap-3 min-w-0">
+    <footer className="mt-8 md:mt-10 border-t border-[rgba(201,162,74,.35)]" style={{ background: "linear-gradient(180deg, rgba(43,22,28,.55), rgba(23,18,17,0))" }}>
+      {/* มือถือ: แบบย่อ */}
+      <div className="md:hidden px-[18px] pt-5 pb-4 flex flex-col gap-2.5 text-[13px] text-[#d8c8b8]">
+        <span className="inline-flex items-center gap-2"><img src="/brand/logo.png" alt="" className="w-8 h-8 object-contain" /><span className="font-brand text-[14px] text-[#e8c472]">Mister Bamrungsuk</span></span>
+        <span>{phone && <>โทร {phone} · </>}LINE <b className="font-semibold text-[#e8c472] select-all">{LINE_OA_ID}</b></span>
+        <nav aria-label="ลิงก์สำคัญ" className="flex flex-wrap gap-x-4">
+          {[["/page/terms", "ข้อกำหนด"], ["/join/privacy", "ความเป็นส่วนตัว"], ["/policy", "กฎเกณฑ์"], ["/work-with-us", "ร่วมงานกับเรา"]].map(([h, l]) => <Link key={h} href={h} className="min-h-9 inline-flex items-center text-[#d8c8b8] hover:text-[#f6efe4]">{l}</Link>)}
+        </nav>
+        <span className="text-[11.5px] text-[#9a8a85]">© {new Date().getFullYear() + 543} Mister Bamrungsuk สงวนลิขสิทธิ์</span>
+      </div>
+      <div className="hidden md:grid mx-auto w-full max-w-[1200px] px-8 pt-8 pb-6 gap-8 md:grid-cols-[1.4fr_1fr_1fr_1fr] text-[13.5px]">
+        <div className="flex flex-col gap-3 min-w-0">
           <span className="inline-flex items-center gap-2.5">
             <img src="/brand/logo.png" alt="" className="w-[42px] h-[42px] object-contain" />
             <span className="font-brand text-[16px] text-[#e8c472]">Mister Bamrungsuk</span>
@@ -33,7 +42,7 @@ export function SiteFooter() {
             {phone && <span>โทร {phone}</span>}
             {email && <span className="break-all">{email}</span>}
           </div>
-          <a href={lineAddUrl()} target="_blank" rel="noopener noreferrer" className="self-start h-10 px-4 rounded-full inline-flex items-center gap-2 font-semibold text-[#1b130b] bg-[#06c755] hover:text-[#1b130b]">ติดต่อทีมงานทาง LINE</a>
+          <span className="text-[#d8c8b8]">LINE <b className="font-semibold text-[#e8c472] select-all">{LINE_OA_ID}</b></span>
         </div>
         {COLS.map((c) => (
           <nav key={c.title} aria-label={c.title} className="flex flex-col min-w-0">
@@ -42,7 +51,7 @@ export function SiteFooter() {
           </nav>
         ))}
       </div>
-      <div className="mx-auto w-full max-w-[1200px] px-[18px] md:px-8 py-4 border-t border-[rgba(243,234,217,.08)] flex flex-col md:flex-row md:justify-between gap-1 text-[12px] text-[#9a8a85]">
+      <div className="hidden md:flex mx-auto w-full max-w-[1200px] px-8 py-4 border-t border-[rgba(243,234,217,.08)] flex-row justify-between gap-1 text-[12px] text-[#9a8a85]">
         <span>© {new Date().getFullYear() + 543} Mister Bamrungsuk สงวนลิขสิทธิ์{reg ? ` · ทะเบียนนิติบุคคลเลขที่ ${reg}` : ""}</span>
         {address && <span className="md:text-right">{address}</span>}
       </div>
