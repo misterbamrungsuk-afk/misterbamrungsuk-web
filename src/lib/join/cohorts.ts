@@ -47,28 +47,37 @@ export async function createCohort(input: CohortInput): Promise<Cohort> {
   return row;
 }
 
-/** ที่นั่งกลุ่มอบรมถัดไป (นับจริง) — กลุ่มที่แอดมินตั้งสถานะ "เปิดรับสมัคร" เรียงตามลำดับ
- *  ที่นั่งถูกใช้ = ผู้สมัครที่ยัง active (รอตรวจสลิป/ผ่านแล้ว) ที่จัดเข้ากลุ่มนั้น + คนที่ยังไม่ถูกจัดกลุ่ม (เติมเข้ากลุ่มเปิดแรกที่ยังว่าง)
- *  ผู้สมัครในกลุ่มที่อบรมเสร็จแล้ว/ร่าง ไม่นับ */
-export async function nextCohortSeats(): Promise<{ cohort: string; left: number; quota: number; full: boolean }> {
+/** ที่นั่งที่ถูกใช้จริงต่อกลุ่ม (ใช้ทั้งหน้า /join และหน้าแอดมิน ให้ตัวเลขตรงกัน)
+ *  = ผู้สมัครที่ยัง active (รอตรวจสลิป/ผ่านแล้ว) ที่จัดเข้ากลุ่มนั้น + คนที่ยังไม่ถูกจัดกลุ่ม (เติมเข้ากลุ่ม "เปิดรับสมัคร" แรกที่ยังว่าง)
+ *  ผู้สมัครในกลุ่มที่อบรมเสร็จแล้ว/ร่าง นับเฉพาะคนที่จัดเข้ากลุ่มนั้นแล้ว */
+export async function cohortTaken(): Promise<{ cohorts: Cohort[]; taken: Map<string, number> }> {
   const { listApplicants, extraOf } = await import("./store");
   const [cohorts, apps] = await Promise.all([listCohorts(), listApplicants()]);
-  const open = cohorts.filter((c) => c.status === "open");
-  if (!open.length) return { cohort: "", left: 0, quota: 0, full: true };
-  const active = apps.filter((a) => a.status === "pending_slip" || a.status === "verified");
   const keys = new Set(cohorts.map((c) => c.key));
-  const assigned = new Map<string, number>();
+  const taken = new Map<string, number>(cohorts.map((c) => [c.key, 0]));
   let unassigned = 0;
-  for (const a of active) {
+  for (const a of apps) {
+    if (a.status !== "pending_slip" && a.status !== "verified") continue;
     const k = extraOf(a).cohort;
-    if (k && keys.has(k)) assigned.set(k, (assigned.get(k) ?? 0) + 1);
+    if (k && keys.has(k)) taken.set(k, (taken.get(k) ?? 0) + 1);
     else unassigned++;
   }
-  for (const c of open) {
-    const free = Math.max(0, c.capacity - (assigned.get(c.key) ?? 0));
-    const take = Math.min(free, unassigned);
+  for (const c of cohorts.filter((x) => x.status === "open")) {
+    const take = Math.min(Math.max(0, c.capacity - (taken.get(c.key) ?? 0)), unassigned);
+    taken.set(c.key, (taken.get(c.key) ?? 0) + take);
     unassigned -= take;
-    if (free - take > 0) return { cohort: c.name, left: free - take, quota: c.capacity, full: false };
+  }
+  return { cohorts, taken };
+}
+
+/** ที่นั่งกลุ่มอบรมถัดไป (นับจริง) — กลุ่มแรกที่ "เปิดรับสมัคร" และยังว่าง */
+export async function nextCohortSeats(): Promise<{ cohort: string; left: number; quota: number; full: boolean }> {
+  const { cohorts, taken } = await cohortTaken();
+  const open = cohorts.filter((c) => c.status === "open");
+  if (!open.length) return { cohort: "", left: 0, quota: 0, full: true };
+  for (const c of open) {
+    const left = c.capacity - (taken.get(c.key) ?? 0);
+    if (left > 0) return { cohort: c.name, left, quota: c.capacity, full: false };
   }
   const last = open[open.length - 1];
   return { cohort: last.name, left: 0, quota: last.capacity, full: true };

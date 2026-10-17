@@ -1,5 +1,5 @@
 import { extraOf, getAttendance, listApplicants } from "@/lib/join/store";
-import { listCohorts } from "@/lib/join/cohorts";
+import { cohortTaken, listCohorts } from "@/lib/join/cohorts";
 import { CohortsClient, type Member } from "./client";
 
 export const dynamic = "force-dynamic";
@@ -7,7 +7,7 @@ export const metadata = { title: "กลุ่มอบรม · แอดมิ
 
 // กลุ่มอบรม Part-Time — สร้างกลุ่ม ดูที่นั่ง เช็กชื่อรายรอบ
 export default async function CohortsPage() {
-  const [cohorts, apps] = await Promise.all([listCohorts(), listApplicants("verified")]);
+  const [cohorts, apps, seats] = await Promise.all([listCohorts(), listApplicants("verified"), cohortTaken().catch(() => null)]);
   const members: Member[] = await Promise.all(
     apps
       .map((a) => ({ a, cohort: extraOf(a).cohort ?? null }))
@@ -20,5 +20,6 @@ export default async function CohortsPage() {
         att: await getAttendance(a.id),
       })),
   );
-  return <CohortsClient initialCohorts={cohorts} initialMembers={members} />;
+  // ที่นั่งที่ใช้ = ตัวเลขเดียวกับหน้า /join (รวมคนรอตรวจสลิป + ยังไม่จัดกลุ่ม)
+  return <CohortsClient initialCohorts={cohorts} initialMembers={members} taken={Object.fromEntries(seats?.taken ?? [])} />;
 }

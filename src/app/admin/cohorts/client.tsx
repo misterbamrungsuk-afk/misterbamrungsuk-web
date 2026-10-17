@@ -23,7 +23,7 @@ const IN: React.CSSProperties = {
 };
 const LBL: React.CSSProperties = { fontSize: 12, color: "#cdbfb3", margin: "0 0 6px" };
 
-export function CohortsClient({ initialCohorts, initialMembers }: { initialCohorts: Cohort[]; initialMembers: Member[] }) {
+export function CohortsClient({ initialCohorts, initialMembers, taken = {} }: { initialCohorts: Cohort[]; initialMembers: Member[]; taken?: Record<string, number> }) {
   const [cohorts, setCohorts] = useState(initialCohorts);
   const [members, setMembers] = useState(initialMembers);
   const [sel, setSel] = useState(() => {
@@ -108,7 +108,8 @@ export function CohortsClient({ initialCohorts, initialMembers }: { initialCohor
       <div className="grid grid-cols-1 lg:grid-cols-[340px_minmax(0,1fr)]" style={{ gap: 16, minHeight: 0, flex: 1 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {cohorts.map((c, i) => {
-            const n = members.filter((m) => m.cohort === c.key).length;
+            const assigned = members.filter((m) => m.cohort === c.key).length;
+            const n = Math.max(assigned, taken[c.key] ?? 0); // ที่นั่งที่ใช้ (ตรงกับหน้า /join)
             const on = sel === i;
             const sc = STATUS_COLOR[c.status] ?? "#f0c75a";
             const meta = [c.date_text, c.venue].filter(Boolean).join(" · ");
@@ -123,7 +124,7 @@ export function CohortsClient({ initialCohorts, initialMembers }: { initialCohor
                 <div style={{ height: 6, borderRadius: 99, background: "#21191a", width: "100%" }}>
                   <div style={{ height: 6, borderRadius: 99, background: "#f0c75a", width: `${Math.min(100, Math.round((n / Math.max(1, c.capacity)) * 100))}%` }} />
                 </div>
-                <span style={{ fontSize: 11.5, color: "#ffd76a" }}>{n} / {c.capacity} ที่นั่ง</span>
+                <span style={{ fontSize: 11.5, color: "#ffd76a" }}>{n} / {c.capacity} ที่นั่ง{n > assigned ? ` · จัดกลุ่มแล้ว ${assigned} · รอจัด/รอตรวจสลิป ${n - assigned}` : ""}</span>
               </button>
             );
           })}

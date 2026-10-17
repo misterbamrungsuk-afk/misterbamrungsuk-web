@@ -41,6 +41,7 @@ export default function WorkWithUsPage() {
             </Link>
           ))}
         </div>
+        <Link href="/join/me" className="self-start tap text-[14px] text-[#e8c472] hover:text-[#e8c472]">มีโปรไฟล์ Part-Time แล้ว? เข้าโปรไฟล์ ›</Link>
       </section>
 
       <footer className="mx-auto w-full max-w-[1200px]" style={{ padding: "0 16px" }}>
