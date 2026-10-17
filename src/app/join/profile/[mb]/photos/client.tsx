@@ -27,7 +27,7 @@ export function PhotosClient({ mb, t, initial }: { mb: string; t: string; initia
     if (!f.type.startsWith("image/")) return setErr("รับเฉพาะไฟล์รูปภาพ");
     const fd = new FormData();
     fd.set("mb", mb); if (t) fd.set("t", t);
-    fd.set("file", await dataUrlToFile(await resizeImage(f, 1400, 0.85), "profile.jpg"));
+    try { fd.set("file", await dataUrlToFile(await resizeImage(f, 1400, 0.85), "profile.jpg")); } catch (e) { return setErr((e instanceof Error ? e.message : "ไฟล์นี้เปิดเป็นรูปไม่ได้ · เลือกรูป JPG/PNG อีกครั้ง")); }
     await call(fd);
   };
 

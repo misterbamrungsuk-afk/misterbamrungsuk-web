@@ -108,12 +108,17 @@ export function resizeImage(file: File, max: number, quality = 0.82): Promise<st
       URL.revokeObjectURL(url);
       resolve(c.toDataURL("image/jpeg", quality));
     };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("bad image")); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("ไฟล์นี้เปิดเป็นรูปไม่ได้ · เลือกรูป JPG/PNG อีกครั้ง")); };
     img.src = url;
   });
 }
 
 export async function dataUrlToFile(dataUrl: string, name: string): Promise<File> {
-  const blob = await (await fetch(dataUrl)).blob();
-  return new File([blob], name, { type: blob.type || "image/jpeg" });
+  // แปลงเองด้วย atob — ไม่ใช้ fetch(dataURL) (บางเบราว์เซอร์/CSP บล็อก)
+  const [head, b64] = dataUrl.split(",");
+  const type = /data:([^;]+)/.exec(head)?.[1] || "image/jpeg";
+  const bin = atob(b64 ?? "");
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new File([bytes], name, { type });
 }

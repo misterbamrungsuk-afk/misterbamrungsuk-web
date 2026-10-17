@@ -45,7 +45,7 @@ export function BankForm({ mb, t, initial, fix = false }: { mb: string; t: strin
     fd.set("ck_terms", "true"); fd.set("ck_pdpa", "true"); fd.set("ck_profile", "true");
     const res = await fetch("/api/join/bank", { method: "POST", body: fd }).catch(() => null);
     const data = await res?.json().catch(() => null);
-    if (res?.ok && data?.ok) return router.push(fix ? `/join/rejected/${mb}${q}` : `/join/contract/${mb}${q}`);
+    if (res?.ok && data?.ok) return router.push(data.review ? `/join/profile/${mb}/settings${q ? `${q}&` : "?"}bank=review` : fix ? `/join/rejected/${mb}${q}` : `/join/contract/${mb}${q}`);
     setError(data?.error ?? "ส่งไม่สำเร็จ กรุณาลองใหม่"); setBusy(false);
   };
 

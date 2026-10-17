@@ -62,13 +62,13 @@ export function ProfileView({ p, reviews = [] }: { p: Person; reviews?: Rv[] }) 
               <h1 className="m-0 font-bold text-[30px] lg:text-[38px]">{p.nick}</h1>
               {p.boost && <span className="rounded-full text-[12px] font-semibold text-[#1b130b]" style={{ padding: "3px 10px", background: "linear-gradient(135deg, #fff1c9, #e8c472)" }}>★ แนะนำ</span>}
               {p.top && <span className="inline-flex items-center h-[18px] rounded text-[9.5px] font-bold tracking-[.2em] text-[#1b130b]" style={{ padding: "0 7px", background: "linear-gradient(135deg, #fff1c9 0%, #e8c472 45%, #a8781f 100%)" }}>TOP</span>}
-              <span className="h-[26px] rounded-full text-[12px] font-light text-[#e8c472] flex items-center" style={{ padding: "0 10px", border: "1px solid rgba(212,175,55,.6)" }}>✓ ยืนยันตัวตน + ตรวจประวัติ</span>
+              {(!p.real || p.checked) && <span className="h-[26px] rounded-full text-[12px] font-light text-[#e8c472] flex items-center" style={{ padding: "0 10px", border: "1px solid rgba(212,175,55,.6)" }}>✓ ยืนยันตัวตน + ตรวจประวัติ</span>}
             </div>
             <div className="text-[13px] text-[#d9c9b4] mt-1 font-light">{[p.age ? `${p.age} ปี` : "", p.height ? `${p.height} ซม.` : "", where].filter(Boolean).join(" · ")}</div>
           </div>
 
           <div className="grid grid-cols-4 text-center" style={{ borderTop: line, borderBottom: line, padding: "12px 0" }}>
-            {(p.real ? [[avg ?? "ใหม่", avg ? `${reviews.length} รีวิว` : "Part-Time ใหม่", true], ["✓", "ผ่านอบรม"], ["✓", "ยืนยันตัวตน"], [p.top ? "TOP" : "Silver", "ระดับ"]] : [[p.rating, `${p.reviews} รีวิว`, true], [String(p.jobs), "นัดสำเร็จ"], [`${p.years} ปี`, "ประสบการณ์"], ["98%", "ตอบกลับ"]]).map(([v, l, g], i) => (
+            {(p.real ? [[avg ?? "ใหม่", avg ? `${reviews.length} รีวิว` : "Part-Time ใหม่", true], [p.trained ? "✓" : "—", p.trained ? "ผ่านอบรม" : "รออบรม"], ["✓", "ยืนยันตัวตน"], [p.top ? "TOP" : "Silver", "ระดับ"]] : [[p.rating, `${p.reviews} รีวิว`, true], [String(p.jobs), "นัดสำเร็จ"], [`${p.years} ปี`, "ประสบการณ์"], ["98%", "ตอบกลับ"]]).map(([v, l, g], i) => (
               <div key={String(l)} style={{ borderLeft: i ? line : undefined }}><div className="font-semibold text-[18px]" style={{ color: g ? "#e8c472" : undefined }}>{v}</div><div className="text-[12px] text-[#d9c9b4] font-light">{l}</div></div>
             ))}
           </div>

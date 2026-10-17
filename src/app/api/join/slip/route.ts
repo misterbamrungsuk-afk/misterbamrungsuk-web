@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { FileTypeError } from "@/lib/file-guard";
 import { limited as dbLimited } from "@/lib/rate-limit";
 import { clearFixes, extraOf, getByMb, saveSlip } from "@/lib/join/store";
 import { canResume } from "@/lib/join/resume";
@@ -38,6 +39,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error("slip resend failed", e);
-    return bad("ระบบขัดข้อง กรุณาลองใหม่อีกครั้ง", 500);
+    return e instanceof FileTypeError ? bad(e.message, 400) : bad("ระบบขัดข้อง กรุณาลองใหม่อีกครั้ง", 500);
   }
 }

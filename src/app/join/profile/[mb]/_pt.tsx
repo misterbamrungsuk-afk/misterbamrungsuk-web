@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { canResume } from "@/lib/join/resume";
+import SOSButton from "@/components/sos";
 import { extraOf, getByMb, type Applicant, type Extra } from "@/lib/join/store";
 
 // ชิ้นส่วนร่วมของหน้า Part-Time ใต้ "โปรไฟล์ของฉัน" (บอร์ด P-Schedule / ProviderJobboard / MyEarnings / ProviderSettings / Withdraw / P-Reviews)
@@ -37,6 +38,8 @@ export function PtPage({ children }: { children: React.ReactNode }) {
   return (
     <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9", lineHeight: "normal" }}>
       <div className="lg:pl-[104px]"><div className="mx-auto w-full max-w-[880px] pb-[calc(100px+env(safe-area-inset-bottom))] lg:pb-12 lg:pt-4">{children}</div></div>
+      {/* SOS ฉุกเฉินสำหรับ Part-Time (สัญญา/ระบบแชทบอกว่ากดได้ตลอด) — ระบบรู้ตัวตนจากคุกกี้ resume */}
+      <SOSButton />
     </div>
   );
 }

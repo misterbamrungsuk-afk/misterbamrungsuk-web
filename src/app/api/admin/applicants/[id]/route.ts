@@ -27,6 +27,18 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const { id } = await params;
   const body = (await req.json().catch(() => ({}))) as Body;
 
+  // บัญชีรับเงินใหม่ (Part-Time ที่อนุมัติแล้วเปลี่ยนบัญชี): อนุมัติ = ใช้บัญชีใหม่ ถอนได้ · ไม่อนุมัติ = คืนบัญชีเดิม
+  if ((body as { bank_review?: string }).bank_review !== undefined) {
+    if (!canAccess(r, "/admin/kyc")) return NextResponse.json({ ok: false, error: "เฉพาะฝ่าย KYC" }, { status: 403 });
+    const cur = await getById(id);
+    const br = cur ? extraOf(cur).bank_review : null;
+    if (!cur || !br) return NextResponse.json({ ok: false, error: "ไม่มีคำขอเปลี่ยนบัญชี" }, { status: 409 });
+    const ok = (body as { bank_review?: string }).bank_review === "approved";
+    await saveProfile(cur.id, ok ? { bank_review: null } : { bank_review: null, bank: br.prev.bank, bank_account: br.prev.bank_account, bank_account_name: br.prev.bank_account_name, bank_book_path: br.prev.bank_book_path });
+    await import("@/lib/bookings").then((m) => m.notify({ user_type: "parttime", user_id: cur.id, kind: "bank_review", title: ok ? "บัญชีรับเงินใหม่ผ่านการตรวจแล้ว · ถอนเงินได้" : "บัญชีรับเงินใหม่ไม่ผ่าน · ใช้บัญชีเดิมต่อ", body: ok ? null : "ชื่อบัญชีต้องตรงกับชื่อในบัตรประชาชน · ติดต่อทีมงานทาง LINE", url: `/join/profile/${cur.mb_code}/settings` })).catch(() => {});
+    return NextResponse.json({ ok: true });
+  }
+
   // ตัดสินเอกสาร: อนุมัติ หรือตีกลับรายการที่ต้องแก้ (สลิป รูป ข้อมูล บัตร บัญชี) — ฝ่าย KYC หรือผู้ดูแลผู้สมัคร
   if (body.kyc_status !== undefined) {
     // ตัดสิน KYC = ฝ่าย KYC/super/CEO เท่านั้น (ฝ่ายการเงินไม่ได้) · คนที่ออกลิงก์เข้าโปรไฟล์ให้ผู้สมัครคนนี้ภายใน 30 วัน อนุมัติเองไม่ได้ (แยกหน้าที่ กันแก้บัญชีรับเงิน+อนุมัติคนเดียว)

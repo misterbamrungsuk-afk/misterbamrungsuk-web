@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { FileTypeError } from "@/lib/file-guard";
 import { limited as dbLimited } from "@/lib/rate-limit";
 import { CLOSE_AT, PACKAGES, type PackageKey } from "@/lib/join/config";
 import { createApplicant, updateApplicant, type DocKind } from "@/lib/join/store";
@@ -123,6 +124,6 @@ export async function POST(req: Request) {
     return res;
   } catch (e) {
     console.error("register failed", e);
-    return bad("ระบบขัดข้อง กรุณาลองใหม่อีกครั้ง", 500);
+    return e instanceof FileTypeError ? bad(e.message, 400) : bad("ระบบขัดข้อง กรุณาลองใหม่อีกครั้ง", 500);
   }
 }

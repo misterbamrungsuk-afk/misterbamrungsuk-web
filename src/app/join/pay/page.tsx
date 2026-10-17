@@ -91,8 +91,7 @@ function PayInner() {
     setErr("");
     if (!file) return;
     if (!file.type.startsWith("image/")) return setErr("รับเฉพาะไฟล์รูปภาพ (JPG/PNG)");
-    setSlip(await resizeImage(file, 1400, 0.85));
-    setSlipName(file.name);
+    try { setSlip(await resizeImage(file, 1400, 0.85)); setSlipName(file.name); } catch (e) { setErr((e instanceof Error ? e.message : "ไฟล์นี้เปิดเป็นรูปไม่ได้ · เลือกรูป JPG/PNG อีกครั้ง")); }
   };
 
   const submit = async () => {

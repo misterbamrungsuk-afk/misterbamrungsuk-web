@@ -1,5 +1,7 @@
 import "server-only";
 import { createHash } from "crypto";
+import { getAttendance } from "@/lib/join/store";
+import { TRAINING } from "@/lib/join/training";
 import { getEarnings } from "@/lib/join/earnings-settings";
 import { ageFrom } from "@/lib/join/form";
 import { extraOf, listApplicants, type Applicant } from "@/lib/join/store";
@@ -31,6 +33,7 @@ export async function getLiveApplicants() {
 
 export async function getLivePeople(): Promise<Person[]> {
   const [rows, cfg] = await Promise.all([getLiveApplicants(), getEarnings()]);
+  const att = new Map(await Promise.all(rows.map(async (a) => [a.id, await getAttendance(a.id).catch(() => ({} as Record<number, boolean>))] as const)));
   const [stars, boosts] = await Promise.all([ratingSummary(rows.map((a) => a.id)).catch(() => new Map<string, { avg: number; count: number }>()), activeBoosts().catch(() => new Map<string, string>())]);
   return rows.map((a) => {
     const st = stars.get(a.id);
@@ -47,7 +50,7 @@ export async function getLivePeople(): Promise<Person[]> {
       area: x.geo ? `แถว${x.geo.label}` : area[1] || area[0] || "กรุงเทพฯ", prov: x.geo ? undefined : area[0] && area[0] !== "กรุงเทพฯ" ? area[0] : undefined,
       ...(x.geo ? { geo: [x.geo.lat, x.geo.lng] as [number, number] } : {}),
       acts: acts.length ? acts : ["eat"], free: 0, bio: x.listing?.title || a.intro || "Part-Time ที่ผ่านการอบรมมาตรฐาน Mister Bamrungsuk",
-      review: ["", ""], real: true, boost: boosts.has(a.id), price: top ? svc.top : svc.silver, photos: Math.min(9, photoPaths(a).length), pos: mainPos(a),
+      review: ["", ""], real: true, trained: Object.values(att.get(a.id) ?? {}).filter(Boolean).length >= TRAINING.requiredCore, checked: a.criminal_check === "passed", boost: boosts.has(a.id), price: top ? svc.top : svc.silver, photos: Math.min(9, photoPaths(a).length), pos: mainPos(a),
     } satisfies Person;
   });
 }

@@ -35,6 +35,14 @@ export function readResume(token: string | null | undefined): string | null {
   } catch { return null; }
 }
 
+/** โทเคนนี้ใช้ได้จริงไหม (ลายเซ็น + อายุ + ไม่ถูกยกเลิกด้วย "ออกจากระบบทุกเครื่อง"/แอดมิน) → mb หรือ null */
+export async function liveResume(token: string | null | undefined): Promise<string | null> {
+  const mb = readResume(token);
+  if (!mb) return null;
+  const after = await import("./store").then(async (m) => { const r = await m.getByMb(mb); return r ? m.extraOf(r).tokens_after ?? null : null; }).catch(() => null);
+  return !after || iatOf(token) >= Date.parse(after) ? mb : null;
+}
+
 /** ผ่านถ้า cookie หรือ ?t= เป็นของ mb นี้ */
 export async function canResume(mb: string, t?: string | null): Promise<boolean> {
   const tok = readResume(t) === mb ? t : (await cookies()).get(RESUME_COOKIE)?.value;

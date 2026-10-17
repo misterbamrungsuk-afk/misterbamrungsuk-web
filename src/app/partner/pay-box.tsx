@@ -60,8 +60,7 @@ export function PartnerPayBox({ pkg, token, onDone, requireAgree = false, showAm
     setErr("");
     if (!file) return;
     if (!file.type.startsWith("image/")) return setSlipErr("รับเฉพาะไฟล์รูปภาพ (JPG/PNG)");
-    setSlipName(file.name);
-    setSlip(await resizeImage(file, 1400, 0.85));
+    try { setSlip(await resizeImage(file, 1400, 0.85)); setSlipName(file.name); } catch (e) { setSlipErr((e instanceof Error ? e.message : "ไฟล์นี้เปิดเป็นรูปไม่ได้ · เลือกรูป JPG/PNG อีกครั้ง")); }
   };
   const submit = async () => {
     if (!slip) return setSlipErr("แนบสลิปการโอนก่อน");

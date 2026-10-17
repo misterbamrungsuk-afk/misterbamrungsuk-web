@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { FileTypeError } from "@/lib/file-guard";
 import { limited as dbLimited } from "@/lib/rate-limit";
 import { currentParttime } from "@/lib/bookings/auth";
 import { balances } from "@/lib/wallet";
@@ -36,6 +37,7 @@ export async function POST(req: Request) {
     const r = await buyBoostWithWallet(a, String(b.plan ?? ""));
     return NextResponse.json({ ok: true, status: r.status, until: r.ends_at });
   } catch (e) {
+    if (e instanceof FileTypeError) return NextResponse.json({ ok: false, error: e.message }, { status: 400 });
     if (e instanceof BoostError) return NextResponse.json({ ok: false, error: e.message }, { status: 400 });
     console.error("boost", e);
     return NextResponse.json({ ok: false, error: "ระบบขัดข้อง" }, { status: 500 });

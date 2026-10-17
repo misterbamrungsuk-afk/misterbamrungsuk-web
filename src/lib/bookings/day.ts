@@ -151,7 +151,7 @@ export async function customerComplete(id: string, customer_id: string, rv: { ra
   const b = await getBooking(id);
   if (!b || b.customer_id !== customer_id) throw new BookingError("ไม่พบการจอง", "notfound");
   if (!["accepted", "checked_in"].includes(b.status)) throw new BookingError("ยืนยันจบงานไม่ได้ในสถานะนี้", "state");
-  if (b.status === "accepted" && Date.parse(b.starts_at) > Date.now()) throw new BookingError("ยังไม่ถึงเวลานัด");
+  if (Date.parse(b.starts_at) > Date.now()) throw new BookingError("ยังไม่ถึงเวลานัด · กดจบงานได้หลังเริ่มนัด");
   const tip = Math.max(0, Math.round(rv.tip) * 100);
   if (tip > 0 && ((await balances("customer", customer_id)).available ?? 0) < tip) throw new BookingError("ยอดในกระเป๋าไม่พอสำหรับทิป");
   const r = await split(b, `customer:${customer_id}`, tip);

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { FileTypeError } from "@/lib/file-guard";
 import { canResume } from "@/lib/join/resume";
 import { addProfilePhoto, extraOf, getByMb, setProfilePhotos } from "@/lib/join/store";
 
@@ -41,6 +42,7 @@ export async function POST(req: Request) {
     await setProfilePhotos(row.id, photos);
     return NextResponse.json({ ok: true, photos });
   } catch (e) {
+    if (e instanceof FileTypeError) return bad(e.message, 400);
     console.error("photos failed", e);
     return bad("บันทึกไม่สำเร็จ กรุณาลองใหม่", 500);
   }

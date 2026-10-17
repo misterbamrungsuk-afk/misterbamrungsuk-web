@@ -100,7 +100,7 @@ export function CartFlow() {
     setSlipErr("");
     if (!file) return;
     if (!file.type.startsWith("image/")) return setSlipErr("รับเฉพาะไฟล์รูปภาพ (JPG/PNG)");
-    setSlip(await resizeImage(file, 1400, 0.85));
+    try { setSlip(await resizeImage(file, 1400, 0.85)); } catch (e) { setSlipErr((e instanceof Error ? e.message : "ไฟล์นี้เปิดเป็นรูปไม่ได้ · เลือกรูป JPG/PNG อีกครั้ง")); }
   };
   const sendSlip = async () => {
     if (!placed) return;

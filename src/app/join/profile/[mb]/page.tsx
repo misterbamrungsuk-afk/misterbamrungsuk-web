@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { canResume } from "@/lib/join/resume";
+import SOSButton from "@/components/sos";
 import { extraOf, getByMb } from "@/lib/join/store";
 import { getEarnings } from "@/lib/join/earnings-settings";
 import { ageFrom } from "@/lib/join/form";
@@ -50,5 +51,5 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
     contractDone: !!row.contract_accepted_at, fixes: fixes.length,
     card: x.card ?? { activities: [], places: [], partner_spas: [], skills: [] },
   };
-  return <ProfileHub d={data} />;
+  return <><ProfileHub d={data} /><SOSButton /></>;
 }

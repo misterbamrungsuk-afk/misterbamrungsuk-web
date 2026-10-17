@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { FileTypeError } from "@/lib/file-guard";
 import { clearFixes, extraOf, getByMb, saveKyc } from "@/lib/join/store";
 import { canResume } from "@/lib/join/resume";
 
@@ -17,6 +18,7 @@ export async function POST(req: Request) {
   const row = await getByMb(mb);
   if (!row) return bad("ไม่พบใบสมัคร", 404);
 
+  if (extraOf(row).kyc_status === "approved") return bad("ยืนยันตัวตนผ่านแล้ว · ต้องการเปลี่ยนเอกสาร ติดต่อทีมงานทาง LINE", 409);
   const files: { id_card?: File; selfie?: File; id_copy?: File } = {};
   const errors: string[] = [];
   // ถูกตีกลับ → ส่งเฉพาะรายการที่ต้องแก้ · ครั้งแรกต้องครบ (บัตรมีจากใบสมัครแล้วไม่ต้องส่งซ้ำ)
@@ -37,6 +39,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error("kyc failed", e);
-    return bad("ระบบขัดข้อง กรุณาลองใหม่อีกครั้ง", 500);
+    return e instanceof FileTypeError ? bad(e.message, 400) : bad("ระบบขัดข้อง กรุณาลองใหม่อีกครั้ง", 500);
   }
 }

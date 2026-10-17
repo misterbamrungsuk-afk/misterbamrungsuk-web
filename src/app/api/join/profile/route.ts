@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { FileTypeError } from "@/lib/file-guard";
 import { ageError } from "@/lib/join/config";
 import { ageFrom } from "@/lib/join/form";
 import { canResume } from "@/lib/join/resume";
@@ -42,6 +43,8 @@ export async function POST(req: Request) {
     if (step === "1") {
       const errors: string[] = [];
       for (const k of ["first_name", "last_name", "nickname", "line_id", "address"]) if (!s(k)) errors.push(k);
+      if (extraOf(row).kyc_status === "approved" && (s("first_name") !== row.first_name || s("last_name") !== row.last_name || s("birthdate") !== (row.birthdate ?? "")))
+        return bad("ชื่อ-นามสกุลและวันเกิดยืนยันกับบัตรแล้ว · ต้องการแก้ ติดต่อทีมงานทาง LINE", 409, ["first_name"]);
       if (!isDate(s("birthdate"))) errors.push("birthdate");
       else { const ae = ageError(row.package, ageFrom(s("birthdate"))); if (ae) return bad(ae, 400, ["birthdate"]); }
       const areas = uniq(form.getAll("areas"), 20, 120);
@@ -163,6 +166,7 @@ export async function POST(req: Request) {
     }
     return bad("ไม่รู้จักขั้นตอนนี้");
   } catch (e) {
+    if (e instanceof FileTypeError) return bad(e.message, 400);
     console.error("profile save failed", e);
     return bad("บันทึกไม่สำเร็จ กรุณาลองใหม่", 500);
   }

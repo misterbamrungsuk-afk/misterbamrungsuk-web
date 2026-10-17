@@ -28,6 +28,7 @@ export async function POST(req: Request) {
   const a = await currentParttime(String(b.mb ?? ""), b.t);
   if (!a) return NextResponse.json({ ok: false }, { status: 403 });
   if (extraOf(a).kyc_status !== "approved") return NextResponse.json({ ok: false, error: "ถอนได้หลังทีมงานอนุมัติเอกสารยืนยันตัวตน" }, { status: 409 });
+  if (extraOf(a).bank_review) return NextResponse.json({ ok: false, error: "บัญชีรับเงินใหม่รอทีมงานตรวจ · ถอนได้หลังตรวจเสร็จ (ปกติภายใน 1 วันทำการ)" }, { status: 409 });
   try {
     const w = await requestWithdraw(a, Number(b.amount) || 0);
     return NextResponse.json({ ok: true, withdrawal: { id: w.id, net_satang: w.net_satang, status: w.status } });

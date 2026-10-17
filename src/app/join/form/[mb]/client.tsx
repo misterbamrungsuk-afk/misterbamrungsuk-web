@@ -94,7 +94,7 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0, fix = false }: {
     if (!file) return;
     if (!file.type.startsWith("image/")) return setErrs((e) => ({ ...e, [k]: "รับเฉพาะไฟล์รูปภาพ (JPG/PNG)" }));
     if (file.size > 10 * 1024 * 1024) return setErrs((e) => ({ ...e, [k]: "ไฟล์ต้องไม่เกิน 10MB" }));
-    set(k, await resizeImage(file, k === "cert_doc" ? 1400 : 1000));
+    try { set(k, await resizeImage(file, k === "cert_doc" ? 1400 : 1000)); } catch (e) { setErrs((x) => ({ ...x, [k]: (e instanceof Error ? e.message : "ไฟล์นี้เปิดเป็นรูปไม่ได้ · เลือกรูป JPG/PNG อีกครั้ง") })); }
   };
 
   // พื้นที่

@@ -35,6 +35,8 @@ export default async function SettingsPage({ params, searchParams }: { params: P
   return (
     <PtPage>
       <PtHead back={ptHref(c)} title="ตั้งค่า" />
+      {c.x.bank_review && <p className="mx-4 mb-3 rounded-2xl text-[14px]" style={{ padding: "12px 14px", background: "rgba(240,163,90,.12)", border: "1px solid #f0a35a", color: "#f6c38e" }}>บัญชีรับเงินใหม่ ({c.row.bank} ••{c.row.bank_account.slice(-4)}) รอทีมงานตรวจ · ยังรับงานได้ตามปกติ · ถอนเงินได้หลังตรวจเสร็จ</p>}
+      {k === "approved" && <p className="mx-4 mb-3 m-0 text-[12.5px] font-light text-[#b5a596]">ยืนยันตัวตนแล้ว · ชื่อ-นามสกุล วันเกิด และเอกสารบัตรแก้เองไม่ได้ ต้องการเปลี่ยน ติดต่อทีมงานทาง LINE</p>}
       <div className="px-4 flex flex-col gap-3.5 md:grid md:grid-cols-2 md:items-start">
         <div className="flex flex-col gap-3.5 min-w-0">
           <div className="rounded-[20px] bg-[#2c1a1f] flex flex-col gap-3" style={{ padding: 16 }}>
