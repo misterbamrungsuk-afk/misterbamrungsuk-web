@@ -11,7 +11,8 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://*.supabase.co https://images.unsplash.com",
   "font-src 'self' data:",
-  `connect-src 'self' https://challenges.cloudflare.com${dev ? " ws: http://localhost:*" : ""}`,
+  // data:/blob: = ย่อรูปในเครื่องก่อนอัป (fetch(dataUrl) → File) · ไม่ใช่การติดต่อเว็บภายนอก
+  `connect-src 'self' data: blob: https://challenges.cloudflare.com${dev ? " ws: http://localhost:*" : ""}`,
   "frame-src https://challenges.cloudflare.com",
   "worker-src 'self' blob:",
   "manifest-src 'self'",
@@ -21,7 +22,8 @@ const csp = [
   // ล็อกอิน LINE/Google ส่งฟอร์มแล้ว redirect ออกไปผู้ให้บริการ → ต้องอนุญาต https:
   "form-action 'self' https:",
   "frame-ancestors 'none'",
-  ...(dev ? [] : ["upgrade-insecure-requests"]),
+  // MB_LOCAL_HTTP=1 = เปิด production build ทดสอบบน http://localhost (ไม่บังคับ https)
+  ...(dev || process.env.MB_LOCAL_HTTP ? [] : ["upgrade-insecure-requests"]),
 ].join("; ");
 
 const securityHeaders = [
