@@ -36,14 +36,8 @@ const Svg = ({ d, size = 20, sw = 1.8 }: { d: string; size?: number; sw?: number
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
 );
 
-// การ์ดทั้งหน้า: โทนม่วงแบบการ์ดสปา แต่เข้มกว่า (ผู้ใช้สั่ง 17 ต.ค.)
-const CARD_BG = "#1c1521";
-// ทางแยก 3 สายงานบนหน้าแรก (ครีมอ่อน) — ลูกค้าอยู่หน้านี้ · Part-Time/สินค้า แยกไปหน้าของตัวเอง
-const BRANCHES = [
-  { href: "/work-with-us", label: "ร่วมงานกับเรา", icon: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM19 8v6M22 11h-6" },
-  { href: "/market", label: "สินค้า", icon: "M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0" },
-  { href: "/join/me", label: "โปรไฟล์ Part-Time", icon: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1-4 4-6 8-6s7 2 8 6" },
-];
+// การ์ดทั้งหน้า: แดงเลือดหมูแบบการ์ดสปาหน้า /work-with-us (#2c1a1f) แต่เข้มกว่า (ผู้ใช้สั่ง 17 ต.ค.)
+const CARD_BG = "#221317";
 
 /** mode "home" = หน้าแรกลูกค้า (เมนูลูกค้า) · "sample" = หน้าตัวอย่างสำหรับผู้สนใจร่วมทีม (เพื่อนตัวอย่าง + เมนูรับสมัคร)
  *  people = Part-Time จริง (ถ้ามี) · ไม่มีคนจริง → ใช้ตัวอย่าง 20 คน */
@@ -80,7 +74,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
     <Link key={p.id} href={sample && !p.real ? `/p/${p.id}?ex=1` : `/p/${p.id}`} style={{ order: i * 2, background: CARD_BG }} className="block rounded-[18px] overflow-hidden text-inherit hover:text-inherit">
       <div className="relative h-[176px] md:h-auto md:aspect-[4/5] lg:aspect-square">
         <img src={p.img} alt={p.nick} loading="lazy" className="w-full h-full object-cover block" style={p.pos ? { objectPosition: p.pos } : undefined} />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(251,251,251,0) 55%, rgba(28,21,33,0.88))" }} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(251,251,251,0) 55%, rgba(34,19,23,0.9))" }} />
         {p.top && <div className="absolute top-2 left-2 flex"><span style={{ display: "inline-flex", alignItems: "center", height: 18, padding: "0 7px", borderRadius: 4, background: "linear-gradient(135deg, #fff1c9 0%, #e8c472 45%, #a8781f 100%)", color: "#1b130b", fontWeight: 700, fontSize: 9.5, letterSpacing: ".2em", boxShadow: "inset 0 0 0 1px rgba(255,241,201,.5), 0 2px 6px rgba(0,0,0,.35)" }}>TOP</span></div>}
         <div className="absolute left-[10px] bottom-2 text-[13px] font-light text-[#f3ead9]">{p.prov ? `${p.area} · ${p.prov}` : p.area}</div>
       </div>
@@ -149,15 +143,14 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
             <span className="shrink-0 h-10 px-4 rounded-full text-[#f3ead9] text-[13.5px] font-semibold flex items-center bg-[#1b130b]">สมัครร่วมทีม →</span>
           </Link>
         ) : (
-          /* ทางแยก 3 สายงาน (ครีมอ่อน) */
-          <nav aria-label="บริการอื่น" className="grid grid-cols-3 gap-2 md:gap-3" style={{ margin: "14px 18px 0" }}>
-            {BRANCHES.map((b) => (
-              <Link key={b.href} href={b.href} className="flex flex-col md:flex-row items-center justify-center gap-1.5 md:gap-2 rounded-2xl text-center text-[13px] md:text-[14px] font-semibold leading-[1.3] text-[#1b130b] hover:text-[#1b130b] active:scale-[.98] transition-transform" style={{ minHeight: 72, padding: "10px 6px", background: "#f3ead9" }}>
-                <span className="grid place-items-center w-9 h-9 rounded-xl shrink-0" style={{ background: "rgba(143,94,0,0.12)", color: "#8f5e00" }}><Svg d={b.icon} size={20} /></span>
-                {b.label}
-              </Link>
-            ))}
-          </nav>
+          /* ร่วมงานกับเรา — ปุ่มเดียวแบบเดิม สีครีมอ่อน */
+          <Link href="/work-with-us" className="flex items-center gap-3 rounded-2xl text-[#1b130b] hover:text-[#1b130b]" style={{ margin: "14px 18px 0", padding: "12px 14px", background: "#f3ead9" }}>
+            <span className="grid place-items-center w-[38px] h-[38px] rounded-xl shrink-0" style={{ background: "rgba(143,94,0,0.12)", color: "#8f5e00" }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m11 17 2 2a1 1 0 1 0 3-3" /><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4" /><path d="m21 3 1 11h-2" /><path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3" /><path d="M3 4h8" /></svg>
+            </span>
+            <span className="flex-1 min-w-0 leading-[1.4]"><span className="block font-semibold text-[15px]">ร่วมงานกับเรา</span></span>
+            <span className="shrink-0 h-9 px-3.5 rounded-full text-[#f3ead9] text-[13px] font-semibold flex items-center bg-[#1b130b]">สมัคร →</span>
+          </Link>
         )}
 
         {/* ค้นหา + ตัวกรอง */}
@@ -204,7 +197,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
         {list.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4" style={{ padding: "0 18px" }}>
             {list.map((x, i) => card(x, i))}
-            <Link href="/spas" style={{ gridTemplateColumns: "112px 1fr" }} className="order-[7] md:order-[11] xl:order-[15] col-span-full relative grid gap-3 items-center p-[10px] rounded-2xl bg-[#241c29] text-[#f3ead9] hover:text-[#f3ead9]">
+            <Link href="/spas" style={{ gridTemplateColumns: "112px 1fr" }} className="order-[7] md:order-[11] xl:order-[15] col-span-full relative grid gap-3 items-center p-[10px] rounded-2xl bg-[#2c1a1f] text-[#f3ead9] hover:text-[#f3ead9]">
               <img src="/brand/home/ad-spa.jpg" alt="" className="w-[112px] h-[84px] rounded-[10px] object-cover block" />
               <span className="flex flex-col gap-0.5 min-w-0 font-normal">
                 <span className="text-[11.5px] text-[#b5a596] font-light">โฆษณา</span>
