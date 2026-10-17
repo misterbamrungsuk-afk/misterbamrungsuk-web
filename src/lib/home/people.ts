@@ -26,7 +26,9 @@ const P = (id: string, nick: string, age: number, img: string, top: boolean, rat
   };
 };
 
-export const PEOPLE: Person[] = [
+// ตัวอย่าง: ต้น + กอล์ฟ = จ่ายโปรโมทอยู่ (กรอบทอง + ป้ายแนะนำ ขึ้นก่อน) — ให้เห็นหน้าตาก่อนมีคนจ่ายจริง
+const BOOSTED = new Set(["ton", "golf"]);
+export const PEOPLE: Person[] = (() => [
   P("ton", "ต้น", 29, "/brand/home/p-ton.jpg", true, "5.0", "วัฒนา", ["eat", "massage", "cafe"], 0, "ชอบพาไปลองร้านใหม่ ๆ คุยสนุก ฟังเก่ง ถ่ายรูปสวย และมีสกิลนวดผ่อนคลาย (มีใบรับรอง)"),
   P("phum", "ภูมิ", 31, "/brand/home/p-phum.jpg", true, "4.9", "ทองหล่อ", ["massage", "gym", "eat"], 20, "สายสุขภาพ ชวนออกกำลังเบา ๆ แล้วไปมื้อดี ๆ ต่อ ใจเย็นและตรงเวลา"),
   P("benz", "เบนซ์", 26, "/brand/home/p-benz.jpg", true, "4.9", "สาทร", ["massage", "photo", "cafe"], 0, "ถ่ายรูปเก่ง รู้มุมคาเฟ่สวยทั่วกรุงเทพฯ คุยได้ทุกเรื่อง"),
@@ -47,7 +49,7 @@ export const PEOPLE: Person[] = [
   P("oat", "โอ๊ต", 31, "/brand/home/p-n08.jpg", false, "4.7", "พระราม 9", ["eat", "movie", "gym"], 15, "สายกิน รู้ร้านเด็ดทั้งสตรีทฟู้ดและไฟน์ไดนิ่ง"),
   P("boss", "บอส", 33, "/brand/home/p-n09.jpg", true, "5.0", "ชิดลม", ["eat", "chill", "photo"], 0, "สุภาพ มาดผู้ใหญ่ เหมาะกับดินเนอร์หรือออกงานสังคม"),
   P("win", "วิน", 26, "/brand/home/p-n10.jpg", false, "4.8", "เมืองขอนแก่น", ["cafe", "eat", "movie"], 5, "อัธยาศัยดี พาเที่ยวคาเฟ่และตลาดกลางคืนขอนแก่น", { prov: "ขอนแก่น" }),
-];
+].map((p) => (BOOSTED.has(p.id) ? { ...p, boost: true } : p)))();
 
 export const personById = (id: string) => PEOPLE.find((p) => p.id === id);
 export const priceOf = (p: Person) => p.price ?? (p.top ? 10000 : 6500);

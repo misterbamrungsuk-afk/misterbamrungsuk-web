@@ -4,8 +4,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { hasSupabase } from "@/lib/supabase";
-import { isDemo } from "@/lib/data";
 
 const GOLD = "#e8c472";
 const field = "h-12 w-full rounded-[14px] border border-[rgba(243,234,217,0.07)] bg-[#211a18] px-[14px] text-[14px] text-[#f3ead9] outline-none focus:border-[#e8c472] placeholder:text-[#b5a596]";
@@ -59,9 +57,7 @@ export default function LoginPage() {
         </div>
 
         <section className="flex flex-col gap-[14px]" style={{ padding: "8px 20px calc(26px + env(safe-area-inset-bottom))" }}>
-          <div className="flex items-center gap-2 text-[12px] font-semibold text-[#e8c472]" style={{ letterSpacing: 3 }}><span className="w-[22px] h-px bg-[#e8c472]" />MISTER BAMRUNGSUK</div>
           <h1 className="m-0 font-bold text-[32px] leading-[1.3]" style={{ textWrap: "balance" }}>เพื่อนกิน เพื่อนเที่ยว<span className="block mt-1 text-[#e8c472]">ในแบบของคุณ</span></h1>
-          <p className="m-0 text-[14px] text-[#d9c9b4] leading-[1.6]" style={{ textShadow: "0 1px 8px rgba(0,0,0,.6)" }}>เพื่อนทุกคนผ่านการยืนยันตัวตน จ่ายปลอดภัย เงินพักไว้กับเราจนจบนัด</p>
           <form onSubmit={emailLogin} className="flex flex-col gap-[10px]">
             <label className="flex flex-col gap-[5px] text-[12px] text-[#d9c9b4] font-light">อีเมล
               <input type="email" required autoComplete="email" inputMode="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className={field} /></label>
@@ -78,7 +74,6 @@ export default function LoginPage() {
             <span className="flex-1"><span className="block font-semibold text-[14px]">สมัครเป็น Part-Time</span><span className="block text-[12px] text-[#d9c9b4] font-light">เปิดรับ 20 ต.ค. – 10 พ.ย. · จำกัด 50 ท่าน</span></span>
             <span className="text-[#e8c472]" aria-hidden="true">→</span>
           </Link>
-          {(isDemo || !hasSupabase) && <p className="m-0 text-[11.5px] text-[#b5a596] text-center font-light">โหมดสาธิต — ข้อมูลจำลอง</p>}
           <div className="text-[12px] text-[#b5a596] text-center font-light">สำหรับผู้มีอายุ 20 ปีขึ้นไป · ไม่มีบริการทางเพศ</div>
         </section>
       </div>

@@ -38,7 +38,7 @@ export function ProfileView({ p, reviews = [] }: { p: Person; reviews?: Rv[] }) 
       <BrandBar />
       <div className="mx-auto w-full max-w-[1120px] lg:grid lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)] lg:gap-10 lg:px-8 lg:pt-4" style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}>
         {/* รูป */}
-        <div className="relative h-[380px] md:h-[520px] lg:h-[640px] lg:sticky lg:top-[84px] rounded-[24px] lg:rounded-[28px] overflow-hidden mx-[18px] mt-1 lg:mx-0 lg:mt-0">
+        <div className="relative h-[380px] md:h-[520px] lg:h-[640px] lg:sticky lg:top-[84px] rounded-[24px] lg:rounded-[28px] overflow-hidden mx-[18px] mt-1 lg:mx-0 lg:mt-0" style={p.boost ? { border: "2px solid #e8c472", boxShadow: "0 0 0 1px rgba(255,241,201,.35), 0 12px 36px rgba(232,196,114,.3)" } : undefined}>
           <img src={pics[pic] ?? p.img} alt={p.nick} className="w-full h-full object-cover block" style={pic === 0 && p.pos ? { objectPosition: p.pos } : undefined} />
           <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(23,18,17,.35) 0%, rgba(23,18,17,0) 30%, rgba(23,18,17,0) 60%, #171211 100%)" }} />
           <Link href="/" aria-label="ย้อนกลับ" className={`absolute top-[14px] left-[14px] ${round} text-[#f3ead9] hover:text-[#f3ead9]`} style={glass}>
@@ -52,9 +52,6 @@ export function ProfileView({ p, reviews = [] }: { p: Person; reviews?: Rv[] }) 
               {pics.slice(0, 5).map((src, i) => <button key={src} type="button" onClick={() => setPic(i)} aria-label={`ดูรูปที่ ${i + 1}`} className="w-[52px] h-[52px] rounded-xl overflow-hidden p-0 bg-[#211a18]" style={{ border: `2px solid ${i === pic ? "#e8c472" : "rgba(246,239,228,.25)"}` }}><img src={src} alt="" className="w-full h-full object-cover block" /></button>)}
             </div>
           )}
-          <div className="absolute right-[18px] bottom-6 h-[26px] rounded-full text-[12px] font-light flex items-center gap-[5px]" style={{ padding: "0 10px", background: "rgba(8,6,6,.7)", border: `1px solid ${p.free ? "rgba(232,196,114,.6)" : "rgba(74,222,128,.7)"}`, color: p.free ? "#e8c472" : "#bbf7d0" }}>
-            {p.real ? "● เปิดให้จองเร็ว ๆ นี้" : p.free ? `● ว่างในอีก ${p.free} นาที` : "● ออนไลน์ · ว่างตอนนี้"}
-          </div>
         </div>
 
         {/* ข้อมูล */}
@@ -62,6 +59,7 @@ export function ProfileView({ p, reviews = [] }: { p: Person; reviews?: Rv[] }) 
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="m-0 font-bold text-[30px] lg:text-[38px]">{p.nick}</h1>
+              {p.boost && <span className="rounded-full text-[12px] font-semibold text-[#1b130b]" style={{ padding: "3px 10px", background: "linear-gradient(135deg, #fff1c9, #e8c472)" }}>★ แนะนำ</span>}
               {p.top && <span className="inline-flex items-center h-[18px] rounded text-[9.5px] font-bold tracking-[.2em] text-[#1b130b]" style={{ padding: "0 7px", background: "linear-gradient(135deg, #fff1c9 0%, #e8c472 45%, #a8781f 100%)" }}>TOP</span>}
               <span className="h-[26px] rounded-full text-[12px] font-light text-[#e8c472] flex items-center" style={{ padding: "0 10px", border: "1px solid rgba(212,175,55,.6)" }}>✓ ยืนยันตัวตน + ตรวจประวัติ</span>
             </div>

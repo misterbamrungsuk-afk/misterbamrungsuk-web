@@ -138,7 +138,7 @@ export function MapView({ people, venues, sample }: { people: MapPerson[]; venue
               <img src={sp.img} alt={sp.nick} className="w-[84px] h-[104px] rounded-2xl object-cover shrink-0" style={sp.pos ? { objectPosition: sp.pos } : undefined} />
               <div className="min-w-0 flex-1 flex flex-col gap-1">
                 <div className="flex justify-between items-center gap-2"><b className="text-[18px] font-semibold">{sp.nick}{sp.age ? `, ${sp.age}` : ""}</b><span className="text-[13px] text-[#e8c472]">★ {sp.rating}</span></div>
-                <div className="text-[12.5px] font-light text-[#d9c9b4]">{sp.area} · {sp.real ? "เปิดให้จองเร็ว ๆ นี้" : sp.free ? `ว่างในอีก ${sp.free} นาที` : "ว่างตอนนี้"}</div>
+                <div className="text-[12.5px] font-light text-[#d9c9b4]">{sp.area}</div>
                 <div className="flex flex-wrap gap-1">{sp.acts.slice(0, 3).map((a) => <span key={a} className="text-[11.5px] font-light rounded-full px-2 py-0.5" style={{ border: "1px solid rgba(243,234,217,0.12)" }}>{LABEL[a]}</span>)}</div>
                 <div className="font-semibold text-[#e8c472]">{baht(sp.price)} <span className="text-[11px] font-light text-[#b5a596]">/ 3 ชม.</span></div>
               </div>

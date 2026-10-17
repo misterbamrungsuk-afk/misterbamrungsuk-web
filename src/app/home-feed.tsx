@@ -24,7 +24,7 @@ type Act = (typeof ACTS)[number]["id"];
 type P = Person;
 const PROV: Record<string, string> = { "กรุงเทพฯ": "bkk", "นนทบุรี": "bkk", "ปทุมธานี": "bkk", "สมุทรปราการ": "bkk", "สมุทรสาคร": "bkk", "นครปฐม": "bkk", "กำแพงเพชร": "north", "ชัยนาท": "bkk", "นครนายก": "bkk", "นครสวรรค์": "north", "พระนครศรีอยุธยา": "bkk", "พิจิตร": "north", "พิษณุโลก": "north", "เพชรบูรณ์": "north", "ลพบุรี": "bkk", "สมุทรสงคราม": "bkk", "สิงห์บุรี": "bkk", "สุโขทัย": "north", "สุพรรณบุรี": "bkk", "สระบุรี": "bkk", "อ่างทอง": "bkk", "อุทัยธานี": "north", "เชียงราย": "north", "เชียงใหม่": "north", "น่าน": "north", "พะเยา": "north", "แพร่": "north", "แม่ฮ่องสอน": "north", "ลำปาง": "north", "ลำพูน": "north", "อุตรดิตถ์": "north", "กาฬสินธุ์": "ne", "ขอนแก่น": "ne", "ชัยภูมิ": "ne", "นครพนม": "ne", "นครราชสีมา": "ne", "บึงกาฬ": "ne", "บุรีรัมย์": "ne", "มหาสารคาม": "ne", "มุกดาหาร": "ne", "ยโสธร": "ne", "ร้อยเอ็ด": "ne", "เลย": "ne", "ศรีสะเกษ": "ne", "สกลนคร": "ne", "สุรินทร์": "ne", "หนองคาย": "ne", "หนองบัวลำภู": "ne", "อำนาจเจริญ": "ne", "อุดรธานี": "ne", "อุบลราชธานี": "ne", "จันทบุรี": "bkk", "ฉะเชิงเทรา": "bkk", "ชลบุรี": "bkk", "ตราด": "bkk", "ปราจีนบุรี": "bkk", "ระยอง": "bkk", "สระแก้ว": "bkk", "กาญจนบุรี": "bkk", "ตาก": "north", "ประจวบคีรีขันธ์": "bkk", "เพชรบุรี": "bkk", "ราชบุรี": "bkk", "กระบี่": "south", "ชุมพร": "south", "ตรัง": "south", "นครศรีธรรมราช": "south", "นราธิวาส": "south", "ปัตตานี": "south", "พังงา": "south", "พัทลุง": "south", "ภูเก็ต": "south", "ระนอง": "south", "สตูล": "south", "สงขลา": "south", "สุราษฎร์ธานี": "south", "ยะลา": "south" };
 const REG = [["", "ทุกภาค"], ["bkk", "กรุงเทพฯ และภาคกลาง"], ["north", "ภาคเหนือ"], ["ne", "ภาคตะวันออกเฉียงเหนือ"], ["south", "ภาคใต้"]];
-const SORTS = [["top", "แนะนำ · TOP ก่อน"], ["rate", "คะแนนสูงสุด"], ["now", "ว่างตอนนี้"], ["price", "ราคา"]] as const;
+const SORTS = [["top", "แนะนำ · TOP ก่อน"], ["rate", "คะแนนสูงสุด"], ["price", "ราคา"]] as const;
 type Sort = (typeof SORTS)[number][0];
 const price = priceOf;
 const labelOf = (id: Act) => ACTS.find((a) => a.id === id)?.label ?? "";
@@ -43,6 +43,15 @@ const Svg = ({ d, size = 20, sw = 1.8 }: { d: string; size?: number; sw?: number
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
 );
 
+// โฆษณาคั่นในรายการเพื่อน (n = จำนวนเพื่อนระหว่างโฆษณา) — วนตามลำดับ
+const AD_EVERY = 6, AD_EVERY_XL = 8;
+const MID_ADS = [
+  { img: "/brand/hotel1.jpg", name: "The Sathorn Retreat", sub: "ห้องพักราคาสมาชิก", href: "/hotels" },
+  { img: "/brand/home/ad-spa.jpg", name: "บำรุงสุข สปา", sub: "สมาชิกลด 20%", href: "/spas" },
+  { img: "/brand/market/gold-box.jpg", name: "ชุดของขวัญ Gold Box", sub: "ของขวัญพรีเมียม ส่งถึงบ้าน", href: "/products" },
+  { img: "/brand/hotel2.jpg", name: "Seaside Villa", sub: "พักริมทะเล ลด 15% สำหรับสมาชิก", href: "/hotels" },
+  { img: "/brand/market/body-oil-lavender.jpg", name: "Body Oil ลาเวนเดอร์", sub: "น้ำมันนวดผ่อนคลาย", href: "/products" },
+];
 // การ์ดทั้งหน้า: แดงเลือดหมูแบบการ์ดสปาหน้า /work-with-us (#2c1a1f) แต่เข้มกว่า (ผู้ใช้สั่ง 17 ต.ค.)
 const CARD_BG = "linear-gradient(180deg, #4d1f2a 0%, #37151d 100%)";
 const CARD_BD = "1px solid rgba(232,196,114,.22)";
@@ -72,7 +81,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
   const list = useMemo(() => {
     const by: Record<Sort, (a: P, b: P) => number> = {
       top: (a, b) => (b.boost ? 1 : 0) - (a.boost ? 1 : 0) || (b.top ? 1 : 0) - (a.top ? 1 : 0) || (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0),
-      rate: (a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0), now: (a, b) => a.free - b.free, price: (a, b) => price(a) - price(b),
+      rate: (a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0), price: (a, b) => price(a) - price(b),
     };
     return people.filter((p) => acts.every((a) => p.acts.includes(a)) && (!f.reg || PROV[provOf(p)] === f.reg) && (!f.prov || provOf(p) === f.prov)
       && (!spot || p.area.includes(spot) || spot.includes(p.area)) && (!f.type || (f.type === "massage") === p.acts.includes("massage"))
@@ -84,7 +93,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
   const clear = () => { setActs([]); setF({ reg: "", prov: "", spot: "", type: "", tier: "", act: "", aMin: "20", aMax: "50" }); };
 
   const card = (p: P, i = 0) => (
-    <Link key={p.id} href={sample && !p.real ? `/p/${p.id}?ex=1` : `/p/${p.id}`} style={{ order: i * 2, background: CARD_BG, border: CARD_BD }} className="block rounded-[18px] overflow-hidden text-inherit hover:text-inherit">
+    <Link key={p.id} href={sample && !p.real ? `/p/${p.id}?ex=1` : `/p/${p.id}`} style={{ order: i * 2, background: p.boost ? "linear-gradient(180deg, #5a2a1c 0%, #3a1a14 100%)" : CARD_BG, border: p.boost ? "2px solid #e8c472" : CARD_BD, boxShadow: p.boost ? "0 0 0 1px rgba(255,241,201,.35), 0 10px 30px rgba(232,196,114,.28)" : undefined }} className="block rounded-[18px] overflow-hidden text-inherit hover:text-inherit">
       <div className="relative h-[176px] md:h-auto md:aspect-[4/5] lg:aspect-square">
         <img src={p.img} alt={p.nick} loading="lazy" className="w-full h-full object-cover block" style={p.pos ? { objectPosition: p.pos } : undefined} />
         <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(251,251,251,0) 55%, rgba(55,21,29,0.95))" }} />
@@ -93,7 +102,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
         <div className="absolute left-[10px] bottom-2 text-[13px] font-light text-[#f3ead9]">{p.prov ? `${p.area} · ${p.prov}` : p.area}</div>
       </div>
       <div style={{ padding: "9px 10px 11px" }}>
-        <div className="flex justify-between items-center"><span className="font-semibold text-[15px]">{p.nick}, {p.age}</span><span className="text-[13px] text-[#e8c472] font-normal">★ {p.rating}</span></div>
+        <div className="flex justify-between items-center"><span className="font-semibold text-[15px]" style={p.boost ? { color: "#f3d27e" } : undefined}>{p.nick}, {p.age}</span><span className="text-[13px] text-[#e8c472] font-normal">★ {p.rating}</span></div>
         <div className="text-[13px] mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis font-thin">{p.acts.map(labelOf).join(" · ")}</div>
         <div className="font-semibold text-[#e8c472] mt-1.5 text-[15px]">฿{price(p).toLocaleString("en-US")} <span className="font-thin text-[11.5px] text-[#b5a596]">/ 3 ชม.</span></div>
       </div>
@@ -234,15 +243,22 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
         {list.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4" style={{ padding: "0 18px" }}>
             {list.map((x, i) => card(x, i))}
-            <Link href="/spas" style={{ gridTemplateColumns: "112px 1fr" }} className="order-[7] md:order-[11] xl:order-[15] col-span-full relative grid gap-3 items-center p-[10px] rounded-2xl bg-[#2c1a1f] text-[#f3ead9] hover:text-[#f3ead9]">
-              <img src="/brand/home/ad-spa.jpg" alt="" className="w-[112px] h-[84px] rounded-[10px] object-cover block" />
-              <span className="flex flex-col gap-0.5 min-w-0 font-normal">
-                <span className="text-[11.5px] text-[#b5a596] font-light">โฆษณา</span>
-                <span className="font-semibold text-[15px]">The Sathorn Retreat</span>
-                <span className="text-[13px] text-[#b5a596] font-light">ห้องพักราคาสมาชิก</span>
-                <span className="text-[13.5px] text-[#e8c472] font-semibold">ดูรายละเอียด ›</span>
-              </span>
-            </Link>
+            {/* โฆษณาคั่นกลาง: ทุก ๆ AD_EVERY คน (มือถือ/แท็บเล็ต 6 คน · จอคอม 4 คอลัมน์ 8 คน) วนตามรายการ MID_ADS เลื่อนไปเรื่อย ๆ */}
+            {[{ n: AD_EVERY, cls: "xl:hidden" }, { n: AD_EVERY_XL, cls: "hidden xl:grid" }].flatMap(({ n, cls }) =>
+              Array.from({ length: Math.floor((list.length - 1) / n) }, (_, k) => {
+                const ad = MID_ADS[k % MID_ADS.length];
+                return (
+                  <Link key={`${n}-${k}`} href={ad.href} style={{ gridTemplateColumns: "112px 1fr", order: (k + 1) * n * 2 - 1, background: "#2c1a1f", border: CARD_BD }} className={`${cls === "xl:hidden" ? "grid xl:hidden" : cls} col-span-full relative gap-3 items-center p-[10px] rounded-2xl text-[#f3ead9] hover:text-[#f3ead9]`}>
+                    <img src={ad.img} alt="" loading="lazy" className="w-[112px] h-[84px] rounded-[10px] object-cover block" />
+                    <span className="flex flex-col gap-0.5 min-w-0 font-normal">
+                      <span className="text-[11.5px] text-[#b5a596] font-light">โฆษณา</span>
+                      <span className="font-semibold text-[15px] truncate">{ad.name}</span>
+                      <span className="text-[13px] text-[#b5a596] font-light truncate">{ad.sub}</span>
+                      <span className="text-[13.5px] text-[#e8c472] font-semibold">ดูรายละเอียด ›</span>
+                    </span>
+                  </Link>
+                );
+              }))}
           </div>
         ) : (
           <div className="rounded-2xl text-center text-[13px] font-light bg-[#2c1a1f]" style={{ margin: "0 18px", padding: 24 }}>ยังไม่เจอเพื่อนที่ตรงใจ ลองเลือกกิจกรรมให้น้อยลงดูนะคะ</div>
