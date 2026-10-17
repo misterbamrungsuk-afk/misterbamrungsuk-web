@@ -17,8 +17,8 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const nextUrl = () => {
-    const n = new URLSearchParams(window.location.search).get("next") || "/home";
-    return n.startsWith("/") && !n.startsWith("//") ? n : "/home";
+    const n = new URLSearchParams(window.location.search).get("next") || "/";
+    return n.startsWith("/") && !n.startsWith("//") ? n : "/";
   };
 
   async function emailLogin(e: React.FormEvent) {
@@ -29,7 +29,9 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
       const out = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
       if (!out.ok) throw new Error(out.error || "เข้าสู่ระบบไม่สำเร็จ");
-      router.push(nextUrl());
+      // refresh ให้หน้าที่ render ฝั่งเซิร์ฟเวอร์อ่านคุกกี้ใหม่ (หัวหน้า/เมนูเปลี่ยนเป็นสถานะล็อกอินทันที)
+      router.replace(nextUrl());
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "เข้าสู่ระบบไม่สำเร็จ");
       setBusy(false);

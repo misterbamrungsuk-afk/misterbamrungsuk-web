@@ -6,6 +6,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { PEOPLE, priceOf, type Person } from "@/lib/home/people";
+import { TabBar } from "@/components/shell";
 
 const GOLD = "#e8c472";
 const ACTS = [
@@ -35,8 +36,19 @@ const Svg = ({ d, size = 20, sw = 1.8 }: { d: string; size?: number; sw?: number
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
 );
 
-/** people = Part-Time จริง (ถ้ามี) · ไม่มีคนจริง → ใช้ตัวอย่าง 20 คน */
-export function HomeFeed({ showEarnings = true, people = PEOPLE }: { showEarnings?: boolean; people?: Person[] }) {
+// การ์ดทั้งหน้า: โทนม่วงแบบการ์ดสปา แต่เข้มกว่า (ผู้ใช้สั่ง 17 ต.ค.)
+const CARD_BG = "#1c1521";
+// ทางแยก 3 สายงานบนหน้าแรก (ครีมอ่อน) — ลูกค้าอยู่หน้านี้ · Part-Time/สินค้า แยกไปหน้าของตัวเอง
+const BRANCHES = [
+  { href: "/work-with-us", label: "ร่วมงานกับเรา", icon: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM19 8v6M22 11h-6" },
+  { href: "/market", label: "สินค้า", icon: "M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0" },
+  { href: "/join/me", label: "โปรไฟล์ Part-Time", icon: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1-4 4-6 8-6s7 2 8 6" },
+];
+
+/** mode "home" = หน้าแรกลูกค้า (เมนูลูกค้า) · "sample" = หน้าตัวอย่างสำหรับผู้สนใจร่วมทีม (เพื่อนตัวอย่าง + เมนูรับสมัคร)
+ *  people = Part-Time จริง (ถ้ามี) · ไม่มีคนจริง → ใช้ตัวอย่าง 20 คน */
+export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", me = null, unread = 0 }: { showEarnings?: boolean; people?: Person[]; mode?: "home" | "sample"; me?: { name: string } | null; unread?: number }) {
+  const sample = mode === "sample";
   const [acts, setActs] = useState<Act[]>([]);
   const [sort, setSort] = useState<Sort>("top");
   const [ad, setAd] = useState(false);
@@ -65,10 +77,10 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE }: { showEarning
   const clear = () => { setActs([]); setF({ reg: "", prov: "", spot: "", type: "", tier: "", act: "", aMin: "20", aMax: "50" }); };
 
   const card = (p: P, i = 0) => (
-    <Link key={p.id} href={`/p/${p.id}`} style={{ order: i * 2 }} className="block rounded-[18px] overflow-hidden bg-[#251d1b] text-inherit hover:text-inherit">
+    <Link key={p.id} href={sample && !p.real ? `/p/${p.id}?ex=1` : `/p/${p.id}`} style={{ order: i * 2, background: CARD_BG }} className="block rounded-[18px] overflow-hidden text-inherit hover:text-inherit">
       <div className="relative h-[176px] md:h-auto md:aspect-[4/5] lg:aspect-square">
         <img src={p.img} alt={p.nick} loading="lazy" className="w-full h-full object-cover block" style={p.pos ? { objectPosition: p.pos } : undefined} />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(251,251,251,0) 55%, rgba(42,33,30,0.85))" }} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(251,251,251,0) 55%, rgba(28,21,33,0.88))" }} />
         {p.top && <div className="absolute top-2 left-2 flex"><span style={{ display: "inline-flex", alignItems: "center", height: 18, padding: "0 7px", borderRadius: 4, background: "linear-gradient(135deg, #fff1c9 0%, #e8c472 45%, #a8781f 100%)", color: "#1b130b", fontWeight: 700, fontSize: 9.5, letterSpacing: ".2em", boxShadow: "inset 0 0 0 1px rgba(255,241,201,.5), 0 2px 6px rgba(0,0,0,.35)" }}>TOP</span></div>}
         <div className="absolute left-[10px] bottom-2 text-[13px] font-light text-[#f3ead9]">{p.prov ? `${p.area} · ${p.prov}` : p.area}</div>
       </div>
@@ -90,15 +102,17 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE }: { showEarning
             <span className="font-brand text-[11px] md:text-[14px] text-[#e8c472] whitespace-nowrap">Mister Bamrungsuk</span>
           </Link>
           <nav aria-label="เมนูหลัก (จอคอม)" className="hidden md:flex items-center gap-1 ml-auto mr-3 text-[14px] font-light">
-            <Link href="/" aria-current="page" className="px-3 min-h-10 inline-flex items-center rounded-full text-[#e8c472] hover:text-[#e8c472]">ดูเพื่อน</Link>
-            <Link href="/map" className="px-3 min-h-10 inline-flex items-center rounded-full text-[#d9c9b4] hover:text-[#f3ead9]">แผนที่</Link>
-            <Link href={showEarnings ? "/join/earnings" : "/join"} className="px-3 min-h-10 inline-flex items-center rounded-full text-[#d9c9b4] hover:text-[#f3ead9]">รายได้</Link>
-            <Link href="/policy" className="px-3 min-h-10 inline-flex items-center rounded-full text-[#d9c9b4] hover:text-[#f3ead9]">กฎเกณฑ์</Link>
-            <Link href="/work-with-us" className="px-3 min-h-10 inline-flex items-center rounded-full text-[#d9c9b4] hover:text-[#f3ead9]">ร่วมทีม</Link>
-            <Link href="/auth/register" className="ml-2 px-5 min-h-10 inline-flex items-center rounded-full bg-[#e8c472] text-[#1b130b] font-semibold hover:text-[#1b130b]">สมัครทันที</Link>
-            <Link href="/login" className="px-3 min-h-10 inline-flex items-center rounded-full text-[#d9c9b4] hover:text-[#f3ead9]">เข้าสู่ระบบ</Link>
+            {(sample
+              ? [["/join/showcase", "ดูเพื่อน"], ["/map", "แผนที่"], [showEarnings ? "/join/earnings" : "/join", "รายได้"], ["/policy", "กฎเกณฑ์"], ["/work-with-us", "ร่วมทีม"]]
+              : [["/", "หน้าแรก"], ["/map", "แผนที่"], ["/quick", "เรียกด่วน"], ["/chat", "แชท"]]).map(([h, l], i) => (
+              <Link key={h} href={h} aria-current={i === 0 ? "page" : undefined} className={`px-3 min-h-10 inline-flex items-center rounded-full ${i === 0 ? "text-[#e8c472] hover:text-[#e8c472]" : "text-[#d9c9b4] hover:text-[#f3ead9]"}`}>{l}</Link>
+            ))}
+            {sample ? <Link href="/join" className="ml-2 px-5 min-h-10 inline-flex items-center rounded-full bg-[#e8c472] text-[#1b130b] font-semibold hover:text-[#1b130b]">สมัครร่วมทีม</Link>
+              : me ? <Link href="/profile" className="ml-2 px-4 min-h-10 inline-flex items-center gap-2 rounded-full text-[#f3ead9] hover:text-[#f3ead9]" style={{ background: "rgba(232,196,114,0.16)" }}><span className="w-7 h-7 rounded-full grid place-items-center bg-[#e8c472] text-[#1b130b] text-[13px] font-semibold">{me.name.slice(0, 1) || "ฉ"}</span>บัญชีของฉัน</Link>
+              : <><Link href="/auth/register" className="ml-2 px-5 min-h-10 inline-flex items-center rounded-full bg-[#e8c472] text-[#1b130b] font-semibold hover:text-[#1b130b]">สมัครทันที</Link>
+                <Link href="/login" className="px-3 min-h-10 inline-flex items-center rounded-full text-[#d9c9b4] hover:text-[#f3ead9]">เข้าสู่ระบบ</Link></>}
           </nav>
-          <Link href="/login" aria-label="การแจ้งเตือน" className="relative grid place-items-center w-11 h-11 rounded-full text-[#f3ead9] hover:text-[#f3ead9]" style={{ background: "rgba(232,196,114,0.16)" }}>
+          <Link href={me ? "/notifications" : "/login"} aria-label="การแจ้งเตือน" className="relative grid place-items-center w-11 h-11 rounded-full text-[#f3ead9] hover:text-[#f3ead9]" style={{ background: "rgba(232,196,114,0.16)" }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10 21h4" /></svg>
             <span className="absolute w-2 h-2 rounded-full bg-[#c9283d]" style={{ top: 9, right: 10 }} />
           </Link>
@@ -123,17 +137,28 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE }: { showEarning
         </div>
 
         <div style={{ padding: "10px 18px 0" }}>
-          <h1 className="m-0 mt-0.5 font-bold text-[26px] md:text-[32px] leading-[1.2] text-[#e8c472]" style={{ textWrap: "balance" }}>เลือกเพื่อนของคุณ</h1>
+          {!sample && me && <p className="m-0 mb-1 text-[15px] text-[#d9c9b4]">สวัสดี คุณ{me.name.split(" ")[0]} 👋</p>}
+          {sample && <div className="mb-2 inline-flex items-center gap-2 rounded-full text-[12.5px] font-semibold" style={{ padding: "5px 12px", background: "rgba(232,196,114,0.16)", color: GOLD }}>หน้าตัวอย่าง · สิ่งที่ลูกค้าเห็นในแอป</div>}
+          <h1 className="m-0 mt-0.5 font-bold text-[26px] md:text-[32px] leading-[1.3] text-[#e8c472]" style={{ textWrap: "balance" }}>{sample ? "เพื่อนกินเที่ยวในแอปของเรา" : "เลือกเพื่อนของคุณ"}</h1>
         </div>
 
-        {/* ร่วมงานกับเรา */}
-        <Link href="/work-with-us" className="flex items-center gap-3 rounded-2xl text-[#f3ead9] hover:text-[#f3ead9]" style={{ margin: "14px 18px 0", padding: "12px 14px", background: "linear-gradient(120deg, rgba(232,196,114,0.16), rgba(42,33,30,0.45))" }}>
-          <span className="grid place-items-center w-[38px] h-[38px] rounded-xl bg-[#e8c472] text-[#1b130b] shrink-0">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m11 17 2 2a1 1 0 1 0 3-3" /><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4" /><path d="m21 3 1 11h-2" /><path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3" /><path d="M3 4h8" /></svg>
-          </span>
-          <span className="flex-1 min-w-0 leading-[1.4]"><span className="block font-semibold text-[15px]">ร่วมงานกับเรา</span></span>
-          <span className="shrink-0 h-8 px-3 rounded-full text-[#e8c472] text-[13px] font-semibold flex items-center bg-[#251d1b]">สมัคร →</span>
-        </Link>
+        {sample ? (
+          /* หน้าตัวอย่าง: ชวนสมัครร่วมทีม */
+          <Link href="/join" className="flex items-center gap-3 rounded-2xl text-[#1b130b] hover:text-[#1b130b]" style={{ margin: "14px 18px 0", padding: "12px 14px", background: "#f3ead9" }}>
+            <span className="flex-1 min-w-0 leading-[1.4]"><span className="block font-semibold text-[15px]">อยากเป็นเพื่อนกินเที่ยวแบบนี้?</span><span className="block text-[13px] font-normal text-[#4f4038]">อบรมฟรีชุดแรก · เลือกวันเวลาเอง</span></span>
+            <span className="shrink-0 h-10 px-4 rounded-full text-[#f3ead9] text-[13.5px] font-semibold flex items-center bg-[#1b130b]">สมัครร่วมทีม →</span>
+          </Link>
+        ) : (
+          /* ทางแยก 3 สายงาน (ครีมอ่อน) */
+          <nav aria-label="บริการอื่น" className="grid grid-cols-3 gap-2 md:gap-3" style={{ margin: "14px 18px 0" }}>
+            {BRANCHES.map((b) => (
+              <Link key={b.href} href={b.href} className="flex flex-col md:flex-row items-center justify-center gap-1.5 md:gap-2 rounded-2xl text-center text-[13px] md:text-[14px] font-semibold leading-[1.3] text-[#1b130b] hover:text-[#1b130b] active:scale-[.98] transition-transform" style={{ minHeight: 72, padding: "10px 6px", background: "#f3ead9" }}>
+                <span className="grid place-items-center w-9 h-9 rounded-xl shrink-0" style={{ background: "rgba(143,94,0,0.12)", color: "#8f5e00" }}><Svg d={b.icon} size={20} /></span>
+                {b.label}
+              </Link>
+            ))}
+          </nav>
+        )}
 
         {/* ค้นหา + ตัวกรอง */}
         <div className="flex gap-[10px]" style={{ margin: "14px 18px 0" }}>
@@ -156,7 +181,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE }: { showEarning
             const on = acts.includes(a.id);
             return (
               <button key={a.id} type="button" aria-pressed={on} onClick={() => setActs((x) => (on ? x.filter((y) => y !== a.id) : [...x, a.id]))}
-                className="flex flex-col items-center justify-center gap-[5px] rounded-2xl font-light flex-[0_0_70px] md:flex-1 md:text-[13px]!" style={{ minWidth: 70, height: 72, fontSize: 11.5, background: on ? "rgba(232,196,114,0.16)" : "rgba(42,33,30,0.9)", color: on ? GOLD : "#f3ead9" }}>
+                className="flex flex-col items-center justify-center gap-[5px] rounded-2xl font-light flex-[0_0_70px] md:flex-1 md:text-[13px]!" style={{ minWidth: 70, height: 72, fontSize: 11.5, background: on ? "rgba(232,196,114,0.16)" : CARD_BG, color: on ? GOLD : "#f3ead9" }}>
                 <Svg d={a.icon} size={22} sw={1.6} />{a.label}
               </button>
             );
@@ -208,15 +233,15 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE }: { showEarning
         </div>
       </div>
 
-      {/* เมนูล่าง */}
-      <nav aria-label="เมนูหลัก" className="md:hidden fixed bottom-0 inset-x-0 z-40 mx-auto max-w-[640px] grid grid-cols-5 items-center text-center font-light text-[#b5a596] border-t border-[rgba(243,234,217,0.07)] bg-[#251d1b] md:rounded-t-2xl"
+      {/* เมนูล่าง: หน้าตัวอย่าง = เมนูรับสมัคร · หน้าแรก = เมนูลูกค้า */}
+      {sample ? <nav aria-label="เมนูหลัก" className="md:hidden fixed bottom-0 inset-x-0 z-40 mx-auto max-w-[640px] grid grid-cols-5 items-center text-center font-light text-[#b5a596] border-t border-[rgba(243,234,217,0.07)] bg-[#251d1b] md:rounded-t-2xl"
         style={{ height: "calc(64px + env(safe-area-inset-bottom))", paddingBottom: "env(safe-area-inset-bottom)", fontSize: 12 }}>
-        <Link href="/" aria-current="page" className="flex flex-col items-center gap-[3px] text-[#e8c472] hover:text-[#e8c472]"><Svg d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />ดูเพื่อน</Link>
+        <Link href="/join/showcase" aria-current="page" className="flex flex-col items-center gap-[3px] text-[#e8c472] hover:text-[#e8c472]"><Svg d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />ดูเพื่อน</Link>
         <Link href={showEarnings ? "/join/earnings" : "/join"} className="flex flex-col items-center gap-[3px] text-inherit hover:text-[#f3ead9]"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2" /><circle cx="12" cy="12" r="2.5" /></svg>รายได้</Link>
         <div><Link href="/auth/register" aria-label="สมัครทันที" className="mx-auto grid place-items-center w-[50px] h-[50px] rounded-2xl bg-[#e8c472] text-[#1b130b] hover:text-[#1b130b]"><Svg d="M12 5v14M5 12h14" size={22} sw={2.2} /></Link></div>
         <Link href="/policy" className="flex flex-col items-center gap-[3px] text-inherit hover:text-[#f3ead9]"><Svg d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3z" />กฎเกณฑ์</Link>
         <Link href="/join" className="flex flex-col items-center gap-[3px] text-inherit hover:text-[#f3ead9]"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21c1-4 4-6 8-6s7 2 8 6" /></svg>ร่วมทีม</Link>
-      </nav>
+      </nav> : <div className="md:hidden"><TabBar unread={unread} /></div>}
 
       {/* ป๊อปอัปโฆษณา */}
       {ad && (

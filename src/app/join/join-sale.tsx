@@ -70,7 +70,7 @@ export function JoinSalePage({ seats, showEarnings = true, invite }: { seats: Se
             })}
           </div>
           <div className="w-full max-w-[560px] mx-auto flex flex-col" style={{ gap: 18 }}>
-            <Link href="/join/terms" className="self-center tap text-[14px] text-[#e8c472]">อ่านสัญญา</Link>
+            <div className="self-center flex gap-5"><Link href="/join/terms" className="tap text-[14px] text-[#e8c472]">อ่านสัญญา</Link><Link href="/join/showcase" className="tap text-[14px] text-[#e8c472]">ดูหน้าตัวอย่างแอป ›</Link></div>
             {!invite && <div className="flex justify-between items-center rounded-xl text-[13px] font-light" style={{ padding: "10px 14px", background: "rgba(232,196,114,0.10)" }}>
               <span>{seats.closed ? "ปิดรับสมัครรอบนี้แล้ว" : `กลุ่มอบรมถัดไป · ${seats.cohort}`}</span>
               <span className="text-[#e8c472] font-semibold">{seats.closed ? "เต็มแล้ว" : `เหลือ ${seats.left} / ${seats.quota} ที่`}</span>

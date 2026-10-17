@@ -186,7 +186,7 @@ export default function RegisterPage() {
               </div>
               <h1 className="m-0 font-semibold text-[24px]" style={{ color: GOLD }}>สมัครสำเร็จ</h1>
               <p className="m-0 text-[14px] text-[#d9c9b4]">ยินดีต้อนรับค่ะ คุณ{f.name.trim()} บัญชีพร้อมแล้ว เลือกเพื่อนและนัดได้เลย</p>
-              <button type="button" onClick={() => router.push("/notifications/permission")} className={cta}>เริ่มใช้งาน</button>
+              <button type="button" onClick={() => { router.push("/notifications/permission"); router.refresh(); }} className={cta}>เริ่มใช้งาน</button>
               <Link href="/" className="h-12 w-full rounded-[14px] bg-[#211a18] text-[#e8c472] text-[14px] font-semibold grid place-items-center hover:text-[#e8c472]" style={{ border: `1px solid ${LN}` }}>ดูเพื่อนในระบบ</Link>
             </div>
           )}

@@ -24,7 +24,7 @@ export function EarningsCalc({ cfg }: { cfg: Omit<EarningsSettings, "history"> }
   const actions = (
     <>
       <Button href={`/join/pay?pkg=${svc === "massage" ? "B" : "A"}`}>สมัครเข้าอบรม</Button>
-      <Button href="/" variant="text">ดูตัวอย่างแอปที่ลูกค้าเห็น</Button>
+      <Button href="/join/showcase" variant="text">ดูตัวอย่างแอปที่ลูกค้าเห็น</Button>
     </>
   );
 
