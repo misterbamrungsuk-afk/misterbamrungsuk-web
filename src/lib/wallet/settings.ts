@@ -6,7 +6,8 @@ export interface MoneySettings {
   minWithdraw: number;      // บาท
   feePct: number;           // ค่าธรรมเนียมแพลตฟอร์มตอนถอน (%)
   whtPct: number;           // หัก ณ ที่จ่าย (%)
-  releaseHours: number;     // ปล่อยเงินให้ถอนได้หลังจบงาน (ชม.)
+  releaseHours: number;     // ปล่อยเงินให้ถอนได้หลังจบงาน (ชม.) — ใช้เมื่อ releaseMode = "auto"
+  releaseMode: "manual" | "auto"; // manual = แอดมินตรวจงานแล้วกดอนุมัติเข้ากระเป๋า (/admin/payroll) · auto = ปล่อยเองหลัง releaseHours
   autoCompleteHours: number;// Part-Time กดจบงาน แล้วลูกค้าไม่ค้าน = จบอัตโนมัติ (ชม.)
   autoPayoutLimit: number;  // วงเงินถอนอัตโนมัติต่อคนต่อวัน (บาท) — เกินให้แอดมินอนุมัติ
   cancelRule: string;       // กติกายกเลิก (ข้อความแสดงลูกค้า) — ช่วงแรกแอดมินตัดสินเป็นเคส
@@ -17,7 +18,7 @@ export interface MoneySettings {
   history: { at: string; by: string; note: string }[];
 }
 export const DEFAULT_MONEY: MoneySettings = {
-  minWithdraw: 500, feePct: 3, whtPct: 3, releaseHours: 24, autoCompleteHours: 12, autoPayoutLimit: 20000,
+  minWithdraw: 500, feePct: 3, whtPct: 3, releaseHours: 24, releaseMode: "manual", autoCompleteHours: 12, autoPayoutLimit: 20000,
   cancelRule: "ยกเลิกได้ฟรีก่อนเพื่อนตอบรับ · หลังยืนยันแล้ว ทีมงานพิจารณาตามกรณี",
   autoCancel: false, cancelFullHours: 3, cancelLatePct: 50, quickSeconds: 180, history: [],
 };
@@ -40,6 +41,7 @@ export function validateMoney(s: Omit<MoneySettings, "history">): string | null 
   if (!(s.feePct >= 0 && s.feePct <= 30)) return "ค่าธรรมเนียม 0–30%";
   if (!(s.whtPct >= 0 && s.whtPct <= 15)) return "หัก ณ ที่จ่าย 0–15%";
   if (!(s.releaseHours >= 0 && s.releaseHours <= 168)) return "ปล่อยเงิน 0–168 ชม.";
+  if (s.releaseMode !== "manual" && s.releaseMode !== "auto") return "เลือกวิธีปล่อยรายได้";
   if (!(s.autoCompleteHours >= 1 && s.autoCompleteHours <= 72)) return "จบงานอัตโนมัติ 1–72 ชม.";
   if (!(s.autoPayoutLimit >= 0)) return "วงเงินอัตโนมัติไม่ถูกต้อง";
   if (!s.cancelRule.trim()) return "กรอกกติกายกเลิก";

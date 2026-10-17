@@ -93,6 +93,11 @@ export function WalletAdmin({ initial, money, recon }: { initial: Data; money: M
             <label key={k} className="flex flex-col gap-1"><span className="text-[#cdbfb3] text-[12px]">{l}</span><input type="number" step="any" value={m[k]} onChange={(e) => setM({ ...m, [k]: Number(e.target.value) })} className={inp} style={{ borderColor: LINE }} /></label>
           ))}
         </div>
+        <label className="flex flex-col gap-1"><span className="text-[#cdbfb3] text-[12px]">ปล่อยรายได้ Part-Time เข้ากระเป๋า</span>
+          <select value={m.releaseMode ?? "manual"} onChange={(e) => setM({ ...m, releaseMode: e.target.value as "manual" | "auto" })} className={inp} style={{ borderColor: LINE }}>
+            <option value="manual">แอดมินตรวจงานแล้วกดอนุมัติ (หน้า "รายได้ Part-Time")</option>
+            <option value="auto">อัตโนมัติหลังจบงานตามชั่วโมงที่ตั้ง</option>
+          </select></label>
         <label className="flex flex-col gap-1"><span className="text-[#cdbfb3] text-[12px]">กติกายกเลิก (แสดงลูกค้า)</span><input value={m.cancelRule} onChange={(e) => setM({ ...m, cancelRule: e.target.value })} className={inp} style={{ borderColor: LINE }} /></label>
         <div className="flex flex-wrap items-end gap-3 rounded-xl border p-3" style={{ borderColor: LINE }}>
           <label className="flex items-center gap-2 self-center"><input type="checkbox" checked={!!m.autoCancel} onChange={(e) => setM({ ...m, autoCancel: e.target.checked })} className="w-4 h-4 accent-[#e8c472]" /><span>ยกเลิกอัตโนมัติตามกติกา</span></label>

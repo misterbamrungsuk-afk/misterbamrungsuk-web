@@ -61,8 +61,30 @@ async function split(b: Booking, actor: string, tip: number): Promise<Booking> {
   if (!r) throw new BookingError("สถานะการจองเปลี่ยนไปแล้ว", "state");
   await addEvent(b.id, "completed", actor, { pct, tip });
   const money = await getMoney();
-  await notify({ user_type: "parttime", user_id: b.parttime_id, kind: "earning", title: `จบงาน ${b.code}`, body: `รายได้รอปล่อย · ถอนได้ใน ${money.releaseHours} ชม.`, url: `/join/profile/${b.parttime_mb}/earnings` });
+  await notify({ user_type: "parttime", user_id: b.parttime_id, kind: "earning", title: `จบงาน ${b.code}`, body: money.releaseMode === "auto" ? `รายได้รอปล่อย · ถอนได้ใน ${money.releaseHours} ชม.` : "รายได้รอทีมงานตรวจและอนุมัติเข้ากระเป๋า", url: `/join/profile/${b.parttime_mb}/earnings` });
   return r;
+}
+
+/** ปล่อยรายได้ของนัดที่จบแล้ว: PT.pending → PT.available (ครั้งเดียวต่อการจอง · กันซ้ำด้วยสถานะ matured_at + idem) */
+async function matureOne(b: Booking, actor: string): Promise<Booking> {
+  const amt = await ptAmount(b);
+  return (await moveBooking(b.id, ["completed"], { matured_at: now() }, amt > 0 ? { kind: "mature", ref: { type: "booking", id: b.id }, idem: `mature:${b.id}`, note: `ปล่อยรายได้ ${b.code}`, actor, legs: [
+    { owner_type: "parttime", owner_id: b.parttime_id, bucket: "pending", amount: -amt },
+    { owner_type: "parttime", owner_id: b.parttime_id, bucket: "available", amount: amt },
+  ] } : null)) ?? b;
+}
+
+/** แอดมินอนุมัติรายได้เข้ากระเป๋า (หน้า /admin/payroll) — ทุกนัดที่จบแล้วแต่ยังไม่ปล่อยของ Part-Time คนนี้ (หรือเฉพาะ ids ที่เลือก) */
+export async function approveEarnings(parttime_id: string, admin: string, ids?: string[]): Promise<{ count: number; amount: number }> {
+  const rows = isDemo ? rawForParttime(parttime_id) : (((await db().from("bookings").select().eq("parttime_id", parttime_id).eq("status", "completed").is("matured_at", null)).data ?? []) as Booking[]);
+  let count = 0, amount = 0, mb = "";
+  for (const b of rows.filter((x) => x.status === "completed" && !x.matured_at && (!ids || ids.includes(x.id)))) {
+    const amt = await ptAmount(b);
+    const r = await matureOne(b, `admin:${admin}`);
+    if (r.matured_at) { count++; amount += amt; mb = b.parttime_mb; }
+  }
+  if (count) await notify({ user_type: "parttime", user_id: parttime_id, kind: "earning", title: "รายได้เข้ากระเป๋าแล้ว", body: `อนุมัติ ${count} งาน · ฿${(amount / 100).toLocaleString("th-TH")} · ถอนหรือใช้ได้ทันที`, url: `/join/profile/${mb}/earnings` });
+  return { count, amount };
 }
 
 /** อ่านแล้วจัดการอัตโนมัติ: Part-Time จบงานแล้วลูกค้าไม่ค้านเกินกำหนด = จบงาน · จบงานครบเวลาปล่อยเงิน = ถอนได้ */
@@ -72,13 +94,7 @@ export async function sweepDay(rows: Booking[]): Promise<Booking[]> {
   for (let b of rows) {
     try {
       if ((b.status === "checked_in" || b.status === "accepted") && b.pt_done_at && Date.parse(b.pt_done_at) + m.autoCompleteHours * 3600_000 < Date.now()) b = await split(b, "system:auto-complete", 0);
-      if (b.status === "completed" && !b.matured_at && b.completed_at && Date.parse(b.completed_at) + m.releaseHours * 3600_000 < Date.now()) {
-        const amt = await ptAmount(b);
-        b = (await moveBooking(b.id, ["completed"], { matured_at: now() }, amt > 0 ? { kind: "mature", ref: { type: "booking", id: b.id }, idem: `mature:${b.id}`, note: `ปล่อยรายได้ ${b.code}`, actor: "system", legs: [
-          { owner_type: "parttime", owner_id: b.parttime_id, bucket: "pending", amount: -amt },
-          { owner_type: "parttime", owner_id: b.parttime_id, bucket: "available", amount: amt },
-        ] } : null)) ?? b;
-      }
+      if (m.releaseMode === "auto" && b.status === "completed" && !b.matured_at && b.completed_at && Date.parse(b.completed_at) + m.releaseHours * 3600_000 < Date.now()) b = await matureOne(b, "system");
     } catch (e) { console.error("sweepDay", b.id, e); }
     out.push(b);
   }

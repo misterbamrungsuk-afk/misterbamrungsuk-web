@@ -17,6 +17,7 @@ export const ROLE_LABEL: Record<AdminRole, string> = {
 export const PATH_ROLES: { prefix: string; roles: AdminRole[] }[] = [
   { prefix: "/admin/settings", roles: ["super"] },
   { prefix: "/admin/payouts", roles: ["super", "finance"] },
+  { prefix: "/admin/payroll", roles: ["super", "finance"] },
   { prefix: "/admin/applicants", roles: ["super", "finance"] },
   { prefix: "/admin/slips", roles: ["super", "finance"] },
   { prefix: "/admin/wallet", roles: ["super", "finance"] },

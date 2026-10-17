@@ -22,6 +22,7 @@ export const ADMIN_TABS: AdminTab[] = [
   { href: "/admin/cohorts", label: "กลุ่มอบรม / เช็กชื่อ" },
   { href: "/admin/earnings", label: "ราคาและส่วนแบ่ง" },
   { href: "/admin/invites", label: "ลิงก์เชิญ" },
+  { href: "/admin/payroll", label: "รายได้ Part-Time · อนุมัติ" },
   { href: "/admin/payouts", label: "โอนให้ Part-Time" },
   { href: "/admin/partners", label: "พาร์ทเนอร์ / พื้นที่โปรโมท" },
   { href: "/admin/market", label: "ร้านค้า Marketplace" },

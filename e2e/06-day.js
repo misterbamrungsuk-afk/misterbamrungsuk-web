@@ -37,8 +37,17 @@ const ptw = () => fetch(B + `/api/pt/wallet?mb=${mb}&t=${encodeURIComponent(T)}`
   let a = await J(await fetch(B + '/api/admin/wallet', { headers: ADM }));
   r = await fetch(B + '/api/admin/wallet', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'settings', money: { ...a.money, releaseHours: 0 }, note: 'ทดสอบ' }) }); ok('save money settings', (await J(r)).ok);
   r = await fetch(B + '/api/admin/wallet', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'settings', money: { ...a.money, feePct: 99 } }) }); ok('invalid settings refused', r.status === 400);
+  // ค่าเริ่มต้น = แอดมินอนุมัติ (releaseMode manual): อ่านแล้วยังไม่ปล่อยเอง → หน้า "รายได้ Part-Time" → กดอนุมัติ → เข้ากระเป๋า
+  ok('default release mode = manual', a.money.releaseMode === 'manual');
   await fetch(B + `/api/pt/bookings?mb=${mb}&t=${encodeURIComponent(T)}`);
+  p = await ptw(); ok('manual mode: still pending (no auto release)', p.pending > 0 && p.available === 0);
+  let t = await (await fetch(B + '/admin/payroll', { headers: ADM })).text(); ok('payroll lists pt waiting', t.includes(mb) && t.includes('รออนุมัติ') && !t.includes('ข้อมูลตัวอย่าง 1 คน'));
+  ok('payroll needs admin', (await fetch(B + '/api/admin/payroll', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ all: true }) })).status === 401);
+  j = await J(await fetch(B + '/api/admin/payroll', { method: 'POST', headers: ADM, body: JSON.stringify({ all: true }) })); ok('approve earnings', j.ok && j.count >= 1 && j.amount > 0, JSON.stringify(j));
+  j = await J(await fetch(B + '/api/admin/payroll', { method: 'POST', headers: ADM, body: JSON.stringify({ all: true }) })); ok('approve twice = nothing', j.ok && j.count === 0);
   p = await ptw(); ok('matured → available', p.available > 0 && p.pending === 0, `${p.available}`);
+  // โหมดอัตโนมัติยังใช้ได้ (สำหรับการทดสอบถัดไป)
+  r = await fetch(B + '/api/admin/wallet', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'settings', money: { ...a.money, releaseHours: 0, releaseMode: 'auto' }, note: 'ทดสอบ auto' }) }); ok('switch to auto release', (await J(r)).ok);
   r = await fetch(B + '/api/pt/wallet', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mb, t: T, amount: 100 }) }); ok('below min refused', r.status === 400);
   const avail = Math.floor(p.available / 100);
   r = await fetch(B + '/api/pt/wallet', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mb, t: T, amount: avail + 1 }) }); ok('over balance refused', r.status === 400);
