@@ -43,3 +43,22 @@ export function jitter([lat, lng]: [number, number], seed: string): [number, num
   const a = ((h >>> 0) % 3600) / 3600 * Math.PI * 2, r = 0.0015 + (((h >>> 12) % 1000) / 1000) * 0.0035;
   return [lat + Math.sin(a) * r, lng + Math.cos(a) * r];
 }
+
+/** ขยับเล็กน้อย (~±200 ม.) สำหรับย่านที่ Part-Time ตั้งเอง (ปัดช่อง ~1 กม. แล้ว) — กันหมุดซ้อน โดยไม่คลาดจากย่านจริง */
+export function jitterSmall([lat, lng]: [number, number], seed: string): [number, number] {
+  let h = 2166136261;
+  for (const c of seed) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
+  const a = ((h >>> 0) % 3600) / 3600 * Math.PI * 2, r = 0.0006 + (((h >>> 12) % 1000) / 1000) * 0.0012;
+  return [lat + Math.sin(a) * r, lng + Math.cos(a) * r];
+}
+
+/** ชื่อย่านที่ใกล้ที่สุด (สำหรับป้าย "แถว…") — ย่าน/เขตก่อนจังหวัด */
+export function nearestArea(lat: number, lng: number): string {
+  let best = "กรุงเทพฯ", d = Infinity;
+  for (const [k, [a, b]] of Object.entries(P)) {
+    if (k === "กรุงเทพฯ" || k === "กรุงเทพมหานคร") continue;
+    const x = (a - lat) ** 2 + ((b - lng) * Math.cos((lat * Math.PI) / 180)) ** 2;
+    if (x < d) { d = x; best = k; }
+  }
+  return best;
+}

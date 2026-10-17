@@ -9,7 +9,7 @@ import { hasContact } from "@/lib/join/contact-guard";
 // การจองลูกค้า ↔ Part-Time (supabase/booking/0001_booking.sql) — เงินเดินผ่าน wallet:
 // ส่งคำขอ: ลูกค้า.available → ลูกค้า.held · ตอบรับ: held → บริษัท.escrow · ปฏิเสธ/หมดเวลา/ยกเลิกก่อนตอบรับ: held → available
 export type PlaceType = "out" | "outdoor" | "mall" | "cafe" | "condo" | "hotel" | "spa";
-export type Place = { type: PlaceType; label: string; detail: string; spa_id?: string; spa_name?: string };
+export type Place = { type: PlaceType; label: string; detail: string; spa_id?: string; spa_name?: string; /** จุดนัดที่ลูกค้าปักหมุด (ใช้คิดระยะ/เวลาถึง และให้ Part-Time นำทาง) */ lat?: number; lng?: number };
 export type Status = "requested" | "accepted" | "declined" | "expired" | "cancelled" | "cancel_requested" | "checked_in" | "completed" | "disputed" | "refunded";
 export type Booking = {
   id: string; code: string; customer_id: string; customer_email: string | null; customer_name: string | null;

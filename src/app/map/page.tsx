@@ -1,7 +1,7 @@
 import { PEOPLE, priceOf } from "@/lib/home/people";
 import { myBlocked } from "@/lib/customer/profile";
 import { getLivePeople } from "@/lib/home/live";
-import { coordsOf, jitter } from "@/lib/home/geo";
+import { coordsOf, jitter, jitterSmall } from "@/lib/home/geo";
 import { listPartners, stripSecret } from "@/lib/partner/store";
 import { PARTNER_SPAS } from "@/lib/booking";
 import { MapView, type MapPerson, type MapVenue } from "./view";
@@ -14,7 +14,7 @@ export default async function MapPage() {
   const [all, blocked] = await Promise.all([getLivePeople().catch(() => []), myBlocked()]);
   const live = all.filter((p) => !blocked.has(p.id));
   const people: MapPerson[] = (live.length ? live : PEOPLE).map((p) => {
-    const [lat, lng] = jitter(coordsOf(p.prov, p.area), p.id);
+    const [lat, lng] = p.geo ? jitterSmall(p.geo, p.id) : jitter(coordsOf(p.prov, p.area), p.id);
     return { id: p.id, nick: p.nick, age: p.age, img: p.img, pos: p.pos, rating: p.rating, top: p.top, acts: p.acts, area: p.prov ? `${p.area} · ${p.prov}` : p.area, price: priceOf(p), free: p.free, lat, lng, real: !!p.real };
   });
   let venues: MapVenue[] = [];

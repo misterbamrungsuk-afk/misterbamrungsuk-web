@@ -114,7 +114,8 @@ export interface PtWork { days: Record<string, { on: boolean; from: string; to: 
 export interface PtListing { title: string; rules: string; hidden: boolean; updated_at: string }
 export interface PtPost { text: string; time: string; zone: string; open: boolean; created_at: string }
 
-export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents" | "talents_other" | "activities_other" | "areas" | "no_area" | "slip_check" | "invite" | "kyc_status" | "kyc_reason" | "kyc_submitted_at" | "bank_book_path"> & { attendance?: Record<string, boolean>; photos?: string[]; card?: ProfileCard | null; form_done?: number[]; tier?: "top" | "silver"; pt_settings?: PtSettings | null; post?: PtPost | null; listing?: PtListing | null; work?: PtWork | null; listed?: boolean; delete_requested_at?: string | null; bank_consents?: { terms: boolean; pdpa: boolean; profile: boolean; at: string } | null; /** ตำแหน่งรูปในกรอบ (object-position "x% y%") ต่อ path รูป */ photo_pos?: Record<string, string> | null };
+export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents" | "talents_other" | "activities_other" | "areas" | "no_area" | "slip_check" | "invite" | "kyc_status" | "kyc_reason" | "kyc_submitted_at" | "bank_book_path"> & { attendance?: Record<string, boolean>; photos?: string[]; card?: ProfileCard | null; form_done?: number[]; tier?: "top" | "silver"; pt_settings?: PtSettings | null; post?: PtPost | null; listing?: PtListing | null; work?: PtWork | null; listed?: boolean; delete_requested_at?: string | null; bank_consents?: { terms: boolean; pdpa: boolean; profile: boolean; at: string } | null; /** ตำแหน่งรูปในกรอบ (object-position "x% y%") ต่อ path รูป */ photo_pos?: Record<string, string> | null; /** ย่านที่ Part-Time ตั้งเองให้แสดงบนแผนที่ (ปัดเป็นช่อง ~1 กม. แล้ว ไม่ใช่ตำแหน่งจริง) */ geo?: PtGeo | null };
+export type PtGeo = { lat: number; lng: number; label: string; src: "gps" | "pin"; at: string };
 
 /** รวมคอลัมน์ 0003 กับ docs.extra — คอลัมน์จริงมาก่อน */
 export function extraOf(a: Applicant): Extra {
@@ -145,6 +146,7 @@ export function extraOf(a: Applicant): Extra {
     delete_requested_at: x.delete_requested_at ?? null,
     bank_consents: x.bank_consents ?? null,
     photo_pos: x.photo_pos ?? null,
+    geo: x.geo ?? null,
     slip_check: x.slip_check ?? null,
     invite: x.invite ?? null,
     kyc_status: a.kyc_status && a.kyc_status !== "none" ? a.kyc_status : x.kyc_status ?? a.kyc_status ?? "none",
@@ -288,7 +290,7 @@ export async function updateExtra(id: string, patch: Pick<Extra, "cohort" | "lin
 
 const KYC_EXTRA_KEYS = ["kyc_status", "kyc_reason", "kyc_submitted_at", "bank_book_path"];
 /** เก็บใน docs.extra อย่างเดียว (ไม่มีคอลัมน์) */
-const EXTRA_ONLY_KEYS = ["photo_pos", "slip_check", "pt_settings", "post", "listing", "work", "listed", "delete_requested_at", "tier", "bank_consents", "areas", "no_area", "availability", "massage_cert", "ack_hours", "ack_no_refuse", "photos", "card", "form_done"];
+const EXTRA_ONLY_KEYS = ["geo", "photo_pos", "slip_check", "pt_settings", "post", "listing", "work", "listed", "delete_requested_at", "tier", "bank_consents", "areas", "no_area", "availability", "massage_cert", "ack_hours", "ack_no_refuse", "photos", "card", "form_done"];
 
 /** เขียนคอลัมน์ + docs (path ไฟล์ และ extra สำรอง) — คอลัมน์ 0006 ยังไม่มีก็เขียนเฉพาะคอลัมน์เดิม + docs */
 async function patchApplicant(id: string, allCols: Record<string, unknown>, docPaths: Partial<Record<DocKind, string>> = {}): Promise<Applicant | null> {

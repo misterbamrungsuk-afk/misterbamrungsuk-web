@@ -3,6 +3,7 @@
 
 // บอร์ด C-Map — แผนที่เต็มจอ · ค้นหาย่าน · กิจกรรม · ชั้นข้อมูล (ทั้งหมด/เพื่อน/พาร์ทเนอร์) · การ์ดเลื่อนด้านล่าง · แผ่นรายละเอียดเมื่อแตะหมุด
 import "leaflet/dist/leaflet.css";
+import { km, kmText } from "@/lib/geo";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { LayerGroup, Map as LMap } from "leaflet";
@@ -138,7 +139,7 @@ export function MapView({ people, venues, sample }: { people: MapPerson[]; venue
               <img src={sp.img} alt={sp.nick} className="w-[84px] h-[104px] rounded-2xl object-cover shrink-0" style={sp.pos ? { objectPosition: sp.pos } : undefined} />
               <div className="min-w-0 flex-1 flex flex-col gap-1">
                 <div className="flex justify-between items-center gap-2"><b className="text-[18px] font-semibold">{sp.nick}{sp.age ? `, ${sp.age}` : ""}</b><span className="text-[13px] text-[#e8c472]">★ {sp.rating}</span></div>
-                <div className="text-[12.5px] font-light text-[#d9c9b4]">{sp.area}</div>
+                <div className="text-[12.5px] font-light text-[#d9c9b4]">{sp.area}{me ? ` · ห่างประมาณ ${kmText(km({ lat: me[0], lng: me[1] }, sp))}` : ""}</div>
                 <div className="flex flex-wrap gap-1">{sp.acts.slice(0, 3).map((a) => <span key={a} className="text-[11.5px] font-light rounded-full px-2 py-0.5" style={{ border: "1px solid rgba(243,234,217,0.12)" }}>{LABEL[a]}</span>)}</div>
                 <div className="font-semibold text-[#e8c472]">{baht(sp.price)} <span className="text-[11px] font-light text-[#b5a596]">/ 3 ชม.</span></div>
               </div>
@@ -159,7 +160,7 @@ export function MapView({ people, venues, sample }: { people: MapPerson[]; venue
             {ps.map((p) => (
               <button key={p.id} type="button" onClick={() => focus(p.lat, p.lng, { kind: "p", id: p.id })} className="shrink-0 w-[220px] rounded-2xl flex gap-2.5 p-2 text-left text-[#f3ead9]" style={{ ...glass, background: "rgba(33,26,24,.94)" }}>
                 <img src={p.img} alt="" className="w-[64px] h-[80px] rounded-xl object-cover shrink-0" style={p.pos ? { objectPosition: p.pos } : undefined} />
-                <span className="min-w-0 flex flex-col gap-0.5"><b className="font-semibold text-[14px] truncate">{p.nick}{p.age ? `, ${p.age}` : ""}</b><span className="text-[11.5px] font-light text-[#d9c9b4] truncate">★ {p.rating} · {p.area}</span><span className="text-[13px] font-semibold text-[#e8c472] mt-auto">{baht(p.price)}<span className="text-[11.5px] font-light text-[#b5a596]"> / 3 ชม.</span></span></span>
+                <span className="min-w-0 flex flex-col gap-0.5"><b className="font-semibold text-[14px] truncate">{p.nick}{p.age ? `, ${p.age}` : ""}</b><span className="text-[11.5px] font-light text-[#d9c9b4] truncate">★ {p.rating} · {me ? `~${kmText(km({ lat: me[0], lng: me[1] }, p))}` : p.area}</span><span className="text-[13px] font-semibold text-[#e8c472] mt-auto">{baht(p.price)}<span className="text-[11.5px] font-light text-[#b5a596]"> / 3 ชม.</span></span></span>
               </button>
             ))}
           </div>

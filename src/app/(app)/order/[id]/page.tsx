@@ -4,6 +4,7 @@
 // รายละเอียดการจอง (บอร์ด C-OrderDetail + C-Escrow "เงินของคุณอยู่ตรงไหน") — สถานะ · เงิน · แชท · ยกเลิก
 import { use, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { LiveTrack } from "@/components/live-track";
 
 const GOLD = "#e8c472";
 const LN = "rgba(243,234,217,0.07)";
@@ -62,6 +63,7 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
           <div className="flex-1 min-w-0"><b className="font-medium text-[17px]">{b.pt.nick}</b><div className="text-[12px] font-light text-[#d9c9b4]">#{b.code} · จองเมื่อ {fmt(b.created_at)}</div></div>
           <Link href={`/p/${b.pt.pid}`} className="tap px-1 text-[13px] font-light" style={{ color: GOLD }}>โปรไฟล์</Link>
         </div>
+        {(b.status === "accepted" || b.status === "checked_in") && <LiveTrack id={b.id} nick={b.pt.nick} img={b.pt.img} startsAt={b.starts_at} />}
         <div className="rounded-[20px] bg-[#211a18] text-[14px]" style={{ padding: "4px 16px", border: `1px solid ${LN}` }}>
           {[["วันเวลา", `${fmt(b.starts_at)} (${b.hours} ชม.)`], ["สถานที่", `${b.place.label} ${b.place.detail}`], ...(b.note ? [["ฝากบอก", b.note]] : []), ["ค่าบริการ", baht(b.price_satang)], ...(b.room_fee_satang ? [["ค่าห้อง", baht(b.room_fee_satang)]] : [])].map(([k, v], i, a) => (
             <div key={k} className="flex justify-between gap-3 py-[10px]" style={{ borderBottom: i < a.length - 1 ? `1px solid ${LN}` : "none" }}><span className="text-[#d9c9b4] shrink-0">{k}</span><span className="text-right">{v}</span></div>

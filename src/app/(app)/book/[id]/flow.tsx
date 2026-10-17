@@ -4,6 +4,7 @@
 // นัดเพื่อน 3 ขั้น — บอร์ด C-Booking (ระยะเวลา + สถานที่) → C-Schedule (วันเวลา + ฝากบอก) → C-Checkout (ยืนยัน + ชำระ)
 // ชำระจากกระเป๋าเงิน · ยอดไม่พอ → สแกน QR เติมเฉพาะส่วนที่ขาด + แนบสลิป (Slip2Go ผ่าน = จองต่อทันที)
 import { useEffect, useMemo, useState } from "react";
+import { PinPicker } from "@/components/pin-picker";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
@@ -39,6 +40,7 @@ export function BookFlow({ p, price, avail, busy: taken = [], spas, saved = [] }
   const [h, setH] = useState<3 | 5>(3);
   const [place, setPlace] = useState<PlaceType>("cafe");
   const [detail, setDetail] = useState("");
+  const [pin, setPin] = useState<{ lat: number; lng: number } | null>(null);
   const [spa, setSpa] = useState(spas[0]?.id ?? "");
   const [day, setDay] = useState(0);
   const [slot, setSlot] = useState<number | null>(null);
@@ -68,7 +70,7 @@ export function BookFlow({ p, price, avail, busy: taken = [], spas, saved = [] }
   const dayLabel = `${WD[d0.getDay()]} ${d0.getDate()} ${MONTH[d0.getMonth()].slice(0, 3)}.`;
   const short = wallet != null ? Math.max(0, total * 100 - wallet) : 0;
   const shortBaht = Math.ceil(short / 100);
-  const step1ok = place === "spa" ? !!spaObj : detail.trim().length >= 2;
+  const step1ok = place === "spa" ? !!spaObj : detail.trim().length >= 2 && !!pin;
 
   useEffect(() => {
     if (step !== 3) return;
@@ -83,7 +85,7 @@ export function BookFlow({ p, price, avail, busy: taken = [], spas, saved = [] }
 
   const book = async () => {
     setBusy(true); setError("");
-    const r = await fetch("/api/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pid: p.id, hours: h, starts_at: starts!.toISOString(), place: { type: place, detail, spa_id: spa }, note }) }).catch(() => null);
+    const r = await fetch("/api/bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pid: p.id, hours: h, starts_at: starts!.toISOString(), place: { type: place, detail, spa_id: spa, ...(place !== "spa" && pin ? pin : {}) }, note }) }).catch(() => null);
     const d = await r?.json().catch(() => null);
     setBusy(false);
     if (d?.ok) return router.push(`/book/success?id=${d.id}`);
@@ -155,7 +157,7 @@ export function BookFlow({ p, price, avail, busy: taken = [], spas, saved = [] }
               ))}
             </div>
           ) : (
-            <label className="flex flex-col gap-[5px] text-[12px] font-light text-[#d9c9b4]">{place === "condo" || place === "hotel" ? "ชื่ออาคาร / ห้อง" : `จุดนัดพบ (${meta[1]})`}
+            <><label className="flex flex-col gap-[5px] text-[12px] font-light text-[#d9c9b4]">{place === "condo" || place === "hotel" ? "ชื่ออาคาร / ห้อง" : `จุดนัดพบ (${meta[1]})`}
               <input value={detail} onChange={(e) => setDetail(e.target.value)} placeholder={meta[3]} maxLength={200} className="h-[46px] rounded-[14px] bg-[#211a18] px-[14px] text-[16px] text-[#f3ead9] outline-none placeholder:text-[#b5a596]" style={{ border: `1px solid ${LN}` }} />
               {!!saved.length && (
                 <span className="flex flex-wrap gap-1.5 pt-1" aria-label="ที่อยู่ที่บันทึก">
@@ -163,6 +165,11 @@ export function BookFlow({ p, price, avail, busy: taken = [], spas, saved = [] }
                 </span>
               )}
             </label>
+            <div className="flex flex-col gap-[5px]">
+              <span className="text-[12px] font-light text-[#d9c9b4]">ปักหมุดจุดนัด <span className="text-[#b5a596]">· ใช้บอกเวลาถึงตอนเพื่อนเดินทาง และให้เพื่อนนำทางมาถูกที่</span></span>
+              <PinPicker value={pin} onChange={(v) => setPin(v)} height={200} />
+              {!pin && <span className="text-[12px] text-[#ff8a9a]">เลื่อนแผนที่หรือกด "ใช้ตำแหน่งฉัน" เพื่อปักหมุดก่อนไปต่อ</span>}
+            </div></>
           )}
           {bar(`${h} ชม. · ${place === "spa" ? spaObj?.name ?? "สปา" : meta[1]}`, <button type="button" disabled={!step1ok} onClick={() => setStep(2)} className={ctaCls} style={{ padding: "0 28px" }}>ถัดไป</button>)}
         </div>

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { ageError } from "@/lib/join/config";
 import { ageFrom } from "@/lib/join/form";
 import { canResume } from "@/lib/join/resume";
+import { inThailand, snapCell } from "@/lib/geo";
+import { nearestArea } from "@/lib/home/geo";
 import { extraOf, getByMb, saveProfile, clearFixes } from "@/lib/join/store";
 import { CONTACT_MSG, hasContact } from "@/lib/join/contact-guard";
 
@@ -126,6 +128,20 @@ export async function POST(req: Request) {
     if (step === "delete_request") {
       await saveProfile(row.id, { delete_requested_at: new Date().toISOString() });
       return NextResponse.json({ ok: true });
+    }
+
+    // ย่านที่แสดงบนแผนที่ (Part-Time ตั้งเอง: GPS หรือปักหมุด) — ปัดเป็นช่อง ~1 กม. ก่อนเก็บ · GPS คลาดเกิน 2 กม. ไม่รับ · clear=1 = กลับไปใช้ย่านตอนสมัคร
+    if (step === "geo") {
+      if (s("clear", 2) === "1") { await saveProfile(row.id, { geo: null }); return NextResponse.json({ ok: true, geo: null }); }
+      const pt = { lat: Number(s("lat", 20)), lng: Number(s("lng", 20)) };
+      if (!inThailand(pt)) return bad("ตำแหน่งต้องอยู่ในประเทศไทย", 400);
+      const src = s("src", 5) === "gps" ? "gps" : "pin";
+      const acc = Number(s("accuracy", 10));
+      if (src === "gps" && Number.isFinite(acc) && acc > 2000) return bad("GPS ยังจับตำแหน่งไม่แม่น (คลาดเกิน 2 กม.) · ลองใหม่ที่โล่ง หรือปักหมุดเอง", 400);
+      const c = snapCell(pt);
+      const geo = { lat: c.lat, lng: c.lng, label: nearestArea(c.lat, c.lng), src: src as "gps" | "pin", at: new Date().toISOString() };
+      await saveProfile(row.id, { geo });
+      return NextResponse.json({ ok: true, geo });
     }
 
     // ตำแหน่งรูปหลักบนการ์ด (ลากปรับในหน้า "ดูตัวอย่างการ์ด")

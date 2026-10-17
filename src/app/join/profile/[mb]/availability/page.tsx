@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Forbidden } from "../../../_kyc/ui";
 import { PtHead, PtNav, PtPage, loadPt, ptHref } from "../_pt";
 import { WorkForm } from "../_ptc2";
+import { PtGeoCard } from "../geo-card";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "เวลาทำงาน — Mister Bamrungsuk" };
@@ -20,7 +21,8 @@ export default async function AvailabilityPage({ params, searchParams }: { param
   return (
     <PtPage>
       <PtHead back={ptHref(c, "schedule")} title="เวลาทำงาน" />
-      <div className="px-4 max-w-[560px]">
+      <div className="px-4 max-w-[560px] flex flex-col gap-4">
+        <PtGeoCard mb={c.mb} t={c.t} init={c.x.geo ?? null} fallback={((c.x.areas ?? [])[0]?.split(" › ") ?? []).slice(1, 2)[0] || (c.x.areas ?? [])[0] || "ยังไม่ได้ตั้ง"} />
         <WorkForm mb={c.mb} t={c.t} init={{ days, radius_km: w?.radius_km ?? 8, paused: w?.paused ?? false }} />
       </div>
       <PtNav c={c} active="schedule" />

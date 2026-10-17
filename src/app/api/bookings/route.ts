@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getProfile } from "@/lib/customer/profile";
 import { currentCustomer, rateLimited } from "@/lib/customer/auth";
+import { inThailand } from "@/lib/geo";
 import { BookingError, createBooking, listForCustomer, ptPublic, type Place, type PlaceType } from "@/lib/bookings";
 import { getLiveApplicants, publicId } from "@/lib/home/live";
 import { listPartners } from "@/lib/partner/store";
@@ -45,7 +46,9 @@ export async function POST(req: Request) {
     spa = { id: s.id, name: s.name };
     roomFee = s.price;
   } else if (!detail) return NextResponse.json({ ok: false, error: "กรอกจุดนัดพบ / ที่อยู่" }, { status: 400 });
-  const place: Place = { type, label: LABEL[type], detail: spa ? spa.name : detail, ...(spa ? { spa_id: spa.id, spa_name: spa.name } : {}) };
+  // หมุดจุดนัด (ลูกค้าปักบนแผนที่) — ใช้คิดระยะ/เวลาถึงตอนเพื่อนเดินทาง และให้เพื่อนเปิดนำทาง
+  const pin = { lat: Math.round(Number(p.lat) * 1e5) / 1e5, lng: Math.round(Number(p.lng) * 1e5) / 1e5 };
+  const place: Place = { type, label: LABEL[type], detail: spa ? spa.name : detail, ...(spa ? { spa_id: spa.id, spa_name: spa.name } : {}), ...(inThailand(pin) ? pin : {}) };
   if ((await getProfile(me.sub, me.email).catch(() => null))?.blocked.includes(String(b.pid ?? ""))) return NextResponse.json({ ok: false, error: "คุณบล็อกเพื่อนคนนี้ไว้ · ยกเลิกบล็อกได้ที่ บัญชี › ผู้ใช้ที่บล็อก" }, { status: 403 });
   const hours = Number(b.hours) === 5 ? 5 : 3;
   try {

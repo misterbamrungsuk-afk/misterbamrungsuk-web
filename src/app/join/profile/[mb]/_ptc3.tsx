@@ -2,13 +2,14 @@
 
 // งานเข้า (บอร์ด P-Incoming) + แชทกับลูกค้า — ใช้ข้อมูลการจองจริง (/api/pt/bookings)
 import { useCallback, useEffect, useRef, useState } from "react";
+import { TravelShare } from "./travel-share";
 import { ChatNotice } from "@/components/chat-notice";
 import Link from "next/link";
 
 const GOLD = "#e8c472";
 const LN = "rgba(243,234,217,0.07)";
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US");
-type B = { id: string; code: string; status: string; starts_at: string; hours: number; total_satang: number; price_satang: number; place: { label: string; detail: string }; note: string | null; expires_at: string | null; customer_name: string | null; pt_done_at?: string | null };
+type B = { id: string; code: string; status: string; starts_at: string; hours: number; total_satang: number; price_satang: number; place: { label: string; detail: string; lat?: number; lng?: number }; note: string | null; expires_at: string | null; customer_name: string | null; pt_done_at?: string | null };
 const fmt = (iso: string) => new Date(iso).toLocaleString("th-TH", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 const q = (mb: string, t: string) => `mb=${encodeURIComponent(mb)}${t ? `&t=${encodeURIComponent(t)}` : ""}`;
 
@@ -71,6 +72,7 @@ export function PtIncoming({ mb, t }: { mb: string; t: string }) {
           <div key={b.id} className="rounded-[20px] bg-[#211a18] flex flex-col gap-2" style={{ padding: 14, border: `1px solid ${LN}` }}>
             <b className="font-medium">{fmt(b.starts_at)} · {b.hours} ชม.</b>
             <span className="text-[13px] font-light text-[#d9c9b4]">{b.place.label} {b.place.detail}{b.status === "cancel_requested" ? " · ลูกค้าขอยกเลิก รอทีมงาน" : b.status === "checked_in" ? " · ถึงจุดนัดแล้ว" : ""}</span>
+            {b.status === "accepted" && <TravelShare mb={mb} t={t} id={b.id} startsAt={b.starts_at} dest={b.place} />}
             <div className="grid grid-cols-3 gap-2">
               {b.status === "accepted" && <button type="button" disabled={!!busy || !soon} onClick={() => act2(b.id, "checkin")} title={soon ? "" : "เช็กอินได้ก่อนเวลานัด 2 ชม."} className="h-11 rounded-xl bg-[#e8c472] text-[#1b130b] text-[13px] font-semibold disabled:opacity-40">ถึงจุดนัด</button>}
               {(b.status === "checked_in" || b.status === "accepted") && <button type="button" disabled={!!busy || b.status !== "checked_in" || !!b.pt_done_at} onClick={() => act2(b.id, "done")} className="h-11 rounded-xl text-[13px] font-semibold disabled:opacity-40" style={{ border: `1px solid ${GOLD}`, color: GOLD }}>{b.pt_done_at ? "รอลูกค้ายืนยัน" : "จบงาน"}</button>}
