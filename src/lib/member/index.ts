@@ -42,8 +42,13 @@ export async function buyMembership(me: { sub: string; email: string }, tierId: 
   let rep = await referrerOf(refCode);
   if (rep?.kind === "parttime") {
     const a = (await listApplicants().catch(() => [])).find((x) => x.id === rep!.parttime_id);
-    if (a?.email && a.email.toLowerCase() === me.email.toLowerCase()) rep = null;
+    // ห้ามแนะนำตัวเอง: อีเมลหรือเบอร์โทรเดียวกับลูกค้า
+    const digits = (v: unknown) => String(v ?? "").replace(/\D/g, "").slice(-9);
+    const myPhone = digits((await getProfile(me.sub, me.email).catch(() => null))?.phone);
+    if ((a?.email && a.email.toLowerCase() === me.email.toLowerCase()) || (myPhone && a?.tel && digits(a.tel) === myPhone)) rep = null;
   }
+  // ค่าคอมจ่ายครั้งเดียวต่อลูกค้า (ครั้งแรกที่มีผู้แนะนำ) — กันเปิดเมมซ้ำเพื่อปั่นค่าคอม
+  if (rep && (await listPurchases({ customer_id: me.sub }).catch(() => [] as MemberPurchase[])).some((x) => x.referrer_id && x.status !== "rejected")) rep = null;
   const id = crypto.randomUUID();
   const slip_path = `member/${me.sub.replace(/[^a-zA-Z0-9._@-]/g, "_")}/${id}.${slip.type === "image/png" ? "png" : slip.type === "image/webp" ? "webp" : "jpg"}`;
   await putFile(slip_path, slip);

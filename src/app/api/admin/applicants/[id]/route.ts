@@ -7,10 +7,8 @@ import { FIX_KEYS } from "@/lib/join/fixes";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, canAccess, verifySession, type AdminRole } from "@/lib/admin-auth";
 
-async function role(): Promise<AdminRole | null> {
-  const s = await verifySession((await cookies()).get(ADMIN_COOKIE)?.value);
-  return s?.role ?? null;
-}
+async function session() { return verifySession((await cookies()).get(ADMIN_COOKIE)?.value); }
+async function role(): Promise<AdminRole | null> { return (await session())?.role ?? null; }
 
 export const runtime = "nodejs";
 
@@ -31,7 +29,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   // ตัดสินเอกสาร: อนุมัติ หรือตีกลับรายการที่ต้องแก้ (สลิป รูป ข้อมูล บัตร บัญชี) — ฝ่าย KYC หรือผู้ดูแลผู้สมัคร
   if (body.kyc_status !== undefined) {
-    if (!canAccess(r, "/admin/kyc") && !canAccess(r, "/admin/applicants")) return NextResponse.json({ ok: false }, { status: 401 });
+    // ตัดสิน KYC = ฝ่าย KYC/super/CEO เท่านั้น (ฝ่ายการเงินไม่ได้) · คนที่ออกลิงก์เข้าโปรไฟล์ให้ผู้สมัครคนนี้ภายใน 30 วัน อนุมัติเองไม่ได้ (แยกหน้าที่ กันแก้บัญชีรับเงิน+อนุมัติคนเดียว)
+    if (!canAccess(r, "/admin/kyc")) return NextResponse.json({ ok: false, error: "ตัดสิน KYC ได้เฉพาะฝ่าย KYC" }, { status: 403 });
+    const me = await session();
+    const cur = await getById(id);
+    const lb = cur ? extraOf(cur).link_by : null;
+    if (body.kyc_status === "approved" && r !== "ceo" && lb && me && lb.email === me.email && Date.now() - Date.parse(lb.at) < 30 * 86400_000)
+      return NextResponse.json({ ok: false, error: "คุณเป็นคนออกลิงก์เข้าโปรไฟล์ให้ผู้สมัครคนนี้ · ให้แอดมินคนอื่นอนุมัติ KYC" }, { status: 403 });
     if (body.kyc_status !== "approved" && body.kyc_status !== "rejected") return NextResponse.json({ ok: false }, { status: 400 });
     let reason: KycReason | null = null;
     if (body.kyc_status === "rejected") {

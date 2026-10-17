@@ -3,7 +3,7 @@ import { fileHeaders } from "@/lib/file-guard";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
 import { MemberError, approveSalesPayout, createExternalRep, creditMembership, rejectMembership, settleSalesPayout, signSalesLink } from "@/lib/member";
-import { getPurchase, patchRep, findRep } from "@/lib/member/store";
+import { getPurchase, patchRep, findRep, listPayouts } from "@/lib/member/store";
 import { getMemberSettings, saveMemberSettings, validateMember, TIER_IDS, type MemberSettings } from "@/lib/member/tiers";
 import { readFile } from "@/lib/join/store";
 
@@ -44,6 +44,8 @@ export async function POST(req: Request) {
     if (act === "payout_paid") return NextResponse.json({ ok: true, row: await settleSalesPayout(id, actor, true) });
     if (act === "payout_failed") {
       if (!String(b.note ?? "").trim()) throw new MemberError("ระบุสาเหตุ");
+      const cur = (await listPayouts()).find((x) => x.id === id);
+      if (cur?.status === "requested" && s.role !== "ceo") return NextResponse.json({ ok: false, error: "คำขอนี้ยังรอ CEO — ปฏิเสธได้เฉพาะ CEO" }, { status: 403 });
       return NextResponse.json({ ok: true, row: await settleSalesPayout(id, actor, false, String(b.note)) });
     }
     if (act === "settings") {

@@ -13,8 +13,13 @@ const secret = () => sessionSecret();
 const sign = (body: string) => createHmac("sha256", secret()).update(`resume:${body}`).digest("base64url");
 
 export function signResume(mb: string) {
-  const body = Buffer.from(JSON.stringify({ mb, exp: Date.now() + RESUME_TTL_MS })).toString("base64url");
+  const body = Buffer.from(JSON.stringify({ mb, iat: Date.now(), exp: Date.now() + RESUME_TTL_MS })).toString("base64url");
   return `${body}.${sign(body)}`;
+}
+
+/** เวลาออกโทเคน (โทเคนรุ่นเก่าไม่มี iat = คิดจาก exp − อายุ) */
+function iatOf(token: string | null | undefined): number {
+  try { const p = JSON.parse(Buffer.from(String(token).split(".")[0], "base64url").toString()) as { iat?: number; exp: number }; return p.iat ?? p.exp - RESUME_TTL_MS; } catch { return 0; }
 }
 
 /** คืน mb_code ถ้าโทเคนถูกต้องและยังไม่หมดอายุ */
@@ -32,6 +37,9 @@ export function readResume(token: string | null | undefined): string | null {
 
 /** ผ่านถ้า cookie หรือ ?t= เป็นของ mb นี้ */
 export async function canResume(mb: string, t?: string | null): Promise<boolean> {
-  if (readResume(t) === mb) return true;
-  return readResume((await cookies()).get(RESUME_COOKIE)?.value) === mb;
+  const tok = readResume(t) === mb ? t : (await cookies()).get(RESUME_COOKIE)?.value;
+  if (readResume(tok) !== mb) return false;
+  // "ออกจากระบบทุกเครื่อง" / แอดมินยกเลิกลิงก์ → โทเคนที่ออกก่อนเวลานั้นใช้ไม่ได้
+  const after = await import("./store").then(async (m) => { const r = await m.getByMb(mb); return r ? m.extraOf(r).tokens_after ?? null : null; }).catch(() => null);
+  return !after || iatOf(tok) >= Date.parse(after);
 }

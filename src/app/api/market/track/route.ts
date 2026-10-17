@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { clientIp, rateLimited } from "@/lib/customer/auth";
+import { limited } from "@/lib/rate-limit";
+import { clientIp } from "@/lib/customer/auth";
 import { buyerPhone, publicOrder } from "@/lib/market/buyer";
 import { checkOrderToken, decideOrder, findOrderByNo, getOrder, listOrders } from "@/lib/market/store";
 
@@ -27,7 +28,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  if (rateLimited(`mkt:${clientIp(req)}`, 30, 15 * 60_000)) return NextResponse.json({ ok: false, error: "ลองบ่อยเกินไป" }, { status: 429 });
+  if (await limited(`mkt:${clientIp(req)}`, 30, 15 * 60_000)) return NextResponse.json({ ok: false, error: "ลองบ่อยเกินไป" }, { status: 429 });
   const body = (await req.clone().json().catch(() => ({}))) as { received?: boolean; order_no?: string; id?: string; t?: string };
   if (body.received) {
     const viaLink = !!body.id && checkOrderToken(String(body.id), String(body.t ?? ""));

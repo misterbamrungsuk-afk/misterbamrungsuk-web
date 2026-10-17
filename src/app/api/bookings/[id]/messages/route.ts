@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { limited } from "@/lib/rate-limit";
 import { bookingActor } from "@/lib/bookings/auth";
 import { BookingError, listMessages, sendMessage } from "@/lib/bookings";
-import { rateLimited } from "@/lib/customer/auth";
+
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,7 +25,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const who = await bookingActor((await params).id, b.mb, b.t);
   if (!who) return NextResponse.json({ ok: false }, { status: 404 });
   if (!OPEN.includes(who.b.status)) return NextResponse.json({ ok: false, error: "แชทของนัดนี้ปิดแล้ว" }, { status: 409 });
-  if (rateLimited(`msg:${who.role}:${who.id}`, 30, 60_000)) return NextResponse.json({ ok: false, error: "ส่งเร็วเกินไป" }, { status: 429 });
+  if (await limited(`msg:${who.role}:${who.id}`, 30, 60_000)) return NextResponse.json({ ok: false, error: "ส่งเร็วเกินไป" }, { status: 429 });
   try {
     const m = await sendMessage(who.b, who.role, who.id, String(b.body ?? ""));
     return NextResponse.json({

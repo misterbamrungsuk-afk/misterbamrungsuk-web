@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { limited as dbLimited } from "@/lib/rate-limit";
 import { CLOSE_AT, PACKAGES, type PackageKey } from "@/lib/join/config";
 import { createApplicant, updateApplicant, type DocKind } from "@/lib/join/store";
 import { consumeInvite, findInvite } from "@/lib/join/invites";
@@ -32,6 +33,7 @@ const bad = (error: string, status = 400) => NextResponse.json({ ok: false, erro
 
 
 export async function POST(req: Request) {
+  if (await dbLimited(`jreg:${(req.headers.get("x-forwarded-for") ?? "local").split(",")[0].trim()}`, 8, 15 * 60_000)) return Response.json({ ok: false, error: "ลองบ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "local";
   if (limited(ip)) return bad("ส่งบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่", 429);
 

@@ -24,6 +24,8 @@ export async function POST(req: Request) {
     if (b.action === "create") {
       const exp = b.expires_at ? new Date(String(b.expires_at)) : null;
       if (exp && Number.isNaN(+exp)) return NextResponse.json({ ok: false, error: "วันหมดอายุไม่ถูกต้อง" }, { status: 400 });
+      const total = Math.round(Number(b.amount) * 100) * Math.max(1, Math.round(Number(b.max_uses) || 1));
+      if (total > 500_000 && s.role !== "ceo") return NextResponse.json({ ok: false, error: "โค้ดมูลค่ารวมเกิน ฿5,000 ต้องให้ CEO สร้าง" }, { status: 403 });
       const code = await createPromo(`admin:${s.email}`, { code: b.code ? String(b.code) : undefined, amount_satang: Math.round(Number(b.amount) * 100), max_uses: Math.round(Number(b.max_uses) || 1), expires_at: exp ? exp.toISOString() : null, note: String(b.note ?? "") });
       return NextResponse.json({ ok: true, code });
     }

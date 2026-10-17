@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { limited as dbLimited } from "@/lib/rate-limit";
 import { clearFixes, extraOf, getByMb, saveSlip } from "@/lib/join/store";
 import { canResume } from "@/lib/join/resume";
 import { verifySlip } from "@/lib/slip2go";
@@ -11,6 +12,7 @@ const bad = (error: string, status = 400, fields?: string[]) => NextResponse.jso
 
 // ส่งสลิปใหม่ — เฉพาะใบสมัครที่ยังรอตรวจสลิป หรือแอดมินตีกลับสลิป · ตรวจ Slip2Go ซ้ำ (สลิปซ้ำ/โอนผิดบัญชี ไม่รับ)
 export async function POST(req: Request) {
+  if (await dbLimited(`jslip:${(req.headers.get("x-forwarded-for") ?? "local").split(",")[0].trim()}`, 6, 10 * 60_000)) return Response.json({ ok: false, error: "ลองบ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
   let form: FormData;
   try { form = await req.formData(); } catch { return bad("ข้อมูลไม่ถูกต้อง"); }
   const mb = String(form.get("mb") ?? "").trim();

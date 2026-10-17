@@ -219,7 +219,7 @@ export function AccountLinks({ mb, t, reviewsHref, quickHref, strikesHref, delet
   const [ask, setAsk] = useState(false);
   const [reqAt, setReqAt] = useState(deleteRequested);
   const [err, setErr] = useState("");
-  const logout = async () => { await fetch("/api/join/logout", { method: "POST" }).catch(() => null); router.push("/work-with-us"); };
+  const logout = async (all = false) => { await fetch("/api/join/logout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ all }) }).catch(() => null); router.push("/work-with-us"); };
   const del = async () => {
     const e = await post(mb, t, "delete_request", () => {});
     if (e) { setErr(e); return; }
@@ -228,7 +228,8 @@ export function AccountLinks({ mb, t, reviewsHref, quickHref, strikesHref, delet
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap justify-center gap-x-[18px] text-[13px] font-light" style={{ padding: "4px 0 8px" }}>
-        <button type="button" onClick={logout} className="min-h-11 text-[#d9c9b4]">ออกจากระบบ</button>
+        <button type="button" onClick={() => logout()} className="min-h-11 text-[#d9c9b4]">ออกจากระบบ</button>
+        <button type="button" onClick={() => logout(true)} title="ลิงก์และเครื่องอื่นที่เคยเข้าจะใช้ไม่ได้ ต้องขอลิงก์ใหม่จากทีมงาน" className="min-h-11 text-[#d9c9b4]">ออกจากระบบทุกเครื่อง</button>
         <Link href={quickHref} className="min-h-11 flex items-center text-[#e8c472]">ข้อความตอบกลับเร็ว</Link>
         <Link href={strikesHref} className="min-h-11 flex items-center text-[#e8c472]">สถานะบัญชี</Link>
         <Link href={reviewsHref} className="min-h-11 flex items-center text-[#e8c472]">รีวิวของฉัน</Link>

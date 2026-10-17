@@ -5,7 +5,7 @@ import { listCategories, listOrders, listPayouts, listProducts, listVendors, PAI
 /** ข้อมูลพอร์ทัลร้านค้า — เฉพาะสินค้า/รายการในออเดอร์ของร้านนี้เท่านั้น */
 export async function vendorData(vendor: Vendor) {
   const [products, orders, payouts, vendors, categories] = await Promise.all([listProducts(), listOrders(), listPayouts(), listVendors(), listCategories()]);
-  const mine = orders.filter((o) => o.items.some((i) => i.vendor_id === vendor.id) && o.status !== "pending");
+  const mine = orders.filter((o) => o.items.some((i) => i.vendor_id === vendor.id) && PAID_STATUSES.includes(o.status));
   return {
     vendor,
     categories,

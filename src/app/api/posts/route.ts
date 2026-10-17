@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { currentCustomer, rateLimited } from "@/lib/customer/auth";
+import { limited } from "@/lib/rate-limit";
+import { currentCustomer } from "@/lib/customer/auth";
 import { PostError, createPost } from "@/lib/posts";
 
 export const runtime = "nodejs";
@@ -8,7 +9,7 @@ export const runtime = "nodejs";
 export async function POST(req: Request) {
   const me = await currentCustomer();
   if (!me) return NextResponse.json({ ok: false, error: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
-  if (rateLimited(`post:${me.sub}`, 10, 60 * 60_000)) return NextResponse.json({ ok: false, error: "โพสต์บ่อยเกินไป" }, { status: 429 });
+  if (await limited(`post:${me.sub}`, 10, 60 * 60_000)) return NextResponse.json({ ok: false, error: "โพสต์บ่อยเกินไป" }, { status: 429 });
   const b = (await req.json().catch(() => ({}))) as Record<string, unknown>;
   try {
     const p = await createPost(me.sub, { activity: String(b.activity ?? ""), starts_at: String(b.starts_at ?? ""), hours: Number(b.hours), area: String(b.area ?? ""), note: String(b.note ?? "") });

@@ -39,9 +39,12 @@ export async function saveSub(user_type: Row["user_type"], user_id: string, s: P
   const { error } = await db().from("push_subs").upsert(row, { onConflict: "endpoint" });
   if (error) throw error;
 }
-export async function removeSub(endpoint: string) {
-  if (isDemo) { const i = demo.findIndex((r) => r.endpoint === endpoint); if (i >= 0) demo.splice(i, 1); return; }
-  await db().from("push_subs").delete().eq("endpoint", endpoint);
+/** auth = key ของอุปกรณ์ (ต้องตรงจึงลบได้ · ระบบภายในเรียกแบบไม่ใส่เมื่อ endpoint หมดอายุ) */
+export async function removeSub(endpoint: string, auth?: string) {
+  if (isDemo) { const i = demo.findIndex((r) => r.endpoint === endpoint && (auth === undefined || r.auth === auth)); if (i >= 0) demo.splice(i, 1); return; }
+  let q = db().from("push_subs").delete().eq("endpoint", endpoint);
+  if (auth !== undefined) q = q.eq("auth", auth);
+  await q;
 }
 async function subsFor(user_type: string, user_id: string): Promise<Row[]> {
   if (isDemo) return demo.filter((r) => r.user_type === user_type && r.user_id === user_id);

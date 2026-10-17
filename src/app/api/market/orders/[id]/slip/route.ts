@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { clientIp, rateLimited } from "@/lib/customer/auth";
+import { limited } from "@/lib/rate-limit";
+import { clientIp } from "@/lib/customer/auth";
 import { notifyOrderSlip } from "@/lib/market/notify";
 import { checkOrderToken, getOrder, patchOrder, saveFile, saveSlipCheck } from "@/lib/market/store";
 import { verifySlip } from "@/lib/slip2go";
@@ -9,7 +10,7 @@ export const runtime = "nodejs";
 // แนบสลิปของคำสั่งซื้อ (ผู้ซื้อถือ token ที่ได้ตอนสร้างออเดอร์) → ตรวจ Slip2Go → แจ้งอีเมลแอดมิน
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (rateLimited(`mks:${clientIp(req)}`, 10, 15 * 60_000)) return NextResponse.json({ ok: false, error: "ลองบ่อยเกินไป" }, { status: 429 });
+  if (await limited(`mks:${clientIp(req)}`, 10, 15 * 60_000)) return NextResponse.json({ ok: false, error: "ลองบ่อยเกินไป" }, { status: 429 });
   const fd = await req.formData().catch(() => null);
   if (!fd || !checkOrderToken(id, String(fd.get("token") ?? ""))) return NextResponse.json({ ok: false, error: "ไม่มีสิทธิ์" }, { status: 401 });
   const o = await getOrder(id);

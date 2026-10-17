@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { clientIp, rateLimited } from "@/lib/customer/auth";
+import { limited } from "@/lib/rate-limit";
+import { clientIp } from "@/lib/customer/auth";
 import { buyerPhone } from "@/lib/market/buyer";
 import { flaggedClaims } from "@/lib/market/config";
 import { addReview, reviewEligibility, setReviewHidden } from "@/lib/market/store";
@@ -18,7 +19,7 @@ export async function GET(req: Request) {
 
 // POST {product_id, stars, text, name} — เฉพาะผู้ซื้อที่มีคำสั่งซื้อสถานะ "สำเร็จ" ของสินค้านี้
 export async function POST(req: Request) {
-  if (rateLimited(`mkr:${clientIp(req)}`, 10, 15 * 60_000)) return NextResponse.json({ ok: false, error: "ลองบ่อยเกินไป" }, { status: 429 });
+  if (await limited(`mkr:${clientIp(req)}`, 10, 15 * 60_000)) return NextResponse.json({ ok: false, error: "ลองบ่อยเกินไป" }, { status: 429 });
   const phone = await buyerPhone();
   if (!phone) return NextResponse.json({ ok: false, error: "ยืนยันเบอร์โทรด้วย OTP ก่อน" }, { status: 401 });
   const b = (await req.json().catch(() => ({}))) as { product_id?: string; stars?: number; text?: string; name?: string };

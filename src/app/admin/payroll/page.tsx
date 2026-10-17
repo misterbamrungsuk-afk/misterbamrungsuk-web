@@ -18,7 +18,10 @@ export default async function PayrollPage({ searchParams }: { searchParams: Prom
   const day = /^\d{4}-\d{2}-\d{2}$/.test(d ?? "") ? d! : todayBkk();
   const s = await verifySession((await cookies()).get(ADMIN_COOKIE)?.value);
   const [{ rows, sample }, money, wds, sp, reps] = await Promise.all([payrollRows(day), getMoney(), listWithdrawals({ status: "requested" }).catch(() => []), listPayouts({ status: "requested" }).catch(() => []), listReps().catch(() => [])]);
-  const ownerReqs = (await listPayoutRequests({ status: ["requested"] }).catch(() => [])).map((w) => ({ id: w.id, type: w.owner_type, name: w.owner_name, amount: Number(w.amount_satang), bank: `${w.bank.bank} · ${w.bank.account} · ${w.bank.name}`, at: w.created_at }));
+  // บัญชีที่ไม่เคยโอนสำเร็จมาก่อน = ติดป้าย "บัญชีใหม่" ให้ CEO ตรวจชื่อบัญชีกับชื่อร้าน/พาร์ทเนอร์ก่อนอนุมัติ (กันคนได้คุกกี้ไปแล้วเปลี่ยนบัญชีรับเงิน)
+  const allReqs = await listPayoutRequests().catch(() => []);
+  const paidAcc = new Set(allReqs.filter((w) => w.status === "paid").map((w) => `${w.owner_type}:${w.owner_id}:${w.bank.account.replace(/\D/g, "")}`));
+  const ownerReqs = allReqs.filter((w) => w.status === "requested").map((w) => ({ id: w.id, type: w.owner_type, name: w.owner_name, amount: Number(w.amount_satang), bank: `${w.bank.bank} · ${w.bank.account} · ${w.bank.name}`, at: w.created_at, newBank: !paidAcc.has(`${w.owner_type}:${w.owner_id}:${w.bank.account.replace(/\D/g, "")}`) }));
   const reqs: WReq[] = wds.map((w) => ({ id: w.id, mb: w.parttime_mb, nick: rows.find((r) => r.parttime_id === w.parttime_id)?.nick ?? w.parttime_mb, amount: w.amount_satang, fee: w.fee_satang, wht: w.wht_satang, net: w.net_satang, bank: `${w.bank.bank} · ${w.bank.account} · ${w.bank.name}`, at: w.created_at }));
   const salesReqs = sp.map((p) => { const r = reps.find((x) => x.id === p.rep_id); return { id: p.id, name: r?.name ?? "Sale Man", code: r?.code ?? "", amount: p.amount_satang, bank: p.bank ? `${p.bank.bank} · ${p.bank.account} · ${p.bank.name}` : "-", at: p.created_at }; });
   return (

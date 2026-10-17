@@ -41,10 +41,10 @@ async function saveAll(list: Invite[]) {
   if (error) throw error;
 }
 
-/** รหัส 6 ตัว (ตัดตัวที่สับสนง่าย 0/O/1/I) */
-const newCode = () => { const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; return [...randomBytes(6)].map((b) => A[b % A.length]).join(""); };
+/** รหัส 10 ตัว (ตัดตัวที่สับสนง่าย 0/O/1/I) — ยาวพอให้สุ่มเดาไม่ได้ (รหัส 6 ตัวเดิมยังใช้ได้) */
+const newCode = () => { const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; return [...randomBytes(10)].map((b) => A[b % A.length]).join(""); };
 
-export const isCode = (c: string) => /^[A-Z0-9]{6}$/.test(c);
+export const isCode = (c: string) => /^[A-Z0-9]{6,12}$/.test(c);
 
 export function stateOf(i: Invite | undefined, now = Date.now()): InviteState {
   if (!i) return "missing";

@@ -357,12 +357,14 @@ export async function createOrder(input: { buyer_name: string; phone: string; ad
   return o;
 }
 
-export async function patchOrder(id: string, patch: Partial<Order>): Promise<Order> {
-  return q<Order>(() => db().from("market_orders").update(patch).eq("id", id).select().single(), () => {
+/** from = เปลี่ยนได้เฉพาะเมื่อสถานะยังเป็นค่านี้ (กันกดพร้อมกัน 2 ครั้งแล้วตัดสต็อก/ลงเงินซ้ำ) */
+export async function patchOrder(id: string, patch: Partial<Order>, from?: OrderStatus): Promise<Order> {
+  return q<Order>(() => { let u = db().from("market_orders").update(patch).eq("id", id); if (from) u = u.eq("status", from); return u.select().single(); }, () => {
     const r = mem.orders.find((x) => x.id === id);
     if (!r) throw new Error("ไม่พบคำสั่งซื้อ");
+    if (from && r.status !== from) throw new Error("สถานะคำสั่งซื้อเปลี่ยนไปแล้ว ลองโหลดหน้าใหม่");
     return Object.assign(r, patch);
-  }).then(normOrder);
+  }).then(normOrder).catch((e) => { if (from && /PGRST116|0 rows|multiple \(or no\) rows/i.test(String((e as { code?: string; message?: string })?.code ?? "") + String((e as Error)?.message ?? ""))) throw new Error("สถานะคำสั่งซื้อเปลี่ยนไปแล้ว ลองโหลดหน้าใหม่"); throw e; });
 }
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
@@ -412,19 +414,20 @@ export async function decideOrder(id: string, action: OrderAction, admin: string
   if (action === "confirm") {
     if (!o.slip_path) throw new Error("ยังไม่มีสลิป");
     Object.assign(patch, { status: "paid", paid_at: now() }, computeGp(o, await listVendors()));
-    await adjustStock(o.items, -1);
   } else if (action === "regp") {
     Object.assign(patch, computeGp(o, await listVendors()));
     if (o.status === "done") { const out = await patchOrder(id, patch); await creditVendors(out, admin).catch((e) => console.error("market credit", e)); return out; }
   } else if (action === "reject") {
     patch.status = "rejected";
     patch.reject_reason = (extra.reason ?? "").trim().slice(0, 300) || null;
-    if (o.status === "paid") await adjustStock(o.items, 1);
+
   } else if (action === "ship") {
     if (!extra.tracking_no?.trim()) throw new Error("ใส่เลขพัสดุ");
     Object.assign(patch, { status: "shipped", tracking_no: extra.tracking_no.trim().slice(0, 60), carrier: extra.carrier || null, shipped_at: now() });
   } else Object.assign(patch, { status: "done", done_at: now() });
-  const out = await patchOrder(id, patch);
+  const out = await patchOrder(id, patch, o.status);
+  if (action === "confirm") await adjustStock(o.items, -1);
+  if (action === "reject" && o.status === "paid") await adjustStock(o.items, 1);
   if (out.status === "done") {
     await creditVendors(out, admin).catch((e) => console.error("market credit", e));
     // แต้มสมาชิก: เฉพาะออเดอร์ที่ลูกค้าล็อกอินตอนสั่ง (คิดจากยอดที่จ่ายจริง) · ครั้งเดียวต่อออเดอร์

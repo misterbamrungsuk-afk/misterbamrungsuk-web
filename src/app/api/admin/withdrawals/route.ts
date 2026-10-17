@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
 import { BookingError } from "@/lib/bookings";
-import { approveWithdrawal, listWithdrawals, makeBatch, markFailed, markPaid, rejectWithdrawal } from "@/lib/bookings/day";
+import { approveWithdrawal, getWithdrawal, listWithdrawals, makeBatch, markFailed, markPaid, rejectWithdrawal } from "@/lib/bookings/day";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,6 +49,8 @@ export async function POST(req: Request) {
     if (b.action === "paid") return NextResponse.json({ ok: true, row: await markPaid(String(b.id ?? ""), actor) });
     if (b.action === "failed") {
       if (!String(b.note ?? "").trim()) return NextResponse.json({ ok: false, error: "ระบุสาเหตุ" }, { status: 400 });
+      const cur = await getWithdrawal(String(b.id ?? ""));
+      if (cur?.status === "requested" && s.role !== "ceo") return NextResponse.json({ ok: false, error: "คำขอนี้ยังรอ CEO — ปฏิเสธได้เฉพาะ CEO" }, { status: 403 });
       return NextResponse.json({ ok: true, row: await markFailed(String(b.id ?? ""), actor, String(b.note)) });
     }
     return NextResponse.json({ ok: false, error: "ไม่รู้จักคำสั่ง" }, { status: 400 });

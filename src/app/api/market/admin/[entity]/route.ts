@@ -62,7 +62,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ entity:
           patch[k] = n;
         }
         for (const k of ["delivery_days", "policy_returns", "policy_shipping", "policy_privacy", "line_notify_url"] as const) if (k in b) patch[k] = String(b[k] ?? "").slice(0, 8000);
-        if (patch.line_notify_url && !/^https:\/\//.test(patch.line_notify_url)) return bad("LINE hook URL ต้องขึ้นต้นด้วย https://");
+        if (patch.line_notify_url) {
+          let host = "";
+          try { const u = new URL(patch.line_notify_url); host = u.protocol === "https:" ? u.hostname : ""; } catch { /* ignore */ }
+          if (!/(^|\.)(line\.me|script\.google\.com|script\.googleusercontent\.com|hooks\.slack\.com|discord\.com)$/.test(host)) return bad("hook URL ต้องเป็น https ของ LINE / Google Apps Script / Slack / Discord");
+        }
         return ok({ settings: await saveSettings(patch) });
       }
       case "reviews":

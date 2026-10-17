@@ -41,13 +41,19 @@ export async function middleware(request: NextRequest) {
       res.cookies.delete(ADMIN_COOKIE); // ล้าง token ที่หมดอายุ/ปลอม
       return res;
     }
-    if (!canAccess(admin.role, pathname)) {
+    // ถอดรหัส %xx ก่อนตรวจสิทธิ์ (กัน /admin/w%61llet หลุดไปเข้ากฎ /admin กว้าง ๆ)
+    let path = pathname;
+    try { path = decodeURIComponent(pathname); } catch { path = "/admin"; }
+    if (!canAccess(admin.role, path)) {
       const url = request.nextUrl.clone();
       url.pathname = homeFor(admin.role);
       url.search = "?denied=1";
       return NextResponse.redirect(url);
     }
-    return NextResponse.next();
+    // ส่ง path ให้ layout ตรวจสิทธิ์ซ้ำอีกชั้นฝั่งเซิร์ฟเวอร์
+    const h = new Headers(request.headers);
+    h.set("x-admin-path", path);
+    return NextResponse.next({ request: { headers: h } });
   }
 
   const isPublic =

@@ -29,6 +29,8 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const admin = await marketAdmin();
   if (!admin) return NextResponse.json({ ok: false }, { status: 401 });
+  // ตั้งแต่ 17 ต.ค. 2569 ร้านได้เงินผ่าน "กระเป๋าร้าน" + คำขอถอน (CEO อนุมัติ) — ปิดการบันทึกโอนรายเดือนแบบเดิม กันจ่ายซ้ำ
+  if (process.env.MARKET_LEGACY_PAYOUTS !== "1") return NextResponse.json({ ok: false, error: "ปิดแล้ว · ร้านถอนเงินผ่านกระเป๋าร้าน (หน้าโอนเงิน)" }, { status: 410 });
   const fd = await req.formData().catch(() => null);
   if (!fd) return NextResponse.json({ ok: false, error: "ข้อมูลไม่ถูกต้อง" }, { status: 400 });
   const s = (k: string, max = 200) => String(fd.get(k) ?? "").trim().slice(0, max);

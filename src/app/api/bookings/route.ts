@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { limited } from "@/lib/rate-limit";
 import { getProfile } from "@/lib/customer/profile";
-import { currentCustomer, rateLimited } from "@/lib/customer/auth";
+import { currentCustomer } from "@/lib/customer/auth";
 import { inThailand } from "@/lib/geo";
 import { BookingError, createBooking, listForCustomer, ptPublic, type Place, type PlaceType } from "@/lib/bookings";
 import { getLiveApplicants, publicId } from "@/lib/home/live";
@@ -29,7 +30,7 @@ export async function GET() {
 export async function POST(req: Request) {
   const me = await currentCustomer();
   if (!me) return NextResponse.json({ ok: false, error: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
-  if (rateLimited(`book:${me.sub}`, 10, 60 * 60_000)) return NextResponse.json({ ok: false, error: "ส่งคำขอบ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
+  if (await limited(`book:${me.sub}`, 10, 60 * 60_000)) return NextResponse.json({ ok: false, error: "ส่งคำขอบ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
   const b = (await req.json().catch(() => ({}))) as Record<string, unknown>;
   const p = (b.place ?? {}) as Record<string, unknown>;
   const type = String(p.type ?? "") as PlaceType;

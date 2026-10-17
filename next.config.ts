@@ -25,7 +25,6 @@ const csp = [
 ].join("; ");
 
 const securityHeaders = [
-  { key: "Content-Security-Policy", value: csp },
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
@@ -49,6 +48,8 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
+      // CSP ของหน้าเว็บ — ไม่ใส่ให้ /api (ไฟล์ที่ผู้ใช้อัปมี CSP sandbox ของตัวเอง ห้ามถูกทับ)
+      { source: "/((?!api/).*)", headers: [{ key: "Content-Security-Policy", value: csp }] },
       // ข้อมูลส่วนตัว/API ห้ามแคชที่ proxy หรือเบราว์เซอร์ร่วม
       { source: "/api/:path((?!public/).*)", headers: [{ key: "Cache-Control", value: "no-store" }, { key: "X-Robots-Tag", value: "noindex" }] },
       { source: "/admin/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }, { key: "Cache-Control", value: "no-store" }] },

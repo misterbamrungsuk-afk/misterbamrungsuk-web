@@ -1,7 +1,7 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { ADMIN_COOKIE, verifySession } from "@/lib/admin-auth";
+import { ADMIN_COOKIE, canAccess, homeFor, verifySession } from "@/lib/admin-auth";
 import { AdminNav, DeniedBanner } from "./admin-nav";
 
 export const metadata = { title: "แอดมิน — Mister Bamrungsuk" };
@@ -12,6 +12,9 @@ export const dynamic = "force-dynamic";
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await verifySession((await cookies()).get(ADMIN_COOKIE)?.value);
   if (!session) redirect("/admin-login");
+  // สิทธิ์ตามบทบาทอีกชั้น (ไม่พึ่ง middleware อย่างเดียว) — ไม่รู้ path = ถือว่าไม่มีสิทธิ์
+  const path = (await headers()).get("x-admin-path");
+  if (!path || !canAccess(session.role, path)) redirect(`${homeFor(session.role)}?denied=1`);
 
   return (
     <div className="min-h-dvh lg:flex bg-[#0e0a0a] text-[#f6efe4]">

@@ -88,6 +88,14 @@ async function patch(id: string, p: Partial<Row>) {
   await fetch(`${SB()}/rest/v1/otp_codes?id=eq.${encodeURIComponent(id)}`, { method: "PATCH", headers: sbHeaders(), body: JSON.stringify(p) });
 }
 
+/** จองสิทธิ์ลอง 1 ครั้งแบบอะตอม (attempts = cur → cur+1) — ยิงพร้อมกันหลายคำขอก็นับครบทุกครั้ง ไม่เกิน 5 */
+async function claimAttempt(id: string, cur: number): Promise<boolean> {
+  if (!useDb()) { const r = mem.find((x) => x.id === id); if (!r || r.attempts !== cur) return false; r.attempts = cur + 1; return true; }
+  const res = await fetch(`${SB()}/rest/v1/otp_codes?id=eq.${encodeURIComponent(id)}&attempts=eq.${cur}`, { method: "PATCH", headers: { ...sbHeaders(), Prefer: "return=representation" }, body: JSON.stringify({ attempts: cur + 1 }) });
+  const rows = (await res.json().catch(() => [])) as unknown[];
+  return res.ok && Array.isArray(rows) && rows.length === 1;
+}
+
 export type SendResult = { ok: true; devCode?: string; dev: boolean } | { ok: false; error: string; retryAfter?: number; status: number };
 
 export async function sendOtp(phone: string, ip: string): Promise<SendResult> {
@@ -123,11 +131,11 @@ export async function verifyOtp(phone: string, code: string): Promise<{ ok: true
   if (!last || last.verified_at) return { ok: false, error: "รหัสหมดอายุ กรุณาขอรหัสใหม่" };
   if (Date.parse(last.expires_at) < Date.now()) return { ok: false, error: "รหัสหมดอายุ กรุณาขอรหัสใหม่" };
   if (last.attempts >= OTP_MAX_ATTEMPTS) return { ok: false, error: "ใส่รหัสผิดเกิน 5 ครั้ง กรุณาขอรหัสใหม่" };
+  if (!(await claimAttempt(last.id, last.attempts))) return { ok: false, error: "ลองพร้อมกันหลายครั้ง กรุณาลองใหม่" };
   const want = Buffer.from(last.code_hash, "hex");
   const got = Buffer.from(hashCode(phone, code.replace(/\D/g, "")), "hex");
   if (want.length !== got.length || !timingSafeEqual(want, got)) {
     const left = OTP_MAX_ATTEMPTS - last.attempts - 1;
-    await patch(last.id, { attempts: last.attempts + 1 });
     return { ok: false, error: left > 0 ? `รหัสไม่ถูกต้อง (เหลือ ${left} ครั้ง)` : "ใส่รหัสผิดเกิน 5 ครั้ง กรุณาขอรหัสใหม่" };
   }
   await patch(last.id, { verified_at: new Date().toISOString() });

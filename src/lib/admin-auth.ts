@@ -92,6 +92,18 @@ export async function signSession(email: string, role: AdminRole): Promise<strin
   return `${payload}.${b64url(await hmac(payload, key))}`;
 }
 
+/** บทบาทปัจจุบันของอีเมลจากค่าตั้งใน env (ADMIN_EMAIL/ADMIN_PASSWORD = CEO · ADMIN_ACCOUNTS = email|role|salt:hash;...) */
+function liveRole(email: string): AdminRole | null {
+  const e = email.trim().toLowerCase();
+  const simple = (process.env.ADMIN_EMAIL?.trim() || (process.env.ADMIN_PASSWORD ? "admin@misterbamrungsuk.com" : "")).toLowerCase();
+  if (simple && process.env.ADMIN_PASSWORD && e === simple) return "ceo";
+  for (const row of (process.env.ADMIN_ACCOUNTS ?? "").split(";")) {
+    const [em, role] = row.split("|").map((x) => x.trim());
+    if (em && em.toLowerCase() === e && role in ROLE_LABEL) return role as AdminRole;
+  }
+  return null;
+}
+
 export async function verifySession(token: string | undefined): Promise<AdminSession | null> {
   const key = secret();
   if (!key || !token) return null;
@@ -101,6 +113,8 @@ export async function verifySession(token: string | undefined): Promise<AdminSes
     if (!safeEqual(fromB64url(sig), await hmac(payload, key))) return null;
     const s = JSON.parse(new TextDecoder().decode(fromB64url(payload))) as AdminSession;
     if (!s.email || !(s.role in ROLE_LABEL) || s.exp < Date.now()) return null;
+    // เว็บจริง: บัญชีต้องยังอยู่และบทบาทยังตรง — ลบ/ลดสิทธิ์แอดมินแล้วมีผลทันที ไม่ต้องรอ token หมดอายุ
+    if (isProdDeploy() && liveRole(s.email) !== s.role) return null;
     return s;
   } catch {
     return null;

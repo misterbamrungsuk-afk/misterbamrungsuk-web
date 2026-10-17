@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { clientIp, rateLimited } from "@/lib/customer/auth";
+import { limited } from "@/lib/rate-limit";
+import { clientIp } from "@/lib/customer/auth";
 import { MAX_QTY, type OrderItem } from "@/lib/market/config";
 import { listPublished, priceCart } from "@/lib/market/store";
 
@@ -7,7 +8,7 @@ export const runtime = "nodejs";
 
 // คำนวณราคาตะกร้า (ยอดสินค้า → ส่วนลดโค้ด → ค่าส่ง) จากราคาในฐานข้อมูล — ใช้แสดงผลในตะกร้า
 export async function POST(req: Request) {
-  if (rateLimited(`mkp:${clientIp(req)}`, 40, 15 * 60_000)) return NextResponse.json({ ok: false, error: "ลองบ่อยเกินไป" }, { status: 429 });
+  if (await limited(`mkp:${clientIp(req)}`, 40, 15 * 60_000)) return NextResponse.json({ ok: false, error: "ลองบ่อยเกินไป" }, { status: 429 });
   const b = (await req.json().catch(() => ({}))) as { code?: string; items?: { id?: string; qty?: number }[] };
   const products = await listPublished();
   const items: OrderItem[] = [];

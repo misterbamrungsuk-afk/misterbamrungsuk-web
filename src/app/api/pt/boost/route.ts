@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { limited as dbLimited } from "@/lib/rate-limit";
 import { currentParttime } from "@/lib/bookings/auth";
 import { balances } from "@/lib/wallet";
 import { BOOST_PLANS, BoostError, activeBoosts, buyBoostWithSlip, buyBoostWithWallet, listBoosts } from "@/lib/join/boost";
@@ -17,6 +18,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  if (await dbLimited(`pboost:${(req.headers.get("x-forwarded-for") ?? "local").split(",")[0].trim()}`, 8, 10 * 60_000)) return Response.json({ ok: false, error: "ลองบ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
   const multipart = (req.headers.get("content-type") ?? "").includes("multipart/form-data");
   const fd = multipart ? await req.formData().catch(() => null) : null;
   const b = multipart ? { mb: String(fd?.get("mb") ?? ""), t: String(fd?.get("t") ?? ""), plan: String(fd?.get("plan") ?? "") } : ((await req.json().catch(() => ({}))) as { mb?: string; t?: string; plan?: string; pay?: string });

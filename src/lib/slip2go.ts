@@ -56,6 +56,19 @@ const nameOf = (p: unknown): string | null => {
   return str(n.th) ?? str(n.en);
 };
 
+/** ทะเบียนเลขอ้างอิงสลิปกลางทุกช่องทาง (เติมเงิน · เปิดเมม · สมัคร · โปรโมท · พาร์ทเนอร์ · ร้านค้า) — สลิปเดียวใช้ได้ครั้งเดียวทั้งระบบ
+ *  true = จองเลขนี้สำเร็จ (ครั้งแรก) · false = เคยใช้แล้ว · ฐานขัดข้อง = ไม่บล็อก (มีด่านซ้ำของ Slip2Go อยู่แล้ว) */
+async function claimSlipRef(ref: string): Promise<boolean> {
+  const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return true;
+  try {
+    const res = await fetch(`${url}/rest/v1/slip_refs`, { method: "POST", headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify({ trans_ref: ref.slice(0, 120) }) });
+    if (res.status === 409) return false;
+    if (!res.ok) console.error("slip_refs", res.status, (await res.text().catch(() => "")).slice(0, 200));
+    return true;
+  } catch (e) { console.error("slip_refs", e); return true; }
+}
+
 export async function verifySlip(file: File, expected: number): Promise<SlipCheck | null> {
   const secret = process.env.SLIP2GO_API_SECRET;
   if (!secret) return null;
@@ -79,6 +92,7 @@ export async function verifySlip(file: File, expected: number): Promise<SlipChec
     // ผ่านอัตโนมัติได้เฉพาะเมื่อยืนยันได้ว่าเข้าบัญชีร้านจริง และสลิปไม่เก่า — ที่เหลือให้แอดมินดู (กันสลิปโอนเข้าพร้อมเพย์คนอื่น/สลิปเก่า)
     const at = out.date_time ? Date.parse(out.date_time) : NaN;
     const fresh = Number.isFinite(at) && Date.now() - at < MAX_AGE_MS && at < Date.now() + 10 * 60_000;
+    if (out.trans_ref && !(await claimSlipRef(out.trans_ref))) return { ...out, verdict: "dup", message: "สลิปนี้เคยใช้ในระบบแล้ว" };
     return { ...out, verdict: ours === true && fresh ? "ok" : "check" };
   } catch (e) {
     console.error("slip2go failed", e);

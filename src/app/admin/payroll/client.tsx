@@ -11,7 +11,7 @@ const hm = (iso: string | null) => (iso ? new Date(iso).toLocaleString("th-TH", 
 export type WReq = { id: string; mb: string; nick: string; amount: number; fee: number; wht: number; net: number; bank: string; at: string };
 
 export type SReq = { id: string; name: string; code: string; amount: number; bank: string; at: string };
-export type OReq = { id: string; type: "partner" | "vendor"; name: string; amount: number; bank: string; at: string };
+export type OReq = { id: string; type: "partner" | "vendor"; name: string; amount: number; bank: string; at: string; newBank?: boolean };
 
 export function PayrollClient({ day, today, rows, sample, reqs, salesReqs = [], ownerReqs = [], isCeo }: { day: string; today: string; rows: PayRow[]; sample: boolean; reqs: WReq[]; salesReqs?: SReq[]; ownerReqs?: OReq[]; isCeo: boolean }) {
   const [note, setNote] = useState<Record<string, string>>({});
@@ -153,7 +153,7 @@ export function PayrollClient({ day, today, rows, sample, reqs, salesReqs = [], 
               {!list.length && <p className="m-0 p-5 text-center text-[#9a8a85]">ไม่มีคำขอถอนรออนุมัติ</p>}
               {list.map((w) => (
                 <div key={w.id} className="flex flex-wrap items-center gap-2 px-3.5 py-3 border-t first:border-t-0" style={{ borderColor: LINE }}>
-                  <span className="flex-1 min-w-[220px]"><b className="font-medium">{w.name}</b><span className="block text-[12.5px] text-[#9a8a85]">{w.bank} · {hm(w.at)}</span></span>
+                  <span className="flex-1 min-w-[220px]"><b className="font-medium">{w.name}</b>{w.newBank && <span className="ml-2 rounded-full px-2 py-0.5 text-[11.5px] font-semibold text-[#1b130b] bg-[#f0a35a]">บัญชีใหม่ · ตรวจชื่อบัญชีก่อนอนุมัติ</span>}<span className="block text-[12.5px] text-[#9a8a85]">{w.bank} · {hm(w.at)}</span></span>
                   <b className="tabular-nums text-[#f0c75a]">{baht(w.amount)}</b>
                   <button type="button" disabled={!isCeo || !!busy} onClick={() => approve({ action: "approve", id: w.id }, w.id, `อนุมัติถอน ${w.name} ${baht(w.amount)} · ส่งให้แอดมินโอน`, "/api/admin/payout-requests")} className="h-10 px-3 rounded-xl font-semibold text-[#1b130b] bg-[#e8c472] disabled:opacity-35">{busy === w.id ? "…" : "อนุมัติถอน"}</button>
                   <input value={note[w.id] ?? ""} onChange={(e) => setNote({ ...note, [w.id]: e.target.value })} placeholder="เหตุผลถ้าไม่อนุมัติ" disabled={!isCeo} className="h-10 w-44 rounded-xl border bg-[#130e0e] px-2 text-[12.5px]" style={{ borderColor: LINE }} />

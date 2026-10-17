@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { clientIp, rateLimited } from "@/lib/customer/auth";
+import { limited } from "@/lib/rate-limit";
+import { clientIp } from "@/lib/customer/auth";
 import { partnerFromTokenOrSession } from "@/lib/partner/identify";
 import { MAX_FILE, QC_TYPES, putPartnerFile } from "@/lib/partner/portal";
 import { QC_DOC_DEFS, QC_TIMES, qcDays, type QcDocKey, type QcDocs } from "@/lib/partner/status";
@@ -12,7 +13,7 @@ const MAX_PHOTOS = 10;
 // นัด QC สถานที่ (/partner/qc) — ผู้เรียก: ผู้สมัครที่ถือ token (?t=) หรือพาร์ทเนอร์ที่ล็อกอิน
 // multipart: action=upload (key, files…) | remove (key, path) | book (date YYYY-MM-DD, time HH:MM)
 export async function POST(req: Request) {
-  if (rateLimited(`pqc:${clientIp(req)}`, 40, 10 * 60_000)) return bad("ส่งบ่อยเกินไป กรุณารอสักครู่", 429);
+  if (await limited(`pqc:${clientIp(req)}`, 40, 10 * 60_000)) return bad("ส่งบ่อยเกินไป กรุณารอสักครู่", 429);
   let form: FormData;
   try {
     form = await req.formData();

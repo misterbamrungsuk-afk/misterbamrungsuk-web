@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { limited as dbLimited } from "@/lib/rate-limit";
 import { PACKAGE_KEYS, PARTNER_APPLY_TYPES, PARTNER_TYPES, type PartnerPackageKey } from "@/lib/partner/config";
 import { createPartner } from "@/lib/partner/store";
 import { notifyAdmin, syncPartnerSheet } from "@/lib/partner/notify";
@@ -21,6 +22,7 @@ const bad = (error: string, status = 400) => NextResponse.json({ ok: false, erro
 const str = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 
 export async function POST(req: Request) {
+  if (await dbLimited(`papp:${(req.headers.get("x-forwarded-for") ?? "local").split(",")[0].trim()}`, 6, 15 * 60_000)) return Response.json({ ok: false, error: "ลองบ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "local";
   if (limited(ip)) return bad("ส่งบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่", 429);
   const b = (await req.json().catch(() => null)) as Record<string, unknown> | null;

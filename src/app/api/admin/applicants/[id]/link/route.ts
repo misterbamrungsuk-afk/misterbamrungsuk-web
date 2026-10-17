@@ -2,12 +2,22 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { siteUrl } from "@/lib/site-url";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
-import { extraOf, getById } from "@/lib/join/store";
+import { extraOf, getById, saveProfile } from "@/lib/join/store";
 import { signResume } from "@/lib/join/resume";
 
 export const runtime = "nodejs";
 
 // แอดมินสร้างลิงก์เข้าโปรไฟล์ให้ผู้สมัคร (#35) — อายุ 30 วัน · เปิดแล้วตั้งคุกกี้ให้เครื่องใหม่ผ่าน /join/go
+// DELETE = ยกเลิกลิงก์/คุกกี้เข้าโปรไฟล์ทั้งหมดที่เคยออกให้ผู้สมัครคนนี้ (ลิงก์หลุด / เปลี่ยนเครื่อง)
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const s = await verifySession((await cookies()).get(ADMIN_COOKIE)?.value);
+  if (!s || !canAccess(s.role, "/admin/applicants")) return NextResponse.json({ ok: false }, { status: 401 });
+  const row = await getById((await params).id);
+  if (!row) return NextResponse.json({ ok: false }, { status: 404 });
+  await saveProfile(row.id, { tokens_after: new Date().toISOString() });
+  return NextResponse.json({ ok: true });
+}
+
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const s = await verifySession((await cookies()).get(ADMIN_COOKIE)?.value);
   // ลิงก์นี้เข้าโปรไฟล์ได้เต็ม (แก้บัญชีรับเงินได้) — เฉพาะ super/การเงิน ไม่ให้บทบาท KYC (กันออกลิงก์ + อนุมัติ KYC เองคนเดียว)
@@ -17,6 +27,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const x = extraOf(row);
   const fix = x.kyc_status === "rejected" && Object.keys(x.kyc_reason ?? {}).length > 0;
   const base = siteUrl(req);
+  await saveProfile(row.id, { link_by: { email: s.email, at: new Date().toISOString() } });
   const url = `${base}/join/go?t=${encodeURIComponent(signResume(row.mb_code))}${fix ? "&to=rejected" : ""}`;
   return NextResponse.json({ ok: true, url, fix, mb: row.mb_code, nickname: row.nickname });
 }

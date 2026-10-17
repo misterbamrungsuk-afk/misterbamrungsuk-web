@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { limited } from "@/lib/rate-limit";
 import { fileHeaders } from "@/lib/file-guard";
 import { cookies } from "next/headers";
-import { currentCustomer, clientIp, rateLimited } from "@/lib/customer/auth";
+import { currentCustomer, clientIp } from "@/lib/customer/auth";
 import { currentPartner } from "@/lib/partner/auth";
 import { currentVendor } from "@/lib/market/vendor-auth";
 import { SALES_COOKIE, readSalesLink } from "@/lib/member";
@@ -36,7 +37,7 @@ export async function GET(req: Request) {
 
 // POST multipart: as, file? (รูปใหม่), pos ("x% y%"), zoom (1–3)
 export async function POST(req: Request) {
-  if (rateLimited(`avatar:${clientIp(req)}`, 30, 10 * 60_000)) return NextResponse.json({ ok: false, error: "ลองบ่อยเกินไป" }, { status: 429 });
+  if (await limited(`avatar:${clientIp(req)}`, 30, 10 * 60_000)) return NextResponse.json({ ok: false, error: "ลองบ่อยเกินไป" }, { status: 429 });
   const fd = await req.formData().catch(() => null);
   const as = asOf(fd?.get("as"));
   const id = as ? await ownerId(as) : null;

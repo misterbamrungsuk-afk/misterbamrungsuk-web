@@ -26,7 +26,9 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  const b = (await req.json().catch(() => ({}))) as { endpoint?: string };
-  if (typeof b.endpoint === "string" && b.endpoint.startsWith("https://")) await removeSub(b.endpoint);
+  const b = (await req.json().catch(() => ({}))) as { endpoint?: string; sub?: unknown };
+  // ต้องส่ง subscription เต็ม (มี key ของเครื่อง) — endpoint อย่างเดียวคนอื่นเดาได้จากลิงก์ที่หลุด
+  const sub = b.sub as { endpoint?: string; keys?: { auth?: string } } | undefined;
+  if (validSub(sub) && typeof sub?.endpoint === "string" && sub.endpoint.startsWith("https://")) await removeSub(sub.endpoint, sub.keys?.auth);
   return NextResponse.json({ ok: true });
 }

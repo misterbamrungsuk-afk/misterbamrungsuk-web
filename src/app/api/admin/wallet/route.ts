@@ -40,11 +40,15 @@ export async function POST(req: Request) {
       }
       // ยอดที่เข้ากระเป๋า = ที่แอดมินระบุ (amount_baht) > ยอดในสลิปที่ Slip2Go อ่านได้ > ยอดที่ลูกค้ากรอก
       const given = Number(b.amount_baht);
-      const amt = Number.isFinite(given) && given > 0 ? Math.round(given * 100) : t.slip_check?.amount ? Math.round(t.slip_check.amount * 100) : t.amount_satang;
+      const base = t.slip_check?.amount ? Math.round(t.slip_check.amount * 100) : t.amount_satang;
+      const amt = Number.isFinite(given) && given > 0 ? Math.round(given * 100) : base;
+      // แก้ยอดให้ต่างจากสลิป/ที่ลูกค้ากรอก = สร้างเงินใหม่ → CEO เท่านั้น
+      if (amt !== base && s.role !== "ceo") return NextResponse.json({ ok: false, error: "แก้ยอดต่างจากสลิปได้เฉพาะ CEO" }, { status: 403 });
       const row = await creditTopup(t, actor, amt);
       if (row) await notify({ user_type: "customer", user_id: t.customer_id, kind: "topup_credited", title: "เติมเงินเข้ากระเป๋าแล้ว", body: `฿${(amt / 100).toLocaleString()} พร้อมใช้จองได้เลย`, url: "/wallet" });
       return row ? NextResponse.json({ ok: true, row }) : NextResponse.json({ ok: false, error: "คำขอนี้ตัดสินไปแล้ว" }, { status: 409 });
     }
+    if ((b.action === "settings" || b.action === "adjust") && s.role !== "ceo") return NextResponse.json({ ok: false, error: "เฉพาะ CEO (ตั้งค่าเงิน / ปรับยอดกระเป๋า)" }, { status: 403 });
     if (b.action === "settings") {
       const m = b.money as Record<string, unknown> | undefined;
       const next = { minWithdraw: Number(m?.minWithdraw), feePct: Number(m?.feePct), whtPct: Number(m?.whtPct), releaseHours: Number(m?.releaseHours), releaseMode: (m?.releaseMode === "auto" ? "auto" : "manual") as "auto" | "manual", autoCompleteHours: Number(m?.autoCompleteHours), autoPayoutLimit: Number(m?.autoPayoutLimit), cancelRule: String(m?.cancelRule ?? "").slice(0, 300), autoCancel: Boolean(m?.autoCancel), cancelFullHours: Number(m?.cancelFullHours), cancelLatePct: Number(m?.cancelLatePct), quickSeconds: Number(m?.quickSeconds ?? 180) };

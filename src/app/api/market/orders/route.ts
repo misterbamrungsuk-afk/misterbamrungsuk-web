@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { limited } from "@/lib/rate-limit";
 import { currentCustomer } from "@/lib/customer/auth";
-import { clientIp, rateLimited } from "@/lib/customer/auth";
+import { clientIp } from "@/lib/customer/auth";
 import { readPhoneToken } from "@/lib/otp";
 import { TURNSTILE_ERROR, verifyTurnstile } from "@/lib/turnstile";
 import { MAX_QTY, type OrderItem } from "@/lib/market/config";
@@ -15,7 +16,7 @@ const bad = (error: string, status = 400) => NextResponse.json({ ok: false, erro
 // ราคาคิดจากฐานข้อมูลเสมอ (ไม่เชื่อราคาจากหน้าเว็บ)
 export async function POST(req: Request) {
   const ip = clientIp(req);
-  if (rateLimited(`mko:${ip}`, 10, 15 * 60_000)) return bad("สั่งซื้อบ่อยเกินไป กรุณารอสักครู่", 429);
+  if (await limited(`mko:${ip}`, 10, 15 * 60_000)) return bad("สั่งซื้อบ่อยเกินไป กรุณารอสักครู่", 429);
   const b = (await req.json().catch(() => ({}))) as Record<string, unknown>;
   if (!(await verifyTurnstile(b.turnstile, ip))) return bad(TURNSTILE_ERROR);
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { clientIp, rateLimited } from "@/lib/customer/auth";
+import { limited } from "@/lib/rate-limit";
+import { clientIp } from "@/lib/customer/auth";
 import { PACKAGE_KEYS, PARTNER_PACKAGES, type PartnerPackageKey } from "@/lib/partner/config";
 import { currentPartner, verifyApplyToken } from "@/lib/partner/auth";
 import { IMAGE_TYPES, MAX_FILE, createPurchase, putPartnerFile } from "@/lib/partner/portal";
@@ -13,7 +14,7 @@ const bad = (error: string, status = 400) => NextResponse.json({ ok: false, erro
 // ชำระค่าแผนโปรโมท (QR + สลิป) → purchase สถานะ pending รอแอดมินตรวจ
 // ผู้เรียก: พาร์ทเนอร์ที่ล็อกอิน (ต่ออายุ/อัปเกรด) หรือผู้สมัครใหม่ที่ถือ token จากฟอร์มสมัคร
 export async function POST(req: Request) {
-  if (rateLimited(`ppay:${clientIp(req)}`, 6, 10 * 60_000)) return bad("ส่งบ่อยเกินไป กรุณารอสักครู่", 429);
+  if (await limited(`ppay:${clientIp(req)}`, 6, 10 * 60_000)) return bad("ส่งบ่อยเกินไป กรุณารอสักครู่", 429);
   let form: FormData;
   try {
     form = await req.formData();
