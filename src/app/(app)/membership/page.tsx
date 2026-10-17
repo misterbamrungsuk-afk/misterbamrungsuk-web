@@ -5,7 +5,6 @@ import { getProfile } from "@/lib/customer/profile";
 import { getMemberSettings } from "@/lib/member/tiers";
 import { pointsOf, listPurchases } from "@/lib/member/store";
 import { MemberCard } from "@/components/member-card";
-import { GiftBox } from "./gift";
 import { JoinMember } from "./join";
 
 export const dynamic = "force-dynamic";
@@ -92,7 +91,6 @@ export default async function MembershipPage({ searchParams }: { searchParams: P
           <span className="flex-1"><b className="font-medium text-[14.5px]">มีโค้ดของขวัญ / โปรโมชัน?</b><span className="block text-[12px] font-light text-[#d9c9b4]">ใช้โค้ดรับเครดิตเข้ากระเป๋า</span></span>
           <span className="text-[#e8c472]">›</span>
         </Link>
-        <GiftBox loggedIn={!!me} />
       </div>
     </div>
   );
