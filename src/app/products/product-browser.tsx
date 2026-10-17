@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { SAMPLE_NOTE } from "@/lib/market/mock";
 import { CartBar, Chip, LINE, MHeader, MProductCard, MShell, Toast, useToast, type CardP } from "./m-kit";
 
 type Cat = { id: string; name: string; slug: string };
@@ -10,7 +11,7 @@ type PriceK = (typeof PRICES)[number][0];
 const SORTS = { rec: ["แนะนำ", "lo"], lo: ["ราคาต่ำ → สูง", "hi"], hi: ["ราคาสูง → ต่ำ", "rec"] } as const;
 type SortK = keyof typeof SORTS;
 
-export function ProductBrowser({ products, categories, vendors, initial }: { products: CardP[]; categories: Cat[]; vendors: V[]; initial: { q: string; cat: string; vendor: string } }) {
+export function ProductBrowser({ products, categories, vendors, initial, sample = false }: { products: CardP[]; categories: Cat[]; vendors: V[]; initial: { q: string; cat: string; vendor: string }; sample?: boolean }) {
   const [q, setQ] = useState(initial.q);
   const [cat, setCat] = useState(categories.find((c) => c.slug === initial.cat)?.id ?? "all");
   const [price, setPrice] = useState<PriceK>("all");
@@ -73,6 +74,7 @@ export function ProductBrowser({ products, categories, vendors, initial }: { pro
             {products.length ? <>ไม่พบสินค้าที่ตรงกับตัวกรอง · <button type="button" onClick={resetAll} className="text-[#e8c472] min-h-11">ล้างทั้งหมด</button></> : "ยังไม่มีสินค้า"}
           </div>
         )}
+        {sample && <p className="text-[11.5px] text-[#b5a596]">{SAMPLE_NOTE} · ใส่ตะกร้าเพื่อดูการใช้งานได้ แต่ยังสั่งซื้อไม่ได้</p>}
         <p className="text-[11.5px] text-[#b5a596] leading-relaxed">ผลิตภัณฑ์เสริมอาหารไม่มีผลในการป้องกันหรือรักษาโรค · จำหน่ายเฉพาะผู้มีอายุ 20 ปีขึ้นไป</p>
       </div>
       <Toast text={text} />

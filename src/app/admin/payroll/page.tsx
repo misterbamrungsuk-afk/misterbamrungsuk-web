@@ -1,20 +1,26 @@
+import { cookies } from "next/headers";
+import { ADMIN_COOKIE, verifySession } from "@/lib/admin-auth";
 import { payrollRows, todayBkk } from "@/lib/bookings/payroll";
+import { listWithdrawals } from "@/lib/bookings/day";
 import { getMoney } from "@/lib/wallet/settings";
 import { PageHead } from "../admin-nav";
-import { PayrollClient } from "./client";
+import { PayrollClient, type WReq } from "./client";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "รายได้ Part-Time — แอดมิน" };
+export const metadata = { title: "CEO · อนุมัติ — แอดมิน" };
 
-// ตรวจงานรายวันของแต่ละคน → สรุปยอดรวมเป็นรายการ → อนุมัติรายได้เข้ากระเป๋า (Part-Time ถอนหรือใช้ซื้อของต่อได้)
+// หน้า CEO (อนุมัติได้คนเดียว): ชั้นที่ 1 ตรวจงานรายวัน → อนุมัติรายได้เข้ากระเป๋า · ชั้นที่ 2 อนุมัติคำขอถอนเงินเข้าบัญชีธนาคาร
+// อนุมัติถอนแล้ว → ส่งต่อหน้าแอดมิน "โอนให้ Part-Time" ให้โอนและกดเช็กว่าโอนสำเร็จ
 export default async function PayrollPage({ searchParams }: { searchParams: Promise<{ d?: string }> }) {
   const { d } = await searchParams;
   const day = /^\d{4}-\d{2}-\d{2}$/.test(d ?? "") ? d! : todayBkk();
-  const [{ rows, sample }, money] = await Promise.all([payrollRows(day), getMoney()]);
+  const s = await verifySession((await cookies()).get(ADMIN_COOKIE)?.value);
+  const [{ rows, sample }, money, wds] = await Promise.all([payrollRows(day), getMoney(), listWithdrawals({ status: "requested" }).catch(() => [])]);
+  const reqs: WReq[] = wds.map((w) => ({ id: w.id, mb: w.parttime_mb, nick: rows.find((r) => r.parttime_id === w.parttime_id)?.nick ?? w.parttime_mb, amount: w.amount_satang, fee: w.fee_satang, wht: w.wht_satang, net: w.net_satang, bank: `${w.bank.bank} · ${w.bank.account} · ${w.bank.name}`, at: w.created_at }));
   return (
     <>
-      <PageHead title="รายได้ Part-Time" sub={`ตรวจงานวันที่ ${new Date(`${day}T12:00:00+07:00`).toLocaleDateString("th-TH", { dateStyle: "long" })} · ${money.releaseMode === "auto" ? `ตอนนี้ปล่อยเงินอัตโนมัติหลัง ${money.releaseHours} ชม. (เปลี่ยนเป็นแอดมินอนุมัติได้ที่ "กระเป๋าเงิน")` : "รายได้เข้ากระเป๋าเมื่อแอดมินกดอนุมัติ"}`} />
-      <PayrollClient day={day} today={todayBkk()} rows={rows} sample={sample} />
+      <PageHead title="CEO · อนุมัติรายได้และถอนเงิน" sub={`ตรวจงานวันที่ ${new Date(`${day}T12:00:00+07:00`).toLocaleDateString("th-TH", { dateStyle: "long" })} · ${money.releaseMode === "auto" ? `ตอนนี้ปล่อยรายได้อัตโนมัติหลัง ${money.releaseHours} ชม. (เปลี่ยนได้ที่ "กระเป๋าเงิน")` : "รายได้เข้ากระเป๋าเมื่อ CEO อนุมัติ"} · ${s?.role === "ceo" ? "คุณคือ CEO" : "ดูอย่างเดียว — อนุมัติได้เฉพาะ CEO"}`} />
+      <PayrollClient day={day} today={todayBkk()} rows={rows} sample={sample} reqs={reqs} isCeo={s?.role === "ceo"} />
     </>
   );
 }

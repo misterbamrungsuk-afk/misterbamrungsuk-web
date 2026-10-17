@@ -2,6 +2,7 @@ import { sessionSecret } from "@/lib/session-secret";
 import "server-only";
 import { createHmac, randomInt, randomUUID, timingSafeEqual } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { SAMPLE_BLOCK, isMockId } from "./mock";
 import {
   DEFAULT_SETTINGS, promoDiscount, shippingFor, slugify,
   type Banner, type Category, type MarketSettings, type Order, type OrderItem, type OrderStatus, type Payout,
@@ -11,6 +12,7 @@ import {
 // ที่เก็บ Marketplace
 // - มี SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY และรัน supabase/market/0001_products.sql + 0002_marketplace_v2.sql แล้ว → ตาราง market_* + bucket "market"
 // - ไม่มี env / ยังไม่รัน migration (ตารางหรือคอลัมน์ไม่มี) → หน่วยความจำ + ข้อมูลตัวอย่าง (หายเมื่อรีสตาร์ท) ตามแบบ src/lib/noshow.ts
+// - หน้าร้านสาธารณะอ่านผ่าน catalog.ts: ยังไม่มีสินค้าจริงที่เผยแพร่ → แคตตาล็อกตัวอย่าง (mock.ts) · ฟังก์ชันในไฟล์นี้คืนเฉพาะข้อมูลจริง
 
 const envDemo = !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY;
 const gm = globalThis as unknown as { __mbMarketMissing?: boolean };
@@ -47,24 +49,10 @@ m.categories ??= [
   { id: "c-supplement", name: "ผลิตภัณฑ์เสริมอาหาร", slug: "supplement", sort: 1 },
   { id: "c-body", name: "ผลิตภัณฑ์ดูแลผิวกาย", slug: "body-care", sort: 2 },
 ];
-m.products ??= [
-  {
-    id: "p-love-hormone", vendor_id: "v-mohso", name: "Love Hormone (ตัวอย่าง)", price: 2490, stock: 30, images: [], age_restricted: true, published: true, created_at: now(),
-    fda_no: "[ตัวอย่าง] เลข อย. รอข้อมูลจริง",
-    description: "ผลิตภัณฑ์เสริมอาหารนำเข้าจากสหรัฐอเมริกา คัดสรรโดยคลินิกหมอโส — ข้อมูลตัวอย่าง รอรายละเอียด ราคา รูป และเลข อย. จริงจากร้านค้า",
-    warning: "ควรกินอาหารหลากหลาย ครบ 5 หมู่ ในสัดส่วนที่เหมาะสม · เด็กและสตรีมีครรภ์ไม่ควรรับประทาน",
-  },
-  {
-    id: "p-massage-oil", vendor_id: "v-mohso", name: "Massage Oil Set (ตัวอย่าง)", price: 890, stock: 50, images: [], age_restricted: false, published: true, created_at: now(),
-    fda_no: "[ตัวอย่าง] เลขจดแจ้ง รอข้อมูลจริง",
-    description: "น้ำมันนวดตัวกลิ่นหอมผ่อนคลาย — ข้อมูลตัวอย่าง",
-    warning: "ใช้ภายนอกเท่านั้น ทดสอบที่ท้องแขนก่อนใช้ หากระคายเคืองให้หยุดใช้",
-  },
-];
-for (const p of m.products) {
-  p.approved ??= true; p.bundle_ids ??= [];
-  p.category_id ??= p.id === "p-love-hormone" ? "c-supplement" : p.id === "p-massage-oil" ? "c-body" : null;
-}
+// ไม่ใส่สินค้าตัวอย่างในหน่วยความจำ — รายการสินค้าว่าง = หน้าร้านแสดงแคตตาล็อกตัวอย่าง (src/lib/market/mock.ts ผ่าน catalog.ts)
+// เหมือนโปรดักชันที่มีฐานข้อมูลแต่ยังไม่มีสินค้าจริง · ใส่สินค้าทดลองในโหมดนี้ได้จาก /admin/market
+m.products ??= [];
+for (const p of m.products) { p.approved ??= true; p.bundle_ids ??= []; p.category_id ??= null; }
 m.reviews ??= [];
 m.banners ??= [
   { id: "b-1", title: "สินค้าคัดสรร มีเลข อย. ทุกชิ้น", subtitle: "แพ็กมิดชิด ไม่ระบุชื่อสินค้าหน้ากล่อง", image: "", link: "/products", sort: 1, active: true },
@@ -348,6 +336,8 @@ export async function priceCart(items: OrderItem[], code?: string | null) {
 }
 
 export async function createOrder(input: { buyer_name: string; phone: string; address: string; items: OrderItem[]; ip: string; promo_code?: string | null }): Promise<Order> {
+  // กันชั้นสุดท้าย: สินค้าตัวอย่าง (mock-*) ห้ามเกิดออเดอร์/รับเงินจริง
+  if (input.items.some((i) => isMockId(i.product_id))) throw new Error(SAMPLE_BLOCK);
   const pr = await priceCart(input.items, input.promo_code);
   if (input.promo_code?.trim() && !pr.promo) throw new Error(pr.promoError || "โค้ดส่วนลดใช้ไม่ได้");
   const row: Order = {

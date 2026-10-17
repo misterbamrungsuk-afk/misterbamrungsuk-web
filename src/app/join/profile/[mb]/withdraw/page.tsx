@@ -20,7 +20,7 @@ export default async function WithdrawPage({ params, searchParams }: { params: P
   const [w, ws, m] = await Promise.all([ptWallet(c.row.id).catch(() => ({ available: 0, withdrawing: 0, pending: 0 })), listWithdrawals({ parttime_id: c.row.id }).catch(() => []), getMoney()]);
   const month = new Date(); month.setDate(1); month.setHours(0, 0, 0, 0);
   const paidMonth = ws.filter((x) => x.status === "paid" && x.paid_at && Date.parse(x.paid_at) >= +month).reduce((t, x) => t + x.net_satang, 0);
-  const ST: Record<string, [string, string]> = { requested: ["รอรอบโอน", "#e8c472"], batched: ["กำลังโอน", "#e8c472"], paid: ["โอนแล้ว", "#7fd6a3"], failed: ["โอนไม่สำเร็จ · คืนยอดแล้ว", "#ff8a9a"] };
+  const ST: Record<string, [string, string]> = { requested: ["รอ CEO อนุมัติ", "#e8c472"], approved: ["อนุมัติแล้ว · รอโอน", "#e8c472"], batched: ["กำลังโอน", "#e8c472"], paid: ["โอนแล้ว", "#7fd6a3"], failed: ["โอนไม่สำเร็จ · คืนยอดแล้ว", "#ff8a9a"] };
 
   return (
     <PtPage>

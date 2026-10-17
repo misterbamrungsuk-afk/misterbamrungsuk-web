@@ -71,7 +71,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
   const lo = +f.aMin || 20, hi = +f.aMax || 50, spot = f.spot.trim();
   const list = useMemo(() => {
     const by: Record<Sort, (a: P, b: P) => number> = {
-      top: (a, b) => (b.top ? 1 : 0) - (a.top ? 1 : 0) || (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0),
+      top: (a, b) => (b.boost ? 1 : 0) - (a.boost ? 1 : 0) || (b.top ? 1 : 0) - (a.top ? 1 : 0) || (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0),
       rate: (a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0), now: (a, b) => a.free - b.free, price: (a, b) => price(a) - price(b),
     };
     return people.filter((p) => acts.every((a) => p.acts.includes(a)) && (!f.reg || PROV[provOf(p)] === f.reg) && (!f.prov || provOf(p) === f.prov)
@@ -88,6 +88,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
       <div className="relative h-[176px] md:h-auto md:aspect-[4/5] lg:aspect-square">
         <img src={p.img} alt={p.nick} loading="lazy" className="w-full h-full object-cover block" style={p.pos ? { objectPosition: p.pos } : undefined} />
         <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(251,251,251,0) 55%, rgba(55,21,29,0.95))" }} />
+        {p.boost && <span className="absolute top-2 right-2 rounded-full text-[11.5px] font-semibold text-[#1b130b]" style={{ padding: "2px 9px", background: "linear-gradient(135deg, #fff1c9, #e8c472)", boxShadow: "0 2px 8px rgba(0,0,0,.35)" }}>★ แนะนำ</span>}
         {p.top && <div className="absolute top-2 left-2 flex"><span style={{ display: "inline-flex", alignItems: "center", height: 18, padding: "0 7px", borderRadius: 4, background: "linear-gradient(135deg, #fff1c9 0%, #e8c472 45%, #a8781f 100%)", color: "#1b130b", fontWeight: 700, fontSize: 9.5, letterSpacing: ".2em", boxShadow: "inset 0 0 0 1px rgba(255,241,201,.5), 0 2px 6px rgba(0,0,0,.35)" }}>TOP</span></div>}
         <div className="absolute left-[10px] bottom-2 text-[13px] font-light text-[#f3ead9]">{p.prov ? `${p.area} · ${p.prov}` : p.area}</div>
       </div>

@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   const s = await verifySession((await cookies()).get(ADMIN_COOKIE)?.value);
   if (!s || !canAccess(s.role, "/admin/payroll")) return NextResponse.json({ ok: false, error: "ไม่มีสิทธิ์" }, { status: 401 });
+  if (s.role !== "ceo") return NextResponse.json({ ok: false, error: "เฉพาะ CEO อนุมัติรายได้ได้" }, { status: 403 });
   const b = (await req.json().catch(() => ({}))) as { parttime_id?: string; ids?: string[]; all?: boolean };
   try {
     if (b.all) {

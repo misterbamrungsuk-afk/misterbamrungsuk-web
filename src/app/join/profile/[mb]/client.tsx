@@ -3,6 +3,7 @@
 
 // โปรไฟล์ของฉัน — ถอดตามบอร์ด ProviderEditProfile
 // ปุ่มงาน / ตาราง / รีวิว / ถอนเงิน / ตั้งค่า → หน้าย่อยใต้ /join/profile/[mb]/ (สถานะว่างตามจริงจนกว่าจะเริ่มรับงาน)
+import { BoostPanel } from "./boost-panel";
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { PtNav } from "./_ptnav";
@@ -24,7 +25,6 @@ const QP = ["", "ดู", "ตี", "คอน", "เที่ยว", "โย�
 const PLACES = ["นอกสถานที่", "กลางแจ้ง", "ห้างสรรพสินค้า", "คาเฟ่ / ร้านอาหาร", "คอนโด", "โรงแรม", "สปา"];
 const PSPA: [string, string][] = [["Siam Serenity Spa", "สุขุมวิท 31"], ["Lanna Retreat", "เชียงใหม่"], ["Baan Suan Spa", "อารีย์"]];
 const SKILLS: [string, string][] = [["massage", "นวดผ่อนคลาย (แนบใบรับรอง)"], ["photo", "ถ่ายรูปเก่ง"], ["eng", "พูดอังกฤษได้"], ["drive", "ขับรถพาเที่ยว"], ["fit", "เต้น / ฟิตเนสโค้ช"], ["cook", "ทำอาหาร"], ["music", "เล่นดนตรี / ร้องเพลง"], ["guide", "ไกด์ท้องถิ่น"]];
-const PROMO: [string, string, number][] = [["ขึ้นหน้าแนะนำ 1 วัน", "แสดงอันดับต้น ๆ ในหน้าเพื่อนในระบบ", 300], ["ขึ้นหน้าแนะนำ 3 วัน", "ยอดนิยม · คุ้มกว่า", 800], ["ขึ้นหน้าแนะนำ 7 วัน", "ปักหมุดหน้าแรก + ป้ายแนะนำ", 1500]];
 const baht = (n: number) => "฿" + n.toLocaleString("en-US");
 const Ico = ({ d, size = 20, children }: { d?: string; size?: number; children?: React.ReactNode }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d && <path d={d} />}{children}</svg>
@@ -37,7 +37,6 @@ export function ProfileHub({ d }: { d: HubData }) {
   const href = { form: `/join/form/${d.mb}${q}`, form2: `/join/form/${d.mb}${qs("step=2")}`, kyc: `/join/kyc/${d.mb}${q}`, rejected: `/join/rejected/${d.mb}${q}` } as const;
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   const [promoOpen, setPromoOpen] = useState(false);
-  const [promo, setPromo] = useState(1);
   const [picked, setPicked] = useState<string[]>(d.card.activities);
   const [query, setQuery] = useState("");
   const [places, setPlaces] = useState<string[]>(d.card.places);
@@ -116,23 +115,7 @@ export function ProfileHub({ d }: { d: HubData }) {
                 <Link href={`/join/profile/${d.mb}/withdraw${q}`} className="min-h-11 rounded-xl text-[14px] font-semibold grid place-items-center text-[#f3ead9] hover:text-[#f3ead9]" style={{ background: "rgba(243,234,217,0.1)" }}>ถอนเงิน</Link>
                 <button type="button" onClick={() => setPromoOpen(!promoOpen)} aria-expanded={promoOpen} className="min-h-11 rounded-xl bg-[#e8c472] text-[#1b130b] text-[14px] font-semibold">{promoOpen ? "ปิด" : "โปรโมทโปรไฟล์"}</button>
               </div>
-              {promoOpen && (
-                <div className="flex flex-col gap-2 pt-1">
-                  <div className="text-[13px] text-[#d9c9b4] font-light">ใช้รายได้ในกระเป๋า ดันโปรไฟล์ขึ้นหน้าแนะนำของเว็บไซต์</div>
-                  {PROMO.map(([name, desc, price], i) => {
-                    const on = promo === i;
-                    return (
-                      <button key={name} type="button" aria-pressed={on} onClick={() => setPromo(i)} className="min-h-[52px] rounded-xl flex items-center gap-[10px] text-left text-[#f3ead9]" style={{ padding: "8px 12px", background: on ? "rgba(232,196,114,0.18)" : "rgba(243,234,217,0.06)" }}>
-                        <span className="shrink-0 w-5 h-5 rounded-full grid place-items-center" style={{ background: on ? GOLD : "rgba(243,234,217,0.12)" }}><span className="w-2 h-2 rounded-full" style={{ background: on ? "#1b130b" : "transparent" }} /></span>
-                        <span className="flex-1 min-w-0 flex flex-col leading-[1.35]"><span className="text-[14px] font-semibold">{name}</span><span className="text-[12.5px] text-[#d9c9b4] font-light">{desc}</span></span>
-                        <span className="text-[15px] font-semibold text-[#e8c472]">{baht(price)}</span>
-                      </button>
-                    );
-                  })}
-                  <button type="button" disabled className="min-h-[46px] rounded-xl text-[14px] font-semibold text-[#b5a596]" style={{ background: "rgba(243,234,217,0.08)" }}>ยอดในกระเป๋าไม่พอ</button>
-                  <div className="text-[12px] text-[#b5a596] font-light">ราคาเป็นตัวอย่าง · ทีมงานกำหนดได้ภายหลัง</div>
-                </div>
-              )}
+              {promoOpen && <BoostPanel mb={d.mb} t={d.t} />}
             </div>
 
             {d.fixes > 0 && (

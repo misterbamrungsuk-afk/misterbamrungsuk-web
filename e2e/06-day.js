@@ -1,7 +1,8 @@
 // ช่วง 5: เช็กอิน → จบงาน + รีวิว + ทิป → แบ่งเงิน → ปล่อยเงิน → ถอน → รอบโอน → โอนแล้ว · ข้อพิพาท → แอดมินตัดสิน (โหมดเดโม · รันหลัง book-e2e)
 const WEB = require('path').join(__dirname, '..');
 const fs = require('fs'), crypto = require('crypto');
-const { adm } = require('./_tok');
+const { adm, sup } = require('./_tok');
+const SUP = { cookie: 'mord_admin=' + sup, 'content-type': 'application/json' };
 const B = 'http://localhost:3210', mb = 'MB-2610001';
 const ENV = fs.readFileSync(WEB + '/.env.local', 'utf8');
 const KEY = (/^ADMIN_SESSION_SECRET=(.*)$/m.exec(ENV)?.[1] || '').trim().replace(/^["']|["']$/g, '') || 'hamoo-demo-secret';
@@ -54,6 +55,14 @@ const ptw = () => fetch(B + `/api/pt/wallet?mb=${mb}&t=${encodeURIComponent(T)}`
   r = await fetch(B + '/api/pt/wallet', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mb, t: T, amount: avail }) }); j = await J(r); ok('withdraw request', j.ok, j.error);
   r = await fetch(B + '/api/pt/wallet', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mb, t: T, amount: 0 }) });
   p = await ptw(); ok('withdrawing bucket', p.withdrawing === avail * 100 && p.withdrawals[0].net_satang === avail * 100 * 0.94, `${p.withdrawals[0].net_satang}`);
+  // ถอน 2 ชั้น: CEO อนุมัติก่อน → แอดมินรวมรอบ/โอน/เช็ก
+  const wid0 = p.withdrawals[0].id;
+  j = await J(await fetch(B + '/api/admin/withdrawals', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'batch' }) })); ok('batch before CEO approve = empty', j.ok && j.rows.length === 0);
+  r = await fetch(B + '/api/admin/withdrawals', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'paid', id: wid0 }) }); ok('paid before CEO approve refused', r.status === 409);
+  r = await fetch(B + '/api/admin/withdrawals', { method: 'POST', headers: SUP, body: JSON.stringify({ action: 'approve', id: wid0 }) }); ok('super admin cannot approve withdrawal', r.status === 403);
+  r = await fetch(B + '/api/admin/payroll', { method: 'POST', headers: SUP, body: JSON.stringify({ all: true }) }); ok('super admin cannot approve earnings', r.status === 403);
+  let tc = await (await fetch(B + '/admin/payroll', { headers: ADM })).text(); ok('CEO page lists withdrawal request', tc.includes('ชั้นที่ 2') && tc.includes(mb));
+  j = await J(await fetch(B + '/api/admin/withdrawals', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'approve', id: wid0 }) })); ok('CEO approves withdrawal', j.ok && j.row.status === 'approved', j.error);
   j = await J(await fetch(B + '/api/admin/withdrawals', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'batch' }) })); ok('batch', j.ok && j.rows.length === 1, j.batch);
   r = await fetch(B + `/api/admin/withdrawals?csv=${j.batch}`, { headers: ADM }); let csv = await r.text(); ok('bulk csv', csv.includes(mb) && csv.includes('กสิกรไทย'));
   r = await fetch(B + '/api/admin/withdrawals', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'paid', id: j.rows[0].id }) }); ok('mark paid', (await J(r)).ok);

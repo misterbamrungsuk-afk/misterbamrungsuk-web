@@ -15,7 +15,7 @@ const db = () => (sb ??= createClient(process.env.SUPABASE_URL!, process.env.SUP
 const now = () => new Date().toISOString();
 
 export type Review = { booking_id: string; parttime_id: string; customer_id: string; rating: number; tags: string[]; again: string | null; body: string | null; hidden: boolean; created_at: string };
-export type Withdrawal = { id: string; parttime_id: string; parttime_mb: string; amount_satang: number; fee_satang: number; wht_satang: number; net_satang: number; bank: { bank: string; account: string; name: string }; status: "requested" | "batched" | "paid" | "failed"; batch_id: string | null; note: string | null; created_at: string; paid_at: string | null };
+export type Withdrawal = { id: string; parttime_id: string; parttime_mb: string; amount_satang: number; fee_satang: number; wht_satang: number; net_satang: number; bank: { bank: string; account: string; name: string }; status: "requested" | "approved" | "batched" | "paid" | "failed"; batch_id: string | null; note: string | null; created_at: string; paid_at: string | null; approved_by?: string | null; approved_at?: string | null };
 type DemoD = { reviews: Review[]; withdrawals: Withdrawal[] };
 const g = globalThis as unknown as { __mbDay?: DemoD };
 const demo: DemoD = (g.__mbDay ??= { reviews: [], withdrawals: [] } as DemoD);
@@ -241,7 +241,7 @@ export async function requestWithdraw(a: Applicant, amountBaht: number): Promise
         { owner_type: "parttime", owner_id: a.id, bucket: "withdrawing", amount },
       ] });
     if (!w) throw new BookingError("สร้างคำขอถอนไม่สำเร็จ");
-    await notify({ user_type: "admin", user_id: "finance", kind: "withdraw_req", title: `คำขอถอน ${a.mb_code} ฿${amountBaht.toLocaleString()}`, body: `สุทธิ ฿${(w.net_satang / 100).toLocaleString()} · ${a.bank}`, url: "/admin/payouts" });
+    await notify({ user_type: "admin", user_id: "ceo", kind: "withdraw_req", title: `คำขอถอน ${a.mb_code} ฿${amountBaht.toLocaleString()} · รอ CEO อนุมัติ`, body: `สุทธิ ฿${(w.net_satang / 100).toLocaleString()} · ${a.bank}`, url: "/admin/payroll" });
     return w;
   } catch (e) {
     await drop().catch(() => {});
@@ -264,12 +264,27 @@ async function patchW(id: string, from: Withdrawal["status"][], patch: Partial<W
   if (error) throw error;
   return (data as Withdrawal) ?? null;
 }
-/** สร้างรอบโอน: คำขอที่รออยู่ทั้งหมด → batched + คืนข้อมูลสำหรับไฟล์โอนกลุ่ม */
+/** CEO อนุมัติคำขอถอน (ชั้นที่ 2) → ส่งต่อหน้าแอดมิน "โอนให้ Part-Time" · ยังไม่ย้ายเงิน (เงินอยู่ใน withdrawing ตั้งแต่ตอนขอ) */
+export async function approveWithdrawal(id: string, ceo: string) {
+  const r = await patchW(id, ["requested"], { status: "approved", approved_by: ceo, approved_at: now() });
+  if (!r) throw new BookingError("คำขอนี้ไม่ได้รออนุมัติ", "state");
+  await notify({ user_type: "parttime", user_id: r.parttime_id, kind: "withdraw_req", title: "อนุมัติคำขอถอนแล้ว", body: `฿${(r.net_satang / 100).toLocaleString()} · รอทีมงานโอนเข้าบัญชี ${r.bank.bank}`, url: `/join/profile/${r.parttime_mb}/withdraw` });
+  await notify({ user_type: "admin", user_id: "finance", kind: "withdraw_req", title: `CEO อนุมัติถอน ${r.parttime_mb} · รอโอน`, body: `สุทธิ ฿${(r.net_satang / 100).toLocaleString()} · ${r.bank.bank}`, url: "/admin/payouts" });
+  return r;
+}
+/** CEO ไม่อนุมัติ → คืนยอดเข้าถอนได้ */
+export async function rejectWithdrawal(id: string, ceo: string, note: string) {
+  const w = await getWithdrawal(id);
+  if (!w || w.status !== "requested") throw new BookingError("คำขอนี้ไม่ได้รออนุมัติ", "state");
+  return markFailed(id, ceo, note || "CEO ไม่อนุมัติ");
+}
+
+/** สร้างรอบโอน: คำขอที่ CEO อนุมัติแล้วทั้งหมด → batched + คืนข้อมูลสำหรับไฟล์โอนกลุ่ม */
 export async function makeBatch(admin: string) {
-  const reqs = await listWithdrawals({ status: "requested" });
+  const reqs = await listWithdrawals({ status: "approved" });
   const batch = `B${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
   const done: Withdrawal[] = [];
-  for (const w of reqs) { const r = await patchW(w.id, ["requested"], { status: "batched", batch_id: batch, note: `by ${admin}` }); if (r) done.push(r); }
+  for (const w of reqs) { const r = await patchW(w.id, ["approved"], { status: "batched", batch_id: batch, note: `by ${admin}` }); if (r) done.push(r); }
   return { batch, rows: done };
 }
 export async function getWithdrawal(id: string): Promise<Withdrawal | null> {
@@ -281,7 +296,8 @@ export async function getWithdrawal(id: string): Promise<Withdrawal | null> {
 /** ปิดคำขอถอน (โอนแล้ว/โอนไม่สำเร็จ) — เปลี่ยนสถานะ + ลงเงินพร้อมกัน · idem เดียวกันทั้ง 2 ทาง กันกดทั้งโอนแล้วและไม่สำเร็จ */
 async function settle(id: string, admin: string, paid: boolean, note = "") {
   const w = await getWithdrawal(id);
-  if (!w || !["requested", "batched"].includes(w.status)) throw new BookingError("คำขอนี้ไม่ได้รอโอน", "state");
+  const from: Withdrawal["status"][] = paid ? ["approved", "batched"] : ["requested", "approved", "batched"];
+  if (!w || !from.includes(w.status)) throw new BookingError(paid && w?.status === "requested" ? "รอ CEO อนุมัติก่อนโอน" : "คำขอนี้ไม่ได้รอโอน", "state");
   const legs: Leg[] = paid ? [
     { owner_type: "parttime", owner_id: w.parttime_id, bucket: "withdrawing", amount: -w.amount_satang },
     { owner_type: "platform", owner_id: PLATFORM, bucket: "bank", amount: w.net_satang },
@@ -291,7 +307,7 @@ async function settle(id: string, admin: string, paid: boolean, note = "") {
     { owner_type: "parttime", owner_id: w.parttime_id, bucket: "withdrawing", amount: -w.amount_satang },
     { owner_type: "parttime", owner_id: w.parttime_id, bucket: "available", amount: w.amount_satang },
   ];
-  const r = await move<Withdrawal>({ table: "withdrawals", id, from: ["requested", "batched"], patch: paid ? { status: "paid", paid_at: now() } : { status: "failed", note: note.slice(0, 200) }, demoRow: () => demo.withdrawals.find((x) => x.id === id) },
+  const r = await move<Withdrawal>({ table: "withdrawals", id, from, patch: paid ? { status: "paid", paid_at: now() } : { status: "failed", note: note.slice(0, 200) }, demoRow: () => demo.withdrawals.find((x) => x.id === id) },
     { kind: paid ? "withdraw_paid" : "withdraw_fail", ref: { type: "withdrawal", id }, idem: `wsettle:${id}`, note: paid ? `โอนแล้ว ฿${(w.net_satang / 100).toLocaleString()}` : `โอนไม่สำเร็จ · ${note}`, actor: admin, legs: legs.filter((l) => l.amount !== 0) });
   if (!r) throw new BookingError("คำขอนี้ถูกปิดไปแล้ว", "state");
   return { w, r };

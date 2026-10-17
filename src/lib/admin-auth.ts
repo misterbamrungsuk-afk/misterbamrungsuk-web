@@ -5,8 +5,10 @@ import { isProdDeploy } from "./session-secret";
 export const ADMIN_COOKIE = "mord_admin";
 export const SESSION_HOURS = 8;
 
-export type AdminRole = "super" | "finance" | "cs" | "kyc";
+// ceo = เจ้าของระบบ: เข้าได้ทุกหน้า + คนเดียวที่อนุมัติรายได้เข้ากระเป๋า และอนุมัติคำขอถอนเงิน
+export type AdminRole = "ceo" | "super" | "finance" | "cs" | "kyc";
 export const ROLE_LABEL: Record<AdminRole, string> = {
+  ceo: "CEO",
   super: "Super admin",
   finance: "การเงิน",
   cs: "CS",
@@ -18,6 +20,7 @@ export const PATH_ROLES: { prefix: string; roles: AdminRole[] }[] = [
   { prefix: "/admin/settings", roles: ["super"] },
   { prefix: "/admin/payouts", roles: ["super", "finance"] },
   { prefix: "/admin/payroll", roles: ["super", "finance"] },
+  { prefix: "/admin/boosts", roles: ["super", "finance"] },
   { prefix: "/admin/applicants", roles: ["super", "finance"] },
   { prefix: "/admin/slips", roles: ["super", "finance"] },
   { prefix: "/admin/wallet", roles: ["super", "finance"] },
@@ -39,6 +42,7 @@ export const PATH_ROLES: { prefix: string; roles: AdminRole[] }[] = [
 ];
 
 export function canAccess(role: AdminRole, path: string) {
+  if (role === "ceo") return true;
   const rule = PATH_ROLES.find((r) => path === r.prefix || path.startsWith(r.prefix + "/"));
   return !!rule && rule.roles.includes(role);
 }

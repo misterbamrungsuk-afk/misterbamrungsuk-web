@@ -88,6 +88,7 @@ export function ProductDetailView({ p, kind, vendor, bundle, bundleAuto, related
           <span className="font-lux font-bold text-[28px] text-[#e8c472]">{fmt(p.price)}</span>
           <span className="text-xs text-[#b5a596]">{out ? "สินค้าหมดชั่วคราว" : `รวม VAT · คงเหลือ ${p.stock} ชิ้น`}</span>
         </div>
+        {p.sample && <p className="-mt-2 text-[11.5px] text-[#b5a596]">สินค้าตัวอย่าง · ใส่ตะกร้าได้ แต่ยังสั่งซื้อไม่ได้จนกว่าร้านค้าจะลงสินค้าจริง</p>}
         <div className={`${card} text-[13px] leading-[1.7] text-[#d9c9b4]`} style={{ borderColor: LINE }}>
           {kind ? `${kind} · ` : ""}มี อย.<br />
           <span className="text-[#d9c9b4]">เลข อย.</span> <b className="text-[#f3ead9] tabular-nums">{p.fda_no}</b>
@@ -138,7 +139,7 @@ export function ProductDetailView({ p, kind, vendor, bundle, bundleAuto, related
           </>
         )}
 
-        <div id="reviews" className="flex justify-between items-end mt-1 scroll-mt-4"><div className="font-lux font-semibold text-base">รีวิวจากผู้ซื้อ</div><span className="text-xs text-[#d9c9b4]">ผู้ซื้อจริงเท่านั้น</span></div>
+        <div id="reviews" className="flex justify-between items-end mt-1 scroll-mt-4"><div className="font-lux font-semibold text-base">รีวิวจากผู้ซื้อ</div><span className="text-xs text-[#d9c9b4]">{p.sample ? "รีวิวตัวอย่าง" : "ผู้ซื้อจริงเท่านั้น"}</span></div>
         {reviews.length > 0 ? (
           <>
             <div className={`${card} flex gap-3.5 items-center`} style={{ borderColor: LINE }}>
@@ -171,7 +172,7 @@ export function ProductDetailView({ p, kind, vendor, bundle, bundleAuto, related
             {!more && rl.length > 2 && <button type="button" onClick={() => setMore(true)} className="h-12 rounded-[14px] border bg-[#211a18] text-[#e8c472] text-sm font-semibold" style={{ borderColor: LINE }}>ดูรีวิวเพิ่ม</button>}
           </>
         ) : <p className="text-[13px] text-[#d9c9b4]">ยังไม่มีรีวิว</p>}
-        <ReviewForm productId={p.id} />
+        {!p.sample && <ReviewForm productId={p.id} />}
 
         {related.length > 0 && (
           <>

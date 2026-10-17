@@ -7,6 +7,8 @@ export type Person = {
   area: string; prov?: string; acts: Act[]; free: number; height: number; langs: string; bio: string; review: [string, string];
   /** true = Part-Time จริงจากระบบสมัคร (ยังไม่มีสถิติ/รีวิว) */
   real?: boolean;
+  /** โปรโมทอยู่ (จ่ายแผนโปรโมท) = ขึ้นอันดับต้น + ป้าย "แนะนำ" */
+  boost?: boolean;
   /** ราคา 3 ชม. จริงจากหน้า "ราคาและส่วนแบ่ง" (คนจริง) */
   price?: number;
   /** จำนวนรูป (คนจริง) */

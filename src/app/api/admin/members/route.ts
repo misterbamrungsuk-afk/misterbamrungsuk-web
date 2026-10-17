@@ -23,7 +23,7 @@ export async function POST(req: Request) {
       await setSuspended(m.id, false, "");
     } else if (b.action === "erase") {
       if (!m.delete_requested_at) return NextResponse.json({ ok: false, error: "ลบได้เฉพาะสมาชิกที่ขอลบบัญชี" }, { status: 400 });
-      if (s.role !== "super") return NextResponse.json({ ok: false, error: "เฉพาะ Super admin" }, { status: 403 });
+      if (s.role !== "super" && s.role !== "ceo") return NextResponse.json({ ok: false, error: "เฉพาะ Super admin" }, { status: 403 });
       await eraseMember(m.id, m.email);
     } else return NextResponse.json({ ok: false, error: "action" }, { status: 400 });
     return NextResponse.json({ ok: true });

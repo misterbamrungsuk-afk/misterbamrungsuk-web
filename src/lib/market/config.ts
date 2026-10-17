@@ -30,6 +30,8 @@ export interface Vendor {
   id: string; name: string; contact: string; gp_pct: number | null; created_at: string;
   /** v2 — หน้าร้าน /shop/[slug] */
   slug?: string; description?: string; logo?: string | null;
+  /** สินค้า/ร้านตัวอย่าง (mockup) — แสดงเมื่อยังไม่มีสินค้าจริง สั่งซื้อไม่ได้ */
+  sample?: boolean;
 }
 export interface Product {
   id: string; vendor_id: string; name: string; description: string; warning: string;
@@ -37,6 +39,8 @@ export interface Product {
   age_restricted: boolean; published: boolean; created_at: string;
   /** v2 — หมวดหมู่, แอดมินอนุมัติ (สินค้าที่ร้านเพิ่มเองเริ่มที่ false), ซื้อคู่กัน (แอดมินตั้ง ว่าง = อัตโนมัติ) */
   category_id?: string | null; approved?: boolean; bundle_ids?: string[];
+  /** สินค้าตัวอย่าง (mockup) — ดู src/lib/market/mock.ts · ใส่ตะกร้าได้แต่สั่งซื้อไม่ได้ */
+  sample?: boolean;
 }
 export interface OrderItem { product_id: string; vendor_id: string; name: string; price: number; qty: number }
 export interface Order {

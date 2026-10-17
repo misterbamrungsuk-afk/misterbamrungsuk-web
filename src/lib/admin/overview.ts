@@ -35,8 +35,9 @@ export async function overview() {
     queues: {
       topups: topups.length,
       withdrawRequested: wds.filter((w) => w.status === "requested").length,
+      withdrawApproved: wds.filter((w) => w.status === "approved").length,
       withdrawBatched: wds.filter((w) => w.status === "batched").length,
-      withdrawSum: wds.filter((w) => w.status === "requested" || w.status === "batched").reduce((s, w) => s + w.net_satang, 0),
+      withdrawSum: wds.filter((w) => w.status === "requested" || w.status === "approved" || w.status === "batched").reduce((s, w) => s + w.net_satang, 0),
       kyc: apps.filter((a) => extraOf(a).kyc_status === "submitted").length,
       slips: apps.filter((a) => a.status === "pending_slip").length,
       applicants: apps.filter((a) => a.status === "verified").length,

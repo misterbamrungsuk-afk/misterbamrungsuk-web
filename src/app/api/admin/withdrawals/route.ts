@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
 import { BookingError } from "@/lib/bookings";
-import { listWithdrawals, makeBatch, markFailed, markPaid } from "@/lib/bookings/day";
+import { approveWithdrawal, listWithdrawals, makeBatch, markFailed, markPaid, rejectWithdrawal } from "@/lib/bookings/day";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -32,13 +32,19 @@ export async function GET(req: Request) {
   }
 }
 
-// { action: "batch" } · { action: "paid", id } · { action: "failed", id, note }
+// แอดมิน: { action: "batch" } · { action: "paid", id } · { action: "failed", id, note }
+// CEO เท่านั้น: { action: "approve", id } · { action: "reject", id, note } (อนุมัติคำขอถอนชั้นที่ 2 ก่อนส่งให้แอดมินโอน)
 export async function POST(req: Request) {
   const s = await admin();
   if (!s) return NextResponse.json({ ok: false }, { status: 401 });
   const b = (await req.json().catch(() => ({}))) as { action?: string; id?: string; note?: string };
   const actor = `admin:${s.email}`;
   try {
+    if (b.action === "approve" || b.action === "reject") {
+      if (s.role !== "ceo") return NextResponse.json({ ok: false, error: "เฉพาะ CEO อนุมัติได้" }, { status: 403 });
+      const id = String(b.id ?? "");
+      return NextResponse.json({ ok: true, row: b.action === "approve" ? await approveWithdrawal(id, `ceo:${s.email}`) : await rejectWithdrawal(id, `ceo:${s.email}`, String(b.note ?? "").slice(0, 200)) });
+    }
     if (b.action === "batch") return NextResponse.json({ ok: true, ...(await makeBatch(actor)) });
     if (b.action === "paid") return NextResponse.json({ ok: true, row: await markPaid(String(b.id ?? ""), actor) });
     if (b.action === "failed") {

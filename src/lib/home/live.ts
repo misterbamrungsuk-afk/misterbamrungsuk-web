@@ -4,6 +4,7 @@ import { getEarnings } from "@/lib/join/earnings-settings";
 import { ageFrom } from "@/lib/join/form";
 import { extraOf, listApplicants, type Applicant } from "@/lib/join/store";
 import { ratingSummary } from "@/lib/bookings/day";
+import { activeBoosts } from "@/lib/join/boost";
 import type { Act, Person } from "./people";
 
 // Part-Time จริงบนหน้าแรก — เงื่อนไข: ชำระแล้ว (verified) · KYC ผ่าน · มีรูป · แอดมินเปิด "แสดงบนหน้าแรก" · ไม่พักงาน · ไม่ขอลบบัญชี
@@ -30,7 +31,7 @@ export async function getLiveApplicants() {
 
 export async function getLivePeople(): Promise<Person[]> {
   const [rows, cfg] = await Promise.all([getLiveApplicants(), getEarnings()]);
-  const stars = await ratingSummary(rows.map((a) => a.id)).catch(() => new Map<string, { avg: number; count: number }>());
+  const [stars, boosts] = await Promise.all([ratingSummary(rows.map((a) => a.id)).catch(() => new Map<string, { avg: number; count: number }>()), activeBoosts().catch(() => new Map<string, string>())]);
   return rows.map((a) => {
     const st = stars.get(a.id);
     const x = extraOf(a);
@@ -45,7 +46,7 @@ export async function getLivePeople(): Promise<Person[]> {
       // แสดงระดับเขต/อำเภอ (ไม่ลงถึงแขวง) · จังหวัดแสดงเมื่อไม่ใช่กรุงเทพฯ
       area: area[1] || area[0] || "กรุงเทพฯ", prov: area[0] && area[0] !== "กรุงเทพฯ" ? area[0] : undefined,
       acts: acts.length ? acts : ["eat"], free: 0, bio: x.listing?.title || a.intro || "Part-Time ที่ผ่านการอบรมมาตรฐาน Mister Bamrungsuk",
-      review: ["", ""], real: true, price: top ? svc.top : svc.silver, photos: Math.min(9, photoPaths(a).length), pos: mainPos(a),
+      review: ["", ""], real: true, boost: boosts.has(a.id), price: top ? svc.top : svc.silver, photos: Math.min(9, photoPaths(a).length), pos: mainPos(a),
     } satisfies Person;
   });
 }

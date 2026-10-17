@@ -28,7 +28,7 @@ async function figures(): Promise<Record<string, number>> {
     held: sum((r) => r.owner_type === "customer" && r.bucket === "held"),
     expHeld: bookings.filter((b) => b.status === "requested").reduce((s, b) => s + b.total_satang, 0) + (await import("@/lib/bookings/quick")).openHolds(),
     withdrawing: sum((r) => r.owner_type === "parttime" && r.bucket === "withdrawing"),
-    expW: wds.filter((w) => w.status === "requested" || w.status === "batched").reduce((s, w) => s + w.amount_satang, 0),
+    expW: wds.filter((w) => w.status === "requested" || w.status === "approved" || w.status === "batched").reduce((s, w) => s + w.amount_satang, 0),
     ptPending: sum((r) => r.owner_type === "parttime" && r.bucket === "pending"),
     expPtPending: unmatured.reduce((s, b) => s + (b.pt_pending_satang ?? 0), 0),
     unknownPending: unmatured.filter((b) => b.pt_pending_satang == null).length,

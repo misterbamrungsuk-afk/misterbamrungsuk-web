@@ -8,6 +8,7 @@ import { Turnstile } from "@/components/turnstile";
 import { BANK } from "@/lib/join/config";
 import { dataUrlToFile, resizeImage } from "@/lib/join/form";
 import { AGE_NOTICE, GENERAL_WARNING, MAX_QTY, imageUrl, type Product } from "@/lib/market/config";
+import { MOCK_PRODUCTS, MOCK_VENDORS, SAMPLE_BLOCK, isMockId } from "@/lib/market/mock";
 import { readCart, useCart, writeCart } from "../products/market-ui";
 import { Bottle, LINE, MHeader, MShell, RED_GRAD, fmt, glowOf } from "../products/m-kit";
 
@@ -15,6 +16,8 @@ type P = Product & { vendor_name: string };
 type Placed = { id: string; order_no: string; total: number; token: string; track?: string; phone?: string };
 type Price = { subtotal: number; discount: number; code: string | null; promo_error: string | null; shipping_fee: number; shipping_tbd: boolean; free_threshold: number | null; delivery_days: string; total: number };
 const PLACED_KEY = "mb_cart_order";
+// ยังไม่มีสินค้าจริง (API คืนว่าง) → หน้าร้านแสดงสินค้าตัวอย่าง จึงให้ตะกร้ารู้จักสินค้าตัวอย่างด้วย — แต่สั่งซื้อไม่ได้
+const MOCK_P: P[] = MOCK_PRODUCTS.map((p) => ({ ...p, vendor_name: MOCK_VENDORS.find((v) => v.id === p.vendor_id)?.name ?? "" }));
 
 const fl = "flex flex-col gap-[5px] text-xs text-[#d9c9b4]";
 const fi = "h-12 w-full rounded-[14px] bg-[#211a18] px-3.5 text-sm text-[#f3ead9] placeholder:text-[#b5a596] border outline-none focus:border-[#e8c472]";
@@ -46,7 +49,7 @@ export function CartFlow() {
   const [price, setPrice] = useState<Price | null>(null);
 
   useEffect(() => {
-    fetch("/api/market/products").then((r) => r.json()).then((d: { products?: P[] }) => setProducts(d.products ?? [])).catch(() => setProducts([]));
+    fetch("/api/market/products").then((r) => r.json()).then((d: { products?: P[] }) => setProducts(d.products?.length ? d.products : MOCK_P)).catch(() => setProducts([]));
     fetch("/api/otp/verify").then((r) => r.json()).then((d: { phone?: string | null }) => { if (d.phone) { setPhone(d.phone); setVerified(true); } }).catch(() => {});
     try {
       const saved = JSON.parse(sessionStorage.getItem(PLACED_KEY) ?? "null") as Placed | null;
@@ -55,25 +58,27 @@ export function CartFlow() {
   }, []);
 
   const rows = useMemo(() => lines.map((l) => ({ l, p: products?.find((x) => x.id === l.id) })).filter((r): r is { l: typeof r.l; p: P } => !!r.p), [lines, products]);
+  const hasSample = rows.some((r) => isMockId(r.p.id) || r.p.sample);
   const subtotal = rows.reduce((s, r) => s + r.p.price * r.l.qty, 0);
   const lineKey = rows.map((r) => `${r.p.id}:${r.l.qty}`).join(",");
   // ราคาสุดท้ายคิดฝั่งเซิร์ฟเวอร์ (ส่วนลดโค้ด → ค่าส่งจากยอดหลังส่วนลด)
   useEffect(() => {
-    if (!lineKey) { setPrice(null); return; }
+    if (!lineKey || hasSample) { setPrice(null); return; }
     let live = true;
     fetch("/api/market/promo", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, items: rows.map((r) => ({ id: r.p.id, qty: r.l.qty })) }) })
       .then((r) => r.json()).then((d: Price) => { if (live) setPrice(d); }).catch(() => {});
     return () => { live = false; };
-  }, [lineKey, code]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [lineKey, code, hasSample]); // eslint-disable-line react-hooks/exhaustive-deps
   const total = price?.total ?? subtotal;
   const setQty = (id: string, qty: number) => writeCart(readCart().map((l) => (l.id === id ? { ...l, qty } : l)).filter((l) => l.qty > 0));
   const free = price && !price.shipping_tbd ? price.free_threshold : null;
   const afterDisc = subtotal - (price?.discount ?? 0);
   const fullAddress = [address.trim(), area.trim()].filter(Boolean).join(" ");
-  const missing = !rows.length ? "ตะกร้าว่าง" : name.trim().length < 2 || fullAddress.length < 10 ? "กรอกที่อยู่ให้ครบ" : !verified ? "ยืนยันเบอร์ด้วย OTP" : !age ? "ยืนยันอายุ 20+" : "";
+  const missing = !rows.length ? "ตะกร้าว่าง" : hasSample ? SAMPLE_BLOCK : name.trim().length < 2 || fullAddress.length < 10 ? "กรอกที่อยู่ให้ครบ" : !verified ? "ยืนยันเบอร์ด้วย OTP" : !age ? "ยืนยันอายุ 20+" : "";
 
   const placeOrder = async () => {
     setErr("");
+    if (hasSample) return setErr(SAMPLE_BLOCK);
     if (missing) return setErr(missing === "กรอกที่อยู่ให้ครบ" ? "กรอกชื่อผู้รับและที่อยู่จัดส่งให้ครบ" : missing === "ยืนยันอายุ 20+" ? "กรุณายืนยันว่าอายุ 20 ปีขึ้นไป" : missing === "ยืนยันเบอร์ด้วย OTP" ? "ยืนยันเบอร์โทรด้วย OTP ก่อน" : missing);
     setBusy(true);
     try {
@@ -147,7 +152,7 @@ export function CartFlow() {
                   </Link>
                   <div className="flex-1 min-w-0">
                     <Link href={`/products/${p.id}`} className="block font-lux font-semibold text-sm text-[#f3ead9] truncate">{p.name}</Link>
-                    <div className="text-[11.5px] text-[#d9c9b4] truncate">{p.vendor_name} · มี อย.</div>
+                    <div className="text-[11.5px] text-[#d9c9b4] truncate">{p.vendor_name} · มี อย.{p.sample ? " · ตัวอย่าง" : ""}</div>
                     <div className="font-lux text-[#e8c472] mt-0.5">{fmt(p.price * l.qty)}</div>
                   </div>
                   <div className="flex items-center gap-0.5">
@@ -170,7 +175,17 @@ export function CartFlow() {
               </div>
             )}
 
-            {rows.length > 0 && (
+            {hasSample && (
+              <div className={`${card} flex flex-col gap-2.5 text-[13px] text-[#d9c9b4] leading-relaxed`} style={{ borderColor: "rgba(227,195,92,.45)", background: "#1d1712" }}>
+                <b className="text-[#e8c472]">{SAMPLE_BLOCK}</b>
+                <span>ตอนนี้ Marketplace แสดงสินค้าตัวอย่างระหว่างรอร้านค้าพาร์ทเนอร์ลงสินค้าจริง · ยังไม่มีการเก็บเงินหรือจัดส่งสำหรับสินค้าตัวอย่าง</span>
+                <div className="flex justify-between border-t pt-2" style={{ borderColor: LINE }}><span>ค่าสินค้า (ตัวอย่าง)</span><span className="font-lux text-[#e8c472]">{fmt(subtotal)}</span></div>
+                <button type="button" onClick={() => writeCart(readCart().filter((l) => !isMockId(l.id)))} className="min-h-11 rounded-xl border bg-[#21191a] text-[#e8c472] text-[13px] font-semibold" style={{ borderColor: LINE }}>นำสินค้าตัวอย่างออกจากตะกร้า</button>
+                <Link href="/market" className="text-center text-[12.5px] text-[#e8c472]">กลับไปดูสินค้า →</Link>
+              </div>
+            )}
+
+            {rows.length > 0 && !hasSample && (
               <>
                 <h2 className="font-lux font-semibold text-[15px] mt-1">ที่อยู่จัดส่ง</h2>
                 <label className={fl}>ชื่อผู้รับ<input className={fi} style={bdOf(name)} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder="แตะเพื่อกรอกชื่อผู้รับ" /></label>

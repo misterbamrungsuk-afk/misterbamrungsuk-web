@@ -8,7 +8,7 @@ import { Back } from "../../hotels/venue-client";
 import { Bottle, glowOf } from "../../products/m-kit";
 import { SiteHeader } from "@/components/site-header";
 
-type P = { id: string; name: string; price: number; stock: number; img: string; kind: string };
+type P = { id: string; name: string; price: number; stock: number; img: string; kind: string; sample?: boolean };
 type R = { id: string; stars: number; text: string; who: string; item: string; at: string };
 const BD = "rgba(232,196,114,.38)";
 const CARD = "p-3.5 rounded-2xl bg-[#211a18]";
@@ -27,7 +27,7 @@ const DOCS = (n: number) => [
 const TABS = [["products", "สินค้า"], ["about", "เกี่ยวกับร้าน"], ["reviews", "รีวิว"]] as const;
 type Tab = (typeof TABS)[number][0];
 
-export function ShopView({ vendor, products, reviews, avg, count }: { vendor: { name: string; description: string; logo: string }; products: P[]; reviews: R[]; avg: number; count: number }) {
+export function ShopView({ vendor, products, reviews, avg, count }: { vendor: { name: string; description: string; logo: string; sample?: boolean }; products: P[]; reviews: R[]; avg: number; count: number }) {
   const [tab, setTab] = useState<Tab>("products");
   const [follow, setFollow] = useState(false);
   const [toast, setToast] = useState("");
@@ -94,6 +94,7 @@ export function ShopView({ vendor, products, reviews, avg, count }: { vendor: { 
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       {p.img ? <img src={p.img} alt="" className="w-full h-full object-cover" /> : <Bottle id={p.id} w={60} h={96} />}
                       <span className="absolute top-2 left-2 px-[7px] py-0.5 rounded-full bg-[#171211] text-[#7fd6a3] text-[11.5px] font-semibold" style={{ border: "1px solid #3f8f63" }}>มี อย.</span>
+                      {p.sample && <span className="absolute bottom-2 left-2 px-[7px] py-0.5 rounded-full bg-[#171211]/85 text-[#d9c9b4] text-[10.5px]" style={{ border: `1px solid ${BD}` }}>ตัวอย่าง</span>}
                     </Link>
                     <div className="p-2.5 flex flex-col gap-1 flex-1">
                       <span className="text-[11px] text-[#d9c9b4]">{vendor.name}</span>
@@ -126,7 +127,7 @@ export function ShopView({ vendor, products, reviews, avg, count }: { vendor: { 
           {tab === "reviews" && <>
             <div className={`${CARD} flex gap-3.5 items-center`} style={{ border: `1px solid ${BD}` }}>
               <div className="text-center"><div className="font-lux font-semibold text-[30px] text-[#e8c472]">{count ? avg.toFixed(1) : "–"}</div><div className="text-[#e8c472] text-[13px]">{stars(avg)}</div><div className="text-[11px] text-[#d9c9b4]">{count} รีวิว</div></div>
-              <div className="flex-1 text-[12px] text-[#d9c9b4] leading-[1.6]">รีวิวจากผู้ซื้อที่สั่งซื้อจริงเท่านั้น · แอดมินซ่อนรีวิวที่อ้างสรรพคุณทางการแพทย์</div>
+              <div className="flex-1 text-[12px] text-[#d9c9b4] leading-[1.6]">{vendor.sample ? "รีวิวตัวอย่าง · เมื่อเปิดขายจริงจะแสดงเฉพาะรีวิวจากผู้ซื้อที่สั่งซื้อจริง" : "รีวิวจากผู้ซื้อที่สั่งซื้อจริงเท่านั้น · แอดมินซ่อนรีวิวที่อ้างสรรพคุณทางการแพทย์"}</div>
             </div>
             {reviews.map((r) => (
               <div key={r.id} className={`${CARD} flex flex-col gap-1`} style={{ border: `1px solid ${BD}` }}>
@@ -136,6 +137,7 @@ export function ShopView({ vendor, products, reviews, avg, count }: { vendor: { 
               </div>
             ))}
           </>}
+          {vendor.sample && <p className="text-[11px] text-[#b5a596]">* ร้านและสินค้าตัวอย่าง รอข้อมูลจริงจากร้านค้าพาร์ทเนอร์ · ใส่ตะกร้าได้ แต่ยังสั่งซื้อไม่ได้</p>}
           <div className="h-6" />
         </div>
       </div>

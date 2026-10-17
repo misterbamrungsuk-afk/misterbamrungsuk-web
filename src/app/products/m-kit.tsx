@@ -127,6 +127,7 @@ export function MProductCard({ p, onAdded }: { p: CardP; onAdded?: (msg: string)
           ? <img src={src} alt={p.name} className="absolute inset-0 w-full h-full object-cover" />
           : <Bottle id={p.id} />}
         <FdaPill className="absolute top-2 left-2" label={p.fda_no ? "มี อย." : "รอ อย."} />
+        {p.sample && <span className="absolute bottom-2 left-2 px-[7px] py-0.5 rounded-full bg-[#171211]/85 border border-[rgba(232,196,114,.38)] text-[#d9c9b4] text-[10.5px]">ตัวอย่าง</span>}
         {p.age_restricted && <span className="absolute top-2 right-2 px-[7px] py-0.5 rounded-full bg-[#171211] border border-[#b0182c] text-[#ef8a97] text-[11.5px] font-semibold">20+</span>}
       </Link>
       <div className="p-2.5 flex flex-col gap-1 flex-1">

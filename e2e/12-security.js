@@ -55,6 +55,7 @@ const img = fs.readFileSync(WEB + '/public/brand/home/p-n04.jpg');
   if (p.available >= 50000) {
     r = await fetch(B + '/api/pt/wallet', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mb, t: T, amount: 500 }) }); j = await J(r); ok('withdraw req', j.ok, j.error);
     const wid = j.withdrawal?.id ?? (await J(await fetch(`${B}/api/pt/wallet?mb=${mb}&t=${encodeURIComponent(T)}`))).withdrawals[0].id;
+    await fetch(B + '/api/admin/withdrawals', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'approve', id: wid }) }); // CEO อนุมัติก่อน
     const [x1, x2] = await Promise.all([
       fetch(B + '/api/admin/withdrawals', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'paid', id: wid }) }),
       fetch(B + '/api/admin/withdrawals', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'failed', id: wid, note: 'ทดสอบ' }) }),

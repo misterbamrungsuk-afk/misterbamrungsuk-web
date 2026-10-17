@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import { activeBanners, listCategories, listPublished, listVendors } from "@/lib/market/store";
+import { shopCatalog } from "@/lib/market/catalog";
+import { SAMPLE_NOTE } from "@/lib/market/mock";
 import { marketPartners } from "@/lib/market/partners";
 import { getCovers } from "@/lib/covers";
 import { SiteFooter } from "@/components/site-footer";
@@ -16,7 +17,9 @@ const TRUST = ["ของแท้", "มี อย.", "นำเข้าถู
 
 // หน้าแรก Marketplace (ตามบอร์ด Market) — hero + แบนเนอร์ + โรงแรม/สปาพาร์ทเนอร์ + สินค้าคัดสรร + สมัครพาร์ทเนอร์
 export default async function MarketHome() {
-  const [products, vendors, partners, banners, categories] = await Promise.all([listPublished(), listVendors(), marketPartners(), activeBanners(), listCategories()]);
+  // ยังไม่มีสินค้าจริง → แคตตาล็อกตัวอย่างตามบอร์ด (catalog.ts)
+  const [cat, partners] = await Promise.all([shopCatalog(), marketPartners()]);
+  const { products, vendors, banners, categories, featured } = cat;
   // รูปจากแอดมิน "รูปหน้าปก": แบนเนอร์ แทนรูปของแบนเนอร์ตามลำดับ (ข้อความ/ลิงก์คงเดิม) · รูปเกินจำนวนแบนเนอร์ = แบนเนอร์รูปล้วน
   const [heroImgs, bannerImgs] = await Promise.all([getCovers("market_hero"), getCovers("market_banner")]);
   const hero = heroImgs[0] || "/brand/venue.jpg";
@@ -58,6 +61,19 @@ export default async function MarketHome() {
           </div>
         </div>
       </div>
+
+      {featured && (
+        <Link href={`/products/${featured.id}`} aria-label={`${featured.title} สินค้าแนะนำ`} className="lux-card block mx-[18px] mt-3.5 rounded-[18px] overflow-hidden border bg-[#211a18] text-[#f3ead9] md:flex md:items-stretch" style={{ borderColor: LINE }}>
+          <div className="relative md:w-[300px] lg:w-[360px] md:shrink-0">
+            <img src={featured.image} alt={featured.title} className="block w-full aspect-[782/787] object-cover" />
+            <span className="absolute top-3 right-3 px-3 py-1 rounded-full bg-[#e8c472] text-[#1b130b] text-xs font-bold tracking-[1px]">สินค้าแนะนำ</span>
+          </div>
+          <div className="flex items-center justify-between gap-3 px-4 py-3 md:flex-col md:items-start md:justify-center md:px-8">
+            <div className="min-w-0"><div className="font-lux font-semibold text-[17px] lg:text-[24px]">{featured.title}</div><div className="text-xs text-[#d9c9b4] lg:text-sm">{featured.sub}</div>{cat.mock && <div className="text-[11px] text-[#b5a596] mt-0.5">สินค้าตัวอย่าง</div>}</div>
+            <span className="shrink-0 min-h-9 px-3 rounded-full border border-[#e8c472] text-[#e8c472] text-[12.5px] font-semibold inline-flex items-center">฿{featured.price.toLocaleString("en-US")} · ดูสินค้า</span>
+          </div>
+        </Link>
+      )}
 
       {slides.length > 0 && <MarketBanner banners={slides} fallback={FALLBACK} />}
 
@@ -117,7 +133,8 @@ export default async function MarketHome() {
       {(partners.hotels.some((r) => r.sample) || partners.spas.some((r) => r.sample)) && <p className="text-[11px] text-[#b5a596] mx-[18px] mt-2">* ข้อมูลตัวอย่าง รอรายชื่อพาร์ทเนอร์จริง</p>}
 
       {sec("SHOP", "สินค้าคัดสรร", "/products")}
-      <MarketShop products={rows} categories={categories.map((c) => ({ id: c.id, name: c.name, slug: c.slug }))} />
+      <MarketShop products={rows} hide={featured?.id} categories={categories.map((c) => ({ id: c.id, name: c.name, slug: c.slug }))} />
+      {cat.mock && <p className="text-[11px] text-[#b5a596] mx-[18px] mt-2">{SAMPLE_NOTE}</p>}
 
       <div className="mx-[18px] mt-[22px] p-[18px] rounded-[18px] border" style={{ borderColor: "rgba(232,196,114,.55)", background: "linear-gradient(135deg, #2a1418, #211a18)" }}>
         <p className="text-[11.5px] tracking-[2.5px] text-[#e8c472] font-semibold">BECOME A PARTNER</p>

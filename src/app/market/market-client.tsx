@@ -52,10 +52,11 @@ export function MarketBanner({ banners, fallback }: { banners: Banner[]; fallbac
 }
 
 // สินค้าคัดสรร — ชิปหมวด + 4 รายการ + แถบตะกร้า
-export function MarketShop({ products, categories }: { products: CardP[]; categories: { id: string; name: string; slug: string }[] }) {
+export function MarketShop({ products, categories, hide }: { products: CardP[]; categories: { id: string; name: string; slug: string }[]; hide?: string }) {
   const [cat, setCat] = useState("all");
   const { text, flash } = useToast();
-  const list = products.filter((p) => cat === "all" || p.category_id === cat).slice(0, 4);
+  // hide = สินค้าแนะนำที่แสดงเป็นการ์ดใหญ่ด้านบนแล้ว (ตามบอร์ด Market)
+  const list = products.filter((p) => p.id !== hide && (cat === "all" || p.category_id === cat)).slice(0, 4);
   const c = categories.find((x) => x.id === cat);
   return (
     <>

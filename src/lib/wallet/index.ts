@@ -6,7 +6,7 @@ import type { SlipCheck } from "@/lib/slip2go";
 // โหมดสาธิต (ไม่มี SUPABASE env): ledger ในหน่วยความจำ กติกาเดียวกัน (ผลรวม 0 · ห้ามติดลบ · กันซ้ำ)
 export type OwnerType = "customer" | "parttime" | "partner" | "platform";
 export type Leg = { owner_type: OwnerType; owner_id: string; bucket: string; amount: number };
-export type TxKind = "topup" | "hold" | "confirm" | "release" | "split" | "mature" | "withdraw_req" | "withdraw_paid" | "withdraw_fail" | "refund" | "adjust" | "reversal" | "promo" | "gift";
+export type TxKind = "topup" | "hold" | "confirm" | "release" | "split" | "mature" | "withdraw_req" | "withdraw_paid" | "withdraw_fail" | "refund" | "adjust" | "reversal" | "promo" | "gift" | "boost";
 export type Entry = { tx_id: number; kind: string; ref_type: string | null; ref_id: string | null; note: string | null; bucket: string; amount: number; created_at: string };
 export type Topup = {
   id: string; customer_id: string; customer_email: string | null; amount_satang: number; slip_path: string | null; slip_check: SlipCheck | null;

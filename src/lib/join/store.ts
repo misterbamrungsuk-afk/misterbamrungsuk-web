@@ -186,7 +186,7 @@ export async function countActive(): Promise<number> {
 
 const extOf = (f: File) => (f.type === "image/png" ? "png" : f.type === "image/webp" ? "webp" : "jpg");
 
-async function putFile(path: string, file: File) {
+export async function putFile(path: string, file: File) {
   const data = Buffer.from(await file.arrayBuffer());
   if (isDemo) return void demo.files.set(path, { type: file.type, data });
   const { error } = await db().storage.from("applicants").upload(path, data, { contentType: file.type, upsert: false });

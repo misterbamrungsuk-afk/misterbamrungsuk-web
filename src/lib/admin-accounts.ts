@@ -8,10 +8,11 @@ import type { AdminRole } from "./admin-auth";
 
 type Account = { email: string; role: AdminRole; salt?: string; hash?: string; plain?: string };
 
-const ROLES: AdminRole[] = ["super", "finance", "cs", "kyc"];
+const ROLES: AdminRole[] = ["ceo", "super", "finance", "cs", "kyc"];
 const isDemo = !process.env.DATABASE_URL && !isProdDeploy(); // เว็บจริงไม่มีโหมดสาธิตเด็ดขาด (ไม่มี DATABASE_URL บน Vercel)
 
 export const DEMO_ADMIN_EMAILS: Record<AdminRole, string> = {
+  ceo: "ceo@mord.demo",
   super: "super@mord.demo",
   finance: "finance@mord.demo",
   cs: "cs@mord.demo",
@@ -19,11 +20,11 @@ export const DEMO_ADMIN_EMAILS: Record<AdminRole, string> = {
 };
 
 function accounts(): Account[] {
-  // แบบง่าย: ADMIN_EMAIL + ADMIN_PASSWORD = บัญชี super 1 บัญชี (ใช้ร่วมกับ ADMIN_ACCOUNTS ได้)
+  // แบบง่าย: ADMIN_EMAIL + ADMIN_PASSWORD = บัญชีเจ้าของ (CEO) 1 บัญชี — อนุมัติรายได้/ถอนเงินได้คนเดียว (แอดมินอื่นตั้งใน ADMIN_ACCOUNTS)
   // ไม่ได้ตั้ง ADMIN_EMAIL แต่มี ADMIN_PASSWORD → ใช้อีเมลแอดมินหลักของแบรนด์
   const simpleEmail = (process.env.ADMIN_EMAIL?.trim() || (process.env.ADMIN_PASSWORD ? "admin@misterbamrungsuk.com" : "")).toLowerCase();
   const simplePw = process.env.ADMIN_PASSWORD;
-  const simple: Account[] = simpleEmail && simplePw ? [{ email: simpleEmail, role: "super", plain: simplePw }] : [];
+  const simple: Account[] = simpleEmail && simplePw ? [{ email: simpleEmail, role: "ceo", plain: simplePw }] : [];
   const raw = process.env.ADMIN_ACCOUNTS?.trim();
   if (simple.length && !raw) return simple;
   if (raw) {
