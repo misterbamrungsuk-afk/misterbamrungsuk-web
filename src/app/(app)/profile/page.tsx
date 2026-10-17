@@ -1,5 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import { TIER_LOOK, MemberCard } from "@/components/member-card";
+import { pointsOf } from "@/lib/member/store";
 import { redirect } from "next/navigation";
 import { currentCustomer } from "@/lib/customer/auth";
 import { getProfile } from "@/lib/customer/profile";
@@ -28,6 +30,8 @@ export default async function AccountPage() {
   const people = live.length ? live : PEOPLE;
   const favs = p.favorites.map((id) => people.find((x) => x.id === id)).filter(Boolean).slice(0, 5);
   const unread = notices.filter((n) => !n.read_at).length;
+  const tier = p.member_tier ?? null;
+  const pts = await pointsOf(me.sub).catch(() => ({ total: 0, rows: [] }));
   const since = new Date(p.created_at).toLocaleDateString("th-TH", { month: "short", year: "numeric" });
   const menu: [string, string, string, React.ReactNode?][] = [
     ["/wallet", "M3 7h18v12H3zM16 13h2M3 7l3-3h12l3 3", "กระเป๋าเงิน", <span key="w" className="text-[13px] font-light" style={{ color: GOLD }}>฿{((bal.available ?? 0) / 100).toLocaleString("en-US")}</span>],
@@ -36,7 +40,7 @@ export default async function AccountPage() {
     ["/profile/edit", "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1.5-4 4.5-6 8-6s6.5 2 8 6", "แก้ไขโปรไฟล์ · ผู้ติดต่อฉุกเฉิน"],
     ["/favorites", "M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z", "เพื่อนที่ถูกใจ"],
     ["/jobs", "M4 5h16v11H8l-4 4zM8 9h8M8 12h5", "โพสต์หาเพื่อน"],
-    ["/membership", "M3 8h18v13H3zM3 12h18M12 8v13M12 8S10 3 7 4.5 9 8 12 8zm0 0s2-5 5-3.5S15 8 12 8z", "ของขวัญ · ใช้โค้ด"],
+    ["/membership", "M3 8h18v13H3zM3 12h18M12 8v13M12 8S10 3 7 4.5 9 8 12 8zm0 0s2-5 5-3.5S15 8 12 8z", p.member_tier ? "เมมเบอร์ · แต้ม · ของขวัญ" : "เปิดเมมเบอร์ · ของขวัญ", p.member_tier ? undefined : <span key="m" className="text-[12px] font-semibold rounded-full px-2 py-0.5 bg-[#e8c472] text-[#1b130b]">โปร</span>],
     ["/profile/addresses", "M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z", "ที่อยู่ที่บันทึก"],
     ["/profile/blocked", "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM5.6 5.6l12.8 12.8", "ผู้ใช้ที่บล็อก"],
     ["/page/terms", "M9.5 9a2.5 2.5 0 0 1 5 0c0 1.7-2.5 2-2.5 4M12 17h0M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z", "ช่วยเหลือและนโยบาย"],
@@ -44,9 +48,10 @@ export default async function AccountPage() {
 
   return (
     <div className="pb-6">
-      <div className="flex items-center gap-[14px]" style={{ padding: "22px 16px 0" }}>
-        <div className="w-16 h-16 rounded-full grid place-items-center font-semibold text-[26px] shrink-0" style={{ border: `1px solid ${GOLD}`, color: GOLD }}>{(p.name || me.email).slice(0, 1)}</div>
-        <div className="flex-1 min-w-0"><div className="font-semibold text-[20px] truncate">{p.name || me.email}</div><div className="text-[13px] font-light text-[#d9c9b4]">สมาชิกตั้งแต่ {since}</div></div>
+      <div className="flex items-center gap-[14px]" style={{ padding: "22px 16px 14px", margin: tier ? "10px 12px 0" : undefined, borderRadius: tier ? 20 : undefined, background: tier ? TIER_LOOK[tier].bg : undefined, boxShadow: tier ? `0 0 0 1.5px ${TIER_LOOK[tier].ring}` : undefined }}>
+        <div className="w-16 h-16 rounded-full grid place-items-center font-semibold text-[26px] shrink-0" style={{ border: `${tier ? 2 : 1}px solid ${GOLD}`, color: GOLD, background: tier ? "rgba(0,0,0,.25)" : undefined }}>{(p.name || me.email).slice(0, 1)}</div>
+        <div className="flex-1 min-w-0"><div className="font-semibold text-[20px] truncate">{p.name || me.email}</div>
+          {tier ? <div className="text-[12.5px] font-semibold tracking-[.18em]" style={{ color: TIER_LOOK[tier].text }}>{TIER_LOOK[tier].label} · {pts.total.toLocaleString("th-TH")} แต้ม</div> : <div className="text-[13px] font-light text-[#d9c9b4]">สมาชิกตั้งแต่ {since}</div>}</div>
         <Link href="/work-with-us" className="h-10 px-4 rounded-full text-[13px] font-light grid place-items-center hover:text-[#e8c472]" style={{ border: `1px solid ${GOLD}`, color: GOLD }}>สมัครเป็นเพื่อน</Link>
       </div>
       <div className="grid grid-cols-3 text-center rounded-[20px] bg-[#211a18]" style={{ margin: "18px 16px 0", padding: "14px 0", border: `1px solid ${LN}` }}>
@@ -54,6 +59,7 @@ export default async function AccountPage() {
         <div style={{ borderLeft: `1px solid ${LN}`, borderRight: `1px solid ${LN}` }}><div className="font-semibold text-[22px]">{p.favorites.length}</div><div className="text-[12px] font-light text-[#d9c9b4]">เพื่อนที่ถูกใจ</div></div>
         <div><div className="font-semibold text-[22px]" style={{ color: GOLD }}>{bookings.filter((b) => b.status === "completed").length}</div><div className="text-[12px] font-light text-[#d9c9b4]">นัดที่จบแล้ว</div></div>
       </div>
+      {tier && <Link href="/membership" className="block" style={{ padding: "16px 16px 0" }}><MemberCard tier={tier} name={p.name || me.email.split("@")[0]} no={p.member_no} since={p.member_since} points={pts.total} className="mx-auto" /></Link>}
       {!!favs.length && (
         <div style={{ padding: "20px 16px 0" }}>
           <div className="flex justify-between items-center"><b className="font-medium text-[17px]">เพื่อนที่ถูกใจ</b><Link href="/favorites" className="tap pl-3 text-[13px] font-light" style={{ color: GOLD }}>ทั้งหมด ›</Link></div>

@@ -25,6 +25,7 @@ export const ADMIN_TABS: AdminTab[] = [
   { href: "/admin/payroll", label: "CEO · อนุมัติรายได้ / ถอน" },
   { href: "/admin/payouts", label: "โอนให้ Part-Time" },
   { href: "/admin/boosts", label: "โปรโมทโปรไฟล์ Part-Time" },
+  { href: "/admin/sales", label: "เมมเบอร์ · Sale Man" },
   { href: "/admin/partners", label: "พาร์ทเนอร์ / พื้นที่โปรโมท" },
   { href: "/admin/market", label: "ร้านค้า Marketplace" },
   { href: "/admin/promos", label: "โค้ดโปรโมชัน · ของขวัญ" },

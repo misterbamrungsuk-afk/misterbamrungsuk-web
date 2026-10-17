@@ -8,6 +8,7 @@ import Link from "next/link";
 import { PEOPLE, priceOf, type Person } from "@/lib/home/people";
 import { TabBar } from "@/components/shell";
 import { SiteFooter } from "@/components/site-footer";
+import { MemberCard } from "@/components/member-card";
 
 const GOLD = "#e8c472";
 const ACTS = [
@@ -58,13 +59,18 @@ const CARD_BD = "1px solid rgba(232,196,114,.22)";
 
 /** mode "home" = หน้าแรกลูกค้า (เมนูลูกค้า) · "sample" = หน้าตัวอย่างสำหรับผู้สนใจร่วมทีม (เพื่อนตัวอย่าง + เมนูรับสมัคร)
  *  people = Part-Time จริง (ถ้ามี) · ไม่มีคนจริง → ใช้ตัวอย่าง 20 คน */
-export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", me = null, unread = 0 }: { showEarnings?: boolean; people?: Person[]; mode?: "home" | "sample"; me?: { name: string } | null; unread?: number }) {
+type Promo = { gold: { pay: number; credit: number }; black: { pay: number; credit: number } };
+const PROMO_DEFAULT: Promo = { gold: { pay: 50000, credit: 70000 }, black: { pay: 100000, credit: 150000 } };
+const fb = (n: number) => "฿" + n.toLocaleString("th-TH");
+
+export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", me = null, unread = 0, memberTier = null, promo = PROMO_DEFAULT }: { showEarnings?: boolean; people?: Person[]; mode?: "home" | "sample"; me?: { name: string } | null; unread?: number; memberTier?: "gold" | "black" | null; promo?: Promo }) {
   const sample = mode === "sample";
   const slider = useRef<HTMLDivElement>(null);
   const [slide, setSlide] = useState(0);
   const go = (i: number) => { const el = slider.current; if (el) el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" }); };
   const onSlide = () => { const el = slider.current; if (el) setSlide(Math.round(el.scrollLeft / Math.max(1, el.clientWidth))); };
-  useEffect(() => { const t = setInterval(() => go((Math.round((slider.current?.scrollLeft ?? 0) / Math.max(1, slider.current?.clientWidth ?? 1)) + 1) % SLIDES.length), 5000); return () => clearInterval(t); }, []);
+  const nSlides = SLIDES.length + (memberTier ? 0 : 1);
+  useEffect(() => { const t = setInterval(() => go((Math.round((slider.current?.scrollLeft ?? 0) / Math.max(1, slider.current?.clientWidth ?? 1)) + 1) % nSlides), 5000); return () => clearInterval(t); }, [nSlides]); // eslint-disable-line react-hooks/exhaustive-deps
   const [acts, setActs] = useState<Act[]>([]);
   const [sort, setSort] = useState<Sort>("top");
   const [ad, setAd] = useState(false);
@@ -138,6 +144,18 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
         {/* โฆษณาบนสุด — สไลด์ */}
         <div className="flex flex-col gap-2" style={{ margin: "6px 18px 0" }}>
           <div ref={slider} onScroll={onSlide} className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar rounded-[18px]" aria-roledescription="carousel" aria-label="โฆษณา">
+            {!memberTier && (
+              <Link href="/membership" aria-label="โปรเปิดเมมเบอร์ Gold / Black" className="relative block shrink-0 w-full snap-start overflow-hidden aspect-[16/9] md:aspect-[16/5]" style={{ background: "radial-gradient(80% 120% at 85% 30%, rgba(232,196,114,.25), rgba(0,0,0,0) 60%), linear-gradient(120deg, #3a0a14 0%, #1a0d0f 60%, #0b0808 100%)" }}>
+                <span className="absolute inset-y-0 left-0 flex flex-col justify-center gap-1.5 text-[#f3ead9] w-[58%] md:w-[52%]" style={{ padding: "14px 16px" }}>
+                  <span className="text-[11.5px] tracking-[.22em] font-semibold text-[#e8c472]">MEMBER PROMOTION</span>
+                  <span className="font-bold text-[19px] md:text-[28px] leading-[1.3]">เปิดเมม Gold<br className="md:hidden" /> จ่าย {fb(promo.gold.pay)} <span className="text-[#e8c472]">รับ {fb(promo.gold.credit)}</span></span>
+                  <span className="text-[12.5px] md:text-[15px] text-[#d9c9b4]">Black จ่าย {fb(promo.black.pay)} รับ {fb(promo.black.credit)} · แต้มคูณ · บัตรสมาชิก</span>
+                  <span className="mt-1 self-start rounded-full bg-[#e8c472] text-[#1b130b] text-[13px] font-semibold" style={{ padding: "6px 14px" }}>ดูโปรเมมเบอร์ ›</span>
+                </span>
+                <span className="absolute right-[-6%] md:right-[3%] top-1/2 -translate-y-1/2 md:-translate-y-[58%] w-[48%] md:w-[25%] rotate-[-8deg] md:rotate-[7deg]"><MemberCard tier="black" name="Black Member" sample /></span>
+                <span className="hidden md:block absolute right-[20%] top-1/2 -translate-y-[42%] w-[25%] rotate-[-7deg]"><MemberCard tier="gold" name="Gold Member" sample /></span>
+              </Link>
+            )}
             {SLIDES.map((x, i) => (
               <Link key={x.name} href={x.href} aria-label={`โฆษณา ${i + 1}/${SLIDES.length} · ${x.name}`} className="relative block shrink-0 w-full snap-start overflow-hidden aspect-[16/9] md:aspect-[16/5]">
                 <img src={x.img} alt={x.name} loading={i ? "lazy" : "eager"} className="w-full h-full object-cover block" />
@@ -153,8 +171,8 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
           </div>
           <div className="flex justify-between items-center">
             <span className="flex items-center">
-              {SLIDES.map((x, i) => (
-                <button key={x.name} type="button" onClick={() => go(i)} aria-label={`ดูโฆษณาที่ ${i + 1}`} aria-current={slide === i} className="h-8 px-[3px] grid place-items-center">
+              {Array.from({ length: nSlides }, (_, i) => (
+                <button key={i} type="button" onClick={() => go(i)} aria-label={`ดูโฆษณาที่ ${i + 1}`} aria-current={slide === i} className="h-8 px-[3px] grid place-items-center">
                   <span className="block h-[5px] rounded-[3px] transition-all" style={{ width: slide === i ? 18 : 5, background: slide === i ? GOLD : "rgba(243,234,217,.3)" }} />
                 </button>
               ))}
@@ -290,8 +308,40 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
         <Link href="/join" className="flex flex-col items-center gap-[3px] text-inherit hover:text-[#f3ead9]"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21c1-4 4-6 8-6s7 2 8 6" /></svg>ร่วมทีม</Link>
       </nav> : <div className="md:hidden"><TabBar unread={unread} /></div>}
 
-      {/* ป๊อปอัปโฆษณา */}
-      {ad && (
+      {/* ป๊อปอัปโปรเมมเบอร์ (คนที่ยังไม่เป็นเมม) */}
+      {ad && !memberTier && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto" style={{ background: "rgba(8,6,6,.78)", padding: "96px 20px 24px" }} onClick={closeAd}>
+          <div role="dialog" aria-modal="true" aria-label="โปรเปิดเมมเบอร์" className="relative w-full max-w-[420px] rounded-[22px] overflow-hidden" style={{ background: "linear-gradient(160deg, #3a0a14 0%, #1c0d10 55%, #0d0909 100%)", boxShadow: "0 0 0 1.5px #e8c472, 0 24px 60px rgba(0,0,0,.6)" }} onClick={(e) => e.stopPropagation()}>
+            <button type="button" onClick={closeAd} aria-label="ปิด" className="absolute z-10 grid place-items-center w-10 h-10 rounded-full text-[#f3ead9] text-[18px]" style={{ top: 10, right: 10, background: "rgba(0,0,0,.45)" }}>✕</button>
+            <div className="flex flex-col items-center text-center gap-3" style={{ padding: "22px 18px 18px" }}>
+              <span className="text-[12px] tracking-[.24em] font-semibold text-[#e8c472]">MEMBER PROMOTION</span>
+              <span className="font-bold text-[24px] leading-[1.3] text-[#f3ead9]">เปิดเมม ได้เครดิตเพิ่มทันที</span>
+              <div className="relative w-full h-[170px]">
+                <span className="absolute left-[2%] top-2 w-[62%] rotate-[-7deg]"><MemberCard tier="gold" name="Gold Member" sample /></span>
+                <span className="absolute right-[2%] top-6 w-[62%] rotate-[6deg]"><MemberCard tier="black" name="Black Member" sample /></span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 w-full text-left">
+                {(["gold", "black"] as const).map((k) => (
+                  <div key={k} className="rounded-xl" style={{ padding: "10px 12px", background: "rgba(0,0,0,.3)", border: "1px solid rgba(232,196,114,.35)" }}>
+                    <b className="text-[14px] text-[#f6dc9a]">{k === "gold" ? "Gold" : "Black"}</b>
+                    <div className="text-[13px] text-[#d9c9b4]">จ่าย {fb(promo[k].pay)}</div>
+                    <div className="text-[15px] font-semibold text-[#e8c472]">รับ {fb(promo[k].credit)}</div>
+                  </div>
+                ))}
+              </div>
+              <ul className="m-0 pl-5 self-stretch text-left text-[13.5px] leading-[1.7] text-[#d9c9b4]">
+                <li>เครดิตเพิ่มใช้นัดเพื่อน สปา โรงแรม และสินค้า</li>
+                <li>แต้มสะสมคูณทุกการใช้จ่าย</li>
+                <li>โปรไฟล์สีพิเศษตามระดับ + บัตรสมาชิกดิจิทัล</li>
+              </ul>
+              <Link href="/membership" onClick={closeAd} className="self-stretch min-h-12 rounded-xl bg-[#e8c472] text-[#1b130b] font-semibold grid place-items-center hover:text-[#1b130b]">ดูโปรเมมเบอร์</Link>
+              <button type="button" onClick={closeAd} className="min-h-10 bg-transparent text-[#b5a596] text-[13px] font-light">ไว้ทีหลัง</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ป๊อปอัปโฆษณา (เมมเบอร์แล้ว) */}
+      {ad && memberTier && (
         <div className="fixed inset-0 z-50 flex items-start justify-center" style={{ background: "rgba(8,6,6,.72)", padding: "140px 24px 24px" }} onClick={closeAd}>
           <div role="dialog" aria-modal="true" aria-label="โฆษณา" className="w-full max-w-[400px] rounded-[20px] overflow-hidden bg-[#251d1b]" style={{ boxShadow: "0 20px 50px rgba(0,0,0,.5)" }} onClick={(e) => e.stopPropagation()}>
             <div className="relative aspect-[4/3]">

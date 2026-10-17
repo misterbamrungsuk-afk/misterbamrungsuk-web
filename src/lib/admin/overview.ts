@@ -10,9 +10,10 @@ const safe = async <T,>(p: Promise<T>, fb: T): Promise<T> => p.catch(() => fb);
 const bkkDay = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: "Asia/Bangkok" });
 
 export async function overview() {
-  const [bookings, bal, topups, wds, apps, alerts, recon] = await Promise.all([
+  const [bookings, bal, topups, wds, apps, alerts, recon, mp] = await Promise.all([
     safe(listAll(5000), []), safe(allBalances(), []), safe(listTopups({ status: "pending", limit: 500 }), []), safe(listWithdrawals(), []),
     safe(listApplicants(), []), safe(listAdminNotices(100), []), safe(reconcile(), null as Recon | null),
+    safe((await import("@/lib/member/store")).listPurchases({ status: "pending" }), []),
   ]);
   const today = bkkDay(new Date()), month = today.slice(0, 7);
   const pf = (bucket: string) => bal.filter((r) => r.owner_type === "platform" && r.owner_id === PLATFORM && r.bucket === bucket).reduce((s, r) => s + r.balance, 0);
@@ -36,6 +37,7 @@ export async function overview() {
       topups: topups.length,
       withdrawRequested: wds.filter((w) => w.status === "requested").length,
       withdrawApproved: wds.filter((w) => w.status === "approved").length,
+      memberSlips: mp.length,
       withdrawBatched: wds.filter((w) => w.status === "batched").length,
       withdrawSum: wds.filter((w) => w.status === "requested" || w.status === "approved" || w.status === "batched").reduce((s, w) => s + w.net_satang, 0),
       kyc: apps.filter((a) => extraOf(a).kyc_status === "submitted").length,

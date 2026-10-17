@@ -4,12 +4,14 @@ import { customersEnabled, sbHeaders } from "./auth";
 // ข้อมูลโปรไฟล์ลูกค้า (ชื่อ เบอร์ ผู้ติดต่อฉุกเฉิน เพื่อนที่ถูกใจ คำขอลบบัญชี) — Supabase REST หรือหน่วยความจำ (โหมดสาธิต)
 export type Emergency = { name: string; tel: string; relation: string };
 export type Address = { id: string; label: string; detail: string; note: string; primary: boolean };
-export type Profile = { id: string; email: string; name: string; phone: string | null; created_at: string; emergency: Emergency | null; favorites: string[]; delete_requested_at: string | null; blocked: string[]; addresses: Address[] };
+export type Profile = { id: string; email: string; name: string; phone: string | null; created_at: string; emergency: Emergency | null; favorites: string[]; delete_requested_at: string | null; blocked: string[]; addresses: Address[];
+  /** ระดับเมมเบอร์ (เปิดเมม Gold/Black) · เลขบัตรสมาชิก */
+  member_tier?: "gold" | "black" | null; member_since?: string | null; member_no?: string | null };
 
 const SB = () => process.env.SUPABASE_URL || "";
 const g = globalThis as unknown as { __mbCust?: Map<string, Profile> };
 const demo: Map<string, Profile> = (g.__mbCust ??= new Map());
-const COLS = "id,email,name,phone,created_at,emergency,favorites,delete_requested_at,blocked,addresses";
+const COLS = "id,email,name,phone,created_at,emergency,favorites,delete_requested_at,blocked,addresses,member_tier,member_since,member_no";
 
 export async function getProfile(sub: string, email: string): Promise<Profile> {
   if (!customersEnabled() || sub.startsWith("demo:")) {
@@ -27,7 +29,7 @@ export async function getProfile(sub: string, email: string): Promise<Profile> {
   return { ...row, favorites: row?.favorites ?? [], emergency: row?.emergency ?? null, blocked: row?.blocked ?? [], addresses: row?.addresses ?? [] };
 }
 
-export async function updateProfile(sub: string, email: string, patch: Partial<Pick<Profile, "name" | "emergency" | "favorites" | "delete_requested_at" | "blocked" | "addresses">>): Promise<Profile> {
+export async function updateProfile(sub: string, email: string, patch: Partial<Pick<Profile, "name" | "emergency" | "favorites" | "delete_requested_at" | "blocked" | "addresses" | "member_tier" | "member_since" | "member_no">>): Promise<Profile> {
   if (!customersEnabled() || sub.startsWith("demo:")) {
     const p = await getProfile(sub, email);
     Object.assign(p, patch);

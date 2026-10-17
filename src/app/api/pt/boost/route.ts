@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { currentParttime } from "@/lib/bookings/auth";
-import { ptWallet } from "@/lib/bookings/day";
+import { balances } from "@/lib/wallet";
 import { BOOST_PLANS, BoostError, activeBoosts, buyBoostWithSlip, buyBoostWithWallet, listBoosts } from "@/lib/join/boost";
 import { notify } from "@/lib/bookings";
 
@@ -12,8 +12,8 @@ export async function GET(req: Request) {
   const u = new URL(req.url);
   const a = await currentParttime(u.searchParams.get("mb") ?? "", u.searchParams.get("t"));
   if (!a) return NextResponse.json({ ok: false }, { status: 403 });
-  const [act, list, w] = await Promise.all([activeBoosts(), listBoosts(), ptWallet(a.id).catch(() => ({ available: 0 }))]);
-  return NextResponse.json({ ok: true, plans: BOOST_PLANS, until: act.get(a.id) ?? null, pending: list.filter((b) => b.parttime_id === a.id && b.status === "pending").length, available: w.available });
+  const [act, list, w] = await Promise.all([activeBoosts(), listBoosts(), balances("parttime", a.id).catch(() => ({} as Record<string, number>))]);
+  return NextResponse.json({ ok: true, plans: BOOST_PLANS, until: act.get(a.id) ?? null, pending: list.filter((b) => b.parttime_id === a.id && b.status === "pending").length, available: (w.available ?? 0) + (w.boost_credit ?? 0), boostCredit: w.boost_credit ?? 0 });
 }
 
 export async function POST(req: Request) {

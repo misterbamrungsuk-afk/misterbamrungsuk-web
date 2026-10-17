@@ -17,6 +17,7 @@ export default async function AdminHome() {
     ["เติมเงินรอตรวจสลิป", q.topups, "/admin/wallet"],
     ["คำขอถอนรอ CEO อนุมัติ", q.withdrawRequested, "/admin/payroll"],
     ["CEO อนุมัติแล้ว · รอโอน", q.withdrawApproved, "/admin/payouts"],
+    ["สลิปเปิดเมมรอตรวจ", q.memberSlips, "/admin/sales"],
     ["รอบโอนรอยืนยัน", q.withdrawBatched, "/admin/payouts"],
     ["KYC รอตรวจ", q.kyc, "/admin/kyc"],
     ["สลิปผู้สมัครรอตรวจ", q.slips, "/admin/slips"],

@@ -60,6 +60,8 @@ async function split(b: Booking, actor: string, tip: number): Promise<Booking> {
   catch (e) { if (tip > 0 && e instanceof WalletError) { tip = 0; r = await run(0); } else throw e; }
   if (!r) throw new BookingError("สถานะการจองเปลี่ยนไปแล้ว", "state");
   await addEvent(b.id, "completed", actor, { pct, tip });
+  // แต้มสะสมลูกค้า (ตามระดับเมมเบอร์) — ยอดค่านัด + ทิป · ครั้งเดียวต่อการจอง
+  await (await import("@/lib/member")).awardPoints(b.customer_id, b.customer_email ?? "", b.total_satang + tip, `bk:${b.id}`, `นัด ${b.code}`).catch((e) => console.error("points", e));
   const money = await getMoney();
   await notify({ user_type: "parttime", user_id: b.parttime_id, kind: "earning", title: `จบงาน ${b.code}`, body: money.releaseMode === "auto" ? `รายได้รอปล่อย · ถอนได้ใน ${money.releaseHours} ชม.` : "รายได้รอทีมงานตรวจและอนุมัติเข้ากระเป๋า", url: `/join/profile/${b.parttime_mb}/earnings` });
   return r;

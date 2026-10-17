@@ -116,6 +116,7 @@ export function ProfileHub({ d }: { d: HubData }) {
                 <button type="button" onClick={() => setPromoOpen(!promoOpen)} aria-expanded={promoOpen} className="min-h-11 rounded-xl bg-[#e8c472] text-[#1b130b] text-[14px] font-semibold">{promoOpen ? "ปิด" : "โปรโมทโปรไฟล์"}</button>
               </div>
               {promoOpen && <BoostPanel mb={d.mb} t={d.t} />}
+              <Link href={`/join/profile/${d.mb}/sales${q}`} className="min-h-12 rounded-xl flex items-center gap-2.5 text-[#f3ead9] hover:text-[#f3ead9]" style={{ padding: "8px 12px", background: "rgba(232,196,114,0.12)", boxShadow: "inset 0 0 0 1px rgba(232,196,114,.35)" }}><span className="text-[18px]" aria-hidden="true">🤝</span><span className="flex-1 leading-[1.35]"><b className="block text-[14px]">ชวนลูกค้าเปิดเมม รับค่าคอม</b><span className="text-[12.5px] text-[#d9c9b4] font-light">ได้ค่าคอมทุกคนที่เปิดเมม หรือแปลงเป็นวงเงินโปรโมท</span></span><span className="text-[#e8c472]">›</span></Link>
             </div>
 
             {d.fixes > 0 && (

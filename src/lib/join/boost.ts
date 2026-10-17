@@ -1,6 +1,6 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
-import { PLATFORM, WalletError, post } from "@/lib/wallet";
+import { PLATFORM, WalletError, balances, post, type Leg } from "@/lib/wallet";
 import { verifySlip, type SlipCheck } from "@/lib/slip2go";
 import { putFile, type Applicant } from "./store";
 
@@ -62,14 +62,18 @@ async function activate(list: Boost[], b: Boost) {
   return b;
 }
 
-/** จ่ายจากยอดถอนได้ในกระเป๋า Part-Time */
+/** จ่ายจากกระเป๋า Part-Time — ใช้วงเงินโปรโมท (ค่าคอมที่แปลง ×2) ก่อน แล้วค่อยใช้ยอดถอนได้ */
 export async function buyBoostWithWallet(a: Applicant, planId: string): Promise<Boost> {
   const p = planOf(planId), amt = p.price * 100, id = crypto.randomUUID();
+  const credit = Math.max(0, (await balances("parttime", a.id).catch(() => ({} as Record<string, number>))).boost_credit ?? 0);
+  const fromCredit = Math.min(credit, amt);
+  const legs: Leg[] = [
+    { owner_type: "parttime", owner_id: a.id, bucket: "boost_credit", amount: -fromCredit },
+    { owner_type: "parttime", owner_id: a.id, bucket: "available", amount: -(amt - fromCredit) },
+    { owner_type: "platform", owner_id: PLATFORM, bucket: "revenue", amount: amt },
+  ];
   try {
-    await post("boost", { type: "boost", id }, `boost:${id}`, `โปรโมทโปรไฟล์ ${p.name}`, `parttime:${a.id}`, [
-      { owner_type: "parttime", owner_id: a.id, bucket: "available", amount: -amt },
-      { owner_type: "platform", owner_id: PLATFORM, bucket: "revenue", amount: amt },
-    ]);
+    await post("boost", { type: "boost", id }, `boost:${id}`, `โปรโมทโปรไฟล์ ${p.name}${fromCredit ? ` (วงเงินโปรโมท ฿${fromCredit / 100})` : ""}`, `parttime:${a.id}`, legs.filter((l) => l.amount !== 0));
   } catch (e) {
     if (e instanceof WalletError) throw new BoostError("ยอดในกระเป๋าไม่พอ · จ่ายด้วย QR แทนได้");
     throw e;

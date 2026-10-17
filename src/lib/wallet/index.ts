@@ -4,9 +4,9 @@ import type { SlipCheck } from "@/lib/slip2go";
 
 // กระเป๋าเงิน (ledger บัญชีคู่) — ทุกการเคลื่อนไหวเงินผ่าน post() → Postgres function wallet_post (supabase/wallet/0001_wallet.sql)
 // โหมดสาธิต (ไม่มี SUPABASE env): ledger ในหน่วยความจำ กติกาเดียวกัน (ผลรวม 0 · ห้ามติดลบ · กันซ้ำ)
-export type OwnerType = "customer" | "parttime" | "partner" | "platform";
+export type OwnerType = "customer" | "parttime" | "partner" | "platform" | "sales";
 export type Leg = { owner_type: OwnerType; owner_id: string; bucket: string; amount: number };
-export type TxKind = "topup" | "hold" | "confirm" | "release" | "split" | "mature" | "withdraw_req" | "withdraw_paid" | "withdraw_fail" | "refund" | "adjust" | "reversal" | "promo" | "gift" | "boost";
+export type TxKind = "topup" | "hold" | "confirm" | "release" | "split" | "mature" | "withdraw_req" | "withdraw_paid" | "withdraw_fail" | "refund" | "adjust" | "reversal" | "promo" | "gift" | "boost" | "member" | "commission" | "sales_payout";
 export type Entry = { tx_id: number; kind: string; ref_type: string | null; ref_id: string | null; note: string | null; bucket: string; amount: number; created_at: string };
 export type Topup = {
   id: string; customer_id: string; customer_email: string | null; amount_satang: number; slip_path: string | null; slip_check: SlipCheck | null;
@@ -61,7 +61,7 @@ export async function post(kind: TxKind, ref: { type?: string; id?: string } | n
   return Number(data);
 }
 
-export type MoveTable = "bookings" | "withdrawals" | "wallet_topups" | "quick_calls";
+export type MoveTable = "bookings" | "withdrawals" | "wallet_topups" | "quick_calls" | "member_purchases" | "sales_payouts";
 export type MoveTx = { kind: TxKind; ref: { type?: string; id?: string } | null; idem: string; note: string | null; actor: string | null; legs: Leg[] };
 
 /** เปลี่ยนสถานะแบบมีเงื่อนไข (from) + ลงบัญชีเงิน ใน transaction เดียว (Postgres wallet_move · supabase/wallet/0002_atomic.sql)
