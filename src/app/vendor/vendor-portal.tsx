@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Logo } from "@/components/ui";
+import { OwnerWallet } from "@/components/owner-wallet";
 import { CARRIERS, CLAIM_NOTE, ORDER_STATUS_LABEL, baht, carrierName, flaggedClaims, imageUrl, type Product } from "@/lib/market/config";
 import type { VendorData } from "@/lib/market/vendor-data";
 
@@ -79,7 +80,7 @@ export function VendorAccept({ t, email, shop }: { t: string; email: string; sho
   );
 }
 
-const TABS = [["orders", "คำสั่งซื้อ"], ["products", "สินค้า"], ["payout", "ยอดขาย / การโอน"]] as const;
+const TABS = [["orders", "คำสั่งซื้อ"], ["products", "สินค้า"], ["wallet", "กระเป๋าเงิน / ถอน"], ["payout", "รายงานยอดขาย"]] as const;
 
 export function VendorPortal({ email, initial }: { email: string; initial: VendorData }) {
   const [d, setD] = useState(initial);
@@ -108,6 +109,7 @@ export function VendorPortal({ email, initial }: { email: string; initial: Vendo
         {msg && <p role="status" className="rounded-2xl border border-gold-500/40 px-4 py-2 text-sm">{msg}</p>}
         {tab === "orders" && <Orders d={d} reload={reload} setMsg={setMsg} />}
         {tab === "products" && <Products d={d} reload={reload} setMsg={setMsg} />}
+        {tab === "wallet" && <div className="max-w-[560px]"><OwnerWallet api="/api/market/vendor/wallet" source="ส่วนของร้านจากออเดอร์ที่สำเร็จ (หัก GP แล้ว รวมค่าส่ง)" /></div>}
         {tab === "payout" && <Payout d={d} />}
       </div>
     </>
@@ -268,14 +270,14 @@ function Payout({ d }: { d: VendorData }) {
         {!d.report.length ? <p className="text-sm text-ink-300">ยังไม่มียอด</p> : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead><tr className="text-left text-ink-300 text-xs"><th className="py-2">เดือน</th><th className="text-right">ออเดอร์</th><th className="text-right">ยอดสินค้า</th><th className="text-right">ส่วนลด</th><th className="text-right">GP</th><th className="text-right">ค่าส่ง</th><th className="text-right">ยอดที่ต้องโอน</th><th className="text-right">สถานะ</th></tr></thead>
+              <thead><tr className="text-left text-ink-300 text-xs"><th className="py-2">เดือน</th><th className="text-right">ออเดอร์</th><th className="text-right">ยอดสินค้า</th><th className="text-right">ส่วนลด</th><th className="text-right">GP</th><th className="text-right">ค่าส่ง</th><th className="text-right">ส่วนของร้าน</th><th className="text-right">สถานะ</th></tr></thead>
               <tbody>
                 {d.report.map((r) => (
                   <tr key={r.month} className="border-t border-ink-600">
                     <td className="py-2">{r.month}</td><td className="text-right">{r.orders}</td><td className="text-right">{money(r.gross)}</td>
                     <td className="text-right">{money(r.discount)}</td><td className="text-right">{r.pendingGp ? "รอกำหนด" : money(r.gp)}</td><td className="text-right">{money(r.shipping)}</td>
                     <td className="text-right font-semibold text-gold-300">{r.pendingGp ? "รอกำหนด" : money(r.payout)}</td>
-                    <td className="text-right text-xs">{r.paid ? <span className="text-emerald-300">โอนแล้ว {new Date(r.paid.paid_at).toLocaleDateString("th-TH")} · {r.paid.ref}</span> : <span className="text-ink-300">รอโอน</span>}</td>
+                    <td className="text-right text-xs">{r.paid ? <span className="text-emerald-300">โอนแล้ว {new Date(r.paid.paid_at).toLocaleDateString("th-TH")} · {r.paid.ref}</span> : <span className="text-ink-300">เข้ากระเป๋าเมื่อออเดอร์สำเร็จ</span>}</td>
                   </tr>
                 ))}
               </tbody>

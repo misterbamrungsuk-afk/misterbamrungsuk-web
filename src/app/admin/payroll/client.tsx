@@ -11,8 +11,9 @@ const hm = (iso: string | null) => (iso ? new Date(iso).toLocaleString("th-TH", 
 export type WReq = { id: string; mb: string; nick: string; amount: number; fee: number; wht: number; net: number; bank: string; at: string };
 
 export type SReq = { id: string; name: string; code: string; amount: number; bank: string; at: string };
+export type OReq = { id: string; type: "partner" | "vendor"; name: string; amount: number; bank: string; at: string };
 
-export function PayrollClient({ day, today, rows, sample, reqs, salesReqs = [], isCeo }: { day: string; today: string; rows: PayRow[]; sample: boolean; reqs: WReq[]; salesReqs?: SReq[]; isCeo: boolean }) {
+export function PayrollClient({ day, today, rows, sample, reqs, salesReqs = [], ownerReqs = [], isCeo }: { day: string; today: string; rows: PayRow[]; sample: boolean; reqs: WReq[]; salesReqs?: SReq[]; ownerReqs?: OReq[]; isCeo: boolean }) {
   const [note, setNote] = useState<Record<string, string>>({});
   const router = useRouter();
   const [open, setOpen] = useState<string | null>(sample ? rows[0]?.parttime_id ?? null : null);
@@ -106,7 +107,7 @@ export function PayrollClient({ day, today, rows, sample, reqs, salesReqs = [], 
       </div>
 
       {/* ชั้นที่ 2: คำขอถอนเงินเข้าบัญชีธนาคาร */}
-      <h2 className="m-0 mt-4 text-[17px] font-semibold">ชั้นที่ 2 · อนุมัติคำขอถอนเงิน <span className="text-[13px] font-normal text-[#9a8a85]">(อนุมัติแล้วส่งไปหน้า "โอนให้ Part-Time" ให้แอดมินโอนและกดเช็ก)</span></h2>
+      <h2 className="m-0 mt-4 text-[17px] font-semibold">ชั้นที่ 2 · อนุมัติคำขอถอนเงิน <span className="text-[13px] font-normal text-[#9a8a85]">(อนุมัติแล้วส่งไปหน้า "โอนเงิน" ให้แอดมินโอนและกดเช็ก)</span></h2>
       <div className="rounded-2xl border overflow-x-auto" style={{ borderColor: LINE }}>
         <div className="min-w-[900px]">
           <div className="grid grid-cols-[minmax(0,1fr)_110px_100px_110px_minmax(0,1.3fr)_120px_260px] gap-2 px-3.5 py-2.5 bg-[#130e0e] text-[#9a8a85] text-xs">
@@ -143,6 +144,26 @@ export function PayrollClient({ day, today, rows, sample, reqs, salesReqs = [], 
           </div>
         ))}
       </div>
+      {([["partner", "พาร์ทเนอร์ (โรงแรม · สปา)", "ค่าห้องจากนัดที่จบแล้ว"], ["vendor", "ร้านค้า Marketplace", "ส่วนของร้านจากออเดอร์ที่สำเร็จ"]] as const).map(([t, title, src]) => {
+        const list = ownerReqs.filter((w) => w.type === t);
+        return (
+          <section key={t} className="flex flex-col gap-2">
+            <h2 className="m-0 mt-4 text-[17px] font-semibold">ถอนเงิน{title} <span className="text-[13px] font-normal text-[#9a8a85]">({src} · อนุมัติแล้วไปหน้า "โอนเงิน" ให้แอดมินโอน)</span></h2>
+            <div className="rounded-2xl border" style={{ borderColor: LINE }}>
+              {!list.length && <p className="m-0 p-5 text-center text-[#9a8a85]">ไม่มีคำขอถอนรออนุมัติ</p>}
+              {list.map((w) => (
+                <div key={w.id} className="flex flex-wrap items-center gap-2 px-3.5 py-3 border-t first:border-t-0" style={{ borderColor: LINE }}>
+                  <span className="flex-1 min-w-[220px]"><b className="font-medium">{w.name}</b><span className="block text-[12.5px] text-[#9a8a85]">{w.bank} · {hm(w.at)}</span></span>
+                  <b className="tabular-nums text-[#f0c75a]">{baht(w.amount)}</b>
+                  <button type="button" disabled={!isCeo || !!busy} onClick={() => approve({ action: "approve", id: w.id }, w.id, `อนุมัติถอน ${w.name} ${baht(w.amount)} · ส่งให้แอดมินโอน`, "/api/admin/payout-requests")} className="h-10 px-3 rounded-xl font-semibold text-[#1b130b] bg-[#e8c472] disabled:opacity-35">{busy === w.id ? "…" : "อนุมัติถอน"}</button>
+                  <input value={note[w.id] ?? ""} onChange={(e) => setNote({ ...note, [w.id]: e.target.value })} placeholder="เหตุผลถ้าไม่อนุมัติ" disabled={!isCeo} className="h-10 w-44 rounded-xl border bg-[#130e0e] px-2 text-[12.5px]" style={{ borderColor: LINE }} />
+                  <button type="button" disabled={!isCeo || !!busy || !(note[w.id] ?? "").trim()} onClick={() => approve({ action: "reject", id: w.id, note: note[w.id] }, w.id, `ไม่อนุมัติ · คืนยอดให้ ${w.name} แล้ว`, "/api/admin/payout-requests")} className="h-10 px-2.5 rounded-xl border text-[12.5px] text-[#fecaca] disabled:opacity-35" style={{ borderColor: "rgba(201,40,61,.6)" }}>ไม่อนุมัติ</button>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      })}
       {!isCeo && <p className="m-0 text-[12.5px] text-[#9a8a85]">บัญชีของคุณดูได้อย่างเดียว · การอนุมัติทั้ง 2 ชั้นทำได้เฉพาะบัญชี CEO</p>}
     </div>
   );

@@ -54,7 +54,7 @@ export async function POST(req: Request) {
     }
     if (b.action === "adjust") {
       const owner_type = String(b.owner_type) as OwnerType;
-      if (!["customer", "parttime", "partner"].includes(owner_type)) return NextResponse.json({ ok: false, error: "ประเภทบัญชีไม่ถูกต้อง" }, { status: 400 });
+      if (!["customer", "parttime", "partner", "vendor", "sales"].includes(owner_type)) return NextResponse.json({ ok: false, error: "ประเภทบัญชีไม่ถูกต้อง" }, { status: 400 });
       const amt = Math.round(Number(b.amount_baht) * 100);
       if (!Number.isFinite(amt) || amt === 0 || Math.abs(amt) > 10_000_000) return NextResponse.json({ ok: false, error: "จำนวนเงินไม่ถูกต้อง" }, { status: 400 });
       const tx = await adjust({ owner_type, owner_id: String(b.owner_id ?? "").slice(0, 100), bucket: String(b.bucket ?? "available").slice(0, 30) }, amt, String(b.reason ?? ""), actor, String(b.idem ?? crypto.randomUUID()));

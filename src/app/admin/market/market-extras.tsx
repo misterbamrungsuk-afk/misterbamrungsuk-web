@@ -50,6 +50,7 @@ function Payouts({ d, reload, setMsg }: Sub) {
           <option value="">ทุกเดือน</option>{months.map((m) => <option key={m} value={m}>{m}</option>)}
         </select>
         <a href={`/api/market/admin/payouts?format=csv${month ? `&month=${month}` : ""}`} className="chip h-9 px-3 text-xs">ส่งออก CSV</a>
+        <p className="text-xs text-gold-300 basis-full">ตั้งแต่ 17 ต.ค. 2569 ส่วนของร้านเข้า "กระเป๋าร้าน" อัตโนมัติเมื่อออเดอร์สำเร็จ → ร้านกดขอถอนในพอร์ทัล → CEO อนุมัติ → โอนที่หน้า "โอนเงิน" · ตารางนี้เป็นรายงานเท่านั้น</p>
         <p className="text-xs text-ink-300 basis-full">นับเฉพาะคำสั่งซื้อที่ยืนยันชำระแล้ว · ยอดที่ต้องโอน = ยอดสินค้า − ส่วนลด − GP + ค่าส่ง · GP คิดจากยอดสินค้าหลังส่วนลด (ไม่รวมค่าส่ง)</p>
       </div>
       {!rows.length ? <p className="text-sm text-ink-300">ยังไม่มียอด</p> : (
@@ -76,7 +77,7 @@ function Payouts({ d, reload, setMsg }: Sub) {
                           <div className="flex gap-1"><button onClick={() => save(r.vendor_id, r.month)} className="btn-crimson h-8 px-3 rounded-full text-xs">บันทึก</button><button onClick={() => setForm(null)} className="chip h-8 px-3 text-xs">ยกเลิก</button></div>
                         </div>
                       ) : (
-                        <button disabled={r.pendingGp > 0} title={r.pendingGp > 0 ? "ตั้ง GP % ก่อน" : ""} onClick={() => setForm({ key, paid_at: new Date().toISOString().slice(0, 10), ref: "", slip: null })} className="chip h-8 px-3 text-xs disabled:opacity-40">บันทึกการโอนแล้ว</button>
+                        <span className="text-xs text-ink-300">{r.pendingGp > 0 ? "ตั้ง GP % ก่อน" : "เข้ากระเป๋าร้าน · ร้านขอถอนเอง"}</span>
                       )}
                     </td>
                   </tr>

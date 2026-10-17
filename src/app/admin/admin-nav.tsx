@@ -23,7 +23,7 @@ export const ADMIN_TABS: AdminTab[] = [
   { href: "/admin/earnings", label: "ราคาและส่วนแบ่ง" },
   { href: "/admin/invites", label: "ลิงก์เชิญ" },
   { href: "/admin/payroll", label: "CEO · อนุมัติรายได้ / ถอน" },
-  { href: "/admin/payouts", label: "โอนให้ Part-Time" },
+  { href: "/admin/payouts", label: "โอนเงิน · Part-Time / พาร์ทเนอร์ / ร้านค้า" },
   { href: "/admin/boosts", label: "โปรโมทโปรไฟล์ Part-Time" },
   { href: "/admin/sales", label: "เมมเบอร์ · Sale Man" },
   { href: "/admin/partners", label: "พาร์ทเนอร์ / พื้นที่โปรโมท" },
@@ -68,7 +68,7 @@ export function AdminNav({ email, role }: { email: string; role: AdminRole }) {
           <div className="pb-2"><ModeSwitch /></div>
           <p className="px-3 text-xs text-[#cdbfb3] truncate" title={email}>{email} · <span className="text-[#f0c75a]">{ROLE_LABEL[role]}</span></p>
           <button onClick={logout} className="mt-1 px-3 py-1.5 rounded-[10px] border border-[rgba(240,200,90,.38)] text-left text-[#cdbfb3] hover:border-[rgba(201,40,61,.55)]">ออกจากระบบ</button>
-          <Link href="/home" className="px-3 py-1.5 text-[#ffd76a]">← กลับหน้าแอป</Link>
+          <Link href="/" className="px-3 py-1.5 text-[#ffd76a]">← กลับหน้าแอป</Link>
         </div>
       </nav>
 

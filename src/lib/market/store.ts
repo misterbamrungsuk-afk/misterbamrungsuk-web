@@ -410,6 +410,7 @@ export async function decideOrder(id: string, action: OrderAction, admin: string
     await adjustStock(o.items, -1);
   } else if (action === "regp") {
     Object.assign(patch, computeGp(o, await listVendors()));
+    if (o.status === "done") { const out = await patchOrder(id, patch); await creditVendors(out, admin).catch((e) => console.error("market credit", e)); return out; }
   } else if (action === "reject") {
     patch.status = "rejected";
     patch.reject_reason = (extra.reason ?? "").trim().slice(0, 300) || null;
@@ -418,7 +419,24 @@ export async function decideOrder(id: string, action: OrderAction, admin: string
     if (!extra.tracking_no?.trim()) throw new Error("ใส่เลขพัสดุ");
     Object.assign(patch, { status: "shipped", tracking_no: extra.tracking_no.trim().slice(0, 60), carrier: extra.carrier || null, shipped_at: now() });
   } else Object.assign(patch, { status: "done", done_at: now() });
-  return patchOrder(id, patch);
+  const out = await patchOrder(id, patch);
+  if (out.status === "done") await creditVendors(out, admin).catch((e) => console.error("market credit", e));
+  return out;
+}
+
+/** ออเดอร์สำเร็จ → ส่วนของแต่ละร้าน (สุทธิ − GP + ค่าส่ง) เข้ากระเป๋าร้าน · เงินลูกค้าเข้าบัญชีบริษัท · GP + เศษ = รายได้บริษัท
+ *  ลงครั้งเดียวต่อออเดอร์ (idem) · ร้านยังไม่ตั้ง GP = ยังไม่ลง (ลงเมื่อแอดมินคำนวณ GP ใหม่หลังตั้ง %) */
+export async function creditVendors(o: Order, actor: string): Promise<boolean> {
+  const split = o.vendor_split ?? computeSplit(o, await listVendors());
+  if (!split.length || split.some((x) => x.payout == null)) return false;
+  const { post, PLATFORM } = await import("@/lib/wallet");
+  const total = Math.round(Number(o.total) * 100);
+  const legs = split.map((x) => ({ owner_type: "vendor" as const, owner_id: x.vendor_id, bucket: "available", amount: Math.round(x.payout! * 100) })).filter((l) => l.amount > 0);
+  const toVendors = legs.reduce((a, l) => a + l.amount, 0);
+  const all = [{ owner_type: "platform" as const, owner_id: PLATFORM, bucket: "bank", amount: -total }, ...legs, { owner_type: "platform" as const, owner_id: PLATFORM, bucket: "revenue", amount: total - toVendors }].filter((l) => l.amount !== 0);
+  if (all.length < 2) return false;
+  await post("market_sale", { type: "market_order", id: o.id }, `market:${o.id}`, `ออเดอร์ ${o.order_no} สำเร็จ`, actor, all);
+  return true;
 }
 
 /** ร้านใส่เลขพัสดุของสินค้าตัวเอง — ครบทุกร้านในออเดอร์ → สถานะ "จัดส่งแล้ว" อัตโนมัติ */

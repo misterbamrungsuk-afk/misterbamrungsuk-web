@@ -6,6 +6,7 @@ import { getMoney } from "@/lib/wallet/settings";
 import { PageHead } from "../admin-nav";
 import { PayrollClient, type WReq } from "./client";
 import { listPayouts, listReps } from "@/lib/member/store";
+import { listPayoutRequests } from "@/lib/payouts";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "CEO · อนุมัติ — แอดมิน" };
@@ -17,12 +18,13 @@ export default async function PayrollPage({ searchParams }: { searchParams: Prom
   const day = /^\d{4}-\d{2}-\d{2}$/.test(d ?? "") ? d! : todayBkk();
   const s = await verifySession((await cookies()).get(ADMIN_COOKIE)?.value);
   const [{ rows, sample }, money, wds, sp, reps] = await Promise.all([payrollRows(day), getMoney(), listWithdrawals({ status: "requested" }).catch(() => []), listPayouts({ status: "requested" }).catch(() => []), listReps().catch(() => [])]);
+  const ownerReqs = (await listPayoutRequests({ status: ["requested"] }).catch(() => [])).map((w) => ({ id: w.id, type: w.owner_type, name: w.owner_name, amount: Number(w.amount_satang), bank: `${w.bank.bank} · ${w.bank.account} · ${w.bank.name}`, at: w.created_at }));
   const reqs: WReq[] = wds.map((w) => ({ id: w.id, mb: w.parttime_mb, nick: rows.find((r) => r.parttime_id === w.parttime_id)?.nick ?? w.parttime_mb, amount: w.amount_satang, fee: w.fee_satang, wht: w.wht_satang, net: w.net_satang, bank: `${w.bank.bank} · ${w.bank.account} · ${w.bank.name}`, at: w.created_at }));
   const salesReqs = sp.map((p) => { const r = reps.find((x) => x.id === p.rep_id); return { id: p.id, name: r?.name ?? "Sale Man", code: r?.code ?? "", amount: p.amount_satang, bank: p.bank ? `${p.bank.bank} · ${p.bank.account} · ${p.bank.name}` : "-", at: p.created_at }; });
   return (
     <>
       <PageHead title="CEO · อนุมัติรายได้และถอนเงิน" sub={`ตรวจงานวันที่ ${new Date(`${day}T12:00:00+07:00`).toLocaleDateString("th-TH", { dateStyle: "long" })} · ${money.releaseMode === "auto" ? `ตอนนี้ปล่อยรายได้อัตโนมัติหลัง ${money.releaseHours} ชม. (เปลี่ยนได้ที่ "กระเป๋าเงิน")` : "รายได้เข้ากระเป๋าเมื่อ CEO อนุมัติ"} · ${s?.role === "ceo" ? "คุณคือ CEO" : "ดูอย่างเดียว — อนุมัติได้เฉพาะ CEO"}`} />
-      <PayrollClient day={day} today={todayBkk()} rows={rows} sample={sample} reqs={reqs} salesReqs={salesReqs} isCeo={s?.role === "ceo"} />
+      <PayrollClient day={day} today={todayBkk()} rows={rows} sample={sample} reqs={reqs} salesReqs={salesReqs} ownerReqs={ownerReqs} isCeo={s?.role === "ceo"} />
     </>
   );
 }

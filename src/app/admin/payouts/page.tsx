@@ -2,6 +2,7 @@
 
 // ถอนเงิน Part-Time (ข้อมูลจริง) — แสดงเฉพาะคำขอที่ CEO อนุมัติแล้ว (ชั้นที่ 2 ทำที่หน้า "CEO · อนุมัติ") → รวมคำขอเป็นรอบโอน → ดาวน์โหลดไฟล์โอนกลุ่ม (CSV) → อัปโหลดในแอปธนาคาร → กด "โอนแล้ว" ทีละรายการ
 import { useEffect, useState } from "react";
+import { OwnerPayouts } from "./owners";
 
 type W = { id: string; parttime_mb: string; amount_satang: number; fee_satang: number; wht_satang: number; net_satang: number; bank: { bank: string; account: string; name: string }; status: string; batch_id: string | null; note: string | null; created_at: string; paid_at: string | null };
 const GOLD = "#f0c75a";
@@ -31,7 +32,7 @@ export default function AdminPayoutsPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap gap-3 justify-between items-end">
-        <div><div className="text-[11px] tracking-[2.5px] font-semibold" style={{ color: GOLD }}>PAYOUTS</div><h1 className="mt-0.5 font-lux font-bold text-2xl">ถอนเงิน Part-Time</h1></div>
+        <div><div className="text-[11px] tracking-[2.5px] font-semibold" style={{ color: GOLD }}>PAYOUTS</div><h1 className="mt-0.5 font-lux font-bold text-2xl">โอนเงิน · Part-Time / พาร์ทเนอร์ / ร้านค้า</h1></div>
         <button disabled={busy || !req.length} onClick={() => act({ action: "batch" })} className="btn-red-lux h-10 px-5 rounded-full text-white font-semibold disabled:opacity-40">รวมคำขอที่อนุมัติแล้วเป็นรอบโอน ({req.length})</button>
       </div>
       {waitCeo > 0 && <p className="m-0 rounded-xl border px-4 py-2.5 text-[13px] text-[#cdbfb3]" style={{ borderColor: LINE }}>มีคำขอถอนรอ CEO อนุมัติ {waitCeo} รายการ — จะขึ้นให้โอนที่นี่หลัง CEO อนุมัติ</p>}
@@ -61,6 +62,8 @@ export default function AdminPayoutsPage() {
         </div>
       </div>
       <p className="text-[12px] text-[#9a8a85]">ขั้นตอน: Part-Time ขอถอน → CEO อนุมัติ → รวมรอบ → ดาวน์โหลด CSV → อัปโหลดในแอปธนาคารบริษัท (โอนกลุ่ม) → กด &quot;โอนแล้ว&quot; ทีละรายการ · โอนไม่สำเร็จ = คืนยอดให้ Part-Time ถอนใหม่</p>
+      <hr className="border-0 border-t my-2" style={{ borderColor: LINE }} />
+      <OwnerPayouts />
     </div>
   );
 }

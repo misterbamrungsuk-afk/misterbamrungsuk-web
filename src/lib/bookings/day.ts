@@ -7,7 +7,7 @@ import type { Applicant } from "@/lib/join/store";
 import { BookingError, addEvent, getBooking, isDemo, moveBooking, notify, rawForParttime, sendMessage, transition, type Booking } from "./index";
 
 // วันนัด → จบงาน → แบ่งเงิน → ปล่อยเงิน → ถอน (แผนข้อ 4 "ทางเดินเงิน")
-// จบงาน: บริษัท.escrow → PT.pending (x% ของค่าบริการ) + บริษัท.revenue (ส่วนที่เหลือ) + บริษัท.partner_payable (ค่าห้อง)
+// จบงาน: บริษัท.escrow → PT.pending (x% ของค่าบริการ) + บริษัท.revenue (ส่วนที่เหลือ) + สปาพาร์ทเนอร์.available (ค่าห้อง)
 // ครบเวลาปล่อยเงิน: PT.pending → PT.available · ถอน: available → withdrawing → (โอนแล้ว) bank สุทธิ + revenue ค่าธรรมเนียม + wht_payable
 
 let sb: SupabaseClient | null = null;
@@ -39,6 +39,13 @@ async function completedThisMonth(parttime_id: string): Promise<number> {
 /** แบ่งเงินเมื่อจบงาน (ครั้งเดียวต่อการจอง) — เปลี่ยนสถานะ + ลงเงิน (ค่านัด + ทิป) ใน transaction เดียว
  *  เฉพาะนัดที่ยังดำเนินอยู่ (accepted/checked_in) — ข้อพิพาท/ขอยกเลิก ต้องให้แอดมินตัดสิน (adminResolve) เท่านั้น
  *  ทิปตัดจากกระเป๋าลูกค้าไม่ได้ (ยอดไม่พอ) = จบงานโดยไม่มีทิป · pt_pending_satang = ยอดที่เข้า PT.pending จริง */
+/** ค่าห้องเข้ากระเป๋าของสปาพาร์ทเนอร์เจ้านั้นโดยตรง (ถอนเองผ่านพอร์ทัล) · สถานที่ที่ไม่ใช่พาร์ทเนอร์ = ค้างจ่ายรวมของบริษัท */
+function roomLeg(b: Booking, amount: number): Leg {
+  const pid = b.place?.spa_id;
+  const ok = !!pid && (/^[0-9a-f-]{36}$/.test(pid) || !process.env.SUPABASE_URL);
+  return ok ? { owner_type: "partner", owner_id: pid!, bucket: "available", amount } : { owner_type: "platform", owner_id: PLATFORM, bucket: "partner_payable", amount };
+}
+
 async function split(b: Booking, actor: string, tip: number): Promise<Booking> {
   const cfg = await getEarnings();
   const pct = pctFor(cfg.tiers, (await completedThisMonth(b.parttime_id)) + 1);
@@ -50,7 +57,7 @@ async function split(b: Booking, actor: string, tip: number): Promise<Booking> {
       { owner_type: "parttime", owner_id: b.parttime_id, bucket: "pending", amount: ptShare + tipPt },
       { owner_type: "platform", owner_id: PLATFORM, bucket: "revenue", amount: b.price_satang - ptShare + (t - tipPt) },
     ];
-    if (b.room_fee_satang) legs.push({ owner_type: "platform", owner_id: PLATFORM, bucket: "partner_payable", amount: b.room_fee_satang });
+    if (b.room_fee_satang) legs.push(roomLeg(b, b.room_fee_satang));
     if (t > 0) legs.push({ owner_type: "customer", owner_id: b.customer_id, bucket: "available", amount: -t });
     return moveBooking(b.id, ["accepted", "checked_in"], { status: "completed", completed_at: now(), share_pct: pct, tip_satang: t, pt_pending_satang: ptShare + tipPt },
       { kind: "split", ref: { type: "booking", id: b.id }, idem: `split:${b.id}`, note: `แบ่งเงินนัด ${b.code} · ส่วนแบ่ง ${pct}%${t ? ` · ทิป ฿${t / 100}` : ""}`, actor, legs: legs.filter((l) => l.amount !== 0) });
@@ -176,7 +183,7 @@ export async function adminResolve(id: string, admin: string, d: { action: "refu
     { owner_type: "customer", owner_id: b.customer_id, bucket: "available", amount: refund },
     { owner_type: "parttime", owner_id: b.parttime_id, bucket: "pending", amount: ptShare },
     { owner_type: "platform", owner_id: PLATFORM, bucket: "revenue", amount: serviceKeep - ptShare },
-    { owner_type: "platform", owner_id: PLATFORM, bucket: "partner_payable", amount: roomKeep },
+    roomLeg(b, roomKeep),
   ];
   const r = await moveBooking(b.id, ["cancel_requested", "disputed"], {
     status: pct === 100 ? "refunded" : "completed", completed_at: now(), share_pct: pct === 100 ? 0 : sharePct, pt_pending_satang: ptShare,
