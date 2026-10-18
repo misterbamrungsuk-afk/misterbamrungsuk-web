@@ -113,7 +113,7 @@ export function VenueListView({ type, items }: { type: "โรงแรม" | "�
               ยังไม่มี{hotel ? "โรงแรม" : "สปา"}พาร์ทเนอร์ใน{prov}<br /><Link href="/partner" className="text-[#e8c472]">สมัครเป็นพาร์ทเนอร์</Link>
             </div>
           )}
-          <div className="text-[11.5px] text-[#b5a596] leading-[1.6]">
+          <div className="text-[13px] text-[#b5a596] leading-[1.6]">
             {items.some((i) => i.sample) ? "ข้อมูลและราคาเป็นตัวอย่าง รอรายชื่อพาร์ทเนอร์จริง" : "ราคาอาจเปลี่ยนแปลงตามที่พาร์ทเนอร์แจ้ง"}
           </div>
         </div>

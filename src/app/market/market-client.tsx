@@ -41,7 +41,7 @@ export function MarketBanner({ banners, fallback, tall = false }: { banners: Ban
         <div className="absolute right-2 bottom-1.5 flex items-center z-10">
           <button type="button" onClick={() => setI((i + n - 1) % n)} aria-label="โปรก่อนหน้า" className="w-9 h-9 text-white text-lg">‹</button>
           {banners.map((x, k) => (
-            <button key={x.id} type="button" onClick={() => setI(k)} aria-label={`โปรที่ ${k + 1}`} className="w-3.5 h-9 grid place-items-center">
+            <button key={x.id} type="button" onClick={() => setI(k)} aria-label={`โปรที่ ${k + 1}`} className="w-7 h-10 grid place-items-center">
               <span className="h-1.5 rounded-[3px]" style={{ width: k === i ? 14 : 6, background: k === i ? "#e8c472" : "rgba(246,239,228,.45)" }} />
             </button>
           ))}

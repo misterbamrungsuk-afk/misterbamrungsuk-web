@@ -182,7 +182,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
           <div className="flex justify-between items-center">
             <span className="flex items-center">
               {Array.from({ length: nSlides }, (_, i) => (
-                <button key={i} type="button" onClick={() => go(i)} aria-label={`ดูโฆษณาที่ ${i + 1}`} aria-current={slide === i} className="h-8 px-[3px] grid place-items-center">
+                <button key={i} type="button" onClick={() => go(i)} aria-label={`ดูโฆษณาที่ ${i + 1}`} aria-current={slide === i} className="h-10 min-w-7 px-1 grid place-items-center">
                   <span className="block h-[5px] rounded-[3px] transition-all" style={{ width: slide === i ? 18 : 5, background: slide === i ? GOLD : "rgba(243,234,217,.3)" }} />
                 </button>
               ))}
