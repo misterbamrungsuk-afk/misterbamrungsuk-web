@@ -30,6 +30,8 @@ export interface Vendor {
   id: string; name: string; contact: string; gp_pct: number | null; created_at: string;
   /** v2 — หน้าร้าน /shop/[slug] */
   slug?: string; description?: string; logo?: string | null;
+  /** ค่าส่งของร้าน (บาท/ออเดอร์ · ร้านตั้งเองในพอร์ทัล) · null/ไม่มี = ใช้ค่าส่งกลางของ Marketplace · free_threshold = ยอดสินค้าของร้านนี้ที่ส่งฟรี (null = ไม่มี) — supabase/market/0005 */
+  shipping_fee?: number | null; free_threshold?: number | null;
   /** สินค้า/ร้านตัวอย่าง (mockup) — แสดงเมื่อยังไม่มีสินค้าจริง สั่งซื้อไม่ได้ */
   sample?: boolean;
 }
@@ -55,6 +57,8 @@ export interface Order {
   /** ลูกค้าที่ล็อกอินตอนสั่ง (ไว้ให้แต้มเมื่อออเดอร์สำเร็จ) · null = สั่งแบบไม่ล็อกอิน */
   customer_id?: string | null; customer_email?: string | null;
   slip_check?: unknown;
+  /** วิธีชำระ: slip = QR + สลิป (ค่าเริ่มต้น) · wallet = ตัดจากกระเป๋าเงินลูกค้า (ปฏิเสธแล้วคืนเข้ากระเป๋าอัตโนมัติ) — supabase/market/0005 */
+  pay_method?: "slip" | "wallet";
 }
 export type CartLine = { id: string; qty: number };
 
@@ -89,7 +93,7 @@ export interface MarketSettings {
   line_notify_url: string;
 }
 export const DEFAULT_SETTINGS: MarketSettings = {
-  shipping_fee: null, free_threshold: null, delivery_days: TBD,
+  shipping_fee: null, free_threshold: null, delivery_days: "",
   policy_returns: "", policy_shipping: "", policy_privacy: "", line_notify_url: "",
 };
 export interface VendorAccount { id: string; vendor_id: string; email: string; password_hash: string | null; invited_at: string; last_login_at: string | null }
@@ -112,7 +116,16 @@ export const carrierName = (k: string | null | undefined) => CARRIERS.find((c) =
 export const carrierLink = (k: string | null | undefined, no: string) => (CARRIERS.find((c) => c.key === k)?.url(no) ?? "");
 
 const r2c = (n: number) => Math.round(n * 100) / 100;
-/** ค่าส่งจากยอดสินค้า (หลังส่วนลด) — fee null = รอกำหนด → 0 */
+/** ระยะเวลาจัดส่งที่แสดงลูกค้า — ยังไม่ตั้ง (ว่าง/ค่าเดิม [รอกำหนด]) = ไม่แสดง */
+export const deliveryText = (s: Pick<MarketSettings, "delivery_days">) => (!s.delivery_days || s.delivery_days.includes(TBD) ? "" : s.delivery_days);
+/** กติกาค่าส่งของร้าน: ร้านตั้งเอง → ใช้ของร้าน · ไม่ตั้ง → ค่าส่งกลาง (ไม่มีทั้งคู่ = ส่งฟรี) */
+export function vendorShipRule(v: Pick<Vendor, "shipping_fee" | "free_threshold"> | null | undefined, s: Pick<MarketSettings, "shipping_fee" | "free_threshold">) {
+  return v?.shipping_fee != null ? { shipping_fee: v.shipping_fee, free_threshold: v.free_threshold ?? null } : { shipping_fee: s.shipping_fee, free_threshold: s.free_threshold };
+}
+/** ค่าส่งต่อร้านในตะกร้า — คิดจากยอดสินค้าของร้านนั้น (ก่อนโค้ดส่วนลด) · แต่ละร้านส่งของเองจึงคิดแยกร้าน */
+export type ShipGroup = { vendor_id: string; vendor_name: string; subtotal: number; shipping_fee: number; free_threshold: number | null };
+
+/** ค่าส่งจากยอดสินค้า — fee null = ไม่คิดค่าส่ง (0) */
 export function shippingFor(s: Pick<MarketSettings, "shipping_fee" | "free_threshold">, productAmount: number) {
   if (s.shipping_fee == null || productAmount <= 0) return 0;
   if (s.free_threshold != null && productAmount >= s.free_threshold) return 0;
@@ -133,4 +146,19 @@ export const POLICY_PAGES = {
   "privacy-shop": { title: "นโยบายความเป็นส่วนตัว (ร้านค้า)", key: "policy_privacy" },
 } as const;
 export type PolicySlug = keyof typeof POLICY_PAGES;
+// ─────────────────────────────────────────────────────────────
+//  ใบสมัครเปิดร้าน (หน้า /market/sell) — แอดมินอนุมัติ → สร้างร้าน + ลิงก์เชิญบัญชีร้าน
+// ─────────────────────────────────────────────────────────────
+export const BUSINESS_TYPES = { person: "บุคคลธรรมดา", company: "นิติบุคคล" } as const;
+export type BusinessType = keyof typeof BUSINESS_TYPES;
+export type ApplyDocKind = "id_card" | "company_cert" | "fda_license";
+export const APPLY_DOC_LABEL: Record<ApplyDocKind, string> = { id_card: "สำเนาบัตรประชาชน", company_cert: "หนังสือรับรองบริษัท", fda_license: "ใบอนุญาต อย." };
+export interface VendorApplication {
+  id: string; shop_name: string; owner_name: string; phone: string; email: string; line_id: string;
+  business_type: BusinessType; description: string; category: string;
+  docs: { kind: ApplyDocKind; path: string; type: string }[];
+  status: "pending" | "approved" | "rejected"; reject_reason: string | null;
+  vendor_id: string | null; reviewed_by: string | null; reviewed_at: string | null; ip: string; created_at: string;
+}
+
 export const slugify = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9ก-๙]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || `shop-${Date.now().toString(36)}`;

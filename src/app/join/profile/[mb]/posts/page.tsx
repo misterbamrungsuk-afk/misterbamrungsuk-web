@@ -7,6 +7,7 @@ import { Forbidden } from "../../../_kyc/ui";
 import { PtHead, PtNav, PtPage, baht, loadPt, ptHref } from "../_pt";
 import { ListingForm } from "../_ptc2";
 import { GATE_MSG, GATE_SHORT, isPtActive } from "@/lib/join/pt-ui";
+import { interestsForPt } from "@/lib/interests";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "โพสต์ของฉัน — Mister Bamrungsuk" };
@@ -24,6 +25,9 @@ export default async function PostsPage({ params, searchParams }: { params: Prom
   const top = c.x.tier === "top";
   const l = c.x.listing;
   const chip = "inline-flex items-center min-h-9 rounded-full text-[13px] font-light";
+  // คนที่สนใจประกาศ "วันนี้ว่าง" (ลูกค้ากด "สนใจ" ในโปรไฟล์) — ชื่อแรกปิดบัง · ไม่มีข้อมูลติดต่อ
+  const fans = await interestsForPt(c.row).catch(() => ({ count: 0, list: [] as { label: string; at: string }[] }));
+  const when = (iso: string) => new Date(iso).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Bangkok" });
 
   return (
     <PtPage>
@@ -33,6 +37,17 @@ export default async function PostsPage({ params, searchParams }: { params: Prom
           <div className="rounded-2xl bg-[#211a18] flex items-center gap-2.5" style={{ padding: "12px 14px", border: "1px solid rgba(243,234,217,0.07)" }}>
             <span className="w-2 h-2 rounded-full shrink-0" style={{ background: l?.hidden ? "#b5a596" : "#e8c472" }} />
             <div className="flex-grow text-[14px]">{!l ? "ยังไม่ได้สร้างโพสต์" : l.hidden ? "ซ่อนอยู่ชั่วคราว" : c.x.listed ? "แสดงต่อลูกค้าอยู่" : "บันทึกแล้ว"}{c.x.listed ? "" : ` · ลูกค้าเห็นเมื่อเปิดบริการ ${TRAINING.openService}`}</div>
+          </div>
+          <div id="interested" className="rounded-2xl bg-[#211a18] flex flex-col gap-2" style={{ padding: "12px 14px", border: "1px solid rgba(243,234,217,0.07)" }}>
+            <div className="flex justify-between items-baseline gap-2"><span className="text-[14px] font-semibold">คนที่สนใจประกาศวันนี้ว่าง</span><b className="text-[22px] text-[#e8c472] font-bold" data-interest-count={fans.count}>{fans.count}</b></div>
+            {!c.x.post?.open
+              ? <span className="text-[13px] font-light text-[#b5a596]">ยังไม่ได้ลงประกาศวันนี้ว่าง · ลงได้ที่ <Link href={ptHref(c, "jobs")} className="text-[#e8c472]">งานและประกาศ ›</Link></span>
+              : !fans.count
+                ? <span className="text-[13px] font-light text-[#b5a596]">ยังไม่มีคนกดสนใจ · ลูกค้าเห็นประกาศในโปรไฟล์ของคุณ</span>
+                : <>
+                  <div className="flex flex-wrap gap-1.5">{fans.list.slice(0, 30).map((f, i) => <span key={i} className={chip} style={{ padding: "0 12px", border: "1px solid rgba(243,234,217,0.14)", color: "#f3ead9" }}>{f.label} · {when(f.at)}</span>)}</div>
+                  <span className="text-[12.5px] font-light text-[#d9c9b4]">ลูกค้าที่สนใจกดจองได้จากโปรไฟล์ของคุณ · คำขอจองจะขึ้นที่ &quot;งานเข้า&quot; ให้กดตอบรับ</span>
+                </>}
           </div>
           <div className="flex flex-col gap-1.5">
             <span className="text-[13px] text-[#d9c9b4]">รูปภาพ · 6 รูปแรกจากรูปโปรไฟล์</span>

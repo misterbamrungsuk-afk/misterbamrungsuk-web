@@ -3,6 +3,7 @@
 // งานเข้า (บอร์ด P-Incoming) + แชทกับลูกค้า — ใช้ข้อมูลการจองจริง (/api/pt/bookings)
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TravelShare } from "./travel-share";
+import { CallButton } from "@/components/call/call-button";
 import { NoShowReport } from "./noshow-report";
 import { ChatNotice } from "@/components/chat-notice";
 import Link from "next/link";
@@ -13,7 +14,9 @@ const GOLD = "#e8c472";
 const JOBS_RELOAD = "pt:jobs-reload";
 const LN = "rgba(243,234,217,0.07)";
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US");
-type B = { id: string; code: string; status: string; starts_at: string; hours: number; total_satang: number; price_satang: number; place: { label: string; detail: string; lat?: number; lng?: number }; note: string | null; expires_at: string | null; customer_name: string | null; pt_done_at?: string | null };
+type Chg = { id: string; kind: "reschedule" | "extend"; old_starts_at: string | null; new_starts_at: string | null; hours: number; amount_satang: number; reason: string | null; expires_at: string };
+type B = { id: string; code: string; status: string; starts_at: string; hours: number; total_satang: number; price_satang: number; place: { label: string; detail: string; lat?: number; lng?: number }; note: string | null; expires_at: string | null; customer_name: string | null; pt_done_at?: string | null; pending_change?: Chg | null; extra_hours?: number };
+const hrs = (b: B) => b.hours + (b.extra_hours ?? 0);
 const fmt = (iso: string) => new Date(iso).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 const q = (mb: string, t: string) => `mb=${encodeURIComponent(mb)}${t ? `&t=${encodeURIComponent(t)}` : ""}`;
 
@@ -42,6 +45,16 @@ export function PtIncoming({ mb, t }: { mb: string; t: string }) {
     const gps = action !== "checkin" || !navigator.geolocation ? undefined : await new Promise<Record<string, unknown>>((ok) => navigator.geolocation.getCurrentPosition(
       (p) => ok({ lat: p.coords.latitude, lng: p.coords.longitude, accuracy: p.coords.accuracy }), (e) => ok({ error: e.code === 1 ? "ไม่อนุญาตตำแหน่ง" : "จับ GPS ไม่ได้" }), { enableHighAccuracy: true, timeout: 6000, maximumAge: 60_000 }));
     const r = await fetch(`/api/pt/bookings/${id}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mb, t, action, gps }) }).catch(() => null);
+    const d = await r?.json().catch(() => null);
+    setBusy("");
+    if (!d?.ok) setErr(d?.error || "บันทึกไม่สำเร็จ");
+    load();
+  };
+  // ตอบคำขอเปลี่ยนเวลา / ต่อเวลาของลูกค้า
+  const [chAsk, setChAsk] = useState(""); // id งานที่กำลังยืนยัน "ไม่สะดวก" คำขอเปลี่ยนแปลง
+  const act3 = async (id: string, action: "reschedule_accept" | "reschedule_decline" | "extend_accept" | "extend_decline") => {
+    setBusy(id); setChAsk(""); setErr("");
+    const r = await fetch(`/api/pt/bookings/${id}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mb, t, action, reason: reason[id] ?? "" }) }).catch(() => null);
     const d = await r?.json().catch(() => null);
     setBusy("");
     if (!d?.ok) setErr(d?.error || "บันทึกไม่สำเร็จ");
@@ -101,10 +114,33 @@ export function PtIncoming({ mb, t }: { mb: string; t: string }) {
           : b.status === "checked_in" && !b.pt_done_at && !started ? `จบงานได้ตั้งแต่เวลานัด ${hm} น.`
           : b.pt_done_at ? "แจ้งจบงานแล้ว · รอลูกค้ายืนยันและรีวิว" : "";
         return (
-          <div key={b.id} className="rounded-[20px] bg-[#211a18] flex flex-col gap-2" style={{ padding: 14, border: `1px solid ${LN}` }}>
-            <b className="font-medium">{fmt(b.starts_at)} · {b.hours} ชม.</b>
+          <div key={b.id} className="rounded-[20px] bg-[#211a18] flex flex-col gap-2" style={{ padding: 14, border: `1px solid ${b.pending_change ? GOLD : LN}` }}>
+            <b className="font-medium">{fmt(b.starts_at)} · {hrs(b)} ชม.{b.extra_hours ? <span className="text-[12px] font-light text-[#d9c9b4]"> (ต่อเวลา {b.extra_hours} ชม.)</span> : null}</b>
             <span className="text-[13px] font-light text-[#d9c9b4]">{b.place.label} {b.place.detail}{b.status === "cancel_requested" ? " · ลูกค้าขอยกเลิก รอทีมงาน" : b.status === "checked_in" ? " · ถึงจุดนัดแล้ว" : ""}</span>
+            {b.pending_change && (() => {
+              const c = b.pending_change;
+              const re = c.kind === "reschedule";
+              return (
+                <div role="group" aria-label={re ? "คำขอเปลี่ยนเวลา" : "คำขอต่อเวลา"} className="rounded-[14px] flex flex-col gap-2" style={{ padding: 12, background: "rgba(232,196,114,0.08)", border: "1px solid rgba(232,196,114,.45)" }}>
+                  <b className="font-semibold text-[14.5px]">{re ? "ลูกค้าขอเปลี่ยนเวลานัด" : "ลูกค้าขอต่อเวลา +1 ชม."}</b>
+                  <span className="text-[13px] font-light text-[#d9c9b4] leading-[1.55]">{re ? <>{fmt(c.old_starts_at ?? b.starts_at)} → <b className="font-semibold text-[#f3ead9]">{fmt(c.new_starts_at!)}</b>{c.reason ? ` · ${c.reason}` : ""}</> : <>ค่าบริการเพิ่ม <b className="font-semibold" style={{ color: GOLD }}>{baht(c.amount_satang)}</b> · ได้ส่วนแบ่งตามปกติเมื่อจบงาน</>}</span>
+                  <span className="text-[12px] font-light text-[#b5a596]">ตอบได้ถึง {fmt(c.expires_at)} · ไม่ตอบ = {re ? "นัดคงเวลาเดิม" : "ไม่ต่อเวลา"}</span>
+                  {chAsk === b.id ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      <button type="button" onClick={() => setChAsk("")} className="h-11 rounded-xl text-[13px] font-semibold" style={{ background: "rgba(243,234,217,0.1)" }}>กลับไปก่อน</button>
+                      <button type="button" disabled={!!busy} onClick={() => act3(b.id, re ? "reschedule_decline" : "extend_decline")} className="h-11 rounded-xl text-[13px] font-semibold text-white disabled:opacity-50" style={{ background: "#a3283c" }}>{busy === b.id ? "กำลังบันทึก…" : "ยืนยันไม่สะดวก"}</button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                      <button type="button" disabled={!!busy} onClick={() => setChAsk(b.id)} className="h-11 rounded-xl text-[13px] text-[#f3ead9] disabled:opacity-50" style={{ border: `1px solid ${LN}` }}>ไม่สะดวก</button>
+                      <button type="button" disabled={!!busy} onClick={() => act3(b.id, re ? "reschedule_accept" : "extend_accept")} className="h-11 rounded-xl bg-[#e8c472] text-[#1b130b] text-[13px] font-semibold disabled:opacity-50">{busy === b.id ? "กำลังบันทึก…" : re ? "รับเวลาใหม่" : "รับต่อเวลา"}</button>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
             {b.status === "accepted" && <TravelShare mb={mb} t={t} id={b.id} startsAt={b.starts_at} dest={b.place} />}
+            {(b.status === "accepted" || b.status === "checked_in") && <CallButton bookingId={b.id} who="pt" mb={mb} t={t ?? undefined} peerName="ลูกค้า" />}
             <div className="grid grid-cols-3 gap-2">
               {b.status === "accepted" && <button type="button" disabled={!!busy || !soon} onClick={() => act2(b.id, "checkin")} className="h-11 rounded-xl bg-[#e8c472] text-[#1b130b] text-[13px] font-semibold disabled:opacity-40">ถึงจุดนัด</button>}
               {(b.status === "checked_in" || b.status === "accepted") && <button type="button" disabled={!!busy || b.status !== "checked_in" || !!b.pt_done_at || !started} onClick={() => act2(b.id, "done")} className="h-11 rounded-xl text-[13px] font-semibold disabled:opacity-40" style={{ border: `1px solid ${GOLD}`, color: GOLD }}>{b.pt_done_at ? "รอลูกค้ายืนยัน" : "จบงาน"}</button>}

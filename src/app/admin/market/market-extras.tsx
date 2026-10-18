@@ -302,10 +302,10 @@ function Settings({ d, reload, setMsg }: Sub) {
   return (
     <div className="grid lg:grid-cols-2 gap-4 items-start">
       <Card>
-        <h3 className="font-semibold">ค่าจัดส่ง</h3>
-        <p className="text-xs text-ink-300 mt-1">ว่าง = {TBD} (คิดเป็น ฿0 และแสดงป้ายในตะกร้า) · ค่าส่งไม่นำมาคิด GP และโอนให้ร้านที่จัดส่ง</p>
+        <h3 className="font-semibold">ค่าจัดส่งกลาง</h3>
+        <p className="text-xs text-ink-300 mt-1">ใช้กับร้านที่ยังไม่ตั้งค่าส่งเองในพอร์ทัลร้านค้า · คิดแยกต่อร้านในตะกร้า · ว่าง = ไม่คิดค่าส่ง · ค่าส่งไม่นำมาคิด GP และเข้ากระเป๋าร้านที่จัดส่ง</p>
         <div className="grid grid-cols-2 gap-2 mt-3">
-          <div><label className={lbl}>ค่าส่งเหมา (บาท/ออเดอร์)</label><input inputMode="decimal" placeholder={TBD} className="input-dark w-full" value={f.shipping_fee} onChange={(e) => setF({ ...f, shipping_fee: e.target.value })} /></div>
+          <div><label className={lbl}>ค่าส่งเหมา (บาท/ออเดอร์)</label><input inputMode="decimal" placeholder="ไม่คิดค่าส่ง" className="input-dark w-full" value={f.shipping_fee} onChange={(e) => setF({ ...f, shipping_fee: e.target.value })} /></div>
           <div><label className={lbl}>ส่งฟรีเมื่อยอดสินค้าถึง (บาท)</label><input inputMode="decimal" placeholder="ไม่มี" className="input-dark w-full" value={f.free_threshold} onChange={(e) => setF({ ...f, free_threshold: e.target.value })} /></div>
         </div>
         <div className="mt-2"><label className={lbl}>ระยะเวลาจัดส่งโดยประมาณ (แสดงในตะกร้า)</label><input className="input-dark w-full" placeholder="เช่น 2–4 วันทำการ" value={f.delivery_days} onChange={(e) => setF({ ...f, delivery_days: e.target.value })} /></div>

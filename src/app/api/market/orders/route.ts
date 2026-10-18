@@ -5,7 +5,8 @@ import { clientIp } from "@/lib/customer/auth";
 import { readPhoneToken } from "@/lib/otp";
 import { TURNSTILE_ERROR, verifyTurnstile } from "@/lib/turnstile";
 import { MAX_QTY, type OrderItem } from "@/lib/market/config";
-import { createOrder, listPublished, orderToken, trackPath } from "@/lib/market/store";
+import { createOrder, getSettings, listPublished, orderToken, payWithWallet, priceCart, trackPath } from "@/lib/market/store";
+import { notifyStatus } from "@/lib/market/notify";
 
 export const runtime = "nodejs";
 
@@ -14,6 +15,7 @@ const bad = (error: string, status = 400) => NextResponse.json({ ok: false, erro
 
 // สร้างคำสั่งซื้อ: ต้องยืนยันเบอร์ OTP แล้ว (cookie mb_phone_ok) + Turnstile + ยืนยันอายุ 20+
 // ราคาคิดจากฐานข้อมูลเสมอ (ไม่เชื่อราคาจากหน้าเว็บ)
+// pay: "wallet" = ตัดจากกระเป๋าเงินทันที (ต้องล็อกอิน · ยอดพอ) → ออเดอร์ "ยืนยันแล้ว" รอร้านส่งของ เหมือนแอดมินยืนยันสลิป
 export async function POST(req: Request) {
   const ip = clientIp(req);
   if (await limited(`mko:${ip}`, 10, 15 * 60_000)) return bad("สั่งซื้อบ่อยเกินไป กรุณารอสักครู่", 429);
@@ -46,15 +48,28 @@ export async function POST(req: Request) {
     if (it.qty > p.stock) return bad(`${p.name} เหลือ ${p.stock} ชิ้น`);
   }
 
+  const wallet = b.pay === "wallet";
+  const me = await currentCustomer().catch(() => null);
+  if (wallet) {
+    if (!me) return bad("เข้าสู่ระบบก่อนชำระจากกระเป๋าเงิน", 401);
+    // ตรวจยอดก่อนสร้างออเดอร์ (ตัดจริงใน ledger อีกชั้น — ไม่พอ ณ ตอนตัด = ออเดอร์ถูกปิด)
+    const { balances } = await import("@/lib/wallet");
+    const [pr, bal] = await Promise.all([priceCart(items, str(b.promo_code, 30) || null), balances("customer", me.sub).catch(() => ({} as Record<string, number>))]);
+    if ((bal.available ?? 0) < Math.round(pr.total * 100)) return bad(`ยอดในกระเป๋าเงินไม่พอ (มี ฿${((bal.available ?? 0) / 100).toLocaleString("th-TH")} · ต้องชำระ ฿${pr.total.toLocaleString("th-TH")})`, 402);
+  }
   try {
-    const me = await currentCustomer().catch(() => null);
-    const o = await createOrder({ buyer_name, phone, address, items, ip, promo_code: str(b.promo_code, 30) || null, customer: me ? { id: me.sub, email: me.email } : null });
+    let o = await createOrder({ buyer_name, phone, address, items, ip, promo_code: str(b.promo_code, 30) || null, customer: me ? { id: me.sub, email: me.email } : null, pay: wallet ? "wallet" : "slip" });
+    if (wallet) {
+      try { o = await payWithWallet(o); }
+      catch (e) { return bad(/ไม่พอ/.test((e as Error).message) ? "ยอดในกระเป๋าเงินไม่พอ" : "ตัดเงินจากกระเป๋าไม่สำเร็จ กรุณาลองใหม่", 402); }
+      getSettings().then((s) => notifyStatus(o, s)).catch(() => {});
+    }
     return NextResponse.json({
       ok: true, id: o.id, order_no: o.order_no, total: o.total, token: orderToken(o.id), track: trackPath(o),
-      subtotal: o.subtotal, discount: o.discount, shipping_fee: o.shipping_fee,
+      subtotal: o.subtotal, discount: o.discount, shipping_fee: o.shipping_fee, status: o.status, pay_method: o.pay_method ?? "slip",
     });
   } catch (e) {
-    if (/โค้ด/.test((e as Error).message)) return bad((e as Error).message);
+    if (/โค้ด|กระเป๋า|ระบบยังไม่พร้อม/.test((e as Error).message)) return bad((e as Error).message);
     console.error("market order", e);
     return bad("บันทึกคำสั่งซื้อไม่สำเร็จ กรุณาลองใหม่", 500);
   }

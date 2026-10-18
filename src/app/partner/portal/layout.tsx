@@ -4,6 +4,7 @@ import { ACCOUNT_LABEL } from "@/lib/partner/portal-types";
 import { qcPassed } from "@/lib/partner/kind";
 import { PortalNav, LogoutButton } from "./nav";
 import { AvatarView } from "@/components/avatar-editor";
+import { isHotelPartner } from "@/lib/hotels/store";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "พอร์ทัลพาร์ทเนอร์ · Mister Bamrungsuk" };
@@ -24,7 +25,7 @@ export default async function PortalLayout({ children }: { children: React.React
           <a href="/partner/portal/listing" aria-label="รูปโปรไฟล์" className="shrink-0"><AvatarView as="partner" letter={p.business_name} size={32} /></a>
           <LogoutButton />
         </header>
-        <PortalNav />
+        <PortalNav hotel={await isHotelPartner(p).catch(() => false)} />
         {st === "pending" && (
           <p className="mx-5 mt-4 rounded-2xl border border-gold-500/40 bg-gold-500/5 px-4 py-3 text-xs text-ink-200">
             บัญชี{ACCOUNT_LABEL.pending} — ทีมงานกำลังตรวจ QC/สลิป หน้าร้านจะเปิดแสดงได้หลังอนุมัติ

@@ -28,7 +28,7 @@ const tracksOf = (o: PublicOrder) => (o.vendor_tracking.length ? o.vendor_tracki
 function Timeline({ o }: { o: PublicOrder }) {
   const at = ["pending", "paid", "shipped", "done"].indexOf(o.status);
   const steps = [
-    { label: "รอตรวจสลิป", sub: o.has_slip ? `สั่งซื้อ ${dt(o.created_at)} · ทีมงานตรวจภายใน 24 ชม.` : "ยังไม่ได้แนบสลิป" },
+    { label: o.pay_method === "wallet" ? "สั่งซื้อ" : "รอตรวจสลิป", sub: o.pay_method === "wallet" ? `สั่งซื้อ ${dt(o.created_at)} · จ่ายจากกระเป๋าเงิน` : o.has_slip ? `สั่งซื้อ ${dt(o.created_at)} · ทีมงานตรวจภายใน 24 ชม.` : "ยังไม่ได้แนบสลิป" },
     { label: "ยืนยันการชำระ", sub: o.paid_at ? `${dt(o.paid_at)} · ร้านกำลังแพ็กสินค้าแบบมิดชิด` : "" },
     { label: "จัดส่งแล้ว", sub: o.shipped_at ? `${dt(o.shipped_at)}${tracksOf(o)[0] ? ` · ${carrierName(tracksOf(o)[0].carrier) || "ขนส่ง"} · ${tracksOf(o)[0].tracking_no}` : ""}` : "" },
     { label: "สำเร็จ", sub: o.done_at ? `${dt(o.done_at)} · ได้รับสินค้าเรียบร้อย` : "" },
@@ -38,6 +38,7 @@ function Timeline({ o }: { o: PublicOrder }) {
       <div className={card} style={{ borderColor: "#b0182c" }}>
         <p className="font-semibold text-[#ef8a97]">คำสั่งซื้อถูกปฏิเสธ</p>
         <p className="text-[12.5px] text-[#d9c9b4] mt-1">เหตุผล: {o.reject_reason || "โปรดติดต่อทีมงาน"}</p>
+        {o.wallet_refunded && <p className="text-[12.5px] text-[#7fd6a3] mt-1">คืนเงิน {fmt(o.total)} เข้ากระเป๋าเงินของคุณแล้ว</p>}
       </div>
     );
   }

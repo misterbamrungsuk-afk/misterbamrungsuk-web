@@ -194,7 +194,8 @@ export async function listStrikes(providerId: string): Promise<ProviderStrike[]>
 export async function strikeCounts(expireDays: number): Promise<Record<string, number>> {
   const since = new Date(Date.now() - expireDays * 86400_000).toISOString();
   const out: Record<string, number> = {};
-  for (const s of await strikeRows()) if (s.created_at >= since) out[s.provider_id] = (out[s.provider_id] ?? 0) + 1;
+  const voided = await (await import("./appeals")).voidedStrikeIds();
+  for (const s of await strikeRows()) if (s.created_at >= since && !voided.has(s.id)) out[s.provider_id] = (out[s.provider_id] ?? 0) + 1;
   return out;
 }
 
@@ -202,6 +203,7 @@ export async function strikeCounts(expireDays: number): Promise<Record<string, n
  *  count = จำนวนใบ · points = คะแนนที่ถูกหักรวม · strikes = รายการ (ใหม่ → เก่า) */
 export async function strikesFor(parttime_id: string, expireDays = STRIKE_EXPIRE_DAYS): Promise<{ count: number; points: number; strikes: ProviderStrike[] }> {
   const since = new Date(Date.now() - expireDays * 86400_000).toISOString();
-  const strikes = (await listStrikes(parttime_id)).filter((s) => s.created_at >= since);
+  const voided = await (await import("./appeals")).voidedStrikeIds();
+  const strikes = (await listStrikes(parttime_id)).filter((s) => s.created_at >= since && !voided.has(s.id));
   return { count: strikes.length, points: strikes.reduce((t, s) => t + (s.points || 0), 0), strikes };
 }

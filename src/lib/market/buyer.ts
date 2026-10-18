@@ -16,6 +16,7 @@ export const publicOrder = (o: Order) => ({
   status: o.status, has_slip: !!o.slip_path, tracking_no: o.tracking_no, carrier: o.carrier ?? null,
   vendor_tracking: Object.values(o.vendor_tracking ?? {}).map((t) => ({ tracking_no: t.tracking_no, carrier: t.carrier })),
   reject_reason: o.status === "rejected" ? o.reject_reason ?? null : null,
+  pay_method: o.pay_method ?? "slip", wallet_refunded: o.pay_method === "wallet" && o.status === "rejected" && !!o.admin_note?.startsWith("[คืนเงินผู้ซื้อแล้ว"),
   created_at: o.created_at, paid_at: o.paid_at, shipped_at: o.shipped_at ?? null, done_at: o.done_at ?? null,
 });
 export type PublicOrder = ReturnType<typeof publicOrder> & { /** ลิงก์แนบสลิปต่อ (ออเดอร์ยังไม่มีสลิป) */ resume?: string | null };

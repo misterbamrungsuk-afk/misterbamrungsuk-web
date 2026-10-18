@@ -5,13 +5,13 @@ import { useEffect, useState } from "react";
 import { EXPIRED, useConfirm } from "../confirm";
 
 type Bank = { bank: string; account: string; name: string };
-type R = { id: string; owner_type: "partner" | "vendor"; owner_id: string; owner_name: string; amount_satang: number; bank: Bank; status: string; note: string | null; created_at: string; approved_at: string | null; paid_at: string | null };
+type R = { id: string; owner_type: "partner" | "vendor" | "customer"; owner_id: string; owner_name: string; amount_satang: number; bank: Bank; status: string; note: string | null; created_at: string; approved_at: string | null; paid_at: string | null };
 type Wl = { owner_type: string; owner_id: string; available: number; withdrawing: number };
 const GOLD = "#f0c75a";
 const LINE = "rgba(240,200,90,.38)";
 const baht = (s: number) => "฿" + (Number(s) / 100).toLocaleString("en-US", { maximumFractionDigits: 2 });
 const day = (iso: string) => new Date(iso).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-const LABEL = { partner: "พาร์ทเนอร์ (โรงแรม · สปา)", vendor: "ร้านค้า Marketplace" } as const;
+const LABEL = { partner: "พาร์ทเนอร์ (โรงแรม · สปา)", vendor: "ร้านค้า Marketplace", customer: "ลูกค้า (ถอนยอดในกระเป๋า)" } as const;
 
 export function OwnerPayouts() {
   const [d, setD] = useState<{ requests: R[]; wallets: Wl[] } | null>(null);
@@ -42,7 +42,7 @@ ${x.bank.bank} ${x.bank.account} · ${x.bank.name}
     <div className="flex flex-col gap-4">
       {msg && <p className="m-0 rounded-xl px-3 py-2 text-[13.5px]" style={{ background: "rgba(240,199,90,.1)", color: GOLD }} role="status">{msg}{msg === EXPIRED && <> · <a href="/admin-login" className="underline">ไปหน้าเข้าสู่ระบบ</a></>}</p>}
       {confirmUi}
-      {(["partner", "vendor"] as const).map((t) => {
+      {(["partner", "vendor", "customer"] as const).map((t) => {
         const ready = d.requests.filter((r) => r.owner_type === t && r.status === "approved");
         const wait = d.requests.filter((r) => r.owner_type === t && r.status === "requested").length;
         const done = d.requests.filter((r) => r.owner_type === t && ["paid", "failed", "rejected"].includes(r.status)).slice(0, 8);

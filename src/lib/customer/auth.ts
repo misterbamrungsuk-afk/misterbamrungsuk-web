@@ -79,7 +79,8 @@ export const sessionCookieOptions = {
 export const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
 
 // กันเดารหัส (ในหน่วยความจำ — หลายเครื่องต้องย้ายไป Redis)
-const hits = new Map<string, number[]>();
+// เก็บบน globalThis — โมดูลถูกโหลดซ้ำ (dev compile / HMR) ตัวนับไม่หาย
+const hits = ((globalThis as unknown as { __mbRateHits?: Map<string, number[]> }).__mbRateHits ??= new Map<string, number[]>());
 export function rateLimited(key: string, max = 10, windowMs = 15 * 60_000) {
   const now = Date.now();
   const list = (hits.get(key) ?? []).filter((t) => now - t < windowMs);

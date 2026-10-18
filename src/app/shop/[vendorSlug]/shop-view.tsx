@@ -27,7 +27,7 @@ const DOCS = (n: number) => [
 const TABS = [["products", "สินค้า"], ["about", "เกี่ยวกับร้าน"], ["reviews", "รีวิว"]] as const;
 type Tab = (typeof TABS)[number][0];
 
-export function ShopView({ vendor, products, reviews, avg, count }: { vendor: { name: string; description: string; logo: string; sample?: boolean }; products: P[]; reviews: R[]; avg: number; count: number }) {
+export function ShopView({ vendor, products, reviews, avg, count }: { vendor: { name: string; description: string; logo: string; sample?: boolean; ship?: { fee: number; free: number | null } }; products: P[]; reviews: R[]; avg: number; count: number }) {
   const [tab, setTab] = useState<Tab>("products");
   const [follow, setFollow] = useState(false);
   const [toast, setToast] = useState("");
@@ -114,6 +114,7 @@ export function ShopView({ vendor, products, reviews, avg, count }: { vendor: { 
 
           {tab === "about" && <>
             <div className={`${CARD} text-[13px] text-[#d9c9b4] leading-[1.7] whitespace-pre-line`} style={{ border: `1px solid ${BD}` }}>{vendor.description || `${vendor.name} · ร้านค้าพาร์ทเนอร์ของ Mister Bamrungsuk`}</div>
+            {vendor.ship && <div className={`${CARD} flex justify-between gap-3 text-[12.5px]`} style={{ border: `1px solid ${BD}` }}><span className="text-[#d9c9b4]">ค่าส่งของร้านนี้</span><span className="text-right">{vendor.ship.fee ? `${fmt(vendor.ship.fee)} / คำสั่งซื้อ${vendor.ship.free != null ? ` · ส่งฟรีเมื่อครบ ${fmt(vendor.ship.free)}` : ""}` : "ส่งฟรี"}</span></div>}
             <div className={`${CARD} flex flex-col gap-2 text-[12.5px]`} style={{ border: `1px solid ${BD}` }}>
               <div className="font-lux font-semibold text-[14px]">เอกสารที่ Mister Bamrungsuk ตรวจแล้ว</div>
               {DOCS(products.length).map(([k, val, c]) => (

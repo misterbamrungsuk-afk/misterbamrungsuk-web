@@ -12,7 +12,7 @@ const hm = (iso: string | null) => (iso ? new Date(iso).toLocaleString("th-TH", 
 export type WReq = { id: string; mb: string; nick: string; name?: string; newBank?: boolean; firstTime?: boolean; amount: number; fee: number; wht: number; net: number; bank: string; at: string };
 
 export type SReq = { id: string; name: string; code: string; amount: number; bank: string; at: string };
-export type OReq = { id: string; type: "partner" | "vendor"; name: string; amount: number; bank: string; at: string; newBank?: boolean };
+export type OReq = { id: string; type: "partner" | "vendor" | "customer"; name: string; amount: number; bank: string; at: string; newBank?: boolean };
 
 export function PayrollClient({ day, today, rows, sample, reqs, salesReqs = [], ownerReqs = [], isCeo }: { day: string; today: string; rows: PayRow[]; sample: boolean; reqs: WReq[]; salesReqs?: SReq[]; ownerReqs?: OReq[]; isCeo: boolean }) {
   const [note, setNote] = useState<Record<string, string>>({});
@@ -153,7 +153,7 @@ export function PayrollClient({ day, today, rows, sample, reqs, salesReqs = [], 
           </div>
         ))}
       </div>
-      {([["partner", "พาร์ทเนอร์ (โรงแรม · สปา)", "ค่าห้องจากนัดที่จบแล้ว"], ["vendor", "ร้านค้า Marketplace", "ส่วนของร้านจากออเดอร์ที่สำเร็จ"]] as const).map(([t, title, src]) => {
+      {([["partner", "พาร์ทเนอร์ (โรงแรม · สปา)", "ค่าห้องจากนัดที่จบแล้ว"], ["vendor", "ร้านค้า Marketplace", "ส่วนของร้านจากออเดอร์ที่สำเร็จ"], ["customer", "ลูกค้า", "ยอดเติมเงินในกระเป๋า ไม่รวมเครดิตโบนัส · ตรวจชื่อบัญชีตรงกับชื่อลูกค้า"]] as const).map(([t, title, src]) => {
         const list = ownerReqs.filter((w) => w.type === t);
         return (
           <section key={t} className="flex flex-col gap-2">

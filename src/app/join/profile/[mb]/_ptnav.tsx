@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { NoticeBadge } from "./_ptbadge";
+import { IncomingCallWatcher } from "@/components/call/incoming-call-watcher";
 
 // เมนู Part-Time 5 ปุ่ม (ตามบอร์ด) — มือถือ: แถบล่าง · จอคอม (lg): แถบเมนูซ้าย พร้อมโลโก้กลับหน้าแรก
 // ไฟล์นี้ไม่มีโค้ดฝั่งเซิร์ฟเวอร์ ใช้ได้ทั้งหน้า server และ client (หน้าโปรไฟล์หลัก)
@@ -18,6 +19,8 @@ export function PtNav({ c, active, unread }: { c: { mb: string; q: string }; act
     ["settings", "ตั้งค่า", "settings", <><circle cx="12" cy="12" r="3" /><path d={GEAR} /></>],
   ];
   return (
+    <>
+    <IncomingCallWatcher who="pt" mb={c.mb} t={new URLSearchParams(c.q.replace(/^\?/, "")).get("t") ?? undefined} />
     <nav aria-label="เมนู Part Time"
       className="fixed z-40 bottom-0 inset-x-0 mx-auto max-w-[640px] h-[calc(76px+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)] grid grid-cols-5 items-center text-center font-light text-[#b5a596] text-[12px] border-t border-[rgba(243,234,217,0.07)] bg-[#251d1b] md:rounded-t-2xl
         lg:top-0 lg:right-auto lg:mx-0 lg:max-w-none lg:w-[104px] lg:h-auto lg:pb-6 lg:grid-cols-1 lg:auto-rows-[76px] lg:content-start lg:rounded-none lg:border-t-0 lg:border-r lg:text-[12px]">
@@ -32,5 +35,6 @@ export function PtNav({ c, active, unread }: { c: { mb: string; q: string }; act
         </Link>
       ))}
     </nav>
+    </>
   );
 }

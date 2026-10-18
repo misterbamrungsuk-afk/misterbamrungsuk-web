@@ -4,6 +4,7 @@
 // บอร์ด C-ChatRoom "ห้องแชท" — ผูกกับการจอง (roomId = booking id) · ดึงข้อความใหม่ทุก 4 วิ · กันเบอร์/LINE/ลิงก์
 import { use, useCallback, useEffect, useRef, useState } from "react";
 import { ChatNotice } from "@/components/chat-notice";
+import { CallButton } from "@/components/call/call-button";
 import Link from "next/link";
 
 const GOLD = "#e8c472";
@@ -61,6 +62,7 @@ export default function ChatRoom({ params }: { params: Promise<{ roomId: string 
         {b && <Link href={`/report?booking=${b.id}&nick=${encodeURIComponent(b.pt.nick)}`} aria-label="รายงานผู้ใช้" className="w-10 h-10 rounded-full grid place-items-center text-[#d9c9b4] hover:text-[#f3ead9]" style={{ border: `1px solid ${LN}` }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M5 21V4h11l-1.5 4L16 12H5" /></svg></Link>}
         <Link href="/sos" aria-label="SOS" className="h-10 px-3 rounded-full grid place-items-center text-[13px] font-semibold text-[#ff8a9a] hover:text-[#ff8a9a]" style={{ border: "1px solid rgba(255,138,154,.4)" }}>SOS</Link>
       </header>
+      {b && ["accepted", "checked_in"].includes(b.status) && <div style={{ margin: "10px 12px 0" }}><CallButton bookingId={b.id} who="customer" peerName={b.pt.nick} /></div>}
       {b && (
         <Link href={`/order/${b.id}`} className="flex items-center gap-[10px] rounded-[14px] text-[#f3ead9] hover:text-[#f3ead9]" style={{ margin: "10px 12px 0", padding: "10px 12px", border: "1px solid rgba(212,175,55,.4)", background: "rgba(212,175,55,.06)" }}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="1.8" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>

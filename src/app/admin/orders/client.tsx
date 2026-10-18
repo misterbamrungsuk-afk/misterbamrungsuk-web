@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useConfirm } from "../confirm";
 import { NoShowClaims } from "./noshow-claims";
+import { CallLog } from "@/components/call/call-log";
 
 type Res = Record<string, unknown> | null;
 type B = { id: string; code: string; status: string; customer_email: string | null; parttime_mb: string; parttime_nick: string | null; starts_at: string; hours: number; total_satang: number; place: { label: string; detail: string }; decline_reason: string | null; resolution: Res; created_at: string; checked_in_at?: string | null };
@@ -99,6 +100,7 @@ export default function AdminOrdersClient({ canResolve, initialTab }: { canResol
               {arr?.arrival && <div className="flex justify-between gap-3"><span className="text-[#cdbfb3] shrink-0">ถึงจุดนัด</span><span className="text-right">{fmt(arr.arrival.at)} · {arr.arrival.gps ? <a className="underline" style={{ color: GOLD }} target="_blank" rel="noreferrer" href={`https://www.google.com/maps?q=${arr.arrival.gps.lat},${arr.arrival.gps.lng}`}>GPS{arr.arrival.dist_m != null ? ` ห่างหมุด ${arr.arrival.dist_m < 1000 ? `${arr.arrival.dist_m} ม.` : `${(arr.arrival.dist_m / 1000).toFixed(1)} กม.`}` : ""}</a> : <span className="text-[#fca5a5]">ไม่มี GPS{arr.arrival.error ? ` (${arr.arrival.error})` : ""}</span>}</span></div>}
               {cur.resolution && typeof cur.resolution.dispute === "string" && <p className="m-0 rounded-lg px-3 py-2 text-[12.5px] text-[#fecaca] bg-[rgba(239,68,68,.1)]">แจ้งปัญหา: {cur.resolution.dispute}</p>}
               {cur.resolution && cur.resolution.decided ? <p className="m-0 text-[12.5px] text-[#cdbfb3]">ตัดสินแล้ว: {String(cur.resolution.decided)} {cur.resolution.refund_pct != null ? `คืน ${String(cur.resolution.refund_pct)}%` : ""} · {String(cur.resolution.note ?? "")}</p> : null}
+              <CallLog bookingId={cur.id} />
               {isNoShow ? (
                 <button type="button" onClick={() => setF("noshow")} className="h-10 rounded-full border text-[13px] font-semibold" style={{ borderColor: GOLD, color: GOLD }}>คำร้องผิดนัด · ตัดสินที่แท็บ “ผิดนัด” ›</button>
               ) : ["cancel_requested", "disputed"].includes(cur.status) && (

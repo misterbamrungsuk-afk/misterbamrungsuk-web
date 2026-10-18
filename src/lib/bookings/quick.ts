@@ -111,7 +111,7 @@ export async function quickCandidates(hours: 3 | 5, blocked: string[]): Promise<
   for (const { a } of await freeToday()) {
     if (blocked.includes(publicId(a.mb_code))) continue; // ลูกค้าบล็อกไว้ = ไม่เชิญ
     if (extraOf(a).work?.paused) continue;
-    const clash = (await listForParttime(a.id)).some((b) => ["requested", "accepted", "checked_in"].includes(b.status) && Math.abs(Date.parse(b.starts_at) - start) < Math.max(b.hours, hours) * 3600_000);
+    const clash = (await listForParttime(a.id)).some((b) => ["requested", "accepted", "checked_in"].includes(b.status) && Math.abs(Date.parse(b.starts_at) - start) < Math.max(b.hours + (b.extra_hours ?? 0), hours) * 3600_000);
     if (!clash) cands.push({ a, price: (await priceFor(a, hours)) * 100 });
     if (cands.length >= MAX_INVITE) break;
   }

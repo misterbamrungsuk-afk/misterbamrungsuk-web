@@ -88,14 +88,14 @@ export default async function MarketHome() {
       <div className="mx-[18px] mt-[22px] p-[18px] rounded-[18px] border" style={{ borderColor: "rgba(232,196,114,.55)", background: "linear-gradient(135deg, #2a1418, #211a18)" }}>
         <p className="text-[11.5px] tracking-[2.5px] text-[#e8c472] font-semibold">BECOME A PARTNER</p>
         <h2 className="font-lux font-semibold text-[18px] my-1">แบรนด์สินค้า อยากขายกับเรา?</h2>
-        <p className="mb-3 text-[12.5px] text-[#d9c9b4]">ลงร้านบน Marketplace รับลูกค้าจากสมาชิกของเรา</p>
-        <Link href="/partner" className="btn-red-lux grid place-items-center h-12 rounded-[14px] border text-white font-lux font-semibold" style={{ background: RED_GRAD, borderColor: "rgba(232,196,114,.55)" }}>สมัครเป็นพาร์ทเนอร์</Link>
+        <p className="mb-3 text-[12.5px] text-[#d9c9b4]">เปิดหน้าร้านของคุณเอง ลงสินค้าและส่งของเอง รับเงินเข้ากระเป๋าร้าน</p>
+        <Link href="/market/sell" className="btn-red-lux grid place-items-center h-12 rounded-[14px] border text-white font-lux font-semibold" style={{ background: RED_GRAD, borderColor: "rgba(232,196,114,.55)" }}>เปิดร้านกับเรา</Link>
         <Link href="/vendor" className="block text-center text-[12.5px] pt-3 text-[#e8c472]">เป็นร้านค้าอยู่แล้ว? เข้าพอร์ทัลร้านค้า →</Link>
       </div>
 
       <div className="mx-[18px] mt-[22px] pt-4 border-t text-xs text-[#b5a596] leading-[1.7]" style={{ borderColor: LINE }}>
         <div className="flex flex-wrap gap-x-3.5 gap-y-1 mb-2 [&_a]:text-[#e8c472]">
-          <Link href="/policy/returns">นโยบายคืนสินค้า</Link><Link href="/policy/shipping">การจัดส่ง</Link><Link href="/policy/privacy-shop">ความเป็นส่วนตัว</Link><Link href="/join/terms">ข้อกำหนดการใช้งาน</Link><Link href="/orders/track">ติดตามคำสั่งซื้อ</Link>
+          <Link href="/policy/returns">นโยบายคืนสินค้า</Link><Link href="/policy/shipping">การจัดส่ง</Link><Link href="/policy/privacy-shop">ความเป็นส่วนตัว</Link><Link href="/join/terms">ข้อกำหนดการใช้งาน</Link><Link href="/orders/track">ติดตามคำสั่งซื้อ</Link><Link href="/market/sell">เปิดร้านกับเรา</Link>
         </div>
         ผลิตภัณฑ์เสริมอาหารไม่มีผลในการป้องกันหรือรักษาโรค · จำหน่ายเฉพาะผู้มีอายุ 20 ปีขึ้นไป
       </div>

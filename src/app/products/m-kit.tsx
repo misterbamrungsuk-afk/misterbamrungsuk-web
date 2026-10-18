@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { MAX_QTY, baht, imageUrl, type Product } from "@/lib/market/config";
 import { readCart, useCart, writeCart } from "./market-ui";
 import { SiteHeader } from "@/components/site-header";
+import { sized } from "@/lib/thumb-url";
 
 // ชุด UI มือถือของ Marketplace ตามบอร์ดดีไซน์ (390px, กว้างสุด 480px กลางจอ)
 
@@ -113,7 +114,7 @@ export type CardP = Product & { vendor_name?: string; vendor_slug?: string; kind
 export function MProductCard({ p, onAdded }: { p: CardP; onAdded?: (msg: string) => void }) {
   const lines = useCart();
   const qn = lines.find((l) => l.id === p.id)?.qty ?? 0;
-  const src = imageUrl(p.images[0]);
+  const src = imageUrl(p.images[0]) && sized(imageUrl(p.images[0])!, 480); // การ์ดสินค้าใช้รูปย่อ
   const [, glow] = glowOf(p.id);
   const out = p.stock <= 0;
   const add = () => {

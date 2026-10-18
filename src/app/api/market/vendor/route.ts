@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { currentVendor } from "@/lib/market/vendor-auth";
 import { vendorData } from "@/lib/market/vendor-data";
-import { listVendors, reportCsv, upsertVendor } from "@/lib/market/store";
+import { listVendors, reportCsv, setVendorShipping, upsertVendor } from "@/lib/market/store";
 import { flaggedClaims } from "@/lib/market/config";
 import { sendEmail } from "@/lib/email";
 
@@ -23,6 +23,14 @@ export async function POST(req: Request) {
   const me = await currentVendor();
   if (!me) return NextResponse.json({ ok: false }, { status: 401 });
   const b = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+  // ค่าส่งของร้าน (บาท/ออเดอร์) + เกณฑ์ส่งฟรี — ค่าส่งว่าง = ใช้ค่าส่งกลางของ Marketplace
+  if (b.op === "shipping") {
+    const opt = (v: unknown) => (v === null || v === undefined || v === "" ? null : Number(v));
+    const fee = opt(b.shipping_fee), free = opt(b.free_threshold);
+    if ([fee, free].some((n) => n != null && !(Number.isFinite(n) && n >= 0 && n <= 100000))) return NextResponse.json({ ok: false, error: "จำนวนเงินไม่ถูกต้อง" }, { status: 400 });
+    try { return NextResponse.json({ ok: true, vendor: await setVendorShipping(me.vendor.id, fee, free) }); }
+    catch (e) { return NextResponse.json({ ok: false, error: (e as Error).message }, { status: 400 }); }
+  }
   const name = String(b.name ?? "").trim().slice(0, 80);
   const description = String(b.description ?? "").trim().slice(0, 2000);
   const contact = String(b.contact ?? "").trim().slice(0, 200);

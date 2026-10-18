@@ -9,13 +9,15 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { SmartBack } from "@/components/smart-back";
 import { priceOf, type Act, type Person } from "@/lib/home/people";
+import { sized } from "@/lib/thumb-url";
 
 const LABEL: Record<Act, string> = { eat: "กิน & เที่ยว", massage: "นวดผ่อนคลาย", cafe: "คาเฟ่", photo: "ถ่ายรูป", movie: "ดูหนัง", gym: "ออกกำลัง", chill: "นั่งชิล" };
 const baht = (n: number) => "฿" + n.toLocaleString("en-US");
 const line = "1px solid rgba(243,234,217,0.07)";
 
 export type Rv = { rating: number; tags: string[]; body: string | null; created_at: string };
-export function ProfileView({ p, reviews = [] }: { p: Person; reviews?: Rv[] }) {
+export type FreePost = { text: string; time: string; zone: string };
+export function ProfileView({ p, reviews = [], vers = [], free = null }: { p: Person; reviews?: Rv[]; vers?: string[]; free?: FreePost | null }) {
   const avg = reviews.length ? (reviews.reduce((t, r) => t + r.rating, 0) / reviews.length).toFixed(1) : null;
   const [svc, setSvc] = useState<3 | 5>(3);
   const [fav, setFav] = useState(false);
@@ -28,7 +30,21 @@ export function ProfileView({ p, reviews = [] }: { p: Person; reviews?: Rv[] }) 
     if (r?.status === 401) { setFav(!next); router.push(`/login?next=${encodeURIComponent(`/p/${p.id}`)}`); }
   };
   const [pic, setPic] = useState(0);
-  const pics = p.real && p.photos ? Array.from({ length: p.photos }, (_, i) => `/api/public/pt-photo?id=${p.id}&i=${i}`) : [p.img];
+  // รูปจริง: ใส่รุ่น (&v=) → แคชยาว · รูปใหญ่ 960 · รูปเล็กด้านล่าง 240
+  const pics = p.real && p.photos ? Array.from({ length: p.photos }, (_, i) => `/api/public/pt-photo?id=${p.id}&i=${i}${vers[i] ? `&v=${vers[i]}` : ""}`) : [p.img];
+  // ประกาศ "วันนี้ว่าง": สนใจ = บอกเพื่อนว่ามีคนสนใจ (เพื่อนไม่เห็นข้อมูลติดต่อ) · ยังไม่ล็อกอิน → หน้าเข้าสู่ระบบ
+  const [liked, setLiked] = useState(false);
+  const [likeBusy, setLikeBusy] = useState(false);
+  const [likeMsg, setLikeMsg] = useState("");
+  useEffect(() => { if (!free) return; fetch(`/api/posts/interest?pid=${p.id}`, { cache: "no-store" }).then((r) => r.json()).then((d) => d?.ok && setLiked(!!d.interested)).catch(() => {}); }, [p.id, free]);
+  const toggleLike = async () => {
+    setLikeBusy(true); setLikeMsg("");
+    const r = await fetch("/api/posts/interest", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pid: p.id, on: !liked }) }).catch(() => null);
+    const d = await r?.json().catch(() => null);
+    setLikeBusy(false);
+    if (r?.status === 401) { router.push(`/login?next=${encodeURIComponent(`/p/${p.id}`)}`); return; }
+    if (d?.ok) setLiked(!!d.interested); else setLikeMsg(d?.error || "ไม่สำเร็จ ลองใหม่อีกครั้ง");
+  };
   const price = { 3: priceOf(p), 5: Math.round(priceOf(p) * 1.5) };
   const where = p.prov ? `${p.area} ${p.prov}` : `${p.area} กรุงเทพฯ`;
   const round = "w-11 h-11 rounded-full grid place-items-center";
@@ -40,7 +56,7 @@ export function ProfileView({ p, reviews = [] }: { p: Person; reviews?: Rv[] }) 
       <div className="mx-auto w-full max-w-[1120px] lg:grid lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)] lg:gap-10 lg:px-8 lg:pt-4" style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}>
         {/* รูป */}
         <div className="relative h-[380px] md:h-[520px] lg:h-[640px] lg:sticky lg:top-[84px] rounded-[24px] lg:rounded-[28px] overflow-hidden mx-[18px] mt-1 lg:mx-0 lg:mt-0" style={p.boost ? { border: "2px solid #e8c472", boxShadow: "0 0 0 1px rgba(255,241,201,.35), 0 12px 36px rgba(232,196,114,.3)" } : undefined}>
-          <img src={pics[pic] ?? p.img} alt={p.nick} className="w-full h-full object-cover block" style={pic === 0 && p.pos ? { objectPosition: p.pos } : undefined} />
+          <img src={sized(pics[pic] ?? p.img, 960)} alt={p.nick} className="w-full h-full object-cover block" style={pic === 0 && p.pos ? { objectPosition: p.pos } : undefined} />
           <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(23,18,17,.35) 0%, rgba(23,18,17,0) 30%, rgba(23,18,17,0) 60%, #171211 100%)" }} />
           <SmartBack href="/" className={`absolute top-[14px] left-[14px] ${round} text-[#f3ead9] hover:text-[#f3ead9]`} style={glass}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
@@ -50,7 +66,7 @@ export function ProfileView({ p, reviews = [] }: { p: Person; reviews?: Rv[] }) 
           </button>
           {pics.length > 1 && (
             <div className="absolute left-[18px] bottom-4 flex gap-2">
-              {pics.slice(0, 5).map((src, i) => <button key={src} type="button" onClick={() => setPic(i)} aria-label={`ดูรูปที่ ${i + 1}`} className="w-[52px] h-[52px] rounded-xl overflow-hidden p-0 bg-[#211a18]" style={{ border: `2px solid ${i === pic ? "#e8c472" : "rgba(246,239,228,.25)"}` }}><img src={src} alt="" className="w-full h-full object-cover block" /></button>)}
+              {pics.slice(0, 5).map((src, i) => <button key={src} type="button" onClick={() => setPic(i)} aria-label={`ดูรูปที่ ${i + 1}`} className="w-[52px] h-[52px] rounded-xl overflow-hidden p-0 bg-[#211a18]" style={{ border: `2px solid ${i === pic ? "#e8c472" : "rgba(246,239,228,.25)"}` }}><img src={sized(src, 240)} alt="" className="w-full h-full object-cover block" /></button>)}
             </div>
           )}
         </div>
@@ -72,6 +88,18 @@ export function ProfileView({ p, reviews = [] }: { p: Person; reviews?: Rv[] }) 
               <div key={String(l)} style={{ borderLeft: i ? line : undefined }}><div className="font-semibold text-[18px]" style={{ color: g ? "#e8c472" : undefined }}>{v}</div><div className="text-[12px] text-[#d9c9b4] font-light">{l}</div></div>
             ))}
           </div>
+
+          {free && (
+            <div className="rounded-2xl flex flex-col gap-2" style={{ padding: 14, border: "1px solid rgba(232,196,114,.55)", background: "rgba(232,196,114,0.08)" }}>
+              <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#7fd6a3] shrink-0" aria-hidden="true" /><b className="font-semibold text-[15px] text-[#e8c472]">วันนี้ว่าง</b><span className="text-[12.5px] font-light text-[#d9c9b4] truncate">{free.time} · {free.zone}</span></div>
+              {free.text && <p className="m-0 text-[13.5px] leading-[1.6]">{free.text}</p>}
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <button type="button" onClick={toggleLike} disabled={likeBusy} aria-pressed={liked} className="h-10 rounded-full text-[14px] font-semibold disabled:opacity-50" style={liked ? { padding: "0 18px", border: "1.5px solid #e8c472", color: "#e8c472", background: "transparent" } : { padding: "0 18px", background: "#e8c472", color: "#1b130b", border: "1.5px solid #e8c472" }}>{liked ? "✓ สนใจแล้ว" : "สนใจ"}</button>
+                <span className="text-[12px] font-light text-[#b5a596]">{liked ? `${p.nick}จะเห็นว่าคุณสนใจ · อยากนัดเลยกด "จองเลย"` : `บอก${p.nick}ว่าคุณสนใจ (ไม่เปิดเผยข้อมูลติดต่อ)`}</span>
+              </div>
+              {likeMsg && <p role="status" className="m-0 text-[12.5px] text-[#FF8A97]">{likeMsg}</p>}
+            </div>
+          )}
 
           <div>
             <h2 className="m-0 mb-1.5 font-semibold text-[17px]">เกี่ยวกับ{p.nick}</h2>

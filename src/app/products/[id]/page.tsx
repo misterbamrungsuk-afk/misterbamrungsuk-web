@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { shopProduct } from "@/lib/market/catalog";
 import { bundleOf, getSettings, isPublic, listOrders, relatedOf } from "@/lib/market/store";
+import { deliveryText, vendorShipRule } from "@/lib/market/config";
 import { ProductDetailView } from "./detail-view";
 
 export const dynamic = "force-dynamic";
@@ -25,6 +26,8 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
     return { ...x, vendor_name: v?.name ?? "", vendor_slug: v?.slug ?? "" };
   };
   const bundle = bundleOf(p, all, orders, 2);
+  // ค่าส่งของร้านนี้ (ร้านตั้งเอง / ค่าส่งกลาง) — ไม่ตั้งเลย = ส่งฟรี
+  const rule = vendorShipRule(vendor, settings);
   return (
     <ProductDetailView
       p={withV(p)}
@@ -34,7 +37,7 @@ export default async function ProductDetail({ params }: { params: Promise<{ id: 
       bundleAuto={bundle.auto}
       related={relatedOf(p, all, 5).map(withV)}
       reviews={reviews.map((r) => ({ id: r.id, name: r.name, stars: r.stars, text: r.text, created_at: r.created_at }))}
-      ship={{ fee: settings.shipping_fee, free: settings.free_threshold, days: settings.delivery_days }}
+      ship={{ fee: rule.shipping_fee ?? 0, free: rule.free_threshold, days: deliveryText(settings) }}
     />
   );
 }

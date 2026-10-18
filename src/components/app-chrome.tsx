@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { TabBar } from "./shell";
 import SOSButton from "./sos";
+import { IncomingCallWatcher } from "./call/incoming-call-watcher";
 
 // หน้าแบบเต็มจอ (มีแถบพิมพ์/ปุ่มควบคุมของตัวเองด้านล่าง) ไม่แสดงแถบเมนูลอยและปุ่ม SOS ลอย
 // + ฟอร์มย่อยที่มีปุ่มหลักติดล่างจอ (บันทึก/โพสต์/ลบ) — ซ่อนเมนูล่างเพื่อไม่ให้ปุ่มหลักกับ SOS ลอยทับกัน
@@ -25,6 +26,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
   return (
     <div className={`app-frame mb-v7 mb-c ${full ? "" : "safe-bottom"}`}>
       {children}
+      <IncomingCallWatcher />
       {!full && <TabBar unread={unread} />}
       {!full && !OWN_SOS.some((re) => re.test(path)) && <SOSButton />}
     </div>

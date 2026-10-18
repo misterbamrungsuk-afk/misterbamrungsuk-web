@@ -5,11 +5,12 @@ import { Card, Pill } from "../admin-nav";
 import { CARRIERS, CLAIM_NOTE, ORDER_STATUS_LABEL, baht, carrierName, flaggedClaims, fmtPct, imageUrl, type Order, type OrderStatus, type Product } from "@/lib/market/config";
 import type { AdminData } from "@/lib/market/admin-data";
 import { Extras } from "./market-extras";
+import { Applications } from "./market-apply";
 
 type Data = AdminData;
 
 const TONE: Record<OrderStatus, "gold" | "red" | "muted" | "green"> = { pending: "gold", paid: "green", shipped: "green", done: "muted", rejected: "red" };
-const TABS = [["orders", "คำสั่งซื้อ"], ["products", "สินค้า"], ["vendors", "ร้านค้า / GP"], ["payouts", "รายงาน / โอนเงินร้าน"], ["accounts", "บัญชีร้านค้า"], ["categories", "หมวดหมู่"], ["banners", "แบนเนอร์"], ["promos", "โค้ดส่วนลด"], ["reviews", "รีวิว"], ["settings", "ค่าส่ง / นโยบาย"]] as const;
+const TABS = [["orders", "คำสั่งซื้อ"], ["products", "สินค้า"], ["apply", "ใบสมัครร้าน"], ["vendors", "ร้านค้า / GP"], ["payouts", "รายงาน / โอนเงินร้าน"], ["accounts", "บัญชีร้านค้า"], ["categories", "หมวดหมู่"], ["banners", "แบนเนอร์"], ["promos", "โค้ดส่วนลด"], ["reviews", "รีวิว"], ["settings", "ค่าส่ง / นโยบาย"]] as const;
 const dt = (s: string | null) => (s ? new Date(s).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", dateStyle: "short", timeStyle: "short" }) : "—");
 const money = (n: number | null) => (n == null ? "รอกำหนด" : `฿${n.toLocaleString("th-TH", { maximumFractionDigits: 2 })}`);
 
@@ -28,6 +29,7 @@ export function MarketAdmin({ initial }: { initial: Data }) {
         {TABS.map(([k, l]) => (
           <button key={k} onClick={() => setTab(k)} className={`chip h-9 px-3.5 ${tab === k ? "chip-red" : ""}`}>
             {l}{k === "orders" && d.orders.some((o) => o.status === "pending" && o.slip_path) ? ` (${d.orders.filter((o) => o.status === "pending" && o.slip_path).length})` : ""}
+            {k === "apply" && d.applications.some((a) => a.status === "pending") ? ` (${d.applications.filter((a) => a.status === "pending").length})` : ""}
             {k === "products" && d.products.some((p) => p.published && p.approved === false) ? ` (${d.products.filter((p) => p.published && p.approved === false).length} รออนุมัติ)` : ""}
           </button>
         ))}
@@ -36,7 +38,8 @@ export function MarketAdmin({ initial }: { initial: Data }) {
       {tab === "orders" && <Orders d={d} reload={reload} setMsg={setMsg} />}
       {tab === "products" && <Products d={d} reload={reload} setMsg={setMsg} />}
       {tab === "vendors" && <Vendors d={d} reload={reload} setMsg={setMsg} />}
-      {!["orders", "products", "vendors"].includes(tab) && <Extras tab={tab} d={d} reload={reload} setMsg={setMsg} />}
+      {tab === "apply" && <Applications d={d} reload={reload} setMsg={setMsg} />}
+      {!["orders", "products", "vendors", "apply"].includes(tab) && <Extras tab={tab} d={d} reload={reload} setMsg={setMsg} />}
     </div>
   );
 }
@@ -53,7 +56,7 @@ function Orders({ d, reload, setMsg }: Sub) {
     setAsk(null);
     const r = await fetch(`/api/market/admin/orders/${o.id}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, tracking_no: track[o.id], carrier: carrier[o.id] ?? "thaipost", reason, ...(action === "refunded" && reason ? { note: reason } : {}) }) });
     const out = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string; order?: Order };
-    setMsg(out.ok ? `${o.order_no}: ${ORDER_STATUS_LABEL[out.order!.status]}${action === "reject" && o.slip_path ? ` · ต้องคืนเงินผู้ซื้อ ฿${baht(o.total)}` : action === "refunded" ? " · บันทึกคืนเงินแล้ว" : ` · GP ${money(out.order!.gp_amount)}`}` : out.error || "ไม่สำเร็จ");
+    setMsg(out.ok ? `${o.order_no}: ${ORDER_STATUS_LABEL[out.order!.status]}${action === "reject" && o.pay_method === "wallet" ? (out.order!.admin_note?.startsWith("[คืนเงินผู้ซื้อแล้ว") ? ` · คืนเงิน ฿${baht(o.total)} เข้ากระเป๋าลูกค้าแล้ว` : " · คืนเงินเข้ากระเป๋าไม่สำเร็จ กด “บันทึกคืนเงิน” เพื่อลองใหม่") : action === "reject" && o.slip_path ? ` · ต้องคืนเงินผู้ซื้อ ฿${baht(o.total)}` : action === "refunded" ? " · บันทึกคืนเงินแล้ว" : ` · GP ${money(out.order!.gp_amount)}`}` : out.error || "ไม่สำเร็จ");
     await reload();
   };
   const rows = d.orders.filter((o) => filter === "all" || o.status === filter);
@@ -71,7 +74,8 @@ function Orders({ d, reload, setMsg }: Sub) {
             <div className="flex-1 min-w-[220px]">
               <div className="flex flex-wrap items-center gap-2">
                 <b>{o.order_no}</b><Pill tone={TONE[o.status]}>{ORDER_STATUS_LABEL[o.status]}</Pill>
-                {o.status === "pending" && !o.slip_path && <Pill>ยังไม่แนบสลิป</Pill>}
+                {o.pay_method === "wallet" && <Pill tone="green">จ่ายจากกระเป๋าเงิน</Pill>}
+                {o.status === "pending" && !o.slip_path && o.pay_method !== "wallet" && <Pill>ยังไม่แนบสลิป</Pill>}
               </div>
               <p className="text-sm mt-1">{o.buyer_name} · 0{o.phone.slice(2)}</p>
               <p className="text-xs text-ink-300 whitespace-pre-line">{o.address}</p>
@@ -79,7 +83,7 @@ function Orders({ d, reload, setMsg }: Sub) {
               <p className="text-xs text-[#9a8a85] mt-2">สั่ง {dt(o.created_at)} · ยืนยัน {dt(o.paid_at)}{o.tracking_no ? ` · พัสดุ ${carrierName(o.carrier)} ${o.tracking_no}` : ""}{o.decided_by ? ` · โดย ${o.decided_by}` : ""}</p>
               {Object.keys(o.vendor_tracking ?? {}).length > 0 && <p className="text-xs text-[#9a8a85]">เลขพัสดุจากร้าน: {Object.entries(o.vendor_tracking ?? {}).map(([vid, t]) => `${d.vendors.find((v) => v.id === vid)?.name ?? vid}: ${t.tracking_no}`).join(" · ")}</p>}
               {o.reject_reason && <p className="text-xs text-crimson-300">เหตุผลที่ปฏิเสธ: {o.reject_reason}</p>}
-              {o.admin_note?.startsWith("[ต้องคืนเงินผู้ซื้อ") && <p className="text-xs font-semibold text-[#fca5a5]">⚠ {o.admin_note.slice(1, o.admin_note.indexOf("]"))} (โอนคืนนอกระบบ แล้วกดบันทึกคืนเงิน)</p>}
+              {o.admin_note?.startsWith("[ต้องคืนเงินผู้ซื้อ") && <p className="text-xs font-semibold text-[#fca5a5]">⚠ {o.admin_note.slice(1, o.admin_note.indexOf("]"))} {o.pay_method === "wallet" ? " (กด “บันทึกคืนเงิน” ให้ระบบคืนเข้ากระเป๋าอีกครั้ง)" : " (โอนคืนนอกระบบ แล้วกดบันทึกคืนเงิน)"}</p>}
               {o.admin_note?.startsWith("[คืนเงินผู้ซื้อแล้ว") && <p className="text-xs text-emerald-300">✓ {o.admin_note.slice(1, o.admin_note.indexOf("]"))}</p>}
             </div>
             <div className="text-sm min-w-[180px]">
@@ -115,7 +119,7 @@ function Orders({ d, reload, setMsg }: Sub) {
           </div>
           {ask?.id === o.id && (
             <div role="alertdialog" aria-label="ยืนยันรายการ" className="mt-3 rounded-xl border border-gold-500/50 p-3 flex flex-col gap-2 text-sm">
-              <p className="m-0">{ask.action === "confirm" ? `ยืนยันว่าได้รับเงิน ฿${baht(o.total)} ของ ${o.order_no} แล้ว? (คิด GP + ตัดสต็อก + แจ้งผู้ซื้อ)` : ask.action === "done" ? `ปิดงาน ${o.order_no} เป็นสำเร็จ? ส่วนของร้านจะเข้ากระเป๋าร้านทันที` : ask.action === "refunded" ? `ยืนยันว่าโอนคืนเงิน ฿${baht(o.total)} ให้ผู้ซื้อ ${o.buyer_name} แล้ว?` : `ปฏิเสธ ${o.order_no}?${o.slip_path ? ` ผู้ซื้อโอนแล้ว ฿${baht(o.total)} — ระบบจะติดป้าย "ต้องคืนเงินผู้ซื้อ"` : ""}`}</p>
+              <p className="m-0">{ask.action === "confirm" ? `ยืนยันว่าได้รับเงิน ฿${baht(o.total)} ของ ${o.order_no} แล้ว? (คิด GP + ตัดสต็อก + แจ้งผู้ซื้อ)` : ask.action === "done" ? `ปิดงาน ${o.order_no} เป็นสำเร็จ? ส่วนของร้านจะเข้ากระเป๋าร้านทันที` : ask.action === "refunded" ? (o.pay_method === "wallet" ? `คืนเงิน ฿${baht(o.total)} เข้ากระเป๋าเงินของ ${o.buyer_name}?` : `ยืนยันว่าโอนคืนเงิน ฿${baht(o.total)} ให้ผู้ซื้อ ${o.buyer_name} แล้ว?`) : `ปฏิเสธ ${o.order_no}?${o.pay_method === "wallet" ? ` ผู้ซื้อจ่ายจากกระเป๋าเงิน ฿${baht(o.total)} — ระบบคืนเข้ากระเป๋าอัตโนมัติ` : o.slip_path ? ` ผู้ซื้อโอนแล้ว ฿${baht(o.total)} — ระบบจะติดป้าย "ต้องคืนเงินผู้ซื้อ"` : ""}`}</p>
               {(ask.action === "reject" || ask.action === "refunded") && <input autoFocus value={ask.reason} onChange={(e) => setAsk({ ...ask, reason: e.target.value })} placeholder={ask.action === "reject" ? "เหตุผล (บังคับ · ผู้ซื้อเห็นในหน้าติดตาม)" : "หมายเหตุการโอนคืน เช่น เลขอ้างอิง"} className="input-dark h-10 w-full" />}
               <div className="flex gap-2">
                 <button onClick={() => setAsk(null)} className="chip h-10 px-4">ยกเลิก</button>

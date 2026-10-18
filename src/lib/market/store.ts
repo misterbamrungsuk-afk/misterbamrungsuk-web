@@ -5,9 +5,9 @@ import { createHmac, randomInt, randomUUID, timingSafeEqual } from "node:crypto"
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { SAMPLE_BLOCK, isMockId } from "./mock";
 import {
-  DEFAULT_SETTINGS, baht, promoDiscount, shippingFor, slugify,
+  DEFAULT_SETTINGS, baht, promoDiscount, shippingFor, slugify, vendorShipRule,
   type Banner, type Category, type MarketSettings, type Order, type OrderItem, type OrderStatus, type Payout,
-  type Product, type Promo, type Review, type Vendor, type VendorAccount, type VendorSplit,
+  type Product, type Promo, type Review, type ShipGroup, type Vendor, type VendorAccount, type VendorSplit,
 } from "./config";
 
 // ที่เก็บ Marketplace
@@ -77,9 +77,27 @@ const num = (v: unknown) => (v == null ? null : Number(v));
 const normOrder = (o: Order): Order => ({
   ...o, total: Number(o.total), gp_pct: num(o.gp_pct), gp_amount: num(o.gp_amount), vendor_amount: num(o.vendor_amount),
   subtotal: o.subtotal == null ? o.items.reduce((s, i) => s + i.price * i.qty, 0) : Number(o.subtotal),
-  discount: Number(o.discount ?? 0), shipping_fee: Number(o.shipping_fee ?? 0), vendor_tracking: o.vendor_tracking ?? {},
+  discount: Number(o.discount ?? 0), shipping_fee: Number(o.shipping_fee ?? 0), vendor_tracking: o.vendor_tracking ?? {}, pay_method: o.pay_method === "wallet" ? "wallet" : "slip",
 });
-const normVendor = (v: Vendor): Vendor => ({ ...v, gp_pct: num(v.gp_pct), slug: v.slug || slugify(v.name), description: v.description ?? "" });
+const normVendor = (v: Vendor): Vendor => ({ ...v, gp_pct: num(v.gp_pct), slug: v.slug || slugify(v.name), description: v.description ?? "", shipping_fee: num(v.shipping_fee), free_threshold: num(v.free_threshold) });
+/** คอลัมน์ใหม่ของ 0005 ยังไม่มี — ไม่สลับทั้งร้านเป็นโหมดหน่วยความจำ (ต่างจาก missing()) แค่ปฏิเสธฟีเจอร์นั้น */
+const colMissing = (err: { code?: string; message?: string } | null) => !!err && (err.code === "PGRST204" || err.code === "42703" || /could not find the '.*' column|column .* does not exist/i.test(err.message ?? ""));
+export const NEED_0005 = "ระบบยังไม่พร้อม (ทีมงานต้องรัน supabase/market/0005_shops_wallet.sql)";
+
+/** ร้านตั้งค่าส่งของตัวเอง — fee null = ใช้ค่าส่งกลาง · free null = ไม่มีเกณฑ์ส่งฟรี */
+export async function setVendorShipping(id: string, shipping_fee: number | null, free_threshold: number | null): Promise<Vendor> {
+  for (const n of [shipping_fee, free_threshold]) if (n != null && !(Number.isFinite(n) && n >= 0 && n <= 100000)) throw new Error("จำนวนเงินไม่ถูกต้อง");
+  const patch = { shipping_fee: shipping_fee == null ? null : r2(shipping_fee), free_threshold: shipping_fee == null || free_threshold == null ? null : r2(free_threshold) };
+  if (marketDemo()) {
+    const r = mem.vendors.find((x) => x.id === id);
+    if (!r) throw new Error("ไม่พบร้านค้า");
+    return normVendor(Object.assign(r, patch));
+  }
+  const { data, error } = await db().from("market_vendors").update(patch).eq("id", id).select().single();
+  if (colMissing(error)) throw new Error(NEED_0005);
+  if (error) throw new Error(error.message);
+  return normVendor(data as Vendor);
+}
 const normProduct = (p: Product): Product => ({ ...p, approved: p.approved ?? true, bundle_ids: p.bundle_ids ?? [], category_id: p.category_id ?? null });
 
 // ── ตารางทั่วไป (CRUD) ──
@@ -352,7 +370,7 @@ const orderNo = () => {
   return `MK${d}-${String(randomInt(0, 1e4)).padStart(4, "0")}`;
 };
 
-/** ราคา: subtotal → ส่วนลดโค้ด → ค่าส่ง (คิดจากยอดหลังส่วนลด) */
+/** ราคา: subtotal → ส่วนลดโค้ด → ค่าส่งแยกร้าน (แต่ละร้านคิดจากยอดสินค้าของร้านตัวเอง ตามที่ร้านตั้ง / ค่าส่งกลาง) */
 export async function priceCart(items: OrderItem[], code?: string | null) {
   const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
   let discount = 0, promo: Promo | null = null, promoError = "";
@@ -361,27 +379,106 @@ export async function priceCart(items: OrderItem[], code?: string | null) {
     const r = promoDiscount(promo, subtotal);
     if (r.ok) discount = r.discount; else { promoError = r.error; promo = null; }
   }
-  const settings = await getSettings();
-  const shipping_fee = shippingFor(settings, subtotal - discount);
-  return { subtotal, discount, promo, promoError, shipping_fee, total: r2(subtotal - discount + shipping_fee), settings };
+  const [settings, vendors] = await Promise.all([getSettings(), listVendors()]);
+  const groups: ShipGroup[] = [];
+  for (const it of items) {
+    let g = groups.find((x) => x.vendor_id === it.vendor_id);
+    if (!g) { g = { vendor_id: it.vendor_id, vendor_name: vendors.find((v) => v.id === it.vendor_id)?.name ?? "", subtotal: 0, shipping_fee: 0, free_threshold: null }; groups.push(g); }
+    g.subtotal = r2(g.subtotal + it.price * it.qty);
+  }
+  for (const g of groups) {
+    const rule = vendorShipRule(vendors.find((v) => v.id === g.vendor_id), settings);
+    g.shipping_fee = shippingFor(rule, g.subtotal);
+    g.free_threshold = rule.shipping_fee ? rule.free_threshold : null;
+  }
+  const shipping_fee = r2(groups.reduce((s, g) => s + g.shipping_fee, 0));
+  return { subtotal, discount, promo, promoError, shipping_fee, groups, total: r2(subtotal - discount + shipping_fee), settings };
 }
 
-export async function createOrder(input: { buyer_name: string; phone: string; address: string; items: OrderItem[]; ip: string; promo_code?: string | null; customer?: { id: string; email: string } | null }): Promise<Order> {
+export async function createOrder(input: { buyer_name: string; phone: string; address: string; items: OrderItem[]; ip: string; promo_code?: string | null; customer?: { id: string; email: string } | null; pay?: "slip" | "wallet" }): Promise<Order> {
   // กันชั้นสุดท้าย: สินค้าตัวอย่าง (mock-*) ห้ามเกิดออเดอร์/รับเงินจริง
   if (input.items.some((i) => isMockId(i.product_id))) throw new Error(SAMPLE_BLOCK);
   const pr = await priceCart(input.items, input.promo_code);
   if (input.promo_code?.trim() && !pr.promo) throw new Error(pr.promoError || "โค้ดส่วนลดใช้ไม่ได้");
+  const wallet = input.pay === "wallet";
+  if (wallet && !input.customer) throw new Error("ชำระจากกระเป๋าเงินต้องเข้าสู่ระบบ");
+  // ค่าส่งของแต่ละร้านเก็บไว้ใน vendor_split ตั้งแต่สร้างออเดอร์ (ตอนยืนยันชำระคิด GP ต่อจากตรงนี้ ค่าส่งไม่เปลี่ยนตามที่ร้านแก้ทีหลัง)
+  const ship = Object.fromEntries(pr.groups.map((g) => [g.vendor_id, g.shipping_fee]));
+  const draft = { items: input.items, discount: pr.discount, shipping_fee: pr.shipping_fee };
   const row: Order = {
     id: randomUUID(), order_no: orderNo(), buyer_name: input.buyer_name, phone: input.phone, address: input.address, items: input.items, total: pr.total,
     gp_pct: null, gp_amount: null, vendor_amount: null, slip_path: null, status: "pending", tracking_no: null, admin_note: null,
     age_confirmed_at: now(), ip: input.ip, paid_at: null, decided_by: null, created_at: now(),
     subtotal: pr.subtotal, discount: pr.discount, promo_code: pr.promo?.code ?? null, shipping_fee: pr.shipping_fee,
-    carrier: null, shipped_at: null, done_at: null, reject_reason: null, vendor_split: null, vendor_tracking: {},
+    carrier: null, shipped_at: null, done_at: null, reject_reason: null, vendor_split: computeSplit(draft, await listVendors(), ship), vendor_tracking: {},
     ...(input.customer ? { customer_id: input.customer.id, customer_email: input.customer.email } : {}),
+    ...(wallet ? { pay_method: "wallet" as const } : {}),
   };
-  const o = await q<Order>(() => db().from("market_orders").insert(row).select().single(), () => (mem.orders.push(row), row)).then(normOrder);
+  let o: Order;
+  if (wallet && !marketDemo()) {
+    // ไม่ผ่าน q(): ยังไม่รัน 0005 (ไม่มีคอลัมน์ pay_method) = ปฏิเสธการจ่ายด้วยกระเป๋า ไม่สลับทั้งร้านเป็นโหมดหน่วยความจำ
+    const { data, error } = await db().from("market_orders").insert(row).select().single();
+    if (colMissing(error)) throw new Error(NEED_0005);
+    if (error) throw new Error(error.message);
+    o = normOrder(data as Order);
+  } else o = await q<Order>(() => db().from("market_orders").insert(row).select().single(), () => (mem.orders.push(row), row)).then(normOrder);
   if (pr.promo) await updateT("promos", pr.promo.id, { used_count: pr.promo.used_count + 1 }).catch(() => {});
   return o;
+}
+
+// ── ชำระด้วยกระเป๋าเงิน ──
+// จ่าย: ลูกค้า.available → บริษัท.market_escrow (พักไว้จนออเดอร์สำเร็จ · แยกจาก escrow ของการจองเพื่อไม่ให้กระทบยอดการจองเพี้ยน)
+// สำเร็จ: market_escrow → ร้าน.available (สุทธิ − GP + ค่าส่ง) + บริษัท.revenue · ปฏิเสธ: market_escrow → ลูกค้า.available (คืนอัตโนมัติ)
+export const MARKET_ESCROW = "market_escrow";
+const satangOf = (b: number) => Math.round(Number(b) * 100);
+
+/** ยอดที่ลูกค้าจ่ายด้วยกระเป๋าให้ออเดอร์นี้และยังไม่ได้คืน (สตางค์) — อ่านจาก ledger จริง ไม่เชื่อสถานะออเดอร์ */
+export async function walletHeldFor(o: Order): Promise<number> {
+  if (!o.customer_id) return 0;
+  const { history } = await import("@/lib/wallet");
+  const h = await history("customer", o.customer_id, 500);
+  return -h.filter((e) => e.ref_type === "market_order" && e.ref_id === o.id && e.bucket === "available").reduce((s, e) => s + e.amount, 0);
+}
+
+/** ตัดเงินจากกระเป๋า → ออเดอร์เป็น "ยืนยันแล้ว" (เหมือนแอดมินยืนยันสลิป: คิด GP + ตัดสต็อก) · เงินไม่พอ = ปิดออเดอร์เป็นปฏิเสธ */
+export async function payWithWallet(o: Order): Promise<Order> {
+  if (o.pay_method !== "wallet" || !o.customer_id) throw new Error("ออเดอร์นี้ไม่ได้เลือกจ่ายจากกระเป๋าเงิน");
+  if (o.status !== "pending") throw new Error("ออเดอร์นี้ชำระแล้ว");
+  const { post, PLATFORM, WalletError } = await import("@/lib/wallet");
+  const amt = satangOf(o.total);
+  try {
+    if (amt > 0) await post("market_sale", { type: "market_order", id: o.id }, `mkpay:${o.id}`, `ซื้อสินค้า ${o.order_no}`, o.customer_id, [
+      { owner_type: "customer", owner_id: o.customer_id, bucket: "available", amount: -amt },
+      { owner_type: "platform", owner_id: PLATFORM, bucket: MARKET_ESCROW, amount: amt },
+    ]);
+  } catch (e) {
+    const rej = await patchOrder(o.id, { status: "rejected", reject_reason: e instanceof WalletError ? "ยอดเงินในกระเป๋าไม่พอ" : "ตัดเงินจากกระเป๋าไม่สำเร็จ", gp_amount: null, vendor_amount: null, vendor_split: null }, "pending").catch(() => null);
+    // ผิดพลาดแบบอื่น (เช่นเครือข่าย) อาจตัดเงินไปแล้ว → ตรวจ ledger แล้วคืนให้
+    if (rej && !(e instanceof WalletError)) await refundWallet(rej, "system").catch((x) => console.error("market wallet refund", x));
+    throw e;
+  }
+  let out: Order;
+  try {
+    out = await patchOrder(o.id, { status: "paid", paid_at: now(), decided_by: "wallet", ...computeGp(o, await listVendors()) }, "pending");
+  } catch (e) {
+    // สถานะเปลี่ยนไประหว่างตัดเงิน (เช่นแอดมินปฏิเสธพร้อมกัน) → คืนเงินทันที
+    await refundWallet(o, "system").catch((x) => console.error("market wallet refund", x));
+    throw e;
+  }
+  await adjustStock(o.items, -1);
+  return out;
+}
+
+/** คืนเงินที่จ่ายด้วยกระเป๋า (เฉพาะยอดที่ยังค้างใน ledger) — ครั้งเดียวต่อออเดอร์ · คืน 0 = ไม่มีอะไรต้องคืน */
+export async function refundWallet(o: Order, actor: string): Promise<number> {
+  const held = await walletHeldFor(o);
+  if (held <= 0 || !o.customer_id) return 0;
+  const { post, PLATFORM } = await import("@/lib/wallet");
+  await post("refund", { type: "market_order", id: o.id }, `mkrefund:${o.id}`, `คืนเงินคำสั่งซื้อ ${o.order_no}`, actor, [
+    { owner_type: "platform", owner_id: PLATFORM, bucket: MARKET_ESCROW, amount: -held },
+    { owner_type: "customer", owner_id: o.customer_id, bucket: "available", amount: held },
+  ]);
+  return held;
 }
 
 /** from = เปลี่ยนได้เฉพาะเมื่อสถานะยังเป็นค่านี้ (กันกดพร้อมกัน 2 ครั้งแล้วตัดสต็อก/ลงเงินซ้ำ) */
@@ -397,22 +494,25 @@ export async function patchOrder(id: string, patch: Partial<Order>, from?: Order
 const r2 = (n: number) => Math.round(n * 100) / 100;
 
 /**
- * ส่วนแบ่งต่อร้าน — ส่วนลดและค่าส่งปันตามสัดส่วนยอดสินค้าของแต่ละร้าน
+ * ส่วนแบ่งต่อร้าน — ส่วนลดปันตามสัดส่วนยอดสินค้าของแต่ละร้าน
+ * ค่าส่ง: ใช้ค่าส่งของแต่ละร้านที่บันทึกไว้ตอนสร้างออเดอร์ (ship หรือ o.vendor_split) · ออเดอร์เก่าที่ไม่มี = ปันตามสัดส่วน
  * net = gross − discount; GP = net × gp_pct (GP คิดเฉพาะยอดสินค้าที่จ่ายจริง ไม่รวมค่าส่ง)
- * payout = net − GP + shipping (ร้านจัดส่งเอง จึงได้ค่าส่ง)
+ * payout = net − GP + shipping (ร้านจัดส่งเอง จึงได้ค่าส่งเต็ม ไม่หัก GP)
  */
-export function computeSplit(o: Pick<Order, "items" | "discount" | "shipping_fee">, vendors: Vendor[]): VendorSplit[] {
+export function computeSplit(o: Pick<Order, "items" | "discount" | "shipping_fee"> & { vendor_split?: VendorSplit[] | null }, vendors: Vendor[], ship?: Record<string, number>): VendorSplit[] {
   const gross = new Map<string, number>();
   for (const it of o.items) gross.set(it.vendor_id, (gross.get(it.vendor_id) ?? 0) + it.price * it.qty);
   const subtotal = [...gross.values()].reduce((a, b) => a + b, 0);
-  const disc = Number(o.discount ?? 0), ship = Number(o.shipping_fee ?? 0);
+  const disc = Number(o.discount ?? 0), shipTotal = Number(o.shipping_fee ?? 0);
   const ids = [...gross.keys()];
-  let dLeft = disc, sLeft = ship;
+  const stored = ship ?? Object.fromEntries((o.vendor_split ?? []).map((s) => [s.vendor_id, Number(s.shipping)]));
+  const exact = ids.every((v) => Number.isFinite(stored[v])) && r2(ids.reduce((a, v) => a + stored[v], 0)) === r2(shipTotal);
+  let dLeft = disc, sLeft = shipTotal;
   return ids.map((vid, i) => {
     const g = gross.get(vid)!;
     const last = i === ids.length - 1;
     const d = last ? r2(dLeft) : r2(subtotal ? (disc * g) / subtotal : 0);
-    const s = last ? r2(sLeft) : r2(subtotal ? (ship * g) / subtotal : 0);
+    const s = exact ? r2(stored[vid]) : last ? r2(sLeft) : r2(subtotal ? (shipTotal * g) / subtotal : 0);
     dLeft -= d; sLeft -= s;
     const net = r2(g - d);
     const pct = vendors.find((v) => v.id === vid)?.gp_pct ?? null;
@@ -421,7 +521,7 @@ export function computeSplit(o: Pick<Order, "items" | "discount" | "shipping_fee
   });
 }
 /** GP ระดับออเดอร์ — ร้านใดยังไม่ตั้ง GP → ทั้งออเดอร์ "รอกำหนด" (null) */
-export function computeGp(o: Pick<Order, "items" | "discount" | "shipping_fee">, vendors: Vendor[]): Pick<Order, "gp_pct" | "gp_amount" | "vendor_amount" | "vendor_split"> {
+export function computeGp(o: Pick<Order, "items" | "discount" | "shipping_fee"> & { vendor_split?: VendorSplit[] | null }, vendors: Vendor[]): Pick<Order, "gp_pct" | "gp_amount" | "vendor_amount" | "vendor_split"> {
   const split = computeSplit(o, vendors);
   if (split.some((s) => s.gp == null)) return { gp_pct: null, gp_amount: null, vendor_amount: null, vendor_split: split };
   const net = split.reduce((a, s) => a + s.net, 0), gp = split.reduce((a, s) => a + s.gp!, 0);
@@ -454,11 +554,14 @@ export async function decideOrder(id: string, action: OrderAction, admin: string
     patch.reject_reason = reason;
     // ล้างส่วนแบ่ง/GP — ออเดอร์ที่ปฏิเสธต้องไม่ถูกนับเป็นยอดขาย/ค้างจ่ายร้าน
     Object.assign(patch, { gp_amount: null, vendor_amount: null, vendor_split: null });
-    // ผู้ซื้อโอนแล้ว (มีสลิป) = เงินอยู่นอกระบบ → ติดป้ายต้องคืนเงินพร้อมยอด ให้แอดมินตามคืน
-    if (o.slip_path) patch.admin_note = `${REFUND_DUE} ฿${baht(Number(o.total))}] ${extra.note ?? o.admin_note ?? ""}`.trim().slice(0, 500);
+    // ผู้ซื้อโอนแล้ว (มีสลิป) = เงินอยู่นอกระบบ → ติดป้ายต้องคืนเงินพร้อมยอด ให้แอดมินตามคืน · จ่ายด้วยกระเป๋า = คืนเข้ากระเป๋าอัตโนมัติหลังเปลี่ยนสถานะ (ด้านล่าง)
+    if (o.pay_method === "wallet") patch.admin_note = `${REFUND_DUE} ฿${baht(Number(o.total))} · กระเป๋าเงิน] ${extra.note ?? o.admin_note ?? ""}`.trim().slice(0, 500);
+    else if (o.slip_path) patch.admin_note = `${REFUND_DUE} ฿${baht(Number(o.total))}] ${extra.note ?? o.admin_note ?? ""}`.trim().slice(0, 500);
   } else if (action === "refunded") {
     const cur = o.admin_note ?? "";
     if (!cur.startsWith(REFUND_DUE)) throw new Error("ออเดอร์นี้ไม่มีรายการต้องคืนเงิน");
+    // จ่ายด้วยกระเป๋า: ลองคืนเข้ากระเป๋าอีกครั้ง (กรณีคืนอัตโนมัติพลาด) — ไม่ต้องโอนนอกระบบ
+    if (o.pay_method === "wallet") await refundWallet(o, admin);
     patch.admin_note = `${REFUND_DONE} ฿${baht(Number(o.total))} · ${new Date(Date.now() + 7 * 3600_000).toISOString().slice(0, 10)}${extra.note ? ` · ${extra.note}` : ""}] ${cur.replace(/^\[[^\]]*\]\s*/, "")}`.slice(0, 500);
 
   } else if (action === "ship") {
@@ -468,6 +571,13 @@ export async function decideOrder(id: string, action: OrderAction, admin: string
   const out = await patchOrder(id, patch, o.status);
   if (action === "confirm") await adjustStock(o.items, -1);
   if (action === "reject" && o.status === "paid") await adjustStock(o.items, 1);
+  if (action === "reject" && o.pay_method === "wallet") {
+    try {
+      const back = await refundWallet(out, admin);
+      // ยังไม่เคยตัดเงิน (back = 0) = ไม่มีอะไรต้องคืน → ล้างป้าย
+      return await patchOrder(id, { admin_note: back > 0 ? `${REFUND_DONE} ฿${baht(back / 100)} เข้ากระเป๋าเงิน · ${new Date(Date.now() + 7 * 3600_000).toISOString().slice(0, 10)}] ${(extra.note ?? "").slice(0, 300)}`.trim().slice(0, 500) : extra.note?.slice(0, 500) || null });
+    } catch (e) { console.error("market wallet refund", e); return out; } // ป้าย "ต้องคืนเงิน" ค้างไว้ → แอดมินกด "บันทึกคืนเงิน" ให้ระบบคืนซ้ำได้
+  }
   if (out.status === "done") {
     await creditVendors(out, admin).catch((e) => console.error("market credit", e));
     // แต้มสมาชิก: เฉพาะออเดอร์ที่ลูกค้าล็อกอินตอนสั่ง (คิดจากยอดที่จ่ายจริง) · ครั้งเดียวต่อออเดอร์
@@ -483,9 +593,11 @@ export async function creditVendors(o: Order, actor: string): Promise<boolean> {
   if (!split.length || split.some((x) => x.payout == null)) return false;
   const { post, PLATFORM } = await import("@/lib/wallet");
   const total = Math.round(Number(o.total) * 100);
+  // จ่ายด้วยกระเป๋า = เงินพักอยู่ใน market_escrow แล้ว · จ่ายด้วยสลิป = เงินเข้าบัญชีธนาคารบริษัท
+  const src = o.pay_method === "wallet" ? MARKET_ESCROW : "bank";
   const legs = split.map((x) => ({ owner_type: "vendor" as const, owner_id: x.vendor_id, bucket: "available", amount: Math.round(x.payout! * 100) })).filter((l) => l.amount > 0);
   const toVendors = legs.reduce((a, l) => a + l.amount, 0);
-  const all = [{ owner_type: "platform" as const, owner_id: PLATFORM, bucket: "bank", amount: -total }, ...legs, { owner_type: "platform" as const, owner_id: PLATFORM, bucket: "revenue", amount: total - toVendors }].filter((l) => l.amount !== 0);
+  const all = [{ owner_type: "platform" as const, owner_id: PLATFORM, bucket: src, amount: -total }, ...legs, { owner_type: "platform" as const, owner_id: PLATFORM, bucket: "revenue", amount: total - toVendors }].filter((l) => l.amount !== 0);
   if (all.length < 2) return false;
   await post("market_sale", { type: "market_order", id: o.id }, `market:${o.id}`, `ออเดอร์ ${o.order_no} สำเร็จ`, actor, all);
   return true;

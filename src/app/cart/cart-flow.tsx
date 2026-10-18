@@ -7,14 +7,14 @@ import { OtpStep } from "@/components/otp-step";
 import { Turnstile } from "@/components/turnstile";
 import { BANK } from "@/lib/join/config";
 import { dataUrlToFile, resizeImage } from "@/lib/join/form";
-import { AGE_NOTICE, GENERAL_WARNING, MAX_QTY, imageUrl, type Product } from "@/lib/market/config";
+import { AGE_NOTICE, GENERAL_WARNING, MAX_QTY, imageUrl, type Product, type ShipGroup } from "@/lib/market/config";
 import { MOCK_PRODUCTS, MOCK_VENDORS, SAMPLE_BLOCK, isMockId } from "@/lib/market/mock";
 import { readCart, useCart, writeCart } from "../products/market-ui";
 import { Bottle, LINE, MHeader, MShell, RED_GRAD, fmt, glowOf } from "../products/m-kit";
 
 type P = Product & { vendor_name: string };
-type Placed = { id: string; order_no: string; total: number; token: string; track?: string; phone?: string };
-type Price = { subtotal: number; discount: number; code: string | null; promo_error: string | null; shipping_fee: number; shipping_tbd: boolean; free_threshold: number | null; delivery_days: string; total: number };
+type Placed = { id: string; order_no: string; total: number; token: string; track?: string; phone?: string; wallet?: boolean };
+type Price = { subtotal: number; discount: number; code: string | null; promo_error: string | null; shipping_fee: number; groups: ShipGroup[]; delivery_days: string; total: number };
 const PLACED_KEY = "mb_cart_order";
 // ออเดอร์ที่รอแนบสลิป: เก็บใน localStorage (ปิดแท็บแล้วกลับมาแนบต่อได้) · token เป็นสิทธิ์เฉพาะออเดอร์นี้
 const savePlaced = (p: Placed) => { try { localStorage.setItem(PLACED_KEY, JSON.stringify(p)); } catch {} };
@@ -54,9 +54,14 @@ export function CartFlow() {
   const [otpOn, setOtpOn] = useState(true);
   // ออเดอร์ที่สร้างแล้วแต่ยังไม่แนบสลิป (กดแก้ไข/สลิปอัปไม่ผ่าน) — เก็บไว้ให้กลับมาแนบสลิปต่อได้ ไม่ต้องสั่งใหม่
   const [unpaid, setUnpaid] = useState<Placed | null>(null);
+  // จ่ายจากกระเป๋าเงิน: แสดงเมื่อล็อกอินอยู่ (wallet = ยอดใช้ได้ สตางค์ · null = ไม่ได้ล็อกอิน/ระบบกระเป๋าปิด)
+  const [wallet, setWallet] = useState<number | null>(null);
+  const [pay, setPay] = useState<"slip" | "wallet">("slip");
+  const [askPay, setAskPay] = useState(false);
 
   useEffect(() => {
     fetch("/api/market/products").then((r) => r.json()).then((d: { products?: P[] }) => setProducts(d.products?.length ? d.products : MOCK_P)).catch(() => setProducts([]));
+    fetch("/api/wallet", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((d: { ok?: boolean; available?: number } | null) => { if (d?.ok && typeof d.available === "number") setWallet(d.available); }).catch(() => {});
     fetch("/api/otp/verify", { cache: "no-store" }).then((r) => r.json()).then((d: { phone?: string | null; required?: boolean }) => { if (d.required === false) setOtpOn(false); if (d.phone) { setPhone(d.phone); setVerified(true); } }).catch(() => {});
     // ล็อกอินอยู่ → เติมชื่อ/เบอร์/ที่อยู่หลักจากโปรไฟล์ให้ (แก้ได้)
     fetch("/api/me?soft=1", { cache: "no-store" }).then((r) => r.json()).then((d: { ok?: boolean; profile?: { name?: string; phone?: string | null; addresses?: { detail?: string; note?: string; primary?: boolean }[] } }) => {
@@ -97,24 +102,34 @@ export function CartFlow() {
   }, [lineKey, code, hasSample]); // eslint-disable-line react-hooks/exhaustive-deps
   const total = price?.total ?? subtotal;
   const setQty = (id: string, qty: number) => writeCart(readCart().map((l) => (l.id === id ? { ...l, qty } : l)).filter((l) => l.qty > 0));
-  const free = price && !price.shipping_tbd ? price.free_threshold : null;
-  const afterDisc = subtotal - (price?.discount ?? 0);
+  const canWallet = wallet != null && !!price && wallet >= Math.round(total * 100);
+  const useWallet = pay === "wallet" && canWallet;
   const fullAddress = [address.trim(), area.trim()].filter(Boolean).join(" ");
   const missing = !rows.length ? "ตะกร้าว่าง" : hasSample ? SAMPLE_BLOCK : name.trim().length < 2 || fullAddress.length < 10 ? "กรอกที่อยู่ให้ครบ" : !verified ? "ยืนยันเบอร์ด้วย OTP" : !age ? "ยืนยันอายุ 20+" : "";
 
-  const placeOrder = async () => {
+  const placeOrder = async (confirmed = false) => {
     setErr("");
     if (hasSample) return setErr(SAMPLE_BLOCK);
     if (missing) return setErr(missing === "กรอกที่อยู่ให้ครบ" ? "กรอกชื่อผู้รับและที่อยู่จัดส่งให้ครบ" : missing === "ยืนยันอายุ 20+" ? "กรุณายืนยันว่าอายุ 20 ปีขึ้นไป" : missing === "ยืนยันเบอร์ด้วย OTP" ? "ยืนยันเบอร์โทรด้วย OTP ก่อน" : missing);
+    // ตัดเงินจากกระเป๋า = ถามยืนยันในหน้าก่อน
+    if (useWallet && !confirmed) return setAskPay(true);
+    setAskPay(false);
     setBusy(true);
     try {
       const res = await fetch("/api/market/orders", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, address: fullAddress, age_confirm: age, turnstile: ts, promo_code: code || undefined, items: rows.map((r) => ({ id: r.p.id, qty: r.l.qty })) }),
+        body: JSON.stringify({ name, address: fullAddress, age_confirm: age, turnstile: ts, promo_code: code || undefined, pay: useWallet ? "wallet" : undefined, items: rows.map((r) => ({ id: r.p.id, qty: r.l.qty })) }),
       });
-      const d = (await res.json().catch(() => ({}))) as Partial<Placed> & { ok?: boolean; error?: string };
+      const d = (await res.json().catch(() => ({}))) as Partial<Placed> & { ok?: boolean; error?: string; status?: string };
       if (!res.ok || !d.ok) { setTs(""); setTsKey((k) => k + 1); throw new Error(d.error || "สั่งซื้อไม่สำเร็จ"); }
-      const p = { id: d.id!, order_no: d.order_no!, total: d.total!, token: d.token!, track: d.track, phone };
+      const p = { id: d.id!, order_no: d.order_no!, total: d.total!, token: d.token!, track: d.track, phone, wallet: d.status === "paid" };
+      if (p.wallet) {
+        // จ่ายจากกระเป๋าแล้ว = ไม่ต้องแนบสลิป → หน้าสำเร็จเลย
+        setPlaced(p); clearPlaced(); writeCart([]); setUnpaid(null);
+        setWallet((w) => (w == null ? w : w - Math.round(p.total * 100)));
+        setStep("done"); window.scrollTo({ top: 0 });
+        return;
+      }
       setPlaced(p);
       savePlaced(p);
       setUnpaid(null);
@@ -203,13 +218,21 @@ export function CartFlow() {
             })}
             {products != null && !rows.length && <div className={`${card} text-center text-[#d9c9b4] text-[13px]`} style={{ borderColor: LINE }}>ตะกร้าว่าง · <Link href="/market" className="tap text-[#e8c472]">กลับไปเลือกสินค้า</Link></div>}
 
-            {rows.length > 0 && free != null && price && price.shipping_fee >= 0 && (
-              <div className={`${card} !py-3 flex flex-col gap-2`} style={{ borderColor: LINE }}>
-                <div className="flex justify-between text-[12.5px]">
-                  <span style={{ color: price.shipping_fee === 0 ? "#7fd6a3" : "#d9c9b4" }}>{price.shipping_fee === 0 ? "ได้สิทธิ์ส่งฟรีแล้ว ✓" : `อีก ${fmt(Math.max(0, free - afterDisc))} ส่งฟรี`}</span>
-                  <span className="text-[#b5a596]">เกณฑ์ {fmt(free)}</span>
-                </div>
-                <div className="h-1.5 rounded-[3px] overflow-hidden" style={{ background: LINE }}><div className="h-full" style={{ width: `${Math.min(100, Math.round((afterDisc / free) * 100))}%`, background: price.shipping_fee === 0 ? "#3f8f63" : "#e8c472" }} /></div>
+            {/* ค่าส่งแยกร้าน — แต่ละร้านส่งของเอง คิดตามที่ร้านตั้ง (ส่งฟรีเมื่อยอดของร้านนั้นถึงเกณฑ์) */}
+            {rows.length > 0 && price && price.groups.length > 0 && (
+              <div className={`${card} !py-3 flex flex-col gap-2.5`} style={{ borderColor: LINE }}>
+                <b className="text-[12.5px] text-[#e8c472]">ค่าส่งแยกตามร้าน{price.groups.length > 1 ? ` · ${price.groups.length} ร้าน ส่งแยกกล่อง` : ""}</b>
+                {price.groups.map((g) => (
+                  <div key={g.vendor_id} className="flex flex-col gap-1.5 text-[12.5px]">
+                    <div className="flex justify-between gap-3"><span className="text-[#d9c9b4] truncate">{g.vendor_name || "ร้านค้า"} · สินค้า {fmt(g.subtotal)}</span><span style={{ color: g.shipping_fee ? "#f3ead9" : "#7fd6a3" }}>{g.shipping_fee ? fmt(g.shipping_fee) : "ส่งฟรี"}</span></div>
+                    {g.free_threshold != null && g.shipping_fee > 0 && (
+                      <>
+                        <span className="text-[11.5px] text-[#b5a596]">ซื้อร้านนี้อีก {fmt(Math.max(0, g.free_threshold - g.subtotal))} ส่งฟรี (เกณฑ์ {fmt(g.free_threshold)})</span>
+                        <div className="h-1.5 rounded-[3px] overflow-hidden" style={{ background: LINE }}><div className="h-full" style={{ width: `${Math.min(100, Math.round((g.subtotal / g.free_threshold) * 100))}%`, background: "#e8c472" }} /></div>
+                      </>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
 
@@ -252,11 +275,27 @@ export function CartFlow() {
                 <div className="rounded-[14px] border border-[#b0182c]/50 bg-[#b0182c]/5 px-3 py-2.5 text-[11.5px] text-[#d9c9b4] leading-relaxed">{GENERAL_WARNING}</div>
                 <div className={`${card} text-[13px] flex flex-col gap-1.5`} style={{ borderColor: LINE }}>
                   <div className="flex justify-between"><span className="text-[#d9c9b4]">ค่าสินค้า</span><span>{fmt(subtotal)}</span></div>
-                  <div className="flex justify-between"><span className="text-[#d9c9b4]">ค่าจัดส่ง</span><span>{price?.shipping_tbd ? "ยังไม่คิดค่าส่ง" : price?.shipping_fee ? fmt(price.shipping_fee) : "ฟรี"}</span></div>
+                  <div className="flex justify-between"><span className="text-[#d9c9b4]">ค่าจัดส่ง</span><span>{price?.shipping_fee ? fmt(price.shipping_fee) : "ฟรี"}</span></div>
                   {!!price?.discount && <div className="flex justify-between text-[#7fd6a3]"><span>ส่วนลด {price.code}</span><span>−{fmt(price.discount)}</span></div>}
                   <div className="flex justify-between border-t pt-1.5 font-lux text-base" style={{ borderColor: LINE }}><span>รวม</span><span className="text-[#e8c472]">{fmt(total)}</span></div>
                   {price?.delivery_days && <p className="text-[12px] text-[#b5a596]">จัดส่งภายในประมาณ {price.delivery_days} หลังยืนยันการชำระ</p>}
                 </div>
+                {wallet != null && (
+                  <div className="flex flex-col gap-2" role="radiogroup" aria-label="วิธีชำระเงิน">
+                    <h2 className="font-lux font-semibold text-[15px] mt-1">วิธีชำระเงิน</h2>
+                    {([["wallet", "จ่ายจากกระเป๋าเงิน", `ยอดใช้ได้ ${fmt(wallet / 100)}${canWallet ? "" : " · ไม่พอสำหรับคำสั่งซื้อนี้"}`], ["slip", "สแกน QR พร้อมเพย์ + แนบสลิป", "ทีมงานตรวจสลิปภายใน 24 ชม."]] as const).map(([k, t, sub]) => {
+                      const on = k === "wallet" ? useWallet : !useWallet;
+                      const off = k === "wallet" && !canWallet;
+                      return (
+                        <button key={k} type="button" role="radio" aria-checked={on} disabled={off} onClick={() => setPay(k)} className={`${card} !py-3 flex gap-3 items-center text-left disabled:opacity-55`} style={{ borderColor: on ? "#e8c472" : LINE }}>
+                          <span className="w-5 h-5 shrink-0 rounded-full border-[1.5px] grid place-items-center" style={{ borderColor: on ? "#e8c472" : "#5a4a3a" }}>{on && <span className="w-2.5 h-2.5 rounded-full bg-[#e8c472]" />}</span>
+                          <span className="flex flex-col"><span className="text-[13.5px] text-[#f3ead9] font-semibold">{t}</span><span className="text-[11.5px] text-[#b5a596]">{sub}</span></span>
+                        </button>
+                      );
+                    })}
+                    {!canWallet && <Link href="/wallet" className="text-[12.5px] text-[#e8c472] self-start min-h-8 inline-flex items-center">เติมเงินเข้ากระเป๋า →</Link>}
+                  </div>
+                )}
                 <Turnstile key={tsKey} onToken={setTs} />
                 <p className="text-[11.5px] text-[#b5a596] leading-relaxed">การสั่งซื้อถือว่ายอมรับ <Link href="/policy/returns" className="text-[#e8c472]">นโยบายคืนสินค้า</Link> · <Link href="/policy/shipping" className="text-[#e8c472]">การจัดส่ง</Link> · <Link href="/policy/privacy-shop" className="text-[#e8c472]">ความเป็นส่วนตัว</Link></p>
                 {err && <p role="alert" className="text-[13px] text-[#ef8a97]">{err}</p>}
@@ -265,9 +304,19 @@ export function CartFlow() {
           </div>
           {rows.length > 0 && (
             <div className={bottomBar} style={{ borderColor: LINE }}>
-              <button type="button" onClick={placeOrder} disabled={busy} className={cta} style={{ ...ctaStyle, opacity: missing ? 0.45 : 1 }}>
-                {busy ? "กำลังสั่งซื้อ…" : missing || `ไปชำระเงิน · ${fmt(total)}`}
-              </button>
+              {askPay ? (
+                <div role="alertdialog" aria-label="ยืนยันชำระจากกระเป๋าเงิน" className="flex flex-col gap-2.5">
+                  <p className="text-[13px] text-[#d9c9b4] text-center">ตัดเงิน <b className="text-[#e8c472]">{fmt(total)}</b> จากกระเป๋าเงิน (คงเหลือ {fmt(Math.max(0, (wallet ?? 0) / 100 - total))})</p>
+                  <div className="flex gap-2.5">
+                    <button type="button" onClick={() => setAskPay(false)} className="w-[100px] shrink-0 h-[52px] rounded-[14px] border bg-[#211a18] text-[#e8c472] font-semibold" style={{ borderColor: LINE }}>ยกเลิก</button>
+                    <button type="button" onClick={() => placeOrder(true)} disabled={busy} className={cta} style={ctaStyle}>{busy ? "กำลังชำระ…" : "ยืนยันชำระ"}</button>
+                  </div>
+                </div>
+              ) : (
+                <button type="button" onClick={() => placeOrder()} disabled={busy} className={cta} style={{ ...ctaStyle, opacity: missing ? 0.45 : 1 }}>
+                  {busy ? "กำลังสั่งซื้อ…" : missing || (useWallet ? `จ่ายจากกระเป๋าเงิน · ${fmt(total)}` : `ไปชำระเงิน · ${fmt(total)}`)}
+                </button>
+              )}
             </div>
           )}
         </>
@@ -308,7 +357,7 @@ export function CartFlow() {
           <h2 className="font-lux font-bold text-2xl">ได้รับคำสั่งซื้อแล้ว</h2>
           <div className="text-[13px] text-[#d9c9b4]">เลขคำสั่งซื้อ</div>
           <div className="font-lux text-[22px] tracking-[1px] text-[#e8c472]">{placed?.order_no}</div>
-          <p className="text-[13px] text-[#d9c9b4] leading-[1.7]">สถานะ: รอตรวจสลิป · เมื่อยืนยันแล้วจะส่งเลขพัสดุไปที่เบอร์ {placed?.phone || phone}<br /><span className="text-[#d9c9b4]">แพ็กมิดชิด · ดูสถานะได้ที่ "ติดตามคำสั่งซื้อ" ด้วยเลขนี้ + เบอร์มือถือ</span></p>
+          <p className="text-[13px] text-[#d9c9b4] leading-[1.7]">{placed?.wallet ? <>ชำระจากกระเป๋าเงินแล้ว {fmt(placed.total)} · ร้านกำลังเตรียมจัดส่ง จะส่งเลขพัสดุไปที่เบอร์ {placed.phone || phone}</> : <>สถานะ: รอตรวจสลิป · เมื่อยืนยันแล้วจะส่งเลขพัสดุไปที่เบอร์ {placed?.phone || phone}</>}<br /><span className="text-[#d9c9b4]">แพ็กมิดชิด · ดูสถานะได้ที่ "ติดตามคำสั่งซื้อ" ด้วยเลขนี้ + เบอร์มือถือ</span></p>
           <Link href={placed?.track || "/orders/track"} className={`${cta} mt-4`} style={ctaStyle}>ติดตามคำสั่งซื้อ</Link>
           <Link href="/market" className="w-full h-[52px] rounded-[14px] border bg-[#211a18] text-[#e8c472] font-lux font-semibold grid place-items-center" style={{ borderColor: "rgba(232,196,114,.55)" }}>กลับหน้า Marketplace</Link>
           <Link href="/" className="text-[13px] p-3 text-[#e8c472]">ไปหาเพื่อนกิน เพื่อนเที่ยว →</Link>

@@ -6,7 +6,8 @@ import { notify } from "@/lib/bookings";
 // กระเป๋าแยกของพาร์ทเนอร์ (โรงแรม/สปา) และร้านค้า Marketplace + คำขอถอน
 // รายได้เข้า <owner>.available (สปา = ค่าห้องเมื่อนัดจบ · ร้าน = ส่วนของร้านเมื่อออเดอร์สำเร็จ)
 // ถอน: available → withdrawing (ขอ) → CEO อนุมัติ → แอดมินโอนแล้ว = withdrawing → platform.bank · ไม่อนุมัติ/โอนไม่สำเร็จ = คืน available
-export type PayoutOwner = "partner" | "vendor";
+// ลูกค้าถอนยอดในกระเป๋า (ยกเว้นเครดิตโบนัส) ใช้ทางเดียวกัน owner_type = customer (ตรวจยอดถอนได้ที่ ./customer.ts)
+export type PayoutOwner = "partner" | "vendor" | "customer";
 export type Bank = { bank: string; account: string; name: string };
 export type PayoutRequest = {
   id: string; owner_type: PayoutOwner; owner_id: string; owner_name: string; amount_satang: number; bank: Bank;
@@ -14,7 +15,7 @@ export type PayoutRequest = {
   note: string | null; created_at: string; paid_at: string | null;
 };
 export class PayoutError extends Error {}
-export const OWNER_LABEL: Record<PayoutOwner, string> = { partner: "พาร์ทเนอร์", vendor: "ร้านค้า" };
+export const OWNER_LABEL: Record<PayoutOwner, string> = { partner: "พาร์ทเนอร์", vendor: "ร้านค้า", customer: "ลูกค้า" };
 export const MIN_PAYOUT = 10000; // ฿100
 
 const isDemo = !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -41,6 +42,8 @@ async function insertReq(row: Pick<PayoutRequest, "owner_type" | "owner_id" | "o
   if (isDemo) { if (demo.some((p) => p.owner_type === row.owner_type && p.owner_id === row.owner_id && isOpen(p.status))) throw new PayoutError("มีคำขอถอนที่รอดำเนินการอยู่แล้ว"); demo.unshift(full); return full; }
   const { data, error } = await db().from("payout_requests").insert(full).select().single();
   if (error?.code === "23505") throw new PayoutError("มีคำขอถอนที่รอดำเนินการอยู่แล้ว");
+  // ยังไม่รัน supabase/wallet/0006_customer_withdraw.sql (owner_type customer ไม่ผ่าน check) — ไม่ให้พังเป็น 500
+  if (error?.code === "23514") throw new PayoutError("ระบบถอนเงินยังไม่เปิดใช้งาน · ติดต่อทีมงานทาง LINE");
   if (error) throw error;
   return data as PayoutRequest;
 }
@@ -66,12 +69,15 @@ export function cleanBank(b: unknown): Bank | null {
   return bank && account.replace(/-/g, "").length >= 10 && name ? { bank, account, name } : null;
 }
 
-/** เจ้าของกระเป๋าขอถอน (ทั้งก้อนหรือบางส่วน) → รอ CEO อนุมัติ */
-export async function requestPayout(owner_type: PayoutOwner, owner_id: string, owner_name: string, amountBaht: number, bankIn: unknown): Promise<PayoutRequest> {
+/** เจ้าของกระเป๋าขอถอน (ทั้งก้อนหรือบางส่วน) → รอ CEO อนุมัติ
+ *  opts.min = ขั้นต่ำ (สตางค์) · opts.max = เพดานที่ถอนได้ (สตางค์ — ลูกค้า: ยอดหักเครดิตโบนัสแล้ว) */
+export async function requestPayout(owner_type: PayoutOwner, owner_id: string, owner_name: string, amountBaht: number, bankIn: unknown, opts: { min?: number; max?: number } = {}): Promise<PayoutRequest> {
   const bank = cleanBank(bankIn);
   if (!bank) throw new PayoutError("กรอกธนาคาร เลขบัญชี (10 หลักขึ้นไป) และชื่อบัญชี");
   const amt = Math.round(Number(amountBaht) * 100);
-  if (!(amt >= MIN_PAYOUT)) throw new PayoutError("ถอนขั้นต่ำ ฿100");
+  const min = opts.min ?? MIN_PAYOUT;
+  if (!(amt >= min)) throw new PayoutError(`ถอนขั้นต่ำ ${baht(min)}`);
+  if (opts.max != null && amt > opts.max) throw new PayoutError(`ถอนได้สูงสุด ${baht(Math.max(0, opts.max))} (ไม่รวมเครดิตโบนัส)`);
   const row = await insertReq({ owner_type, owner_id, owner_name: owner_name.slice(0, 120), amount_satang: amt, bank });
   try {
     const r = await move<PayoutRequest>({ table: "payout_requests", id: row.id, from: ["requested"], patch: { status: "requested" }, demoRow: demoRow(row.id) },
@@ -81,6 +87,7 @@ export async function requestPayout(owner_type: PayoutOwner, owner_id: string, o
       ] });
     if (!r) throw new PayoutError("สร้างคำขอไม่สำเร็จ");
     await notify({ user_type: "admin", user_id: "ceo", kind: "payout_request", title: `ขอถอนเงิน${OWNER_LABEL[owner_type]} ${owner_name} ${baht(amt)} · รอ CEO อนุมัติ`, body: bank.bank, url: "/admin/payroll" }).catch(() => {});
+    if (owner_type === "customer") await notify({ user_type: "customer", user_id: owner_id, kind: "withdraw", title: `ส่งคำขอถอน ${baht(amt)} แล้ว`, body: "รอทีมงานอนุมัติและโอนเข้าบัญชีของคุณ", url: "/wallet" }).catch(() => {});
     return r;
   } catch (e) {
     await dropReq(row.id).catch(() => {});
@@ -100,6 +107,7 @@ export async function approvePayout(id: string, ceo: string): Promise<PayoutRequ
   }
   if (!r) throw new PayoutError("คำขอนี้ไม่ได้รออนุมัติ");
   await notify({ user_type: "admin", user_id: "finance", kind: "payout_request", title: `CEO อนุมัติถอนเงิน${OWNER_LABEL[r.owner_type]} · รอโอน`, body: `${r.owner_name} ${baht(Number(r.amount_satang))}`, url: "/admin/payouts" }).catch(() => {});
+  if (r.owner_type === "customer") await notify({ user_type: "customer", user_id: r.owner_id, kind: "withdraw", title: `อนุมัติถอน ${baht(Number(r.amount_satang))} แล้ว`, body: "ทีมงานกำลังโอนเข้าบัญชีของคุณ", url: "/wallet" }).catch(() => {});
   return r;
 }
 
@@ -115,5 +123,9 @@ export async function settlePayout(id: string, actor: string, to: "paid" | "fail
   const r = await move<PayoutRequest>({ table: "payout_requests", id, from, patch: to === "paid" ? { status: "paid", paid_at: now() } : { status: to, note: note.slice(0, 200) || null }, demoRow: demoRow(id) },
     { kind: "payout", ref: { type: "payout_request", id }, idem: `psettle:${id}`, note: to === "paid" ? `โอนแล้ว ${baht(amt)}` : `คืนยอด · ${note || (to === "rejected" ? "ไม่อนุมัติ" : "โอนไม่สำเร็จ")}`, actor, legs });
   if (!r) throw new PayoutError("คำขอนี้ปิดไปแล้ว");
+  // ลูกค้า: แจ้งผลทุกครั้ง (โอนแล้ว / ไม่อนุมัติ / โอนไม่สำเร็จ = คืนเข้ากระเป๋า)
+  if (r.owner_type === "customer") await notify({ user_type: "customer", user_id: r.owner_id, kind: "withdraw",
+    title: to === "paid" ? `โอน ${baht(amt)} เข้าบัญชีแล้ว` : to === "rejected" ? "คำขอถอนไม่ได้รับอนุมัติ" : "โอนเงินไม่สำเร็จ",
+    body: to === "paid" ? `${w.bank.bank} · ${w.bank.account}` : `${note ? `${note} · ` : ""}คืน ${baht(amt)} เข้ากระเป๋าแล้ว`, url: "/wallet" }).catch(() => {});
   return r;
 }

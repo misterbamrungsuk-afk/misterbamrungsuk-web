@@ -25,6 +25,7 @@ export const PATH_ROLES: { prefix: string; roles: AdminRole[] }[] = [
   { prefix: "/admin/applicants", roles: ["super", "finance"] },
   { prefix: "/admin/slips", roles: ["super", "finance"] },
   { prefix: "/admin/wallet", roles: ["super", "finance"] },
+  { prefix: "/admin/stays", roles: ["super", "finance"] },
   { prefix: "/admin/partners", roles: ["super", "finance"] },
   { prefix: "/admin/market", roles: ["super", "finance"] },
   { prefix: "/admin/cohorts", roles: ["super", "finance"] },
@@ -39,6 +40,7 @@ export const PATH_ROLES: { prefix: string; roles: AdminRole[] }[] = [
   { prefix: "/admin/orders", roles: ["super", "finance", "cs"] },
   { prefix: "/admin/chats", roles: ["super", "cs"] },
   { prefix: "/admin/audit", roles: ["super", "finance", "cs", "kyc"] },
+  { prefix: "/admin/appeals", roles: ["super", "cs"] },
   { prefix: "/admin", roles: ["super", "finance", "cs", "kyc"] }, // หน้าภาพรวม (ต้องอยู่ท้ายสุด)
 ];
 

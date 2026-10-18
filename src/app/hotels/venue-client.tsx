@@ -8,12 +8,15 @@ import { useRouter } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { LogoBadge } from "@/components/logo-badge";
 import type { Logo } from "@/lib/avatar";
+import { StayBookSheet, type RoomOpt } from "./stay-book";
 
 export type VenueCard = { id: string; name: string; province: string; area: string; img: string; tags: string; price: number | null; sample: boolean; logo?: Logo | null };
 export type VenueFull = {
   id: string; name: string; type: "โรงแรม" | "สปา"; province: string; area: string; sample: boolean; description: string;
   gallery: string[]; facts: string[]; services: { name: string; desc: string; price: number; base: number }[];
   tel: string; telLabel: string; line: string; map: string; logo?: Logo | null; address?: string;
+  /** ประเภทห้องที่จองในแอปได้ (โรงแรมพาร์ทเนอร์จริง) — มี = กด "จองห้อง" ชำระจากกระเป๋า */
+  rooms?: RoomOpt[];
 };
 
 const BD = "rgba(232,196,114,.38)";
@@ -136,6 +139,9 @@ export function VenueDetailView({ v }: { v: VenueFull }) {
   const [date, setDate] = useState<string | null>(null);
   const [dates, setDates] = useState<string[]>(["วันนี้", "พรุ่งนี้"]);
   const [toast, flash] = useToast();
+  const stayRooms = hotel ? v.rooms ?? [] : [];
+  const canStay = stayRooms.length > 0;
+  const [stay, setStay] = useState<string | null>(null);
   const G = v.gallery;
   const sv = v.services[svc];
 
@@ -200,7 +206,19 @@ export function VenueDetailView({ v }: { v: VenueFull }) {
           {v.facts.length > 0 && <div className="flex flex-wrap gap-2">{v.facts.map((t) => <span key={t} className="max-w-full px-2.5 py-1.5 rounded-[10px] bg-[#211a18] text-[12px] text-[#d9c9b4] [overflow-wrap:anywhere]" style={{ border: `1px solid ${BD}` }}>{t}</span>)}</div>}
           {v.description && <p className="m-0 text-[13px] text-[#d9c9b4] leading-[1.7] whitespace-pre-line">{v.description}</p>}
           <div className="font-lux font-semibold text-[16px] mt-1">{hotel ? "ห้องพักและราคา" : "บริการและราคา"}</div>
-          {v.services.length ? (
+          {canStay ? (
+            <div className="flex flex-col gap-2">
+              {stayRooms.map((r) => (
+                <button key={r.id} type="button" onClick={() => setStay(r.id)} className="flex items-center gap-2.5 p-3 rounded-[14px] text-[#f3ead9] text-left min-h-14 bg-[#211a18]" style={{ border: `1px solid ${BD}` }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {r.photos[0] && <img src={r.photos[0]} alt="" className="w-16 h-16 rounded-[10px] object-cover shrink-0" />}
+                  <span className="flex-1 min-w-0"><span className="block font-semibold text-[14px]">{r.name}</span><span className="block text-[12px] text-[#d9c9b4]">พักได้ {r.capacity} คน/ห้อง{r.description ? ` · ${r.description}` : ""}</span></span>
+                  <span className="text-right shrink-0"><span className="font-lux font-semibold text-[#e8c472]">{fmt(r.price_satang / 100)}</span><span className="block text-[11px] text-[#d9c9b4]">/คืน · จอง ›</span></span>
+                </button>
+              ))}
+              <div className="text-[12px] text-[#b5a596]">จองและชำระผ่านกระเป๋า · ยกเลิกฟรีถึง 24 ชม. ก่อนเช็กอิน</div>
+            </div>
+          ) : v.services.length ? (
             <div role="radiogroup" aria-label={hotel ? "ห้องพักและราคา" : "บริการและราคา"} className="flex flex-col gap-2">
               {v.services.map((s, i) => {
                 const on = i === svc;
@@ -230,7 +248,7 @@ export function VenueDetailView({ v }: { v: VenueFull }) {
       </div>
 
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] md:max-w-[760px] px-[18px] pt-3 pb-[22px] bg-[#171211] flex gap-2.5 z-20" style={{ borderTop: `1px solid ${BD}` }}>
-        <button type="button" onClick={() => setSheet(true)} className="basis-[132px] shrink-0 h-[52px] rounded-[14px] bg-[#211a18] text-[#e8c472] font-lux font-semibold text-[15px]" style={{ border: "1px solid #e8c472" }}>ติดต่อ/จอง</button>
+        <button type="button" onClick={() => (canStay ? setStay(stayRooms[0].id) : setSheet(true))} className="basis-[132px] shrink-0 h-[52px] rounded-[14px] bg-[#211a18] text-[#e8c472] font-lux font-semibold text-[15px]" style={{ border: "1px solid #e8c472" }}>{canStay ? "จองห้อง" : "ติดต่อ/จอง"}</button>
         <button type="button" onClick={meet} className="btn-red-lux flex-1 h-[52px] rounded-[14px] font-lux font-semibold text-white text-[15px]">นัดเพื่อนที่นี่</button>
       </div>
 
@@ -258,6 +276,7 @@ export function VenueDetailView({ v }: { v: VenueFull }) {
           </div>
         </div>
       )}
+      {stay && <StayBookSheet hotelId={v.id} hotelName={v.name} rooms={stayRooms} initialRoom={stay} onClose={() => setStay(null)} />}
       <Toast text={toast} />
     </main>
   );

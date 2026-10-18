@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { baht, imageUrl, type Product } from "@/lib/market/config";
 import { AddToCart } from "./market-ui";
+import { sized } from "@/lib/thumb-url";
 
 export function FdaBadge() {
   return <span className="inline-flex items-center h-6 px-2.5 rounded-full border border-emerald-500/70 text-emerald-300 text-[11px] font-semibold">✓ อย. ถูกต้อง</span>;
 }
 
 export function ProductImage({ p, className = "" }: { p: Product; className?: string }) {
-  const src = imageUrl(p.images[0]);
+  const src = imageUrl(p.images[0]) && sized(imageUrl(p.images[0])!, 480); // การ์ดสินค้าใช้รูปย่อ
   return src
     // eslint-disable-next-line @next/next/no-img-element
     ? <img src={src} alt={p.name} className={`object-cover ${className}`} />

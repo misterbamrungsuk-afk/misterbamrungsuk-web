@@ -38,7 +38,8 @@ export function ProductDetailView({ p, kind, vendor, bundle, bundleAuto, related
   const shown = more ? rl : rl.slice(0, 2);
   const bSel = [p, ...bundle.filter((b) => bun[b.id])];
   const bSum = bSel.reduce((s, b) => s + b.price, 0);
-  const shipText = ship.fee == null ? "ทีมงานแจ้งค่าส่ง (ถ้ามี)" : ship.fee === 0 ? "ส่งฟรี" : `${fmt(ship.fee)}${ship.free != null ? ` · ส่งฟรีเมื่อครบ ${fmt(ship.free)}` : ""}`;
+  // ค่าส่งของร้านนี้ (คิดแยกต่อร้านในตะกร้า)
+  const shipText = !ship.fee ? "ส่งฟรี" : `${fmt(ship.fee)}${ship.free != null ? ` · ส่งฟรีเมื่อครบ ${fmt(ship.free)}` : ""}`;
 
   const flash = (t: string) => { setAdded(t); setTimeout(() => setAdded(""), 2500); };
   const add = () => {
@@ -101,7 +102,7 @@ export function ProductDetailView({ p, kind, vendor, bundle, bundleAuto, related
         </div>
         <div className={`${card} flex flex-col gap-2 text-[12.5px]`} style={{ borderColor: LINE }}>
           <div className="flex justify-between gap-3"><span className="text-[#d9c9b4]">จัดส่งถึง</span><span>ทั่วประเทศ</span></div>
-          {ship.days && <div className="flex justify-between gap-3"><span className="text-[#d9c9b4]">ได้รับประมาณ</span><span className="text-right">{ship.days} หลังยืนยันสลิป</span></div>}
+          {ship.days && <div className="flex justify-between gap-3"><span className="text-[#d9c9b4]">ได้รับประมาณ</span><span className="text-right">{ship.days} หลังยืนยันการชำระ</span></div>}
           <div className="flex justify-between gap-3"><span className="text-[#d9c9b4]">ค่าส่ง</span><span className="text-right">{shipText}</span></div>
           <div className="flex gap-2 items-center pt-2 border-t text-[#d9c9b4]" style={{ borderColor: LINE }}><span className="text-[#e8c472]"><BoxIcon /></span>แพ็กมิดชิด · กล่องสีพื้น ไม่ระบุชื่อสินค้าหรือชื่อร้านบนกล่อง</div>
         </div>

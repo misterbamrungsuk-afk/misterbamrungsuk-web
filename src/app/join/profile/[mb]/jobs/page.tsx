@@ -7,6 +7,7 @@ import { PtHead, PtNav, PtPage, baht, loadPt, ptHref } from "../_pt";
 import { JobPost } from "../_ptc";
 import { PtIncoming, PtPosts, PtQuick } from "../_ptc3";
 import { GATE_MSG, GATE_SHORT, isPtActive } from "@/lib/join/pt-ui";
+import { interestsForPt } from "@/lib/interests";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "ประกาศงาน — Mister Bamrungsuk" };
@@ -22,6 +23,7 @@ export default async function JobsPage({ params, searchParams }: { params: Promi
   const top = c.x.tier === "top";
   const svc = c.row.package === "B" ? cfg.price3h.massage : cfg.price3h.eat;
   const active = isPtActive(c.x);
+  const fans = active ? await interestsForPt(c.row).catch(() => ({ count: 0, list: [] })) : { count: 0, list: [] };
   const meta = `${top ? "TOP" : "Silver"} · 3 ชม. ${baht(top ? svc.top : svc.silver)} · ${c.row.package === "B" ? "สายนวด" : "สายกินเที่ยว"}`;
 
   return (
@@ -40,7 +42,7 @@ export default async function JobsPage({ params, searchParams }: { params: Promi
           ? <JobPost mb={c.mb} t={c.t} init={c.x.post ?? null} photo={photo} meta={meta} />
           : <div className="rounded-3xl bg-[#211a18] flex flex-col gap-1" style={{ padding: "20px 16px" }}><b className="font-semibold text-[#e8c472]">{GATE_SHORT}</b><span className="text-[14px] font-light text-[#d9c9b4]">{GATE_MSG} (เปิดให้บริการ {TRAINING.openService})</span></div>}
         <div className="min-w-0">
-          {/* ยังไม่มีระบบให้ลูกค้ากดสนใจประกาศ "วันนี้ว่าง" → ไม่แสดงตัวนับ "คนที่สนใจ" ที่เป็น 0 ตลอด · ลูกค้าที่เห็นประกาศจะจองเข้ามาเป็น "งานเข้า" ด้านบน */}
+          {active && <Link href={`${ptHref(c, "posts")}#interested`} className="rounded-[20px] bg-[#211a18] flex items-center justify-between text-[14px] hover:text-inherit" style={{ padding: "14px 16px", marginBottom: 10 }}>คนที่สนใจประกาศวันนี้ว่าง<b className="text-[18px]" style={{ color: "#e8c472" }}>{fans.count}</b></Link>}
           {active && <div className="rounded-[20px] bg-[#272013] text-[14px] font-light text-[#d9c9b4]" style={{ padding: "16px 14px" }}>ลูกค้าที่เห็นประกาศจะจองเข้ามาทันที · งานใหม่ขึ้นที่ &quot;งานเข้า&quot; ด้านบนและในแจ้งเตือน</div>}
           <Link href={ptHref(c, "posts")} className="mt-4 rounded-[18px] bg-[#211a18] flex items-center gap-3 hover:text-inherit" style={{ padding: 16 }}>
             <span className="flex-1 min-w-0 flex flex-col"><span className="font-semibold">โพสต์ของฉัน</span><span className="text-[13px] font-light text-[#d9c9b4] truncate">{c.x.listing?.title || "หัวข้อ · กติกา · รูปปก (บัญชีละ 1 โพสต์)"}</span></span>

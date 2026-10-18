@@ -30,7 +30,7 @@ export async function payrollRows(day: string): Promise<{ rows: PayRow[]; sample
     const waiting = done.filter((b) => !b.matured_at);
     const show = [...new Map([...today, ...waiting].map((b) => [b.id, b])).values()].sort((x, y) => Date.parse(y.completed_at ?? y.starts_at) - Date.parse(x.completed_at ?? x.starts_at));
     const jobs: PayJob[] = await Promise.all(show.map(async (b) => ({
-      id: b.id, code: b.code, starts_at: b.starts_at, completed_at: b.completed_at, hours: b.hours, customer: b.customer_name || (b.customer_email ?? "").split("@")[0] || "ลูกค้า",
+      id: b.id, code: b.code, starts_at: b.starts_at, completed_at: b.completed_at, hours: b.hours + (b.extra_hours ?? 0), customer: b.customer_name || (b.customer_email ?? "").split("@")[0] || "ลูกค้า",
       price: b.price_satang, tip: b.tip_satang ?? 0, pct: b.share_pct ?? null, pt: await ptAmount(b), matured: !!b.matured_at,
     })));
     const ptOf = (list: typeof done) => list.reduce((t, b) => t + (jobs.find((j) => j.id === b.id)?.pt ?? 0), 0);

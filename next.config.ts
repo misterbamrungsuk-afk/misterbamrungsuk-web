@@ -31,7 +31,7 @@ const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  { key: "Permissions-Policy", value: "geolocation=(self), camera=(self), microphone=(), payment=(), usb=(), interest-cohort=()" },
+  { key: "Permissions-Policy", value: "geolocation=(self), camera=(self), microphone=(self), payment=(), usb=(), interest-cohort=()" },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
   { key: "X-DNS-Prefetch-Control", value: "off" },
 ];
@@ -53,7 +53,7 @@ const nextConfig: NextConfig = {
       // CSP ของหน้าเว็บ — ไม่ใส่ให้ /api (ไฟล์ที่ผู้ใช้อัปมี CSP sandbox ของตัวเอง ห้ามถูกทับ)
       { source: "/((?!api/).*)", headers: [{ key: "Content-Security-Policy", value: csp }] },
       // ข้อมูลส่วนตัว/API ห้ามแคชที่ proxy หรือเบราว์เซอร์ร่วม
-      { source: "/api/:path((?!public/).*)", headers: [{ key: "Cache-Control", value: "no-store" }, { key: "X-Robots-Tag", value: "noindex" }] },
+      { source: "/api/:path((?!public/|market/image).*)", headers: [{ key: "Cache-Control", value: "no-store" }, { key: "X-Robots-Tag", value: "noindex" }] },
       { source: "/admin/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }, { key: "Cache-Control", value: "no-store" }] },
     ];
   },

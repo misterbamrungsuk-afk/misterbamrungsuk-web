@@ -19,6 +19,7 @@ export type Booking = {
   accepted_at: string | null; declined_at: string | null; cancelled_at: string | null; checked_in_at: string | null; completed_at: string | null; created_at: string; updated_at: string;
   pt_done_at?: string | null; tip_satang?: number; share_pct?: number | null; matured_at?: string | null; resolution?: Record<string, unknown> | null;
   pt_pending_satang?: number | null; // ยอดที่เข้า PT.pending จริง (0002_atomic) — ปล่อยเงินตามนี้
+  extra_hours?: number | null; // ชม. ที่ต่อระหว่างนัด (0011_changes) — ค่าบริการรวมไว้ใน price_satang แล้ว
 };
 export type Message = { id: number; booking_id: string; sender_type: "customer" | "parttime" | "system"; sender_id: string | null; body: string; blocked: boolean; flag?: string | null; created_at: string; read_at: string | null };
 export type Notice = { id: number; user_type: "customer" | "parttime" | "admin"; user_id: string; kind: string; title: string; body: string | null; url: string | null; read_at: string | null; created_at: string };
@@ -225,7 +226,7 @@ export async function createBooking(cust: { sub: string; email: string; name?: s
     if (requirePin()) throw new BookingError("ปักหมุดจุดนัดบนแผนที่ก่อนส่งคำขอ", "pin");
     console.info("booking without map pin", input.place.type, a.mb_code); // ไม่มีหมุด = เพื่อนนำทาง/ETA ไม่ได้
   }
-  const clash = (await listForParttime(a.id)).some((b) => ["requested", "accepted", "checked_in"].includes(b.status) && Math.abs(Date.parse(b.starts_at) - start) < Math.max(b.hours, input.hours) * 3600_000);
+  const clash = (await listForParttime(a.id)).some((b) => ["requested", "accepted", "checked_in"].includes(b.status) && Math.abs(Date.parse(b.starts_at) - start) < Math.max(b.hours + (b.extra_hours ?? 0), input.hours) * 3600_000);
   if (clash) throw new BookingError("ช่วงเวลานี้เพื่อนมีนัดแล้ว ลองเลือกเวลาอื่น", "clash");
   if (input.note && hasContact(input.note)) throw new BookingError("ข้อความฝากถึงเพื่อนห้ามมีเบอร์โทร LINE หรือช่องทางติดต่อ");
   const price = (await priceFor(a, input.hours)) * 100;

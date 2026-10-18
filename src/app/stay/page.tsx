@@ -43,6 +43,7 @@ export default async function StayHome() {
       <nav className="mx-[18px] mt-3.5 grid grid-cols-2 gap-2" aria-label="เลือกประเภท">
         <Link href="/hotels" className={tab} style={{ borderColor: LINE }}>โรงแรมทั้งหมด</Link>
         <Link href="/spas" className={tab} style={{ borderColor: LINE }}>สปาทั้งหมด</Link>
+        <Link href="/stays/bookings" className={`${tab} col-span-2 !min-h-11 !text-[13px] text-[#e8c472]`} style={{ borderColor: LINE }}>การจองห้องพักของฉัน →</Link>
       </nav>
 
       {partners.hotels.length > 0 && (

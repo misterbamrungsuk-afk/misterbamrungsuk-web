@@ -119,7 +119,7 @@ export function VendorPortal({ email, initial }: { email: string; initial: Vendo
         {tab === "profile" && (
           <div className="grid gap-4 md:grid-cols-[360px_1fr] items-start">
             <section className="rounded-2xl border border-ink-600 p-5 flex flex-col items-center gap-2"><b className="self-start">รูปโปรไฟล์ / โลโก้ร้าน</b><span className="text-xs text-ink-300 self-start">แสดงบนหน้าร้านค้าสาธารณะ</span><AvatarEditor as="vendor" letter={d.vendor.name} size={140} onChange={(m) => setLogo(m)} /></section>
-            <ShopInfo d={d} reload={reload} setMsg={setMsg} />
+            <div className="flex flex-col gap-4"><ShopInfo d={d} reload={reload} setMsg={setMsg} /><Shipping d={d} reload={reload} setMsg={setMsg} /></div>
           </div>
         )}
       </div>
@@ -152,6 +152,35 @@ function ShopInfo({ d, reload, setMsg }: Sub) {
         {flaggedClaims(`${f.name} ${f.description}`).length > 0 && <p className="text-xs text-crimson-300">พบคำที่อาจเข้าข่ายโฆษณาเกินจริง: {flaggedClaims(`${f.name} ${f.description}`).join(", ")}</p>}
         <button onClick={save} disabled={busy || !dirty || f.name.trim().length < 2} className="btn-crimson h-11 rounded-full text-sm disabled:opacity-50">{busy ? "กำลังบันทึก…" : "บันทึกข้อมูลร้าน"}</button>
       </div>
+    </section>
+  );
+}
+
+/** ค่าส่งของร้าน — คิดแยกต่อร้านในตะกร้า (ร้านส่งของเอง) · ค่าส่งเข้ากระเป๋าร้านเต็มจำนวน ไม่หัก GP */
+function Shipping({ d, reload, setMsg }: Sub) {
+  const s = (n: number | null | undefined) => (n == null ? "" : String(n));
+  const [f, setF] = useState({ fee: s(d.vendor.shipping_fee), free: s(d.vendor.free_threshold) });
+  const [busy, setBusy] = useState(false);
+  const dirty = f.fee !== s(d.vendor.shipping_fee) || f.free !== s(d.vendor.free_threshold);
+  const def = d.shipDefault;
+  const save = async () => {
+    setBusy(true);
+    const out = await post("/api/market/vendor", { op: "shipping", shipping_fee: f.fee === "" ? null : Number(f.fee), free_threshold: f.fee === "" || f.free === "" ? null : Number(f.free) });
+    setBusy(false);
+    setMsg(out.ok ? "บันทึกค่าส่งแล้ว · ใช้กับคำสั่งซื้อใหม่" : out.error || "บันทึกไม่สำเร็จ");
+    if (out.ok) await reload();
+  };
+  const num = (v: string) => v.replace(/[^\d.]/g, "").slice(0, 8);
+  return (
+    <section className={card}>
+      <h3 className="font-semibold">ค่าจัดส่ง</h3>
+      <p className="text-xs text-[#9a8a85] mt-1">คิดต่อคำสั่งซื้อ (แยกต่อร้าน) · ค่าส่งไม่ถูกหัก GP และเข้ากระเป๋าร้านเมื่อออเดอร์สำเร็จ · เว้นว่าง = ใช้ค่าส่งกลาง ({def.shipping_fee ? `฿${baht(def.shipping_fee)}${def.free_threshold != null ? ` · ส่งฟรีเมื่อครบ ฿${baht(def.free_threshold)}` : ""}` : "ส่งฟรี"})</p>
+      <div className="grid grid-cols-2 gap-2 mt-3">
+        <div><label className={lbl} htmlFor="vs-fee">ค่าส่ง (บาท/ออเดอร์)</label><input id="vs-fee" inputMode="decimal" placeholder="ใช้ค่าส่งกลาง" className="input-dark w-full" value={f.fee} onChange={(e) => setF({ ...f, fee: num(e.target.value) })} /></div>
+        <div><label className={lbl} htmlFor="vs-free">ส่งฟรีเมื่อซื้อครบ (บาท)</label><input id="vs-free" inputMode="decimal" placeholder="ไม่มี" disabled={f.fee === ""} className="input-dark w-full disabled:opacity-50" value={f.free} onChange={(e) => setF({ ...f, free: num(e.target.value) })} /></div>
+      </div>
+      <p className="text-xs text-ink-300 mt-2">ใส่ 0 = ส่งฟรีทุกออเดอร์</p>
+      <button onClick={save} disabled={busy || !dirty} className="btn-crimson h-11 rounded-full text-sm w-full mt-3 disabled:opacity-50">{busy ? "กำลังบันทึก…" : "บันทึกค่าส่ง"}</button>
     </section>
   );
 }
