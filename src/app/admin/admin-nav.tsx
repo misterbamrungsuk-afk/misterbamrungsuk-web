@@ -11,6 +11,7 @@ export type AdminTab = { href: string; label: string; exact?: boolean; divider?:
 export const ADMIN_TABS: AdminTab[] = [
   { href: "/admin", label: "ภาพรวม", exact: true },
   { href: "/admin/audit", label: "SOS · แจ้งเตือนระบบ" },
+  { href: "/admin/errors", label: "ข้อผิดพลาดหน้าเว็บ" },
   { href: "/admin/orders", label: "ตรวจงาน" },
   { href: "/admin/chats", label: "แชท · คำห้ามส่ง" },
   { href: "/admin/reports", label: "รายงานผู้ใช้" },

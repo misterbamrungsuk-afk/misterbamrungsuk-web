@@ -40,6 +40,7 @@ export const PATH_ROLES: { prefix: string; roles: AdminRole[] }[] = [
   { prefix: "/admin/promos", roles: ["super", "finance"] },
   { prefix: "/admin/orders", roles: ["super", "finance", "cs"] },
   { prefix: "/admin/chats", roles: ["super", "cs"] },
+  { prefix: "/admin/errors", roles: ["super"] },
   { prefix: "/admin/audit", roles: ["super", "finance", "cs", "kyc"] },
   { prefix: "/admin/appeals", roles: ["super", "cs"] },
   { prefix: "/admin", roles: ["super", "finance", "cs", "kyc"] }, // หน้าภาพรวม (ต้องอยู่ท้ายสุด)

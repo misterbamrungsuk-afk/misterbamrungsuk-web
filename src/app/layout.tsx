@@ -6,6 +6,7 @@ import { PwaRegister } from "@/components/pwa-register";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { CookieConsent } from "@/components/cookie-consent";
 import { NavTrack } from "@/components/smart-back";
+import { ErrorReporter, EARLY_ERROR_SCRIPT } from "@/components/error-reporter";
 
 const plex = IBM_Plex_Sans_Thai({ subsets: ["thai", "latin"], weight: ["400", "500", "600", "700"], variable: "--font-plex" });
 const kanit = Kanit({ subsets: ["thai", "latin"], weight: ["500", "600", "700", "800"], variable: "--font-kanit" });
@@ -37,12 +38,15 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="th" className={`${plex.variable} ${kanit.variable} ${cormorant.variable} ${noto.variable} ${archivo.variable}`}>
+      {/* จับ error ตั้งแต่ก่อน React hydrate (เช่น #418) ไว้ในคิว → ErrorReporter ส่งต่อ */}
+      <head><script dangerouslySetInnerHTML={{ __html: EARLY_ERROR_SCRIPT }} /></head>
       <body>
         <I18nProvider>{children}</I18nProvider>
         <PwaRegister />
         <ScrollReveal />
         <CookieConsent />
         <NavTrack />
+        <ErrorReporter />
       </body>
     </html>
   );
