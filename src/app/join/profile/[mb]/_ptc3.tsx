@@ -188,6 +188,7 @@ function BlockCustomer({ mb, t, id, onChange }: { mb: string; t: string; id: str
   const [ask, setAsk] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [impact, setImpact] = useState<{ requested: number; accepted: number } | null>(null);
   useEffect(() => {
     fetch(`/api/bookings/${id}?${q(mb, t)}`, { cache: "no-store" }).then((r) => r.json()).then((d) => { if (d?.ok) { setState(!!d.blocked_customer); onChange(!!d.blocked_customer); } }).catch(() => {});
   }, [id, mb, t, onChange]);
@@ -199,16 +200,28 @@ function BlockCustomer({ mb, t, id, onChange }: { mb: string; t: string; id: str
     if (!d?.ok) return setErr(d?.error || "บันทึกไม่สำเร็จ");
     setState(block); onChange(block); setAsk(false);
   };
+  // เปิดหน้ายืนยัน → ถามจำนวนนัดที่ยังไม่จบกับลูกค้าคนนี้ (บอกผลก่อนกด)
+  const openAsk = () => {
+    setAsk(true); setImpact(null);
+    fetch(`/api/pt/bookings/${id}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mb, t, action: "block_preview" }) })
+      .then((r) => r.json()).then((d) => { if (d?.ok) setImpact({ requested: Number(d.requested) || 0, accepted: Number(d.accepted) || 0 }); }).catch(() => {});
+  };
   if (state === null) return null;
   return (
     <>
-      <button type="button" onClick={() => (state ? go(false) : setAsk(true))} disabled={busy} className="min-h-10 px-3 rounded-full text-[12.5px] mr-auto disabled:opacity-50" style={{ border: `1px solid ${state ? LN : "rgba(255,138,154,.45)"}`, color: state ? "#d9c9b4" : "#ff8a9a" }}>{busy ? "กำลังบันทึก…" : state ? "เลิกบล็อก" : "บล็อกลูกค้านี้"}</button>
+      <button type="button" onClick={() => (state ? go(false) : openAsk())} disabled={busy} className="min-h-10 px-3 rounded-full text-[12.5px] mr-auto disabled:opacity-50" style={{ border: `1px solid ${state ? LN : "rgba(255,138,154,.45)"}`, color: state ? "#d9c9b4" : "#ff8a9a" }}>{busy ? "กำลังบันทึก…" : state ? "เลิกบล็อก" : "บล็อกลูกค้านี้"}</button>
       {ask && (
         <div className="fixed inset-0 z-[60] flex items-end justify-center" role="dialog" aria-modal="true" aria-label="ยืนยันบล็อกลูกค้า">
           <button type="button" aria-label="ปิด" onClick={() => setAsk(false)} className="absolute inset-0 bg-black/60" />
           <div className="relative w-full max-w-[480px] rounded-t-[24px] bg-[#211a18] flex flex-col gap-3" style={{ padding: "16px 16px calc(18px + env(safe-area-inset-bottom))", borderTop: `1px solid ${LN}` }}>
             <b className="font-semibold text-[16px]">บล็อกลูกค้านี้?</b>
-            <span className="text-[13.5px] font-light text-[#d9c9b4] leading-[1.6]">แชทและโทรหากันไม่ได้ทั้งสองฝั่ง · ลูกค้าจองหรือเรียกด่วนคุณใหม่ไม่ได้ · นัดที่ยืนยันแล้วยังอยู่ตามเดิม (ยกเลิก/มีปัญหา แจ้งทีมงาน) · เลิกบล็อกได้ที่ ตั้งค่า</span>
+            <span className="text-[13.5px] font-light text-[#d9c9b4] leading-[1.6]">แชทและโทรหากันไม่ได้ทั้งสองฝั่ง (สายที่กำลังดัง/คุยอยู่จะถูกวาง) · ลูกค้าจองหรือเรียกด่วนคุณใหม่ไม่ได้ · เลิกบล็อกได้ที่ ตั้งค่า</span>
+            <ul className="m-0 pl-5 list-disc text-[13.5px] font-light text-[#f3ead9] leading-[1.6]" aria-live="polite">
+              {!impact ? <li className="text-[#b5a596]">กำลังดูนัดที่ยังไม่จบกับลูกค้าคนนี้…</li> : <>
+                <li>{impact.requested ? `คำขอที่ยังไม่ตอบ ${impact.requested} นัด จะถูกปฏิเสธ และคืนเงินลูกค้าอัตโนมัติ` : "ไม่มีคำขอที่รอตอบจากลูกค้าคนนี้"}</li>
+                <li>{impact.accepted ? `นัดที่ยืนยันแล้ว ${impact.accepted} นัด ยังอยู่ตามเดิม · ระบบแจ้งทีมงานให้ช่วยจัดการ` : "ไม่มีนัดที่ยืนยันแล้วกับลูกค้าคนนี้"}</li>
+              </>}
+            </ul>
             {err && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{err}</p>}
             <div className="grid grid-cols-2 gap-2">
               <button type="button" onClick={() => setAsk(false)} className="h-12 rounded-[14px] text-[#f3ead9]" style={{ border: `1px solid ${LN}` }}>ไม่บล็อก</button>

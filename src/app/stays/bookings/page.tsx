@@ -47,7 +47,7 @@ export default async function MyStaysPage() {
             </div>
           ) : !shown.length ? (
             <div className="p-4 rounded-2xl bg-[#211a18] text-center text-[13px] text-[#d9c9b4] leading-[1.7]" style={{ border: `1px solid ${BD}` }}>
-              ยังไม่มีการจองห้องพัก<br /><Link href="/hotels" className="text-[#e8c472] underline">ดูโรงแรมพาร์ทเนอร์</Link>
+              ยังไม่มีการจองห้องพัก<br /><Link href="/hotels" className="min-h-10 inline-flex items-center px-2 text-[#e8c472] underline">ดูโรงแรมพาร์ทเนอร์</Link>
             </div>
           ) : (
             <>

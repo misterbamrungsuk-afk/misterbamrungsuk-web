@@ -713,3 +713,52 @@ export async function saveSlipCheck(id: string, check: unknown): Promise<void> {
   const { error } = await db().from("market_orders").update({ slip_check: check }).eq("id", id);
   if (error) console.warn("[market] slip_check not saved (run supabase/market/0003_slip_check.sql):", error.message);
 }
+
+// ── ออเดอร์โอนเงิน (สลิป) ที่ไม่ชำระภายในเวลา → ยกเลิกอัตโนมัติ ──
+// นับเฉพาะ pay_method = slip ที่ยังรอชำระ: ไม่มีสลิป หรือสลิปตรวจแล้วไม่ใช่เงินจริง (Slip2Go: ปลอม/ซ้ำ)
+// สลิปที่ยังรอแอดมินตรวจ (ยอด/บัญชีไม่ตรง ตรวจไม่ได้ ฯลฯ) ไม่แตะ — อาจมีเงินโอนเข้ามาจริง · ออเดอร์กระเป๋าเงินไม่เกี่ยว
+// สต็อกตัดตอนยืนยันชำระ (pending ยังไม่ได้ตัด) → ไม่มีสต็อกต้องคืน · ผู้ซื้อเห็น "หมดเวลาชำระ" ในหน้าติดตาม
+export const ORDER_PAY_HOURS = 24;
+export const EXPIRED_REASON = "หมดเวลาชำระ";
+const DEAD_SLIP = new Set(["fake", "dup"]);
+const unpaid = (o: Order) => o.status === "pending" && o.pay_method !== "wallet"
+  && (!o.slip_path || DEAD_SLIP.has(String((o.slip_check as { verdict?: string } | null | undefined)?.verdict ?? "")));
+
+/** กวาดออเดอร์ที่หมดเวลาชำระ (cron รายวัน + หน้าภาพรวมแอดมิน) · คืนจำนวนที่ยกเลิก */
+export async function sweepOrders(): Promise<number> {
+  const cutoff = new Date(Date.now() - ORDER_PAY_HOURS * 3600_000).toISOString();
+  const rows = (await q<Order[]>(() => db().from("market_orders").select("*").eq("status", "pending").lt("created_at", cutoff).order("created_at").limit(200),
+    () => mem.orders.filter((o) => o.status === "pending" && o.created_at < cutoff))).map(normOrder).filter(unpaid);
+  let n = 0;
+  for (const o of rows) {
+    const patch: Partial<Order> = { status: "rejected", reject_reason: EXPIRED_REASON, decided_by: "system", gp_amount: null, vendor_amount: null, vendor_split: null };
+    // เงื่อนไขซ้ำตอนเขียน: ยัง pending และสลิปยังเป็นอันเดิม (ผู้ซื้อแนบสลิปใหม่ระหว่างกวาด = ไม่ยกเลิก)
+    const out = await q<Order | null>(() => {
+      let u = db().from("market_orders").update(patch).eq("id", o.id).eq("status", "pending");
+      u = o.slip_path ? u.eq("slip_path", o.slip_path) : u.is("slip_path", null);
+      return u.select().maybeSingle();
+    }, () => {
+      const r = mem.orders.find((x) => x.id === o.id);
+      if (!r || r.status !== "pending" || (r.slip_path ?? null) !== (o.slip_path ?? null)) return null;
+      return Object.assign(r, patch);
+    }).catch((e) => { console.error("market expire", o.id, e); return null; });
+    if (!out) continue;
+    n++;
+    await tellBuyerExpired(normOrder(out)).catch((e) => console.error("market expire notify", e));
+  }
+  return n;
+}
+async function tellBuyerExpired(o: Order) {
+  const msg = `คำสั่งซื้อ ${o.order_no} ยกเลิกแล้ว เพราะไม่ได้ชำระภายใน ${ORDER_PAY_HOURS} ชม. · สั่งใหม่ได้ที่หน้าร้านค้า`;
+  if (o.customer_id) await import("@/lib/bookings").then((m) => m.notify({ user_type: "customer", user_id: o.customer_id!, kind: "market_order_expired", title: `คำสั่งซื้อ ${o.order_no} หมดเวลาชำระ`, body: msg, url: trackPath(o) })).catch((e) => console.error("market expire notify", e));
+  if (o.phone) await import("./notify").then((m) => m.sendSms(o.phone, `Mister Bamrungsuk: ${msg}`)).catch(() => false);
+}
+
+/** โหมดสาธิตเท่านั้น (e2e): ย้อนเวลาสร้างออเดอร์ hours ชั่วโมง */
+export function demoAgeOrder(id: string, hours: number): Order | null {
+  if (!(envDemo && !process.env.VERCEL_ENV && process.env.NODE_ENV !== "production")) return null;
+  const r = mem.orders.find((x) => x.id === id);
+  if (!r) return null;
+  r.created_at = new Date(Date.parse(r.created_at) - hours * 3600_000).toISOString();
+  return r;
+}

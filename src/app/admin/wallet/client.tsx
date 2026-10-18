@@ -50,7 +50,7 @@ export function WalletAdmin({ initial, money, recon, isCeo = false, owners = [],
   const shown = tab === "pending" ? pending : d.topups;
   const holders = d.accounts.filter((a) => a.owner_type !== "platform" && a.balance !== 0);
   const platform = d.accounts.filter((a) => a.owner_type === "platform");
-  const inp = "h-10 rounded-lg bg-[#130e0e] border px-2.5";
+  const inp = "h-10 min-w-0 max-w-full rounded-lg bg-[#130e0e] border px-2.5";
 
   return (
     <div className="flex flex-col gap-4">
@@ -74,7 +74,7 @@ export function WalletAdmin({ initial, money, recon, isCeo = false, owners = [],
       </div>}
 
       <section className="flex flex-col gap-2">
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {(["pending", "all"] as const).map((k) => <button key={k} onClick={() => setTab(k)} aria-pressed={tab === k} className="h-9 px-4 rounded-full border text-[13px] font-semibold" style={{ borderColor: tab === k ? GOLD : LINE, background: tab === k ? GOLD : "transparent", color: tab === k ? "#1a1206" : "#d3c7bc" }}>{k === "pending" ? `รอตรวจ ${pending.length}` : "ทั้งหมด"}</button>)}
         </div>
         {!shown.length && <p className="rounded-2xl border px-4 py-10 text-center text-[#9a8a85]" style={{ borderColor: LINE }}>ไม่มีคำขอเติมเงิน</p>}

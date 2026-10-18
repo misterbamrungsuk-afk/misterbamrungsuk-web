@@ -141,6 +141,22 @@ export async function sweep(rows: Call[]): Promise<Call[]> {
     return c;
   }));
 }
+/** วางทุกสายที่ดัง/คุยอยู่ระหว่าง Part-Time กับลูกค้าคนนี้ (ทุกนัด) — ใช้ตอนบล็อก · คืนจำนวนสายที่ปิด */
+export async function endCallsBetween(parttime_id: string, customer_id: string, reason = "blocked"): Promise<number> {
+  let rows: Call[];
+  const pair = (c: Call) => (c.caller_type === "parttime" && c.caller_id === parttime_id && c.callee_type === "customer" && c.callee_id === customer_id)
+    || (c.caller_type === "customer" && c.caller_id === customer_id && c.callee_type === "parttime" && c.callee_id === parttime_id);
+  if (isDemo) rows = demo.filter((c) => LIVE.includes(c.status) && pair(c));
+  else {
+    const q = (from: CallSide, fid: string, to: CallSide, tid: string) => db().from("booking_calls").select().in("status", LIVE).eq("caller_type", from).eq("caller_id", fid).eq("callee_type", to).eq("callee_id", tid).limit(10);
+    const [x, y] = await Promise.all([q("parttime", parttime_id, "customer", customer_id), q("customer", customer_id, "parttime", parttime_id)]);
+    if (x.error) throw x.error;
+    if (y.error) throw y.error;
+    rows = [...(x.data ?? []), ...(y.data ?? [])] as Call[];
+  }
+  const done = await Promise.all(rows.map((c) => finish(c, c.status === "ringing" ? "declined" : "ended", reason)));
+  return done.filter((c) => c.end_reason === reason).length;
+}
 export async function getCall(id: string): Promise<Call | null> {
   const c = await rawGet(id);
   return c ? (await sweep([c]))[0] : null;

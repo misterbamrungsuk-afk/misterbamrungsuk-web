@@ -60,7 +60,7 @@ export default async function PostsPage({ params, searchParams }: { params: Prom
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <div className="flex justify-between items-center"><span className="text-[13px] text-[#d9c9b4]">กิจกรรม · สถานที่ · สปาพาร์ทเนอร์</span><Link href={ptHref(c)} className="text-[13px] text-[#e8c472] font-light">แก้ที่การ์ดโปรไฟล์ ›</Link></div>
+            <div className="flex justify-between items-center"><span className="text-[13px] text-[#d9c9b4]">กิจกรรม · สถานที่ · สปาพาร์ทเนอร์</span><Link href={ptHref(c)} className="min-h-10 inline-flex items-center pl-2 shrink-0 text-[13px] text-[#e8c472] font-light">แก้ที่การ์ดโปรไฟล์ ›</Link></div>
             <div className="flex flex-wrap gap-2">
               {[...card.activities, ...card.places, ...card.partner_spas].map((a) => <span key={a} className={chip} style={{ padding: "0 14px", border: "1px solid #e8c472", color: "#e8c472", background: "rgba(212,175,55,.12)" }}>{a}</span>)}
               {!card.activities.length && !card.places.length && <span className="text-[13px] font-light text-[#b5a596]">ยังไม่ได้เลือก</span>}

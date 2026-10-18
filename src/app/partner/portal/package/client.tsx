@@ -23,7 +23,7 @@ export function RenewBox({ current }: { current: PartnerPackageKey }) {
           return (
             <button key={k} type="button" role="radio" aria-checked={pkg === k} onClick={() => { setPkg(k); setPaying(false); }}
               className={`w-full flex justify-between items-center gap-3 rounded-2xl border px-4 py-3 text-left ${pkg === k ? "border-gold-500 bg-gold-500/10" : "border-ink-600 bg-ink-800/60"}`}>
-              <span><span className="font-display font-semibold">{x.label}</span>{x.badge && <span className="ml-2 text-[11px] text-gold-300">{x.badge}</span>}<span className="block text-xs text-[#9a8a85]">{x.desc}</span></span>
+              <span><span className="font-display font-semibold">{x.label}</span>{x.badge && <span className="ml-2 text-[12px] text-gold-300">{x.badge}</span>}<span className="block text-xs text-[#9a8a85]">{x.desc}</span></span>
               <span className="font-display text-gold-300 shrink-0">{x.price == null ? "ติดต่อทีมงาน" : `฿${baht(x.price)}`}</span>
             </button>
           );

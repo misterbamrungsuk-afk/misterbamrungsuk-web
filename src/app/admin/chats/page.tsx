@@ -27,7 +27,7 @@ export default async function ChatsPage({ searchParams }: { searchParams: Promis
       <PageHead title="แชท · คำห้ามส่ง" sub="ทุกข้อความถูกเก็บไว้ (รวมที่ถูกกัน) · ทีมงานเปิดอ่านได้เพื่อตรวจข้อพิพาท/ความปลอดภัย" />
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px] items-start">
         <section className="flex flex-col gap-2">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Link href="/admin/chats" className={`chip h-9 px-3.5 inline-flex items-center ${f !== "flag" ? "chip-red" : ""}`}>ทุกห้อง ({rooms.size})</Link>
             <Link href="/admin/chats?f=flag" className={`chip h-9 px-3.5 inline-flex items-center ${f === "flag" ? "chip-red" : ""}`}>มีข้อความต้องห้าม ({flagged})</Link>
           </div>

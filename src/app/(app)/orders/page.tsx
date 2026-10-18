@@ -35,7 +35,7 @@ export default function OrdersPage() {
   return (
     <div className="pb-6">
       <div className="flex flex-col gap-[14px]" style={{ padding: "18px 16px 12px" }}>
-        <div className="flex items-center justify-between gap-3"><h1 className="m-0 font-semibold text-[28px]">นัดของฉัน</h1><Link href="/stays/bookings" className="text-[13.5px] text-[#e8c472] hover:text-[#e8c472]">การจองห้องพัก ›</Link></div>
+        <div className="flex items-center justify-between gap-3"><h1 className="m-0 font-semibold text-[28px]">นัดของฉัน</h1><Link href="/stays/bookings" className="min-h-10 inline-flex items-center px-1 -mr-1 text-[13.5px] text-[#e8c472] hover:text-[#e8c472]">การจองห้องพัก ›</Link></div>
         <div className="flex gap-2">
           {([["up", "กำลังจะถึง"], ["done", "เสร็จแล้ว"], ["cancel", "ยกเลิก"]] as const).map(([id, l]) => (
             <button key={id} type="button" onClick={() => setTab(id)} aria-pressed={tab === id} className="h-10 px-4 rounded-full text-[13.5px]" style={{ border: `1px solid ${tab === id ? "#f3ead9" : LN}`, background: tab === id ? "#f3ead9" : "transparent", color: tab === id ? "#171211" : "#f3ead9" }}>{l}</button>

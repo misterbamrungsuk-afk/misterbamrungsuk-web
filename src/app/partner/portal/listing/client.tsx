@@ -70,7 +70,7 @@ export function ListingClient({ initial, name, canPublish, qcOk = true }: { init
         <div className="relative aspect-[16/9] bg-ink-700">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           {l.cover ? <img src={fileUrl(l.cover)} alt="ภาพปก" className="w-full h-full object-cover" /> : <div className="w-full h-full grid place-items-center text-[#9a8a85] text-sm">ยังไม่มีภาพปก</div>}
-          <span className="absolute top-3 left-3 text-[11px] rounded-full bg-black/60 text-gold-300 px-2.5 py-1 border border-gold-500/50">พาร์ทเนอร์แนะนำ</span>
+          <span className="absolute top-3 left-3 text-[12px] rounded-full bg-black/60 text-gold-300 px-2.5 py-1 border border-gold-500/50">พาร์ทเนอร์แนะนำ</span>
         </div>
         <div className="p-4">
           <p className="font-display text-lg font-semibold">{name}</p>

@@ -223,11 +223,11 @@ export function ProfileHub({ d }: { d: HubData }) {
                   </div>
                   <label className="h-12 rounded-xl bg-[#251d1b] flex items-center gap-2 px-[14px]">
                     <Ico><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></Ico>
-                    <input value={query} onChange={(e) => setQuery(e.target.value.slice(0, 30))} placeholder="พิมพ์กิจกรรม เช่น ดูหนัง, ตีกอล์ฟ…" aria-label="ค้นหากิจกรรม" className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[#f3ead9] placeholder:text-[#b5a596] text-[14px]" />
+                    <input value={query} onChange={(e) => setQuery(e.target.value.slice(0, 30))} placeholder="พิมพ์กิจกรรม เช่น ดูหนัง, ตีกอล์ฟ…" aria-label="ค้นหากิจกรรม" className="flex-1 min-w-0 h-11 bg-transparent border-0 outline-none text-[#f3ead9] placeholder:text-[#b5a596] text-[14px]" />
                   </label>
                   <div className="flex flex-wrap items-center gap-1.5 mt-2 text-[13px] font-light">
                     <span>ลองพิมพ์:</span>
-                    {QP.map((v) => <button key={v || "clear"} type="button" onClick={() => setQuery(v)} className="h-9 px-3 rounded-full text-[13px] font-light" style={{ background: "rgba(232,196,114,0.16)", color: query === v ? GOLD : "#f3ead9" }}>{v || "ล้าง"}</button>)}
+                    {QP.map((v) => <button key={v || "clear"} type="button" onClick={() => setQuery(v)} className="h-10 px-3 rounded-full text-[13px] font-light" style={{ background: "rgba(232,196,114,0.16)", color: query === v ? GOLD : "#f3ead9" }}>{v || "ล้าง"}</button>)}
                   </div>
                   <div className="mt-2 rounded-xl bg-[#1b2322] overflow-hidden flex flex-col">
                     {sugg.map((label) => <button key={label} type="button" onClick={() => addPick(label)} className="min-h-11 px-[14px] bg-transparent border-b border-[rgba(243,234,217,0.07)] text-[#f3ead9] text-[13.5px] flex justify-between items-center text-left">{label}<span className="text-[#e8c472] text-[13px] font-light">+ เลือก</span></button>)}

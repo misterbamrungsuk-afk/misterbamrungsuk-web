@@ -72,7 +72,7 @@ export function EarnBoard({ price, tiers, top, real = 0 }: { price: number; tier
               return (
                 <span key={i} className="absolute top-0 -translate-x-1/2 flex flex-col items-center gap-1" style={{ left: `${(Math.min(at, span) / span) * 100}%` }}>
                   <span className="w-9 h-9 rounded-full grid place-items-center text-[11.5px] font-bold" style={{ background: done ? col(i) : "#171211", color: done ? "#1b130b" : col(i), boxShadow: i === cur ? `0 0 0 5px ${rgba(col(i), 0.25)}, 0 0 16px ${rgba(col(i), 0.5)}` : "none" }}>{t.pct}%</span>
-                  <span className="text-[11.5px] leading-[1.2] whitespace-nowrap font-light" style={{ color: done ? col(i) : "#b5a596" }}>{i === 0 ? "เริ่ม" : `${t.min} เคส`}</span>
+                  <span className="text-[12.5px] leading-[1.2] whitespace-nowrap font-light" style={{ color: done ? col(i) : "#b5a596" }}>{i === 0 ? "เริ่ม" : `${t.min} เคส`}</span>
                 </span>
               );
             })}
@@ -188,8 +188,11 @@ export function SettingsForm({ mb, t, init }: { mb: string; t: string; init: PtS
     <div id="pt-auto-reply" className="rounded-[20px] bg-[#272013] flex flex-col gap-3" style={{ padding: 16 }}>
       <div className="flex items-center justify-between">
         <div className="text-[17px] font-medium">ตอบกลับอัตโนมัติ</div>
-        <button type="button" role="switch" aria-checked={on} aria-label="ตอบกลับอัตโนมัติ" onClick={() => { setOn(!on); ch(); }} className="w-12 h-7 rounded-[28px] relative shrink-0" style={{ background: on ? GOLD : "rgba(243,234,217,0.18)" }}>
-          <span className="absolute top-[3px] w-[22px] h-[22px] rounded-[22px] transition-all" style={{ left: on ? 23 : 3, background: on ? "#000" : "#f3ead9" }} />
+        <button type="button" role="switch" aria-checked={on} aria-label="ตอบกลับอัตโนมัติ" onClick={() => { setOn(!on); ch(); }} className="h-11 -my-2 -mr-1 px-1 inline-flex items-center shrink-0">
+          {/* แตะได้สูง 44px · ตัวสวิตช์ยังเห็นขนาดเดิม 48×28 */}
+          <span className="block w-12 h-7 rounded-[28px] relative" style={{ background: on ? GOLD : "rgba(243,234,217,0.18)" }}>
+            <span className="absolute top-[3px] w-[22px] h-[22px] rounded-[22px] transition-all" style={{ left: on ? 23 : 3, background: on ? "#000" : "#f3ead9" }} />
+          </span>
         </button>
       </div>
       <textarea aria-label="ข้อความตอบกลับอัตโนมัติ" maxLength={300} value={text} placeholder="เช่น สวัสดีครับ ขอทราบวัน เวลา สถานที่ และกิจกรรมที่อยากทำด้วยกันหน่อยครับ" onChange={(e) => { setText(e.target.value); ch(); }}

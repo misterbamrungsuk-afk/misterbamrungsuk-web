@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { currentParttime } from "@/lib/bookings/auth";
 import { BookingError, getBooking, respond } from "@/lib/bookings";
-import { blockFromBooking, customerHash, unblock } from "@/lib/bookings/blocks";
+import { blockCustomer, blockPreview, customerHash, unblock } from "@/lib/bookings/blocks";
 import { checkIn, ptDone } from "@/lib/bookings/day";
 import { respondExtend, respondReschedule } from "@/lib/bookings/changes";
 
@@ -17,9 +17,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const action = b.action ?? (b.accept === true ? "accept" : "decline");
   const reason = String(b.reason ?? "");
   // บล็อก / เลิกบล็อกลูกค้าของงานนี้ (เมนูหัวแชท) — ไม่เปลี่ยนสถานะนัด
-  if (action === "block_customer" || action === "unblock_customer") {
+  // block_preview = ตัวเลขให้หน้ายืนยัน (นัดที่จะถูกปฏิเสธ / นัดที่ยืนยันแล้วที่ทีมงานจะจัดการ) ไม่เปลี่ยนอะไร
+  if (action === "block_customer" || action === "unblock_customer" || action === "block_preview") {
     try {
-      if (action === "block_customer") { const row = await blockFromBooking(a, id); return NextResponse.json({ ok: true, blocked: true, name: row.name }); }
+      if (action === "block_preview") return NextResponse.json({ ok: true, ...(await blockPreview(a, id)) });
+      if (action === "block_customer") { const r = await blockCustomer(a, id); return NextResponse.json({ ok: true, blocked: true, name: r.row.name, calls_ended: r.calls, declined: r.declined, accepted: r.accepted }); }
       const bk = await getBooking(id);
       if (!bk || bk.parttime_id !== a.id) return NextResponse.json({ ok: false, error: "ไม่พบงานนี้" }, { status: 404 });
       await unblock(a, customerHash(bk.customer_id));

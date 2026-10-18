@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { CallView } from "@/lib/calls/rules";
+import { startRingback, stopRingback } from "./ringtone";
 import { authBody, callBusy, canWebRtc, externalHref, gathered, getJ, inLine, micError, mmss, postJ, qs, type CallAuth } from "./engine";
 
 // หน้าจอโทรเต็มจอ (เสียงอย่างเดียว) — ผู้โทร: ขอไมค์ → เปิดสาย → ส่ง offer ครบชุด → รอ answer
@@ -13,6 +14,7 @@ const STUN_ONLY: RTCIceServer[] = [{ urls: ["stun:stun.l.google.com:19302"] }];
 function endText(v: CallView): string {
   const caller = v.me === "caller";
   if (v.status === "missed") return v.end_reason === "cancelled" ? (caller ? "ยกเลิกการโทรแล้ว" : "ผู้โทรวางสายแล้ว") : caller ? "ไม่มีผู้รับสาย" : "สายที่ไม่ได้รับ";
+  if (v.end_reason === "blocked") return "สายนี้จบแล้ว";
   if (v.status === "declined") return caller ? "อีกฝั่งไม่สะดวกรับสาย · ทักแชทไว้ก่อนได้" : "ไม่รับสายแล้ว";
   if (v.end_reason === "max") return `ครบ 10 นาที · วางสายอัตโนมัติ${v.duration_s != null ? ` (${mmss(v.duration_s)})` : ""}`;
   if (v.end_reason === "failed") return "ต่อสายไม่สำเร็จ · ลองใหม่อีกครั้งหรือคุยในแชท";
@@ -31,6 +33,11 @@ export function CallScreen({ role, bookingId, callId, auth, peerName, onClose }:
   const audio = useRef<HTMLAudioElement>(null);
   const s = useRef<{ started?: boolean; mounted?: boolean; done?: boolean; id?: string; pc?: RTCPeerConnection; stream?: MediaStream; remoteSet?: boolean; answering?: boolean; connectedAt?: number; maxEnd?: number; timer?: ReturnType<typeof setTimeout>; tick?: ReturnType<typeof setInterval>; drop?: ReturnType<typeof setTimeout>; phase: Phase }>({ phase: "init" });
   const go = (p: Phase) => { s.current.phase = p; setPhase(p); };
+  // เสียงรอสาย: เฉพาะผู้โทร ระหว่างอีกฝั่งยังไม่รับ (phase calling = สถานะ ringing) · ต่อสาย/ปฏิเสธ/วาง/หมดเวลา = หยุด
+  useEffect(() => {
+    if (role === "caller" && phase === "calling") startRingback(); else stopRingback();
+  }, [role, phase]);
+  useEffect(() => () => stopRingback(), []);
 
   const teardown = () => {
     const x = s.current;

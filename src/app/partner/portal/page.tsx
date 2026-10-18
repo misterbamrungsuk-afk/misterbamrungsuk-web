@@ -76,7 +76,7 @@ export default async function PortalHome() {
       </Link>
 
       <section className="mt-6">
-        <div className="flex justify-between items-baseline"><h2 className="font-semibold">การจองที่กำลังจะมาถึง</h2><Link href="/partner/portal/bookings" className="text-xs text-gold-300">ดูทั้งหมด</Link></div>
+        <div className="flex justify-between items-center"><h2 className="font-semibold">การจองที่กำลังจะมาถึง</h2><Link href="/partner/portal/bookings" className="min-h-10 -my-2 px-2 -mr-2 inline-flex items-center text-xs text-gold-300">ดูทั้งหมด</Link></div>
         {upcoming.length === 0 ? <p className="text-sm text-[#9a8a85] mt-3">ยังไม่มีการจองที่กำลังจะมาถึง</p> : (
           <ul className="mt-3 space-y-2">
             {upcoming.map((b) => (

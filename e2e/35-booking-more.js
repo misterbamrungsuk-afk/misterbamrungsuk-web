@@ -4,6 +4,8 @@
 // 3) หน้าระหว่างนัดเปิดได้ (ปุ่มต่อเวลาใช้ข้อมูล change เดียวกับหน้าการจอง)
 // 4) แข่งกัน: เพื่อนรับต่อเวลา "ระหว่าง" ลูกค้ากดจบ (demo_race_extend) → คืนค่าต่อเวลาอัตโนมัติ ไม่ค้าง escrow · จบก่อนแล้วรับ = ปฏิเสธ ไม่ตัดเงิน
 // 5) เพื่อนบล็อกลูกค้า → โทร/แชทไม่ได้ทั้งสองฝั่ง · จองใหม่ไม่ได้ · ตั้งค่าเห็นรายการ + เลิกบล็อกได้
+//    + สายที่ดังอยู่ถูกวาง (blocked) · คำขอที่ยังไม่ตอบถูกปฏิเสธ/คืนเงิน · แจ้งทีมงานนัดที่ยืนยันแล้ว (ครั้งเดียว)
+// 6) เรียกด่วน: จำนวนเพื่อนบนฟอร์มไม่นับเพื่อนที่บล็อกลูกค้าคนนี้ และตรงกับตอนเรียกจริง
 const WEB = require('path').join(__dirname, '..');
 const fs = require('fs'), crypto = require('crypto');
 const { adm } = require('./_tok');
@@ -41,6 +43,8 @@ async function fund(C, email, baht) {
   await fetch(B + '/api/wallet/topup', { method: 'POST', headers: { cookie: C.cookie }, body: fd });
   const tp = ((await admW()).topups || []).find((x) => x.customer_email === email && x.status === 'pending');
   if (tp) await post('/api/admin/wallet', ADM, { action: 'approve', id: tp.id });
+  // รายการเติมเงินในหลังบ้านแสดงจำนวนจำกัด (ชุดท้าย ๆ หาไม่เจอ) → เติมด้วยการปรับยอดของ CEO
+  else await post('/api/admin/wallet', ADM, { action: 'adjust', owner_type: 'customer', owner_id: 'demo:' + email, bucket: 'available', amount_baht: baht, reason: 'e2e', idem: 'e2e35-' + email + '-' + Date.now() });
 }
 const book = (C, starts_at, place = { type: 'cafe', detail: 'คาเฟ่ทดสอบชุด 35' }) => post('/api/bookings', C, { pid, hours: 3, starts_at, place, note: '' }).then(res);
 async function bookAccepted(C, starts_at, label, place) {
@@ -176,8 +180,27 @@ async function clearNow() {
     const msgC = (body) => post(`/api/bookings/${b5}/messages`, C, { body }).then(res);
     const msgP = (body) => post(`/api/bookings/${b5}/messages`, { 'content-type': 'application/json' }, { body, mb, t: T }).then(res);
     ok('chat works before block', (await msgC('สวัสดีครับ')).ok);
+    // ก่อนบล็อก: มีคำขอที่ยังไม่ตอบอีก 1 นัด + ลูกค้ากำลังโทรหาเพื่อน (สายดังอยู่)
+    const rq = await book(C, far(39)); ok('pending request before block', rq.ok, rq.error);
+    const rqTotal = rq.ok ? (await bk(C, rq.id)).booking.total_satang : 0;
+    const wPre = await wallet(C);
+    const cl = await post('/api/calls', C, { booking_id: b5, as: 'customer' }).then(res); ok('customer is ringing PT', cl.ok && cl.call?.status === 'ringing', cl.error);
+    const pv = await PT(b5, 'block_preview'); ok('block sheet preview counts upcoming bookings', pv.ok && pv.requested >= 1 && pv.accepted >= 1, JSON.stringify(pv));
+    ok('preview changes nothing', rq.ok && (await bk(C, rq.id)).booking.status === 'requested');
+    const code5a = (await bk(C, b5)).booking.code;
     let p = await PT(b5, 'block_customer'); ok('PT blocks customer from chat header', p.ok && p.blocked, p.error);
+    ok('block ends the ringing call', p.calls_ended === 1, String(p.calls_ended));
+    if (cl.ok) { const cv = await fetch(B + `/api/calls/${cl.call.id}?as=customer`, { headers: C }).then(J); ok('call closed with reason blocked', cv.call?.status === 'declined' && cv.call?.end_reason === 'blocked', JSON.stringify(cv.call && { s: cv.call.status, r: cv.call.end_reason })); }
+    ok('block auto-declined the pending request', p.declined >= 1, String(p.declined));
+    if (rq.ok) {
+      const rb = (await bk(C, rq.id)).booking;
+      ok('request declined with normal reason', rb.status === 'declined' && rb.decline_reason === 'เพื่อนไม่สะดวกรับนัดนี้', rb.status + ' ' + rb.decline_reason);
+      ok('declined request refunded to wallet', (await wallet(C)).available === wPre.available + rqTotal);
+    }
+    const ptAlerts = async () => ((await fetch(B + '/api/admin/alerts', { headers: ADM }).then(J)).items || []).filter((n) => n.kind === 'pt_block' && (n.body || '').includes(code5a));
+    ok('admin told about upcoming accepted booking', (await ptAlerts()).length === 1);
     p = await PT(b5, 'block_customer'); ok('block twice is idempotent', p.ok);
+    ok('no duplicate admin notice on second block', (await ptAlerts()).length === 1);
     ok('PT booking view says blocked', (await fetch(B + `/api/bookings/${b5}?${PTQ}`).then(J)).blocked_customer === true);
     let r = await can(C); ok('customer cannot call', r.can === false && r.code === 'blocked', r.reason);
     r = await can('pt'); ok('PT cannot call', r.can === false && r.code === 'blocked', r.reason);
@@ -205,6 +228,30 @@ async function clearNow() {
     p = await PT(b5, 'block_customer'); p = await PT(b5, 'unblock_customer'); ok('unblock from chat header', p.ok && p.blocked === false);
     ok('blocked list empty again', !((await fetch(B + `/api/pt/bookings/blocks?${PTQ}`).then(J)).blocks || []).some((x) => x.h === row?.h));
     await post(`/api/bookings/${b5}/cancel`, C, { reason: 'ทดสอบ' });
+  }
+
+  // ══ 6) เรียกด่วน: ตัวเลขบนฟอร์มไม่นับเพื่อนที่บล็อกลูกค้าคนนี้ (ตัวกรองเดียวกับตอนเรียกจริง) ══
+  await clearNow();
+  const E6 = 'bm35-quick@test.local', C6 = cust(E6);
+  await fund(C6, E6, 20000);
+  const q6 = await book(C6, far(47)); ok('book (quick-preview test)', q6.ok, q6.error);
+  if (q6.ok) {
+    const preview = async (H) => { const h = (await (await fetch(B + '/quick', { headers: H })).text()).replace(/\\"/g, '"'); const m = /"free":\{"3":(\d+),"5":(\d+)\}/.exec(h); return m ? { c3: Number(m[1]), listed: h.includes(`/p/${pid}`) } : null; };
+    const before = await preview(C6);
+    const p6 = await PT(q6.id, 'block_customer'); ok('PT blocks quick-test customer', p6.ok && p6.declined === 1, JSON.stringify(p6));
+    const after = await preview(C6), other = await preview(cust('bm35-other@test.local'));
+    ok('quick preview parsed', !!before && !!after && !!other);
+    if (before && after && other) {
+      ok('blocked customer: PT not in free list', after.listed === false);
+      ok('preview count drops the PT who blocked me', before.c3 - after.c3 === (before.listed ? 1 : 0) || (!before.listed && before.c3 === after.c3), `${before.c3} → ${after.c3} (listed ${before.listed})`);
+      ok('other customers still see the same count', other.c3 === before.c3, `${other.c3} vs ${before.c3}`);
+      const qr = await post('/api/quick', C6, { activity: 'คาเฟ่', hours: 3, place: { type: 'cafe', detail: 'อโศก' }, note: '' }).then(res);
+      ok('create quick agrees with preview', after.c3 === 0 ? qr.code === 'none' : qr.ok && qr.quick?.invited === after.c3, `${after.c3} · ${qr.code ?? qr.quick?.invited}`);
+      if (qr.ok) await post(`/api/quick/${qr.quick.id}`, C6, { action: 'cancel' });
+    }
+    const code6 = (await bk(C6, q6.id)).booking.code;
+    const row6 = ((await fetch(B + `/api/pt/bookings/blocks?${PTQ}`).then(J)).blocks || []).find((x) => x.code === code6);
+    const un = await post('/api/pt/bookings/blocks', { 'content-type': 'application/json' }, { mb, t: T, action: 'unblock', h: row6?.h }).then(res); ok('unblock quick-test customer', un.ok, un.error);
   }
   ok('ledger sum 0 (end)', (await ledger()) === 0);
   console.log(fails ? fails + ' FAILED' : 'ALL PASS');

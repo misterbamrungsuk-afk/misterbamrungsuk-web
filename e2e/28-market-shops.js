@@ -108,5 +108,34 @@ const custBal = async (C) => (await J(await fetch(B + '/api/wallet', { headers: 
   const lw = await J(await fetch(B + '/api/admin/wallet', { headers: ADM }));
   ok('market escrow empty (only shipped-not-done would hold)', (lw.accounts.find((a) => a.owner_type === 'platform' && a.bucket === 'market_escrow')?.balance ?? 0) === 0);
   ok('ledger sum 0', lw.sum === 0, String(lw.sum));
+
+  // ── 7) ออเดอร์โอนเงินที่ไม่ชำระภายใน 24 ชม. → ยกเลิก "หมดเวลาชำระ" (กวาดตอนเปิดหน้าภาพรวมแอดมิน / cron) ──
+  const slipOrder = { ...order, pay: 'slip' };
+  const ex = await J(await post('/api/market/orders', BC, { ...slipOrder, items: [{ id: prod.id, qty: 1 }] })); ok('slip order (no slip) created', ex.ok && ex.status === 'pending', ex.error);
+  const ws = await J(await post('/api/market/orders', BC, { ...slipOrder, items: [{ id: prod.id, qty: 1 }] })); ok('slip order (slip attached) created', ws.ok, ws.error);
+  r = await fetch(B + `/api/market/orders/${ws.id}/slip`, { method: 'POST', headers: { 'x-forwarded-for': IP }, body: form({ token: ws.token }, { slip: [img, 'slip.jpg', 'image/jpeg'] }) }); ok('slip attached (awaits admin)', (await J(r)).ok);
+  const fresh = await J(await post('/api/market/orders', BC, { ...slipOrder, items: [{ id: prod.id, qty: 1 }] })); ok('fresh slip order created', fresh.ok, fresh.error);
+  const age = async (id, hours) => J(await post(`/api/market/admin/orders/${id}`, ADM, { action: 'demo_age', hours }));
+  ok('demo_age needs admin', (await post(`/api/market/admin/orders/${ex.id}`, {}, { action: 'demo_age', hours: 25 })).status === 401);
+  ok('age unpaid order 25 h', (await age(ex.id, 25)).ok);
+  ok('age slip-attached order 25 h', (await age(ws.id, 25)).ok);
+  ok('age paid wallet order 25 h', (await age(oid, 25)).ok);
+  const stock0 = (await adminData()).products.find((p) => p.id === prod.id)?.stock;
+  await fetch(B + '/admin', { headers: ADM }); // sweepLight → sweepOrders
+  const track = async (x) => (await J(await fetch(B + `/api/market/track?id=${x.id}&t=${encodeURIComponent(x.token)}`))).order;
+  let te = await track(ex);
+  for (let i = 0; i < 10 && te?.status === 'pending'; i++) { await new Promise((s) => setTimeout(s, 500)); te = await track(ex); }
+  ok('unpaid order expired after 24 h', te?.status === 'rejected' && te.reject_reason === 'หมดเวลาชำระ', te?.status + ' ' + te?.reject_reason);
+  ok('slip-attached order untouched (admin decides)', (await track(ws))?.status === 'pending');
+  ok('fresh order untouched', (await track(fresh))?.status === 'pending');
+  ok('wallet order never expired', (await adminData()).orders.find((x) => x.id === oid)?.status === 'done');
+  ok('stock unchanged (pending never reserved stock)', (await adminData()).products.find((p) => p.id === prod.id)?.stock === stock0);
+  // หน้าติดตามโหลดข้อมูลฝั่งเบราว์เซอร์ → ตรวจจาก API ที่หน้านั้นเรียก (id + t จากลิงก์ติดตาม)
+  { const q = new URL(B + ex.track).searchParams; const tj = await J(await fetch(B + `/api/market/track?id=${encodeURIComponent(q.get('id') || '')}&t=${encodeURIComponent(q.get('t') || '')}`)); const o = tj.order ?? tj.orders?.[0]; ok('track API: rejected · หมดเวลาชำระ', o?.status === 'rejected' && o?.reject_reason === 'หมดเวลาชำระ', JSON.stringify(tj).slice(0, 160)); }
+  const nts = (await J(await fetch(B + '/api/notifications', { headers: CC }))).notices || [];
+  ok('buyer notified (logged-in order)', nts.some((n) => n.kind === 'market_order_expired' && n.title.includes(ex.order_no)));
+  r = await fetch(B + `/api/market/orders/${ex.id}/slip`, { method: 'POST', headers: { 'x-forwarded-for': IP }, body: form({ token: ex.token }, { slip: [img, 'late.jpg', 'image/jpeg'] }) }); ok('late slip refused', r.status === 409);
+  for (const x of [ws, fresh]) await post(`/api/market/admin/orders/${x.id}`, ADM, { action: 'reject', reason: 'ทดสอบ e2e' });
+  ok('ledger sum 0 (after expiry)', (await J(await fetch(B + '/api/admin/wallet', { headers: ADM }))).sum === 0);
   console.log(fails ? fails + ' FAILED' : 'ALL PASS');
 })().catch((e) => console.log('ERR', e));

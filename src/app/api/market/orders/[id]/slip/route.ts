@@ -24,7 +24,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (slipCheck?.verdict === "acct") return NextResponse.json({ ok: false, error: "สลิปนี้โอนเข้าบัญชีที่ไม่ใช่ของ Mister Bamrungsuk กรุณาโอนผ่าน QR ในหน้านี้ แล้วแนบสลิปใหม่", fields: ["slip"] }, { status: 400 });
   const path = await saveFile("slips", file);
   if (!path) return NextResponse.json({ ok: false, error: "รับเฉพาะรูป JPG/PNG/WebP ไม่เกิน 8MB", fields: ["slip"] }, { status: 400 });
-  const updated = await patchOrder(id, { slip_path: path });
+  // เฉพาะยัง pending (ระบบอาจยกเลิก "หมดเวลาชำระ" ระหว่างอัปโหลด)
+  const updated = await patchOrder(id, { slip_path: path }, "pending").catch(() => null);
+  if (!updated) return NextResponse.json({ ok: false, error: "คำสั่งซื้อนี้ปิดแล้ว" }, { status: 409 });
   // เก็บผลตรวจ — ยังไม่ได้รัน 0003_slip_check.sql (ไม่มีคอลัมน์) ก็ข้ามไปเงียบ ๆ
   if (slipCheck) await saveSlipCheck(id, slipCheck).catch(() => {});
   notifyOrderSlip(updated).catch(() => {});

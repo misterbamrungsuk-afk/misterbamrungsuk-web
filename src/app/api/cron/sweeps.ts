@@ -56,6 +56,9 @@ const changes = () => run(async () => {
   return due;
 });
 
+/** ร้านค้า: ออเดอร์โอนเงินที่ไม่ชำระภายใน 24 ชม. → ยกเลิก "หมดเวลาชำระ" (ออเดอร์กระเป๋าเงินไม่เกี่ยว) */
+const market = () => run(async () => (await import("@/lib/market/store")).sweepOrders());
+
 /** ทุกส่วน (cron รายวัน) */
 export async function sweepAll(): Promise<SweepSummary> {
   // ทีละส่วนตามลำดับ (การจองก่อน) — กันส่วนต่าง ๆ แย่งแก้แถวเดียวกันพร้อมกัน
@@ -65,12 +68,12 @@ export async function sweepAll(): Promise<SweepSummary> {
   out.hotels = await hotels();
   out.calls = await calls();
   out.changes = await changes();
-  out.market = { ok: true, note: "ร้านค้ายังไม่มีกติกาหมดเวลาอัตโนมัติ" };
+  out.market = await market();
   return out;
 }
 
 /** แบบเบาตอนเปิดหน้าภาพรวมแอดมิน — ส่วนที่ query ถูก (การจองถูกกวาดแล้วจาก overview().listAll) · เกิน 3 วิ = ปล่อยทำต่อเบื้องหลัง */
 export async function sweepLight(): Promise<void> {
-  const work = Promise.allSettled([hotels(), changes(), quick()]);
+  const work = Promise.allSettled([hotels(), changes(), quick(), market()]);
   await Promise.race([work, new Promise((r) => setTimeout(r, 3000))]);
 }

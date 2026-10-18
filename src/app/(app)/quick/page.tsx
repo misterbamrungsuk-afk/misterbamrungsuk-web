@@ -5,6 +5,7 @@ import { getLivePeople, publicId } from "@/lib/home/live";
 import { priceOf } from "@/lib/home/people";
 import { currentCustomer } from "@/lib/customer/auth";
 import { freeToday, quickPreview } from "@/lib/bookings/quick";
+import { isBlockedBy } from "@/lib/bookings/blocks";
 import { ACTIVITIES } from "@/lib/posts";
 import { QuickCall } from "./call";
 import { sized } from "@/lib/thumb-url";
@@ -19,9 +20,10 @@ const LN = "rgba(243,234,217,0.07)";
 export default async function QuickPage() {
   const [free, people, me] = await Promise.all([freeToday(), getLivePeople().catch(() => []), currentCustomer().catch(() => null)]);
   const blocked = await myBlocked();
-  const rows = free.filter(({ a }) => !blocked.has(publicId(a.mb_code))).map(({ a, note, hot }) => { const p = people.find((y) => y.id === publicId(a.mb_code)); return p ? { p, note, hot } : null; }).filter((r) => !!r);
+  // ไม่แสดงเพื่อนที่บล็อกลูกค้าคนนี้ (จองไม่ได้อยู่แล้ว)
+  const rows = free.filter(({ a }) => !blocked.has(publicId(a.mb_code)) && !(me && isBlockedBy(a, me.sub))).map(({ a, note, hot }) => { const p = people.find((y) => y.id === publicId(a.mb_code)); return p ? { p, note, hot } : null; }).filter((r) => !!r);
   // ตัวเลขบนฟอร์ม = กลุ่มเดียวกับที่ระบบจะเชิญจริง (ไม่ถูกบล็อก · ไม่มีนัดชนเวลา) → ยอดกันและจำนวนเพื่อนตรงกับหลังกดเรียก
-  const pv = await quickPreview([...blocked]).catch(() => ({ count: { 3: 0, 5: 0 }, hold: { 3: 0, 5: 0 } }));
+  const pv = await quickPreview([...blocked], me?.sub ?? "").catch(() => ({ count: { 3: 0, 5: 0 }, hold: { 3: 0, 5: 0 } }));
 
   return (
     <div className="pb-6">

@@ -12,7 +12,7 @@ export function ringMuted(): boolean {
 }
 export function setRingMuted(m: boolean) {
   try { if (m) localStorage.setItem(MUTE_KEY, "1"); else localStorage.removeItem(MUTE_KEY); } catch {}
-  if (m) silence(); else if (st.wanted) begin();
+  if (m) { silence(); rbSilence(); } else { if (st.wanted) begin(); if (rb.wanted) rbBegin(); }
 }
 
 function unlock() {
@@ -23,6 +23,7 @@ function unlock() {
   }
   if (st.ctx.state === "suspended") void st.ctx.resume().catch(() => {});
   if (st.wanted) begin();
+  if (rb.wanted) rbBegin();
 }
 /** ติดตั้งครั้งเดียว: รอการแตะ/กดครั้งแรกเพื่อปลดล็อกเสียง */
 export function primeRingtone() {
@@ -68,3 +69,38 @@ function silence() {
 export function startRing() { st.wanted = true; begin(); }
 /** หยุด: รับสาย / ไม่รับ / หมดเวลา */
 export function stopRing() { st.wanted = false; silence(); }
+
+// ── เสียงรอสาย (ฝั่งผู้โทร) แบบไทย: 425 Hz ดัง 1 วิ เงียบ 4 วิ · เบากว่าเสียงเรียกเข้า · ปิดเสียงด้วยสวิตช์เดียวกัน (ringMuted) ──
+const rb: { wanted: boolean; loop: ReturnType<typeof setInterval> | null; nodes: { o: OscillatorNode; g: GainNode }[] } = { wanted: false, loop: null, nodes: [] };
+function rbTone() {
+  const ctx = st.ctx;
+  if (!ctx || ctx.state !== "running") return;
+  const t0 = ctx.currentTime + 0.02;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0, t0);
+  g.gain.linearRampToValueAtTime(0.08, t0 + 0.04);
+  g.gain.setValueAtTime(0.08, t0 + 0.96);
+  g.gain.linearRampToValueAtTime(0, t0 + 1);
+  g.connect(ctx.destination);
+  const o = ctx.createOscillator();
+  o.type = "sine"; o.frequency.value = 425; o.connect(g); o.start(t0); o.stop(t0 + 1.02);
+  const n = { o, g };
+  rb.nodes.push(n);
+  o.onended = () => { try { g.disconnect(); } catch {} rb.nodes = rb.nodes.filter((y) => y !== n); };
+}
+function rbBegin() {
+  if (rb.loop || ringMuted() || !st.ctx) return;
+  rb.loop = setInterval(rbTone, 5000);
+  if (st.ctx.state === "suspended") void st.ctx.resume().then(() => { if (rb.loop) rbTone(); }).catch(() => {});
+  else rbTone();
+}
+function rbSilence() {
+  if (rb.loop) clearInterval(rb.loop);
+  rb.loop = null;
+  for (const n of rb.nodes) { try { n.o.stop(); } catch {} try { n.g.disconnect(); } catch {} }
+  rb.nodes = [];
+}
+/** ผู้โทร: เริ่มเสียงรอสายระหว่างอีกฝั่งยังไม่รับ (ผู้ใช้เพิ่งกดโทร = เปิดเสียงได้ทันที) */
+export function startRingback() { rb.wanted = true; primeRingtone(); unlock(); rbBegin(); }
+/** หยุดเสียงรอสาย: ต่อสาย / ปฏิเสธ / วางสาย / หมดเวลา */
+export function stopRingback() { rb.wanted = false; rbSilence(); }

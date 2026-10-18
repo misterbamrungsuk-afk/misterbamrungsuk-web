@@ -25,6 +25,10 @@ const ST: Record<PublicOrder["status"], [string, string]> = {
 const itemsText = (o: PublicOrder) => o.items.map((i) => `${i.name} ×${i.qty}`).join(", ");
 const tracksOf = (o: PublicOrder) => (o.vendor_tracking.length ? o.vendor_tracking : o.tracking_no ? [{ tracking_no: o.tracking_no, carrier: o.carrier ?? "" }] : []);
 
+/** ยกเลิกเพราะไม่ชำระภายในเวลา (lib/market/store EXPIRED_REASON) */
+const expiredOf = (o: Pick<PublicOrder, "status" | "reject_reason">) => o.status === "rejected" && o.reject_reason === "หมดเวลาชำระ";
+const stOf = (o: Pick<PublicOrder, "status" | "reject_reason">): [string, string] => (expiredOf(o) ? ["หมดเวลาชำระ", "#ef8a97"] : ST[o.status]);
+
 function Timeline({ o }: { o: PublicOrder }) {
   const at = ["pending", "paid", "shipped", "done"].indexOf(o.status);
   const steps = [
@@ -36,8 +40,8 @@ function Timeline({ o }: { o: PublicOrder }) {
   if (o.status === "rejected") {
     return (
       <div className={card} style={{ borderColor: "#b0182c" }}>
-        <p className="font-semibold text-[#ef8a97]">คำสั่งซื้อถูกปฏิเสธ</p>
-        <p className="text-[12.5px] text-[#d9c9b4] mt-1">เหตุผล: {o.reject_reason || "โปรดติดต่อทีมงาน"}</p>
+        <p className="font-semibold text-[#ef8a97]">{expiredOf(o) ? "หมดเวลาชำระ" : "คำสั่งซื้อถูกปฏิเสธ"}</p>
+        <p className="text-[12.5px] text-[#d9c9b4] mt-1">{expiredOf(o) ? "ไม่ได้ชำระภายใน 24 ชม. ระบบยกเลิกคำสั่งซื้อนี้แล้ว · สั่งใหม่ได้ที่หน้าร้านค้า" : `เหตุผล: ${o.reject_reason || "โปรดติดต่อทีมงาน"}`}</p>
         {o.wallet_refunded && <p className="text-[12.5px] text-[#7fd6a3] mt-1">คืนเงิน {fmt(o.total)} เข้ากระเป๋าเงินของคุณแล้ว</p>}
       </div>
     );
@@ -144,7 +148,7 @@ export function TrackView() {
           <div className={`${card} flex flex-col gap-1`} style={{ borderColor: LINE }}>
             <div className="flex justify-between items-center gap-2">
               <span className="font-lux text-base text-[#e8c472] tracking-wide">{order.order_no}</span>
-              <span className="px-[9px] py-[3px] rounded-full border text-[11.5px] font-semibold shrink-0" style={{ borderColor: ST[order.status][1], color: ST[order.status][1] }}>{ST[order.status][0]}</span>
+              <span className="px-[9px] py-[3px] rounded-full border text-[11.5px] font-semibold shrink-0" style={{ borderColor: stOf(order)[1], color: stOf(order)[1] }}>{stOf(order)[0]}</span>
             </div>
             <div className="text-[12.5px] text-[#d9c9b4]">{d8(order.created_at)} · {itemsText(order)}</div>
             <div className="font-lux text-[15px]">ยอดชำระ {fmt(order.total)}{order.discount > 0 && <span className="text-[11.5px] text-[#7fd6a3] ml-2">ส่วนลด {order.promo_code} −{fmt(order.discount)}</span>}</div>
@@ -184,7 +188,7 @@ export function TrackView() {
             {mine && !mine.length && <p className="text-[13px] text-[#d9c9b4]">ยังไม่มีคำสั่งซื้อ{verified ? "ของเบอร์นี้" : "ของบัญชีนี้"}</p>}
             {mine?.map((o) => (
               <button key={o.id} type="button" onClick={() => { setOrder(o); setLink(null); setTab("find"); window.scrollTo({ top: 0 }); }} className={`${card} lux-card flex flex-col gap-1 text-left text-[#f3ead9] w-full`} style={{ borderColor: LINE }}>
-                <span className="flex justify-between w-full gap-2"><span className="font-lux text-[#e8c472]">{o.order_no}</span><span className="text-[11.5px] font-semibold" style={{ color: ST[o.status][1] }}>{ST[o.status][0]}</span></span>
+                <span className="flex justify-between w-full gap-2"><span className="font-lux text-[#e8c472]">{o.order_no}</span><span className="text-[11.5px] font-semibold" style={{ color: stOf(o)[1] }}>{stOf(o)[0]}</span></span>
                 <span className="text-[12.5px] text-[#d9c9b4] line-clamp-1">{d8(o.created_at)} · {itemsText(o)}</span>
                 <span className="flex justify-between w-full text-[13px]"><span>{fmt(o.total)}</span><span className="text-[#e8c472]">{o.resume ? "แนบสลิปต่อ →" : "ดูสถานะ →"}</span></span>
               </button>

@@ -17,7 +17,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!path || !canAccess(session.role, path)) redirect(`${homeFor(session.role)}?denied=1`);
 
   return (
-    <div className="min-h-dvh lg:flex bg-[#0e0a0a] text-[#f6efe4]">
+    <div className="min-h-dvh lg:flex overflow-x-clip bg-[#0e0a0a] text-[#f6efe4]">
       <AdminNav email={session.email} role={session.role} />
       <main className="flex-1 min-w-0 bg-[#0e0a0a] font-lux-body px-4 lg:px-6 py-5 lg:py-[22px] pb-16 [&_.grid>*]:min-w-0">
         <Suspense><DeniedBanner /></Suspense>

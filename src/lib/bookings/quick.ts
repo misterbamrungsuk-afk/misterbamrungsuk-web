@@ -119,9 +119,10 @@ export async function quickCandidates(hours: 3 | 5, blocked: string[], customer_
   }
   return cands;
 }
-/** สรุปสำหรับหน้าฟอร์ม: จำนวนเพื่อนที่จะเห็นคำขอ + ยอดที่จะกัน (ราคาสูงสุดในกลุ่ม) ต่อระยะเวลา */
-export async function quickPreview(blocked: string[]) {
-  const [c3, c5] = await Promise.all([quickCandidates(3, blocked), quickCandidates(5, blocked)]);
+/** สรุปสำหรับหน้าฟอร์ม: จำนวนเพื่อนที่จะเห็นคำขอ + ยอดที่จะกัน (ราคาสูงสุดในกลุ่ม) ต่อระยะเวลา
+ *  customer_id = ตัวกรองเดียวกับ createQuick (ไม่นับเพื่อนที่บล็อกลูกค้าคนนี้) */
+export async function quickPreview(blocked: string[], customer_id = "") {
+  const [c3, c5] = await Promise.all([quickCandidates(3, blocked, customer_id), quickCandidates(5, blocked, customer_id)]);
   const max = (c: { price: number }[]) => (c.length ? Math.max(...c.map((x) => x.price)) : 0);
   return { count: { 3: c3.length, 5: c5.length }, hold: { 3: max(c3), 5: max(c5) } };
 }

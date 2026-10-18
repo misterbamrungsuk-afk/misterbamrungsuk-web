@@ -144,7 +144,7 @@ async function partnerOf(email, type, PCx = {}) {
   const spa = (await J(await fetch(B + '/api/spas'))).spas.find((s) => s.id === S.p.id); ok('spa listed', !!spa?.services?.length);
   const SC = customer('spa'); await topup(SC, 20000);
   const pid = (/\/p\/(r[0-9a-f]{10})/.exec(await (await fetch(B + '/')).text()) || [])[1];
-  const d = new Date(Date.now() + (40 + crypto.randomInt(120)) * 86400e3); d.setHours(10 + crypto.randomInt(8), 0, 0, 0);
+  const d = new Date(Date.now() + [48, 49, 59][crypto.randomInt(3)] * 86400e3); // จองได้ไม่เกิน 60 วัน · วันที่ชุดอื่นไม่ใช้ d.setHours(10 + crypto.randomInt(8), 0, 0, 0);
   j = await J(await post('/api/bookings', SC.h, { pid, hours: 3, starts_at: d.toISOString(), place: { type: 'spa', spa_id: S.p.id, service_id: spa?.services?.[0]?.id }, note: '' }));
   ok('spa booking requested', j.ok, j.error); const sbid = j.id;
   const sb = (await J(await fetch(B + `/api/bookings/${sbid}`, { headers: SC.h }))).booking;

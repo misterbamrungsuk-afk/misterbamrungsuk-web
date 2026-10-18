@@ -49,7 +49,7 @@ export default async function StrikesPage({ params, searchParams }: { params: Pr
         <div className={card} style={{ padding: 16 }}>
           <b className="font-medium">การอุทธรณ์</b>
           <div className="text-[13px] text-[#d9c9b4] leading-[1.55] font-light">กด &quot;ยื่นอุทธรณ์&quot; ที่ใบเตือน · เขียนเหตุผลและแนบรูปหลักฐานได้ · ใบละ 1 ครั้ง · ทีมงานตรวจภายใน 48 ชม. ผลจะแจ้งในแจ้งเตือน · ถ้าอุทธรณ์ผ่าน ใบเตือนใบนั้นจะไม่นับ</div>
-          <a href={lineAddUrl()} target="_blank" rel="noopener" className="self-start mt-1 text-[13px] text-[#e8c472] font-light">มีคำถาม ติดต่อทีมงานทาง LINE ›</a>
+          <a href={lineAddUrl()} target="_blank" rel="noopener" className="self-start min-h-10 inline-flex items-center text-[13px] text-[#e8c472] font-light">มีคำถาม ติดต่อทีมงานทาง LINE ›</a>
         </div>
       </div>
       <PtNav c={c} active="settings" />

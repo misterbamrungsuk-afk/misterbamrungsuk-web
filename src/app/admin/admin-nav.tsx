@@ -48,8 +48,9 @@ export function AdminNav({ email, role }: { email: string; role: AdminRole }) {
   // มือถือ: เลื่อนแท็บที่เปิดอยู่ให้อยู่ในจอ (แท็บท้าย ๆ เช่น "รูปหน้าปก" ไม่หลุดขอบขวา)
   const chips = useRef<HTMLElement>(null);
   useEffect(() => {
-    const el = chips.current?.querySelector<HTMLElement>("[aria-current=page]");
-    el?.scrollIntoView({ block: "nearest", inline: "center", behavior: "instant" as ScrollBehavior });
+    // เลื่อนเฉพาะแถบแท็บเอง — scrollIntoView ลากทั้งหน้าให้เลื่อนข้างได้บนจอแคบ (iPhone SE)
+    const nav = chips.current, el = nav?.querySelector<HTMLElement>("[aria-current=page]");
+    if (nav && el) nav.scrollLeft = Math.max(0, el.offsetLeft - (nav.clientWidth - el.offsetWidth) / 2);
   }, [path]);
 
   return (
@@ -95,7 +96,7 @@ export function AdminNav({ email, role }: { email: string; role: AdminRole }) {
           <button onClick={logout} className="text-xs text-crimson-200 min-h-9 px-2">ออก</button>
         </div>
         <div className="px-4 pb-2.5 flex items-center gap-2"><div className="flex-1 min-w-0"><ModeSwitch /></div><Link href="/" className="shrink-0 text-[12px] text-[#ffd76a] min-h-9 px-1 inline-flex items-center">กลับหน้าแอป</Link></div>
-        <nav ref={chips} aria-label="เมนูแอดมิน (มือถือ)" className="flex gap-2 overflow-x-auto no-scrollbar px-4 pb-3">
+        <nav ref={chips} aria-label="เมนูแอดมิน (มือถือ)" className="relative flex gap-2 overflow-x-auto overscroll-x-contain no-scrollbar max-w-full min-w-0 px-4 pb-3">
           {tabs.map((t) => (
             <Link key={t.href} href={t.href} aria-current={isOn(t) ? "page" : undefined} className={`chip whitespace-nowrap h-9 px-3.5 inline-flex items-center gap-1.5 ${isOn(t) ? "chip-red" : ""}`}>
               {t.label}

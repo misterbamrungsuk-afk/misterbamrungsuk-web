@@ -25,7 +25,7 @@ export default async function PartnerPackagePage() {
       <h1 className="font-display text-2xl font-semibold mt-5">แผนโปรโมทของฉัน</h1>
 
       <section className="mt-4 rounded-3xl border border-gold-500/50 bg-gradient-to-br from-ink-800 to-ink-900 p-5">
-        <div className="flex justify-between text-[11px] tracking-[.18em] text-gold-400"><span>CURRENT PLAN</span><span className="tracking-normal">QC {QC_LABEL[p.qc]}</span></div>
+        <div className="flex justify-between text-[11px] tracking-[.18em] text-gold-400"><span>CURRENT PLAN</span><span className="tracking-normal text-[12px]">QC {QC_LABEL[p.qc]}</span></div>
         {left != null && total ? (
           <>
             <p className="font-display text-3xl font-semibold mt-2">{(PARTNER_PACKAGES[p.package]?.label ?? p.package)}</p>

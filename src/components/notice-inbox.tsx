@@ -66,7 +66,7 @@ export function NoticeInbox({ api, pushTo, initial = [], devices: dev0 = 0 }: { 
                 <div className="flex items-start gap-2">
                   {!r.read_at && <span className="mt-1.5 w-2 h-2 rounded-full bg-crimson-500 shrink-0" aria-label="ยังไม่อ่าน" />}
                   <b className={`text-sm flex-1 ${r.read_at ? "font-normal text-ink-200" : "text-ink-100"}`}>{r.title}</b>
-                  <span className="text-[11px] text-ink-300 shrink-0">{when(r.created_at)}</span>
+                  <span className="text-[12.5px] text-ink-300 shrink-0">{when(r.created_at)}</span>
                 </div>
                 {r.body && <p className="m-0 mt-1 text-xs text-ink-300 break-words">{r.body}</p>}
               </>
