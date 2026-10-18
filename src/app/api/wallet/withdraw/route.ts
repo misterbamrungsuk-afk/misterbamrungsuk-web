@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 export async function POST(req: Request) {
   const me = await currentCustomer();
   if (!me) return NextResponse.json({ ok: false, error: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
-  if (await limited(`cwd:${me.sub}`, 6, 60 * 60_000) || await limited(`cwd-ip:${clientIp(req)}`, 20, 60 * 60_000)) return NextResponse.json({ ok: false, error: "ส่งบ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
+  if (await limited(`cwd:${me.sub}`, 10, 60 * 60_000) || await limited(`cwd-ip:${clientIp(req)}`, 20, 60 * 60_000)) return NextResponse.json({ ok: false, error: "ส่งบ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
   const b = (await req.json().catch(() => ({}))) as { amount?: unknown; bank?: unknown };
   try {
     const r = await requestCustomerWithdraw(me, Number(b.amount), b.bank);

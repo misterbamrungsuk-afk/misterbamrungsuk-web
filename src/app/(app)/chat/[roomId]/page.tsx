@@ -6,11 +6,13 @@ import { use, useCallback, useEffect, useRef, useState } from "react";
 import { ChatNotice } from "@/components/chat-notice";
 import { CallButton } from "@/components/call/call-button";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ChatBoxMenu, MsgMore, UnsentBubble, patchUnsent, useMsgActions, type CM } from "@/components/chat-manage";
 
 const GOLD = "#e8c472";
 const LN = "rgba(243,234,217,0.07)";
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US");
-type M = { id: number; sender_type: "customer" | "parttime" | "system"; body: string; blocked: boolean; created_at: string };
+type M = CM;
 type B = { id: string; code: string; status: string; starts_at: string; hours: number; total_satang: number; place: { label: string }; pt: { nick: string; img: string; pid: string } };
 const time = (iso: string) => new Date(iso).toLocaleTimeString("th-TH", { timeZone: "Asia/Bangkok", hour: "2-digit", minute: "2-digit" });
 
@@ -25,11 +27,18 @@ export default function ChatRoom({ params }: { params: Promise<{ roomId: string 
   const last = useRef(0);
   const end = useRef<HTMLDivElement>(null);
 
+  const since = useRef("");
+  const router = useRouter();
+  const ma = useMsgActions({ bookingId: roomId, role: "customer", setMs });
   const poll = useCallback(async () => {
-    const r = await fetch(`/api/bookings/${roomId}/messages?after=${last.current}`, { cache: "no-store" }).catch(() => null);
+    const r = await fetch(`/api/bookings/${roomId}/messages?after=${last.current}${since.current ? `&since=${encodeURIComponent(since.current)}` : ""}`, { cache: "no-store" }).catch(() => null);
     const d = await r?.json().catch(() => null);
     if (!d?.ok) return;
-    if (d.messages.length) { last.current = d.messages[d.messages.length - 1].id; setMs((x) => [...x, ...d.messages.filter((m: M) => !x.some((y) => y.id === m.id))]); }
+    if (d.ts) since.current = d.ts;
+    // อีกฝ่ายยกเลิกการส่ง → แก้ฟองข้อความในที่
+    if (d.unsent?.length) setMs((x) => patchUnsent(x, d.unsent));
+    if (d.messages.length) setMs((x) => [...x, ...d.messages.filter((m: M) => !x.some((y) => y.id === m.id))]);
+    last.current = Math.max(last.current, Number(d.last) || 0, d.messages.length ? d.messages[d.messages.length - 1].id : 0);
   }, [roomId]);
   useEffect(() => {
     fetch(`/api/bookings/${roomId}`, { cache: "no-store" }).then((r) => r.json()).then((d) => (d?.ok ? setB(d.booking) : setErr("ไม่พบห้องแชทนี้"))).catch(() => setErr("โหลดไม่สำเร็จ"));
@@ -58,9 +67,11 @@ export default function ChatRoom({ params }: { params: Promise<{ roomId: string 
       <header className="flex items-center gap-[10px]" style={{ padding: "14px 12px", borderBottom: `1px solid ${LN}` }}>
         <Link href="/chat" aria-label="ย้อนกลับ" className="w-10 h-10 rounded-full grid place-items-center text-[#f3ead9] hover:text-[#f3ead9]" style={{ border: `1px solid ${LN}` }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg></Link>
         {b && <img src={b.pt.img} alt="" className="w-[42px] h-[42px] rounded-full object-cover" />}
-        <div className="flex-1 min-w-0"><div className="font-medium text-[16px]">{b?.pt.nick ?? "…"} <span className="text-[12px] font-light" style={{ color: GOLD }}>✓</span></div><div className="text-[12px] font-light text-[#d9c9b4]">{b ? `#${b.code}` : ""}</div></div>
+        <div className="flex-1 min-w-0"><div className="font-medium text-[16px] truncate">{b?.pt.nick ?? "…"} <span className="text-[12px] font-light" style={{ color: GOLD }}>✓</span></div><div className="text-[12px] font-light text-[#d9c9b4]">{b ? `#${b.code}` : ""}</div></div>
         {b && <Link href={`/report?booking=${b.id}&nick=${encodeURIComponent(b.pt.nick)}`} aria-label="รายงานผู้ใช้" className="w-10 h-10 rounded-full grid place-items-center text-[#d9c9b4] hover:text-[#f3ead9]" style={{ border: `1px solid ${LN}` }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M5 21V4h11l-1.5 4L16 12H5" /></svg></Link>}
         <Link href="/sos" aria-label="SOS" className="h-10 px-3 rounded-full grid place-items-center text-[13px] font-semibold text-[#ff8a9a] hover:text-[#ff8a9a]" style={{ border: "1px solid rgba(255,138,154,.4)" }}>SOS</Link>
+        {/* ซ่อนแชท / ลบกล่องแชท (เฉพาะฝั่งฉัน) → กลับไปรายการแชท */}
+        {b && <ChatBoxMenu bookingId={b.id} status={b.status} onDone={() => router.push("/chat")} className="w-11 h-11 -ml-1 shrink-0 rounded-full grid place-items-center text-[#d9c9b4] hover:text-[#f3ead9]" />}
       </header>
       {b && ["accepted", "checked_in"].includes(b.status) && <div style={{ margin: "10px 12px 0" }}><CallButton bookingId={b.id} who="customer" peerName={b.pt.nick} /></div>}
       {b && (
@@ -72,16 +83,27 @@ export default function ChatRoom({ params }: { params: Promise<{ roomId: string 
       <div className="flex-1 overflow-y-auto flex flex-col gap-2" style={{ padding: "14px 12px" }}>
         <ChatNotice />
         {!ms.length && <div className="self-center text-[12px] font-light text-[#d9c9b4] text-center">เริ่มคุยรายละเอียดนัดได้เลย</div>}
+        {/* กดค้าง (มือถือ) หรือปุ่ม ⋯ = เมนูข้อความ: ยกเลิกการส่ง · ลบข้อความ · คัดลอก */}
         {ms.map((m) => m.sender_type === "system" ? (
-          <div key={m.id} className="self-center max-w-[90%] text-center text-[12px] font-light text-[#d9c9b4] rounded-xl bg-[#211a18]" style={{ padding: "6px 12px" }}>{m.body}</div>
+          <div key={m.id} className="self-center max-w-[96%] flex items-center gap-0.5">
+            <div {...ma.press(m)} className="text-center text-[12px] font-light text-[#d9c9b4] rounded-xl bg-[#211a18] select-none" style={{ padding: "6px 12px", ...ma.press(m).style }}>{m.body}</div>
+            <MsgMore onClick={() => ma.open(m)} />
+          </div>
         ) : m.sender_type === "customer" ? (
-          <div key={m.id} className="self-end max-w-[76%] flex flex-col items-end gap-0.5">
-            <div className="text-[15px] leading-[1.45]" style={{ background: m.blocked ? "rgba(201,40,61,.2)" : GOLD, color: m.blocked ? "#ff8a9a" : "#1b130b", borderRadius: "20px 20px 6px 20px", padding: "10px 14px" }}>{m.body}</div>
-            <span className="text-[12px] text-[#d9c9b4]">{time(m.created_at)}{m.blocked ? " · ไม่ถูกส่ง (ข้อความต้องห้าม)" : ""}</span>
+          <div key={m.id} className="self-end max-w-[90%] flex items-center gap-0.5">
+            <MsgMore onClick={() => ma.open(m)} />
+            <div className="min-w-0 flex flex-col items-end gap-0.5">
+              {m.unsent ? <UnsentBubble mine /> : <div {...ma.press(m)} className="text-[15px] leading-[1.45] break-words select-none" style={{ background: m.blocked ? "rgba(201,40,61,.2)" : GOLD, color: m.blocked ? "#ff8a9a" : "#1b130b", borderRadius: "20px 20px 6px 20px", padding: "10px 14px", ...ma.press(m).style }}>{m.body}</div>}
+              <span className="text-[12px] text-[#d9c9b4]">{time(m.created_at)}{m.blocked ? " · ไม่ถูกส่ง (ข้อความต้องห้าม)" : ""}</span>
+            </div>
           </div>
         ) : (
-          <div key={m.id} className="self-start max-w-[76%] text-[15px] leading-[1.45] bg-[#251d1b]" style={{ borderRadius: "20px 20px 20px 6px", padding: "10px 14px" }}>{m.body}</div>
+          <div key={m.id} className="self-start max-w-[90%] flex items-center gap-0.5">
+            {m.unsent ? <UnsentBubble mine={false} /> : <div {...ma.press(m)} className="min-w-0 text-[15px] leading-[1.45] bg-[#251d1b] break-words select-none" style={{ borderRadius: "20px 20px 20px 6px", padding: "10px 14px", ...ma.press(m).style }}>{m.body}</div>}
+            <MsgMore onClick={() => ma.open(m)} />
+          </div>
         ))}
+        {ma.ui}
         <div ref={end} />
       </div>
       {warn && <p role="alert" className="m-0 text-[12.5px] text-[#ff8a9a]" style={{ padding: "0 14px 6px" }}>{warn}</p>}

@@ -193,7 +193,9 @@ async function bookAccepted(C, starts_at, label) {
     d = await bk(X, b4);
     const share = Math.round(d.booking.price_satang * (d.booking.share_pct ?? 0) / 100);
     ok('PT share computed on extended price', d.booking.pt_pending_satang === share && share > Math.round(price0 * (d.booking.share_pct ?? 0) / 100), `${d.booking.pt_pending_satang} vs ${share}`);
-    const pw1 = await ptw(); ok('PT pending grew by share incl. extra hour', (pw1.pending ?? 0) - (pw0.pending ?? 0) === share, `${pw0.pending}→${pw1.pending}`);
+    const pw1 = await ptw(); // ชุดก่อนหน้าอาจตั้งปล่อยเงินอัตโนมัติ → ส่วนแบ่งอาจเข้า available ทันที · นับรวม pending + available
+    const tot = (x) => (x.pending ?? 0) + (x.available ?? 0);
+    ok('PT earned share incl. extra hour', tot(pw1) - tot(pw0) === share, `${tot(pw0)}→${tot(pw1)} vs ${share}`);
     j = await J(await post(`/api/bookings/${b4}/extend`, X, {})); ok('cannot extend after completion', !j.ok, j.error);
     ok('ledger sum 0 (after split)', (await ledger()) === 0);
   }

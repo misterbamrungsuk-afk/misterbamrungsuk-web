@@ -18,7 +18,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     if (!reuse) { console.error("มีเซิร์ฟเวอร์ที่ :3210 อยู่แล้ว — ปิดก่อน หรือใช้ --reuse (ต้องเป็นโหมดสาธิตที่เพิ่งเปิด)"); process.exit(2); }
   } else {
     console.log("เปิดเซิร์ฟเวอร์สาธิต :3210 …");
-    srv = spawn(process.execPath, [path.join(DIR, "demo-server.js")], { stdio: ["ignore", "pipe", "pipe"], cwd: path.join(DIR, "..") });
+    srv = spawn(process.execPath, [path.join(DIR, "demo-server.js")], { stdio: ["ignore", "ignore", "pipe"], cwd: path.join(DIR, "..") }); // stdout ไม่อ่าน = ห้ามเป็น pipe (บัฟเฟอร์เต็มแล้วเซิร์ฟเวอร์ค้าง)
     srv.stderr.on("data", (d) => { if (/error/i.test(d)) process.stderr.write(d); });
     for (let i = 0; i < 90 && !(await up()); i++) await sleep(2000);
     if (!(await up())) { console.error("เซิร์ฟเวอร์ไม่ขึ้น"); srv.kill(); process.exit(2); }

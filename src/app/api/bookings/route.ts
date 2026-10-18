@@ -5,6 +5,7 @@ import { currentCustomer } from "@/lib/customer/auth";
 import { inThailand } from "@/lib/geo";
 import { BookingError, createBooking, listForCustomer, ptPublic, type Place, type PlaceType } from "@/lib/bookings";
 import { getLiveApplicants, publicId } from "@/lib/home/live";
+import { chatListState } from "@/lib/bookings/chat-manage";
 import { spaServiceFor } from "@/lib/market/partners";
 
 export const runtime = "nodejs";
@@ -13,12 +14,14 @@ const TYPES: PlaceType[] = ["out", "outdoor", "mall", "cafe", "condo", "hotel", 
 const LABEL: Record<PlaceType, string> = { out: "นอกสถานที่", outdoor: "กลางแจ้ง", mall: "ห้าง", cafe: "คาเฟ่ / ร้านอาหาร", condo: "คอนโด", hotel: "โรงแรม", spa: "สปา" };
 
 // การจองของฉัน (ลูกค้า)
-export async function GET() {
+export async function GET(req: Request) {
   const me = await currentCustomer();
   if (!me) return NextResponse.json({ ok: false, error: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
   try {
     const rows = await listForCustomer(me.sub);
-    return NextResponse.json({ ok: true, bookings: rows.map((b) => ({ ...b, pt: ptPublic(b), parttime_id: undefined, parttime_mb: undefined })) });
+    // ?chat=1 (หน้ารายการแชท): แนบสถานะซ่อน/ลบกล่องแชทของฉัน
+    const cs = new URL(req.url).searchParams.get("chat") === "1" ? await chatListState({ role: "customer", id: me.sub }, rows.map((b) => b.id)).catch(() => null) : null;
+    return NextResponse.json({ ok: true, bookings: rows.map((b) => ({ ...b, pt: ptPublic(b), parttime_id: undefined, parttime_mb: undefined, ...(cs ? { chat: cs.get(b.id) ?? null } : {}) })) });
   } catch (e) {
     console.error("bookings list", e);
     return NextResponse.json({ ok: false, error: "ระบบการจองยังไม่เปิดใช้งาน" }, { status: 503 });

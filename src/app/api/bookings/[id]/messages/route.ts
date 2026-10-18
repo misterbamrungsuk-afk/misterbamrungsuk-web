@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { limited } from "@/lib/rate-limit";
 import { bookingActor } from "@/lib/bookings/auth";
-import { BookingError, listMessages, sendMessage } from "@/lib/bookings";
+import { BookingError, sendMessage } from "@/lib/bookings";
+import { messagesFor } from "@/lib/bookings/chat-manage";
 
 
 export const runtime = "nodejs";
@@ -13,11 +14,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const u = new URL(req.url);
   const who = await bookingActor((await params).id, u.searchParams.get("mb"), u.searchParams.get("t"));
   if (!who) return NextResponse.json({ ok: false }, { status: 404 });
-  const rows = await listMessages(who.b.id, Number(u.searchParams.get("after") ?? 0) || 0);
-  const mine = who.role;
-  // ข้อความที่ถูกกัน: ผู้ส่งเห็นของตัวเอง อีกฝ่ายไม่เห็น
-  const visible = rows.filter((m) => !m.blocked || m.sender_type === mine).map((m) => ({ id: m.id, sender_type: m.sender_type, body: m.body, blocked: m.blocked, created_at: m.created_at }));
-  return NextResponse.json({ ok: true, role: mine, status: who.b.status, messages: visible });
+  // ข้อความที่ถูกกัน: ผู้ส่งเห็นของตัวเอง อีกฝ่ายไม่เห็น · ไม่รวมที่ฉันลบ/ลบกล่องแชท · ยกเลิกการส่ง = ไม่มีเนื้อความ
+  // unsent = id ที่โหลดไปแล้วซึ่งถูกยกเลิกการส่งหลัง poll ก่อน (since = ts ครั้งก่อน) → หน้าเว็บแก้ในที่
+  const v = await messagesFor({ role: who.role, id: who.id }, who.b.id, Number(u.searchParams.get("after") ?? 0) || 0, u.searchParams.get("since"));
+  return NextResponse.json({ ok: true, role: who.role, status: who.b.status, messages: v.messages, last: v.last, unsent: v.unsent, ts: v.ts });
 }
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {

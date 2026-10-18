@@ -103,6 +103,8 @@ const ptStrikes = () => fetch(B + `/api/pt/appeals?${q}`).then(J);
   const aw = await J(await fetch(B + '/api/admin/wallet', { headers: ADM }));
   const tp = aw.topups?.find((x) => x.customer_email === 'appeal32@test.local' && x.status === 'pending');
   if (tp) await fetch(B + '/api/admin/wallet', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'approve', id: tp.id }) });
+  // รายการเติมเงินในหลังบ้านแสดงจำนวนจำกัด (ชุดท้าย ๆ อาจหาไม่เจอ) → เติมด้วยการปรับยอดของ CEO ให้แน่ใจว่ามีเงินพอ
+  if (!tp) await fetch(B + '/api/admin/wallet', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'adjust', owner_type: 'customer', owner_id: 'demo:appeal32@test.local', bucket: 'available', amount_baht: 30000, reason: 'e2e', idem: 'e2e-appeal32@test.local-' + Date.now() }) });
   j = await J(await fetch(B + '/api/bookings', { method: 'POST', headers: CA, body: JSON.stringify({ pid, hours: 3, starts_at: far(47), place: { type: 'cafe', detail: 'คาเฟ่ทดสอบอุทธรณ์' }, note: '' }) }));
   ok('book for strike', j.ok, j.error); const bid = j.id;
   await PT(bid, 'accept');

@@ -21,7 +21,7 @@ export type Booking = {
   pt_pending_satang?: number | null; // ยอดที่เข้า PT.pending จริง (0002_atomic) — ปล่อยเงินตามนี้
   extra_hours?: number | null; // ชม. ที่ต่อระหว่างนัด (0011_changes) — ค่าบริการรวมไว้ใน price_satang แล้ว
 };
-export type Message = { id: number; booking_id: string; sender_type: "customer" | "parttime" | "system"; sender_id: string | null; body: string; blocked: boolean; flag?: string | null; created_at: string; read_at: string | null };
+export type Message = { id: number; booking_id: string; sender_type: "customer" | "parttime" | "system"; sender_id: string | null; body: string; blocked: boolean; flag?: string | null; created_at: string; read_at: string | null; /** ยกเลิกการส่ง (0012_chat_manage) — ผู้ใช้เห็นข้อความแทน ทีมงานเห็นของเดิม */ unsent_at?: string | null };
 export type Notice = { id: number; user_type: "customer" | "parttime" | "admin"; user_id: string; kind: string; title: string; body: string | null; url: string | null; read_at: string | null; created_at: string };
 
 export const RESPOND_MINUTES = 30;

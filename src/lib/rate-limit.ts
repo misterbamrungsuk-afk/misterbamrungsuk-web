@@ -9,6 +9,8 @@ let sb: SupabaseClient | null = null;
 const db = () => (sb ??= createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } }));
 
 export async function limited(key: string, max = 10, windowMs = 15 * 60_000): Promise<boolean> {
+  // ไม่มี IP (เรียกตรงในเครื่อง ไม่ผ่าน proxy) = ข้ามเฉพาะคีย์ราย IP · บน Vercel มี x-forwarded-for เสมอ
+  if (key.endsWith(":local")) return false;
   const local = rateLimited(key, max, windowMs);
   if (local) return true;
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return false;

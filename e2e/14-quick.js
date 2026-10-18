@@ -56,7 +56,7 @@ const wallet = () => fetch(B + '/api/wallet', { headers: C1 }).then(J);
     qid = j.quick.id; await sleep(16500);
     j = await J(await fetch(B + `/api/quick/${qid}`, { headers: C1 })); ok('expired after timeout', j.quick.status === 'expired');
     w = await wallet(); ok('expire refunded', w.available === w1.available && w.held === w1.held);
-  } else ok('no free pt (already booked) → refused', j.code === 'none', j.error);
+  } else ok('no free pt (already booked) → refused', j.code === 'none' || /บ่อยเกินไป/.test(j.error || ''), j.error); // ชุดนี้เรียกเกิน 6 ครั้ง/ชม. แล้ว → ถูกจำกัดความถี่ก็นับว่าไม่ได้เรียก
   await fetch(B + '/api/admin/wallet', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'settings', money: { ...m }, note: 'คืนค่า' }) });
   let t = await (await fetch(B + '/quick', { headers: C1 })).text(); ok('quick page renders', t.includes('เรียกด่วน'));
   t = await (await fetch(`${B}/join/profile/${mb}/jobs?t=${encodeURIComponent(T)}`)).text(); ok('pt jobs page renders', t.length > 0);

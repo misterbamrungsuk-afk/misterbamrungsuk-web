@@ -7,7 +7,9 @@ import { CallButton } from "@/components/call/call-button";
 import { NoShowReport } from "./noshow-report";
 import { ChatNotice } from "@/components/chat-notice";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { BOOKING_STATUS_TH } from "@/lib/join/pt-ui";
+import { ChatBoxMenu, MsgMore, UnsentBubble, patchUnsent, useMsgActions, type CM } from "@/components/chat-manage";
 
 const GOLD = "#e8c472";
 /** อีเวนต์ในหน้า: รับเรียกด่วนแล้ว → ให้รายการงานโหลดใหม่ทันที */
@@ -180,20 +182,28 @@ export function PtIncoming({ mb, t }: { mb: string; t: string }) {
   );
 }
 
-type M ={ id: number; sender_type: "customer" | "parttime" | "system"; body: string; blocked: boolean; created_at: string };
+type M = CM;
 export function PtChat({ mb, t, id, quick = [] }: { mb: string; t: string; id: string; /** ข้อความตอบกลับเร็วที่บันทึกไว้ (หน้าตั้งค่า) */ quick?: string[] }) {
   const [ms, setMs] = useState<M[]>([]);
   const [text, setText] = useState("");
   const [warn, setWarn] = useState("");
   const [status, setStatus] = useState("");
   const last = useRef(0);
+  const since = useRef("");
   const end = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const auth = { mb, t };
+  const ma = useMsgActions({ bookingId: id, role: "parttime", auth, setMs });
   const poll = useCallback(async () => {
-    const r = await fetch(`/api/bookings/${id}/messages?after=${last.current}&${q(mb, t)}`, { cache: "no-store" }).catch(() => null);
+    const r = await fetch(`/api/bookings/${id}/messages?after=${last.current}&${q(mb, t)}${since.current ? `&since=${encodeURIComponent(since.current)}` : ""}`, { cache: "no-store" }).catch(() => null);
     const d = await r?.json().catch(() => null);
     if (!d?.ok) return;
     setStatus(d.status);
-    if (d.messages.length) { last.current = d.messages[d.messages.length - 1].id; setMs((x) => [...x, ...d.messages.filter((m: M) => !x.some((y) => y.id === m.id))]); }
+    if (d.ts) since.current = d.ts;
+    // ลูกค้ายกเลิกการส่ง → แก้ฟองข้อความในที่
+    if (d.unsent?.length) setMs((x) => patchUnsent(x, d.unsent));
+    if (d.messages.length) setMs((x) => [...x, ...d.messages.filter((m: M) => !x.some((y) => y.id === m.id))]);
+    last.current = Math.max(last.current, Number(d.last) || 0, d.messages.length ? d.messages[d.messages.length - 1].id : 0);
   }, [id, mb, t]);
   useEffect(() => { poll(); const i = setInterval(() => { if (document.visibilityState === "visible") poll(); }, 4000); return () => clearInterval(i); }, [poll]);
   useEffect(() => { end.current?.scrollIntoView({ block: "end" }); }, [ms.length]);
@@ -210,12 +220,34 @@ export function PtChat({ mb, t, id, quick = [] }: { mb: string; t: string; id: s
   const open = !status || ["requested", "accepted", "checked_in", "cancel_requested"].includes(status);
   return (
     <div className="flex flex-col" style={{ minHeight: "calc(100dvh - 160px)" }}>
+      {/* ซ่อนแชท / ลบกล่องแชท (เฉพาะฝั่งฉัน) — Part-Time ไม่มีหน้ารายการแชท จึงอยู่ในห้องแชท · เสร็จแล้วกลับหน้างาน */}
+      {status && (
+        <div className="flex items-center justify-end gap-1 px-4 pt-1">
+          <span className="text-[12.5px] font-light text-[#b5a596]">จัดการแชท</span>
+          <ChatBoxMenu bookingId={id} status={status} auth={auth} onDone={() => router.push(`/join/profile/${mb}/jobs${t ? `?t=${encodeURIComponent(t)}` : ""}`)} />
+        </div>
+      )}
       <div className="flex-1 flex flex-col gap-2 px-4 py-3">
         <ChatNotice />
         {!ms.length && <div className="self-center text-[12px] font-light text-[#d9c9b4] text-center">คุยรายละเอียดนัดกับลูกค้า</div>}
-        {ms.map((m) => m.sender_type === "system" ? <div key={m.id} className="self-center text-center text-[12px] font-light text-[#d9c9b4] rounded-xl bg-[#211a18]" style={{ padding: "6px 12px" }}>{m.body}</div>
-          : m.sender_type === "parttime" ? <div key={m.id} className="self-end max-w-[76%] text-[15px]" style={{ background: m.blocked ? "rgba(201,40,61,.2)" : GOLD, color: m.blocked ? "#ff8a9a" : "#1b130b", borderRadius: "20px 20px 6px 20px", padding: "10px 14px" }}>{m.body}{m.blocked ? " · ไม่ถูกส่ง" : ""}</div>
-          : <div key={m.id} className="self-start max-w-[76%] text-[15px] bg-[#251d1b]" style={{ borderRadius: "20px 20px 20px 6px", padding: "10px 14px" }}>{m.body}</div>)}
+        {/* กดค้าง (มือถือ) หรือปุ่ม ⋯ = เมนูข้อความ: ยกเลิกการส่ง · ลบข้อความ · คัดลอก */}
+        {ms.map((m) => m.sender_type === "system" ? (
+          <div key={m.id} className="self-center max-w-[96%] flex items-center gap-0.5">
+            <div {...ma.press(m)} className="text-center text-[12px] font-light text-[#d9c9b4] rounded-xl bg-[#211a18] select-none" style={{ padding: "6px 12px", ...ma.press(m).style }}>{m.body}</div>
+            <MsgMore onClick={() => ma.open(m)} />
+          </div>
+        ) : m.sender_type === "parttime" ? (
+          <div key={m.id} className="self-end max-w-[90%] flex items-center gap-0.5">
+            <MsgMore onClick={() => ma.open(m)} />
+            {m.unsent ? <UnsentBubble mine /> : <div {...ma.press(m)} className="min-w-0 text-[15px] break-words select-none" style={{ background: m.blocked ? "rgba(201,40,61,.2)" : GOLD, color: m.blocked ? "#ff8a9a" : "#1b130b", borderRadius: "20px 20px 6px 20px", padding: "10px 14px", ...ma.press(m).style }}>{m.body}{m.blocked ? " · ไม่ถูกส่ง" : ""}</div>}
+          </div>
+        ) : (
+          <div key={m.id} className="self-start max-w-[90%] flex items-center gap-0.5">
+            {m.unsent ? <UnsentBubble mine={false} /> : <div {...ma.press(m)} className="min-w-0 text-[15px] bg-[#251d1b] break-words select-none" style={{ borderRadius: "20px 20px 20px 6px", padding: "10px 14px", ...ma.press(m).style }}>{m.body}</div>}
+            <MsgMore onClick={() => ma.open(m)} />
+          </div>
+        ))}
+        {ma.ui}
         <div ref={end} />
       </div>
       {warn && <p role="alert" className="m-0 px-4 pb-1 text-[12.5px] text-[#ff8a9a]">{warn}</p>}
