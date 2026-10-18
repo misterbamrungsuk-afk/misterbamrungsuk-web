@@ -195,6 +195,9 @@ export async function actOnBooking(pid: string, id: string, status: Extract<Book
 
 /** การจองจริงที่ลูกค้าเลือกสปาพาร์ทเนอร์ (#26) — เพื่อนตอบรับ = เข้าพอร์ทัลเป็น "รอยืนยัน" · จบ = เสร็จสิ้น · ยกเลิก/คืนเงิน = ยกเลิก
  *  ไม่ทับสถานะที่พาร์ทเนอร์ตั้งเอง (ยืนยัน/ห้องเต็ม) ระหว่างนัดยังเดินอยู่ · ไม่ส่งข้อมูลติดต่อลูกค้า */
+/** แจ้งกล่องแจ้งเตือนพาร์ทเนอร์ (lib/partner/notify) — ไม่ throw */
+const spaNotice = (pid: string, kind: "new" | "cancelled", r: { booking_ref: string; start_time: string; hours: number; amount?: number | null; addon?: string | null }) =>
+  import("./notify").then((m) => m.notifySpaBooking(pid, kind, r)).catch((e) => console.error("spa notice", e));
 export async function syncSpaBooking(b: { code: string; status: string; starts_at: string; hours: number; room_fee_satang: number; customer_name: string | null; parttime_nick: string | null; note?: string | null; place: { spa_id?: string } }) {
   const pid = b.place.spa_id;
   if (!pid || (!isDemo && !/^[0-9a-f-]{36}$/.test(pid))) return;
@@ -208,16 +211,41 @@ export async function syncSpaBooking(b: { code: string; status: string; starts_a
   const row = { partner_id: pid, booking_ref: b.code, customer_name: first, parttime_name: b.parttime_nick ?? "เพื่อน", start_time: b.starts_at, hours: b.hours, room: null, addon: svc, status: to, amount: Math.round(b.room_fee_satang / 100), platform_pct: pct == null ? null : Number(pct), note: String(b.note ?? "").trim().slice(0, 300) || null };
   if (isDemo) {
     const cur = demo.bookings.find((x) => x.booking_ref === b.code);
-    if (cur) { if (to !== "pending") Object.assign(cur, { status: to }); }
-    else if (to === "pending") demo.bookings.push({ ...row, id: crypto.randomUUID(), created_at: nowIso });
+    if (cur) { if (to !== "pending" && cur.status !== to) { Object.assign(cur, { status: to }); if (to === "cancelled") await spaNotice(pid, "cancelled", cur); } }
+    else if (to === "pending") { demo.bookings.push({ ...row, id: crypto.randomUUID(), created_at: nowIso }); await spaNotice(pid, "new", row); }
     return;
   }
   if (to === "pending") {
-    let { error } = await db().from("partner_bookings").upsert(row, { onConflict: "booking_ref", ignoreDuplicates: true });
-    if (error && missingCol(error)) { const { note: _n, ...rest } = row; void _n; ({ error } = await db().from("partner_bookings").upsert(rest, { onConflict: "booking_ref", ignoreDuplicates: true })); }
+    // ignoreDuplicates + select = ได้แถวกลับเฉพาะที่เพิ่งเพิ่ม → แจ้งพาร์ทเนอร์ครั้งเดียว
+    let { data, error } = await db().from("partner_bookings").upsert(row, { onConflict: "booking_ref", ignoreDuplicates: true }).select("id");
+    if (error && missingCol(error)) { const { note: _n, ...rest } = row; void _n; ({ data, error } = await db().from("partner_bookings").upsert(rest, { onConflict: "booking_ref", ignoreDuplicates: true }).select("id")); }
     if (error) throw error;
+    if ((data ?? []).length) await spaNotice(pid, "new", row);
   } else {
-    const { error } = await db().from("partner_bookings").update({ status: to, updated_at: nowIso }).eq("booking_ref", b.code);
+    // แจ้งเฉพาะครั้งที่สถานะเปลี่ยนจริง (neq) — sync ซ้ำไม่แจ้งซ้ำ
+    const { data, error } = await db().from("partner_bookings").update({ status: to, updated_at: nowIso }).eq("booking_ref", b.code).neq("status", to).select("id");
     if (error) throw error;
+    if (to === "cancelled" && (data ?? []).length) await spaNotice(pid, "cancelled", row);
   }
+}
+
+/** นัดที่สปาเปลี่ยนเวลา (ลูกค้าขอ · เพื่อนรับ — lib/bookings/changes.ts) → ย้ายเวลาในพอร์ทัล
+ *  ยืนยันห้องไว้แล้ว / แจ้งห้องเต็ม = กลับเป็น "รอยืนยัน" (ล้างห้อง) ให้สปาตอบใหม่สำหรับเวลาใหม่ · จบ/ยกเลิกแล้ว = ไม่แตะ (คืน null)
+ *  prev = สถานะเดิมก่อนย้าย */
+export async function rescheduleSpaBooking(code: string, newStartIso: string): Promise<{ row: PartnerBooking; prev: BookingStatus } | null> {
+  const open: BookingStatus[] = ["pending", "confirmed", "full"];
+  const patch = { start_time: newStartIso, status: "pending" as BookingStatus, room: null, updated_at: new Date().toISOString() };
+  if (isDemo) {
+    const b = demo.bookings.find((x) => x.booking_ref === code && open.includes(x.status));
+    if (!b) return null;
+    const prev = b.status;
+    Object.assign(b, patch);
+    return { row: b, prev };
+  }
+  const { data: cur, error: e0 } = await db().from("partner_bookings").select("*").eq("booking_ref", code).in("status", open).maybeSingle();
+  if (e0) throw e0;
+  if (!cur) return null;
+  const { data, error } = await db().from("partner_bookings").update(patch).eq("id", (cur as PartnerBooking).id).in("status", open).select().maybeSingle();
+  if (error) throw error;
+  return data ? { row: data as PartnerBooking, prev: (cur as PartnerBooking).status } : null;
 }

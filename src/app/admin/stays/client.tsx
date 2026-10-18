@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { FlashMsg, useConfirm, useFlash } from "../confirm";
-import { STAY_LABEL, bahtTxt, thDate, thTime, type StayBooking, type StayStatus } from "@/lib/hotels/types";
+import { STAY_LABEL, afterStayRefundSplit, bahtTxt, thDate, thTime, type StayBooking, type StayStatus } from "@/lib/hotels/types";
 
 const FILTERS: { key: string; label: string; has: StayStatus[] | null }[] = [
   { key: "open", label: "เงินพักอยู่", has: ["pending", "confirmed"] },
@@ -18,6 +18,8 @@ export function StaysAdmin({ initial, recon }: { initial: StayBooking[]; recon: 
   const [busy, setBusy] = useState<string | null>(null);
   const [confirmUi, ask] = useConfirm();
   const { msg, flash, fromRes } = useFlash();
+  // คืนเงินหลังเข้าพักเสร็จ (เต็ม/บางส่วน)
+  const [after, setAfter] = useState<{ b: StayBooking; amount: string; note: string } | null>(null);
 
   const cur = FILTERS.find((x) => x.key === f)!;
   const shown = useMemo(() => {
@@ -43,9 +45,57 @@ export function StaysAdmin({ initial, recon }: { initial: StayBooking[]; recon: 
     flash(`คืนเงิน ${b.code} แล้ว`, { ok: true });
   };
 
+  const refundAfter = async () => {
+    if (!after) return;
+    const { b } = after;
+    const note = after.note.trim();
+    const amt = Math.round(Number(after.amount) * 100);
+    const sp = afterStayRefundSplit(b, amt);
+    if (!note) return flash("ต้องระบุเหตุผลการคืนเงิน", { ok: false });
+    if (!(amt > 0) || amt > sp.left) return flash(`ยอดคืนต้องอยู่ระหว่าง ฿0.01 – ${bahtTxt(sp.left)}`, { ok: false });
+    const ok = await ask({
+      title: `คืนเงินหลังเข้าพัก ${b.code} ${bahtTxt(amt)}?`, danger: true, ok: "คืนเงิน",
+      body: <div className="flex flex-col gap-1.5">
+        <span>ลูกค้า ({b.customer_email ?? b.customer_id}) ได้รับ <b>{bahtTxt(amt)}</b> เข้ากระเป๋า{sp.full ? " · คืนครบยอด" : " · คืนบางส่วน"}</span>
+        <span>ดึงจากกระเป๋าโรงแรม {b.partner_name}: <b>{bahtTxt(sp.fromPartner)}</b></span>
+        <span>ดึงจากรายได้แพลตฟอร์ม: <b>{bahtTxt(sp.fromPlatform)}</b></span>
+        {sp.prior > 0 && <span className="text-xs">คืนไปแล้วก่อนหน้า {bahtTxt(sp.prior)} · คงเหลือคืนได้หลังรายการนี้ {bahtTxt(sp.left - amt)}</span>}
+        <span className="text-xs">เหตุผล: {note} · ลูกค้าและโรงแรมได้รับแจ้ง · ยอดโรงแรมไม่พอ = ระบบไม่ทำรายการ</span>
+      </div>,
+    });
+    if (!ok) return;
+    setBusy(b.id);
+    const res = await fetch("/api/admin/stays", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "refund_after", id: b.id, amount: amt / 100, note }) }).catch(() => null);
+    const out = (await res?.json().catch(() => ({}))) as { ok?: boolean; row?: StayBooking; error?: string } | undefined;
+    setBusy(null);
+    if (!out?.ok || !out.row) return fromRes(res, out?.error ?? "คืนเงินไม่สำเร็จ", false);
+    setRows((rs) => rs.map((x) => (x.id === out.row!.id ? out.row! : x)));
+    setAfter(null);
+    flash(`คืนเงิน ${b.code} ${bahtTxt(amt)} แล้ว`, { ok: true });
+  };
+
   return (
     <div className="flex flex-col gap-3">
       {confirmUi}
+      {after && (() => {
+        const sp = afterStayRefundSplit(after.b, Math.round(Number(after.amount) * 100));
+        return (
+          <div className="rounded-2xl border border-crimson-500/50 bg-crimson-500/5 p-4 flex flex-col gap-2 text-sm">
+            <b>คืนเงินหลังเข้าพัก {after.b.code} · {after.b.partner_name}</b>
+            <span className="text-xs text-ink-300">ยอดจอง {bahtTxt(after.b.total_satang)} · โรงแรมได้ {bahtTxt(after.b.partner_net_satang ?? 0)} / แพลตฟอร์ม {bahtTxt(after.b.platform_fee_satang ?? 0)}{sp.prior > 0 ? ` · คืนไปแล้ว ${bahtTxt(sp.prior)}` : ""} · คืนได้อีก {bahtTxt(sp.left)}</span>
+            <div className="flex flex-wrap gap-2 items-end">
+              <label className="text-xs text-ink-300">ยอดคืน (บาท)<input className="input-dark w-36 mt-1" inputMode="decimal" value={after.amount} onChange={(e) => setAfter({ ...after, amount: e.target.value })} /></label>
+              <button type="button" className="chip h-10 px-3" onClick={() => setAfter({ ...after, amount: String(sp.left / 100) })}>คืนเต็มที่เหลือ</button>
+              <label className="text-xs text-ink-300 flex-1 min-w-[200px]">เหตุผล (ลูกค้าและโรงแรมเห็น)<input className="input-dark w-full mt-1" maxLength={300} value={after.note} onChange={(e) => setAfter({ ...after, note: e.target.value })} /></label>
+            </div>
+            {sp.amount > 0 && sp.amount <= sp.left && <span className="text-xs">ดึงจากโรงแรม {bahtTxt(sp.fromPartner)} + แพลตฟอร์ม {bahtTxt(sp.fromPlatform)} = ลูกค้าได้ {bahtTxt(sp.amount)}</span>}
+            <div className="flex gap-2">
+              <button type="button" className="chip h-10 px-4" onClick={() => setAfter(null)}>ปิด</button>
+              <button type="button" disabled={busy === after.b.id} className="h-10 px-4 rounded-full bg-crimson-500 text-white font-semibold disabled:opacity-60" onClick={refundAfter}>{busy === after.b.id ? "กำลังคืน…" : "ตรวจยอดและคืนเงิน"}</button>
+            </div>
+          </div>
+        );
+      })()}
       {recon && (
         <p className="m-0 rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: recon.ok ? "rgba(74,222,128,.4)" : "rgba(252,165,165,.6)" }}>
           เงินพักห้องพัก (hotel_escrow) {bahtTxt(recon.escrow)} · รายการที่เงินพักอยู่ {bahtTxt(recon.expected)} · {recon.ok ? "ตรงกัน" : "ไม่ตรงกัน — ตรวจสอบ"}
@@ -79,6 +129,7 @@ export function StaysAdmin({ initial, recon }: { initial: StayBooking[]; recon: 
                   <td className="px-3 py-2 text-xs">{STAY_LABEL[b.status]}{b.decline_reason && <div className="text-ink-300">{b.decline_reason}</div>}</td>
                   <td className="px-3 py-2 text-right">
                     {(b.status === "pending" || b.status === "confirmed") && <button type="button" disabled={busy === b.id} onClick={() => refund(b)} className="chip h-9 px-3 whitespace-nowrap">{busy === b.id ? "กำลังคืน…" : "คืนเงิน"}</button>}
+                    {b.status === "completed" && (b.refund_satang ?? 0) < b.total_satang && <button type="button" disabled={busy === b.id} onClick={() => { setAfter({ b, amount: "", note: "" }); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="chip h-9 px-3 whitespace-nowrap">คืนเงินหลังเข้าพัก</button>}
                   </td>
                 </tr>
               ))}

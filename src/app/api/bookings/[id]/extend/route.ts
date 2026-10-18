@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { currentCustomer } from "@/lib/customer/auth";
 import { limited } from "@/lib/rate-limit";
 import { BookingError } from "@/lib/bookings";
-import { requestExtend } from "@/lib/bookings/changes";
+import { cancelChange, requestExtend } from "@/lib/bookings/changes";
 
 export const runtime = "nodejs";
 
@@ -17,6 +17,20 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   } catch (e) {
     if (e instanceof BookingError) return NextResponse.json({ ok: false, error: e.message, code: e.code, ...e.data }, { status: e.code === "notfound" ? 404 : e.code === "funds" ? 402 : 409 });
     console.error("extend", e);
+    return NextResponse.json({ ok: false, error: "ระบบขัดข้อง" }, { status: 500 });
+  }
+}
+
+// ลูกค้ายกเลิกคำขอที่ยังรอเพื่อนตอบ → แจ้งเพื่อน · ไม่มีเงินเปลี่ยน
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const me = await currentCustomer();
+  if (!me) return NextResponse.json({ ok: false, error: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
+  try {
+    const c = await cancelChange((await params).id, me.sub, "extend");
+    return NextResponse.json({ ok: true, change: c });
+  } catch (e) {
+    if (e instanceof BookingError) return NextResponse.json({ ok: false, error: e.message, code: e.code }, { status: e.code === "notfound" ? 404 : 409 });
+    console.error("extend cancel", e);
     return NextResponse.json({ ok: false, error: "ระบบขัดข้อง" }, { status: 500 });
   }
 }

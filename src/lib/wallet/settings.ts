@@ -15,12 +15,19 @@ export interface MoneySettings {
   cancelFullHours: number;  // ยกเลิกก่อนเวลานัด ≥ กี่ชม. = คืนเต็ม
   cancelLatePct: number;    // ยกเลิกช้ากว่านั้น = คืนกี่ %
   quickSeconds: number;     // เรียกด่วน: รอเพื่อนกดรับกี่วินาที (บอร์ด 15 วิ · ค่าเริ่มต้น 180 ให้เพื่อนทันเห็นแจ้งเตือน)
+  // กติกาลูกค้า + เปลี่ยนแปลงนัด (อ่านใน src/lib/bookings/rules.ts — ขอบเขตต้องตรงกับไฟล์นั้น)
+  custMinWithdraw: number;     // ลูกค้าถอนเงินจากกระเป๋าขั้นต่ำ (บาท)
+  rescheduleMinHours: number;  // ขอเปลี่ยนเวลาได้ก่อนเวลานัดเดิมอย่างน้อยกี่ชม.
+  rescheduleWaitHours: number; // เพื่อนต้องตอบคำขอเปลี่ยนเวลาภายในกี่ชม.
+  extendMaxHours: number;      // ต่อเวลาระหว่างนัดรวมได้สูงสุดกี่ชม.
+  extendWaitMinutes: number;   // เพื่อนต้องตอบคำขอต่อเวลาภายในกี่นาที
   history: { at: string; by: string; note: string }[];
 }
 export const DEFAULT_MONEY: MoneySettings = {
   minWithdraw: 500, feePct: 3, whtPct: 3, releaseHours: 24, releaseMode: "manual", autoCompleteHours: 12, autoPayoutLimit: 20000,
   cancelRule: "ยกเลิกได้ฟรีก่อนเพื่อนตอบรับ · หลังยืนยันแล้ว ทีมงานพิจารณาตามกรณี",
-  autoCancel: false, cancelFullHours: 3, cancelLatePct: 50, quickSeconds: 180, history: [],
+  autoCancel: false, cancelFullHours: 3, cancelLatePct: 50, quickSeconds: 180,
+  custMinWithdraw: 100, rescheduleMinHours: 3, rescheduleWaitHours: 12, extendMaxHours: 3, extendWaitMinutes: 30, history: [],
 };
 const PATH = "_config/money.json";
 const isDemo = !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -48,6 +55,11 @@ export function validateMoney(s: Omit<MoneySettings, "history">): string | null 
   if (!(s.cancelFullHours >= 0 && s.cancelFullHours <= 168)) return "ยกเลิกคืนเต็ม 0–168 ชม.";
   if (!(s.cancelLatePct >= 0 && s.cancelLatePct <= 100)) return "คืนเงินเมื่อยกเลิกช้า 0–100%";
   if (!(s.quickSeconds >= 15 && s.quickSeconds <= 1800)) return "เรียกด่วนรอรับ 15–1,800 วินาที";
+  if (!(s.custMinWithdraw >= 1 && s.custMinWithdraw <= 100000)) return "ลูกค้าถอนขั้นต่ำ 1–100,000 บาท";
+  if (!(s.rescheduleMinHours >= 0 && s.rescheduleMinHours <= 168)) return "ขอเปลี่ยนเวลาก่อนนัด 0–168 ชม.";
+  if (!(s.rescheduleWaitHours >= 1 && s.rescheduleWaitHours <= 72)) return "เพื่อนตอบคำขอเปลี่ยนเวลา 1–72 ชม.";
+  if (!(Number.isInteger(s.extendMaxHours) && s.extendMaxHours >= 1 && s.extendMaxHours <= 6)) return "ต่อเวลารวมสูงสุด 1–6 ชม. (จำนวนเต็ม)";
+  if (!(s.extendWaitMinutes >= 5 && s.extendWaitMinutes <= 120)) return "เพื่อนตอบคำขอต่อเวลา 5–120 นาที";
   return null;
 }
 

@@ -52,7 +52,10 @@ export async function POST(req: Request) {
     if ((b.action === "settings" || b.action === "adjust") && s.role !== "ceo") return NextResponse.json({ ok: false, error: "เฉพาะ CEO (ตั้งค่าเงิน / ปรับยอดกระเป๋า)" }, { status: 403 });
     if (b.action === "settings") {
       const m = b.money as Record<string, unknown> | undefined;
-      const next = { minWithdraw: Number(m?.minWithdraw), feePct: Number(m?.feePct), whtPct: Number(m?.whtPct), releaseHours: Number(m?.releaseHours), releaseMode: (m?.releaseMode === "auto" ? "auto" : "manual") as "auto" | "manual", autoCompleteHours: Number(m?.autoCompleteHours), autoPayoutLimit: Number(m?.autoPayoutLimit), cancelRule: String(m?.cancelRule ?? "").slice(0, 300), autoCancel: Boolean(m?.autoCancel), cancelFullHours: Number(m?.cancelFullHours), cancelLatePct: Number(m?.cancelLatePct), quickSeconds: Number(m?.quickSeconds ?? 180) };
+      const cur = await getMoney();
+      // กติกาลูกค้า/เปลี่ยนแปลงนัด — ไม่ส่งมา = คงค่าเดิม (ฟอร์มเก่าที่ยังไม่มีช่องนี้บันทึกได้ไม่พัง)
+      const keep = (k: "custMinWithdraw" | "rescheduleMinHours" | "rescheduleWaitHours" | "extendMaxHours" | "extendWaitMinutes") => Number(m?.[k] ?? cur[k]);
+      const next = { custMinWithdraw: keep("custMinWithdraw"), rescheduleMinHours: keep("rescheduleMinHours"), rescheduleWaitHours: keep("rescheduleWaitHours"), extendMaxHours: keep("extendMaxHours"), extendWaitMinutes: keep("extendWaitMinutes"), minWithdraw: Number(m?.minWithdraw), feePct: Number(m?.feePct), whtPct: Number(m?.whtPct), releaseHours: Number(m?.releaseHours), releaseMode: (m?.releaseMode === "auto" ? "auto" : "manual") as "auto" | "manual", autoCompleteHours: Number(m?.autoCompleteHours), autoPayoutLimit: Number(m?.autoPayoutLimit), cancelRule: String(m?.cancelRule ?? "").slice(0, 300), autoCancel: Boolean(m?.autoCancel), cancelFullHours: Number(m?.cancelFullHours), cancelLatePct: Number(m?.cancelLatePct), quickSeconds: Number(m?.quickSeconds ?? 180) };
       const err = validateMoney(next);
       if (err) return NextResponse.json({ ok: false, error: err }, { status: 400 });
       return NextResponse.json({ ok: true, money: await saveMoney(next, s.email, String(b.note ?? "").slice(0, 200)) });

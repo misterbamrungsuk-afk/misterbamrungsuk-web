@@ -108,6 +108,8 @@ export async function approvePayout(id: string, ceo: string): Promise<PayoutRequ
   if (!r) throw new PayoutError("คำขอนี้ไม่ได้รออนุมัติ");
   await notify({ user_type: "admin", user_id: "finance", kind: "payout_request", title: `CEO อนุมัติถอนเงิน${OWNER_LABEL[r.owner_type]} · รอโอน`, body: `${r.owner_name} ${baht(Number(r.amount_satang))}`, url: "/admin/payouts" }).catch(() => {});
   if (r.owner_type === "customer") await notify({ user_type: "customer", user_id: r.owner_id, kind: "withdraw", title: `อนุมัติถอน ${baht(Number(r.amount_satang))} แล้ว`, body: "ทีมงานกำลังโอนเข้าบัญชีของคุณ", url: "/wallet" }).catch(() => {});
+  // พาร์ทเนอร์ / ร้านค้า: แจ้งในกล่องแจ้งเตือนของพอร์ทัล
+  await import("@/lib/notices/payout").then((m) => m.notifyPayoutOwner(r!, "approved")).catch(() => {});
   return r;
 }
 
@@ -127,5 +129,6 @@ export async function settlePayout(id: string, actor: string, to: "paid" | "fail
   if (r.owner_type === "customer") await notify({ user_type: "customer", user_id: r.owner_id, kind: "withdraw",
     title: to === "paid" ? `โอน ${baht(amt)} เข้าบัญชีแล้ว` : to === "rejected" ? "คำขอถอนไม่ได้รับอนุมัติ" : "โอนเงินไม่สำเร็จ",
     body: to === "paid" ? `${w.bank.bank} · ${w.bank.account}` : `${note ? `${note} · ` : ""}คืน ${baht(amt)} เข้ากระเป๋าแล้ว`, url: "/wallet" }).catch(() => {});
+  await import("@/lib/notices/payout").then((m) => m.notifyPayoutOwner(r, to, note)).catch(() => {});
   return r;
 }

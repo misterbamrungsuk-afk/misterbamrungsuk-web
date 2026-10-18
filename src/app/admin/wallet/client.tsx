@@ -58,7 +58,7 @@ export function WalletAdmin({ initial, money, recon, isCeo = false, owners = [],
         <div><div className="text-[11px] tracking-[2.5px] font-semibold" style={{ color: GOLD }}>WALLET</div><h1 className="mt-0.5 font-lux font-bold text-2xl">กระเป๋าเงิน · เติมเงิน</h1></div>
         <span className="text-[13px] rounded-full px-3 py-1.5 border" style={{ borderColor: d.sum === 0 ? "rgba(74,222,128,.5)" : "rgba(239,68,68,.6)", color: d.sum === 0 ? "#4ade80" : "#fca5a5" }}>{d.sum === 0 ? "✓ ผลรวม ledger = 0 (สมดุล)" : Number.isNaN(d.sum) ? "⚠ ยังไม่ได้รัน migration กระเป๋าเงิน" : `⚠ ผลรวม ledger = ${d.sum} สตางค์ — ตรวจด่วน`}</span>
       </div>
-      {recon && <div className="rounded-2xl border p-3 text-[13px]" style={{ borderColor: recon.ok ? "rgba(74,222,128,.4)" : "rgba(239,68,68,.6)", background: recon.ok ? "rgba(74,222,128,.05)" : "rgba(239,68,68,.08)" }}><b style={{ color: recon.ok ? "#4ade80" : "#fca5a5" }}>{recon.ok ? "✓ กระทบยอดตรง: ledger · เงินพัก · เงินกันไว้ · ยอดกำลังถอน ตรงกับการจองและคำขอถอน" : `⚠ กระทบยอดไม่ตรง ${recon.issues.length} รายการ`}</b>{!recon.ok && <ul className="mt-1.5 list-disc pl-5 text-[#fca5a5]">{recon.issues.map((i) => <li key={i}>{i}</li>)}</ul>}<div className="mt-1 text-[11.5px] text-[#9a8a85]">ตรวจตอนเปิดหน้านี้ + รอบรายวัน 10:00 (ไม่ตรง = แจ้งเตือน + อีเมลแอดมิน)</div></div>}
+      {recon && <div className="rounded-2xl border p-3 text-[13px]" style={{ borderColor: recon.ok ? "rgba(74,222,128,.4)" : "rgba(239,68,68,.6)", background: recon.ok ? "rgba(74,222,128,.05)" : "rgba(239,68,68,.08)" }}><b style={{ color: recon.ok ? "#4ade80" : "#fca5a5" }}>{recon.ok ? "✓ กระทบยอดตรง: ledger · เงินพัก · เงินกันไว้ · ยอดกำลังถอน · เงินพักร้านค้า · เงินพักห้องพัก ตรงกับรายการจริง" : `⚠ กระทบยอดไม่ตรง ${recon.issues.length} รายการ`}</b>{!recon.ok && <ul className="mt-1.5 list-disc pl-5 text-[#fca5a5]">{recon.issues.map((i) => <li key={i}>{i}</li>)}</ul>}<div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-0.5 text-[12px] text-[#cdbfb3]">{([["เงินพักร้านค้า", "marketEscrow", "expMarket"], ["เงินพักห้องพัก", "hotelEscrow", "expHotel"]] as const).map(([l, a, e]) => recon.figures[a] == null ? <span key={a}>{l}: อ่านยอดไม่ได้ (ข้าม)</span> : <span key={a}>{l} {baht(recon.figures[a])} · ควรเป็น {baht(recon.figures[e])} <b style={{ color: recon.figures[a] === recon.figures[e] ? "#4ade80" : "#fca5a5" }}>{recon.figures[a] === recon.figures[e] ? "✓" : "≠"}</b></span>)}</div><div className="mt-1 text-[11.5px] text-[#9a8a85]">ตรวจตอนเปิดหน้านี้ + รอบรายวัน 10:00 (ไม่ตรง = แจ้งเตือน + อีเมลแอดมิน)</div></div>}
       {msg && <p role="status" className="text-sm text-[#eed58a]">{msg}</p>}
       {expired && <p role="alert" className="text-sm text-[#fca5a5]">เซสชันหมดอายุ · <a href="/admin-login" className="underline text-[#f0c75a]">เข้าสู่ระบบใหม่</a></p>}
       {ask && (
@@ -126,9 +126,23 @@ export function WalletAdmin({ initial, money, recon, isCeo = false, owners = [],
           <label className="flex flex-col gap-1"><span className="text-[#cdbfb3] text-[12px]">ยกเลิกช้ากว่านั้น คืน (%)</span><input type="number" step="any" value={m.cancelLatePct ?? 50} disabled={!m.autoCancel} onChange={(e) => setM({ ...m, cancelLatePct: Number(e.target.value) })} className={inp + " w-40 disabled:opacity-40"} style={{ borderColor: LINE }} /></label>
           <span className="text-[11.5px] text-[#9a8a85] basis-full">ปิด = ทีมงานตัดสินเป็นเคสใน /admin/orders · เปิด = ลูกค้ากดยกเลิกนัดที่ยืนยันแล้ว ระบบคืนเงินทันที ส่วนที่ไม่คืนแบ่งให้เพื่อนตามขั้นส่วนแบ่ง · ก่อนเพื่อนตอบรับยังคืนเต็มเสมอ</span>
         </div>
+        <div className="flex flex-col gap-2 rounded-xl border p-3" style={{ borderColor: LINE }}>
+          <b className="text-[13px]">ลูกค้า · ถอนเงิน และเปลี่ยนแปลงนัด</b>
+          <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
+            {([
+              ["custMinWithdraw", "ลูกค้าถอนขั้นต่ำ (บาท)", "1–100,000 · ถอนจากกระเป๋าลูกค้าเข้าบัญชีธนาคาร", 1, 100000, 1],
+              ["rescheduleMinHours", "ขอเปลี่ยนเวลาก่อนนัด ≥ (ชม.)", "0–168 · ใกล้นัดกว่านี้กดเปลี่ยนเวลาไม่ได้", 0, 168, "any"],
+              ["rescheduleWaitHours", "เพื่อนตอบเปลี่ยนเวลาภายใน (ชม.)", "1–72 · ไม่ตอบ = นัดคงเวลาเดิม", 1, 72, "any"],
+              ["extendMaxHours", "ต่อเวลารวมสูงสุด (ชม.)", "1–6 · ขอต่อทีละ 1 ชม.", 1, 6, 1],
+              ["extendWaitMinutes", "เพื่อนตอบต่อเวลาภายใน (นาที)", "5–120 · ไม่ตอบ = ไม่ตัดเงิน", 5, 120, 1],
+            ] as const).map(([k, l, help, min, max, step]) => (
+              <label key={k} className="flex flex-col gap-1"><span className="text-[#cdbfb3] text-[12px]">{l}</span><input type="number" min={min} max={max} step={step} value={m[k] ?? ""} onChange={(e) => setM({ ...m, [k]: Number(e.target.value) })} className={inp} style={{ borderColor: LINE }} /><span className="text-[11px] text-[#9a8a85]">{help}</span></label>
+            ))}
+          </div>
+        </div>
         <button disabled={busy} className="self-start btn-red-lux h-10 px-5 rounded-full text-white font-semibold disabled:opacity-40">บันทึกตั้งค่า</button>
         {!!m.history.length && <span className="text-[11.5px] text-[#9a8a85]">แก้ล่าสุด {new Date(m.history[0].at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })} โดย {m.history[0].by}</span>}
-      </form> : <p className="rounded-2xl border p-4 text-[13px] text-[#9a8a85]" style={{ borderColor: LINE }}>ตั้งค่าการเงินและปรับยอดกระเป๋า แก้ได้เฉพาะ CEO · ถอนขั้นต่ำ ฿{m.minWithdraw} · ค่าธรรมเนียม {m.feePct}% · ปล่อยเงิน{m.releaseMode === "auto" ? `อัตโนมัติ ${m.releaseHours} ชม.` : "โดยแอดมินอนุมัติ"}</p>}
+      </form> : <p className="rounded-2xl border p-4 text-[13px] text-[#9a8a85]" style={{ borderColor: LINE }}>ตั้งค่าการเงินและปรับยอดกระเป๋า แก้ได้เฉพาะ CEO · ถอนขั้นต่ำ ฿{m.minWithdraw} · ลูกค้าถอนขั้นต่ำ ฿{m.custMinWithdraw} · ค่าธรรมเนียม {m.feePct}% · ปล่อยเงิน{m.releaseMode === "auto" ? `อัตโนมัติ ${m.releaseHours} ชม.` : "โดยแอดมินอนุมัติ"}</p>}
 
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] items-start">
         <div className="rounded-2xl border overflow-x-auto" style={{ borderColor: LINE }}>

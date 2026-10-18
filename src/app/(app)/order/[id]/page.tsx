@@ -9,6 +9,7 @@ import { use, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { LiveTrack } from "@/components/live-track";
 import { CallButton } from "@/components/call/call-button";
+import { ExtendSheet, PendingChange, Sheet, type CI } from "./_extend";
 
 const GOLD = "#e8c472";
 const LN = "rgba(243,234,217,0.07)";
@@ -16,11 +17,9 @@ const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US");
 type Res = { refund_pct?: number; refund_satang?: number; decided?: string; cancelled?: boolean; note?: string; noshow?: { by: "customer" | "provider" } } | null;
 type B = { id: string; code: string; status: string; starts_at: string; hours: number; price_satang: number; room_fee_satang: number; total_satang: number; note: string | null; place: { label: string; detail: string }; decline_reason: string | null; expires_at: string | null; created_at: string; checked_in_at?: string | null; cancel_refund_pct?: number | null; cancel_rule?: string; resolution?: Res; pt: { pid: string; nick: string; img: string } };
 type NS = { can: boolean; reason: string; at: string | null; counter: boolean; claim: { status: string; mine: boolean; other: boolean } | null };
-type Chg = { id: string; kind: "reschedule" | "extend"; status: "pending" | "accepted" | "declined" | "expired" | "failed"; old_starts_at: string | null; new_starts_at: string | null; hours: number; amount_satang: number; reason: string | null; expires_at: string; created_at: string; decided_at: string | null };
-type CI = { changes: Chg[]; pending: Chg | null; extra_hours: number; hourly_satang: number; can_reschedule: string | null; can_extend: string | null; rules: { rescheduleMinHours: number; rescheduleWaitHours: number; extendMaxHours: number } } | null;
 /** ISO → ค่า datetime-local ตามเวลาไทย */
 const bkkLocal = (iso: string) => new Date(Date.parse(iso) + 7 * 3600_000).toISOString().slice(0, 16);
-const CHG_DONE: Record<string, string> = { declined: "เพื่อนไม่สะดวก", expired: "เพื่อนไม่ได้ตอบภายในเวลา", failed: "ไม่สำเร็จ" };
+const CHG_DONE: Record<string, string> = { declined: "เพื่อนไม่สะดวก", expired: "เพื่อนไม่ได้ตอบภายในเวลา", failed: "ไม่สำเร็จ", cancelled: "คุณยกเลิกคำขอแล้ว" };
 const MONEY: Record<string, [string, string]> = {
   requested: ["กันไว้ในกระเป๋าของคุณ", "รอเพื่อนตอบรับ · ไม่ตอบใน 30 นาทีคืนอัตโนมัติ"],
   accepted: ["พักไว้กับ Mister Bamrungsuk", "โอนให้เพื่อนหลังจบนัด · มีปัญหาแจ้งเราได้ก่อนเงินถูกปล่อย"],
@@ -45,19 +44,6 @@ function moneyOf(b: B): [string, string] {
     if (pct < 100) return [`คืน ${baht(r.refund_satang ?? 0)} เข้ากระเป๋าแล้ว`, `${cancelled ? "ยกเลิกตามกติกา" : "ผลพิจารณา"} · คืน ${pct}% ส่วนที่เหลือโอนให้เพื่อน`];
   }
   return (MONEY[b.status] ?? ["—", ""]) as [string, string];
-}
-
-function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
-  useEffect(() => { const k = (e: KeyboardEvent) => e.key === "Escape" && onClose(); window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k); }, [onClose]);
-  return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center" role="dialog" aria-modal="true" aria-label={title}>
-      <button type="button" aria-label="ปิด" onClick={onClose} className="absolute inset-0 bg-black/60" />
-      <div className="relative w-full max-w-[480px] rounded-t-[24px] bg-[#211a18] flex flex-col gap-3 max-h-[88dvh] overflow-y-auto" style={{ padding: "16px 16px calc(18px + env(safe-area-inset-bottom))", borderTop: `1px solid ${LN}` }}>
-        <div className="flex items-center justify-between gap-3"><b className="font-semibold text-[16px]">{title}</b><button type="button" onClick={onClose} aria-label="ปิด" className="w-10 h-10 rounded-full grid place-items-center text-[#d9c9b4]">✕</button></div>
-        {children}
-      </div>
-    </div>
-  );
 }
 
 export default function OrderPage({ params }: { params: Promise<{ id: string }> }) {
@@ -91,14 +77,14 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
     load();
   };
   // ขอเปลี่ยนเวลา / ต่อเวลา — ส่งคำขอให้เพื่อนตอบ (เงินต่อเวลาตัดตอนเพื่อนรับ)
-  const sendChange = async (kind: "reschedule" | "extend") => {
+  const sendChange = async (kind: "reschedule") => {
     setBusy(true); setChErr(null);
-    const body = kind === "reschedule" ? { starts_at: newAt ? new Date(`${newAt}:00+07:00`).toISOString() : "", reason } : {};
+    const body = { starts_at: newAt ? new Date(`${newAt}:00+07:00`).toISOString() : "", reason };
     const r = await fetch(`/api/bookings/${id}/${kind}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).catch(() => null);
     const d = await r?.json().catch(() => null);
     setBusy(false);
     if (!d?.ok) return setChErr({ t: d?.error || "ส่งไม่สำเร็จ กรุณาลองใหม่", topup: r?.status === 402 });
-    setSheet(null); setMsg(kind === "reschedule" ? "ส่งคำขอเปลี่ยนเวลาแล้ว · รอเพื่อนตอบ (นัดยังเป็นเวลาเดิมจนเพื่อนรับ)" : "ส่งคำขอต่อเวลาแล้ว · ตัดเงินเมื่อเพื่อนรับ");
+    setSheet(null); setMsg("ส่งคำขอเปลี่ยนเวลาแล้ว · รอเพื่อนตอบ (นัดยังเป็นเวลาเดิมจนเพื่อนรับ)");
     load();
   };
   const getGps = () => navigator.geolocation?.getCurrentPosition((p) => setNsGps({ lat: p.coords.latitude, lng: p.coords.longitude, accuracy: p.coords.accuracy }), () => setNsErr("ไม่ได้รับอนุญาตตำแหน่ง · ส่งได้โดยไม่มี GPS"), { enableHighAccuracy: true, timeout: 8000 });
@@ -180,15 +166,9 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
           ))}
         </div>
         {/* คำขอเปลี่ยนเวลา/ต่อเวลาที่รอเพื่อนตอบ · ผลล่าสุด (ไม่สำเร็จ) ใน 24 ชม. */}
-        {ch?.pending ? (
-          <div className="rounded-[20px] flex flex-col gap-1" style={{ padding: 14, border: `1px solid ${GOLD}`, background: "rgba(232,196,114,0.08)" }}>
-            <b className="font-semibold text-[15px]">{ch.pending.kind === "reschedule" ? "รอเพื่อนตอบคำขอเปลี่ยนเวลา" : "รอเพื่อนตอบคำขอต่อเวลา +1 ชม."}</b>
-            <span className="text-[13px] font-light text-[#d9c9b4]">{ch.pending.kind === "reschedule" ? `${fmt(ch.pending.old_starts_at ?? b.starts_at)} → ${fmt(ch.pending.new_starts_at!)} · นัดยังเป็นเวลาเดิมจนเพื่อนรับ` : `ค่าบริการเพิ่ม ${baht(ch.pending.amount_satang)} · ตัดจากกระเป๋าเมื่อเพื่อนรับ`}</span>
-            <span className="text-[12px] font-light text-[#b5a596]">เพื่อนตอบได้ถึง {fmt(ch.pending.expires_at)} · ไม่ตอบ = ไม่มีอะไรเปลี่ยน</span>
-          </div>
-        ) : (() => {
+        {ch?.pending ? <PendingChange id={b.id} c={ch.pending} startsAt={b.starts_at} onDone={(m) => { setMsg(m); load(); }} /> : (() => {
           const last = ch?.changes.find((c) => c.status !== "accepted" && c.status !== "pending" && Date.now() - Date.parse(c.decided_at ?? c.created_at) < 86400_000);
-          return last ? <p className="m-0 rounded-xl text-[13px] text-[#d9c9b4]" style={{ padding: "10px 14px", border: `1px solid ${LN}` }}>{last.kind === "reschedule" ? "คำขอเปลี่ยนเวลา" : "คำขอต่อเวลา"}: {CHG_DONE[last.status]}{last.reason ? ` · ${last.reason}` : ""} · {last.kind === "reschedule" ? "นัดยังเป็นเวลาเดิม" : "ไม่มีการตัดเงิน"}</p> : null;
+          return last ? <p className="m-0 rounded-xl text-[13px] text-[#d9c9b4]" style={{ padding: "10px 14px", border: `1px solid ${LN}` }}>{last.kind === "reschedule" ? "คำขอเปลี่ยนเวลา" : "คำขอต่อเวลา"}: {CHG_DONE[last.status]}{last.reason && last.status !== "cancelled" ? ` · ${last.reason}` : ""} · {last.status === "failed" && last.kind === "extend" && /คืนเงิน/.test(last.reason ?? "") ? "คืนเงินแล้ว" : last.kind === "reschedule" ? "นัดยังเป็นเวลาเดิม" : "ไม่มีการตัดเงิน"}</p> : null;
         })()}
         <div className="rounded-[20px] flex gap-3 items-start" style={{ padding: 14, border: "1px solid rgba(212,175,55,.4)", background: "rgba(212,175,55,.06)" }}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="1.8" aria-hidden="true" className="shrink-0 mt-0.5"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
@@ -245,21 +225,7 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
         </Sheet>
       )}
 
-      {sheet === "extend" && ch && (
-        <Sheet title="ต่อเวลา +1 ชม.?" onClose={close}>
-          {ch.can_extend ? <p className="m-0 rounded-2xl text-[14px]" style={{ padding: 14, background: "#251d1b" }}>{ch.can_extend}</p> : <>
-            <div className="rounded-2xl text-[14px] flex flex-col gap-1" style={{ padding: 14, background: "#251d1b" }}>
-              <span>ค่าบริการเพิ่ม <b style={{ color: GOLD }}>{baht(ch.hourly_satang)}</b> / ชม.</span>
-              <span className="text-[12.5px] font-light text-[#d9c9b4]">ตัดจากกระเป๋าเมื่อเพื่อนรับ · พักไว้กับเราจนจบนัดเหมือนค่านัด · ต่อได้ทีละ 1 ชม. รวมไม่เกิน {ch.rules.extendMaxHours} ชม. (ต่อแล้ว {ch.extra_hours} ชม.)</span>
-            </div>
-          </>}
-          {chErr && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{chErr.t}{chErr.topup && <> · <Link href="/wallet" className="underline" style={{ color: GOLD }}>เติมเงิน</Link></>}</p>}
-          <div className="grid grid-cols-2 gap-2">
-            <button type="button" onClick={close} className="h-12 rounded-[14px] text-[#f3ead9]" style={{ border: `1px solid ${LN}` }}>ไม่ต่อ</button>
-            <button type="button" disabled={busy || !!ch.can_extend} onClick={() => sendChange("extend")} className="h-12 rounded-[14px] font-semibold text-[#1b130b] disabled:opacity-45" style={{ background: GOLD }}>{busy ? "กำลังส่ง…" : "ขอต่อเวลา"}</button>
-          </div>
-        </Sheet>
-      )}
+      {sheet === "extend" && ch && <ExtendSheet id={b.id} ch={ch} onClose={close} onDone={(m) => { setSheet(null); setMsg(m); load(); }} />}
 
       {sheet === "noshow" && ns && (
         <Sheet title={ns.counter ? "ส่งหลักฐานฝั่งคุณ" : "แจ้งเพื่อนไม่มาตามนัด"} onClose={close}>

@@ -7,6 +7,8 @@ import { LINE_OA_ID } from "@/lib/join/config";
 // จอคอม = 4 คอลัมน์ (แบรนด์+ติดต่อ · สำหรับลูกค้า · ร่วมงานกับเรา · ช่วยเหลือและนโยบาย) · มือถือ = แบบย่อ (ติดต่อ 1 บรรทัด + ลิงก์สำคัญ 1 แถว)
 // ข้อมูลบริษัทมาจาก CONTROLLER ใน lib/join/legal.ts — ค่าที่ยังเป็น [placeholder] จะไม่แสดง
 const filled = (v: string) => (v && !v.startsWith("[") ? v : "");
+// ปี พ.ศ. ตามเวลาไทย (เซิร์ฟเวอร์อยู่ต่างโซนเวลา — ใช้เวลาเครื่องตรง ๆ ช่วงข้ามปีจะได้ปีไม่ตรงกับเบราว์เซอร์ = hydration mismatch)
+const yearBE = () => Number(new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Bangkok", year: "numeric" }).format(new Date())) + 543;
 
 const COLS: { title: string; links: [string, string][] }[] = [
   { title: "สำหรับลูกค้า", links: [["/", "ค้นหาเพื่อนกินเที่ยว"], ["/map", "แผนที่"], ["/quick", "เรียกด่วน"], ["/stay", "โรงแรม · สปา"], ["/market", "Marketplace"], ["/orders/track", "ติดตามคำสั่งซื้อ"]] },
@@ -29,7 +31,7 @@ export function SiteFooter() {
         <nav aria-label="ลิงก์สำคัญ" className="flex flex-wrap gap-x-4">
           {[["/page/terms", "ข้อกำหนด"], ["/join/privacy", "ความเป็นส่วนตัว"], ["/policy", "กฎเกณฑ์"], ["/work-with-us", "ร่วมงานกับเรา"]].map(([h, l]) => <Link key={h} href={h} className="min-h-9 inline-flex items-center text-[#d8c8b8] hover:text-[#f6efe4]">{l}</Link>)}
         </nav>
-        <span className="text-[11.5px] text-[#9a8a85]">© {new Date().getFullYear() + 543} Mister Bamrungsuk สงวนลิขสิทธิ์</span>
+        <span className="text-[11.5px] text-[#9a8a85]">© {yearBE()} Mister Bamrungsuk สงวนลิขสิทธิ์</span>
       </div>
       <div className="hidden md:grid mx-auto w-full max-w-[1200px] px-8 pt-8 pb-6 gap-8 md:grid-cols-[1.4fr_1fr_1fr_1fr] text-[13.5px]">
         <div className="flex flex-col gap-3 min-w-0">
@@ -52,7 +54,7 @@ export function SiteFooter() {
         ))}
       </div>
       <div className="hidden md:flex mx-auto w-full max-w-[1200px] px-8 py-4 border-t border-[rgba(243,234,217,.08)] flex-row justify-between gap-1 text-[12px] text-[#9a8a85]">
-        <span>© {new Date().getFullYear() + 543} Mister Bamrungsuk สงวนลิขสิทธิ์{reg ? ` · ทะเบียนนิติบุคคลเลขที่ ${reg}` : ""}</span>
+        <span>© {yearBE()} Mister Bamrungsuk สงวนลิขสิทธิ์{reg ? ` · ทะเบียนนิติบุคคลเลขที่ ${reg}` : ""}</span>
         {address && <span className="md:text-right">{address}</span>}
       </div>
     </footer>

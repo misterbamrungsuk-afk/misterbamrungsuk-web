@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Logo } from "@/components/ui";
 import { OwnerWallet } from "@/components/owner-wallet";
 import { AvatarEditor, AvatarView } from "@/components/avatar-editor";
+import { NoticeBell, NoticeInbox } from "@/components/notice-inbox";
 import { CARRIERS, CLAIM_NOTE, ORDER_STATUS_LABEL, baht, carrierName, flaggedClaims, imageUrl, type Product } from "@/lib/market/config";
 import type { VendorData } from "@/lib/market/vendor-data";
 
@@ -81,7 +82,7 @@ export function VendorAccept({ t, email, shop }: { t: string; email: string; sho
   );
 }
 
-const TABS = [["orders", "คำสั่งซื้อ"], ["products", "สินค้า"], ["wallet", "กระเป๋าเงิน / ถอน"], ["payout", "รายงานยอดขาย"], ["profile", "ข้อมูลร้าน / โลโก้"]] as const;
+const TABS = [["orders", "คำสั่งซื้อ"], ["products", "สินค้า"], ["wallet", "กระเป๋าเงิน / ถอน"], ["payout", "รายงานยอดขาย"], ["profile", "ข้อมูลร้าน / โลโก้"], ["notices", "แจ้งเตือน"]] as const;
 type LogoMeta = Parameters<typeof AvatarView>[0]["meta"];
 
 export function VendorPortal({ email, initial }: { email: string; initial: VendorData }) {
@@ -103,6 +104,7 @@ export function VendorPortal({ email, initial }: { email: string; initial: Vendo
           <span className="hidden sm:inline-flex shrink-0"><Logo size={26} /></span>
           <button type="button" onClick={() => setTab("profile")} aria-label="ข้อมูลร้าน / โลโก้" className="shrink-0"><AvatarView as="vendor" letter={d.vendor.name} size={32} meta={logo} /></button>
           <div className="min-w-0 flex-1"><p className="text-sm font-semibold truncate">{d.vendor.name}</p><p className="text-[12px] text-[#9a8a85] truncate">{email}</p></div>
+          <NoticeBell api="/api/market/vendor/notifications" onClick={() => setTab("notices")} />
           <Link href={`/shop/${d.vendor.slug}`} className="shrink-0 min-h-10 inline-flex items-center px-1 text-xs text-gold-300 whitespace-nowrap" aria-label="ดูหน้าร้าน">หน้าร้าน ↗</Link>
           <button onClick={logout} className="chip shrink-0 h-10 px-3 text-xs whitespace-nowrap" aria-label="ออกจากระบบ">ออก</button>
         </div>
@@ -116,6 +118,7 @@ export function VendorPortal({ email, initial }: { email: string; initial: Vendo
         {tab === "products" && <Products d={d} reload={reload} setMsg={setMsg} />}
         {tab === "wallet" && <div className="max-w-[560px]"><OwnerWallet api="/api/market/vendor/wallet" source="ส่วนของร้านจากออเดอร์ที่สำเร็จ (หัก GP แล้ว รวมค่าส่ง)" /></div>}
         {tab === "payout" && <Payout d={d} />}
+        {tab === "notices" && <div className="max-w-[640px]"><NoticeInbox api="/api/market/vendor/notifications" pushTo="/api/market/vendor/push" /></div>}
         {tab === "profile" && (
           <div className="grid gap-4 md:grid-cols-[360px_1fr] items-start">
             <section className="rounded-2xl border border-ink-600 p-5 flex flex-col items-center gap-2"><b className="self-start">รูปโปรไฟล์ / โลโก้ร้าน</b><span className="text-xs text-ink-300 self-start">แสดงบนหน้าร้านค้าสาธารณะ</span><AvatarEditor as="vendor" letter={d.vendor.name} size={140} onChange={(m) => setLogo(m)} /></section>

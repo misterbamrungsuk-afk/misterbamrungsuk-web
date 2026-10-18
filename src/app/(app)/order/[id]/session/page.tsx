@@ -2,10 +2,11 @@
 /* eslint-disable @next/next/no-img-element */
 
 // บอร์ด C-InSession "ระหว่างนัด" — วงเวลาที่เหลือ (นับจากเวลานัด/เช็กอิน) · แชท · แจ้งปัญหา · SOS · จบนัดหมาย
-// ต่างจากบอร์ด: ไม่มี "ต่อเวลา 1 ชม." (ยังไม่มีระบบเงินรองรับ) และไม่อ้างว่าแอดมินเห็นตำแหน่งตลอดนัด (ไม่มีติดตามสด)
+// ต่อเวลา +1 ชม. ใช้แผ่นล่างเดียวกับหน้าการจอง (_extend.tsx) · ไม่อ้างว่าแอดมินเห็นตำแหน่งตลอดนัด (ไม่มีติดตามสด)
 import { use, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ExtendSheet, PendingChange, baht, type CI } from "../_extend";
 
 const GOLD = "#e8c472";
 const LN = "rgba(243,234,217,0.07)";
@@ -17,13 +18,17 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
   const router = useRouter();
   const [b, setB] = useState<B | null>(null);
   const [now, setNow] = useState(Date.now());
-  const load = useCallback(() => fetch(`/api/bookings/${id}`, { cache: "no-store" }).then((r) => r.json()).then((d) => { if (d?.ok) setB(d.booking); else router.replace(`/order/${id}`); }).catch(() => {}), [id, router]);
+  const [ch, setCh] = useState<CI>(null);
+  const [ext, setExt] = useState(false);
+  const [msg, setMsg] = useState("");
+  const load = useCallback(() => fetch(`/api/bookings/${id}`, { cache: "no-store" }).then((r) => r.json()).then((d) => { if (d?.ok) { setB(d.booking); setCh(d.change ?? null); } else router.replace(`/order/${id}`); }).catch(() => {}), [id, router]);
   useEffect(() => { load(); const t = setInterval(load, 30_000); const c = setInterval(() => setNow(Date.now()), 1000); return () => { clearInterval(t); clearInterval(c); }; }, [load]);
   useEffect(() => { if (b && !["accepted", "checked_in"].includes(b.status)) router.replace(`/order/${id}`); }, [b, id, router]);
   if (!b) return <p className="text-center text-[#b5a596]" style={{ padding: 60 }}>กำลังโหลด…</p>;
 
   const start = Math.max(Date.parse(b.starts_at), b.checked_in_at ? Date.parse(b.checked_in_at) : 0);
-  const total = b.hours * 3600_000, end = start + total;
+  const hrs = b.hours + (ch?.extra_hours ?? 0); // รวมชั่วโมงที่ต่อแล้ว
+  const total = hrs * 3600_000, end = start + total;
   const before = now < start, left = Math.max(0, end - now), passed = Math.max(0, Math.min(total, now - start));
   const sec = Math.floor((before ? start - now : left) / 1000);
   const clock = sec >= 86400 ? `${Math.floor(sec / 86400)} วัน ${Math.floor((sec % 86400) / 3600)} ชม.` : `${String(Math.floor(sec / 3600)).padStart(2, "0")}:${String(Math.floor((sec % 3600) / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
@@ -32,7 +37,7 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
     <div className="min-h-dvh pb-[210px]" style={{ background: "#171211" }}>
       <div className="flex items-center gap-[10px]" style={{ padding: 16 }}>
         <Link href={`/order/${id}`} aria-label="ย้อนกลับ" className="shrink-0"><img src={b.pt.img} alt="" className="w-[42px] h-[42px] rounded-full object-cover" style={{ border: `1px solid ${GOLD}` }} /></Link>
-        <div className="flex-1 min-w-0"><b className="font-medium">{before ? `รอเจอ${b.pt.nick}` : `กำลังใช้เวลากับ${b.pt.nick}`}</b><div className="text-[12px] font-light text-[#d9c9b4] truncate">{b.place.label} {b.place.detail} · {b.hours} ชม.</div></div>
+        <div className="flex-1 min-w-0"><b className="font-medium">{before ? `รอเจอ${b.pt.nick}` : `กำลังใช้เวลากับ${b.pt.nick}`}</b><div className="text-[12px] font-light text-[#d9c9b4] truncate">{b.place.label} {b.place.detail} · {hrs} ชม.{ch?.extra_hours ? ` (ต่อเวลา ${ch.extra_hours} ชม.)` : ""}</div></div>
         <Link href="/sos" aria-label="SOS" className="w-11 h-11 rounded-full grid place-items-center text-[12px] font-bold text-white hover:text-white" style={{ background: "#c9283d" }}>SOS</Link>
       </div>
       <div className="relative mx-auto" style={{ width: 270, height: 270, marginTop: 26, maxWidth: "100%" }}>
@@ -51,6 +56,15 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
         <Link href={`/order/${id}/dispute`} className={qa} style={{ border: `1px solid ${LN}` }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 8v4M12 16h0" /></svg>แจ้งปัญหา</Link>
         <Link href={`/report?booking=${id}&nick=${encodeURIComponent(b.pt.nick)}`} className={qa} style={{ border: `1px solid ${LN}` }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M5 21V4h11l-1.5 4L16 12H5" /></svg>รายงานผู้ใช้</Link>
       </div>
+      {/* ต่อเวลา +1 ชม. (ระหว่างนัด หลังเพื่อนถึงจุดนัด) — แตะแล้วเปิดแผ่นยืนยัน · กดไม่ได้ = บอกเหตุผล */}
+      {msg && <p role="status" className="m-0 rounded-xl text-[13px]" style={{ margin: "14px 16px 0", padding: "10px 14px", background: "rgba(232,196,114,0.14)", color: GOLD }}>{msg}</p>}
+      {ch?.pending?.kind === "extend" ? <div style={{ margin: "14px 16px 0" }}><PendingChange id={id} c={ch.pending} startsAt={b.starts_at} onDone={(m) => { setMsg(m); load(); }} /></div>
+        : ch?.can_extend != null && (
+        <button type="button" onClick={() => setExt(true)} className="flex items-center justify-between gap-3 rounded-2xl text-left" style={{ margin: "14px 16px 0", width: "calc(100% - 32px)", padding: "12px 14px", border: `1px solid ${ch.can_extend ? LN : "rgba(232,196,114,0.55)"}`, background: "#211a18" }}>
+          <span className="flex flex-col"><b className="font-semibold text-[15px]" style={{ color: ch.can_extend ? "#d9c9b4" : GOLD }}>ต่อเวลา +1 ชม.</b><span className="text-[12.5px] font-light text-[#d9c9b4]">{ch.can_extend || `${baht(ch.hourly_satang)} · ตัดเงินเมื่อเพื่อนรับ`}</span></span>
+          <span aria-hidden="true" className="text-[#d9c9b4]">›</span>
+        </button>
+      )}
       <div className="flex gap-2.5 items-center rounded-2xl text-[13px] font-light" style={{ margin: "14px 16px 0", padding: 14, border: "1px solid rgba(232,196,114,0.55)" }}>
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="1.8" aria-hidden="true" className="shrink-0"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
         <span>เงินยังพักไว้กับเรา จะโอนให้{b.pt.nick}เมื่อคุณยืนยันว่าจบนัด</span>
@@ -62,10 +76,11 @@ export default function SessionPage({ params }: { params: Promise<{ id: string }
           <p id="end-why" className="m-0 text-center text-[12.5px] text-[#d9c9b4]">ยังไม่ถึงเวลานัด · กดจบนัดได้ตั้งแต่ {new Date(Date.parse(b.starts_at)).toLocaleTimeString("th-TH", { timeZone: "Asia/Bangkok", hour: "2-digit", minute: "2-digit" })} น.</p>
         </> : <>
           <Link href={`/order/${id}/complete`} className="h-[52px] rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[16px] grid place-items-center hover:text-[#1b130b]">จบนัดหมาย</Link>
-          <p className="m-0 text-center text-[12.5px] text-[#d9c9b4]">จบก่อนครบ {b.hours} ชม. ได้ · ถ้าเพื่อนแจ้งจบงานแล้วคุณไม่ตอบ ระบบยืนยันให้อัตโนมัติ</p>
+          <p className="m-0 text-center text-[12.5px] text-[#d9c9b4]">จบก่อนครบ {hrs} ชม. ได้ · ถ้าเพื่อนแจ้งจบงานแล้วคุณไม่ตอบ ระบบยืนยันให้อัตโนมัติ</p>
         </>}
         <p className="m-0 text-center text-[12px] font-light text-[#d9c9b4]">มีเหตุฉุกเฉินกด SOS · ทีมงานได้รับแจ้งพร้อมตำแหน่งที่คุณส่งทันที</p>
       </div>
+      {ext && ch && <ExtendSheet id={id} ch={ch} onClose={() => setExt(false)} onDone={(m) => { setExt(false); setMsg(m); load(); }} />}
     </div>
   );
 }

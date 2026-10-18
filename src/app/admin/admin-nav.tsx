@@ -32,6 +32,7 @@ export const ADMIN_TABS: AdminTab[] = [
   { href: "/admin/market", label: "ร้านค้า Marketplace" },
   { href: "/admin/promos", label: "โค้ดโปรโมชัน · ของขวัญ" },
   { href: "/admin/covers", label: "รูปหน้าปก", divider: true },
+  { href: "/admin/security", label: "ความปลอดภัยบัญชี" },
   
 ];
 

@@ -17,6 +17,7 @@ export const ROLE_LABEL: Record<AdminRole, string> = {
 
 // หน้าไหนบทบาทไหนเข้าได้ (ตรงกับตารางสิทธิ์ในดีไซน์)
 export const PATH_ROLES: { prefix: string; roles: AdminRole[] }[] = [
+  { prefix: "/admin/security", roles: ["super", "finance", "cs", "kyc"] }, // ตั้งค่า 2 ชั้นของบัญชีตัวเอง — ทุกบทบาท
   { prefix: "/admin/settings", roles: ["super"] },
   { prefix: "/admin/payouts", roles: ["super", "finance"] },
   { prefix: "/admin/payroll", roles: ["super", "finance"] },
@@ -56,11 +57,18 @@ export function homeFor(role: AdminRole) {
   return role === "kyc" ? "/admin/kyc" : role === "cs" ? "/admin/orders" : "/admin";
 }
 
-export type AdminSession = { email: string; role: AdminRole; exp: number };
+/** mfa = ผ่านรหัส 2 ชั้นแล้ว (session ที่ไม่มีค่านี้ใช้ได้ตามเดิมเมื่อยังไม่เปิด "บังคับ 2 ชั้น") */
+export type AdminSession = { email: string; role: AdminRole; exp: number; mfa?: boolean };
+export const ADMIN_MFA_PENDING_COOKIE = "mord_admin_mfa";
+export const MFA_PENDING_MINUTES = 5;
 
 const isDemo = !process.env.DATABASE_URL && !isProdDeploy(); // เว็บจริงไม่มีโหมดสาธิตเด็ดขาด (ไม่มี DATABASE_URL บน Vercel)
 
 /** secret สำหรับลงลายเซ็น: โหมดจริงต้องตั้ง ADMIN_SESSION_SECRET ไม่งั้นปิดระบบแอดมินทั้งหมด */
+/** คีย์หลักของระบบแอดมิน (ใช้ฝั่งเซิร์ฟเวอร์เท่านั้น — admin-mfa.ts เอาไปแตกคีย์เข้ารหัสด้วย HKDF) */
+export function adminSecret(): string | null {
+  return secret();
+}
 function secret(): string | null {
   const s = process.env.ADMIN_SESSION_SECRET;
   if (s && s.length >= 32) return s;
@@ -88,11 +96,38 @@ function safeEqual(a: Uint8Array, b: Uint8Array) {
   return d === 0;
 }
 
-export async function signSession(email: string, role: AdminRole): Promise<string | null> {
+export async function signSession(email: string, role: AdminRole, opts: { mfa?: boolean } = {}): Promise<string | null> {
   const key = secret();
   if (!key) return null;
-  const payload = b64url(enc.encode(JSON.stringify({ email, role, exp: Date.now() + SESSION_HOURS * 3600_000 })));
+  const body: AdminSession = { email, role, exp: Date.now() + SESSION_HOURS * 3600_000 };
+  if (opts.mfa) body.mfa = true;
+  const payload = b64url(enc.encode(JSON.stringify(body)));
   return `${payload}.${b64url(await hmac(payload, key))}`;
+}
+
+// โทเคน "รหัสผ่านถูกแล้ว รอรหัส 2 ชั้น" (5 นาที) — ลงลายเซ็นด้วยคีย์คนละตัวกับ session และมี typ
+// เอาไปใส่แทนคุกกี้ session ไม่ได้ (verifySession ปฏิเสธทุก token ที่มี typ)
+export type MfaPending = { typ: "mfa-pending"; email: string; role: AdminRole; exp: number };
+export async function signMfaPending(email: string, role: AdminRole): Promise<string | null> {
+  const key = secret();
+  if (!key) return null;
+  const body: MfaPending = { typ: "mfa-pending", email, role, exp: Date.now() + MFA_PENDING_MINUTES * 60_000 };
+  const payload = b64url(enc.encode(JSON.stringify(body)));
+  return `${payload}.${b64url(await hmac(payload, key + "|mfa-pending"))}`;
+}
+export async function verifyMfaPending(token: string | undefined): Promise<MfaPending | null> {
+  const key = secret();
+  if (!key || !token) return null;
+  const [payload, sig] = token.split(".");
+  if (!payload || !sig) return null;
+  try {
+    if (!safeEqual(fromB64url(sig), await hmac(payload, key + "|mfa-pending"))) return null;
+    const p = JSON.parse(new TextDecoder().decode(fromB64url(payload))) as MfaPending;
+    if (p.typ !== "mfa-pending" || !p.email || !(p.role in ROLE_LABEL) || p.exp < Date.now()) return null;
+    return p;
+  } catch {
+    return null;
+  }
 }
 
 /** บทบาทปัจจุบันของอีเมลจากค่าตั้งใน env (ADMIN_EMAIL/ADMIN_PASSWORD = CEO · ADMIN_ACCOUNTS = email|role|salt:hash;...) */
@@ -114,8 +149,8 @@ export async function verifySession(token: string | undefined): Promise<AdminSes
   if (!payload || !sig) return null;
   try {
     if (!safeEqual(fromB64url(sig), await hmac(payload, key))) return null;
-    const s = JSON.parse(new TextDecoder().decode(fromB64url(payload))) as AdminSession;
-    if (!s.email || !(s.role in ROLE_LABEL) || s.exp < Date.now()) return null;
+    const s = JSON.parse(new TextDecoder().decode(fromB64url(payload))) as AdminSession & { typ?: string };
+    if (s.typ || !s.email || !(s.role in ROLE_LABEL) || s.exp < Date.now()) return null;
     // เว็บจริง: บัญชีต้องยังอยู่และบทบาทยังตรง — ลบ/ลดสิทธิ์แอดมินแล้วมีผลทันที ไม่ต้องรอ token หมดอายุ
     if (isProdDeploy() && liveRole(s.email) !== s.role) return null;
     return s;

@@ -4,6 +4,8 @@ import { Forbidden } from "../../../_kyc/ui";
 import { PtHead, PtNav, PtPage, acctOf, loadPt, ptHref } from "../_pt";
 import { AccountLinks, SettingsForm } from "../_ptc";
 import { PushButton } from "@/components/push-button";
+import { blockedOf } from "@/lib/bookings/blocks";
+import { BlockedCustomers } from "./blocked-list";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "ตั้งค่า — Mister Bamrungsuk" };
@@ -50,6 +52,7 @@ export default async function SettingsPage({ params, searchParams }: { params: P
           </div>
           <PushButton pt={{ mb: c.mb, t: c.t }} />
           <SettingsForm mb={c.mb} t={c.t} init={c.x.pt_settings ?? null} />
+          <BlockedCustomers mb={c.mb} t={c.t} init={blockedOf(c.row).map(({ h, name, code, at }) => ({ h, name, code, at }))} />
         </div>
 
         <div className="flex flex-col gap-3.5 min-w-0">

@@ -58,3 +58,8 @@ export function checkLogin(email: string, password: string): AdminRole | null {
 
 export const adminLoginEnabled = () => accounts().length > 0;
 export const usingDemoAccounts = () => !process.env.ADMIN_ACCOUNTS?.trim() && !process.env.ADMIN_PASSWORD && isDemo;
+
+/** รายชื่อบัญชีแอดมิน (อีเมล + บทบาท ไม่มีรหัส) — หน้า /admin/security ของ CEO ใช้ดูว่าใครตั้ง 2 ชั้นแล้ว */
+export function listAdminAccounts(): { email: string; role: AdminRole }[] {
+  return accounts().map((a) => ({ email: a.email, role: a.role }));
+}

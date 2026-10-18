@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { ADMIN_COOKIE, canAccess, homeFor, verifySession } from "@/lib/admin-auth";
+import { mfaEnforcedEdge } from "@/lib/admin-mfa-policy";
 import { GATE_COOKIE, gateExempt, gateToken, marketPublic } from "@/lib/site-gate";
+
+// API ที่ใช้ได้แม้ยังไม่ผ่าน 2 ชั้นตอนเปิดบังคับ (ตั้งค่า 2 ชั้น · เข้าสู่ระบบ · ออกจากระบบ)
+const mfaFreeApi = (p: string) => ["/api/admin/security", "/api/admin/login", "/api/admin/logout"].some((x) => p === x || p.startsWith(x + "/"));
 
 // Auth guard
 // - หน้าแอปทั่วไป: ต้องมี cookie hamoo_session (โหมดจริง: ตรวจ Supabase session; โหมดเดโม: ตั้งตอนกดเข้าสู่ระบบ)
@@ -30,6 +34,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // บังคับ 2 ชั้น (CEO เปิดที่ /admin/security): session แอดมินที่ยังไม่ผ่าน 2 ชั้น ใช้ API แอดมินไม่ได้
+  // ไม่มีคุกกี้แอดมิน / ไม่ได้เปิดบังคับ = ไม่แตะเลย (ทำงานเหมือนเดิมทุกอย่าง)
+  if (pathname.startsWith("/api/") && !mfaFreeApi(pathname)) {
+    const raw = request.cookies.get(ADMIN_COOKIE)?.value;
+    const s = raw ? await verifySession(raw) : null;
+    if (s && !s.mfa && (await mfaEnforcedEdge(request))) {
+      if (pathname.startsWith("/api/admin/")) return NextResponse.json({ ok: false, error: "ต้องตั้งค่ายืนยันตัวตน 2 ชั้นก่อน (หน้า ความปลอดภัยบัญชี)", mfa_required: true }, { status: 403 });
+      // API อื่นที่รับคุกกี้แอดมินด้วย: ตัดคุกกี้แอดมินออก = ใช้งานแบบไม่ใช่แอดมิน
+      const h = new Headers(request.headers);
+      h.set("cookie", (request.headers.get("cookie") ?? "").split(/;\s*/).filter((c) => c && !c.startsWith(ADMIN_COOKIE + "=")).join("; "));
+      return NextResponse.next({ request: { headers: h } });
+    }
+  }
+
   if (pathname === "/admin" || pathname.startsWith("/admin/")) {
     const admin = await verifySession(request.cookies.get(ADMIN_COOKIE)?.value);
     if (!admin) {
@@ -46,6 +64,14 @@ export async function middleware(request: NextRequest) {
     try { path = decodeURIComponent(pathname); } catch { path = "/admin"; }
     // อักขระควบคุม (%00 ฯลฯ) ใน path = ไม่ใช่หน้าจริง → 404 (กันหลุดกฎสิทธิ์/500)
     if (/[\x00-\x1f]/.test(path)) return new NextResponse("not found", { status: 404 });
+    // เปิดบังคับ 2 ชั้นอยู่ + session นี้ยังไม่ผ่าน 2 ชั้น → ไปหน้าตั้งค่า/ยืนยันก่อน (เปิดหน้าอื่นไม่ได้)
+    const securityPage = path === "/admin/security" || path.startsWith("/admin/security/");
+    if (!admin.mfa && !securityPage && (await mfaEnforcedEdge(request))) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/security";
+      url.search = "?required=1";
+      return NextResponse.redirect(url);
+    }
     if (!canAccess(admin.role, path)) {
       const url = request.nextUrl.clone();
       url.pathname = homeFor(admin.role);

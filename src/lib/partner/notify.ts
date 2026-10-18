@@ -44,3 +44,19 @@ export async function notifyPurchase(p: Partner, x: Purchase) {
   const html = `<div style="font-family:Tahoma,sans-serif;max-width:520px;margin:auto;padding:24px;border:1px solid #d4af37;border-radius:16px"><p style="letter-spacing:.2em;font-size:12px;color:#8f5e00;margin:0">MISTER BAMRUNGSUK · PARTNER</p><h2>สลิปค่าแผนโปรโมทรอตรวจ</h2><p>${esc(p.business_name)} · ${esc(PARTNER_PACKAGES[x.package].label)} · ฿${x.amount.toLocaleString("th-TH")}</p><p style="font-size:13px;color:#6b6152">ใบแจ้งหนี้ ${esc(x.invoice_no)} · ตรวจได้ที่ /admin/partners</p></div>`;
   return sendEmail({ to: admin.split(",").map((s) => s.trim()), subject: `[สลิปพาร์ทเนอร์] ${p.business_name} ${x.invoice_no}`, html }).catch(() => false);
 }
+
+// ── กล่องแจ้งเตือนในพอร์ทัลพาร์ทเนอร์ (notify user_type "partner" → in-app + web push) ──
+const thWhen = (iso: string) => new Date(iso).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+
+/** แจ้งพาร์ทเนอร์ — ไม่ throw (แจ้งเตือนพลาดต้องไม่ทำให้การจอง/เงินพัง) */
+export async function tellPartnerInbox(pid: string, kind: string, title: string, body: string | null, url = "/partner/portal/bookings") {
+  await import("@/lib/bookings").then((m) => m.notify({ user_type: "partner", user_id: pid, kind, title, body, url })).catch((e) => console.error("partner notify", e));
+}
+
+/** การจองสปา: ใหม่ / ยกเลิก / เลื่อนเวลา (Dev ที่ทำ rescheduleSpaBooking เรียก kind "changed" ได้) */
+export async function notifySpaBooking(pid: string, kind: "new" | "cancelled" | "changed", b: { booking_ref: string; start_time: string; hours: number; parttime_name?: string | null; amount?: number | null; addon?: string | null }, extra = "") {
+  const when = `${thWhen(b.start_time)} · ${b.hours} ชม.`;
+  if (kind === "new") await tellPartnerInbox(pid, "spa_new", `มีการจองห้องสปาใหม่ ${b.booking_ref}`, `${when}${b.addon ? ` · ${b.addon}` : ""}${b.amount ? ` · ค่าห้อง ฿${Number(b.amount).toLocaleString("th-TH")}` : ""} · กรุณายืนยันห้องในหน้าการจอง`);
+  else if (kind === "cancelled") await tellPartnerInbox(pid, "spa_cancelled", `ยกเลิกการจองสปา ${b.booking_ref}`, `${when} · ห้องกลับมาว่าง${extra ? ` · ${extra}` : ""}`);
+  else await tellPartnerInbox(pid, "spa_changed", `เปลี่ยนเวลาการจองสปา ${b.booking_ref}`, `เวลาใหม่ ${when}${extra ? ` · ${extra}` : ""}`);
+}

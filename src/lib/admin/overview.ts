@@ -10,6 +10,8 @@ const safe = async <T,>(p: Promise<T>, fb: T): Promise<T> => p.catch(() => fb);
 const bkkDay = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: "Asia/Bangkok" });
 
 export async function overview() {
+  // กวาดสถานะแบบเบาก่อนอ่านตัวเลข (ห้องพักหมดเวลา · คำขอเปลี่ยน/ต่อเวลา · เรียกด่วน) — รอไม่เกิน 3 วิ ไม่ทำให้หน้าล่ม
+  await safe((await import("@/app/api/cron/sweeps")).sweepLight(), undefined);
   const [bookings, bal, topups, wds, apps, alerts, recon, mp, pr, boosts, mko, reps] = await Promise.all([
     safe(listAll(5000), []), safe(allBalances(), []), safe(listTopups({ status: "pending", limit: 500 }), []), safe(listWithdrawals(), []),
     safe(listApplicants(), []), safe(listAdminNotices(100), []), safe(reconcile(), null as Recon | null),
@@ -34,7 +36,7 @@ export async function overview() {
       monthGmv: done.reduce((s, b) => s + b.total_satang, 0),
     },
     money: {
-      revenue: pf("revenue"), escrow: pf("escrow"), bank: -pf("bank") || 0, wht: pf("wht_payable"), partner: pf("partner_payable"),
+      revenue: pf("revenue"), escrow: pf("escrow"), marketEscrow: pf("market_escrow"), hotelEscrow: pf("hotel_escrow"), bank: -pf("bank") || 0, wht: pf("wht_payable"), partner: pf("partner_payable"),
       customerAvail: sum("customer", "available"), customerHeld: sum("customer", "held"),
       ptPending: sum("parttime", "pending"), ptAvail: sum("parttime", "available"), ptWithdrawing: sum("parttime", "withdrawing"),
     },

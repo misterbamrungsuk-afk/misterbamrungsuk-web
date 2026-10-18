@@ -22,7 +22,9 @@ export type Booking = {
   extra_hours?: number | null; // ชม. ที่ต่อระหว่างนัด (0011_changes) — ค่าบริการรวมไว้ใน price_satang แล้ว
 };
 export type Message = { id: number; booking_id: string; sender_type: "customer" | "parttime" | "system"; sender_id: string | null; body: string; blocked: boolean; flag?: string | null; created_at: string; read_at: string | null; /** ยกเลิกการส่ง (0012_chat_manage) — ผู้ใช้เห็นข้อความแทน ทีมงานเห็นของเดิม */ unsent_at?: string | null };
-export type Notice = { id: number; user_type: "customer" | "parttime" | "admin"; user_id: string; kind: string; title: string; body: string | null; url: string | null; read_at: string | null; created_at: string };
+/** partner = สปา/โรงแรม (partners.id) · vendor = ร้านค้า Marketplace (market_vendors.id) — ต้องรัน supabase/booking/0014_partner_vendor_notices.sql (ยังไม่รัน = insert พลาดแค่ log) */
+export type NoticeUser = "customer" | "parttime" | "admin" | "partner" | "vendor";
+export type Notice = { id: number; user_type: NoticeUser; user_id: string; kind: string; title: string; body: string | null; url: string | null; read_at: string | null; created_at: string };
 
 export const RESPOND_MINUTES = 30;
 export const isDemo = !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -100,7 +102,8 @@ export async function notify(n: Omit<Notice, "id" | "read_at" | "created_at">) {
   const [pt, pid] = n.user_type === "admin" ? ["admin", "all"] : [n.user_type, n.user_id];
   await import("@/lib/push").then((m) => m.sendPush(pt, pid, { title: n.title, body: n.body, url: n.url, tag: n.kind === "sos" ? undefined : n.kind })).catch(() => 0);
   // อีเมลคู่กับเรื่องสำคัญ (บอร์ด A-Notify) — ต้องตั้ง RESEND_API_KEY + EMAIL_FROM · ไม่มี = ข้าม · ไม่รอ ไม่ทำให้งานหลักพัง
-  if (n.user_type !== "admin") void emailNotice(n).catch((e) => console.error("notice email", e));
+  // พาร์ทเนอร์/ร้านค้า: อีเมลส่งจากโมดูลของตัวเอง (เช่น hotels/store tellPartner) — ไม่ส่งซ้ำที่นี่
+  if (n.user_type === "customer" || n.user_type === "parttime") void emailNotice(n).catch((e) => console.error("notice email", e));
 }
 async function emailNotice(n: Omit<Notice, "id" | "read_at" | "created_at">) {
   const mail = await import("@/lib/email");
@@ -133,7 +136,7 @@ export async function spaRoomUpdate(code: string, status: "confirmed" | "full", 
     return;
   }
   await addEvent(b.id, "spa_full", "partner", null);
-  await notify({ user_type: "customer", user_id: b.customer_id, kind: "spa_full", title: `${spa} แจ้งห้องเต็ม`, body: `${b.code} · ทีมงานจะติดต่อเพื่อเปลี่ยนสถานที่หรือเวลา หรือขอยกเลิกในหน้าการจองได้`, url: `/order/${b.id}` });
+  await notify({ user_type: "customer", user_id: b.customer_id, kind: "spa_full", title: `${spa} แจ้งห้องเต็ม`, body: `${b.code} · ขอเปลี่ยนเวลาหรือขอยกเลิกได้ในหน้าการจอง · ทีมงานจะติดต่อช่วยประสาน`, url: `/order/${b.id}` });
   await notify({ user_type: "parttime", user_id: b.parttime_id, kind: "spa_full", title: `${spa} แจ้งห้องเต็ม ${b.code}`, body: "รอทีมงานประสานสถานที่ใหม่", url: `/join/profile/${b.parttime_mb}/jobs` });
   await notify({ user_type: "admin", user_id: "ops", kind: "spa_full", title: `สปาแจ้งห้องเต็ม ${b.code}`, body: spa, url: "/admin/orders" });
 }
@@ -218,6 +221,8 @@ export async function createBooking(cust: { sub: string; email: string; name?: s
   const a = await findPt(input.pid);
   if (a && extraOf(a).work?.paused) throw new BookingError("เพื่อนพักรับงานชั่วคราว · ลองเลือกเพื่อนคนอื่น", "paused");
   if (!a || !isLive(a)) throw new BookingError("เพื่อนคนนี้ยังไม่เปิดรับงาน", "unavailable");
+  // Part-Time บล็อกลูกค้าคนนี้ไว้ (blocks.ts) — ทั้งจองปกติและเรียกด่วน
+  { const bl = await import("./blocks"); if (bl.isBlockedBy(a, cust.sub)) throw new BookingError(bl.BLOCKED_MSG, "blocked"); }
   const start = Date.parse(input.starts_at);
   if (!Number.isFinite(start) || start < Date.now() + 60 * 60_000 || start > Date.now() + 60 * 86400_000) throw new BookingError("เลือกเวลานัดล่วงหน้าอย่างน้อย 1 ชม. และไม่เกิน 60 วัน");
   // เรียกด่วน: Part-Time กดรับเอง = ยืนยันว่าว่างตอนนี้ ไม่ต้องเทียบตารางรับงาน
@@ -365,6 +370,19 @@ export async function listNotices(user_type: Notice["user_type"], user_id: strin
 export async function markNoticesRead(user_type: Notice["user_type"], user_id: string) {
   if (isDemo) { for (const n of demo.notices) if (n.user_type === user_type && n.user_id === user_id && !n.read_at) n.read_at = now(); return; }
   await db().from("notifications").update({ read_at: now() }).eq("user_type", user_type).eq("user_id", user_id).is("read_at", null);
+}
+/** อ่านแล้วทีละรายการ — ต้องเป็นของผู้ใช้คนนั้นเท่านั้น */
+export async function markNoticeRead(user_type: Notice["user_type"], user_id: string, id: number) {
+  if (!Number.isInteger(id) || id <= 0) return;
+  if (isDemo) { const n = demo.notices.find((x) => x.id === id && x.user_type === user_type && x.user_id === user_id); if (n && !n.read_at) n.read_at = now(); return; }
+  await db().from("notifications").update({ read_at: now() }).eq("id", id).eq("user_type", user_type).eq("user_id", user_id).is("read_at", null);
+}
+/** จำนวนที่ยังไม่อ่าน (กระดิ่ง) */
+export async function unreadNotices(user_type: Notice["user_type"], user_id: string): Promise<number> {
+  if (isDemo) return demo.notices.filter((n) => n.user_type === user_type && n.user_id === user_id && !n.read_at).length;
+  const { count, error } = await db().from("notifications").select("id", { count: "exact", head: true }).eq("user_type", user_type).eq("user_id", user_id).is("read_at", null);
+  if (error) throw error;
+  return count ?? 0;
 }
 
 

@@ -4,6 +4,7 @@ import { ACCOUNT_LABEL } from "@/lib/partner/portal-types";
 import { qcPassed } from "@/lib/partner/kind";
 import { PortalNav, LogoutButton } from "./nav";
 import { AvatarView } from "@/components/avatar-editor";
+import { NoticeBell } from "@/components/notice-inbox";
 import { isHotelPartner } from "@/lib/hotels/store";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +23,7 @@ export default async function PortalLayout({ children }: { children: React.React
         <header className="flex items-center gap-2 h-14 px-5 border-b border-ink-700">
           <span className="font-display text-gold-400 tracking-[.18em] text-sm shrink-0">MB PARTNER</span>
           <span className="ml-auto text-xs text-ink-300 truncate min-w-0">{p.business_name}</span>
+          <NoticeBell api="/api/partner/notifications" href="/partner/portal/notifications" />
           <a href="/partner/portal/listing" aria-label="รูปโปรไฟล์" className="shrink-0"><AvatarView as="partner" letter={p.business_name} size={32} /></a>
           <LogoutButton />
         </header>

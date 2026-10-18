@@ -3,6 +3,7 @@ import { limited } from "@/lib/rate-limit";
 import { bookingActor } from "@/lib/bookings/auth";
 import { BookingError, sendMessage } from "@/lib/bookings";
 import { messagesFor } from "@/lib/bookings/chat-manage";
+import { ptBlocks } from "@/lib/bookings/blocks";
 
 
 export const runtime = "nodejs";
@@ -26,6 +27,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!who) return NextResponse.json({ ok: false }, { status: 404 });
   if (!OPEN.includes(who.b.status)) return NextResponse.json({ ok: false, error: "แชทของนัดนี้ปิดแล้ว" }, { status: 409 });
   if (await limited(`msg:${who.role}:${who.id}`, 30, 60_000)) return NextResponse.json({ ok: false, error: "ส่งเร็วเกินไป" }, { status: 429 });
+  // Part-Time บล็อกลูกค้าของนัดนี้ = ส่งแชทไม่ได้ทั้งสองฝั่ง
+  if (await ptBlocks(who.b.parttime_id, who.b.customer_id)) return NextResponse.json({ ok: false, error: who.role === "customer" ? "เพื่อนคนนี้ไม่รับข้อความจากบัญชีของคุณ" : "คุณบล็อกลูกค้านี้ไว้ · ยกเลิกบล็อกได้ที่ ตั้งค่า › ลูกค้าที่บล็อก", code: "blocked" }, { status: 403 });
   try {
     const m = await sendMessage(who.b, who.role, who.id, String(b.body ?? ""));
     return NextResponse.json({

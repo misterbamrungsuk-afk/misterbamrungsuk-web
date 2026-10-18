@@ -66,3 +66,16 @@ export function staySplit(total: number, pct: number) {
   const fee = Math.round((total * p) / 100);
   return { fee, net: total - fee };
 }
+
+/** คืนเงินหลังเข้าพักเสร็จ (ทีมงาน · คืนเต็มหรือบางส่วน · คืนได้หลายครั้งจนครบยอด)
+ *  ดึงจากโรงแรม (partner.available) และรายได้แพลตฟอร์มตามสัดส่วนเดิมของการแบ่ง — คิดแบบสะสม ปัดเศษแล้วรวมทุกครั้งเท่าส่วนแบ่งเดิมพอดี */
+export function afterStayRefundSplit(b: Pick<StayBooking, "total_satang" | "partner_net_satang" | "platform_fee_satang" | "platform_pct" | "refund_satang">, amount: number) {
+  const total = b.total_satang;
+  const net = b.partner_net_satang ?? staySplit(total, b.platform_pct).net;
+  const prior = b.refund_satang ?? 0;
+  const left = Math.max(0, total - prior);
+  const amt = Math.round(amount);
+  const cum = (x: number) => (total > 0 ? Math.round((x * net) / total) : 0);
+  const fromPartner = amt > 0 && amt <= left ? cum(prior + amt) - cum(prior) : 0;
+  return { prior, left, amount: amt, fromPartner, fromPlatform: amt > 0 && amt <= left ? amt - fromPartner : 0, full: amt === left && amt > 0 };
+}

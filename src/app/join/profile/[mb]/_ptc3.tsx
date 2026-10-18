@@ -182,12 +182,53 @@ export function PtIncoming({ mb, t }: { mb: string; t: string }) {
   );
 }
 
+/** หัวแชท Part-Time: "บล็อกลูกค้านี้" (ยืนยันในหน้า) / "เลิกบล็อก" — บล็อกแล้วโทร/แชทไม่ได้ทั้งสองฝั่ง และลูกค้าจองคุณใหม่ไม่ได้ */
+function BlockCustomer({ mb, t, id, onChange }: { mb: string; t: string; id: string; onChange: (b: boolean) => void }) {
+  const [state, setState] = useState<boolean | null>(null);
+  const [ask, setAsk] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  useEffect(() => {
+    fetch(`/api/bookings/${id}?${q(mb, t)}`, { cache: "no-store" }).then((r) => r.json()).then((d) => { if (d?.ok) { setState(!!d.blocked_customer); onChange(!!d.blocked_customer); } }).catch(() => {});
+  }, [id, mb, t, onChange]);
+  const go = async (block: boolean) => {
+    setBusy(true); setErr("");
+    const r = await fetch(`/api/pt/bookings/${id}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mb, t, action: block ? "block_customer" : "unblock_customer" }) }).catch(() => null);
+    const d = await r?.json().catch(() => null);
+    setBusy(false);
+    if (!d?.ok) return setErr(d?.error || "บันทึกไม่สำเร็จ");
+    setState(block); onChange(block); setAsk(false);
+  };
+  if (state === null) return null;
+  return (
+    <>
+      <button type="button" onClick={() => (state ? go(false) : setAsk(true))} disabled={busy} className="min-h-10 px-3 rounded-full text-[12.5px] mr-auto disabled:opacity-50" style={{ border: `1px solid ${state ? LN : "rgba(255,138,154,.45)"}`, color: state ? "#d9c9b4" : "#ff8a9a" }}>{busy ? "กำลังบันทึก…" : state ? "เลิกบล็อก" : "บล็อกลูกค้านี้"}</button>
+      {ask && (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center" role="dialog" aria-modal="true" aria-label="ยืนยันบล็อกลูกค้า">
+          <button type="button" aria-label="ปิด" onClick={() => setAsk(false)} className="absolute inset-0 bg-black/60" />
+          <div className="relative w-full max-w-[480px] rounded-t-[24px] bg-[#211a18] flex flex-col gap-3" style={{ padding: "16px 16px calc(18px + env(safe-area-inset-bottom))", borderTop: `1px solid ${LN}` }}>
+            <b className="font-semibold text-[16px]">บล็อกลูกค้านี้?</b>
+            <span className="text-[13.5px] font-light text-[#d9c9b4] leading-[1.6]">แชทและโทรหากันไม่ได้ทั้งสองฝั่ง · ลูกค้าจองหรือเรียกด่วนคุณใหม่ไม่ได้ · นัดที่ยืนยันแล้วยังอยู่ตามเดิม (ยกเลิก/มีปัญหา แจ้งทีมงาน) · เลิกบล็อกได้ที่ ตั้งค่า</span>
+            {err && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{err}</p>}
+            <div className="grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => setAsk(false)} className="h-12 rounded-[14px] text-[#f3ead9]" style={{ border: `1px solid ${LN}` }}>ไม่บล็อก</button>
+              <button type="button" disabled={busy} onClick={() => go(true)} className="h-12 rounded-[14px] font-semibold text-white disabled:opacity-50" style={{ background: "#a3283c" }}>{busy ? "กำลังบล็อก…" : "ยืนยันบล็อก"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {err && !ask && <span role="alert" className="text-[12px] text-[#ff8a9a]">{err}</span>}
+    </>
+  );
+}
+
 type M = CM;
 export function PtChat({ mb, t, id, quick = [] }: { mb: string; t: string; id: string; /** ข้อความตอบกลับเร็วที่บันทึกไว้ (หน้าตั้งค่า) */ quick?: string[] }) {
   const [ms, setMs] = useState<M[]>([]);
   const [text, setText] = useState("");
   const [warn, setWarn] = useState("");
   const [status, setStatus] = useState("");
+  const [blocked, setBlocked] = useState(false);
   const last = useRef(0);
   const since = useRef("");
   const end = useRef<HTMLDivElement>(null);
@@ -223,10 +264,12 @@ export function PtChat({ mb, t, id, quick = [] }: { mb: string; t: string; id: s
       {/* ซ่อนแชท / ลบกล่องแชท (เฉพาะฝั่งฉัน) — Part-Time ไม่มีหน้ารายการแชท จึงอยู่ในห้องแชท · เสร็จแล้วกลับหน้างาน */}
       {status && (
         <div className="flex items-center justify-end gap-1 px-4 pt-1">
+          <BlockCustomer mb={mb} t={t} id={id} onChange={setBlocked} />
           <span className="text-[12.5px] font-light text-[#b5a596]">จัดการแชท</span>
           <ChatBoxMenu bookingId={id} status={status} auth={auth} onDone={() => router.push(`/join/profile/${mb}/jobs${t ? `?t=${encodeURIComponent(t)}` : ""}`)} />
         </div>
       )}
+      {blocked && <p role="status" className="m-0 mx-4 mt-1 rounded-xl text-[12.5px] text-[#f6c38e]" style={{ padding: "8px 12px", background: "rgba(240,163,90,.1)" }}>บล็อกลูกค้านี้อยู่ · ส่งแชท/โทรไม่ได้ทั้งสองฝั่ง และลูกค้าจองคุณใหม่ไม่ได้ · ยกเลิกบล็อกได้ที่ ตั้งค่า</p>}
       <div className="flex-1 flex flex-col gap-2 px-4 py-3">
         <ChatNotice />
         {!ms.length && <div className="self-center text-[12px] font-light text-[#d9c9b4] text-center">คุยรายละเอียดนัดกับลูกค้า</div>}

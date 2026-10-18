@@ -167,14 +167,39 @@ export async function saveProduct(p: Omit<Product, "id" | "created_at"> & { id?:
   if (p.published && !p.fda_no?.trim()) throw new Error("ต้องใส่เลข อย. ก่อนเผยแพร่");
   const { id, ...row } = p;
   if (id) {
-    return q<Product>(() => db().from("market_products").update(row).eq("id", id).select().single(), () => {
+    const prev = await getProduct(id).catch(() => null);
+    const saved = await q<Product>(() => db().from("market_products").update(row).eq("id", id).select().single(), () => {
       const r = mem.products.find((x) => x.id === id);
       if (!r) throw new Error("ไม่พบสินค้า");
       return Object.assign(r, row);
     }).then(normProduct);
+    if (prev) await tellProductReview(prev, saved);
+    return saved;
   }
   const full: Product = { ...row, id: randomUUID(), created_at: now() };
   return q<Product>(() => db().from("market_products").insert(full).select().single(), () => (mem.products.push(full), full)).then(normProduct);
+}
+
+// ── แจ้งร้านค้า (notify user_type "vendor" → กล่องแจ้งเตือน /vendor + web push) — ไม่ throw ──
+async function tellVendor(vendor_id: string, kind: string, title: string, body: string | null) {
+  await import("@/lib/bookings").then((m) => m.notify({ user_type: "vendor", user_id: vendor_id, kind, title, body, url: "/vendor" })).catch((e) => console.error("vendor notify", e));
+}
+/** ทุกร้านในออเดอร์ — n = จำนวนชิ้นของร้าน · payout = ส่วนของร้าน (บาท) */
+async function tellVendors(o: Order, kind: string, title: (n: number, payout: number | null) => string, body: (n: number, payout: number | null) => string) {
+  const ids = [...new Set(o.items.map((i) => i.vendor_id))];
+  for (const vid of ids) {
+    const n = o.items.filter((i) => i.vendor_id === vid).reduce((a, i) => a + i.qty, 0);
+    const payout = o.vendor_split?.find((x) => x.vendor_id === vid)?.payout ?? null;
+    await tellVendor(vid, kind, title(n, payout), body(n, payout));
+  }
+}
+/** อนุมัติ/ไม่ผ่านสินค้า: false→true = อนุมัติ · true→false โดยเนื้อหาไม่เปลี่ยน (ร้านแก้เอง = รอตรวจใหม่ ไม่แจ้ง) = ไม่ผ่าน
+ *  รอตรวจอยู่แล้วถูกปิดเผยแพร่โดยเนื้อหาไม่เปลี่ยน = ไม่ผ่าน */
+async function tellProductReview(prev: Product, cur: Product) {
+  const same = prev.name === cur.name && prev.description === cur.description && prev.fda_no === cur.fda_no && prev.warning === cur.warning && prev.images.join() === cur.images.join();
+  if (prev.approved === false && cur.approved !== false) await tellVendor(cur.vendor_id, "market_product_approved", `สินค้าผ่านการตรวจ: ${cur.name}`, cur.published ? "แสดงในร้านแล้ว" : "เปิดเผยแพร่ได้ที่แท็บสินค้า");
+  else if (same && ((prev.approved !== false && cur.approved === false) || (prev.approved === false && cur.approved === false && prev.published && !cur.published)))
+    await tellVendor(cur.vendor_id, "market_product_rejected", `สินค้าไม่ผ่านการตรวจ: ${cur.name}`, "ซ่อนจากหน้าร้าน · แก้ไขรายละเอียด/เลข อย. แล้วส่งตรวจใหม่ได้ที่แท็บสินค้า หรือสอบถามทีมงาน");
 }
 
 /** ลบสินค้า — เคยอยู่ในออเดอร์แล้ว = ลบไม่ได้ (ประวัติบัญชี) → ซ่อนจากหน้าเว็บแทน */
@@ -466,6 +491,7 @@ export async function payWithWallet(o: Order): Promise<Order> {
     throw e;
   }
   await adjustStock(o.items, -1);
+  await tellVendors(out, "market_order_paid", () => `ออเดอร์ใหม่ ${out.order_no} ชำระแล้ว`, (n) => `สินค้าของร้าน ${n} ชิ้น · กรุณาจัดส่งและใส่เลขพัสดุ`);
   return out;
 }
 
@@ -569,6 +595,9 @@ export async function decideOrder(id: string, action: OrderAction, admin: string
     Object.assign(patch, { status: "shipped", tracking_no: extra.tracking_no.trim().slice(0, 60), carrier: extra.carrier || null, shipped_at: now() });
   } else Object.assign(patch, { status: "done", done_at: now() });
   const out = await patchOrder(id, patch, o.status);
+  // แจ้งร้าน (กล่องแจ้งเตือน /vendor + push): ออเดอร์ใหม่ที่ชำระแล้ว · ถูกยกเลิกหลังยืนยัน (คืนเงินผู้ซื้อ)
+  if (action === "confirm") await tellVendors(out, "market_order_paid", () => `ออเดอร์ใหม่ ${out.order_no} ชำระแล้ว`, (n) => `สินค้าของร้าน ${n} ชิ้น · กรุณาจัดส่งและใส่เลขพัสดุ`);
+  if (action === "reject" && o.status === "paid") await tellVendors(out, "market_order_rejected", () => `ออเดอร์ ${out.order_no} ถูกยกเลิก`, () => `ทีมงานยกเลิกและคืนเงินผู้ซื้อ · ไม่ต้องจัดส่ง${out.reject_reason ? ` · ${out.reject_reason}` : ""}`);
   if (action === "confirm") await adjustStock(o.items, -1);
   if (action === "reject" && o.status === "paid") await adjustStock(o.items, 1);
   if (action === "reject" && o.pay_method === "wallet") {
@@ -579,7 +608,8 @@ export async function decideOrder(id: string, action: OrderAction, admin: string
     } catch (e) { console.error("market wallet refund", e); return out; } // ป้าย "ต้องคืนเงิน" ค้างไว้ → แอดมินกด "บันทึกคืนเงิน" ให้ระบบคืนซ้ำได้
   }
   if (out.status === "done") {
-    await creditVendors(out, admin).catch((e) => console.error("market credit", e));
+    const credited = await creditVendors(out, admin).catch((e) => { console.error("market credit", e); return false; });
+    if (credited) await tellVendors(out, "market_order_done", () => `ออเดอร์ ${out.order_no} สำเร็จ · เงินเข้ากระเป๋าร้านแล้ว`, (_n, payout) => payout != null ? `ส่วนของร้าน ฿${baht(payout)} (หัก GP แล้ว รวมค่าส่ง) · ถอนได้ที่แท็บกระเป๋าเงิน` : "ถอนได้ที่แท็บกระเป๋าเงิน");
     // แต้มสมาชิก: เฉพาะออเดอร์ที่ลูกค้าล็อกอินตอนสั่ง (คิดจากยอดที่จ่ายจริง) · ครั้งเดียวต่อออเดอร์
     if (out.customer_id) await import("@/lib/member").then((m) => m.awardPoints(out.customer_id!, out.customer_email ?? "", Math.round(Number(out.total) * 100), `mk:${out.id}`, `ซื้อสินค้า ${out.order_no}`)).catch((e) => console.error("market points", e));
   }

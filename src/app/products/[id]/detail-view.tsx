@@ -8,6 +8,7 @@ import { useCart } from "../market-ui";
 import { Bottle, BoxIcon, CartCount, CartIcon, Chip, LINE, RED_GRAD, addToCart, fmt, glowOf, type CardP } from "../m-kit";
 import { ReviewForm } from "../review-form";
 import { SiteHeader } from "@/components/site-header";
+import { sized } from "@/lib/thumb-url";
 
 type R = { id: string; name: string; stars: number; text: string; created_at: string };
 const card = "p-3.5 rounded-2xl bg-[#211a18] border";
@@ -59,7 +60,7 @@ export function ProductDetailView({ p, kind, vendor, bundle, bundleAuto, related
       <div className="relative h-[320px] grid place-items-center overflow-hidden" style={{ background: `radial-gradient(circle at 50% 45%, ${glow}, #171211 72%)` }}>
         {imgs.length
           // eslint-disable-next-line @next/next/no-img-element
-          ? <img src={imgs[view] ?? imgs[0]} alt={p.name} className="absolute inset-0 w-full h-full object-cover" />
+          ? <img src={sized(imgs[view] ?? imgs[0], 960)} alt={p.name} className="absolute inset-0 w-full h-full object-cover" />
           : <Bottle id={p.id} w={130} h={210} />}
         <div className="absolute top-4 left-[18px] right-[18px] flex justify-between z-10">
           <SmartBack href="/market" className={circle}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="m15 18-6-6 6-6" /></svg></SmartBack>
@@ -126,7 +127,7 @@ export function ProductDetailView({ p, kind, vendor, bundle, bundleAuto, related
                     <span className="w-[22px] h-[22px] shrink-0 rounded-md border-[1.5px] grid place-items-center text-white text-[13px]" style={{ borderColor: on ? "#e8c472" : "#5a4a3a", background: on ? "#e8c472" : "transparent" }}>{on ? "✓" : ""}</span>
                     <span className="w-11 h-[52px] shrink-0 rounded-[10px] grid place-items-center overflow-hidden" style={{ background: `radial-gradient(circle, ${glowOf(b.id)[1]}, #140f0f 75%)` }}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      {src ? <img src={src} alt="" className="w-full h-full object-cover" /> : <Bottle id={b.id} w={24} h={38} />}
+                      {src ? <img src={sized(src, 240)} alt="" className="w-full h-full object-cover" /> : <Bottle id={b.id} w={24} h={38} />}
                     </span>
                     <span className="flex-1 min-w-0"><span className="block text-[13.5px] font-semibold">{b.name}</span><span className="block text-[11.5px] text-[#d9c9b4]">{fixed ? "สินค้านี้" : `${b.vendor_name} · มี อย.`}</span></span>
                     <span className="font-lux font-semibold text-[#e8c472]">{fmt(b.price)}</span>
@@ -186,7 +187,7 @@ export function ProductDetailView({ p, kind, vendor, bundle, bundleAuto, related
                   <Link key={x.id} href={`/products/${x.id}`} className="lux-card shrink-0 w-[140px] rounded-[14px] bg-[#211a18] border overflow-hidden text-[#f3ead9]" style={{ borderColor: LINE }}>
                     <span className="h-24 grid place-items-center overflow-hidden" style={{ background: `radial-gradient(circle at 50% 40%, ${glowOf(x.id)[1]}, #140f0f 70%)` }}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      {src ? <img src={src} alt="" className="w-full h-full object-cover" /> : <Bottle id={x.id} w={48} h={76} />}
+                      {src ? <img src={sized(src, 480)} alt="" className="w-full h-full object-cover" /> : <Bottle id={x.id} w={48} h={76} />}
                     </span>
                     <span className="block px-2.5 py-2"><span className="block text-[11px] text-[#d9c9b4] truncate">{x.vendor_name}</span><span className="block text-[13px] font-semibold truncate">{x.name}</span><span className="block font-lux font-semibold text-[#e8c472] text-[13.5px]">{fmt(x.price)}</span></span>
                   </Link>

@@ -13,7 +13,7 @@ const baht = (s: number) => "฿" + (s / 100).toLocaleString("th-TH", { maximumF
 export default async function AdminHome() {
   const [o, checks] = [await overview(), systemChecks()];
   const role = (await verifySession((await cookies()).get(ADMIN_COOKIE)?.value))?.role;
-  const q = o.queues, m = o.money, b = o.bookings;
+  const q = o.queues, m = o.money, b = o.bookings, f = o.recon?.figures;
   const all: [string, number, string, string?][] = [
     ["ตัดสินยกเลิก / ข้อพิพาท", b.decide, "/admin/orders", "red"],
     ["SOS / แจ้งเตือนค้าง", o.alerts.open, "/admin/audit", "red"],
@@ -68,6 +68,13 @@ export default async function AdminHome() {
             ["Part-Time รอปล่อยเงิน", m.ptPending], ["Part-Time ถอนได้", m.ptAvail], ["Part-Time กำลังถอน", m.ptWithdrawing],
             ["ค้างจ่ายพาร์ทเนอร์ (ค่าห้อง)", m.partner], ["หัก ณ ที่จ่าย ค้างนำส่ง", m.wht], ["ยอดโอนรอบถัดไป (สุทธิ)", q.withdrawSum],
           ] as [string, number][]).map(([k, v]) => <div key={k} className="flex justify-between py-1.5 text-sm"><span className="text-ink-300">{k}</span><span className="tabular-nums">{baht(v)}</span></div>)}
+          {/* เงินพักร้านค้า/ห้องพัก เทียบกับยอดที่ควรเป็นจากกระทบยอด */}
+          {([
+            ["เงินพักร้านค้า (จ่ายด้วยกระเป๋า)", m.marketEscrow, f?.expMarket, "ออเดอร์ที่ยังไม่จบ"],
+            ["เงินพักห้องพัก", m.hotelEscrow, f?.expHotel, "การจองห้องที่ยังไม่เช็กเอาต์"],
+          ] as [string, number, number | undefined, string][]).map(([k, v, exp, what]) => (
+            <div key={k} className="flex justify-between py-1.5 text-sm"><span className="text-ink-300">{k}{exp != null && <span className={`block text-xs ${exp === v ? "text-emerald-300" : "text-amber-300"}`}>{exp === v ? `✓ ตรงกับ${what}` : `⚠ ${what} ${baht(exp)}`}</span>}</span><span className="tabular-nums">{baht(v)}</span></div>
+          ))}
           <p className={`text-xs mt-2 ${o.recon?.ok ? "text-emerald-300" : "text-amber-300"}`}>{o.recon ? (o.recon.ok ? "✓ กระทบยอดตรงทุกบัญชี" : "⚠ กระทบยอดไม่ตรง — ดู /admin/wallet") : "ยังอ่านข้อมูลเงินไม่ได้"}</p>
         </Card>
       </div>

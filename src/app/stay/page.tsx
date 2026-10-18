@@ -3,6 +3,7 @@ import Link from "next/link";
 import { marketPartners } from "@/lib/market/partners";
 import { publicLogo } from "@/lib/avatar";
 import { LogoBadge } from "@/components/logo-badge";
+import { sized } from "@/lib/thumb-url";
 import { getCovers } from "@/lib/covers";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -31,7 +32,7 @@ export default async function StayHome() {
     <main className="mb-v7 mb-c w-full max-w-[480px] md:max-w-[760px] lg:max-w-[1120px] mx-auto min-h-dvh bg-[#171211] text-[#f3ead9] relative overflow-x-hidden">
       <SiteHeader />
       <div className="relative h-[240px] lg:h-[340px] mx-[18px] rounded-[18px] overflow-hidden border" style={{ borderColor: LINE }}>
-        <img src={hero} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <img src={sized(hero, 960)} alt="" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(14,10,10,.2) 0%, rgba(14,10,10,.55) 50%, rgba(14,10,10,.92) 100%)" }} />
         <div className="absolute left-4 right-4 bottom-4 lg:left-8 lg:bottom-8 lg:max-w-[560px]">
           <p className="text-[11.5px] tracking-[2.5px] text-[#e8c472] font-semibold">HOTEL · SPA PARTNERS</p>
@@ -52,7 +53,7 @@ export default async function StayHome() {
           <div className="flex gap-3 overflow-x-auto no-scrollbar px-[18px] lg:grid lg:grid-cols-3 lg:overflow-visible">
             {partners.hotels.map((h, k) => (
               <Link key={h.id} href={`/hotels/${h.id}`} className="lux-card shrink-0 w-[220px] lg:w-auto rounded-2xl overflow-hidden bg-[#211a18] border text-[#f3ead9]" style={{ borderColor: LINE }}>
-                <span className="relative block"><img src={img(h.cover, k)} alt={h.name} className="w-full h-[120px] lg:h-[180px] object-cover block" />{logo.get(h.id) && <LogoBadge logo={logo.get(h.id)!} size={38} className="absolute right-2.5 -bottom-4" />}</span>
+                <span className="relative block"><img src={sized(img(h.cover, k), 480)} alt={h.name} className="w-full h-[120px] lg:h-[180px] object-cover block" />{logo.get(h.id) && <LogoBadge logo={logo.get(h.id)!} size={38} className="absolute right-2.5 -bottom-4" />}</span>
                 <div className="px-3 py-2.5"><div className="font-lux font-semibold text-sm">{h.name}</div><div className="text-xs text-[#d9c9b4]">{h.area}</div></div>
               </Link>
             ))}
@@ -66,7 +67,7 @@ export default async function StayHome() {
           <div className="flex flex-col gap-2.5 px-[18px] md:grid md:grid-cols-2 lg:grid-cols-3">
             {partners.spas.slice(0, 6).map((s, k) => (
               <Link key={s.id} href={`/spas/${s.id}`} className="lux-card flex gap-3 p-2.5 rounded-2xl bg-[#211a18] border text-[#f3ead9]" style={{ borderColor: LINE }}>
-                {logo.get(s.id) ? <LogoBadge logo={logo.get(s.id)!} size={76} /> : <img src={img(s.cover, k + 1)} alt={s.name} className="w-[76px] h-[76px] rounded-xl object-cover shrink-0" />}
+                {logo.get(s.id) ? <LogoBadge logo={logo.get(s.id)!} size={76} /> : <img src={sized(img(s.cover, k + 1), 240)} alt={s.name} className="w-[76px] h-[76px] rounded-xl object-cover shrink-0" />}
                 <div className="min-w-0">
                   <div className="font-lux font-semibold text-[14.5px]">{s.name}</div>
                   <div className="text-xs text-[#d9c9b4]">{s.label} · {s.area}</div>

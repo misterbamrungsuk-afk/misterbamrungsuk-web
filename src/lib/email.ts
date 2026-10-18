@@ -70,11 +70,17 @@ export function bookingStatusChanged(b: BookingMail, status: string): Mail[] {
 export const EMAIL_KINDS = new Set([
   "booking_accepted", "booking_declined", "booking_expired", "booking_resolved", "quick_matched", "quick_expired",
   "topup_credited", "topup_rejected", "booking_new", "withdraw_paid", "withdraw_failed", "spa_full",
+  // ถอนเงินลูกค้า · เปลี่ยนเวลา/ต่อเวลานัด · จองห้องพักโรงแรม
+  "withdraw", "booking_reschedule", "booking_extend",
+  "stay_booked", "stay_confirmed", "stay_declined", "stay_cancelled", "stay_refunded", "stay_expired", "stay_completed",
 ]);
 const SUBJECT: Record<string, string> = {
   booking_accepted: "จองสำเร็จ", booking_declined: "เพื่อนไม่สะดวก · คืนเงินแล้ว", booking_expired: "ไม่มีการตอบรับ · คืนเงินแล้ว", booking_resolved: "ผลพิจารณาการจอง",
   quick_matched: "เรียกด่วนสำเร็จ", quick_expired: "เรียกด่วนยังไม่มีเพื่อนรับ", topup_credited: "เติมเงินเข้ากระเป๋าแล้ว", topup_rejected: "เติมเงินไม่ผ่าน",
   booking_new: "มีงานเข้าใหม่", withdraw_paid: "โอนเงินแล้ว", withdraw_failed: "โอนเงินไม่สำเร็จ", spa_full: "สปาแจ้งห้องเต็ม",
+  withdraw: "คำขอถอนเงิน", booking_reschedule: "เปลี่ยนเวลานัด", booking_extend: "ต่อเวลานัด",
+  stay_booked: "ส่งคำขอจองห้องแล้ว", stay_confirmed: "โรงแรมยืนยันการจอง", stay_declined: "โรงแรมปฏิเสธ · คืนเงินแล้ว", stay_cancelled: "ยกเลิกการจองห้อง",
+  stay_refunded: "คืนเงินการจองห้อง", stay_expired: "การจองห้องหมดเวลา · คืนเงินแล้ว", stay_completed: "ขอบคุณที่เข้าพัก",
 };
 /** อีเมลแบรนด์: หัวข้อ + เนื้อความ + ปุ่มเปิดในแอป */
 export function noticeMail(to: string, kind: string, title: string, body: string | null, url: string | null): Mail {

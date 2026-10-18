@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { imageUrl, type Banner } from "@/lib/market/config";
+import { sized } from "@/lib/thumb-url";
 
 // แบนเนอร์โปรโมชั่นหน้าแรก (แอดมินจัดการที่ /admin/market) — เลื่อนเองทุก 5 วิ, ปัดได้
 export function BannerCarousel({ banners }: { banners: Banner[] }) {
@@ -29,7 +30,7 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
             <div className="relative h-44 sm:h-56 lg:h-64 w-full overflow-hidden rounded-3xl border border-gold-500/30">
               {img
                 // eslint-disable-next-line @next/next/no-img-element
-                ? <img src={img} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                ? <img src={sized(img, 960)} alt="" className="absolute inset-0 w-full h-full object-cover" />
                 : <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,175,55,0.25),transparent_60%),linear-gradient(135deg,#2a1014,#171211)]" />}
               {b.title && <div className="absolute inset-0 bg-gradient-to-r from-ink-950/85 via-ink-950/40 to-transparent" />}
               {b.title && <div className="relative h-full flex flex-col justify-center px-6 lg:px-10 max-w-xl">

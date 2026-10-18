@@ -7,6 +7,7 @@ import { currentCustomer } from "@/lib/customer/auth";
 import { freeToday, quickPreview } from "@/lib/bookings/quick";
 import { ACTIVITIES } from "@/lib/posts";
 import { QuickCall } from "./call";
+import { sized } from "@/lib/thumb-url";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "เรียกด่วน — Mister Bamrungsuk" };
@@ -40,13 +41,25 @@ export default async function QuickPage() {
             <span className="text-[14px] text-[#d9c9b4]">ตอนนี้ยังไม่มีเพื่อนประกาศว่างวันนี้ · ลองดูเพื่อนทั้งหมดแล้วนัดล่วงหน้า</span>
             <Link href="/" className="h-11 px-5 rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold grid place-items-center hover:text-[#1b130b]">ดูเพื่อนทั้งหมด</Link>
           </div>
-        ) : rows.map((r) => (
-          <Link key={r!.p.id} href={`/book/${r!.p.id}`} className="flex gap-3 items-center rounded-2xl bg-[#211a18] text-[#f3ead9] hover:text-[#f3ead9]" style={{ padding: 12, border: `1px solid ${r!.hot ? GOLD : LN}` }}>
-            <img src={r!.p.img} alt={r!.p.nick} className="w-14 h-14 rounded-full object-cover shrink-0" style={{ boxShadow: `0 0 0 2px ${GOLD}`, objectPosition: r!.p.pos }} />
-            <span className="flex-1 min-w-0"><b className="font-medium text-[16px]">{r!.p.nick}{r!.p.age ? `, ${r!.p.age}` : ""}</b><span className="block text-[12.5px] font-light text-[#d9c9b4] truncate">{r!.note} · {r!.p.area}</span></span>
-            <span className="text-right shrink-0"><b className="font-semibold" style={{ color: GOLD }}>฿{priceOf(r!.p).toLocaleString("en-US")}</b><span className="block text-[12px] font-light text-[#d9c9b4]">จองเลย ›</span></span>
-          </Link>
-        ))}
+        ) : rows.map((r) => {
+          const { p, note, hot } = r!;
+          const pic = <img src={sized(p.img, 240)} alt={p.nick} className="w-14 h-14 rounded-full object-cover shrink-0" style={{ boxShadow: `0 0 0 2px ${GOLD}`, objectPosition: p.pos }} />;
+          const info = <span className="flex-1 min-w-0"><b className="font-medium text-[16px]">{p.nick}{p.age ? `, ${p.age}` : ""}</b><span className="block text-[12.5px] font-light text-[#d9c9b4] truncate">{note} · {p.area}</span></span>;
+          const fee = <b className="font-semibold" style={{ color: GOLD }}>฿{priceOf(p).toLocaleString("en-US")}</b>;
+          // มีโพสต์ว่างวันนี้ (hot) → ไปหน้าโปรไฟล์ /p/{id} ที่มีปุ่ม "สนใจ" · ปุ่มรอง "นัดเลย" ไปหน้านัดตรง (ลิงก์แยกกัน ไม่ซ้อน <a>)
+          if (hot) return (
+            <div key={p.id} className="flex gap-3 items-center rounded-2xl bg-[#211a18] text-[#f3ead9]" style={{ padding: 12, border: `1px solid ${GOLD}` }}>
+              <Link href={`/p/${p.id}`} className="flex gap-3 items-center flex-1 min-w-0 text-[#f3ead9] hover:text-[#f3ead9]">{pic}{info}</Link>
+              <span className="text-right shrink-0 flex flex-col items-end gap-1">{fee}<Link href={`/book/${p.id}`} className="min-h-9 px-3 rounded-full bg-[#e8c472] text-[#1b130b] text-[12.5px] font-semibold inline-flex items-center hover:text-[#1b130b]">นัดเลย ›</Link></span>
+            </div>
+          );
+          return (
+            <Link key={p.id} href={`/book/${p.id}`} className="flex gap-3 items-center rounded-2xl bg-[#211a18] text-[#f3ead9] hover:text-[#f3ead9]" style={{ padding: 12, border: `1px solid ${LN}` }}>
+              {pic}{info}
+              <span className="text-right shrink-0">{fee}<span className="block text-[12px] font-light text-[#d9c9b4]">จองเลย ›</span></span>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

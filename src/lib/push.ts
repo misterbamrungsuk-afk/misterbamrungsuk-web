@@ -73,3 +73,13 @@ export async function sendPush(user_type: string, user_id: string, m: { title: s
   } catch (e) { console.error("push", e); return 0; }
 }
 export const demoPushLog = () => sentLog;
+/** จำนวนอุปกรณ์ที่เปิดรับของผู้ใช้ (แสดงในหน้ากล่องแจ้งเตือน) — ไม่ throw */
+export async function countSubs(user_type: string, user_id: string): Promise<number> {
+  try { return (await subsFor(user_type, user_id)).length; } catch { return 0; }
+}
+/** เดโมเท่านั้น (e2e): จำนวน push ที่ "ส่ง" ถึงอุปกรณ์ของผู้ใช้นี้ — เว็บจริงคืน null */
+export function demoPushedTo(user_type: string, user_id: string): number | null {
+  if (!isDemo || process.env.VERCEL_ENV) return null;
+  const mine = new Set(demo.filter((r) => r.user_type === user_type && r.user_id === user_id).map((r) => r.endpoint));
+  return sentLog.filter((x) => mine.has(x.endpoint)).length;
+}

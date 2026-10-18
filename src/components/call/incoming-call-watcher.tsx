@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { CallScreen } from "./call-screen";
 import { authBody, callBusy, getJ, inLine, postJ, qs, type CallAuth } from "./engine";
+import { primeRingtone, ringMuted, setRingMuted, startRing, stopRing } from "./ringtone";
 
 // รอสายเรียกเข้า: ถาม /api/calls/incoming ทุก 4 วิ เฉพาะตอนเปิดหน้าอยู่ → แสดงแผ่น "สายเรียกเข้า" (รับ / ไม่รับ)
 // ลูกค้า: <IncomingCallWatcher /> · Part-Time: <IncomingCallWatcher who="pt" mb={mb} t={t} />
@@ -13,6 +14,10 @@ export function IncomingCallWatcher({ who = "customer", mb, t }: { who?: "custom
   const [ring, setRing] = useState<In | null>(null);
   const [active, setActive] = useState<In | null>(null);
   const seen = useRef(new Set<string>());
+  const [muted, setMuted] = useState(false);
+  // เสียงเรียกเข้าปลดล็อกเมื่อแตะหน้าครั้งแรก · ค่าปิดเสียงจำในเครื่อง
+  useEffect(() => { primeRingtone(); setMuted(ringMuted()); }, []);
+  const toggleMute = () => { const m = !muted; setMuted(m); setRingMuted(m); };
 
   useEffect(() => {
     let alive = true, busy = false;
@@ -33,13 +38,14 @@ export function IncomingCallWatcher({ who = "customer", mb, t }: { who?: "custom
     return () => { alive = false; clearInterval(iv); document.removeEventListener("visibilitychange", vis); };
   }, [who, mb, t]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // สั่นเตือน + ปิดแผ่นเองเมื่อหมดเวลาเรียก
+  // เสียงเรียกเข้า + สั่นเตือน + ปิดแผ่นเองเมื่อหมดเวลาเรียก · หยุดเสียงเมื่อรับ/ไม่รับ/หมดเวลา (ring = null)
   useEffect(() => {
     if (!ring) return;
+    startRing();
     try { navigator.vibrate?.([400, 200, 400, 200, 400]); } catch {}
     const left = Date.parse(ring.ring_ends_at) - Date.now();
     const tm = setTimeout(() => { seen.current.add(ring.id); setRing(null); }, Math.max(0, left));
-    return () => { clearTimeout(tm); try { navigator.vibrate?.(0); } catch {} };
+    return () => { clearTimeout(tm); stopRing(); try { navigator.vibrate?.(0); } catch {} };
   }, [ring]);
 
   const take = () => { if (!ring) return; seen.current.add(ring.id); setActive(ring); setRing(null); };
@@ -57,6 +63,7 @@ export function IncomingCallWatcher({ who = "customer", mb, t }: { who?: "custom
             <b className="text-[16px] font-medium truncate">สายเรียกเข้าจาก{ring.caller_name}</b>
             <span className="text-[13px] font-light text-[#d9c9b4]">{ring.code ? `นัด ${ring.code} · ` : ""}โทรผ่านแอป</span>
           </span>
+          <button type="button" onClick={toggleMute} aria-pressed={muted} aria-label={muted ? "เปิดเสียงเรียกเข้า" : "ปิดเสียงเรียกเข้า"} className="shrink-0 min-h-10 px-3 rounded-full text-[12.5px] text-[#d9c9b4]" style={{ border: "1px solid rgba(243,234,217,.18)" }}>{muted ? "🔕 เสียงปิด" : "🔔 ปิดเสียง"}</button>
         </div>
         {line && <span className="text-[13px] font-light text-[#d9c9b4]">เปิดใน Chrome/Safari เพื่อรับสาย</span>}
         <div className="flex gap-3">

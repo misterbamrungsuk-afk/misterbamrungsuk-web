@@ -8,6 +8,7 @@ import { hasContact } from "@/lib/join/contact-guard";
 import { ACTIVITIES } from "@/lib/posts";
 import { inThailand } from "@/lib/geo";
 import { BookingError, createBooking, isDemo, listForParttime, notify, priceFor, requirePin, respond, type Booking, type Place, type PlaceType } from "./index";
+import { isBlockedBy } from "./blocks";
 
 // เรียกด่วน (บอร์ด C-QuickCall): ลูกค้าส่งคำขอ → กันเงิน (ยอดสูงสุดของเพื่อนที่ถูกเชิญ) → แจ้งเพื่อนที่ว่างวันนี้
 // → เพื่อนคนแรกที่กดรับ = ได้นัด (คืนเงินที่กันไว้ แล้วจอง + ตอบรับตามราคาจริงของคนนั้นทันที)
@@ -105,11 +106,12 @@ export async function sweepAll() {
 export type QuickInput = { activity: string; hours: 3 | 5; place: { type: string; detail: string; lat?: unknown; lng?: unknown }; note: string; blocked?: string[] };
 
 /** เพื่อนที่จะถูกเชิญจริง (ว่างวันนี้ · ไม่ถูกบล็อก · ไม่มีนัดชนเวลา) + ราคา — ใช้ทั้งตอนเรียกและหน้าฟอร์ม (ตัวเลขบนหน้าตรงกับที่กันจริง) */
-export async function quickCandidates(hours: 3 | 5, blocked: string[]): Promise<{ a: Applicant; price: number }[]> {
+export async function quickCandidates(hours: 3 | 5, blocked: string[], customer_id = ""): Promise<{ a: Applicant; price: number }[]> {
   const start = Date.parse(quickStart());
   const cands: { a: Applicant; price: number }[] = [];
   for (const { a } of await freeToday()) {
     if (blocked.includes(publicId(a.mb_code))) continue; // ลูกค้าบล็อกไว้ = ไม่เชิญ
+    if (customer_id && isBlockedBy(a, customer_id)) continue; // เพื่อนบล็อกลูกค้าคนนี้ = ไม่เชิญ
     if (extraOf(a).work?.paused) continue;
     const clash = (await listForParttime(a.id)).some((b) => ["requested", "accepted", "checked_in"].includes(b.status) && Math.abs(Date.parse(b.starts_at) - start) < Math.max(b.hours + (b.extra_hours ?? 0), hours) * 3600_000);
     if (!clash) cands.push({ a, price: (await priceFor(a, hours)) * 100 });
@@ -138,7 +140,7 @@ export async function createQuick(cust: { sub: string; email: string; name?: str
   const pin = { lat: Math.round(Number(input.place.lat) * 1e5) / 1e5, lng: Math.round(Number(input.place.lng) * 1e5) / 1e5 };
   if (requirePin() && !inThailand(pin)) throw new BookingError("กดใช้ตำแหน่งปัจจุบัน หรือปักหมุดจุดนัดก่อนเรียก", "pin");
   // เชิญเพื่อนที่ว่างวันนี้และไม่มีนัดชนเวลา
-  const cands = await quickCandidates(input.hours, input.blocked ?? []);
+  const cands = await quickCandidates(input.hours, input.blocked ?? [], cust.sub);
   if (!cands.length) throw new BookingError("ตอนนี้ยังไม่มีเพื่อนว่างรับเรียกด่วน · ลองเลือกเพื่อนแล้วนัดล่วงหน้า", "none");
   const hold = Math.max(...cands.map((c) => c.price));
   const bal = await balances("customer", cust.sub);

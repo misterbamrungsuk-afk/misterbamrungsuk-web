@@ -8,6 +8,7 @@ import { readCart, writeCart, useCart } from "../../products/market-ui";
 import { Back } from "../../hotels/venue-client";
 import { Bottle, glowOf } from "../../products/m-kit";
 import { SiteHeader } from "@/components/site-header";
+import { sized } from "@/lib/thumb-url";
 
 type P = { id: string; name: string; price: number; stock: number; img: string; kind: string; sample?: boolean };
 type R = { id: string; stars: number; text: string; who: string; item: string; at: string };
@@ -62,7 +63,7 @@ export function ShopView({ vendor, products, reviews, avg, count }: { vendor: { 
           <div className="flex items-end gap-3">
             <div className="w-[76px] h-[76px] shrink-0 rounded-[20px] bg-[#171211] grid place-items-center font-lux font-bold text-[#e8c472] text-[18px] overflow-hidden" style={{ border: "2px solid #e8c472" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              {vendor.logo ? <img src={vendor.logo} alt={vendor.name} className="w-full h-full object-cover" /> : vendor.name.slice(0, 4)}
+              {vendor.logo ? <img src={sized(vendor.logo, 240)} alt={vendor.name} className="w-full h-full object-cover" /> : vendor.name.slice(0, 4)}
             </div>
             <div className="flex-1 min-w-0 pb-1">
               <div className="font-lux font-semibold text-[20px]">{vendor.name}</div>
@@ -91,7 +92,7 @@ export function ShopView({ vendor, products, reviews, avg, count }: { vendor: { 
                   <div key={p.id} className="lux-card rounded-2xl bg-[#211a18] overflow-hidden flex flex-col" style={{ border: `1px solid ${BD}` }}>
                     <Link href={`/products/${p.id}`} aria-label={p.name} className="relative h-[130px] grid place-items-center overflow-hidden" style={{ background: `radial-gradient(circle at 50% 40%, ${glowOf(p.id)[1]}, #140f0f 70%)` }}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      {p.img ? <img src={p.img} alt="" className="w-full h-full object-cover" /> : <Bottle id={p.id} w={60} h={96} />}
+                      {p.img ? <img src={sized(p.img, 480)} alt="" className="w-full h-full object-cover" /> : <Bottle id={p.id} w={60} h={96} />}
                       <span className="absolute top-2 left-2 px-[7px] py-0.5 rounded-full bg-[#171211] text-[#7fd6a3] text-[11.5px] font-semibold" style={{ border: "1px solid #3f8f63" }}>มี อย.</span>
                       {p.sample && <span className="absolute bottom-2 left-2 px-[7px] py-0.5 rounded-full bg-[#171211]/85 text-[#d9c9b4] text-[10.5px]" style={{ border: `1px solid ${BD}` }}>ตัวอย่าง</span>}
                     </Link>

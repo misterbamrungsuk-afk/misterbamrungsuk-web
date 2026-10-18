@@ -298,7 +298,7 @@ export async function updateExtra(id: string, patch: Pick<Extra, "cohort" | "lin
 
 const KYC_EXTRA_KEYS = ["kyc_status", "kyc_reason", "kyc_submitted_at", "bank_book_path"];
 /** เก็บใน docs.extra อย่างเดียว (ไม่มีคอลัมน์) */
-const EXTRA_ONLY_KEYS = ["link_by_all", "slip_reject", "fixes_done_at", "bank_review", "tokens_after", "link_by", "geo", "photo_pos", "slip_check", "pt_settings", "post", "listing", "work", "listed", "delete_requested_at", "tier", "bank_consents", "areas", "no_area", "availability", "massage_cert", "ack_hours", "ack_no_refuse", "photos", "card", "form_done"];
+const EXTRA_ONLY_KEYS = ["blocked_customers", "link_by_all", "slip_reject", "fixes_done_at", "bank_review", "tokens_after", "link_by", "geo", "photo_pos", "slip_check", "pt_settings", "post", "listing", "work", "listed", "delete_requested_at", "tier", "bank_consents", "areas", "no_area", "availability", "massage_cert", "ack_hours", "ack_no_refuse", "photos", "card", "form_done"];
 
 /** เขียนคอลัมน์ + docs (path ไฟล์ และ extra สำรอง) — คอลัมน์ 0006 ยังไม่มีก็เขียนเฉพาะคอลัมน์เดิม + docs */
 async function patchApplicant(id: string, allCols: Record<string, unknown>, docPaths: Partial<Record<DocKind, string>> = {}): Promise<Applicant | null> {

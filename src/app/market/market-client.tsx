@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { imageUrl, type Banner } from "@/lib/market/config";
+import { sized } from "@/lib/thumb-url";
 import { CartBar, Chip, LINE, MProductCard, Toast, useToast, type CardP } from "../products/m-kit";
 
 // แบนเนอร์โปรโมชัน (แอดมินจัดการ) — เลื่อนเองทุก 5 วิ + ปุ่ม ‹ › + จุด (ตามบอร์ด Market)
@@ -15,7 +16,7 @@ export function MarketBanner({ banners, fallback, tall = false }: { banners: Ban
     return () => clearInterval(t);
   }, [n]);
   const b = banners[i % n];
-  const src = (b.image && (imageUrl(b.image) || b.image)) || fallback[i % fallback.length];
+  const src = sized((b.image && (imageUrl(b.image) || b.image)) || fallback[i % fallback.length], 960);
   const body = (
     <>
       {/* eslint-disable-next-line @next/next/no-img-element */}

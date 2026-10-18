@@ -2,6 +2,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { getBooking, notify, type Booking } from "@/lib/bookings";
+import { ptBlocks } from "@/lib/bookings/blocks";
 import { currentParttime } from "@/lib/bookings/auth";
 import { currentCustomer } from "@/lib/customer/auth";
 import { getProfile } from "@/lib/customer/profile";
@@ -182,6 +183,8 @@ export async function canCall(b: Booking | string, who: { side: CallSide; id: st
   if (t > ends) return no("late", "เลยเวลานัดแล้ว · คุยต่อในแชทได้");
   const prof = await getProfile(bk.customer_id, bk.customer_email ?? "").catch(() => null);
   if (prof?.blocked?.includes(publicId(bk.parttime_mb))) return no("blocked", who.side === "customer" ? "คุณบล็อกเพื่อนคนนี้ไว้ · ยกเลิกการบล็อกก่อนโทร" : "โทรหาลูกค้าคนนี้ไม่ได้");
+  // Part-Time บล็อกลูกค้าคนนี้ = โทรไม่ได้ทั้งสองทาง
+  if (await ptBlocks(bk.parttime_id, bk.customer_id)) return no("blocked", who.side === "customer" ? "เพื่อนคนนี้ไม่รับสายจากบัญชีของคุณ" : "คุณบล็อกลูกค้านี้ไว้ · ยกเลิกบล็อกได้ที่ตั้งค่า");
   const live = await liveFor(bk.id).then((c) => (c ? sweep([c]).then((r) => r[0]) : null));
   if (live && LIVE.includes(live.status)) return no("busy", "มีสายของนัดนี้ที่ยังไม่จบ", { live_id: live.id });
   return { ok: true, reason: null, code: null };
@@ -226,6 +229,9 @@ export async function postSignal(c: Call, who: { side: CallSide; id: string }, k
 }
 export async function accept(c: Call, who: { side: CallSide; id: string }, answer?: unknown): Promise<Call> {
   if (!isParty(c, who) || isCaller(c, who)) throw new CallError("รับสายนี้ไม่ได้", "forbidden", 403);
+  // บล็อกระหว่างสายกำลังดัง → ปิดสาย
+  const bk = await getBooking(c.booking_id).catch(() => null);
+  if (bk && (await ptBlocks(bk.parttime_id, bk.customer_id))) { await finish(c, "declined", "blocked"); throw new CallError("รับสายนี้ไม่ได้ (บล็อก)", "blocked"); }
   const r = await patch(c.id, ["ringing"], { status: "active", answered_at: now() });
   if (!r) throw new CallError(c.status === "active" ? "รับสายไปแล้ว" : "สายนี้จบแล้ว", "state");
   return answer != null ? postSignal(r, who, "answer", answer) : r;

@@ -5,7 +5,7 @@ import { getListing } from "@/lib/partner/portal";
 import { isPublicPartner, venueKind } from "@/lib/partner/kind";
 import {
   CONFIRM_HOURS, HOLDING, MAX_AHEAD_DAYS, MAX_NIGHTS, MAX_ROOMS_PER_BOOKING, addDays, bahtTxt, bkkToday, cancelRule, checkinAt, checkoutAt,
-  isDate, nightsBetween, nightsOf, staySplit, thDate, type RoomType, type StayBooking, type StayStatus,
+  afterStayRefundSplit, isDate, nightsBetween, nightsOf, staySplit, thDate, type RoomType, type StayBooking, type StayStatus,
 } from "./types";
 
 // ห้องพักโรงแรมพาร์ทเนอร์ (supabase/partner/0007_hotel_rooms.sql) — Supabase service role หรือโหมดเดโมในหน่วยความจำ
@@ -18,7 +18,7 @@ import {
 const TABLE: MoveTable = "hotel_bookings"; // wallet_move ต้องรู้จักตารางนี้ (0007_hotel_rooms.sql)
 const ESCROW = "hotel_escrow";
 const now = () => new Date().toISOString();
-export class StayError extends Error { constructor(msg: string, public code = "bad", public status = 400) { super(msg); } }
+export class StayError extends Error { constructor(msg: string, public code = "bad", public status = 400, public data?: Record<string, unknown>) { super(msg); } }
 
 type Demo = { types: RoomType[]; bookings: StayBooking[] };
 const g = globalThis as unknown as { __mbHotels?: Demo };
@@ -194,7 +194,7 @@ export async function createStay(me: { sub: string; email: string | null }, x: C
   }
   if (!paid) throw new StayError("ทำรายการไม่สำเร็จ ลองใหม่อีกครั้ง", "state", 409);
   await tellCustomer(paid, "stay_booked", `ส่งคำขอจองห้อง ${paid.code} แล้ว`, `${p.business_name} · ${thDate(paid.check_in)} · ${paid.nights} คืน · รอโรงแรมยืนยัน (ไม่ตอบภายในเวลา = คืนเงินเต็ม)`);
-  await tellPartner(p, `มีการจองห้องใหม่ ${paid.code}`, `${paid.room_name} ×${paid.rooms} · ${thDate(paid.check_in)} – ${thDate(paid.check_out)} · ${bahtTxt(paid.total_satang)} · กรุณายืนยันภายใน ${CONFIRM_HOURS} ชม.`);
+  await tellPartner(p, "stay_new", `มีการจองห้องใหม่ ${paid.code}`, `${paid.room_name} ×${paid.rooms} · ${thDate(paid.check_in)} – ${thDate(paid.check_out)} · ${bahtTxt(paid.total_satang)} · กรุณายืนยันภายใน ${CONFIRM_HOURS} ชม.`);
   return paid;
 }
 
@@ -264,7 +264,7 @@ export async function customerCancel(customer: string, id: string, expectRefund?
   if (!r) throw new StayError("รายการนี้เปลี่ยนสถานะไปแล้ว", "state", 409);
   await tellCustomer(r, "stay_cancelled", `ยกเลิกการจอง ${r.code} แล้ว`, rule.refund ? `คืนเงิน ${bahtTxt(r.total_satang)} เข้ากระเป๋าแล้ว` : "ยกเลิกหลังกำหนดยกเลิกฟรี · ไม่คืนเงินตามกติกา");
   const p = await getPartner(r.partner_id).catch(() => null);
-  if (p) await tellPartner(p, `ลูกค้ายกเลิกการจอง ${r.code}`, rule.refund ? "ยกเลิกในกำหนด · คืนเงินลูกค้าเต็มจำนวน · ห้องกลับมาว่าง" : `ยกเลิกหลังกำหนด · ค่าห้อง ${bahtTxt(r.partner_net_satang ?? 0)} (หัก % แพลตฟอร์มแล้ว) เข้ากระเป๋าร้าน`);
+  if (p) await tellPartner(p, "stay_cancelled", `ลูกค้ายกเลิกการจอง ${r.code}`, rule.refund ? "ยกเลิกในกำหนด · คืนเงินลูกค้าเต็มจำนวน · ห้องกลับมาว่าง" : `ยกเลิกหลังกำหนด · ค่าห้อง ${bahtTxt(r.partner_net_satang ?? 0)} (หัก % แพลตฟอร์มแล้ว) เข้ากระเป๋าร้าน`);
   return r;
 }
 
@@ -277,8 +277,70 @@ export async function adminRefund(id: string, actor: string, note: string): Prom
   if (!r) throw new StayError("รายการนี้เปลี่ยนสถานะไปแล้ว", "state", 409);
   await tellCustomer(r, "stay_refunded", `คืนเงินการจอง ${r.code}`, `ทีมงานคืน ${bahtTxt(r.total_satang)} เข้ากระเป๋าแล้ว · ${note}`);
   const p = await getPartner(r.partner_id).catch(() => null);
-  if (p) await tellPartner(p, `ทีมงานยกเลิกการจอง ${r.code}`, `คืนเงินลูกค้าแล้ว · ${note}`);
+  if (p) await tellPartner(p, "stay_refunded", `ทีมงานยกเลิกการจอง ${r.code}`, `คืนเงินลูกค้าแล้ว · ${note}`);
   return r;
+}
+
+/** คืนเงินหลังเข้าพักเสร็จ (completed) — ทีมงานการเงิน/CEO · เต็มหรือบางส่วน · คืนได้หลายครั้งจนครบยอด
+ *  เงินกลับจาก partner.available + platform.revenue ตามสัดส่วนการแบ่งเดิม → customer.available (ledger รวม 0)
+ *  ยอดถอนได้ของโรงแรมไม่พอ = ปฏิเสธ (ไม่ให้ติดลบ) พร้อมบอกยอดคงเหลือ
+ *  กันคืนซ้อน: จองยอดสะสม refund_satang แบบมีเงื่อนไข (ต้องเท่ายอดเดิม) ก่อนลงเงิน · idem = รหัสการจอง + ยอดสะสมก่อนคืน (กดซ้ำ/ส่งซ้ำ = ไม่ลงเงินซ้ำ) */
+const refundLocks = new Set<string>();
+export async function adminRefundCompleted(id: string, actor: string, amountSatang: number, note: string): Promise<{ row: StayBooking; fromPartner: number; fromPlatform: number }> {
+  if (refundLocks.has(id)) throw new StayError("กำลังคืนเงินรายการนี้อยู่ รอสักครู่แล้วโหลดใหม่", "busy", 409);
+  refundLocks.add(id);
+  try {
+    const b = await getStay(id);
+    if (!b) throw new StayError("ไม่พบรายการ", "nf", 404);
+    if (b.status !== "completed") throw new StayError("คืนเงินหลังเข้าพักได้เฉพาะรายการที่เข้าพักเรียบร้อยแล้ว", "state", 409);
+    const sp = afterStayRefundSplit(b, amountSatang);
+    if (!(sp.left > 0)) throw new StayError("รายการนี้คืนเงินครบยอดแล้ว", "state", 409);
+    if (!(Number.isInteger(amountSatang) && amountSatang > 0 && amountSatang <= sp.left)) throw new StayError(`ยอดคืนต้องอยู่ระหว่าง ฿0.01 – ${bahtTxt(sp.left)}`, "amount");
+    const bal = (await balances("partner", b.partner_id)).available ?? 0;
+    if (bal < sp.fromPartner) throw new StayError(`ยอดในกระเป๋าโรงแรมไม่พอ: ต้องดึงคืน ${bahtTxt(sp.fromPartner)} แต่คงเหลือถอนได้ ${bahtTxt(bal)} · ให้โรงแรมเติม/รอรายได้เข้า หรือคืนบางส่วน`, "partner_funds", 409, { balance: bal, need: sp.fromPartner });
+    const cum = sp.prior + sp.amount;
+    // 1) จองยอดสะสม (CAS) — คนที่สองที่กดพร้อมกันจะไม่ผ่าน
+    if (!(await casRefund(b.id, b.refund_satang, cum))) throw new StayError("มีการคืนเงินรายการนี้พร้อมกัน โหลดหน้าใหม่แล้วลองอีกครั้ง", "state", 409);
+    const legs: Leg[] = [
+      { owner_type: "partner", owner_id: b.partner_id, bucket: "available", amount: -sp.fromPartner },
+      { owner_type: "platform", owner_id: PLATFORM, bucket: "revenue", amount: -sp.fromPlatform },
+      { owner_type: "customer", owner_id: b.customer_id, bucket: "available", amount: sp.amount },
+    ].filter((l) => l.amount !== 0) as Leg[];
+    let r: StayBooking | null;
+    try {
+      // 2) สถานะ + เงินพร้อมกัน (คืนครบ = refunded)
+      r = await moveStay(b.id, ["completed"], { status: sp.full ? "refunded" : "completed", refund_satang: cum, refunded_at: now(), decline_reason: note }, {
+        kind: "refund", ref: { type: "stay", id: b.id }, idem: `stay:afterrefund:${b.id}:${sp.prior}`, note: `คืนเงินหลังเข้าพัก ${b.code} ${bahtTxt(sp.amount)} · ${note}`, actor, legs,
+      });
+    } catch (e) {
+      await casRefund(b.id, cum, b.refund_satang).catch(() => null);
+      if (e instanceof WalletError) {
+        const now2 = (await balances("partner", b.partner_id).catch(() => ({} as Record<string, number>))).available ?? 0;
+        throw new StayError(`ยอดในกระเป๋าโรงแรมไม่พอ: ต้องดึงคืน ${bahtTxt(sp.fromPartner)} แต่คงเหลือถอนได้ ${bahtTxt(now2)}`, "partner_funds", 409, { balance: now2, need: sp.fromPartner });
+      }
+      throw e;
+    }
+    if (!r) { await casRefund(b.id, cum, b.refund_satang).catch(() => null); throw new StayError("รายการนี้เปลี่ยนสถานะไปแล้ว", "state", 409); }
+    const left = r.total_satang - cum;
+    await tellCustomer(r, "stay_refunded", `คืนเงินการจอง ${r.code} ${bahtTxt(sp.amount)}`, `ทีมงานคืน ${bahtTxt(sp.amount)} เข้ากระเป๋าแล้ว · ${note}`);
+    const p = await getPartner(r.partner_id).catch(() => null);
+    if (p) await tellPartner(p, "stay_aftercare_refund", `ทีมงานคืนเงินลูกค้า ${r.code} ${bahtTxt(sp.amount)}`, `หักจากกระเป๋าร้าน ${bahtTxt(sp.fromPartner)} (ส่วนแพลตฟอร์ม ${bahtTxt(sp.fromPlatform)}) · ${note}${left > 0 ? ` · คืนแล้วรวม ${bahtTxt(cum)}` : " · คืนครบยอด"}`);
+    return { row: r, fromPartner: sp.fromPartner, fromPlatform: sp.fromPlatform };
+  } finally { refundLocks.delete(id); }
+}
+/** ตั้ง refund_satang แบบมีเงื่อนไข (ต้องเท่าค่าเดิม และสถานะยัง completed) — ไม่มีเงินเคลื่อน */
+async function casRefund(id: string, from: number | null, to: number | null): Promise<boolean> {
+  if (isDemo) {
+    const b = demo.bookings.find((x) => x.id === id);
+    if (!b || b.status !== "completed" || (b.refund_satang ?? null) !== from) return false;
+    b.refund_satang = to; b.updated_at = now();
+    return true;
+  }
+  let q = db().from("hotel_bookings").update({ refund_satang: to, updated_at: now() }).eq("id", id).eq("status", "completed");
+  q = from == null ? q.is("refund_satang", null) : q.eq("refund_satang", from);
+  const { data, error } = await q.select("id");
+  if (error) throw error;
+  return (data ?? []).length > 0;
 }
 
 /** กวาดสถานะตามเวลา (เรียกตอนอ่านรายการ): รอยืนยันเกินเวลา → คืนเงิน · ยืนยันแล้วและเลยเวลาเช็กเอาต์ → แบ่งเงินเข้าโรงแรม · ค้าง "กำลังชำระ" → void */
@@ -301,14 +363,19 @@ export async function sweep(): Promise<number> {
       if (b.status === "paying" && Date.parse(b.created_at) < nowMs - 15 * 60_000) { await plainUpdate(b.id, ["paying"], { status: "void" }); n++; }
       else if (b.status === "pending" && Date.parse(b.expires_at) <= nowMs) {
         const r = await refund(b, ["pending"], "expired", { declined_at: now(), decline_reason: "โรงแรมไม่ได้ยืนยันภายในเวลา" }, "auto:stay", "หมดเวลายืนยัน");
-        if (r) { n++; await tellCustomer(r, "stay_expired", `การจอง ${r.code} หมดเวลา`, `โรงแรมไม่ได้ยืนยันภายในเวลา · คืนเงิน ${bahtTxt(r.total_satang)} เข้ากระเป๋าแล้ว`); }
+        if (r) {
+          n++;
+          await tellCustomer(r, "stay_expired", `การจอง ${r.code} หมดเวลา`, `โรงแรมไม่ได้ยืนยันภายในเวลา · คืนเงิน ${bahtTxt(r.total_satang)} เข้ากระเป๋าแล้ว`);
+          const p = await getPartner(r.partner_id).catch(() => null);
+          if (p) await tellPartner(p, "stay_expired", `การจอง ${r.code} หมดเวลายืนยัน`, `ไม่ได้ยืนยันภายใน ${CONFIRM_HOURS} ชม. · คืนเงินลูกค้าเต็มจำนวนแล้ว · ห้องกลับมาว่าง`);
+        }
       } else if (b.status === "confirmed" && nowMs >= checkoutAt(b.check_out)) {
         const r = await settle(b, ["confirmed"], "completed", { completed_at: now() }, "auto:stay", "เช็กเอาต์แล้ว");
         if (r) {
           n++;
           await tellCustomer(r, "stay_completed", `ขอบคุณที่เข้าพัก ${r.partner_name}`, `การจอง ${r.code} เสร็จสมบูรณ์`);
           const p = await getPartner(r.partner_id).catch(() => null);
-          if (p) await tellPartner(p, `ค่าห้อง ${r.code} เข้ากระเป๋าแล้ว`, `${bahtTxt(r.partner_net_satang ?? 0)} (หักแพลตฟอร์ม ${r.platform_pct}%)`);
+          if (p) await tellPartner(p, "stay_settled", `ค่าห้อง ${r.code} เข้ากระเป๋าแล้ว`, `${bahtTxt(r.partner_net_satang ?? 0)} (หักแพลตฟอร์ม ${r.platform_pct}%)`);
         }
       }
     } catch (e) { console.error("stay sweep row", b.code, e); }
@@ -342,9 +409,10 @@ async function tellCustomer(b: StayBooking, kind: string, title: string, body: s
 }
 const ENT: Record<string, string> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
 const esc = (v: unknown) => String(v ?? "").replace(/[&<>"']/g, (c) => ENT[c]);
-/** แจ้งโรงแรม: อีเมลถึงผู้ติดต่อ + push (ถ้าเปิดรับ) — ไม่บล็อกงานหลัก */
-async function tellPartner(p: Pick<Partner, "id" | "email" | "business_name">, title: string, body: string) {
+/** แจ้งโรงแรม: กล่องแจ้งเตือนในพอร์ทัล + push (ผ่าน notify) + อีเมลถึงผู้ติดต่อ — ไม่บล็อกงานหลัก */
+async function tellPartner(p: Pick<Partner, "id" | "email" | "business_name">, kind: string, title: string, body: string) {
   const html = `<div style="font-family:Tahoma,sans-serif;max-width:520px;margin:auto;padding:24px;border:1px solid #d4af37;border-radius:16px"><p style="letter-spacing:.2em;font-size:12px;color:#8f5e00;margin:0">MISTER BAMRUNGSUK · PARTNER</p><h2>${esc(title)}</h2><p>${esc(body)}</p><p style="font-size:13px;color:#6b6152">จัดการได้ที่พอร์ทัลพาร์ทเนอร์ → การจอง</p></div>`;
   if (p.email) await import("@/lib/email").then((m) => m.sendEmail({ to: p.email, subject: `[${p.business_name}] ${title}`, html })).catch(() => false);
-  await import("@/lib/push").then((m) => m.sendPush("partner", p.id, { title, body, url: "/partner/portal/bookings", tag: "stay" })).catch(() => 0);
+  const url = kind === "stay_settled" || kind === "stay_aftercare_refund" ? "/partner/portal/wallet" : "/partner/portal/bookings";
+  await import("@/lib/bookings").then((m) => m.notify({ user_type: "partner", user_id: p.id, kind, title, body, url })).catch((e) => console.error("stay notify partner", e));
 }

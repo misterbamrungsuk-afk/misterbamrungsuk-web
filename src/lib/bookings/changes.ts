@@ -10,7 +10,8 @@ import { BookingError, addEvent, getBooking, getById, isDemo, listForParttime, m
 // · ต่อเวลา (extend): ระหว่างนัด (เช็กอินแล้ว) ลูกค้าขอ +1 ชม. → เพื่อนรับ = ตัดค่าชั่วโมงจากกระเป๋าลูกค้าเข้า escrow (idem) + เพิ่มค่าบริการ/ยอดรวมของนัด
 //   ตอนจบงาน split() แบ่งจากค่าบริการใหม่ → เพื่อนได้ส่วนแบ่งของชั่วโมงที่ต่อตามปกติ
 export type ChangeKind = "reschedule" | "extend";
-export type ChangeStatus = "pending" | "accepted" | "declined" | "expired" | "failed";
+/** cancelled = ลูกค้ายกเลิกคำขอเอง (0013 เพิ่มในเงื่อนไขตาราง · ยังไม่รัน = เก็บเป็น declined + decided_by ลูกค้า แล้วแปลงตอนอ่าน) */
+export type ChangeStatus = "pending" | "accepted" | "declined" | "expired" | "failed" | "cancelled";
 export type Change = {
   id: string; booking_id: string; kind: ChangeKind; status: ChangeStatus;
   old_starts_at: string | null; new_starts_at: string | null; hours: number; amount_satang: number;
@@ -58,6 +59,7 @@ export async function listChanges(bookingIds: string[]): Promise<Change[]> {
     if (error) { if (notReady(error)) return []; throw error; }
     rows = (data ?? []) as Change[];
   }
+  for (const c of rows) if (c.status === "declined" && c.decided_by?.startsWith("customer:")) c.status = "cancelled";
   for (const c of rows) {
     if (c.status !== "pending" || Date.parse(c.expires_at) > Date.now()) continue;
     const r = await patchChange(c.id, ["pending"], { status: "expired", decided_at: now(), decided_by: "system" }).catch(() => null);
@@ -91,11 +93,10 @@ async function checkSlot(b: Booking, startMs: number, hours: number, opts: { sch
 export async function changeInfo(b: Booking) {
   const [rows, rules] = await Promise.all([listChanges([b.id]).catch(() => [] as Change[]), getCustomerRules()]);
   const ext = extendedOf(rows), pending = pendingOf(rows);
-  const used = rows.some((c) => c.kind === "reschedule");
+  const used = rows.some((c) => c.kind === "reschedule" && c.status !== "cancelled"); // ยกเลิกคำขอเอง = ยังไม่ใช้สิทธิ์
   const left = Date.parse(b.starts_at) - Date.now();
   const reschedule = b.status !== "accepted" ? null
     : used ? "เปลี่ยนเวลาได้ 1 ครั้งต่อการจอง"
-    : b.place?.spa_id ? "นัดที่สปาพาร์ทเนอร์ เปลี่ยนเวลาผ่านทีมงานทาง LINE"
     : left < rules.rescheduleMinHours * 3600_000 ? `เปลี่ยนเวลาได้ก่อนเวลานัดอย่างน้อย ${rules.rescheduleMinHours} ชม.`
     : pending ? "มีคำขอที่รอเพื่อนตอบอยู่" : "";
   const extend = b.status !== "checked_in" ? null
@@ -163,9 +164,70 @@ export async function respondReschedule(id: string, parttime_id: string, accept:
   catch (e) { await patchChange(c.id, ["accepted"], { status: "pending", decided_at: null, decided_by: null }).catch(() => null); throw e; }
   if (!r) { await patchChange(c.id, ["accepted"], { status: "failed", decided_at: now() }).catch(() => null); throw new BookingError("นัดนี้เปลี่ยนสถานะไปแล้ว · เปลี่ยนเวลาไม่ได้", "state"); }
   await addEvent(b.id, "rescheduled", actor, { change: c.id, from: c.old_starts_at, to });
-  await notify({ user_type: "customer", user_id: b.customer_id, kind: "booking_reschedule", title: `${b.parttime_nick ?? "เพื่อน"} รับเวลาใหม่แล้ว`, body: `${b.code} · นัดใหม่ ${when(to)}`, url: `/order/${b.id}` });
+  // นัดที่สปาพาร์ทเนอร์: ย้ายเวลาในพอร์ทัล + แจ้งสปาให้ตรวจห้องของเวลาใหม่ (พลาดไม่กระทบนัด — ทีมงานได้แจ้งเตือน)
+  const spa = r.place?.spa_id ? await spaRescheduled(r, c.old_starts_at ?? b.starts_at).catch((e) => { console.error("spa reschedule", e); return null; }) : null;
+  await notify({ user_type: "customer", user_id: b.customer_id, kind: "booking_reschedule", title: `${b.parttime_nick ?? "เพื่อน"} รับเวลาใหม่แล้ว`, body: `${b.code} · นัดใหม่ ${when(to)}${spa ? ` · ${r.place.spa_name ?? "สปา"} กำลังตรวจห้องของเวลาใหม่` : ""}`, url: `/order/${b.id}` });
   await sendMessage(r, "system", null, `เปลี่ยนเวลานัดเป็น ${when(to)} แล้ว (เดิม ${when(c.old_starts_at ?? b.starts_at)})`).catch(() => {});
   return r;
+}
+
+/** สปาพาร์ทเนอร์: เวลาในพอร์ทัลเปลี่ยนตามนัด · เคยยืนยันห้อง/แจ้งห้องเต็ม = กลับเป็น "รอยืนยัน" ให้สปาตอบใหม่สำหรับเวลาใหม่
+ *  แจ้งสปาทางอีเมล (ถ้าตั้งอีเมลไว้) + ทีมงาน · คืน null = ไม่มีรายการในพอร์ทัลที่ย้ายได้ (จบ/ยกเลิกแล้ว หรือยังไม่ sync) */
+async function spaRescheduled(b: Booking, from: string) {
+  const pid = b.place.spa_id!;
+  const { rescheduleSpaBooking } = await import("@/lib/partner/portal");
+  const moved = await rescheduleSpaBooking(b.code, b.starts_at);
+  const spa = b.place.spa_name ?? "สปา";
+  if (!moved) {
+    await notify({ user_type: "admin", user_id: "ops", kind: "spa_reschedule", title: `เปลี่ยนเวลานัดสปา ${b.code} · พอร์ทัลไม่ได้อัปเดต`, body: `${spa} · ${when(from)} → ${when(b.starts_at)} · แจ้งสปาเอง`, url: "/admin/orders" });
+    return null;
+  }
+  await addEvent(b.id, "spa_rescheduled", "system", { from, to: b.starts_at, prev: moved.prev });
+  const title = `นัด ${b.code} เปลี่ยนเวลา`;
+  const body = `${when(from)} → ${when(b.starts_at)} · ${b.hours + (b.extra_hours ?? 0)} ชม.${moved.prev !== "pending" ? " · กรุณายืนยันห้องของเวลาใหม่อีกครั้ง" : " · กรุณายืนยันห้อง"}`;
+  const p = await import("@/lib/partner/store").then((m) => m.getPartner(pid)).catch(() => null);
+  const mail = await import("@/lib/email");
+  if (p?.email && mail.emailEnabled()) await mail.sendEmail(mail.noticeMail(p.email, "spa_reschedule", title, body, "/partner/portal/bookings")).catch((e) => console.error("spa mail", e));
+  await notify({ user_type: "admin", user_id: "ops", kind: "spa_reschedule", title: `สปา ${spa}: ${title}`, body, url: "/admin/orders" });
+  // แจ้งในกล่องแจ้งเตือนพอร์ทัลสปาด้วย
+  await import("@/lib/partner/notify").then((m) => m.notifySpaBooking(pid, "changed", { booking_ref: b.code, start_time: b.starts_at, hours: b.hours + (b.extra_hours ?? 0) }, `เดิม ${when(from)}`)).catch((e) => console.error("spa notice", e));
+  return moved;
+}
+
+// ── ลูกค้ายกเลิกคำขอที่รอเพื่อนตอบ ──
+/** ยกเลิกคำขอเปลี่ยนเวลา/ต่อเวลาของตัวเองที่ยังรอตอบ (ไม่มีเงินเปลี่ยน — ต่อเวลาตัดเงินตอนเพื่อนรับเท่านั้น)
+ *  ยกเลิกคำขอเปลี่ยนเวลาแล้ว ไม่นับเป็น "ใช้สิทธิ์ 1 ครั้ง" · แจ้งเพื่อน */
+export async function cancelChange(id: string, customer_id: string, kind: ChangeKind): Promise<Change> {
+  const b = await getBooking(id);
+  if (!b || b.customer_id !== customer_id) throw new BookingError("ไม่พบการจอง", "notfound");
+  const c = pendingOf(await listChanges([b.id]), kind);
+  if (!c) throw new BookingError(kind === "reschedule" ? "ไม่มีคำขอเปลี่ยนเวลาที่รอตอบ (เพื่อนอาจตอบไปแล้ว)" : "ไม่มีคำขอต่อเวลาที่รอตอบ (เพื่อนอาจตอบไปแล้ว)", "state");
+  const actor = `customer:${customer_id}`;
+  const stamp = { decided_at: now(), decided_by: actor, reason: "ลูกค้ายกเลิกคำขอ" };
+  let r: Change | null;
+  try { r = await patchChange(c.id, ["pending"], { status: "cancelled", ...stamp }); }
+  catch (e) {
+    // ยังไม่รัน 0013 (เงื่อนไขสถานะเดิม) → เก็บเป็น declined โดยลูกค้า (อ่านกลับเป็น cancelled)
+    if ((e as { code?: string })?.code !== "23514") throw e;
+    r = await patchChange(c.id, ["pending"], { status: "declined", ...stamp });
+    if (r) r.status = "cancelled";
+  }
+  if (!r) throw new BookingError("เพื่อนตอบคำขอนี้ไปแล้ว · รีเฟรชหน้าเพื่อดูผล", "state");
+  await addEvent(b.id, `${kind}_cancelled`, actor, { change: c.id });
+  await notify({ user_type: "parttime", user_id: b.parttime_id, kind: `booking_${kind}`, title: kind === "reschedule" ? `ลูกค้ายกเลิกคำขอเปลี่ยนเวลา ${b.code}` : `ลูกค้ายกเลิกคำขอต่อเวลา ${b.code}`, body: kind === "reschedule" ? `นัดยังเป็นเวลาเดิม ${when(b.starts_at)} · ไม่ต้องตอบแล้ว` : "ไม่ต้องตอบแล้ว · ไม่มีการตัดเงิน", url: ptJobs(b) });
+  return r;
+}
+
+/** ต่อเวลาที่เพื่อนรับ "หลัง" ลูกค้าจบนัดพร้อมกัน (จบงานใช้ยอดเดิม) — day.ts คืนเงินส่วนนี้ให้ลูกค้าแล้ว → ปิดคำขอเป็นไม่สำเร็จ
+ *  ไล่จากคำขอที่รับล่าสุดจนครบยอดที่คืน */
+export async function voidLateExtensions(bookingId: string, amount: number, actor: string) {
+  const rows = (await listChanges([bookingId])).filter((c) => c.kind === "extend" && c.status === "accepted").sort((a, b) => String(b.decided_at).localeCompare(String(a.decided_at)));
+  let left = amount;
+  for (const c of rows) {
+    if (left <= 0) break;
+    await patchChange(c.id, ["accepted"], { status: "failed", reason: "ลูกค้าจบนัดก่อนต่อเวลา · คืนเงินแล้ว", decided_by: actor }).catch(() => null);
+    left -= c.amount_satang;
+  }
 }
 
 // ── ต่อเวลา ──

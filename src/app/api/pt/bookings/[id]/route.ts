@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { currentParttime } from "@/lib/bookings/auth";
-import { BookingError, respond } from "@/lib/bookings";
+import { BookingError, getBooking, respond } from "@/lib/bookings";
+import { blockFromBooking, customerHash, unblock } from "@/lib/bookings/blocks";
 import { checkIn, ptDone } from "@/lib/bookings/day";
 import { respondExtend, respondReschedule } from "@/lib/bookings/changes";
 
@@ -15,6 +16,20 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const id = (await params).id;
   const action = b.action ?? (b.accept === true ? "accept" : "decline");
   const reason = String(b.reason ?? "");
+  // บล็อก / เลิกบล็อกลูกค้าของงานนี้ (เมนูหัวแชท) — ไม่เปลี่ยนสถานะนัด
+  if (action === "block_customer" || action === "unblock_customer") {
+    try {
+      if (action === "block_customer") { const row = await blockFromBooking(a, id); return NextResponse.json({ ok: true, blocked: true, name: row.name }); }
+      const bk = await getBooking(id);
+      if (!bk || bk.parttime_id !== a.id) return NextResponse.json({ ok: false, error: "ไม่พบงานนี้" }, { status: 404 });
+      await unblock(a, customerHash(bk.customer_id));
+      return NextResponse.json({ ok: true, blocked: false });
+    } catch (e) {
+      if (e instanceof BookingError) return NextResponse.json({ ok: false, error: e.message, code: e.code }, { status: e.code === "notfound" ? 404 : 409 });
+      console.error("pt block", e);
+      return NextResponse.json({ ok: false, error: "ระบบขัดข้อง" }, { status: 500 });
+    }
+  }
   try {
     const r = action === "checkin" ? await checkIn(id, a.id, b.gps)
       : action === "done" ? await ptDone(id, a.id)

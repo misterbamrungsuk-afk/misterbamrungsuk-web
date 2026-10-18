@@ -55,7 +55,27 @@ async function roomLegs(b: Booking, amount: number): Promise<Leg[]> {
   ].filter((l) => l.amount !== 0) as Leg[];
 }
 
-async function split(b: Booking, actor: string, tip: number): Promise<Booking> {
+/** กันแข่งกับ "ต่อเวลา": แบ่งเงินจากภาพนิ่งของนัด (snap) — ถ้าเพื่อนรับต่อเวลาเข้า escrow ก่อนรายการจบงานจะลง
+ *  (ยอดในแถวหลังจบ > ยอดที่แบ่ง) ส่วนต่างจะค้างใน escrow → คืนลูกค้าทันทีในรายการ idem เดียว + ปิดคำขอต่อเวลาเป็นไม่สำเร็จ
+ *  ลำดับกลับกัน (จบก่อน) ปลอดภัยอยู่แล้ว: respondExtend ย้ายได้เฉพาะสถานะ checked_in */
+async function voidLateExtension(r: Booking, snap: Booking, extra: number): Promise<Booking> {
+  const back = await moveBooking(r.id, ["completed"], { price_satang: snap.price_satang, total_satang: snap.total_satang, extra_hours: snap.extra_hours ?? 0 },
+    { kind: "refund", ref: { type: "booking", id: r.id }, idem: `extend_void:${r.id}`, note: `คืนค่าต่อเวลา ${r.code} · จบนัดก่อนเพื่อนรับต่อเวลา`, actor: "system:extend-race", legs: [
+      { owner_type: "platform", owner_id: PLATFORM, bucket: "escrow", amount: -extra },
+      { owner_type: "customer", owner_id: r.customer_id, bucket: "available", amount: extra },
+    ] });
+  if (!back) { console.error("extend void: booking left completed", r.id); return r; }
+  await import("./changes").then((m) => m.voidLateExtensions(r.id, extra, "system:extend-race")).catch((e) => console.error("extend void changes", e));
+  await addEvent(r.id, "extend_voided", "system", { amount: extra });
+  const baht = (s: number) => "฿" + (s / 100).toLocaleString("th-TH", { maximumFractionDigits: 2 });
+  await notify({ user_type: "customer", user_id: r.customer_id, kind: "booking_extend", title: `คืนค่าต่อเวลา ${r.code}`, body: `คุณจบนัดก่อนเพื่อนรับต่อเวลา · คืน ${baht(extra)} เข้ากระเป๋าแล้ว`, url: `/order/${r.id}` });
+  await notify({ user_type: "parttime", user_id: r.parttime_id, kind: "booking_extend", title: `ต่อเวลา ${r.code} ไม่มีผล`, body: "ลูกค้ายืนยันจบนัดก่อน · คิดส่วนแบ่งตามเวลาเดิม", url: `/join/profile/${r.parttime_mb}/jobs` });
+  return back;
+}
+
+async function split(live: Booking, actor: string, tip: number, beforeMove?: () => Promise<unknown>): Promise<Booking> {
+  const b: Booking = { ...live }; // ภาพนิ่ง — โหมดสาธิตคืนแถวตัวจริง (ห้ามอ่านยอดที่เปลี่ยนระหว่างทาง)
+  if (beforeMove) await beforeMove().catch((e) => console.error("split hook", e));
   const cfg = await getEarnings();
   const pct = pctFor(cfg.tiers, (await completedThisMonth(b.parttime_id)) + 1);
   const ptShare = Math.round(b.price_satang * pct / 100);
@@ -76,6 +96,8 @@ async function split(b: Booking, actor: string, tip: number): Promise<Booking> {
   try { r = await run(tip); }
   catch (e) { if (tip > 0 && e instanceof WalletError) { tip = 0; r = await run(0); } else throw e; }
   if (!r) throw new BookingError("สถานะการจองเปลี่ยนไปแล้ว", "state");
+  const lateExtra = (r.total_satang ?? 0) - b.total_satang;
+  if (lateExtra > 0) r = await voidLateExtension(r, b, lateExtra);
   await addEvent(b.id, "completed", actor, { pct, tip });
   // แต้มสะสมลูกค้า (ตามระดับเมมเบอร์) — ยอดค่านัด + ทิป · ครั้งเดียวต่อการจอง
   await (await import("@/lib/member")).awardPoints(b.customer_id, b.customer_email ?? "", b.total_satang + tip, `bk:${b.id}`, `นัด ${b.code}`).catch((e) => console.error("points", e));
@@ -159,7 +181,8 @@ export async function ptDone(id: string, parttime_id: string) {
 /** ทิปสูงสุดต่อนัด (บาท) — หน้า "จบนัด" ใช้ค่าเดียวกัน */
 export const TIP_MAX = 5000;
 /** ลูกค้ายืนยันจบงาน + รีวิว + ทิป (บอร์ด C-Complete) */
-export async function customerComplete(id: string, customer_id: string, rv: { rating: number; tags: string[]; again: string; body: string; tip: number }) {
+/** opts.beforeMove = ทดสอบเท่านั้น (route ส่งเฉพาะโหมดสาธิต): จำลองเพื่อนรับต่อเวลาพร้อมกับที่ลูกค้ากดจบ */
+export async function customerComplete(id: string, customer_id: string, rv: { rating: number; tags: string[]; again: string; body: string; tip: number }, opts: { beforeMove?: () => Promise<unknown> } = {}) {
   const b = await getBooking(id);
   if (!b || b.customer_id !== customer_id) throw new BookingError("ไม่พบการจอง", "notfound");
   if (!["accepted", "checked_in"].includes(b.status)) throw new BookingError("ยืนยันจบงานไม่ได้ในสถานะนี้", "state");
@@ -172,7 +195,7 @@ export async function customerComplete(id: string, customer_id: string, rv: { ra
   if (tipBaht < 0 || tipBaht > TIP_MAX) throw new BookingError(`ทิปได้ 0–${TIP_MAX.toLocaleString()} บาท`, "tip");
   const tip = tipBaht * 100;
   if (tip > 0 && ((await balances("customer", customer_id)).available ?? 0) < tip) throw new BookingError("ยอดในกระเป๋าไม่พอสำหรับทิป");
-  const r = await split(b, `customer:${customer_id}`, tip);
+  const r = await split(b, `customer:${customer_id}`, tip, opts.beforeMove);
   if (rv.rating >= 1 && rv.rating <= 5) await saveReview({ booking_id: b.id, parttime_id: b.parttime_id, customer_id, rating: Math.round(rv.rating), tags: rv.tags.slice(0, 6).map((t) => t.slice(0, 20)), again: rv.again.slice(0, 10) || null, body: rv.body.trim().slice(0, 500) || null, hidden: false, created_at: now() });
   return r;
 }

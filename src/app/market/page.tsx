@@ -6,6 +6,7 @@ import { getCovers } from "@/lib/covers";
 import { SiteFooter } from "@/components/site-footer";
 import { BoxIcon, CartCount, CartIcon, LINE, RED_GRAD } from "../products/m-kit";
 import { SiteHeader } from "@/components/site-header";
+import { sized } from "@/lib/thumb-url";
 import { MarketBanner, MarketShop } from "./market-client";
 
 export const dynamic = "force-dynamic";
@@ -50,7 +51,7 @@ export default async function MarketHome() {
       {featured && (
         <Link href={`/products/${featured.id}`} aria-label={`${featured.title} สินค้าแนะนำ`} className="lux-card block mx-[18px] mt-3.5 rounded-[18px] overflow-hidden border bg-[#211a18] text-[#f3ead9] md:flex md:items-stretch" style={{ borderColor: LINE }}>
           <div className="relative md:w-[300px] lg:w-[360px] md:shrink-0">
-            <img src={featured.image} alt={featured.title} className="block w-full aspect-[782/787] object-cover" />
+            <img src={sized(featured.image, 960)} alt={featured.title} className="block w-full aspect-[782/787] object-cover" />
             <span className="absolute top-3 right-3 px-3 py-1 rounded-full bg-[#e8c472] text-[#1b130b] text-xs font-bold tracking-[1px]">สินค้าแนะนำ</span>
           </div>
           <div className="flex items-center justify-between gap-3 px-4 py-3 md:flex-col md:items-start md:justify-center md:px-8">
