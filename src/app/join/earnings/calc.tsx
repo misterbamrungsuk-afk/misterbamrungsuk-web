@@ -13,9 +13,9 @@ const TIERS: [EarnTier, string][] = [["top", "TOP"], ["silver", "Silver"]];
 
 export function EarningsCalc({ cfg }: { cfg: Omit<EarningsSettings, "history"> }) {
   const SVCS = (["eat", "massage"] as EarnSvc[]).map((k) => [k, { label: SVC_LABEL[k], ...cfg.price3h[k] }] as const);
-  const [svc, setSvc] = useState<EarnSvc>("massage");
-  const [tier, setTier] = useState<EarnTier>("top");
-  const [cases, setCases] = useState<number>(15);
+  const [svc, setSvc] = useState<EarnSvc>("eat"); // เริ่มที่จุดที่ทุกคนเริ่มจริง: กินเที่ยว · Silver
+  const [tier, setTier] = useState<EarnTier>("silver");
+  const [cases, setCases] = useState<number>(8);
   const price = cfg.price3h[svc][tier];
   const pct = pctFor(cfg.tiers, cases);
   const perCase = (price * pct) / 100;

@@ -200,7 +200,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
         {sample ? (
           /* หน้าตัวอย่าง: ชวนสมัครร่วมทีม */
           <Link href="/join" className="flex items-center gap-3 rounded-2xl text-[#1b130b] hover:text-[#1b130b]" style={{ margin: "14px 18px 0", padding: "12px 14px", background: "#f3ead9" }}>
-            <span className="flex-1 min-w-0 leading-[1.4]"><span className="block font-semibold text-[15px]">อยากเป็นเพื่อนกินเที่ยวแบบนี้?</span><span className="block text-[13px] font-normal text-[#4f4038]">อบรมฟรีชุดแรก · เลือกวันเวลาเอง</span></span>
+            <span className="flex-1 min-w-0 leading-[1.4]"><span className="block font-semibold text-[15px]">อยากเป็นเพื่อนกินเที่ยวแบบนี้?</span><span className="block text-[13px] font-normal text-[#4f4038]">อบรมเริ่มต้น ฿3,000 · เลือกวันเวลาเอง</span></span>
             <span className="shrink-0 h-10 px-4 rounded-full text-[#f3ead9] text-[13.5px] font-semibold flex items-center bg-[#1b130b]">สมัครร่วมทีม →</span>
           </Link>
         ) : (

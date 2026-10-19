@@ -71,7 +71,7 @@ export default function LoginPage() {
 
           <Link href="/join" className="flex items-center gap-3 rounded-[18px] bg-[#211a18] text-inherit hover:text-inherit" style={{ padding: "12px 14px", border: "1px solid rgba(212,175,55,.4)" }}>
             <img src="/brand/logo.png" alt="" width={44} height={44} className="w-11 h-11 object-contain" />
-            <span className="flex-1"><span className="block font-semibold text-[14px]">สมัครเป็น Part-Time</span><span className="block text-[12px] text-[#d9c9b4] font-light">เปิดรับ 20 ต.ค. – 10 พ.ย. · จำกัด 50 ท่าน</span></span>
+            <span className="flex-1"><span className="block font-semibold text-[14px]">สมัครเป็น Part-Time</span><span className="block text-[12px] text-[#d9c9b4] font-light">เปิดรับ 20 ต.ค. – 10 พ.ย. · กลุ่ม 1 รับ 25 ท่าน</span></span>
             <span className="text-[#e8c472]" aria-hidden="true">→</span>
           </Link>
           <div className="text-[12px] text-[#b5a596] text-center font-light">สำหรับผู้มีอายุ 20 ปีขึ้นไป · ไม่มีบริการทางเพศ</div>
