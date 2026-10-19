@@ -45,8 +45,8 @@ export default function SOSButton() {
       <button
         onClick={() => setOpen(true)}
         aria-label="SOS emergency"
-        className="fixed z-40 h-11 pl-2 pr-3.5 rounded-full flex items-center gap-1.5 font-semibold text-[13px] active:scale-95 transition-transform" 
-        style={{ right: "max(16px, calc(50% - 224px))", bottom: "calc(96px + env(safe-area-inset-bottom))", background: "#251d1b", color: "#ff8a9a", boxShadow: "inset 0 0 0 1px rgba(255,138,154,.45), 0 6px 20px rgba(0,0,0,.4)" }}
+        className="sos-fab fixed z-40 h-11 pl-2 pr-3.5 rounded-full flex items-center gap-1.5 font-semibold text-[13px] active:scale-95 transition-transform" 
+        style={{ background: "#251d1b", color: "#ff8a9a", boxShadow: "inset 0 0 0 1px rgba(255,138,154,.45), 0 6px 20px rgba(0,0,0,.4)" }}
       >
         <span className="relative w-7 h-7 rounded-full grid place-items-center" style={{ background: "#c9283d" }}>
           <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "rgba(201,40,61,.4)" }} />

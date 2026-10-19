@@ -439,3 +439,7 @@ html { scroll-behavior: smooth; }
 
 /* ลิงก์/ปุ่มตัวหนังสือ: พื้นที่กดอย่างน้อย 44px โดยไม่เปลี่ยนหน้าตา */
 .tap { display: inline-flex; align-items: center; min-height: 44px; }
+
+/* ปุ่ม SOS — มือถือ: เหนือแถบเมนูล่าง ชิดขอบขวาของคอลัมน์ (เมนูล่างกว้างสุด 640px) · คอม (เมนูเป็นแถบซ้าย): มุมขวาล่างของจอ */
+.sos-fab { right: max(16px, calc(50% - 304px)); bottom: calc(96px + env(safe-area-inset-bottom)); }
+@media (min-width: 1024px) { .sos-fab { right: 32px; bottom: 32px; } }
