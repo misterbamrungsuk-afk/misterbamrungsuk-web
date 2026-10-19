@@ -6,6 +6,7 @@ import { AccountLinks, SettingsForm } from "../_ptc";
 import { PushButton } from "@/components/push-button";
 import { blockedOf } from "@/lib/bookings/blocks";
 import { BlockedCustomers } from "./blocked-list";
+import { PasswordCard } from "./password-card";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "ตั้งค่า — Mister Bamrungsuk" };
@@ -50,6 +51,7 @@ export default async function SettingsPage({ params, searchParams }: { params: P
             <div className="flex gap-2.5">{tile(!!c.row.docs.id_card, "หน้าบัตรประชาชน")}{tile(!!c.row.docs.selfie, "รูปถือบัตรคู่หน้า")}</div>
             <div className="text-[13px] font-light">เมื่อได้ตรา ✓ แล้ว คุณจะรับงาน ถอนเงิน และลงประกาศรับงานได้</div>
           </div>
+          <PasswordCard mb={c.mb} t={c.t} />
           <PushButton pt={{ mb: c.mb, t: c.t }} />
           <SettingsForm mb={c.mb} t={c.t} init={c.x.pt_settings ?? null} />
           <BlockedCustomers mb={c.mb} t={c.t} init={blockedOf(c.row).map(({ h, name, code, at }) => ({ h, name, code, at }))} />

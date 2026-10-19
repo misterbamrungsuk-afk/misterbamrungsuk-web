@@ -115,7 +115,7 @@ export interface PtWork { days: Record<string, { on: boolean; from: string; to: 
 export interface PtListing { title: string; rules: string; hidden: boolean; updated_at: string }
 export interface PtPost { text: string; time: string; zone: string; open: boolean; created_at: string }
 
-export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents" | "talents_other" | "activities_other" | "areas" | "no_area" | "slip_check" | "invite" | "kyc_status" | "kyc_reason" | "kyc_submitted_at" | "bank_book_path"> & { attendance?: Record<string, boolean>; photos?: string[]; card?: ProfileCard | null; form_done?: number[]; tier?: "top" | "silver"; pt_settings?: PtSettings | null; post?: PtPost | null; listing?: PtListing | null; work?: PtWork | null; listed?: boolean; delete_requested_at?: string | null; bank_consents?: { terms: boolean; pdpa: boolean; profile: boolean; at: string } | null; /** ตำแหน่งรูปในกรอบ (object-position "x% y%") ต่อ path รูป */ photo_pos?: Record<string, string> | null; /** ย่านที่ Part-Time ตั้งเองให้แสดงบนแผนที่ (ปัดเป็นช่อง ~1 กม. แล้ว ไม่ใช่ตำแหน่งจริง) */ geo?: PtGeo | null; /** แอดมินที่ออกลิงก์เข้าโปรไฟล์ล่าสุด (คนนี้อนุมัติ KYC ผู้สมัครคนนี้ไม่ได้) */ link_by?: { email: string; at: string } | null; /** โทเคนเข้าโปรไฟล์ที่ออกก่อนเวลานี้ใช้ไม่ได้ (ออกจากระบบทุกเครื่อง / แอดมินยกเลิกลิงก์) */ tokens_after?: string | null; /** เปลี่ยนบัญชีรับเงินหลังอนุมัติแล้ว — รอแอดมินตรวจบัญชีใหม่ (ถอนเงินไม่ได้จนตรวจ) · prev = บัญชีเดิม */ bank_review?: { at: string; prev: { bank: string; bank_account: string; bank_account_name: string; bank_book_path: string | null } } | null; /** เวลาที่แก้รายการที่ทีมงานตีกลับครบทุกรายการล่าสุด (หน้า /join/rejected แยก "ส่งแก้ไขครบแล้ว" กับ "ไม่มีรายการต้องแก้") */ fixes_done_at?: string | null; /** แอดมินทุกคนที่เคยออกลิงก์ให้ผู้สมัครคนนี้ (กันอนุมัติ KYC เอง) */ link_by_all?: { email: string; at: string }[] | null; /** เหตุผลล่าสุดที่ไม่อนุมัติสลิปค่าสมัคร */ slip_reject?: { reason: string; by: string; at: string } | null };
+export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents" | "talents_other" | "activities_other" | "areas" | "no_area" | "slip_check" | "invite" | "kyc_status" | "kyc_reason" | "kyc_submitted_at" | "bank_book_path"> & { attendance?: Record<string, boolean>; photos?: string[]; card?: ProfileCard | null; form_done?: number[]; tier?: "top" | "silver"; pt_settings?: PtSettings | null; post?: PtPost | null; listing?: PtListing | null; work?: PtWork | null; listed?: boolean; delete_requested_at?: string | null; bank_consents?: { terms: boolean; pdpa: boolean; profile: boolean; at: string } | null; /** ตำแหน่งรูปในกรอบ (object-position "x% y%") ต่อ path รูป */ photo_pos?: Record<string, string> | null; /** ย่านที่ Part-Time ตั้งเองให้แสดงบนแผนที่ (ปัดเป็นช่อง ~1 กม. แล้ว ไม่ใช่ตำแหน่งจริง) */ geo?: PtGeo | null; /** แอดมินที่ออกลิงก์เข้าโปรไฟล์ล่าสุด (คนนี้อนุมัติ KYC ผู้สมัครคนนี้ไม่ได้) */ link_by?: { email: string; at: string } | null; /** โทเคนเข้าโปรไฟล์ที่ออกก่อนเวลานี้ใช้ไม่ได้ (ออกจากระบบทุกเครื่อง / แอดมินยกเลิกลิงก์) */ tokens_after?: string | null; /** เปลี่ยนบัญชีรับเงินหลังอนุมัติแล้ว — รอแอดมินตรวจบัญชีใหม่ (ถอนเงินไม่ได้จนตรวจ) · prev = บัญชีเดิม */ bank_review?: { at: string; prev: { bank: string; bank_account: string; bank_account_name: string; bank_book_path: string | null } } | null; /** เวลาที่แก้รายการที่ทีมงานตีกลับครบทุกรายการล่าสุด (หน้า /join/rejected แยก "ส่งแก้ไขครบแล้ว" กับ "ไม่มีรายการต้องแก้") */ fixes_done_at?: string | null; /** แอดมินทุกคนที่เคยออกลิงก์ให้ผู้สมัครคนนี้ (กันอนุมัติ KYC เอง) */ link_by_all?: { email: string; at: string }[] | null; /** เหตุผลล่าสุดที่ไม่อนุมัติสลิปค่าสมัคร */ slip_reject?: { reason: string; by: string; at: string } | null; /** รหัสผ่าน Part-Time (scrypt "salt:hash") — อ่านผ่าน getPwHash เท่านั้น ไม่ส่งออกจาก store */ pw_hash?: string | null; /** เวลาตั้งรหัสผ่านล่าสุด */ pw_at?: string | null };
 export type PtGeo = { lat: number; lng: number; label: string; src: "gps" | "pin"; at: string };
 
 /** รวมคอลัมน์ 0003 กับ docs.extra — คอลัมน์จริงมาก่อน */
@@ -150,6 +150,7 @@ export function extraOf(a: Applicant): Extra {
     geo: x.geo ?? null,
     link_by: x.link_by ?? null,
     tokens_after: x.tokens_after ?? null,
+    pw_at: x.pw_at ?? null,
     bank_review: x.bank_review ?? null,
     fixes_done_at: x.fixes_done_at ?? null,
     link_by_all: x.link_by_all ?? null,
@@ -166,6 +167,32 @@ export function extraOf(a: Applicant): Extra {
 export const fullName = (a: Pick<Applicant, "title" | "first_name" | "last_name">) => `${a.title}${a.first_name} ${a.last_name}`;
 
 export const isDemo = !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// แฮชรหัสผ่านไม่ออกจาก store (หน้าแอดมิน/API คืน row ทั้งก้อน) — ตัด docs.extra.pw_hash ทิ้งทุกครั้งที่คืนแถว
+function noPw1(r: Applicant): Applicant {
+  const ex = r?.docs?.extra as (Extra & { pw_hash?: unknown }) | undefined;
+  if (!ex || !("pw_hash" in ex)) return r;
+  const { pw_hash: _h, ...rest } = ex; void _h;
+  return { ...r, docs: { ...r.docs, extra: rest as Extra } };
+}
+const noPw = (r: Applicant | null) => (r ? noPw1(r) : null);
+
+/** แฮชรหัสผ่าน Part-Time ของใบสมัคร (ไม่มี = null) */
+export async function getPwHash(id: string): Promise<string | null> {
+  if (isDemo) return (demo.rows.find((x) => x.id === id)?.docs?.extra?.pw_hash as string | undefined) ?? null;
+  const { data } = await db().from("applicants").select("docs").eq("id", id).maybeSingle();
+  return ((data as Pick<Applicant, "docs"> | null)?.docs?.extra?.pw_hash as string | undefined) ?? null;
+}
+
+/** ใบสมัครที่ใช้อีเมลนี้ (ตัวเล็ก) — ล่าสุดก่อน */
+export async function getByEmail(email: string): Promise<Applicant[]> {
+  const e = email.trim().toLowerCase();
+  if (!e) return [];
+  if (isDemo) return demo.rows.filter((r) => (r.email ?? "").toLowerCase() === e).reverse().map(noPw1);
+  const { data, error } = await db().from("applicants").select("*").ilike("email", e.replace(/[\%_]/g, (c) => "\\" + c)).order("created_at", { ascending: false }).limit(10);
+  if (error) throw error;
+  return ((data as Applicant[]) ?? []).map(noPw1);
+}
 
 let sb: SupabaseClient | null = null;
 function db() {
@@ -233,26 +260,34 @@ export async function createApplicant(input: ApplicantInput, files: Partial<Reco
 }
 
 export async function getByMb(mb: string): Promise<Applicant | null> {
-  if (isDemo) return demo.rows.find((r) => r.mb_code === mb) ?? null;
+  if (isDemo) return noPw(demo.rows.find((r) => r.mb_code === mb) ?? null);
   const { data } = await db().from("applicants").select("*").eq("mb_code", mb).maybeSingle();
-  return (data as Applicant) ?? null;
+  return noPw((data as Applicant) ?? null);
+}
+
+/** หาใบสมัครจากเบอร์ (ตัวเลขล้วน) — ใบล่าสุดก่อน (ใช้ขอลิงก์เข้าโปรไฟล์ทางอีเมล) */
+export async function getByTel(tel: string): Promise<Applicant[]> {
+  if (isDemo) return demo.rows.filter((r) => r.tel === tel).reverse().map(noPw1);
+  const { data, error } = await db().from("applicants").select("*").eq("tel", tel).order("created_at", { ascending: false }).limit(5);
+  if (error) throw error;
+  return ((data as Applicant[]) ?? []).map(noPw1);
 }
 
 export async function listApplicants(status?: ApplicantStatus): Promise<Applicant[]> {
-  if (isDemo) return [...demo.rows].filter((r) => !status || r.status === status).reverse();
+  if (isDemo) return [...demo.rows].filter((r) => !status || r.status === status).reverse().map(noPw1);
   let q = db().from("applicants").select("*").order("created_at", { ascending: false });
   if (status) q = q.eq("status", status);
   const { data, error } = await q;
   if (error) throw error;
-  return data as Applicant[];
+  return (data as Applicant[]).map(noPw1);
 }
 
 /** ใบสมัครตาม id (ใช้ในหลังบ้าน) */
 export async function getById(id: string): Promise<Applicant | null> {
-  if (isDemo) return demo.rows.find((x) => x.id === id) ?? null;
+  if (isDemo) return noPw(demo.rows.find((x) => x.id === id) ?? null);
   const { data, error } = await db().from("applicants").select("*").eq("id", id).maybeSingle();
   if (error) throw error;
-  return (data as Applicant) ?? null;
+  return noPw((data as Applicant) ?? null);
 }
 
 export async function updateApplicant(id: string, patch: Partial<Pick<Applicant, "status" | "contract_accepted_at" | "sheet_synced">>) {
@@ -263,7 +298,7 @@ export async function updateApplicant(id: string, patch: Partial<Pick<Applicant,
   }
   const { data, error } = await db().from("applicants").update(patch).eq("id", id).select().single();
   if (error) throw error;
-  return data as Applicant;
+  return noPw1(data as Applicant);
 }
 
 /** ไฟล์เอกสาร/สลิป สำหรับแอดมินเท่านั้น */
@@ -281,24 +316,24 @@ export async function updateExtra(id: string, patch: Pick<Extra, "cohort" | "lin
     if (!r) return null;
     Object.assign(r, patch);
     r.docs = { ...r.docs, extra: { ...r.docs.extra, ...patch } };
-    return r;
+    return noPw1(r);
   }
   const { data: cur, error: e1 } = await db().from("applicants").select("docs").eq("id", id).single();
   if (e1) throw e1;
   const docs = { ...(cur?.docs ?? {}), extra: { ...(cur?.docs?.extra ?? {}), ...patch } };
   const withCols = await db().from("applicants").update({ ...patch, docs }).eq("id", id).select().single();
-  if (!withCols.error) return withCols.data as Applicant;
+  if (!withCols.error) return noPw1(withCols.data as Applicant);
   // คอลัมน์ cohort/line_joined ยังไม่มี (ยังไม่รัน 0003) → เขียนเฉพาะ docs
   const { data, error } = await db().from("applicants").update({ docs }).eq("id", id).select().single();
   if (error) throw error;
-  return data as Applicant;
+  return noPw1(data as Applicant);
 }
 
 // ── KYC / บัญชีรับเงิน / เช็กชื่ออบรม (migration join/0006 — ไม่มีคอลัมน์ก็เก็บใน docs.extra) ──
 
 const KYC_EXTRA_KEYS = ["kyc_status", "kyc_reason", "kyc_submitted_at", "bank_book_path"];
 /** เก็บใน docs.extra อย่างเดียว (ไม่มีคอลัมน์) */
-const EXTRA_ONLY_KEYS = ["blocked_customers", "link_by_all", "slip_reject", "fixes_done_at", "bank_review", "tokens_after", "link_by", "geo", "photo_pos", "slip_check", "pt_settings", "post", "listing", "work", "listed", "delete_requested_at", "tier", "bank_consents", "areas", "no_area", "availability", "massage_cert", "ack_hours", "ack_no_refuse", "photos", "card", "form_done"];
+const EXTRA_ONLY_KEYS = ["pw_hash", "pw_at", "blocked_customers", "link_by_all", "slip_reject", "fixes_done_at", "bank_review", "tokens_after", "link_by", "geo", "photo_pos", "slip_check", "pt_settings", "post", "listing", "work", "listed", "delete_requested_at", "tier", "bank_consents", "areas", "no_area", "availability", "massage_cert", "ack_hours", "ack_no_refuse", "photos", "card", "form_done"];
 
 /** เขียนคอลัมน์ + docs (path ไฟล์ และ extra สำรอง) — คอลัมน์ 0006 ยังไม่มีก็เขียนเฉพาะคอลัมน์เดิม + docs */
 async function patchApplicant(id: string, allCols: Record<string, unknown>, docPaths: Partial<Record<DocKind, string>> = {}): Promise<Applicant | null> {
@@ -309,17 +344,17 @@ async function patchApplicant(id: string, allCols: Record<string, unknown>, docP
     if (!r) return null;
     Object.assign(r, cols);
     r.docs = { ...r.docs, ...docPaths, extra: { ...r.docs.extra, ...extraPatch } };
-    return r;
+    return noPw1(r);
   }
   const { data: cur, error: e1 } = await db().from("applicants").select("docs").eq("id", id).single();
   if (e1) throw e1;
   const docs = { ...(cur?.docs ?? {}), ...docPaths, extra: { ...(cur?.docs?.extra ?? {}), ...extraPatch } };
   const withCols = await db().from("applicants").update({ ...cols, docs }).eq("id", id).select().single();
-  if (!withCols.error) return withCols.data as Applicant;
+  if (!withCols.error) return noPw1(withCols.data as Applicant);
   const base = Object.fromEntries(Object.entries(cols).filter(([k]) => !KYC_EXTRA_KEYS.includes(k)));
   const { data, error } = await db().from("applicants").update({ ...base, docs }).eq("id", id).select().single();
   if (error) throw error;
-  return data as Applicant;
+  return noPw1(data as Applicant);
 }
 
 async function putKycFile(id: string, kind: DocKind | "profile", f: File) {

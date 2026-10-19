@@ -36,6 +36,7 @@ export function Forbidden() {
       <div className="px-4 pt-24 text-center flex flex-col items-center gap-3">
         <h1 className="text-2xl font-semibold">ลิงก์หมดอายุหรือไม่มีสิทธิ์</h1>
         <p className="text-sm font-light" style={{ color: C.mut }}>กรุณาเปิดจากลิงก์ที่ได้รับหลังสมัคร หรือติดต่อแอดมินทาง LINE</p>
+        <a href="/join/me" className="min-h-12 px-5 rounded-full grid place-items-center font-semibold bg-[#e8c472] text-[#1b130b] hover:text-[#1b130b]">ขอลิงก์ใหม่ทางอีเมล</a>
       </div>
     </Page>
   );

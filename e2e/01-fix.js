@@ -21,7 +21,7 @@ const txt = async (p) => (await (await req(p)).text()).replace(/<[^>]+>/g, ' ').
   const tel = '09' + String(Date.now()).slice(-8);
   const s = await (await req('/api/otp/send', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ phone: tel }) })).json();
   await req('/api/otp/verify', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ phone: tel, code: s.devCode }) });
-  const j = await (await req('/api/join/register', { method: 'POST', body: form({ package: 'A', first_name: 'แก้', last_name: 'ทดสอบ', nickname: 'ตีกลับ', tel, accept_terms: 'true', consent_pdpa: 'true' }, { slip: F('s.jpg') }) })).json();
+  const j = await (await req('/api/join/register', { method: 'POST', body: form({ package: 'A', first_name: 'แก้', last_name: 'ทดสอบ', nickname: 'ตีกลับ', tel, email: 'pt' + tel + '@test.local', password: 'test-pass-1234', accept_terms: 'true', consent_pdpa: 'true' }, { slip: F('s.jpg') }) })).json();
   const mb = j.mb_code; ok('register', !!mb, mb);
   await req('/api/join/profile', { method: 'POST', body: form({ mb, step: '1', first_name: 'แก้', last_name: 'ทดสอบ', nickname: 'ตีกลับ', birthdate: '1999-03-03', line_id: 'x', address: 'อโศก', areas: ['กรุงเทพฯ › วัฒนา'] }, { photo: F('a.jpg'), other_doc: F('b.jpg') }) });
   await req('/api/join/profile', { method: 'POST', body: form({ mb, step: '2', hours_band: '5–6 ชม.', ack_hours: 'true', ack_no_refuse: 'true', week_days: ['ศ'], periods: ['กลางคืน'] }) });

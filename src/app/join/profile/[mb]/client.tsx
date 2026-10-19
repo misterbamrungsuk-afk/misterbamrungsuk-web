@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import type { ProfileCard } from "@/lib/join/store";
 import { CERT_MSG, GATE_MSG, GATE_SHORT, MASSAGE_SKILL, isMassage } from "@/lib/join/pt-ui";
 import type { Tier } from "@/lib/join/earnings-shared";
-import { EstimateCard, PromoCard } from "./hub-cards";
+import { EstimateCard, PromoCard, SaveLinkCard } from "./hub-cards";
 
 export type HubData = {
   mb: string; t: string; nickname: string; fullName: string; statusLine: string; track: string; trackShort: string;
@@ -161,6 +161,7 @@ export function ProfileHub({ d }: { d: HubData }) {
 
             <EstimateCard d={d} q={q} />
             <PromoCard d={d} q={q} onBoost={() => { setPromoOpen(true); setTimeout(() => document.getElementById("pt-wallet")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50); }} />
+            <SaveLinkCard d={d} />
 
             {delAt && (
               <div className="flex flex-col gap-2 rounded-2xl" style={{ padding: "12px 14px", background: "rgba(255,138,154,0.08)", boxShadow: "inset 0 0 0 1px rgba(255,138,154,.35)" }}>

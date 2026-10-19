@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { FileTypeError } from "@/lib/file-guard";
 import { limited as dbLimited } from "@/lib/rate-limit";
 import { CLOSE_AT, PACKAGES, type PackageKey } from "@/lib/join/config";
-import { createApplicant, updateApplicant, type DocKind } from "@/lib/join/store";
+import { createApplicant, getByEmail, saveProfile, updateApplicant, type DocKind } from "@/lib/join/store";
 import { consumeInvite, findInvite } from "@/lib/join/invites";
 import { appendToSheet } from "@/lib/join/sheets";
 import { applicantRegistered, sendAll } from "@/lib/email";
@@ -12,6 +12,9 @@ import { cookies } from "next/headers";
 import { PHONE_COOKIE, normalizePhone, otpRequired, readPhoneToken } from "@/lib/otp";
 import { verifySlip } from "@/lib/slip2go";
 import { RESUME_COOKIE, RESUME_TTL_MS, signResume } from "@/lib/join/resume";
+import { EMAIL_ERROR, cleanEmail, linkable } from "@/lib/join/link-mail";
+import { hashPw, pwProblem } from "@/lib/join/pt-password";
+import { siteUrl } from "@/lib/site-url";
 
 export const runtime = "nodejs";
 
@@ -58,6 +61,15 @@ export async function POST(req: Request) {
   if (!(pkg in PACKAGES)) errors.push("package");
   for (const k of ["first_name", "last_name", "nickname"]) if (!s(k)) errors.push(k);
   if (!/^0\d{9}$/.test(tel)) errors.push("tel");
+  // อีเมลบังคับ — ใช้ส่งลิงก์เข้าโปรไฟล์ (LINE ↔ Chrome คุกกี้แยกกัน · ปิด OTP อยู่) และใบเสร็จ
+  const email = cleanEmail(form.get("email"));
+  if (!email) return NextResponse.json({ ok: false, error: EMAIL_ERROR, fields: ["email"] }, { status: 400 });
+  // รหัสผ่าน Part-Time (เข้าสู่ระบบที่ /join/me) — ลืมรหัส = ขอลิงก์ทางอีเมล
+  const password = String(form.get("password") ?? "");
+  const pwErr = pwProblem(password);
+  if (pwErr) return NextResponse.json({ ok: false, error: pwErr, fields: ["password"] }, { status: 400 });
+  // อีเมลซ้ำกับใบสมัครที่ยังใช้งานอยู่ → ให้เข้าสู่ระบบแทน (ตรวจก่อนส่งสลิปไป Slip2Go)
+  if ((await getByEmail(email)).some(linkable)) return NextResponse.json({ ok: false, error: "อีเมลนี้สมัครไว้แล้ว · เข้าสู่ระบบ Part-Time", fields: ["email"], login: "/join/me" }, { status: 409 });
   if (s("accept_terms") !== "true") errors.push("accept_terms");
   if (s("consent_pdpa") !== "true") errors.push("consent_pdpa");
 
@@ -98,7 +110,7 @@ export async function POST(req: Request) {
         title: "นาย", first_name: s("first_name"), last_name: s("last_name"), nickname: s("nickname"),
         birthdate: null, weight: 0, height: 0, nationality: "ไทย", ethnicity: "ไทย",
         religion: "", education: "", marital: "", start_date: null,
-        tel, line_id: "", email: "", address: "", zipcode: "",
+        tel, line_id: "", email, address: "", zipcode: "",
         bank: "", bank_account: "", bank_account_name: "",
         experience: "", skills: [], intro: "",
         consent_marketing: false,
@@ -114,14 +126,19 @@ export async function POST(req: Request) {
       },
       files,
     );
+    // เก็บเฉพาะแฮช (docs.extra.pw_hash · store ไม่ส่งออก)
+    await saveProfile(row.id, { pw_hash: hashPw(password), pw_at: new Date().toISOString() });
     if (invite) await consumeInvite(invite).catch((e) => console.error("consume invite failed", e));
     // sync ชีตแบบไม่ให้ล้มทั้งคำขอ — ถ้าไม่สำเร็จ แอดมินกด sync ซ้ำได้
     // อีเมลแจ้งผู้สมัคร + แอดมิน (ไม่รอ ไม่ทำให้คำขอล้ม)
-    void sendAll(applicantRegistered({ mb_code: row.mb_code, first_name: row.first_name, last_name: row.last_name, email: row.email, tel: row.tel, package: PACKAGES[pkg].name ?? pkg, amount: row.amount }));
+    // โทเคนเดียวกับคุกกี้ — ส่งไปอีเมล + คืนให้ป๊อปอัปหลังจ่าย (คัดลอก / ส่งเข้า LINE ตัวเอง)
+    const token = signResume(row.mb_code);
+    const link = `${siteUrl(req)}/join/go?t=${encodeURIComponent(token)}`;
+    void sendAll(applicantRegistered({ mb_code: row.mb_code, first_name: row.first_name, last_name: row.last_name, nickname: row.nickname, email: row.email || email, tel: row.tel, package: PACKAGES[pkg].name ?? pkg, amount: row.amount, link }));
     if (await appendToSheet(row)) await updateApplicant(row.id, { sheet_synced: true });
-    const res = NextResponse.json({ ok: true, mb_code: row.mb_code });
+    const res = NextResponse.json({ ok: true, mb_code: row.mb_code, link });
     res.cookies.delete(PHONE_COOKIE);
-    res.cookies.set(RESUME_COOKIE, signResume(row.mb_code), { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: RESUME_TTL_MS / 1000 });
+    res.cookies.set(RESUME_COOKIE, token, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: RESUME_TTL_MS / 1000 });
     return res;
   } catch (e) {
     console.error("register failed", e);

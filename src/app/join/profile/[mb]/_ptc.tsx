@@ -253,7 +253,7 @@ export function AccountLinks({ mb, t, reviewsHref, quickHref, strikesHref, delet
       {askAll && (
         <div role="dialog" aria-label="ยืนยันออกจากระบบทุกเครื่อง" className="rounded-[20px] bg-[#211a18] flex flex-col gap-2.5" style={{ padding: 16 }}>
           <div className="text-[16px] font-semibold">ออกจากระบบทุกเครื่อง?</div>
-          <p className="m-0 text-[13.5px] font-light text-[#d9c9b4]">ลิงก์เข้าโปรไฟล์และทุกเครื่องที่เคยเข้า (รวมเครื่องนี้) จะใช้ไม่ได้ทันที · ต้องขอลิงก์ใหม่จากทีมงานทาง LINE จึงจะเข้าได้อีก</p>
+          <p className="m-0 text-[13.5px] font-light text-[#d9c9b4]">ลิงก์เข้าโปรไฟล์และทุกเครื่องที่เคยเข้า (รวมเครื่องนี้) จะใช้ไม่ได้ทันที · เข้าใหม่ได้ด้วยอีเมลและรหัสผ่านที่หน้า Part-Time เข้าสู่ระบบ</p>
           <div className="grid grid-cols-2 gap-2">
             <button type="button" onClick={() => setAskAll(false)} className="h-11 rounded-xl text-[14px] font-semibold" style={{ background: "rgba(243,234,217,0.1)" }}>ยกเลิก</button>
             <button type="button" onClick={() => logout(true)} disabled={busy} className="h-11 rounded-xl text-[14px] font-semibold text-white disabled:opacity-50" style={{ background: "#a3283c" }}>{busy ? "กำลังออก…" : "ยืนยันออกทุกเครื่อง"}</button>

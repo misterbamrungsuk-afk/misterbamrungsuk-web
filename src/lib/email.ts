@@ -7,11 +7,19 @@ export type Mail = { to: string | string[]; subject: string; html: string };
 
 const esc = (v: unknown) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
+type Sent = { to: string[]; subject: string; html: string; at: number };
+const outboxG = globalThis as unknown as { __mbOutbox?: Sent[] };
+/** กล่องจดหมายจำลอง: เปิดเฉพาะไม่มี RESEND_API_KEY และไม่ได้รันบน Vercel (ชุดทดสอบอ่านผ่าน /api/admin/demo-outbox) */
+export const demoOutboxOn = () => !process.env.RESEND_API_KEY && !process.env.VERCEL_ENV && !process.env.VERCEL;
+export const demoOutbox = (): Sent[] => (demoOutboxOn() ? outboxG.__mbOutbox ?? [] : []);
+
 export async function sendEmail(m: Mail): Promise<boolean> {
   const to = (Array.isArray(m.to) ? m.to : [m.to]).filter(Boolean);
   if (!to.length) return false;
   if (!emailEnabled()) {
-    console.info(`[email:noop] to=${to.join(",")} subject=${m.subject}`);
+    // ไม่ log อีเมลผู้รับ (PII) — หัวเรื่องพอ
+    console.info(`[email:noop] subject=${m.subject}`);
+    if (demoOutboxOn()) { const box = (outboxG.__mbOutbox ??= []); box.push({ to, subject: m.subject, html: m.html, at: Date.now() }); if (box.length > 100) box.splice(0, box.length - 100); }
     return false;
   }
   try {
@@ -37,11 +45,35 @@ ${note ? `<p style="font-size:13px;color:#6b6152;margin-top:16px">${esc(note)}</
 <p style="font-size:11px;color:#9a8f7c;margin-top:24px">อีเมลอัตโนมัติ · กรุณาอย่าตอบกลับ</p></div>`;
 }
 
-export type ApplicantMail = { mb_code: string; first_name: string; last_name: string; nickname?: string; email: string; tel?: string; package?: string; amount?: number };
+export type ApplicantMail = { mb_code: string; first_name: string; last_name: string; nickname?: string; email: string; tel?: string; package?: string; amount?: number; /** ลิงก์เข้าโปรไฟล์ (/join/go?t=…) */ link?: string };
+
+/** อีเมลลิงก์เข้าโปรไฟล์ Part-Time — ปุ่มเปิด + วิธีเก็บลิงก์ · rows = รายละเอียดการชำระ (ตอนสมัคร) */
+export function profileLinkMail(a: { to: string; mb_code: string; nickname?: string; link: string; rows?: [string, unknown][]; note?: string }): Mail {
+  const trs = (a.rows ?? []).map(([k, v]) => `<tr><td style="padding:6px 12px 6px 0;color:#6b6152">${esc(k)}</td><td style="padding:6px 0;font-weight:600">${esc(v)}</td></tr>`).join("");
+  return {
+    to: a.to, subject: `ลิงก์เข้าโปรไฟล์ Part-Time ของคุณ · ${a.mb_code}`,
+    html: `<div style="font-family:'Noto Sans Thai',Tahoma,sans-serif;max-width:520px;margin:auto;padding:24px;border:1px solid #e6c97a;border-radius:16px;color:#1a1206">
+<p style="margin:0;letter-spacing:.2em;font-size:12px;color:#8f5e00">MISTER BAMRUNGSUK</p>
+<h2 style="margin:6px 0 12px">ลิงก์เข้าโปรไฟล์ Part-Time${a.nickname ? ` ของคุณ${esc(a.nickname)}` : ""}</h2>
+${a.note ? `<p style="font-size:14px;line-height:1.6;margin:0 0 12px">${esc(a.note)}</p>` : ""}
+${trs ? `<table style="font-size:14px;border-collapse:collapse;margin-bottom:12px">${trs}</table>` : ""}
+<p style="margin:16px 0"><a href="${esc(a.link)}" style="display:inline-block;background:#e8c472;color:#1b130b;border-radius:10px;padding:12px 20px;font-weight:600;text-decoration:none">เข้าโปรไฟล์ของฉัน</a></p>
+<ul style="font-size:13.5px;line-height:1.7;color:#4a3f33;padding-left:18px;margin:0">
+<li>กดปุ่มแล้วเปิดใน Chrome หรือ Safari ได้เลย เครื่องนั้นจะจำไว้ 30 วัน</li>
+<li>เก็บอีเมลนี้ไว้ ใช้เข้าโปรไฟล์จากเครื่องอื่นหรือจากแอป LINE</li>
+<li>ลิงก์ใช้ได้ 30 วัน · ขอลิงก์ใหม่ได้ที่หน้า "โปรไฟล์ Part-Time" บนเว็บ</li>
+<li>อย่าส่งลิงก์นี้ให้คนอื่น เพราะเปิดแล้วเข้าโปรไฟล์ของคุณได้</li>
+</ul>
+<p style="font-size:12px;color:#6b6152;word-break:break-all;margin-top:14px">ถ้ากดปุ่มไม่ได้ คัดลอกลิงก์นี้ไปเปิด: ${esc(a.link)}</p>
+<p style="font-size:11px;color:#9a8f7c;margin-top:20px">อีเมลอัตโนมัติ · กรุณาอย่าตอบกลับ · ถ้าคุณไม่ได้ขอลิงก์นี้ ไม่ต้องทำอะไร</p></div>`,
+  };
+}
 
 export function applicantRegistered(a: ApplicantMail): Mail[] {
   const rows: [string, unknown][] = [["รหัสผู้สมัคร", a.mb_code], ["ชื่อ", `${a.first_name} ${a.last_name}`], ["รูปแบบที่สมัคร", a.package ?? "-"], ["ยอดชำระ", a.amount != null ? `฿${a.amount.toLocaleString("th-TH")}` : "-"]];
-  const out: Mail[] = [{ to: a.email, subject: `ได้รับใบสมัครแล้ว · ${a.mb_code}`, html: layout("ได้รับใบสมัครของคุณแล้ว", rows, "ทีมงานจะตรวจสลิปและติดต่อกลับภายใน 1–2 วันทำการ") }];
+  const out: Mail[] = [a.link
+    ? profileLinkMail({ to: a.email, mb_code: a.mb_code, nickname: a.nickname, link: a.link, rows, note: "ได้รับสลิปแล้ว ทีมงานตรวจภายใน 2 ชม. (09:00–22:00) ระหว่างนี้กรอกรายละเอียดในโปรไฟล์ต่อได้เลย" })
+    : { to: a.email, subject: `ได้รับใบสมัครแล้ว · ${a.mb_code}`, html: layout("ได้รับใบสมัครของคุณแล้ว", rows, "ทีมงานจะตรวจสลิปและติดต่อกลับภายใน 1–2 วันทำการ") }];
   const admin = process.env.ADMIN_NOTIFY_EMAIL;
   if (admin) out.push({ to: admin.split(",").map((x) => x.trim()), subject: `[ผู้สมัครใหม่] ${a.mb_code} ${a.first_name}`, html: layout("มีผู้สมัครใหม่", [...rows, ["อีเมล", a.email], ["โทร", a.tel ?? "-"]], "ตรวจสลิปได้ที่ /admin/applicants") });
   return out;

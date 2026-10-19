@@ -6,6 +6,7 @@ import Link from "next/link";
 import { pctFor } from "@/lib/join/earnings-shared";
 import { GATE_MSG, GATE_SHORT } from "@/lib/join/pt-ui";
 import type { HubData } from "./client";
+import { SaveLink } from "@/components/save-link";
 
 const GOLD = "#e8c472";
 const baht = (n: number) => "฿" + Math.round(n).toLocaleString("en-US");
@@ -67,6 +68,15 @@ export function PromoCard({ d, q, onBoost }: { d: HubData; q: string; onBoost: (
         ? <Link href={`/join/profile/${d.mb}/sales${q}`} className={row + " min-h-12"} style={st}>{memberInner}</Link>
         : <div className={row} style={st}>{memberInner}</div>)}
       {!d.active && <p className="m-0 text-[12.5px] font-light text-[#f6c38e] leading-[1.5]">{GATE_SHORT} · {GATE_MSG}</p>}
+    </section>
+  );
+}
+
+/** บันทึกลิงก์เข้าโปรไฟล์ — LINE กับ Chrome/Safari คุกกี้แยกกัน · เก็บลิงก์ไว้เข้าจากเครื่องอื่นได้เอง ไม่ต้องทักแอดมิน */
+export function SaveLinkCard({ d }: { d: HubData }) {
+  return (
+    <section aria-label="บันทึกลิงก์เข้าโปรไฟล์" className="rounded-[18px] bg-[#211a18]" style={{ padding: 16 }}>
+      <SaveLink mb={d.mb} t={d.t} />
     </section>
   );
 }

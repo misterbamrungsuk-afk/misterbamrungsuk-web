@@ -13,6 +13,7 @@ import { promptPayPayload } from "@/lib/join/promptpay";
 import { Turnstile } from "@/components/turnstile";
 import { OtpStep } from "@/components/otp-step";
 import { BrandHeader } from "@/components/mb/ui";
+import { SaveLink } from "@/components/save-link";
 
 const GOLD = "#e8c472";
 const QR_TTL = 900;
@@ -22,13 +23,14 @@ const box: CSSProperties = { padding: 20, borderRadius: 16, minWidth: 0, overflo
 const cta = "min-h-14 w-full rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[17px] grid place-items-center text-center px-4";
 const ghost = "min-h-12 w-full rounded-[14px] text-[#e8c472] text-[15px] font-semibold grid place-items-center";
 const inCls = "w-full min-h-12 rounded-xl bg-[#211a18] text-[#f3ead9] px-[14px] text-[15px] placeholder:text-[#b5a596] outline-none border border-transparent focus:border-[#e8c472]";
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
 const baht = (n: number) => "฿" + n.toLocaleString("en-US");
 
 function PayInner() {
   const router = useRouter();
   const params = useSearchParams();
   const [k, setK] = useState<PackageKey | null>(null);
-  const [who, setWho] = useState({ first_name: "", last_name: "", nickname: "", tel: "" });
+  const [who, setWho] = useState({ first_name: "", last_name: "", nickname: "", tel: "", email: "" });
   const [phoneOk, setPhoneOk] = useState(false);
   const [otpOff, setOtpOff] = useState(false);
   const [qr, setQr] = useState("");
@@ -41,6 +43,10 @@ function PayInner() {
   const [ts, setTs] = useState("");
   const [tsKey, setTsKey] = useState(0);
   const [done, setDone] = useState("");
+  const [link, setLink] = useState("");
+  const [pw, setPw] = useState({ a: "", b: "" });
+  const [showPw, setShowPw] = useState(false);
+  const [loginHint, setLoginHint] = useState(false);
   // ลิงก์เชิญ: null = สมัครปกติ · "…" = รหัสที่ตรวจแล้วใช้ได้ · inviteErr = ลิงก์ใช้ไม่ได้
   const [invite, setInvite] = useState<string | null>(null);
   const [inviteErr, setInviteErr] = useState("");
@@ -97,6 +103,9 @@ function PayInner() {
   const submit = async () => {
     if (!who.first_name.trim() || !who.last_name.trim() || !who.nickname.trim()) return setErr("กรอกชื่อ นามสกุล และชื่อเล่นของผู้สมัคร");
     if (!/^0\d{9}$/.test(who.tel)) return setErr("เบอร์โทร 10 หลัก ขึ้นต้นด้วย 0");
+    if (!EMAIL_RE.test(who.email.trim())) return setErr("กรอกอีเมลให้ถูกต้อง เช่น name@gmail.com · ใช้รับลิงก์เข้าโปรไฟล์และใบเสร็จ");
+    if (pw.a.length < 8) return setErr("ตั้งรหัสผ่านอย่างน้อย 8 ตัวอักษร");
+    if (pw.a !== pw.b) return setErr("ยืนยันรหัสผ่านไม่ตรงกัน · พิมพ์ให้เหมือนกันทั้ง 2 ช่อง");
     if (!phoneOk) return setErr("ยืนยันเบอร์โทรด้วยรหัส OTP ก่อน");
     if (!slip) return setErr("แนบสลิปการโอนก่อน");
     if (!agree) return setErr("ติ๊กยอมรับข้อกำหนดและยินยอมตาม PDPA ก่อนส่ง");
@@ -105,18 +114,21 @@ function PayInner() {
       const fd = new FormData();
       fd.append("package", k); fd.append("first_name", who.first_name.trim()); fd.append("last_name", who.last_name.trim());
       fd.append("nickname", who.nickname.trim()); fd.append("tel", who.tel);
+      fd.append("email", who.email.trim().toLowerCase()); fd.append("password", pw.a);
       fd.append("accept_terms", "true"); fd.append("consent_pdpa", "true"); fd.append("turnstile", ts);
       fd.append("slip", await dataUrlToFile(slip, "slip.jpg"));
       if (invite) fd.append("invite", invite);
       const res = await fetch("/api/join/register", { method: "POST", body: fd });
-      const data = (await res.json()) as { ok?: boolean; mb_code?: string; error?: string; fields?: string[]; needOtp?: boolean };
+      const data = (await res.json()) as { ok?: boolean; mb_code?: string; link?: string; error?: string; fields?: string[]; needOtp?: boolean; login?: string };
       if (!res.ok || !data.ok || !data.mb_code) {
         if (data.needOtp) setPhoneOk(false);
+        setLoginHint(!!data.login);
         if (data.fields?.includes("slip")) { setSlip(""); setSlipName(""); }
         setErr(data.error || "ส่งข้อมูลไม่สำเร็จ");
         throw null;
       }
       try { sessionStorage.removeItem(PKG_KEY); sessionStorage.removeItem(INV_KEY); } catch {}
+      setLink(data.link ?? "");
       setDone(data.mb_code);
     } catch (e) {
       if (e) setErr((e as Error).message || "ส่งข้อมูลไม่สำเร็จ");
@@ -131,7 +143,7 @@ function PayInner() {
   const perks = k === "A" ? ["อบรมบุคลิกภาพ มารยาท การดูแลลูกค้า"] : ["อบรมบุคลิกภาพ + มาตรฐานการนวด", "Uniform + Oil นวด 1 ชุด ฟรี"];
   const mm = String(Math.floor(sec / 60)).padStart(2, "0"), ss = String(sec % 60).padStart(2, "0");
   const expired = sec === 0;
-  const ready = !!slip && agree && phoneOk && !busy;
+  const ready = !!slip && agree && phoneOk && EMAIL_RE.test(who.email.trim()) && pw.a.length >= 8 && pw.a === pw.b && !busy;
 
   return (
     <div className="mb-v7 min-h-dvh relative" style={{ background: "#171211", color: "#f3ead9", fontSize: 15, lineHeight: 1.7 }}>
@@ -158,6 +170,19 @@ function PayInner() {
                 ? <input className={inCls} inputMode="tel" autoComplete="tel" placeholder="เบอร์มือถือ 08x-xxx-xxxx" aria-label="เบอร์โทรศัพท์" value={who.tel} onChange={(e) => setW("tel", e.target.value.replace(/\D/g, "").slice(0, 10))} />
                 : <OtpStep phone={who.tel} onPhone={(v) => { setW("tel", v.replace(/\D/g, "").slice(0, 10)); setPhoneOk(false); }} verified={phoneOk} onVerified={() => { setPhoneOk(true); setErr(""); }} inputCls={inCls} />}
               {phoneOk && !otpOff && <div className="text-[13px] text-[#7fd6a3]">✓ ยืนยันเบอร์แล้ว</div>}
+              <div className="flex flex-col gap-1">
+                <input className={inCls} type="email" inputMode="email" autoComplete="email" autoCapitalize="off" spellCheck={false} placeholder="อีเมล เช่น name@gmail.com" aria-label="อีเมล" aria-describedby="emailHelp" value={who.email} onChange={(e) => setW("email", e.target.value.replace(/\s/g, ""))} />
+                <div id="emailHelp" className="text-[12.5px] font-light text-[#d9c9b4]">ใช้รับลิงก์เข้าโปรไฟล์และใบเสร็จ · เปิดโปรไฟล์จากเครื่องอื่นได้</div>
+              </div>
+              <div className="flex flex-col gap-[10px]">
+                <div className="relative">
+                  <input className={inCls + " pr-[76px]"} type={showPw ? "text" : "password"} autoComplete="new-password" placeholder="ตั้งรหัสผ่าน (อย่างน้อย 8 ตัว)" aria-label="ตั้งรหัสผ่าน" value={pw.a} onChange={(e) => { setPw((x) => ({ ...x, a: e.target.value })); setErr(""); }} />
+                  <button type="button" onClick={() => setShowPw((v) => !v)} aria-pressed={showPw} className="absolute right-1 top-1/2 -translate-y-1/2 min-h-10 px-3 rounded-lg text-[13px] text-[#e8c472]">{showPw ? "ซ่อน" : "แสดง"}</button>
+                </div>
+                <input className={inCls} type={showPw ? "text" : "password"} autoComplete="new-password" placeholder="ยืนยันรหัสผ่านอีกครั้ง" aria-label="ยืนยันรหัสผ่าน" value={pw.b} onChange={(e) => { setPw((x) => ({ ...x, b: e.target.value })); setErr(""); }} />
+                {pw.b && pw.a !== pw.b && <div className="text-[12.5px] text-[#ff8a9a]">รหัสผ่านยังไม่ตรงกัน</div>}
+                <div className="text-[12.5px] font-light text-[#d9c9b4]">ใช้อีเมลกับรหัสผ่านนี้ เข้าสู่ระบบ Part-Time จากเครื่องไหนก็ได้</div>
+              </div>
             </div>
             <div className="flex flex-col bg-[#251d1b]" style={{ ...box, gap: 13 }}>
               {summary.map(([n, v]) => <div key={n} className="flex justify-between gap-4 min-w-0"><span className="whitespace-nowrap shrink-0">{n}</span><span className="text-right min-w-0">{v}</span></div>)}
@@ -192,22 +217,24 @@ function PayInner() {
             </div>
             <button type="button" role="checkbox" aria-checked={agree} onClick={() => setAgree(!agree)} className="flex gap-3 items-start text-left bg-transparent text-[14px] leading-[1.6] text-[#f3ead9] min-h-11 py-2">
               <span className="shrink-0 grid place-items-center rounded-md font-bold text-[13px] text-[#1b130b]" style={{ width: 22, height: 22, marginTop: 2, background: agree ? GOLD : "transparent", boxShadow: agree ? "none" : "inset 0 0 0 1.5px rgba(232,196,114,0.6)" }}>{agree ? "✓" : ""}</span>
-              <span>ยอมรับ<a href="/join/terms" target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} className="text-[#e8c472]">ข้อกำหนด</a> และยินยอมให้เก็บข้อมูลตาม<a href="/join/privacy" target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} className="text-[#e8c472]"> PDPA</a></span>
+              <span>ยอมรับ<a href="/join/terms" target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} className="text-[#e8c472]">ข้อกำหนด</a> และยินยอมให้เก็บข้อมูลตาม<a href="/join/privacy" target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} className="text-[#e8c472]"> PDPA</a> · ใช้อีเมลส่งลิงก์เข้าโปรไฟล์และใบเสร็จ</span>
             </button>
             <Turnstile key={tsKey} onToken={setTs} />
-            {err && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{err}</p>}
+            {err && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{err}{loginHint && <> · <Link href="/join/me" className="text-[#e8c472] underline">เข้าสู่ระบบ Part-Time</Link></>}</p>}
             <button type="button" onClick={submit} disabled={busy} aria-busy={busy} className={cta} style={{ opacity: ready ? 1 : 0.45 }}>{busy ? "กำลังส่งสลิปเพื่อตรวจสอบ…" : "ส่งสลิปเพื่อตรวจสอบ"}</button>
           </div>
         </div>
       </div>
 
       {done && (
-        <div role="dialog" aria-modal="true" aria-labelledby="paidT" className="fixed inset-0 z-50 flex justify-center items-center" style={{ background: "rgba(10,7,6,0.78)", padding: 20 }}>
-          <div className="w-full max-w-[400px] rounded-[20px] bg-[#1b2322] flex flex-col items-center gap-[14px] text-center" style={{ padding: "28px 20px 20px" }}>
+        <div role="dialog" aria-modal="true" aria-labelledby="paidT" className="fixed inset-0 z-50 flex justify-center items-center overflow-y-auto" style={{ background: "rgba(10,7,6,0.78)", padding: 20 }}>
+          <div className="w-full max-w-[400px] rounded-[20px] bg-[#1b2322] flex flex-col items-center gap-[14px] text-center my-auto" style={{ padding: "28px 20px 20px" }}>
             <div className="w-[72px] h-[72px] rounded-full bg-[#e8c472] text-[#1b130b] grid place-items-center"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg></div>
             <div id="paidT" className="font-semibold text-[22px] leading-[1.35] text-[#e8c472]">ได้รับข้อมูลแล้ว · รอทีมงานตรวจ</div>
             <p className="m-0 text-[15px] leading-[1.7]">ได้รับสลิปแล้ว ทีมงานตรวจภายใน 2 ชม. (09:00–22:00)<br />ระหว่างนี้ไปกรอกรายละเอียดในโปรไฟล์ได้เลย</p>
             <Link href={`/join/profile/${done}`} className={cta + " hover:text-[#1b130b]"}>ไปที่โปรไฟล์ของฉัน</Link>
+            <p className="m-0 text-[13.5px] leading-[1.6] text-[#e8c472]">ครั้งต่อไปเข้าที่ &quot;Part-Time เข้าสู่ระบบ&quot; ด้วยอีเมลและรหัสผ่านนี้</p>
+            <div className="w-full rounded-2xl" style={{ padding: 14, background: "rgba(243,234,217,0.05)" }}><SaveLink mb={done} link={link} email={who.email.trim().toLowerCase()} /></div>
           </div>
         </div>
       )}

@@ -77,7 +77,7 @@ export async function deleteCohort(key: string): Promise<void> {
   if (error) throw error;
 }
 
-/** ที่นั่งที่ถูกใช้จริงต่อกลุ่ม (ใช้ทั้งหน้า /join และหน้าแอดมิน ให้ตัวเลขตรงกัน)
+/** ที่นั่งที่ถูกใช้จริงต่อกลุ่ม (ใช้ทั้งหน้า /join และหน้าแอดมิน ให้ตัวเลขตรงกัน) · นับเฉพาะคนที่สลิป + KYC ผ่านแล้ว
  *  = ผู้สมัครที่ยัง active (รอตรวจสลิป/ผ่านแล้ว) ที่จัดเข้ากลุ่มนั้น + คนที่ยังไม่ถูกจัดกลุ่ม (เติมเข้ากลุ่ม "เปิดรับสมัคร" แรกที่ยังว่าง)
  *  ผู้สมัครในกลุ่มที่อบรมเสร็จแล้ว/ร่าง นับเฉพาะคนที่จัดเข้ากลุ่มนั้นแล้ว */
 export async function cohortTaken(): Promise<{ cohorts: Cohort[]; taken: Map<string, number> }> {
@@ -87,7 +87,8 @@ export async function cohortTaken(): Promise<{ cohorts: Cohort[]; taken: Map<str
   const taken = new Map<string, number>(cohorts.map((c) => [c.key, 0]));
   let unassigned = 0;
   for (const a of apps) {
-    if (a.status !== "pending_slip" && a.status !== "verified") continue;
+    // นับเข้าที่นั่งเมื่อแอดมินอนุมัติครบทั้งสลิปค่าสมัคร (verified) และ KYC (approved) — ทั้งสายจ่ายการันตีและสายคำเชิญ
+    if (a.status !== "verified" || extraOf(a).kyc_status !== "approved") continue;
     const k = extraOf(a).cohort;
     if (k && keys.has(k)) taken.set(k, (taken.get(k) ?? 0) + 1);
     else unassigned++;

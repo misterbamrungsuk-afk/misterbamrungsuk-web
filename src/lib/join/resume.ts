@@ -18,7 +18,7 @@ export function signResume(mb: string) {
 }
 
 /** เวลาออกโทเคน (โทเคนรุ่นเก่าไม่มี iat = คิดจาก exp − อายุ) */
-function iatOf(token: string | null | undefined): number {
+export function iatOf(token: string | null | undefined): number {
   try { const p = JSON.parse(Buffer.from(String(token).split(".")[0], "base64url").toString()) as { iat?: number; exp: number }; return p.iat ?? p.exp - RESUME_TTL_MS; } catch { return 0; }
 }
 
