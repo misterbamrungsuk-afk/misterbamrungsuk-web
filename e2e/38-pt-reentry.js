@@ -168,6 +168,31 @@ const setPw = (d, o) => d.req('/api/join/password', { method: 'POST', headers: J
   r = await Bdev.req('/join/profile/' + mb); h = await r.text(); ok('after logout profile blocked', h.includes('ไม่มีสิทธิ์'));
   r = await login(Bdev, email, PW3); ok('login after logout works', r.status === 200, String(r.status));
 
+  // ── สายคำเชิญ (ไม่จ่ายการันตี) — สมัครต้องมีอีเมล + รหัสผ่านเหมือนกัน แล้วเข้าสู่ระบบได้ ──
+  const exp = new Date(Date.now() + 7 * 86400e3).toISOString().slice(0, 10);
+  const inv = (await (await fetch(B + '/api/admin/invites', { method: 'POST', headers: ADM, body: JSON.stringify({ name: 'e2e invite reentry', limit: 2, expires: exp }) })).json()).data;
+  ok('admin creates invite', !!inv?.code, JSON.stringify(inv));
+  h = await (await fetch(B + '/join/i/' + inv.code)).text(); ok('invite page opens (no guarantee)', !/ลิงก์เชิญนี้/.test(h) && h.includes(inv.code));
+  const I = device();
+  const itel = '06' + String(Date.now()).slice(-8), iemail = `invite${itel}@test.local`, IPW = 'inv-' + itel;
+  const is = await (await I.req('/api/otp/send', { method: 'POST', headers: JSONH, body: JSON.stringify({ phone: itel }) })).json();
+  if (is.devCode) await I.req('/api/otp/verify', { method: 'POST', headers: JSONH, body: JSON.stringify({ phone: itel, code: is.devCode }) });
+  const ibase = { ...base, tel: itel, first_name: 'คำเชิญ', nickname: 'อินไวต์', invite: inv.code };
+  r = await I.req('/api/join/register', { method: 'POST', body: form({ ...ibase, password: '' , email: iemail }, { slip: F('s.jpg') }) });
+  ok('invite register without password → 400', r.status === 400, String(r.status));
+  r = await I.req('/api/join/register', { method: 'POST', body: form({ ...ibase, email: iemail, password: IPW }, { slip: F('s.jpg') }) }); j = await r.json();
+  ok('invite register with email + password', r.status === 200 && !!j.mb_code && /\/join\/go\?t=/.test(j.link || ''), r.status + ' ' + JSON.stringify(j));
+  const imb = j.mb_code;
+  const ilist = (await (await fetch(B + '/admin/applicants', { headers: ADM })).text()).replace(/\\"/g, '"');
+  const iat = ilist.indexOf('"mb_code":"' + imb + '"'); const iid = [...ilist.slice(Math.max(0, iat - 6000), iat).matchAll(/"id":"([0-9a-f-]{36})"/g)].pop()?.[1];
+  const irow = iid && (await (await fetch(B + '/api/admin/applicants/' + iid, { method: 'PATCH', headers: ADM, body: JSON.stringify({ line_joined: false }) })).json()).row;
+  ok('invite pays training only (no guarantee)', irow && irow.amount === 3000 && irow.invite === inv.code, `${irow?.amount} ${irow?.invite}`);
+  ok('invite applicant gets profile-link email', (await waitMails(iemail, 1)).some((m) => linkOf(m)));
+  const I2 = device();
+  r = await login(I2, iemail, IPW); ok('invite applicant logs in on another device', r.status === 200, String(r.status));
+  r = await I2.req('/join/profile/' + imb); h = await r.text(); ok('invite applicant profile opens after login', !h.includes('ไม่มีสิทธิ์') && h.includes(imb));
+  r = await login(device(), iemail, 'wrong-password'); ok('invite wrong password → generic', r.status === 401 || r.status === 400, String(r.status));
+
   // ── หน้า ──
   h = await (await fetch(B + '/join/me')).text();
   ok('/join/me has login + forgot + LINE fallback', h.includes('Part-Time เข้าสู่ระบบ') && h.includes('ลืมรหัสผ่าน? ส่งลิงก์ไปอีเมล') && h.includes('ขอลิงก์ใหม่ทาง LINE'));
