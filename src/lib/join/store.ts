@@ -115,7 +115,7 @@ export interface PtWork { days: Record<string, { on: boolean; from: string; to: 
 export interface PtListing { title: string; rules: string; hidden: boolean; updated_at: string }
 export interface PtPost { text: string; time: string; zone: string; open: boolean; created_at: string }
 
-export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents" | "talents_other" | "activities_other" | "areas" | "no_area" | "slip_check" | "invite" | "kyc_status" | "kyc_reason" | "kyc_submitted_at" | "bank_book_path"> & { attendance?: Record<string, boolean>; photos?: string[]; card?: ProfileCard | null; form_done?: number[]; tier?: "top" | "silver"; pt_settings?: PtSettings | null; post?: PtPost | null; listing?: PtListing | null; work?: PtWork | null; listed?: boolean; delete_requested_at?: string | null; bank_consents?: { terms: boolean; pdpa: boolean; profile: boolean; at: string } | null; /** ตำแหน่งรูปในกรอบ (object-position "x% y%") ต่อ path รูป */ photo_pos?: Record<string, string> | null; /** ย่านที่ Part-Time ตั้งเองให้แสดงบนแผนที่ (ปัดเป็นช่อง ~1 กม. แล้ว ไม่ใช่ตำแหน่งจริง) */ geo?: PtGeo | null; /** แอดมินที่ออกลิงก์เข้าโปรไฟล์ล่าสุด (คนนี้อนุมัติ KYC ผู้สมัครคนนี้ไม่ได้) */ link_by?: { email: string; at: string } | null; /** โทเคนเข้าโปรไฟล์ที่ออกก่อนเวลานี้ใช้ไม่ได้ (ออกจากระบบทุกเครื่อง / แอดมินยกเลิกลิงก์) */ tokens_after?: string | null; /** เปลี่ยนบัญชีรับเงินหลังอนุมัติแล้ว — รอแอดมินตรวจบัญชีใหม่ (ถอนเงินไม่ได้จนตรวจ) · prev = บัญชีเดิม */ bank_review?: { at: string; prev: { bank: string; bank_account: string; bank_account_name: string; bank_book_path: string | null } } | null; /** เวลาที่แก้รายการที่ทีมงานตีกลับครบทุกรายการล่าสุด (หน้า /join/rejected แยก "ส่งแก้ไขครบแล้ว" กับ "ไม่มีรายการต้องแก้") */ fixes_done_at?: string | null; /** แอดมินทุกคนที่เคยออกลิงก์ให้ผู้สมัครคนนี้ (กันอนุมัติ KYC เอง) */ link_by_all?: { email: string; at: string }[] | null; /** เหตุผลล่าสุดที่ไม่อนุมัติสลิปค่าสมัคร */ slip_reject?: { reason: string; by: string; at: string } | null; /** รหัสผ่าน Part-Time (scrypt "salt:hash") — อ่านผ่าน getPwHash เท่านั้น ไม่ส่งออกจาก store */ pw_hash?: string | null; /** เวลาตั้งรหัสผ่านล่าสุด */ pw_at?: string | null };
+export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents" | "talents_other" | "activities_other" | "areas" | "no_area" | "slip_check" | "invite" | "kyc_status" | "kyc_reason" | "kyc_submitted_at" | "bank_book_path"> & { attendance?: Record<string, boolean>; /** เวลาเช็กชื่อรายรอบ (โหมดสาธิต / ฐานที่ยังไม่มีตาราง cohort_attendance) */ attendance_at?: Record<string, string>; photos?: string[]; card?: ProfileCard | null; form_done?: number[]; tier?: "top" | "silver"; pt_settings?: PtSettings | null; post?: PtPost | null; listing?: PtListing | null; work?: PtWork | null; listed?: boolean; delete_requested_at?: string | null; bank_consents?: { terms: boolean; pdpa: boolean; profile: boolean; at: string } | null; /** ตำแหน่งรูปในกรอบ (object-position "x% y%") ต่อ path รูป */ photo_pos?: Record<string, string> | null; /** ย่านที่ Part-Time ตั้งเองให้แสดงบนแผนที่ (ปัดเป็นช่อง ~1 กม. แล้ว ไม่ใช่ตำแหน่งจริง) */ geo?: PtGeo | null; /** แอดมินที่ออกลิงก์เข้าโปรไฟล์ล่าสุด (คนนี้อนุมัติ KYC ผู้สมัครคนนี้ไม่ได้) */ link_by?: { email: string; at: string } | null; /** โทเคนเข้าโปรไฟล์ที่ออกก่อนเวลานี้ใช้ไม่ได้ (ออกจากระบบทุกเครื่อง / แอดมินยกเลิกลิงก์) */ tokens_after?: string | null; /** เปลี่ยนบัญชีรับเงินหลังอนุมัติแล้ว — รอแอดมินตรวจบัญชีใหม่ (ถอนเงินไม่ได้จนตรวจ) · prev = บัญชีเดิม */ bank_review?: { at: string; prev: { bank: string; bank_account: string; bank_account_name: string; bank_book_path: string | null } } | null; /** เวลาที่แก้รายการที่ทีมงานตีกลับครบทุกรายการล่าสุด (หน้า /join/rejected แยก "ส่งแก้ไขครบแล้ว" กับ "ไม่มีรายการต้องแก้") */ fixes_done_at?: string | null; /** แอดมินทุกคนที่เคยออกลิงก์ให้ผู้สมัครคนนี้ (กันอนุมัติ KYC เอง) */ link_by_all?: { email: string; at: string }[] | null; /** เหตุผลล่าสุดที่ไม่อนุมัติสลิปค่าสมัคร */ slip_reject?: { reason: string; by: string; at: string } | null; /** รหัสผ่าน Part-Time (scrypt "salt:hash") — อ่านผ่าน getPwHash เท่านั้น ไม่ส่งออกจาก store */ pw_hash?: string | null; /** เวลาตั้งรหัสผ่านล่าสุด */ pw_at?: string | null };
 export type PtGeo = { lat: number; lng: number; label: string; src: "gps" | "pin"; at: string };
 
 /** รวมคอลัมน์ 0003 กับ docs.extra — คอลัมน์จริงมาก่อน */
@@ -460,6 +460,24 @@ export async function getAttendance(id: string): Promise<Record<number, boolean>
   return Object.fromEntries((data as { session: number; present: boolean }[]).map((x) => [x.session, x.present]));
 }
 
+/** วันที่อบรมผ่าน = เวลาเช็กชื่อรอบหลักรอบสุดท้ายที่ทำให้ครบเกณฑ์ (null = ยังไม่ครบ) — เริ่มนับ 1 ปีคืนเงินประกัน */
+export async function trainedAt(id: string, isCoreDone: (att: Record<number, boolean>) => boolean, core: number[]): Promise<string | null> {
+  let rows: { session: number; present: boolean; at: string | null }[] | null = null;
+  if (!isDemo) {
+    const { data, error } = await db().from("cohort_attendance").select("session, present, marked_at").eq("applicant_id", id);
+    if (!error) rows = (data as { session: number; present: boolean; marked_at: string | null }[]).map((x) => ({ session: x.session, present: x.present, at: x.marked_at }));
+  }
+  if (!rows) {
+    const r = isDemo ? demo.rows.find((x) => x.id === id) : ((await db().from("applicants").select("docs").eq("id", id).maybeSingle()).data as Pick<Applicant, "docs"> | null);
+    const ex = r?.docs?.extra ?? {};
+    rows = Object.entries(ex.attendance ?? {}).map(([k, v]) => ({ session: Number(k), present: !!v, at: ex.attendance_at?.[k] ?? null }));
+  }
+  const att = Object.fromEntries(rows.map((x) => [x.session, x.present]));
+  if (!isCoreDone(att)) return null;
+  const ts = rows.filter((x) => x.present && core.includes(x.session) && x.at).map((x) => x.at as string).sort();
+  return ts.at(-1) ?? null;
+}
+
 /** แอดมินเช็กชื่อ */
 export async function markAttendance(id: string, session: number, present: boolean) {
   if (!isDemo) {
@@ -468,13 +486,13 @@ export async function markAttendance(id: string, session: number, present: boole
   }
   if (isDemo) {
     const r = demo.rows.find((x) => x.id === id);
-    if (r) r.docs = { ...r.docs, extra: { ...r.docs.extra, attendance: { ...r.docs.extra?.attendance, [session]: present } } };
+    if (r) r.docs = { ...r.docs, extra: { ...r.docs.extra, attendance: { ...r.docs.extra?.attendance, [session]: present }, attendance_at: { ...r.docs.extra?.attendance_at, [session]: new Date().toISOString() } } };
     return;
   }
   const { data: cur, error: e1 } = await db().from("applicants").select("docs").eq("id", id).single();
   if (e1) throw e1;
   const ex = cur?.docs?.extra ?? {};
-  const docs = { ...(cur?.docs ?? {}), extra: { ...ex, attendance: { ...(ex.attendance ?? {}), [session]: present } } };
+  const docs = { ...(cur?.docs ?? {}), extra: { ...ex, attendance: { ...(ex.attendance ?? {}), [session]: present }, attendance_at: { ...(ex.attendance_at ?? {}), [session]: new Date().toISOString() } } };
   const { error } = await db().from("applicants").update({ docs }).eq("id", id);
   if (error) throw error;
 }

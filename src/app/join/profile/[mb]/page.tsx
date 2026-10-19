@@ -1,7 +1,11 @@
 import { notFound } from "next/navigation";
 import { canResume } from "@/lib/join/resume";
 import SOSButton from "@/components/sos";
-import { extraOf, getByMb } from "@/lib/join/store";
+import { extraOf, getByMb, trainedAt } from "@/lib/join/store";
+import { PACKAGES, type PackageKey } from "@/lib/join/config";
+import { CORE_SESSIONS, coreDone } from "@/lib/join/training";
+import { strikesWithAppeals } from "@/lib/appeals";
+import { STRIKE_LIMIT } from "@/lib/strikes";
 import { getEarnings } from "@/lib/join/earnings-settings";
 import { ageFrom } from "@/lib/join/form";
 import { Forbidden } from "../../_kyc/ui";
@@ -46,6 +50,11 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
   const nowMs = Date.now();
   const nx = jobs.filter((b) => ["accepted", "checked_in"].includes(b.status) && Date.parse(b.starts_at) + b.hours * 3600_000 > nowMs).sort((a, b) => a.starts_at.localeCompare(b.starts_at))[0];
   const r = rate.get(row.id);
+  // เงินประกัน (เฉพาะสายจ่ายการันตี) — นับ 1 ปีจากวันอบรมผ่าน · ใบเตือนที่มีผลตอนนี้
+  const guarantee = x.invite ? null : await (async () => {
+    const [trained, st] = await Promise.all([trainedAt(row.id, coreDone, CORE_SESSIONS).catch(() => null), strikesWithAppeals(row.id).catch(() => ({ count: 0 }))]);
+    return { amount: PACKAGES[row.package as PackageKey]?.guarantee ?? 0, paid: row.status === "verified", kyc: kyc === "approved", bank: !!row.bank_account && !x.bank_review, trainedAt: trained, strikes: st.count, strikeLimit: STRIKE_LIMIT };
+  })();
   const data: HubData = {
     next: nx ? { when: new Date(nx.starts_at).toLocaleString("th-TH", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Bangkok" }) + " น.", place: [nx.place?.label, nx.place?.detail].filter(Boolean).join(" · "), hours: nx.hours } : null,
     pendingJobs: jobs.filter((b) => b.status === "requested").length,
@@ -64,6 +73,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
       { t: "วันเวลาที่รับงาน", sub: bad("form2") ? "ทีมงานขอให้แก้ไข" : "วัน ช่วงเวลา ชั่วโมงต่อวัน ประสบการณ์", ok: done.has(2) && !bad("form2"), href: bad("form2") ? "rejected" : "form2" },
       { t: "ยืนยันตัวตน + บัญชีรับเงิน", sub: bad("kyc", "bank") ? "เอกสารต้องแก้ไข" : "บัตรประชาชน เซลฟี่ บัญชีธนาคาร", ok: kyc !== "none" && !bad("kyc", "bank") && !!row.bank_account, href: bad("kyc", "bank") ? "rejected" : "kyc" },
     ],
+    guarantee, invite: !!x.invite,
     contractDone: !!row.contract_accepted_at, fixes: fixes.length,
     card: x.card ?? { activities: [], places: [], partner_spas: [], skills: [] },
     estimate: { tiers: cfg.tiers, tipPct: cfg.tipPct, payout: cfg.payout, show: cfg.show },

@@ -191,6 +191,14 @@ const setPw = (d, o) => d.req('/api/join/password', { method: 'POST', headers: J
   const I2 = device();
   r = await login(I2, iemail, IPW); ok('invite applicant logs in on another device', r.status === 200, String(r.status));
   r = await I2.req('/join/profile/' + imb); h = await r.text(); ok('invite applicant profile opens after login', !h.includes('ไม่มีสิทธิ์') && h.includes(imb));
+  ok('invite profile: lane badge, no guarantee card', h.includes('สายคำเชิญ') && !h.includes('เงินประกันคืน'));
+
+  // ── สายการันตี: การ์ดเงินประกันคืน + หลอด · เริ่มนับ 1 ปีเมื่ออบรมรอบหลักครบ ──
+  h = await (await Bdev.req('/join/profile/' + mb)).text();
+  ok('guarantee profile: badge + card before training', h.includes('สายการันตี') && h.includes('เงินประกันคืน') && h.includes('฿10,000') && h.includes('ยังไม่เริ่มนับ') && h.includes('data-guarantee-pct="0"'));
+  for (const s of [1, 2, 3, 5]) await fetch(B + '/api/admin/cohorts/attendance', { method: 'POST', headers: ADM, body: JSON.stringify({ applicant_id: id, session: s, present: true }) });
+  h = await (await Bdev.req('/join/profile/' + mb)).text();
+  ok('after training: count starts, refund date shown', h.includes('ผ่านเมื่อ') && h.includes('คาดว่าได้คืน') && h.includes('อีก 365 วัน'), (/ทำงานแล้ว[^<]*/.exec(h) || [])[0]);
   r = await login(device(), iemail, 'wrong-password'); ok('invite wrong password → generic', r.status === 401 || r.status === 400, String(r.status));
 
   // ── หน้า ──

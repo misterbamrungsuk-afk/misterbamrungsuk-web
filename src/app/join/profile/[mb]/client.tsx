@@ -11,9 +11,11 @@ import { useRouter } from "next/navigation";
 import type { ProfileCard } from "@/lib/join/store";
 import { CERT_MSG, GATE_MSG, GATE_SHORT, MASSAGE_SKILL, isMassage } from "@/lib/join/pt-ui";
 import type { Tier } from "@/lib/join/earnings-shared";
-import { EstimateCard, PromoCard, SaveLinkCard } from "./hub-cards";
+import { EstimateCard, GuaranteeCard, PromoCard, SaveLinkCard } from "./hub-cards";
 
 export type HubData = {
+  /** เงินประกัน (null = สายคำเชิญ ไม่เก็บการันตี) */
+  guarantee: { amount: number; paid: boolean; kyc: boolean; bank: boolean; trainedAt: string | null; strikes: number; strikeLimit: number } | null; invite: boolean;
   mb: string; t: string; nickname: string; fullName: string; statusLine: string; track: string; trackShort: string;
   main: string; mainPath: string; pos: string; photos: string[]; age: number | null; area: string; price: number; tier: "top" | "silver"; verified: boolean;
   fixes: number;
@@ -129,7 +131,10 @@ export function ProfileHub({ d }: { d: HubData }) {
                   <span className="font-semibold text-[18px] text-[#e8c472] tracking-[1px]">{d.mb}</span>
                   <span className="text-[12px] text-[#b5a596] font-light">{d.statusLine}</span>
                 </div>
-                <span className="self-start mt-1 rounded-full text-[13px] text-[#e8c472] bg-[#251d1b] font-light" style={{ padding: "3px 10px" }}>{d.track}</span>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  <span className="rounded-full text-[13px] text-[#e8c472] bg-[#251d1b] font-light" style={{ padding: "3px 10px" }}>{d.track}</span>
+                  <span data-pt-lane={d.invite ? "invite" : "guarantee"} className="rounded-full text-[13px] font-light" style={{ padding: "3px 10px", color: d.invite ? "#f3ead9" : "#1b130b", background: d.invite ? "rgba(232,196,114,0.18)" : "#e8c472" }}>{d.invite ? "✦ สายคำเชิญ" : "สายการันตี"}</span>
+                </div>
               </div>
             </div>
 
@@ -159,6 +164,7 @@ export function ProfileHub({ d }: { d: HubData }) {
               {d.active && <Link href={`/join/profile/${d.mb}/sales${q}`} className="min-h-12 rounded-xl flex items-center gap-2.5 text-[#f3ead9] hover:text-[#f3ead9]" style={{ padding: "8px 12px", background: "rgba(232,196,114,0.12)", boxShadow: "inset 0 0 0 1px rgba(232,196,114,.35)" }}><span className="text-[18px]" aria-hidden="true">🤝</span><span className="flex-1 leading-[1.35]"><b className="block text-[14px]">ชวนลูกค้าเปิดเมม รับค่าคอม</b><span className="text-[12.5px] text-[#d9c9b4] font-light">ได้ค่าคอมทุกคนที่เปิดเมม หรือแปลงเป็นวงเงินโปรโมท</span></span><span className="text-[#e8c472]">›</span></Link>}
             </div>
 
+            {d.guarantee && <GuaranteeCard g={d.guarantee} />}
             <EstimateCard d={d} q={q} />
             <PromoCard d={d} q={q} onBoost={() => { setPromoOpen(true); setTimeout(() => document.getElementById("pt-wallet")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50); }} />
             <SaveLinkCard d={d} />

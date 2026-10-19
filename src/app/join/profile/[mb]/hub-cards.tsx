@@ -80,3 +80,47 @@ export function SaveLinkCard({ d }: { d: HubData }) {
     </section>
   );
 }
+
+/** เงินประกัน (สายการันตี) — หลอดนับ 1 ปีจากวันอบรมผ่าน + ขั้นที่ต้องผ่านก่อนได้คืน (เงื่อนไขเดียวกับ GUARANTEE_REFUND_NOTE) */
+export function GuaranteeCard({ g }: { g: NonNullable<HubData["guarantee"]> }) {
+  const DAY = 86400_000, YEAR = 365;
+  const thDate = (ms: number) => new Date(ms).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Bangkok" });
+  const start = g.trainedAt ? Date.parse(g.trainedAt) : null;
+  const due = start !== null ? start + YEAR * DAY : null;
+  const days = start !== null ? Math.min(YEAR, Math.max(0, Math.floor((Date.now() - start) / DAY))) : 0;
+  const pct = Math.round((days / YEAR) * 100);
+  const yearDone = start !== null && days >= YEAR;
+  const clean = g.strikes === 0;
+  const steps: { t: string; sub: string; ok: boolean }[] = [
+    { t: "ชำระเงินประกัน", sub: g.paid ? `${baht(g.amount)} · ทีมงานตรวจสลิปแล้ว` : "ส่งสลิปแล้ว · รอทีมงานตรวจ", ok: g.paid },
+    { t: "ยืนยันตัวตน + บัญชีรับเงิน", sub: g.kyc && g.bank ? "ผ่านแล้ว · ใช้บัญชีนี้รับเงินคืน" : "รอทีมงานตรวจเอกสาร", ok: g.kyc && g.bank },
+    { t: "อบรมผ่าน", sub: start !== null ? `ผ่านเมื่อ ${thDate(start)} · เริ่มนับ 1 ปี` : "เข้าอบรมรอบหลักครบ → เริ่มนับ 1 ปี", ok: start !== null },
+    { t: "ทำงานครบ 1 ปี", sub: due !== null ? (yearDone ? "ครบแล้ว" : `อีก ${YEAR - days} วัน · ครบ ${thDate(due)}`) : "เริ่มนับหลังอบรมผ่าน", ok: yearDone },
+    { t: "ไม่ผิดกฎบริษัท", sub: clean ? "ตอนนี้ไม่มีใบเตือน · เช่น ไม่ปฏิเสธการรับลูกค้า" : `มีใบเตือนที่มีผล ${g.strikes} / ${g.strikeLimit} · ทีมงานตรวจประวัติก่อนคืน`, ok: clean && yearDone },
+    { t: "ได้รับเงินคืน", sub: `${baht(g.amount)} เต็มจำนวน · ทีมงานโอนเข้าบัญชีที่ยืนยันไว้`, ok: false },
+  ];
+  return (
+    <section aria-labelledby="gua-h" data-guarantee-pct={pct} className="flex flex-col gap-3 rounded-[18px] bg-[#211a18]" style={{ padding: 16 }}>
+      <div className="flex justify-between items-baseline gap-2">
+        <h2 id="gua-h" className="m-0 text-[15px] font-semibold text-[#e8c472]">เงินประกันคืน</h2>
+        <b className="text-[18px] tabular-nums">{baht(g.amount)}</b>
+      </div>
+      <div>
+        <div className="flex justify-between text-[13px] font-light text-[#d9c9b4]"><span>{start !== null ? `ทำงานแล้ว ${days} / ${YEAR} วัน` : "ยังไม่เริ่มนับ"}</span><span className="tabular-nums">{pct}%</span></div>
+        <div className="h-2.5 rounded-full mt-1.5 overflow-hidden" style={{ background: "rgba(243,234,217,0.08)" }} role="progressbar" aria-valuemin={0} aria-valuemax={YEAR} aria-valuenow={days} aria-label="นับวันถึงคืนเงินประกัน">
+          <div className="h-full rounded-full" style={{ width: `${pct}%`, background: GOLD, minWidth: pct ? 6 : 0 }} />
+        </div>
+        <div className="text-[13px] mt-1.5 leading-[1.5]">{due !== null ? <>คาดว่าได้คืน <b className="text-[#e8c472]">{thDate(due)}</b></> : <span className="font-light text-[#d9c9b4]">เริ่มนับ 1 ปีตั้งแต่วันที่อบรมผ่าน</span>}</div>
+      </div>
+      <ol className="m-0 p-0 list-none flex flex-col gap-2">
+        {steps.map((s, i) => (
+          <li key={s.t} className="flex gap-2.5 items-start">
+            <span aria-hidden="true" className="shrink-0 w-6 h-6 rounded-full grid place-items-center text-[12px] font-semibold" style={{ background: s.ok ? GOLD : "rgba(243,234,217,0.08)", color: s.ok ? "#1b130b" : "#b5a596" }}>{s.ok ? "✓" : i + 1}</span>
+            <span className="min-w-0 leading-[1.4]"><b className="block text-[14px] font-medium">{s.t}<span className="sr-only">{s.ok ? " (ผ่านแล้ว)" : " (ยังไม่ถึง)"}</span></b><span className="text-[12.5px] font-light text-[#d9c9b4]">{s.sub}</span></span>
+          </li>
+        ))}
+      </ol>
+      <p className="m-0 text-[12px] font-light text-[#b5a596] leading-[1.5]">คืนเต็มจำนวนเมื่อครบ 1 ปีและไม่ผิดกฎบริษัทและกฎหมาย เช่น ไม่ปฏิเสธการรับลูกค้าในวันเวลาที่แจ้งไว้</p>
+    </section>
+  );
+}
