@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
 import { promptPayPayload } from "@/lib/join/promptpay";
 import { BottomBar, ctaStyle } from "../../_kyc/ui";
+import { dataUrlToFile, resizeImage } from "@/lib/join/form";
 
 const OK_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const baht = (n: number) => "฿" + n.toLocaleString("en-US");
@@ -25,9 +26,13 @@ export function SlipForm({ mb, t, amount, reason, promptPayId, accountName, allo
     if (p) QRCode.toDataURL(p, { margin: 1, width: 480, errorCorrectionLevel: "M" }).then(setQr).catch(() => setQr(""));
   }, [promptPayId, amount]);
 
-  const pick = (f?: File) => {
-    if (!f) return;
-    if (!OK_TYPES.includes(f.type) || f.size > 5 * 1024 * 1024) return setError("สลิปต้องเป็นรูป JPG/PNG/WEBP ไม่เกิน 5MB");
+  // รูปจากกล้อง/HEIC ที่เครื่องแปลงแล้วมักใหญ่ → ย่อในเครื่องเป็น JPEG ก่อนส่ง (เหมือนหน้าชำระเงินแรก)
+  const pick = async (f0?: File) => {
+    if (!f0) return;
+    if (!f0.type.startsWith("image/")) return setError("สลิปต้องเป็นรูป JPG/PNG/WEBP");
+    let f = f0;
+    try { f = await dataUrlToFile(await resizeImage(f0, 1400, 0.85), "slip.jpg"); } catch { if (!OK_TYPES.includes(f0.type)) return setError("ไฟล์นี้เปิดเป็นรูปไม่ได้ · เลือกรูป JPG/PNG อีกครั้ง"); }
+    if (f.size > 5 * 1024 * 1024) return setError("สลิปต้องเป็นรูป JPG/PNG/WEBP ไม่เกิน 5MB");
     setError(""); setFile(f);
     setUrl((o) => { if (o) URL.revokeObjectURL(o); return URL.createObjectURL(f); });
   };

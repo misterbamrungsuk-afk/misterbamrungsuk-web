@@ -4,12 +4,14 @@
 // โปรไฟล์ของฉัน — ถอดตามบอร์ด ProviderEditProfile
 // ปุ่มงาน / ตาราง / รีวิว / ถอนเงิน / ตั้งค่า → หน้าย่อยใต้ /join/profile/[mb]/ (สถานะว่างตามจริงจนกว่าจะเริ่มรับงาน)
 import { BoostPanel } from "./boost-panel";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { PtNav } from "./_ptnav";
 import { useRouter } from "next/navigation";
 import type { ProfileCard } from "@/lib/join/store";
 import { CERT_MSG, GATE_MSG, GATE_SHORT, MASSAGE_SKILL, isMassage } from "@/lib/join/pt-ui";
+import type { Tier } from "@/lib/join/earnings-shared";
+import { EstimateCard, PromoCard } from "./hub-cards";
 
 export type HubData = {
   mb: string; t: string; nickname: string; fullName: string; statusLine: string; track: string; trackShort: string;
@@ -22,6 +24,10 @@ export type HubData = {
   next: { when: string; place: string; hours: number } | null; pendingJobs: number; rating: { avg: number; count: number } | null; unread: number;
   /** active = อนุมัติ KYC + เปิดโปรไฟล์แล้ว (ถอน/โปรโมท/ชวนเปิดเมมใช้ได้) · hasCert = มีใบรับรองการนวด */
   active: boolean; kycApproved: boolean; listed: boolean; hasCert: boolean; deleteRequested: string | null;
+  /** ประมาณรายได้ (ค่าจากหน้า "ราคาและส่วนแบ่ง" ของแอดมิน — ชุดเดียวกับ /join/earnings) */
+  estimate: { tiers: Tier[]; tipPct: number; payout: string; show: boolean };
+  /** โปรโมชั่นที่ใช้ได้จริง: แผนโปรโมทโปรไฟล์ · ค่าคอมชวนเปิดเมม (null = ปิดระบบสมาชิก) */
+  promos: { boost: { name: string; days: number; price: number }[]; member: { gold: { name: string; commission: number }; black: { name: string; commission: number }; mult: number } | null };
 };
 
 const GOLD = "#e8c472";
@@ -52,6 +58,8 @@ export function ProfileHub({ d }: { d: HubData }) {
   const [certWarn, setCertWarn] = useState("");
   const [delAt, setDelAt] = useState(d.deleteRequested);
   const [delBusy, setDelBusy] = useState(false);
+  // ต่ออายุคุกกี้เข้าโปรไฟล์ทุกครั้งที่เปิดหน้าหลัก (เลื่อน 30 วัน) — ไม่ต้องขอลิงก์ใหม่ทุกเดือน
+  useEffect(() => { fetch("/api/join/renew", { method: "POST", cache: "no-store" }).then((r) => r.json()).catch(() => {}); }, []);
   // ยกเลิกคำขอลบบัญชี → โปรไฟล์กลับมาแสดงตามปกติ
   const cancelDelete = async () => {
     setDelBusy(true);
@@ -135,7 +143,7 @@ export function ProfileHub({ d }: { d: HubData }) {
             </div>
 
             {/* กระเป๋าเงิน */}
-            <div className="flex flex-col gap-3 rounded-[18px]" style={{ padding: 16, background: "linear-gradient(150deg, #3a2a17 0%, #251d1b 70%)", boxShadow: "0 10px 24px rgba(0,0,0,0.35)" }}>
+            <div id="pt-wallet" className="flex flex-col gap-3 rounded-[18px] scroll-mt-3" style={{ padding: 16, background: "linear-gradient(150deg, #3a2a17 0%, #251d1b 70%)", boxShadow: "0 10px 24px rgba(0,0,0,0.35)" }}>
               <div className="flex justify-between items-center gap-2">
                 <span className="flex items-center gap-2 text-[14px] font-semibold text-[#e8c472]"><Ico><path d="M3 7a2 2 0 0 1 2-2h13v4" /><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z" /><circle cx="16" cy="14.5" r="1.3" /></Ico>กระเป๋าเงิน</span>
                 <Link href={`/join/profile/${d.mb}/earnings${q}`} className="tap text-[13px] text-[#e8c472] font-light">เช็คเรทรายได้ ›</Link>
@@ -150,6 +158,9 @@ export function ProfileHub({ d }: { d: HubData }) {
               {d.active && promoOpen && <BoostPanel mb={d.mb} t={d.t} />}
               {d.active && <Link href={`/join/profile/${d.mb}/sales${q}`} className="min-h-12 rounded-xl flex items-center gap-2.5 text-[#f3ead9] hover:text-[#f3ead9]" style={{ padding: "8px 12px", background: "rgba(232,196,114,0.12)", boxShadow: "inset 0 0 0 1px rgba(232,196,114,.35)" }}><span className="text-[18px]" aria-hidden="true">🤝</span><span className="flex-1 leading-[1.35]"><b className="block text-[14px]">ชวนลูกค้าเปิดเมม รับค่าคอม</b><span className="text-[12.5px] text-[#d9c9b4] font-light">ได้ค่าคอมทุกคนที่เปิดเมม หรือแปลงเป็นวงเงินโปรโมท</span></span><span className="text-[#e8c472]">›</span></Link>}
             </div>
+
+            <EstimateCard d={d} q={q} />
+            <PromoCard d={d} q={q} onBoost={() => { setPromoOpen(true); setTimeout(() => document.getElementById("pt-wallet")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50); }} />
 
             {delAt && (
               <div className="flex flex-col gap-2 rounded-2xl" style={{ padding: "12px 14px", background: "rgba(255,138,154,0.08)", boxShadow: "inset 0 0 0 1px rgba(255,138,154,.35)" }}>

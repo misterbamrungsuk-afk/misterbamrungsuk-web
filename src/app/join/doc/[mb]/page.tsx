@@ -31,7 +31,8 @@ export default async function DocPage({ params, searchParams }: { params: Promis
   const total = fees.reduce((a, f) => a + f.amount, 0);
   const cohort = x.cohort ? COHORTS.find((c) => c.key === x.cohort) : null;
   const group = cohort ? `${cohort.name} · ${cohort.date}` : x.cohort ? `กลุ่ม ${x.cohort}` : "รอจัดกลุ่ม (แจ้งทาง LINE)";
-  const terms = TERMS_SUMMARY.length ? TERMS_SUMMARY : [GUARANTEE_REFUND_NOTE];
+  // ลิงก์เชิญ = ไม่เก็บค่าการันตี → ไม่แสดงข้อที่พูดถึงการชำระ/คืนค่าการันตี
+  const terms = (TERMS_SUMMARY.length ? TERMS_SUMMARY : [GUARANTEE_REFUND_NOTE]).map((t) => (x.invite && t.startsWith("ชำระค่าการันตี") ? "ชำระค่าอบรมเต็มจำนวนตามสายงานที่เลือก (ลิงก์เชิญ · ไม่เก็บค่าการันตี Branding)" : t)).filter((t) => !(x.invite && (t === GUARANTEE_REFUND_NOTE || /คืนเงินประกัน/.test(t))) || /ไม่ปฏิเสธ/.test(t)).map((t) => (x.invite ? t.replace(" (เงื่อนไขคืนเงินประกันเมื่อครบ 1 ปี)", "") : t));
 
   const info: [string, string][] = [
     ["ชื่อ-นามสกุล", fullName(row)],

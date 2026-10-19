@@ -52,7 +52,7 @@ export function PhotosClient({ mb, t, initial }: { mb: string; t: string; initia
                     <>
                       <button type="button" onClick={() => i > 0 && call({ action: "main", index: i })} aria-label={i === 0 ? "รูปหลัก" : `ตั้งรูปที่ ${i + 1} เป็นรูปหลัก`} className="absolute inset-0 p-0 bg-transparent"><img src={url(p)} alt="" className="w-full h-full object-cover block" /></button>
                       <span className="absolute left-1.5 top-1.5 min-w-[22px] h-[22px] px-[7px] rounded-full text-[12px] font-bold grid place-items-center" style={{ background: i === 0 ? "#e8c472" : "rgba(23,18,17,0.8)", color: i === 0 ? "#1b130b" : "#f3ead9" }}>{i === 0 ? "รูปหลัก" : i + 1}</span>
-                      <button type="button" onClick={() => call({ action: "remove", index: i })} aria-label="ลบรูป" className="absolute right-1 bottom-1 w-8 h-8 rounded-full text-[#f3ead9] text-[18px] leading-none grid place-items-center" style={{ background: "rgba(23,18,17,0.85)" }}>×</button>
+                      <button type="button" onClick={() => call({ action: "remove", index: i })} aria-label="ลบรูป" className="absolute right-1 bottom-1 w-10 h-10 rounded-full text-[#f3ead9] text-[18px] leading-none grid place-items-center" style={{ background: "rgba(23,18,17,0.85)" }}>×</button>
                     </>
                   ) : (
                     <label aria-label="เพิ่มรูป" className="absolute inset-0 grid place-items-center cursor-pointer" style={{ opacity: i === photos.length ? 1 : 0.5 }}>

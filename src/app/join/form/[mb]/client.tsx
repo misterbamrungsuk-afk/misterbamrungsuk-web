@@ -74,7 +74,7 @@ function Upload({ label, done, onPick, err }: { label: string; done: boolean; on
   );
 }
 
-export function JoinFormClient({ mb, t, pkg, init, step: step0, fix = false }: { mb: string; t: string; pkg: PackageKey; init: FormInit; step: 1 | 2; fix?: boolean }) {
+export function JoinFormClient({ mb, t, pkg, init, step: step0, fix = false, invite = false }: { mb: string; t: string; pkg: PackageKey; init: FormInit; step: 1 | 2; fix?: boolean; invite?: boolean }) {
   const router = useRouter();
   const [f, setF] = useState<JoinForm>({ ...emptyForm, ...init, package: pkg });
   const [step, setStep] = useState<1 | 2>(step0);
@@ -83,6 +83,8 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0, fix = false }: {
   const [loc, setLoc] = useState({ r: "", p: "", d: "", t: "" });
   const q = t ? `?t=${encodeURIComponent(t)}` : "";
   useEffect(() => { window.scrollTo(0, 0); }, [step]);
+  // จำขั้นไว้ใน URL → รีเฟรชกลางทางแล้วยังอยู่ขั้นเดิม (ไม่เด้งกลับขั้น 1)
+  const goStep = (n: 1 | 2) => { setStep(n); try { const u = new URL(window.location.href); if (n === 2) u.searchParams.set("step", "2"); else u.searchParams.delete("step"); window.history.replaceState(window.history.state, "", u.toString()); } catch {} };
 
 
   const set = <K extends keyof JoinForm>(k: K, v: JoinForm[K]) => { setF((p) => ({ ...p, [k]: v })); setErrs((e) => ({ ...e, [k]: "" })); };
@@ -93,7 +95,6 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0, fix = false }: {
   const onFile = async (k: "photo" | "other_doc" | "cert_doc", file?: File) => {
     if (!file) return;
     if (!file.type.startsWith("image/")) return setErrs((e) => ({ ...e, [k]: "รับเฉพาะไฟล์รูปภาพ (JPG/PNG)" }));
-    if (file.size > 10 * 1024 * 1024) return setErrs((e) => ({ ...e, [k]: "ไฟล์ต้องไม่เกิน 10MB" }));
     try { set(k, await resizeImage(file, k === "cert_doc" ? 1400 : 1000)); } catch (e) { setErrs((x) => ({ ...x, [k]: (e instanceof Error ? e.message : "ไฟล์นี้เปิดเป็นรูปไม่ได้ · เลือกรูป JPG/PNG อีกครั้ง") })); }
   };
 
@@ -164,7 +165,7 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0, fix = false }: {
     setBusy(false);
     if (!ok) return;
     if (fix) return router.push(`/join/rejected/${mb}${q}`); // มาจากรายการที่ทีมงานตีกลับ → กลับไปดูรายการที่เหลือ
-    if (step === 1) return setStep(2);
+    if (step === 1) return goStep(2);
     router.push(`/join/kyc/${mb}${q}`);
   };
 
@@ -189,7 +190,6 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0, fix = false }: {
             <div className="jf1 flex flex-col" style={{ padding: "12px 16px 28px", gap: 22 }}>
               <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#251d1b]" style={{ padding: "14px 16px" }}>
                 <div className="min-w-0"><div className="text-[13px] font-light">สายที่สมัคร</div><div className="font-semibold text-[17px] leading-[1.4]">{TRACK[pkg]}</div></div>
-                <Link href="/join" className="shrink-0 text-[14px] text-[#e8c472]">เปลี่ยน</Link>
               </div>
 
               <section className="flex flex-col" style={{ gap: 10 }}>
@@ -241,7 +241,7 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0, fix = false }: {
         ) : (
           <>
             <div className="flex items-center gap-3" style={{ padding: "20px 20px 10px" }}>
-              <button type="button" onClick={() => setStep(1)} aria-label="ย้อนกลับ" className={backCls}>{back}</button>
+              <button type="button" onClick={() => goStep(1)} aria-label="ย้อนกลับ" className={backCls}>{back}</button>
               <div className="min-w-0 font-semibold text-[20px] leading-[1.35]">วันเวลาและประสบการณ์</div>
             </div>
             <div className="flex flex-col" style={{ padding: "24px 20px 40px", gap: 24 }}>
@@ -304,7 +304,7 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0, fix = false }: {
 
               <section className="flex flex-col gap-1.5">
                 <h2 style={h2}>รับทราบเงื่อนไขการรับงาน</h2>
-                {([["ack_hours", `รับทราบว่าการให้บริการต่อครั้งอยู่ที่ ${pkg === "A" ? "3–8" : "3–5"} ชม. แล้วแต่ที่ลูกค้าจอง`], ["ack_no_refuse", "รับทราบว่าจะไม่ปฏิเสธการรับลูกค้าในวันเวลาที่แจ้งไว้ (เงื่อนไขการรับคืนค่าการันตี Branding)"]] as const).map(([k, t]) => {
+                {([["ack_hours", `รับทราบว่าการให้บริการต่อครั้งอยู่ที่ ${pkg === "A" ? "3–8" : "3–5"} ชม. แล้วแต่ที่ลูกค้าจอง`], ["ack_no_refuse", invite ? "รับทราบว่าจะไม่ปฏิเสธการรับลูกค้าในวันเวลาที่แจ้งไว้" : "รับทราบว่าจะไม่ปฏิเสธการรับลูกค้าในวันเวลาที่แจ้งไว้ (เงื่อนไขการรับคืนค่าการันตี Branding)"]] as const).map(([k, t]) => {
                   const on = f[k];
                   return (
                     <button key={k} type="button" role="checkbox" aria-checked={on} onClick={() => set(k, !on)} className="flex gap-3 items-start text-left bg-transparent w-full text-[#f3ead9]" style={{ padding: "6px 0", fontSize: 14.5, lineHeight: 1.6, minHeight: 44 }}>

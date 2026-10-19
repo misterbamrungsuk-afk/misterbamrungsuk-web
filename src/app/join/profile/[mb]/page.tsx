@@ -10,6 +10,8 @@ import { FIX_ITEMS } from "@/lib/join/fixes";
 import { ptWallet, ratingSummary } from "@/lib/bookings/day";
 import { listForParttime, listNotices } from "@/lib/bookings";
 import { isPtActive } from "@/lib/join/pt-ui";
+import { BOOST_PLANS } from "@/lib/join/boost";
+import { getMemberSettings } from "@/lib/member/tiers";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "โปรไฟล์ของฉัน — Mister Bamrungsuk" };
@@ -33,6 +35,8 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
   const bad = (...go: string[]) => fixes.some((k) => go.includes(FIX_ITEMS.find((i) => i.key === k)?.go ?? ""));
   const cfg = await getEarnings();
   const svc = row.package === "B" ? cfg.price3h.massage : cfg.price3h.eat;
+  // โปรโมชั่นที่ Part-Time ใช้ได้จริง (ค่าจากตั้งค่าแอดมิน) — โปรโมทโปรไฟล์ · ค่าคอมชวนเปิดเมม (แปลงเป็นวงเงินโปรโมท ×เท่า)
+  const ms = await getMemberSettings().catch(() => null);
 
   const w = await ptWallet(row.id).catch(() => null);
   const m0 = new Date(); m0.setDate(1); m0.setHours(0, 0, 0, 0);
@@ -62,6 +66,8 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
     ],
     contractDone: !!row.contract_accepted_at, fixes: fixes.length,
     card: x.card ?? { activities: [], places: [], partner_spas: [], skills: [] },
+    estimate: { tiers: cfg.tiers, tipPct: cfg.tipPct, payout: cfg.payout, show: cfg.show },
+    promos: { boost: BOOST_PLANS.map((p) => ({ name: p.name, days: p.days, price: p.price })), member: ms?.enabled ? { gold: { name: ms.tiers.gold.name, commission: ms.tiers.gold.commission }, black: { name: ms.tiers.black.name, commission: ms.tiers.black.commission }, mult: ms.boostMult } : null },
   };
   return <><ProfileHub d={data} /><SOSButton /></>;
 }

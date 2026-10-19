@@ -174,7 +174,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
                   style={{ background: sel?.id === r.id ? "rgba(240,200,90,.16)" : "transparent" }}>
                   <span className="text-[#ffd76a]">{r.mb_code}</span>
                   <span className="truncate pr-2">{r.first_name} {r.last_name}</span>
-                  <span className="text-[#d3c7bc] pr-1">{r.package} · {fmt(G(r.package))} + {fmt(T(r.package))}</span>
+                  <span className="text-[#d3c7bc] pr-1">{r.package} · {r.invite ? <><span className="text-[#e8c472]">✦ เชิญ</span> {fmt(T(r.package))}</> : <>{fmt(G(r.package))} + {fmt(T(r.package))}</>}</span>
                   <span className="flex flex-col leading-tight text-[11.5px]"><span style={{ color: r.status === "verified" ? "#4ade80" : r.status === "pending_slip" ? "#eed58a" : "#fca5a5" }}>{LABEL[r.status]}</span><span style={{ color: KYC_LABEL[r.kyc_status ?? "none"][1] }}>{KYC_LABEL[r.kyc_status ?? "none"][0]}</span></span>
                   <span className="text-[#d3c7bc]">{cohortName(r.cohort)}</span>
                   <span style={{ color: r.line_joined ? "#4ade80" : "#eed58a" }}>{r.line_joined ? "✓ เข้ากลุ่มแล้ว" : "ยังไม่เข้า"}</span>
@@ -199,7 +199,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
             <div className="flex gap-3 items-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={sel.photos?.[0] ? file(sel.photos[0]) : sel.docs.photo ? file(sel.docs.photo) : ""} alt="" className="w-14 h-14 rounded-[14px] object-cover bg-[#130e0e]" />
-              <div className="min-w-0"><div className="font-lux font-semibold text-[17px] truncate">{sel.first_name} {sel.last_name}</div><div className="text-[#ffd76a] text-xs">{sel.mb_code} · {sel.package} · {fmt(G(sel.package))} + {fmt(T(sel.package))}</div></div>
+              <div className="min-w-0"><div className="font-lux font-semibold text-[17px] truncate">{sel.first_name} {sel.last_name}</div><div className="text-[#ffd76a] text-xs">{sel.mb_code} · {sel.package} · {sel.invite ? `ลิงก์เชิญ · ${fmt(T(sel.package))}` : `${fmt(G(sel.package))} + ${fmt(T(sel.package))}`}</div></div>
             </div>
             <Progress r={sel} />
             {sel.invite && <p className="text-[12.5px] text-[#e8c472] m-0">✦ สมัครผ่านลิงก์เชิญ ({sel.invite}) · ไม่เก็บค่าการันตี · ยอดที่ต้องได้รับ = ค่าอบรม</p>}

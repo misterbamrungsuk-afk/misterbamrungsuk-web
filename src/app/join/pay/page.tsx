@@ -163,6 +163,7 @@ function PayInner() {
               {summary.map(([n, v]) => <div key={n} className="flex justify-between gap-4 min-w-0"><span className="whitespace-nowrap shrink-0">{n}</span><span className="text-right min-w-0">{v}</span></div>)}
               <div style={{ height: 1, background: "rgba(243,234,217,0.07)", margin: "4px 0" }} />
               {items.map(([n, v]) => <div key={n} className="flex justify-between items-baseline gap-4 min-w-0"><span className="min-w-0">{n}</span><span className="whitespace-nowrap shrink-0 font-semibold text-[18px] text-[#e8c472]">{baht(v)}</span></div>)}
+              {items.length > 1 && <div className="flex justify-between items-baseline gap-4 min-w-0 pt-2 border-t border-[rgba(243,234,217,0.07)]"><span className="min-w-0 font-semibold">รวมที่ต้องโอน</span><span className="whitespace-nowrap shrink-0 font-bold text-[20px] text-[#e8c472]" data-total="1">{baht(amount)}</span></div>}
               <div className="text-[13px] font-light">{invite ? "ผู้ได้รับคำเชิญ ไม่ต้องชำระค่าการันตี Branding" : "ค่าการันตี Branding รับคืนเมื่อครบ 1 ปี ถ้าไม่ทำผิดกฎบริษัทและกฎหมาย (เช่น ไม่ปฏิเสธการรับลูกค้า)"}</div>
             </div>
             <div className="flex flex-col gap-2 bg-[#2c1a1f]" style={box}>
@@ -189,7 +190,7 @@ function PayInner() {
                 <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => onSlip(e.target.files?.[0])} />
               </label>
             </div>
-            <button type="button" role="checkbox" aria-checked={agree} onClick={() => setAgree(!agree)} className="flex gap-3 items-start text-left bg-transparent text-[14px] leading-[1.6] text-[#f3ead9]">
+            <button type="button" role="checkbox" aria-checked={agree} onClick={() => setAgree(!agree)} className="flex gap-3 items-start text-left bg-transparent text-[14px] leading-[1.6] text-[#f3ead9] min-h-11 py-2">
               <span className="shrink-0 grid place-items-center rounded-md font-bold text-[13px] text-[#1b130b]" style={{ width: 22, height: 22, marginTop: 2, background: agree ? GOLD : "transparent", boxShadow: agree ? "none" : "inset 0 0 0 1.5px rgba(232,196,114,0.6)" }}>{agree ? "✓" : ""}</span>
               <span>ยอมรับ<a href="/join/terms" target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} className="text-[#e8c472]">ข้อกำหนด</a> และยินยอมให้เก็บข้อมูลตาม<a href="/join/privacy" target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} className="text-[#e8c472]"> PDPA</a></span>
             </button>

@@ -60,7 +60,7 @@ export function BankForm({ mb, t, initial, fix = false }: { mb: string; t: strin
   };
 
   const check = (k: keyof typeof ck, label: React.ReactNode) => (
-    <button type="button" role="checkbox" aria-checked={ck[k]} onClick={() => setCk((c) => ({ ...c, [k]: !c[k] }))} className="flex gap-3 items-start p-0 bg-transparent text-[#f3ead9] text-[14px] leading-[1.6] text-left">
+    <button type="button" role="checkbox" aria-checked={ck[k]} onClick={() => setCk((c) => ({ ...c, [k]: !c[k] }))} className="flex gap-3 items-start p-0 bg-transparent text-[#f3ead9] text-[14px] leading-[1.6] text-left min-h-11">
       <span className="shrink-0 grid place-items-center rounded-md font-bold text-[14px] text-[#1b130b]" style={{ marginTop: 2, width: 22, height: 22, background: ck[k] ? GOLD : "transparent", boxShadow: ck[k] ? "none" : "inset 0 0 0 1.5px rgba(232,196,114,0.6)" }}>{ck[k] ? "✓" : ""}</span>
       <span>{label}</span>
     </button>

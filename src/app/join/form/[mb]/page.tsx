@@ -17,7 +17,7 @@ export default async function JoinFormPage({ params, searchParams }: { params: P
   const x = extraOf(row);
   const a = x.availability;
   return (
-    <JoinFormClient mb={mb} t={t ?? ""} pkg={row.package} step={step === "2" ? 2 : 1} fix={fix === "1"}
+    <JoinFormClient mb={mb} t={t ?? ""} pkg={row.package} step={step === "2" ? 2 : 1} fix={fix === "1"} invite={!!x.invite}
       init={{
         first_name: row.first_name, last_name: row.last_name, nickname: row.nickname, birthdate: row.birthdate ?? "", tel: row.tel,
         line_id: row.line_id, address: row.address, areas: x.areas ?? [], no_area: x.no_area ?? "",

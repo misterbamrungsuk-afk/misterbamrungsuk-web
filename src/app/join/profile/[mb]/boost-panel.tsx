@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import PromptPayCard from "@/components/promptpay-qr";
+import { dataUrlToFile, resizeImage } from "@/lib/join/form";
 
 // โปรโมทโปรไฟล์ — จ่ายแล้วขึ้นอันดับต้นหน้าแรก + ป้าย "แนะนำ" · จ่ายจากกระเป๋า หรือ QR พร้อมเพย์ + แนบสลิป
 type Plan = { id: string; name: string; desc: string; days: number; price: number };
@@ -68,7 +69,7 @@ export function BoostPanel({ mb, t }: { mb: string; t?: string | null }) {
           <PromptPayCard amount={p.price} />
           <label className="min-h-[46px] rounded-xl flex items-center justify-center text-[13.5px] text-[#e8c472] cursor-pointer" style={{ border: "1px dashed rgba(232,196,114,.6)" }}>
             {slip ? `แนบแล้ว: ${slip.name.slice(0, 28)}` : "แนบสลิปการโอน"}
-            <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => setSlip(e.target.files?.[0] ?? null)} />
+            <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return setSlip(null); try { setSlip(await dataUrlToFile(await resizeImage(f, 1400, 0.85), f.name.replace(/\.[^.]+$/, "") + ".jpg")); } catch { setSlip(f); } }} />
           </label>
           <button type="button" disabled={busy || !slip} onClick={paySlip} className="min-h-[46px] rounded-xl text-[14px] font-semibold bg-[#e8c472] text-[#1b130b] disabled:opacity-40">{busy ? "กำลังตรวจสลิป…" : `ส่งสลิป · โปรโมท ${p.days} วัน`}</button>
         </div>
