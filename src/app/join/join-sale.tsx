@@ -44,33 +44,36 @@ export function JoinSalePage({ seats, showEarnings = true, invite }: { seats: Se
 
       <div className="mx-auto max-w-[1200px] flex flex-col" style={{ padding: "20px 16px 0", gap: 26 }}>
         <section className="join-hero md:min-h-[340px] md:flex md:flex-col md:justify-end md:py-14 md:px-12" style={{ padding: "40px 22px 34px", borderRadius: 18 }}>
-          <div className="text-[11px] font-semibold tracking-[2px] text-[#e8c472]">{invite ? "✦ คำเชิญพิเศษ · PART TIME" : "PART TIME"}</div>
+          <div className="text-[11px] font-semibold tracking-[2px] text-[#e8c472]">{invite ? <><span className="tracking-normal text-[13px]">✦ คำเชิญพิเศษ</span> · PART TIME</> : "PART TIME"}</div>
           <h1 className="font-semibold text-[30px] md:text-[48px] leading-[1.32] text-[#f3ead9] md:max-w-[640px]" style={{ margin: "10px 0 6px" }}>เพื่อนกินเที่ยว Mister Bamrungsuk</h1>
           <p className="m-0 text-[15px] md:text-[18px] text-[#e6d6c4]">งานพาร์ทไทม์ เลือกวันเวลาเอง{invite ? " · คำเชิญพิเศษ: สมัครฟรี ได้ระดับ TOP" : ""}</p>
         </section>
 
         <section className="flex flex-col" style={{ gap: 18 }}>
+          {/* ลิงก์เชิญพิเศษ: ไม่ต้องเลือกสาย (ทุกคนได้ TOP · ฟรี) → กดเริ่มสร้างโปรไฟล์ได้เลย */}
+          {!invite && (
           <div className="grid gap-[18px] md:grid-cols-2 md:gap-6" role="radiogroup" aria-label="เลือกสายงาน">
-            {(["B", "A"] as PackageKey[]).map((k) => {
-              const on = pick === k, T = TR[k];
-              return (
-                <button key={k} type="button" role="radio" aria-checked={on} onClick={() => setPick(k)} className="w-full text-left flex flex-col"
-                  style={{ padding: 18, borderRadius: 16, gap: 16, background: T.bg, boxShadow: on ? T.sh : "none", opacity: on ? 1 : 0.8, transform: on ? "scale(1.02)" : "scale(.98)", transition: "all .3s ease", color: "#fff8ea" }}>
-                  <span className="flex items-center gap-3">
-                    <span className="shrink-0 w-6 h-6 rounded-full grid place-items-center" style={{ background: "rgba(243,234,217,0.08)" }}><span className="w-3 h-3 rounded-full" style={{ background: on ? "#e8c472" : "transparent" }} /></span>
-                    <span className="flex flex-col min-w-0" style={{ gap: 2 }}><span className="font-semibold text-[18px] leading-[1.35]">เพื่อนกินเที่ยว</span><span className="font-medium text-[15px] leading-[1.4]" style={{ opacity: 0.85 }}>{T.name2}</span></span>
-                  </span>
-                  <span className="flex flex-col gap-1.5">
-                    {T.lines.map(([kk, v]) => <span key={kk} className="flex justify-between gap-[10px] text-[#fff7e8]"><span className="whitespace-nowrap shrink-0" style={{ color: T.kc }}>{kk}</span><span className="font-semibold text-right min-w-0">{v}</span></span>)}
-                  </span>
-                  <span className="flex flex-col gap-1 rounded-xl" style={{ padding: "12px 14px", background: "rgba(0,0,0,.32)" }}>
-                    <span className="flex justify-between gap-[10px] text-[#fff7e8]"><span className="text-[#e8c472] font-semibold">ค่าสมัคร (รวมอบรม)</span><span className="font-bold text-[17px] text-[#fff1c9]" data-fee={k}>{invite ? "ฟรี" : T.fee}</span></span>
-                    <span className="text-[13px] leading-[1.6] text-[#fff7e8] font-light">{FEE_INCLUDES(k).slice(1, 3).join(" · ")}<br />{invite ? "✦ คำเชิญพิเศษ: ไม่ต้องชำระ · ได้ระดับ TOP" : "ไม่คืนเงินทุกกรณี"}</span>
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+              {(["B", "A"] as PackageKey[]).map((k) => {
+                const on = pick === k, T = TR[k];
+                return (
+                  <button key={k} type="button" role="radio" aria-checked={on} onClick={() => setPick(k)} className="w-full text-left flex flex-col"
+                    style={{ padding: 18, borderRadius: 16, gap: 16, background: T.bg, boxShadow: on ? T.sh : "none", opacity: on ? 1 : 0.8, transform: on ? "scale(1.02)" : "scale(.98)", transition: "all .3s ease", color: "#fff8ea" }}>
+                    <span className="flex items-center gap-3">
+                      <span className="shrink-0 w-6 h-6 rounded-full grid place-items-center" style={{ background: "rgba(243,234,217,0.08)" }}><span className="w-3 h-3 rounded-full" style={{ background: on ? "#e8c472" : "transparent" }} /></span>
+                      <span className="flex flex-col min-w-0" style={{ gap: 2 }}><span className="font-semibold text-[18px] leading-[1.35]">เพื่อนกินเที่ยว</span><span className="font-medium text-[15px] leading-[1.4]" style={{ opacity: 0.85 }}>{T.name2}</span></span>
+                    </span>
+                    <span className="flex flex-col gap-1.5">
+                      {T.lines.map(([kk, v]) => <span key={kk} className="flex justify-between gap-[10px] text-[#fff7e8]"><span className="whitespace-nowrap shrink-0" style={{ color: T.kc }}>{kk}</span><span className="font-semibold text-right min-w-0">{v}</span></span>)}
+                    </span>
+                    <span className="flex flex-col gap-1 rounded-xl" style={{ padding: "12px 14px", background: "rgba(0,0,0,.32)" }}>
+                      <span className="flex justify-between gap-[10px] text-[#fff7e8]"><span className="text-[#e8c472] font-semibold">ค่าสมัคร (รวมอบรม)</span><span className="font-bold text-[17px] text-[#fff1c9]" data-fee={k}>{invite ? "ฟรี" : T.fee}</span></span>
+                      <span className="text-[13px] leading-[1.6] text-[#fff7e8] font-light">{FEE_INCLUDES(k).slice(1, 3).join(" · ")}<br />{invite ? "✦ คำเชิญพิเศษ: ไม่ต้องชำระ · ได้ระดับ TOP" : "ไม่คืนเงินทุกกรณี"}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
           <div className="w-full max-w-[560px] mx-auto flex flex-col" style={{ gap: 18 }}>
             <div className="self-center flex gap-5"><Link href="/join/terms" className="tap text-[14px] text-[#e8c472]">อ่านสัญญา</Link><Link href="/join/showcase" className="tap text-[14px] text-[#e8c472]">ดูหน้าตัวอย่างแอป ›</Link></div>
             {!invite && <div className="flex justify-between items-center rounded-xl text-[13px] font-light" style={{ padding: "10px 14px", background: "rgba(232,196,114,0.10)" }}>
@@ -80,7 +83,7 @@ export function JoinSalePage({ seats, showEarnings = true, invite }: { seats: Se
             {showEarnings && !invite && <Link href="/join/earnings" className="min-h-12 rounded-[14px] text-[#e8c472] font-semibold grid place-items-center text-center hover:text-[#e8c472]" style={{ background: "rgba(232,196,114,0.16)" }}>ดูรายได้และส่วนแบ่ง · คำนวณรายได้ต่อเดือน</Link>}
             {seats.closed
               ? <span aria-disabled="true" className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center" style={{ marginTop: 6, opacity: 0.45 }}>ปิดรับสมัครแล้ว</span>
-              : <Link href={invite ? `/join/pay?pkg=${pick}&invite=${invite}` : `/join/pay?pkg=${pick}`} className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center hover:text-[#1b130b]" style={{ marginTop: 6 }}>{invite ? "เริ่มสร้างโปรไฟล์" : "ชำระเงินและรับรหัสสมัคร"}</Link>}
+              : <Link href={invite ? `/join/pay?pkg=A&invite=${invite}` : `/join/pay?pkg=${pick}`} className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center hover:text-[#1b130b]" style={{ marginTop: 6 }}>{invite ? "เริ่มสร้างโปรไฟล์" : "ชำระเงินและรับรหัสสมัคร"}</Link>}
             {invite && <p className="m-0 text-[13px] text-center text-[#b5a596] font-light">ลิงก์ส่วนตัว กรุณาอย่าเผยแพร่</p>}
             <Link href="/join/me" className="self-center min-h-11 inline-flex items-center text-[14px] text-[#e8c472] hover:text-[#e8c472]">สมัครแล้ว? เข้าสู่ระบบ Part-Time ›</Link>
           </div>

@@ -52,6 +52,8 @@ function PayInner() {
   // ลิงก์เชิญ: null = สมัครปกติ · "…" = รหัสที่ตรวจแล้วใช้ได้ · inviteErr = ลิงก์ใช้ไม่ได้
   const [invite, setInvite] = useState<string | null>(null);
   const [inviteErr, setInviteErr] = useState("");
+  // กำลังตรวจรหัสเชิญ → ยังไม่แสดง QR (กันสายเชิญฟรีเห็น QR แวบหนึ่ง)
+  const [invChecking, setInvChecking] = useState(true);
 
   useEffect(() => {
     const q = params.get("pkg");
@@ -60,10 +62,11 @@ function PayInner() {
     if (pkg === "A" || pkg === "B") setK(pkg); else router.replace("/join");
     let code = (params.get("invite") ?? "").toUpperCase();
     try { if (code) sessionStorage.setItem(INV_KEY, code); else code = sessionStorage.getItem(INV_KEY) ?? ""; } catch {}
+    if (!code) setInvChecking(false);
     if (code) fetch(`/api/join/invite?code=${encodeURIComponent(code)}`, { cache: "no-store" }).then((r) => r.json()).then((d: { ok?: boolean; state?: string }) => {
       if (d.ok) setInvite(code);
       else { setInviteErr(d.state === "full" ? "ลิงก์เชิญนี้มีผู้ใช้ครบจำนวนแล้ว" : d.state === "expired" ? "ลิงก์เชิญนี้หมดอายุแล้ว" : "ลิงก์เชิญนี้ใช้ไม่ได้"); try { sessionStorage.removeItem(INV_KEY); } catch {} }
-    }).catch(() => {});
+    }).catch(() => {}).finally(() => setInvChecking(false));
   }, [params, router]);
 
   useEffect(() => {
@@ -200,7 +203,7 @@ function PayInner() {
           </div>
 
           <div className="flex flex-col min-w-0" style={{ gap: 26 }}>
-            {!invite && <>
+            {!invite && !invChecking && <>
             <div className="flex flex-col items-center gap-3 bg-[#272013]" style={box}>
               <div className="flex justify-between gap-2 flex-wrap w-full text-[14px]"><span className="text-[#e8c472] font-semibold">PromptPay</span><span>QR หมดอายุใน <b style={{ color: sec < 120 ? "#ff8a9a" : GOLD }}>{mm}:{ss}</b></span></div>
               <div className="rounded-xl" style={{ padding: 12, background: "#000", lineHeight: 0, opacity: expired ? 0.2 : 1 }}>
