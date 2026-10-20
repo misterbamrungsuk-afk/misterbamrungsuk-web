@@ -17,7 +17,9 @@ const line = "1px solid rgba(243,234,217,0.07)";
 
 export type Rv = { rating: number; tags: string[]; body: string | null; created_at: string };
 export type FreePost = { text: string; time: string; zone: string };
-export function ProfileView({ p, reviews = [], vers = [], free = null }: { p: Person; reviews?: Rv[]; vers?: string[]; free?: FreePost | null }) {
+export function ProfileView({ p, reviews = [], vers = [], free = null, preview = false }: { p: Person; reviews?: Rv[]; vers?: string[]; free?: FreePost | null; preview?: boolean }) {
+  // โหมดตัวอย่าง (รับสมัคร Part-Time อย่างเดียว): ล็อกอิน/จอง → หน้า "เร็ว ๆ นี้"
+  const login = (next: string) => (preview ? "/soon" : `/login?next=${encodeURIComponent(next)}`);
   const avg = reviews.length ? (reviews.reduce((t, r) => t + r.rating, 0) / reviews.length).toFixed(1) : null;
   const [svc, setSvc] = useState<3 | 5>(3);
   const [fav, setFav] = useState(false);
@@ -27,7 +29,7 @@ export function ProfileView({ p, reviews = [], vers = [], free = null }: { p: Pe
   const toggleFav = async () => {
     const next = !fav; setFav(next);
     const r = await fetch("/api/me", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ favorite: p.id, on: next }) }).catch(() => null);
-    if (r?.status === 401) { setFav(!next); router.push(`/login?next=${encodeURIComponent(`/p/${p.id}`)}`); }
+    if (r?.status === 401) { setFav(!next); router.push(login(`/p/${p.id}`)); }
   };
   const [pic, setPic] = useState(0);
   // รูปจริง: ใส่รุ่น (&v=) → แคชยาว · รูปใหญ่ 960 · รูปเล็กด้านล่าง 240
@@ -42,7 +44,7 @@ export function ProfileView({ p, reviews = [], vers = [], free = null }: { p: Pe
     const r = await fetch("/api/posts/interest", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pid: p.id, on: !liked }) }).catch(() => null);
     const d = await r?.json().catch(() => null);
     setLikeBusy(false);
-    if (r?.status === 401) { router.push(`/login?next=${encodeURIComponent(`/p/${p.id}`)}`); return; }
+    if (r?.status === 401) { router.push(login(`/p/${p.id}`)); return; }
     if (d?.ok) setLiked(!!d.interested); else setLikeMsg(d?.error || "ไม่สำเร็จ ลองใหม่อีกครั้ง");
   };
   const price = { 3: priceOf(p), 5: Math.round(priceOf(p) * 1.5) };
@@ -155,7 +157,7 @@ export function ProfileView({ p, reviews = [], vers = [], free = null }: { p: Pe
             {!p.real && <Link href={`/p/${p.id}/chat`} aria-label={`แชทกับ${p.nick}`} className="h-[52px] rounded-full flex items-center gap-2 text-[#e8c472] font-semibold hover:text-[#e8c472]" style={{ padding: "0 20px", border: "1.5px solid rgba(232,196,114,.6)" }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" /></svg>แชท
             </Link>}
-            <Link href={p.real ? `/book/${p.id}` : "/login"} className="h-[52px] rounded-full bg-[#e8c472] text-[#1b130b] font-semibold flex items-center hover:text-[#1b130b]" style={{ padding: "0 28px", border: "1.5px solid #e8c472" }}>จองเลย</Link>
+            <Link href={preview ? "/soon" : p.real ? `/book/${p.id}` : "/login"} className="h-[52px] rounded-full bg-[#e8c472] text-[#1b130b] font-semibold flex items-center hover:text-[#1b130b]" style={{ padding: "0 28px", border: "1.5px solid #e8c472" }}>จองเลย</Link>
           </div>
         </div>
       </div>

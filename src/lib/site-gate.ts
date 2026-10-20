@@ -38,6 +38,8 @@ export const PT_ONLY = process.env.SITE_MODE !== "full";
 export function ptOnlyOpen(p: string) {
   const under = (b: string) => p === b || p.startsWith(`${b}/`);
   return (
+    // หน้าตัวอย่าง (mockup): แผนที่ · โปรไฟล์เพื่อน · แชทตัวอย่าง — กดจอง/จ่าย/ล็อกอิน → /soon
+    p === "/map" || under("/p") ||
     p === "/" || p === "/work-with-us" || under("/join") || under("/privacy") || p === "/page/terms" || under("/policy") ||
     p === "/gate" || p === "/soon" || p === "/offline" || p === "/login" ||
     under("/admin") || p === "/admin-login" ||

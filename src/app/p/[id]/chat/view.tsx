@@ -12,7 +12,8 @@ const baht = (n: number) => "฿" + n.toLocaleString("en-US");
 const line = "rgba(243,234,217,0.07)";
 const REPLIES = ["ได้เลยครับ เดี๋ยวผมเช็กตารางให้นะครับ", "โอเคครับ เจอกันตามนัดนะครับ ถึงแล้วจะทักไปครับ", "ขอบคุณครับ ถ้าอยากเปลี่ยนร้านบอกได้เลยนะครับ", "รับทราบครับ 🙏"];
 
-export function ChatView({ p }: { p: Person }) {
+export function ChatView({ p, preview = false }: { p: Person; preview?: boolean }) {
+  const L = preview ? "/soon" : "/login";
   const total = priceOf(p);
   const [msgs, setMsgs] = useState<Msg[]>([
     { me: false, text: "ข้อความอัตโนมัติ: สวัสดีครับ อยากนัดวันไหน กี่โมง ที่ไหน และอยากทำอะไร บอกได้เลยครับ" },
@@ -47,8 +48,8 @@ export function ChatView({ p }: { p: Person }) {
           <Link href={`/p/${p.id}`} aria-label="ย้อนกลับ" className={hb} style={{ border: `1px solid ${line}` }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg></Link>
           <img src={p.img} alt="" className="w-[42px] h-[42px] rounded-full object-cover" />
           <div className="flex-grow min-w-0"><div className="font-medium text-[16px]">{p.nick} <span className="text-[#e8c472] text-[12px] font-light">✓</span></div><div className="text-[12px] font-light" style={{ color: p.free ? "#e8c472" : "#2FBF71" }}>{typing ? "กำลังพิมพ์…" : ""}</div></div>
-          <Link href="/login" aria-label="โทรซ่อนเบอร์" className={hb} style={{ border: `1px solid ${line}` }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" aria-hidden="true"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2z" /></svg></Link>
-          <Link href="/login" aria-label="รายงาน / บล็อก" className={hb} style={{ border: `1px solid ${line}` }}><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.4" /><circle cx="12" cy="12" r="1.4" /><circle cx="12" cy="19" r="1.4" /></svg></Link>
+          <Link href={L} aria-label="โทรซ่อนเบอร์" className={hb} style={{ border: `1px solid ${line}` }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" aria-hidden="true"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2z" /></svg></Link>
+          <Link href={L} aria-label="รายงาน / บล็อก" className={hb} style={{ border: `1px solid ${line}` }}><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.4" /><circle cx="12" cy="12" r="1.4" /><circle cx="12" cy="19" r="1.4" /></svg></Link>
         </header>
 
         <div className="flex items-center gap-2.5 rounded-[14px] text-[13px] font-light" style={{ margin: "10px 12px 0", padding: "10px 12px", border: "1px solid rgba(212,175,55,.4)", background: "rgba(212,175,55,.06)" }}>
@@ -76,7 +77,7 @@ export function ChatView({ p }: { p: Person }) {
         </div>
 
         <form onSubmit={send} className="flex gap-2 items-center" style={{ borderTop: `1px solid ${line}`, padding: "10px 12px calc(14px + env(safe-area-inset-bottom))" }}>
-          <Link href="/login" aria-label="ส่งรูป" className="w-11 h-11 rounded-full grid place-items-center text-[#f3ead9] shrink-0 hover:text-[#f3ead9]" style={{ border: `1px solid ${line}` }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="9" cy="10" r="2" /><path d="m21 17-5-5-9 8" /></svg></Link>
+          <Link href={L} aria-label="ส่งรูป" className="w-11 h-11 rounded-full grid place-items-center text-[#f3ead9] shrink-0 hover:text-[#f3ead9]" style={{ border: `1px solid ${line}` }}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="9" cy="10" r="2" /><path d="m21 17-5-5-9 8" /></svg></Link>
           <input value={text} onChange={(e) => setText(e.target.value)} maxLength={300} placeholder="พิมพ์ข้อความ" aria-label="พิมพ์ข้อความ" className="flex-grow min-w-0 h-[46px] rounded-full bg-[#211a18] text-[15px] text-[#f3ead9] outline-none placeholder:text-[#b5a596] focus:border-[#e8c472]" style={{ border: `1px solid ${line}`, padding: "0 16px" }} />
           <button type="submit" aria-label="ส่ง" disabled={!text.trim()} className="w-[46px] h-[46px] rounded-full bg-[#e8c472] text-[#1b130b] grid place-items-center shrink-0 disabled:opacity-45"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" aria-hidden="true"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z" /></svg></button>
         </form>

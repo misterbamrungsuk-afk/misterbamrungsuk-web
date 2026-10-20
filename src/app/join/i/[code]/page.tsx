@@ -6,7 +6,15 @@ import { findInvite } from "@/lib/join/invites";
 import { JoinSalePage } from "../../join-sale";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "คำเชิญพิเศษ · Part-Time — Mister Bamrungsuk", robots: { index: false } };
+// ปกลิงก์ (LINE / Facebook / Messenger) แยกจากหน้าสมัครปกติ — เห็นทันทีว่าเป็นคำเชิญพิเศษ
+const OG_DESC = "สมัครฟรี ไม่มีค่าสมัคร · ได้ระดับ TOP ทันที · ลิงก์ส่วนตัว";
+export const metadata = {
+  title: "✦ คำเชิญพิเศษ · Part-Time — Mister Bamrungsuk",
+  description: OG_DESC,
+  robots: { index: false },
+  openGraph: { title: "✦ คำเชิญพิเศษ · เพื่อนกินเที่ยว Part-Time", description: OG_DESC, siteName: "Mister Bamrungsuk", images: [{ url: "/brand/og-invite.jpg", width: 1200, height: 630 }], locale: "th_TH", type: "website" },
+  twitter: { card: "summary_large_image", title: "✦ คำเชิญพิเศษ · เพื่อนกินเที่ยว Part-Time", description: OG_DESC, images: ["/brand/og-invite.jpg"] },
+};
 
 // บอร์ด JoinInvite — ลิงก์เชิญ /join/i/[รหัส] · ค่าสมัครเท่าสมัครปกติ (ลิงก์เป็นช่องทางเข้า + ป้าย) · ลิงก์ใช้ไม่ได้ → แจ้งเหตุผล + ไปหน้าสมัครปกติ
 export default async function InvitePage({ params }: { params: Promise<{ code: string }> }) {

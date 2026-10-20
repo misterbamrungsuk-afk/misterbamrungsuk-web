@@ -23,6 +23,13 @@ export async function middleware(request: NextRequest) {
     if (foreign) return NextResponse.json({ ok: false, error: "forbidden origin" }, { status: 403 });
   }
 
+  // แท็บแชทระหว่างโหมดนี้ → ห้องแชทตัวอย่าง
+  if (PT_ONLY && pathname === "/chat") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/p/ton/chat";
+    url.search = "";
+    return NextResponse.rewrite(url);
+  }
   // โหมดรับสมัคร Part-Time อย่างเดียว: หน้าอื่น → "เปิดให้บริการเร็ว ๆ นี้" · ทีมงาน (คุกกี้แอดมิน / รหัสเข้าเว็บ) ยังเปิดดูได้ทุกหน้า
   if (PT_ONLY && !ptOnlyOpen(pathname)) {
     const sitePw0 = process.env.SITE_PASSWORD;

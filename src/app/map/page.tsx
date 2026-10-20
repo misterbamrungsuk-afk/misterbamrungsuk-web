@@ -6,6 +6,8 @@ import { listPartners, stripSecret } from "@/lib/partner/store";
 import { PARTNER_SPAS } from "@/lib/booking";
 import { isPublicPartner, isSpaType } from "@/lib/partner/kind";
 import { MapView, type MapPerson, type MapVenue } from "./view";
+import { PT_ONLY } from "@/lib/site-gate";
+import { PreviewBanner } from "@/components/preview-banner";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "แผนที่ — Mister Bamrungsuk" };
@@ -24,5 +26,5 @@ export default async function MapPage() {
       .map((v) => { const [lat, lng] = jitter(coordsOf(v.province), v.id); return { id: v.id, name: v.business_name, area: v.province, lat, lng }; });
   } catch { venues = []; }
   if (!venues.length) venues = PARTNER_SPAS.map((v) => { const [lat, lng] = jitter(coordsOf(v.area), v.id); return { id: v.id, name: v.name, area: v.area, lat, lng, sample: true }; });
-  return <MapView people={people} venues={venues} sample={!live.length} />;
+  return <>{PT_ONLY && <PreviewBanner offset={160} />}<MapView people={people} venues={venues} sample={!live.length} /></>;
 }

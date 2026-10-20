@@ -6,6 +6,8 @@ import { myBlocked } from "@/lib/customer/profile";
 import { openPost } from "@/lib/interests";
 import { fileVer } from "@/lib/thumb";
 import { ProfileView } from "./view";
+import { PT_ONLY } from "@/lib/site-gate";
+import { PreviewBanner } from "@/components/preview-banner";
 
 export const dynamic = "force-dynamic";
 
@@ -33,5 +35,5 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
   const post = a ? openPost(a) : null;
   const blocked = post ? (await myBlocked().catch(() => new Set<string>())).has(p.id) : false;
   const free = post && !blocked ? { text: post.text, time: post.time, zone: post.zone } : null;
-  return <ProfileView p={p} reviews={reviews} vers={vers} free={free} />;
+  return <>{PT_ONLY && <PreviewBanner />}<ProfileView p={p} reviews={reviews} vers={vers} free={free} preview={PT_ONLY} /></>;
 }
