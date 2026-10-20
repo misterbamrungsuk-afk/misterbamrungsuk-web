@@ -330,11 +330,6 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
             <div className="flex flex-col items-center text-center gap-3" style={{ padding: "18px 18px 18px" }}>
               <span className="text-[13px] font-semibold text-[#e8c472]">ร่วมงานกับเรา · <span className="tracking-[.2em]">PART-TIME</span></span>
               <span className="font-bold text-[24px] leading-[1.3] text-[#f3ead9]" style={{ textWrap: "balance" }}>เป็นเพื่อนกินเที่ยว Mister Bamrungsuk</span>
-              <ul className="m-0 pl-5 self-stretch text-left text-[14px] leading-[1.7] text-[#d9c9b4]">
-                <li>งานพาร์ทไทม์ เลือกวันเวลาเอง</li>
-                <li>ส่วนแบ่ง 40–60% ต่อนัด + ทิปเต็ม 100%</li>
-                <li>ค่าสมัครเริ่มต้น ฿{PACKAGES.A.price.toLocaleString("en-US")} รวมอบรม · ไม่มีประสบการณ์ก็สมัครได้</li>
-              </ul>
               <Link href="/join" onClick={closeAd} className="self-stretch min-h-12 rounded-xl bg-[#e8c472] text-[#1b130b] font-semibold grid place-items-center hover:text-[#1b130b]">สมัคร Part-Time</Link>
               <Link href="/join/earnings" onClick={closeAd} className="self-stretch min-h-11 rounded-xl text-[#e8c472] text-[14px] font-semibold grid place-items-center hover:text-[#e8c472]" style={{ boxShadow: "inset 0 0 0 1px rgba(232,196,114,.45)" }}>ดูรายได้และส่วนแบ่ง</Link>
               <button type="button" onClick={closeAd} className="min-h-10 bg-transparent text-[#b5a596] text-[13px] font-light">ไว้ทีหลัง</button>
