@@ -11,11 +11,11 @@ import { useRouter } from "next/navigation";
 import type { ProfileCard } from "@/lib/join/store";
 import { CERT_MSG, GATE_MSG, GATE_SHORT, MASSAGE_SKILL, isMassage } from "@/lib/join/pt-ui";
 import type { Tier } from "@/lib/join/earnings-shared";
-import { EstimateCard, GuaranteeCard, PromoCard, SaveLinkCard } from "./hub-cards";
+import { EstimateCard, PromoCard, SaveLinkCard } from "./hub-cards";
 
 export type HubData = {
-  /** เงินประกัน (null = สายคำเชิญ ไม่เก็บการันตี) */
-  guarantee: { amount: number; paid: boolean; kyc: boolean; bank: boolean; trainedAt: string | null; strikes: number; strikeLimit: number } | null; invite: boolean;
+  /** สมัครผ่านลิงก์เชิญ (ป้าย) */
+  invite: boolean;
   mb: string; t: string; nickname: string; fullName: string; statusLine: string; track: string; trackShort: string;
   main: string; mainPath: string; pos: string; photos: string[]; age: number | null; area: string; price: number; tier: "top" | "silver"; verified: boolean;
   fixes: number;
@@ -29,7 +29,7 @@ export type HubData = {
   /** ประมาณรายได้ (ค่าจากหน้า "ราคาและส่วนแบ่ง" ของแอดมิน — ชุดเดียวกับ /join/earnings) */
   estimate: { tiers: Tier[]; tipPct: number; payout: string; show: boolean };
   /** โปรโมชั่นที่ใช้ได้จริง: แผนโปรโมทโปรไฟล์ · ค่าคอมชวนเปิดเมม (null = ปิดระบบสมาชิก) */
-  promos: { boost: { name: string; days: number; price: number }[]; member: { gold: { name: string; commission: number }; black: { name: string; commission: number }; mult: number } | null };
+  promos: { freeCodes: number; free: { days: number; windowDays: number; minJobs: number }; boost: { name: string; days: number; price: number }[]; member: { gold: { name: string; commission: number }; black: { name: string; commission: number }; mult: number } | null };
 };
 
 const GOLD = "#e8c472";
@@ -133,7 +133,7 @@ export function ProfileHub({ d }: { d: HubData }) {
                 </div>
                 <div className="flex flex-wrap gap-1.5 mt-1">
                   <span className="rounded-full text-[13px] text-[#e8c472] bg-[#251d1b] font-light" style={{ padding: "3px 10px" }}>{d.track}</span>
-                  <span data-pt-lane={d.invite ? "invite" : "guarantee"} className="rounded-full text-[13px] font-light" style={{ padding: "3px 10px", color: d.invite ? "#f3ead9" : "#1b130b", background: d.invite ? "rgba(232,196,114,0.18)" : "#e8c472" }}>{d.invite ? "✦ สายคำเชิญ" : "สายการันตี"}</span>
+                  {d.invite && <span data-pt-lane="invite" className="rounded-full text-[13px] font-light text-[#f3ead9]" style={{ padding: "3px 10px", background: "rgba(232,196,114,0.18)" }}>✦ สายคำเชิญ</span>}
                 </div>
               </div>
             </div>
@@ -164,7 +164,6 @@ export function ProfileHub({ d }: { d: HubData }) {
               {d.active && <Link href={`/join/profile/${d.mb}/sales${q}`} className="min-h-12 rounded-xl flex items-center gap-2.5 text-[#f3ead9] hover:text-[#f3ead9]" style={{ padding: "8px 12px", background: "rgba(232,196,114,0.12)", boxShadow: "inset 0 0 0 1px rgba(232,196,114,.35)" }}><span className="text-[18px]" aria-hidden="true">🤝</span><span className="flex-1 leading-[1.35]"><b className="block text-[14px]">ชวนลูกค้าเปิดเมม รับค่าคอม</b><span className="text-[12.5px] text-[#d9c9b4] font-light">ได้ค่าคอมทุกคนที่เปิดเมม หรือแปลงเป็นวงเงินโปรโมท</span></span><span className="text-[#e8c472]">›</span></Link>}
             </div>
 
-            {d.guarantee && <GuaranteeCard g={d.guarantee} />}
             <EstimateCard d={d} q={q} />
             <PromoCard d={d} q={q} onBoost={() => { setPromoOpen(true); setTimeout(() => document.getElementById("pt-wallet")?.scrollIntoView({ behavior: "smooth", block: "start" }), 50); }} />
             <SaveLinkCard d={d} />

@@ -6,18 +6,20 @@
 import { useState } from "react";
 import Link from "next/link";
 import { CONTROLLER } from "@/lib/join/legal";
-import { LOOKING_FOR, PERKS, type PackageKey } from "@/lib/join/config";
+import { FEE_INCLUDES, LOOKING_FOR, PACKAGES, PERKS, type PackageKey } from "@/lib/join/config";
 
-const TR: Record<PackageKey, { name2: string; guarantee: string; lines: [string, string][]; bg: string; kc: string; sh: string }> = {
-  A: { name2: "ตามความสามารถพิเศษ", guarantee: "10,000 บาท", lines: [["ค่าอบรม", "3,000 บาท"], ["การให้บริการต่อครั้ง", "3–8 ชม."]],
+const fmtB = (n: number) => `${n.toLocaleString("en-US")} บาท`;
+const TR: Record<PackageKey, { name2: string; fee: string; lines: [string, string][]; bg: string; kc: string; sh: string }> = {
+  A: { name2: "ตามความสามารถพิเศษ", fee: fmtB(PACKAGES.A.price), lines: [["การให้บริการต่อครั้ง", "3–8 ชม."]],
     bg: "linear-gradient(160deg, #4a3a22, #2c2216)", kc: "#e6d6c4", sh: "0 0 0 4px rgba(168,123,31,.18), 0 12px 28px rgba(168,123,31,.25)" },
-  B: { name2: "ที่มีความสามารถในการนวด", guarantee: "15,000 บาท", lines: [["ค่าอบรม", "6,000 บาท"], ["รับฟรี", "Uniform + Oil นวด 1 ชุด"], ["การให้บริการต่อครั้ง", "3–5 ชม."]],
+  B: { name2: "ที่มีความสามารถในการนวด", fee: fmtB(PACKAGES.B.price), lines: [["รับฟรี", "Uniform + Oil นวด 1 ชุด"], ["การให้บริการต่อครั้ง", "3–5 ชม."]],
     bg: "linear-gradient(160deg, #6a1a28, #3a0d16)", kc: "#f0d6d0", sh: "0 0 0 4px rgba(232,196,114,.18), 0 14px 32px rgba(200,16,46,.35)" },
 };
 const TIMELINE: [string, string][] = [["20 ต.ค. – 10 พ.ย.", "เปิดรับสมัคร"], ["ไม่เกินต้น พ.ย.", "ประกาศกฎเกณฑ์การทำงาน"], ["ภายใน 20 พ.ย.", "อบรมกลุ่ม 1"], ["30 พ.ย.", "พร้อมเปิดให้บริการ"], ["30 พ.ย. – ต้น ธ.ค.", "อบรมกลุ่ม 2"]];
-const FAQ_INVITE: [string, string] = ["คำเชิญพิเศษต่างจากสมัครปกติอย่างไร?", "ผู้ได้รับคำเชิญไม่ต้องชำระค่าการันตี Branding จ่ายแค่ค่าอบรม ขั้นตอนอื่นเหมือนสมัครปกติ"];
+const FAQ_INVITE: [string, string] = ["คำเชิญพิเศษต่างจากสมัครปกติอย่างไร?", "ผู้ได้รับคำเชิญไม่ต้องชำระค่าสมัคร และได้ระดับ TOP ทันที แค่กรอกข้อมูลสมัคร ขั้นตอนอื่นเหมือนสมัครปกติ"];
 const FAQ: [string, string][] = [
-  ["ค่าการันตี Branding คืออะไร ได้คืนเมื่อไหร่?", "ได้รับคืนเต็มจำนวนเมื่อครบ 1 ปี ถ้าไม่ทำผิดกฎบริษัทและกฎหมาย เช่น ไม่ปฏิเสธการรับลูกค้าในวันเวลาที่แจ้งไว้"],
+  ["ค่าสมัครรวมอะไรบ้าง คืนได้ไหม?", `รวมค่าอบรมแล้ว ได้แชร์ข้อมูลทางกฎหมายที่เกี่ยวข้องกับการทำงานและทริคมัดใจลูกค้า (เพื่อนกินเที่ยว ${fmtB(PACKAGES.A.price)} · สายนวด ${fmtB(PACKAGES.B.price)}) · ค่าสมัครไม่คืนเงินทุกกรณี`],
+  ["ถ้าเริ่มงานแล้วยังไม่ค่อยมีลูกค้า?", "30 วันแรกหลังเปิดรับงาน ถ้าได้งานไม่ถึง 5 เคส ระบบให้โค้ดโปรโมทโปรไฟล์ฟรี 3 วัน ขึ้นหน้าแนะนำให้ลูกค้าเห็นก่อน"],
   ["งานนี้ทำอะไรบ้าง?", "เป็นเพื่อนร่วมกิจกรรมของลูกค้า เช่น ทานข้าว เที่ยว ดูหนัง ถ่ายรูป ไม่มีบริการทางเพศใด ๆ ทั้งสิ้น"],
   ["ไม่เคยมีประสบการณ์ สมัครได้ไหม?", "ได้ ทุกคนจะได้อบรมก่อนเริ่มรับงาน"],
   ["ต้องตรวจประวัติอะไรบ้าง?", "ยืนยันตัวตนด้วยบัตรประชาชน และยินยอมให้ตรวจประวัติอาชญากรรมก่อนเปิดบัญชี"],
@@ -26,7 +28,7 @@ const FAQ: [string, string][] = [
 export type Seats = { left: number; quota: number; cohort: string; closed: boolean };
 const h2: React.CSSProperties = { margin: 0, fontWeight: 600, fontSize: 20 };
 
-/** invite = รหัสลิงก์เชิญ (บอร์ด JoinInvite): ไม่มีกล่องค่าการันตี · ไม่มีแถบที่นั่ง · ปุ่ม "เริ่มสร้างโปรไฟล์" */
+/** invite = รหัสลิงก์เชิญ (บอร์ด JoinInvite): ค่าสมัครเท่ากัน · ไม่มีแถบที่นั่ง · ปุ่ม "เริ่มสร้างโปรไฟล์" */
 export function JoinSalePage({ seats, showEarnings = true, invite }: { seats: Seats; showEarnings?: boolean; invite?: string }) {
   const faq = invite ? [FAQ_INVITE, ...FAQ.slice(1)] : FAQ;
   const [pick, setPick] = useState<PackageKey>("B");
@@ -44,7 +46,7 @@ export function JoinSalePage({ seats, showEarnings = true, invite }: { seats: Se
         <section className="join-hero md:min-h-[340px] md:flex md:flex-col md:justify-end md:py-14 md:px-12" style={{ padding: "40px 22px 34px", borderRadius: 18 }}>
           <div className="text-[11px] font-semibold tracking-[2px] text-[#e8c472]">{invite ? "✦ คำเชิญพิเศษ · PART TIME" : "PART TIME"}</div>
           <h1 className="font-semibold text-[30px] md:text-[48px] leading-[1.32] text-[#f3ead9] md:max-w-[640px]" style={{ margin: "10px 0 6px" }}>เพื่อนกินเที่ยว Mister Bamrungsuk</h1>
-          <p className="m-0 text-[15px] md:text-[18px] text-[#e6d6c4]">งานพาร์ทไทม์ เลือกวันเวลาเอง{invite ? " · ผู้ได้รับคำเชิญไม่เก็บค่าการันตี" : ""}</p>
+          <p className="m-0 text-[15px] md:text-[18px] text-[#e6d6c4]">งานพาร์ทไทม์ เลือกวันเวลาเอง{invite ? " · คำเชิญพิเศษ: สมัครฟรี ได้ระดับ TOP" : ""}</p>
         </section>
 
         <section className="flex flex-col" style={{ gap: 18 }}>
@@ -61,10 +63,10 @@ export function JoinSalePage({ seats, showEarnings = true, invite }: { seats: Se
                   <span className="flex flex-col gap-1.5">
                     {T.lines.map(([kk, v]) => <span key={kk} className="flex justify-between gap-[10px] text-[#fff7e8]"><span className="whitespace-nowrap shrink-0" style={{ color: T.kc }}>{kk}</span><span className="font-semibold text-right min-w-0">{v}</span></span>)}
                   </span>
-                  {!invite && <span className="flex flex-col gap-1 rounded-xl" style={{ padding: "12px 14px", background: "rgba(0,0,0,.32)" }}>
-                    <span className="flex justify-between gap-[10px] text-[#fff7e8]"><span className="text-[#e8c472] font-semibold">ค่าการันตี Branding</span><span className="font-bold text-[17px] text-[#fff1c9]">{T.guarantee}</span></span>
-                    <span className="text-[13px] leading-[1.6] text-[#fff7e8] font-light">รับคืนเมื่อครบ 1 ปี ถ้าไม่ทำผิดกฎบริษัทและกฎหมาย <br />(เช่น ไม่ปฏิเสธการรับลูกค้า)</span>
-                  </span>}
+                  <span className="flex flex-col gap-1 rounded-xl" style={{ padding: "12px 14px", background: "rgba(0,0,0,.32)" }}>
+                    <span className="flex justify-between gap-[10px] text-[#fff7e8]"><span className="text-[#e8c472] font-semibold">ค่าสมัคร (รวมอบรม)</span><span className="font-bold text-[17px] text-[#fff1c9]" data-fee={k}>{invite ? "ฟรี" : T.fee}</span></span>
+                    <span className="text-[13px] leading-[1.6] text-[#fff7e8] font-light">{FEE_INCLUDES(k).slice(1, 3).join(" · ")}<br />{invite ? "✦ คำเชิญพิเศษ: ไม่ต้องชำระ · ได้ระดับ TOP" : "ไม่คืนเงินทุกกรณี"}</span>
+                  </span>
                 </button>
               );
             })}

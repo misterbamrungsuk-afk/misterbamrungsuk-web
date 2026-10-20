@@ -70,7 +70,7 @@ ${trs ? `<table style="font-size:14px;border-collapse:collapse;margin-bottom:12p
 }
 
 export function applicantRegistered(a: ApplicantMail): Mail[] {
-  const rows: [string, unknown][] = [["รหัสผู้สมัคร", a.mb_code], ["ชื่อ", `${a.first_name} ${a.last_name}`], ["รูปแบบที่สมัคร", a.package ?? "-"], ["ยอดชำระ", a.amount != null ? `฿${a.amount.toLocaleString("th-TH")}` : "-"]];
+  const rows: [string, unknown][] = [["รหัสผู้สมัคร", a.mb_code], ["ชื่อ", `${a.first_name} ${a.last_name}`], ["รูปแบบที่สมัคร", a.package ?? "-"], ["ยอดชำระ", a.amount ? `฿${a.amount.toLocaleString("th-TH")}` : a.amount === 0 ? "ไม่มีค่าสมัคร (คำเชิญพิเศษ)" : "-"]];
   const out: Mail[] = [a.link
     ? profileLinkMail({ to: a.email, mb_code: a.mb_code, nickname: a.nickname, link: a.link, rows, note: "ได้รับสลิปแล้ว ทีมงานตรวจภายใน 2 ชม. (09:00–22:00) ระหว่างนี้กรอกรายละเอียดในโปรไฟล์ต่อได้เลย" })
     : { to: a.email, subject: `ได้รับใบสมัครแล้ว · ${a.mb_code}`, html: layout("ได้รับใบสมัครของคุณแล้ว", rows, "ทีมงานจะตรวจสลิปและติดต่อกลับภายใน 1–2 วันทำการ") }];

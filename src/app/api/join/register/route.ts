@@ -2,11 +2,11 @@ import { NextResponse } from "next/server";
 import { FileTypeError } from "@/lib/file-guard";
 import { limited as dbLimited } from "@/lib/rate-limit";
 import { CLOSE_AT, PACKAGES, type PackageKey } from "@/lib/join/config";
-import { createApplicant, getByEmail, saveProfile, updateApplicant, type DocKind } from "@/lib/join/store";
+import { createApplicant, getByEmail, nextDocNo, saveProfile, updateApplicant, type DocKind } from "@/lib/join/store";
 import { consumeInvite, findInvite } from "@/lib/join/invites";
 import { appendToSheet } from "@/lib/join/sheets";
 import { applicantRegistered, sendAll } from "@/lib/email";
-import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/join/legal";
+import { CONSENT_VERSION, PRIVACY_VERSION, TERMS_VERSION } from "@/lib/join/legal";
 import { TURNSTILE_ERROR, verifyTurnstile } from "@/lib/turnstile";
 import { cookies } from "next/headers";
 import { PHONE_COOKIE, normalizePhone, otpRequired, readPhoneToken } from "@/lib/otp";
@@ -72,9 +72,13 @@ export async function POST(req: Request) {
   if ((await getByEmail(email)).some(linkable)) return NextResponse.json({ ok: false, error: "อีเมลนี้สมัครไว้แล้ว · เข้าสู่ระบบ Part-Time", fields: ["email"], login: "/join/me" }, { status: 409 });
   if (s("accept_terms") !== "true") errors.push("accept_terms");
   if (s("consent_pdpa") !== "true") errors.push("consent_pdpa");
+  // แบบคำขอความยินยอม (ผู้สมัคร) ข้อ 6: ตรวจประวัติอาชญากรรม + ผลตรวจสุขภาพ = ข้อมูลอ่อนไหว (ม.26) แยกติ๊ก บังคับ
+  if (s("consent_criminal") !== "true") errors.push("consent_criminal");
 
+  // ลิงก์เชิญพิเศษ = ไม่ต้องจ่าย ไม่ต้องแนบสลิป (ตรวจรหัสด้านล่าง)
+  const inviteCode = s("invite", 12).toUpperCase();
   const files: Partial<Record<DocKind, File>> = {};
-  for (const k of REQUIRED_DOCS) {
+  for (const k of inviteCode ? [] : REQUIRED_DOCS) {
     const f = form.get(k);
     if (f instanceof File && f.size > 0) {
       if (!IMAGE_TYPES.includes(f.type) || f.size > MAX_FILE) errors.push(k);
@@ -83,15 +87,14 @@ export async function POST(req: Request) {
   }
   if (errors.length) return NextResponse.json({ ok: false, error: "กรอกข้อมูลไม่ครบหรือไม่ถูกต้อง", fields: errors }, { status: 400 });
 
-  // ลิงก์เชิญ → ไม่เก็บค่าการันตี Branding ยอดที่ต้องโอน = ค่าอบรมเท่านั้น
-  const inviteCode = s("invite", 12).toUpperCase();
+  // ลิงก์เชิญพิเศษ (บอสกำหนด 20 ต.ค. 2569): ไม่ต้องจ่ายค่าสมัคร · ได้ระดับ TOP ทันที · แค่สมัคร
   let invite: string | null = null;
   if (inviteCode) {
     const { state } = await findInvite(inviteCode);
     if (state !== "ok") return bad(state === "full" ? "ลิงก์เชิญนี้มีผู้ใช้ครบจำนวนแล้ว" : state === "expired" ? "ลิงก์เชิญนี้หมดอายุแล้ว" : "ลิงก์เชิญนี้ใช้ไม่ได้ กรุณาติดต่อแอดมิน", 410);
     invite = inviteCode;
   }
-  const amount = invite ? PACKAGES[pkg].training : PACKAGES[pkg].price;
+  const amount = invite ? 0 : PACKAGES[pkg].price;
 
   // เบอร์ที่ส่งมาต้องตรงกับเบอร์ที่ยืนยัน OTP แล้ว (cookie ลงลายเซ็นจาก /api/otp/verify)
   const verifiedPhone = readPhoneToken((await cookies()).get(PHONE_COOKIE)?.value);
@@ -99,7 +102,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "กรุณายืนยันเบอร์โทรด้วยรหัส OTP ก่อนส่งใบสมัคร", fields: ["tel"], needOtp: true }, { status: 403 });
 
   // ตรวจสลิปกับ Slip2Go — สลิปซ้ำ หรือโอนเข้าบัญชีอื่น ไม่รับ; กรณีอื่นบันทึกผลให้แอดมินตัดสิน
-  const slipCheck = await verifySlip(files.slip!, amount);
+  const slipCheck = invite ? null : await verifySlip(files.slip!, amount);
   if (slipCheck?.verdict === "dup") return NextResponse.json({ ok: false, error: "สลิปนี้เคยถูกใช้แล้ว กรุณาแนบสลิปของการโอนครั้งนี้", fields: ["slip"] }, { status: 400 });
   if (slipCheck?.verdict === "acct") return NextResponse.json({ ok: false, error: "สลิปนี้โอนเข้าบัญชีที่ไม่ใช่ของ Mister Bamrungsuk กรุณาโอนผ่าน QR ในหน้านี้ แล้วแนบสลิปใหม่", fields: ["slip"] }, { status: 400 });
 
@@ -114,20 +117,24 @@ export async function POST(req: Request) {
         bank: "", bank_account: "", bank_account_name: "",
         experience: "", skills: [], intro: "",
         consent_marketing: false,
-        consent_criminal: false,
+        consent_criminal: true,
         activities: [], talents: [], talents_other: "", activities_other: "", massage_cert: null,
         areas: [], no_area: "",
         ack_hours: false, ack_no_refuse: false,
         phone_verified_at: verifiedPhone && verifiedPhone === normalizePhone(tel) ? new Date().toISOString() : null,
         slip_check: slipCheck,
         invite,
-        consent_version: `privacy-${PRIVACY_VERSION}/terms-${TERMS_VERSION}`, consented_at: new Date().toISOString(),
+        consent_version: `privacy-${PRIVACY_VERSION}/terms-${TERMS_VERSION}/consent-${CONSENT_VERSION}`, consented_at: new Date().toISOString(),
         package: pkg, amount, payment_method: "qr", ip,
       },
       files,
     );
     // เก็บเฉพาะแฮช (docs.extra.pw_hash · store ไม่ส่งออก)
-    await saveProfile(row.id, { pw_hash: hashPw(password), pw_at: new Date().toISOString() });
+    // เลขใบแจ้งหนี้ INV (ยังไม่รัน SQL 0010 → ใช้เลขตามรหัส MB)
+    // สายเชิญไม่มียอด → ไม่ออกเอกสาร · ถือว่าชำระแล้ว (verified) + ระดับ TOP
+    const inv_no = invite ? null : (await nextDocNo("INV").catch(() => null)) ?? `INV-${row.mb_code.slice(3)}`;
+    await saveProfile(row.id, { pw_hash: hashPw(password), pw_at: new Date().toISOString(), inv_no, ...(invite ? { tier: "top" } : {}) });
+    if (invite) await updateApplicant(row.id, { status: "verified" });
     if (invite) await consumeInvite(invite).catch((e) => console.error("consume invite failed", e));
     // sync ชีตแบบไม่ให้ล้มทั้งคำขอ — ถ้าไม่สำเร็จ แอดมินกด sync ซ้ำได้
     // อีเมลแจ้งผู้สมัคร + แอดมิน (ไม่รอ ไม่ทำให้คำขอล้ม)

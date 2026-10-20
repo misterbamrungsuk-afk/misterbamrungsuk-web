@@ -59,6 +59,9 @@ const changes = () => run(async () => {
 /** ร้านค้า: ออเดอร์โอนเงินที่ไม่ชำระภายใน 24 ชม. → ยกเลิก "หมดเวลาชำระ" (ออเดอร์กระเป๋าเงินไม่เกี่ยว) */
 const market = () => run(async () => (await import("@/lib/market/store")).sweepOrders());
 
+/** Part-Time ครบ 30 วันแรกแต่งานไม่ถึง 5 เคส → โค้ดโปรโมทฟรี 3 วัน */
+const freeBoost = () => run(async () => (await import("@/lib/join/free-boost")).lowJobsBoostCodes());
+
 /** ทุกส่วน (cron รายวัน) */
 export async function sweepAll(): Promise<SweepSummary> {
   // ทีละส่วนตามลำดับ (การจองก่อน) — กันส่วนต่าง ๆ แย่งแก้แถวเดียวกันพร้อมกัน
@@ -69,6 +72,7 @@ export async function sweepAll(): Promise<SweepSummary> {
   out.calls = await calls();
   out.changes = await changes();
   out.market = await market();
+  out.freeBoost = await freeBoost();
   return out;
 }
 

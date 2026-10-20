@@ -27,7 +27,7 @@ const JSONH = { 'content-type': 'application/json' };
   const s = await (await req('/api/otp/send', { method: 'POST', headers: JSONH, body: JSON.stringify({ phone: tel }) })).json();
   await req('/api/otp/verify', { method: 'POST', headers: JSONH, body: JSON.stringify({ phone: tel, code: s.devCode }) });
   const dirty = 'abc' + tel.slice(0, 3) + '-' + tel.slice(3, 6) + ' ' + tel.slice(6);
-  const j = await (await req('/api/join/register', { method: 'POST', body: form({ package: 'A', first_name: 'ยูเอ็กซ์', last_name: 'ทดสอบ', nickname: 'ยูเอ็กซ์', tel: dirty, email: 'pt' + tel + '@test.local', password: 'test-pass-1234', accept_terms: 'true', consent_pdpa: 'true' }, { slip: F('s.jpg') }) })).json();
+  const j = await (await req('/api/join/register', { method: 'POST', body: form({ package: 'A', first_name: 'ยูเอ็กซ์', last_name: 'ทดสอบ', nickname: 'ยูเอ็กซ์', tel: dirty, email: 'pt' + tel + '@test.local', password: 'test-pass-1234', accept_terms: 'true', consent_pdpa: 'true', consent_criminal: 'true' }, { slip: F('s.jpg') }) })).json();
   const mb = j.mb_code; ok('register with non-digit phone accepted', !!mb, j.error || mb);
   const list = (await (await fetch(B + '/admin/applicants', { headers: ADM })).text()).replace(/\\"/g, '"');
   const at = list.indexOf('"mb_code":"' + mb + '"'); const ids = [...list.slice(Math.max(0, at - 6000), at).matchAll(/"id":"([0-9a-f-]{36})"/g)]; const id = ids[ids.length - 1]?.[1];

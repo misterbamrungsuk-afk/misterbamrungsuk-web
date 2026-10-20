@@ -20,7 +20,11 @@ export default async function HomePage() {
     me ? listNotices("customer", me.sub).catch(() => []) : [],
     getMemberSettings(),
   ]);
-  const live = all.filter((p) => !blocked.has(p.id)); // ลูกค้าบล็อกไว้ = ไม่แสดง
+  const visible = all.filter((p) => !blocked.has(p.id)); // ลูกค้าบล็อกไว้ = ไม่แสดง
+  // คนที่ซื้อโปรโมท: สุ่มลำดับทุกครั้งที่เปิดหน้า (ทุกคนมีโอกาสขึ้นแถวแรกเท่ากัน) · สุ่มฝั่งเซิร์ฟเวอร์ ส่งเป็น props → ไม่ hydration mismatch
+  const boosted = visible.filter((p) => p.boost);
+  for (let i = boosted.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [boosted[i], boosted[j]] = [boosted[j], boosted[i]]; }
+  const live = [...boosted, ...visible.filter((p) => !p.boost)];
   const unread = notices.filter((n) => n.kind === "message" && !n.read_at).length;
   // มี Part-Time จริงที่แอดมินเปิดแสดงแล้ว → แสดงเฉพาะคนจริง · ยังไม่มี → ตัวอย่าง
   return <HomeFeed showEarnings={show} people={live.length ? live : undefined} me={me ? { name: prof?.name || me.email.split("@")[0] } : null} unread={unread} memberTier={prof?.member_tier ?? null} promo={{ gold: mcfg.tiers.gold, black: mcfg.tiers.black }} />;

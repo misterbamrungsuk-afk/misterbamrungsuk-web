@@ -1,6 +1,6 @@
 "use client";
 
-// ลิงก์เชิญ (บอร์ด AdminInvites) — ผู้สมัครจากลิงก์เชิญไม่ต้องชำระค่าการันตี Branding จ่ายเฉพาะค่าอบรม
+// ลิงก์เชิญ (บอร์ด AdminInvites) — ช่องทางสมัครพิเศษจากทีมงาน · ค่าสมัครเท่าสมัครปกติ
 import { useEffect, useState } from "react";
 import { Card, PageHead } from "../admin-nav";
 import type { Invite } from "@/lib/join/invites";
@@ -38,7 +38,7 @@ export function InvitesAdmin({ initial, recent }: { initial: Invite[]; recent: {
 
   return (
     <>
-      <PageHead title="ลิงก์เชิญ" sub="INVITE LINKS · ผู้สมัครจากลิงก์เชิญไม่ต้องชำระค่าการันตี Branding (จ่ายเฉพาะค่าอบรม)" />
+      <PageHead title="ลิงก์เชิญ" sub="INVITE LINKS · ช่องทางสมัครพิเศษ · ค่าสมัครเท่าสมัครปกติ" />
       <div className="flex flex-col gap-4">
         <Card>
           <h2 className="font-semibold mb-3">สร้างลิงก์ใหม่</h2>

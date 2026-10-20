@@ -33,8 +33,6 @@ const match = (r: Applicant, f: Filter) => f === "all" ? true : f === "todo" ? i
 const FILTERS: [Filter, string][] = [["todo", "รอตรวจ"], ["fix", "ตีกลับ · รอแก้"], ["verified", "ชำระแล้ว"], ["pending_slip", "รอตรวจสลิป"], ["rejected", "ปฏิเสธ"], ["refunded", "คืนเงินแล้ว"], ["all", "ทั้งหมด"]];
 const PKG_TABS: [Pkg, string, string][] = [["all", "ทั้งหมด", "ผู้สมัครทุกสาย"], ["A", "สาย A", PACKAGES.A.name], ["B", "สาย B", PACKAGES.B.name]];
 const PN: Record<Pkg, string> = { all: "ทุกสาย", A: "สาย A", B: "สาย B" };
-const G = (k: PackageKey) => feeBreakdown(k)[0].amount;
-const T = (k: PackageKey) => feeBreakdown(k)[1].amount;
 const GRID = "grid grid-cols-[110px_minmax(0,1.4fr)_100px_100px_90px_120px_100px]";
 
 /** ค้นหาจาก ชื่อ ชื่อเล่น รหัส MB เบอร์ อีเมล LINE */
@@ -58,8 +56,10 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
   const paid = rows.filter((r) => r.status === "verified");
   const nOf = (k: Pkg, list = paid) => list.filter((r) => k === "all" || r.package === k).length;
   const nA = nOf("A"), nB = nOf("B");
-  const sumOf = (k: Pkg, f: (p: PackageKey) => number) => (k !== "B" ? nA * f("A") : 0) + (k !== "A" ? nB * f("B") : 0);
-  const fx = (k: Pkg, f: (p: PackageKey) => number) => k === "A" ? `A ${nA}×${fmt(f("A"))}` : k === "B" ? `B ${nB}×${fmt(f("B"))}` : `A ${nA}×${fmt(f("A"))} + B ${nB}×${fmt(f("B"))}`;
+  // ยอดจริงที่ผู้สมัครจ่าย (amount) — ใบเก่าก่อนเปลี่ยนราคา/สายเชิญนับตามที่จ่ายจริง
+  const inPkg = (k: Pkg) => (r: Applicant) => k === "all" || r.package === k;
+  const sumAmt = (list: Applicant[]) => list.reduce((a, r) => a + (r.amount || 0), 0);
+  const waiting = rows.filter((r) => r.status === "pending_slip");
   const notLine = paid.filter((r) => !r.line_joined).length;
 
   const t = q.trim().toLowerCase();
@@ -150,16 +150,16 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
                 style={{ borderColor: on ? GOLD : LINE_BD, background: on ? "rgba(240,200,90,.14)" : "#241717", boxShadow: on ? "0 0 0 3px rgba(240,200,90,.15)" : "none" }}>
                 <span className="flex justify-between items-center w-full"><span className="text-[11px] tracking-[1.5px] text-[#f0c75a] font-semibold">{code}</span><span className="text-xs text-[#cdbfb3]">{nOf(k)} คน</span></span>
                 <span className="font-lux font-semibold text-[15px]">{name}</span>
-                <span className="font-lux font-bold text-2xl text-[#ffd76a]">{fmt(sumOf(k, G) + sumOf(k, T))}</span>
+                <span className="font-lux font-bold text-2xl text-[#ffd76a]">{fmt(sumAmt(paid.filter(inPkg(k))))}</span>
               </button>
             );
           })}
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 rounded-2xl border border-[rgba(240,200,90,.55)] overflow-hidden" style={{ background: "linear-gradient(160deg, rgba(240,200,90,.1), #241717 60%)" }}>
-          <div className="px-4 py-3"><div className="text-[11.5px] text-[#cdbfb3]">ค่าการันตี Branding · {PN[pkg]}</div><div className="font-lux font-bold text-xl">{fmt(sumOf(pkg, G))}</div><div className="text-[11.5px] text-[#9a8a85]">{fx(pkg, G)} · คืนเมื่อครบ 1 ปี</div></div>
-          <div className="px-4 py-3 border-l border-[rgba(240,200,90,.25)]"><div className="text-[11.5px] text-[#cdbfb3]">ค่าอบรม · {PN[pkg]}</div><div className="font-lux font-bold text-xl">{fmt(sumOf(pkg, T))}</div><div className="text-[11.5px] text-[#9a8a85]">{fx(pkg, T)}</div></div>
-          <div className="px-4 py-3 border-l border-[rgba(240,200,90,.25)] bg-[rgba(176,24,44,.12)]"><div className="text-[11.5px] text-[#cdbfb3]">ยอดรวม · {PN[pkg]}</div><div className="font-lux font-bold text-xl text-[#ffd76a]">{fmt(sumOf(pkg, G) + sumOf(pkg, T))}</div><div className="text-[11.5px] text-[#9a8a85]">{nOf(pkg)} คน</div></div>
+          <div className="px-4 py-3 bg-[rgba(176,24,44,.12)]"><div className="text-[11.5px] text-[#cdbfb3]">ค่าสมัครที่ได้รับ · {PN[pkg]}</div><div className="font-lux font-bold text-xl text-[#ffd76a]">{fmt(sumAmt(paid.filter(inPkg(pkg))))}</div><div className="text-[11.5px] text-[#9a8a85]">{nOf(pkg)} คน · ไม่คืนเงิน</div></div>
+          <div className="px-4 py-3 border-l border-[rgba(240,200,90,.25)]"><div className="text-[11.5px] text-[#cdbfb3]">แยกสาย</div><div className="font-lux font-bold text-xl">A {nA} · B {nB}</div><div className="text-[11.5px] text-[#9a8a85]">A {fmt(PACKAGES.A.price)} · B {fmt(PACKAGES.B.price)} · เชิญ {nOf(pkg, paid.filter((r) => r.invite))} คน</div></div>
+          <div className="px-4 py-3 border-l border-[rgba(240,200,90,.25)]"><div className="text-[11.5px] text-[#cdbfb3]">รอตรวจสลิป · {PN[pkg]}</div><div className="font-lux font-bold text-xl">{fmt(sumAmt(waiting.filter(inPkg(pkg))))}</div><div className="text-[11.5px] text-[#9a8a85]">{nOf(pkg, waiting)} คน</div></div>
           <div className="px-4 py-3 border-l border-[rgba(240,200,90,.25)]"><div className="text-[11.5px] text-[#cdbfb3]">ยังไม่เข้ากลุ่ม LINE</div><div className="font-lux font-bold text-xl text-[#eed58a]">{notLine} คน</div><div className="text-[11.5px] text-[#9a8a85]">โควตา {QUOTA} คน</div></div>
         </div>
         <FlashMsg msg={msg} />
@@ -174,7 +174,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
                   style={{ background: sel?.id === r.id ? "rgba(240,200,90,.16)" : "transparent" }}>
                   <span className="text-[#ffd76a]">{r.mb_code}</span>
                   <span className="truncate pr-2">{r.first_name} {r.last_name}</span>
-                  <span className="text-[#d3c7bc] pr-1">{r.package} · {r.invite ? <><span className="text-[#e8c472]">✦ เชิญ</span> {fmt(T(r.package))}</> : <>{fmt(G(r.package))} + {fmt(T(r.package))}</>}</span>
+                  <span className="text-[#d3c7bc] pr-1">{r.package} · {r.invite && <span className="text-[#e8c472]">✦ เชิญ </span>}{fmt(r.amount)}</span>
                   <span className="flex flex-col leading-tight text-[11.5px]"><span style={{ color: r.status === "verified" ? "#4ade80" : r.status === "pending_slip" ? "#eed58a" : "#fca5a5" }}>{LABEL[r.status]}</span><span style={{ color: KYC_LABEL[r.kyc_status ?? "none"][1] }}>{KYC_LABEL[r.kyc_status ?? "none"][0]}</span></span>
                   <span className="text-[#d3c7bc]">{cohortName(r.cohort)}</span>
                   <span style={{ color: r.line_joined ? "#4ade80" : "#eed58a" }}>{r.line_joined ? "✓ เข้ากลุ่มแล้ว" : "ยังไม่เข้า"}</span>
@@ -199,10 +199,10 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
             <div className="flex gap-3 items-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={sel.photos?.[0] ? file(sel.photos[0]) : sel.docs.photo ? file(sel.docs.photo) : ""} alt="" className="w-14 h-14 rounded-[14px] object-cover bg-[#130e0e]" />
-              <div className="min-w-0"><div className="font-lux font-semibold text-[17px] truncate">{sel.first_name} {sel.last_name}</div><div className="text-[#ffd76a] text-xs">{sel.mb_code} · {sel.package} · {sel.invite ? `ลิงก์เชิญ · ${fmt(T(sel.package))}` : `${fmt(G(sel.package))} + ${fmt(T(sel.package))}`}</div></div>
+              <div className="min-w-0"><div className="font-lux font-semibold text-[17px] truncate">{sel.first_name} {sel.last_name}</div><div className="text-[#ffd76a] text-xs">{sel.mb_code} · {sel.package} · {sel.invite ? "ลิงก์เชิญ · " : ""}{fmt(sel.amount)}{sel.inv_no ? ` · ${sel.inv_no}` : ""}{sel.ri_no ? ` · ${sel.ri_no}` : ""}</div></div>
             </div>
             <Progress r={sel} />
-            {sel.invite && <p className="text-[12.5px] text-[#e8c472] m-0">✦ สมัครผ่านลิงก์เชิญ ({sel.invite}) · ไม่เก็บค่าการันตี · ยอดที่ต้องได้รับ = ค่าอบรม</p>}
+            {sel.invite && <p className="text-[12.5px] text-[#e8c472] m-0">✦ สมัครผ่านลิงก์เชิญ ({sel.invite}) · ค่าสมัครเต็มเท่าคนทั่วไป</p>}
             <div className="flex justify-between items-center gap-2"><span className="text-[#cdbfb3]">ระดับ (หลังอบรม)</span>
               <span className="flex gap-1">{(["silver", "top"] as const).map((t) => { const on = (sel.tier ?? "silver") === t; return <button key={t} onClick={() => setTier(sel.id, t)} aria-pressed={on} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={{ borderColor: on ? GOLD : LINE_BD, background: on ? GOLD : "transparent", color: on ? "#1a1206" : "#d3c7bc" }}>{t === "top" ? "TOP" : "Silver"}</button>; })}</span>
             </div>
@@ -257,7 +257,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
                 <div className="h-px bg-[rgba(240,200,90,.38)]" />
                 <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[12.5px]">
                   <dt className="text-[#cdbfb3]">สายงาน</dt><dd>{sel.package} · {PACKAGES[sel.package].name}</dd>
-                  {feeBreakdown(sel.package, !!sel.invite).map((x) => <Fragment key={x.name}><dt className="text-[#cdbfb3]">{x.name}</dt><dd>{fmt(x.amount)}</dd></Fragment>)}
+                  {feeBreakdown(sel.package, sel.amount).map((x) => <Fragment key={x.name}><dt className="text-[#cdbfb3]">{x.name}</dt><dd>{fmt(x.amount)}</dd></Fragment>)}
                   <dt className="text-[#cdbfb3]">ชำระโดย</dt><dd>{sel.payment_method === "qr" ? "QR" : "โอนบัญชี"}</dd>
                   <dt className="text-[#cdbfb3]">Slip2Go</dt>
                   <dd>{sel.slip_check ? <span style={{ color: SLIP_LABEL[sel.slip_check.verdict][1] }}>{SLIP_LABEL[sel.slip_check.verdict][0]} · {sel.slip_check.amount != null ? fmt(sel.slip_check.amount) : "-"}</span> : <span className="text-[#9a8a85]">ไม่ได้ตรวจ</span>}</dd>

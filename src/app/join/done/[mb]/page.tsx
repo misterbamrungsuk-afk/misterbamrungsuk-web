@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { canResume } from "@/lib/join/resume";
-import { PACKAGES, lineAddUrl } from "@/lib/join/config";
+import { FEE_NOTE, PACKAGES, lineAddUrl } from "@/lib/join/config";
 import { extraOf, getByMb } from "@/lib/join/store";
 import { TRAINING, sessionsLabel } from "@/lib/join/training";
 import { Forbidden } from "../../_kyc/ui";
@@ -29,11 +29,7 @@ export default async function DonePage({ params, searchParams }: { params: Promi
   const P = PACKAGES[row.package];
   const group = x.cohort ? `กลุ่ม ${x.cohort}` : TRAINING.group;
   const info: [string, string][] = [["วันอบรม", TRAINING.window], ["สถานที่", TRAINING.venue], ["จำนวนรอบ", `${sessionsLabel(row.package)} · ทีมงานเช็กชื่อที่หน้างาน`], ["เปิดให้บริการ", TRAINING.openService]];
-  const fee = x.invite
-    ? `สมัครผ่านลิงก์เชิญ · ชำระเฉพาะค่าอบรม ${baht(P.training)} ไม่เก็บค่าการันตี`
-    : row.package === "B"
-    ? `เพื่อนกินเที่ยว (สำหรับผู้มีความสามารถด้านการนวด): ค่าการันตี Branding ${baht(P.guarantee)} + ค่าอบรม (รวมยูนิฟอร์ม + น้ำมันนวด) ${baht(P.training)} = ${baht(P.price)}`
-    : `เพื่อนกินเที่ยว (ตามความสามารถพิเศษ): ค่าการันตี Branding ${baht(P.guarantee)} + ค่าอบรม ${baht(P.training)} = ${baht(P.price)}`;
+  const fee = `${x.invite ? "สมัครผ่านลิงก์เชิญ · " : ""}${row.package === "B" ? "เพื่อนกินเที่ยว (สำหรับผู้มีความสามารถด้านการนวด)" : "เพื่อนกินเที่ยว (ตามความสามารถพิเศษ)"}: ${x.invite && !row.amount ? "ไม่มีค่าสมัคร · ระดับ TOP" : `ค่าสมัคร (รวมค่าอบรม) ${baht(row.amount || P.price)} · ${FEE_NOTE}`}`;
 
   return (
     <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9", lineHeight: "normal" }}>
@@ -63,11 +59,11 @@ export default async function DonePage({ params, searchParams }: { params: Promi
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2.5">
-          <a href={`/join/receipt/${row.mb_code}${q}`} className="min-h-12 rounded-[14px] bg-[#211a18] text-[#e8c472] text-[14px] font-semibold grid place-items-center text-center px-2 hover:text-[#e8c472]" style={{ border: "1px solid rgba(243,234,217,0.07)" }}>ใบเสร็จรับเงิน (PDF)</a>
+          <a href={`/join/receipt/${row.mb_code}${q}`} className="min-h-12 rounded-[14px] bg-[#211a18] text-[#e8c472] text-[14px] font-semibold grid place-items-center text-center px-2 hover:text-[#e8c472]" style={{ border: "1px solid rgba(243,234,217,0.07)" }}>{row.status === "verified" ? "ใบเสร็จรับเงิน (PDF)" : "ใบแจ้งหนี้ (PDF)"}</a>
           <a href={`/join/doc/${row.mb_code}${q}`} className="min-h-12 rounded-[14px] bg-[#211a18] text-[#e8c472] text-[14px] font-semibold grid place-items-center text-center px-2 hover:text-[#e8c472]" style={{ border: "1px solid rgba(243,234,217,0.07)" }}>ใบยืนยันการสมัคร (PDF)</a>
         </div>
         <Link href={`/join/profile/${row.mb_code}${q}`} className="min-h-[52px] rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold text-[15px] grid place-items-center hover:text-[#1b130b]">ไปที่โปรไฟล์ของฉัน</Link>
-        <div className="text-[12px] leading-[1.6] text-center font-light text-[#d9c9b4]">{x.invite ? fee : `${fee} · เงินประกัน Refundable – คืนเมื่อครบ 1 ปี หากไม่ผิดกฎ`}</div>
+        <div className="text-[12px] leading-[1.6] text-center font-light text-[#d9c9b4]">{fee}</div>
       </div>
     </div>
   );

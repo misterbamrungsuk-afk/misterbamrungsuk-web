@@ -2,12 +2,12 @@ import { notFound } from "next/navigation";
 import { Forbidden } from "../../_kyc/ui";
 import { canResume } from "@/lib/join/resume";
 import { ISSUER } from "@/lib/join/legal";
-import { BRAND, PACKAGES, feeBreakdown } from "@/lib/join/config";
-import { extraOf, fullName, getByMb } from "@/lib/join/store";
+import { BRAND, FEE_NOTE, PACKAGES, feeBreakdown } from "@/lib/join/config";
+import { ensureReceiptNo, extraOf, fullName, getByMb } from "@/lib/join/store";
 import { SavePdfButton } from "./save-pdf";
 
-// ใบเสร็จรับเงิน (A4 · ปุ่มดาวน์โหลดเป็นไฟล์ PDF) — ออกได้เมื่อทีมงานตรวจสลิปแล้ว (status = verified) · ก่อนนั้นแสดงสถานะรอตรวจ
-// เลขที่ใบเสร็จผูกกับรหัสผู้สมัคร (RC-xxxxxxx) จึงไม่ซ้ำและออกซ้ำได้เลขเดิม
+// ใบแจ้งหนี้ / ใบเสร็จรับเงิน (A4 · ดาวน์โหลด PDF) — รอตรวจสลิป = ใบแจ้งหนี้เลข INV · อนุมัติแล้ว = ใบเสร็จรับเงินเลข RI (อ้างอิง INV)
+// เลขรันต่อเนื่องออกใน DB (0010_doc_numbers) · ใบเก่าก่อนมีเลข → RC-รหัสผู้สมัคร
 export const dynamic = "force-dynamic";
 export const metadata = { title: "ใบเสร็จรับเงิน — Mister Bamrungsuk", robots: { index: false } };
 
@@ -37,13 +37,20 @@ export default async function ReceiptPage({ params, searchParams }: { params: Pr
   const { t } = await searchParams;
   if (!/^MB-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
   const q = t ? `?t=${encodeURIComponent(t)}` : "";
-  const row = await getByMb(mb);
+  let row = await getByMb(mb);
   if (!row) notFound();
+  // อนุมัติก่อนมีระบบเลข RI → ออกเลขให้ครั้งแรกที่เปิด (ครั้งเดียว)
+  if (row.status === "verified" && !extraOf(row).ri_no) { await ensureReceiptNo(row).catch(() => {}); row = (await getByMb(mb)) ?? row; }
   const x = extraOf(row);
-  const fees = feeBreakdown(row.package, !!x.invite);
+  const fees = feeBreakdown(row.package, row.amount);
   const total = row.amount || fees.reduce((a, f) => a + f.amount, 0);
   const paid = row.status === "verified";
-  const no = `RC-${mb.slice(3)}`;
+  const invoice = row.status === "pending_slip";
+  // สมัครผ่านคำเชิญพิเศษ (ไม่มียอด) → ไม่มีใบแจ้งหนี้/ใบเสร็จ
+  const free = !!x.invite && !row.amount;
+  const show = (paid || invoice) && !free;
+  const no = paid ? x.ri_no || `RC-${mb.slice(3)}` : x.inv_no || `INV-${mb.slice(3)}`;
+  const title = paid ? "ใบเสร็จรับเงิน" : "ใบแจ้งหนี้";
   const th = "text-left font-normal text-[#6b5a50] py-1 pr-4 align-top whitespace-nowrap";
 
   return (
@@ -64,18 +71,18 @@ export default async function ReceiptPage({ params, searchParams }: { params: Pr
           <a href={`/join/done/${row.mb_code}${q}`} className="text-[13px] text-[#5a4a40] underline underline-offset-2">← กลับหน้าสมัครสำเร็จ</a>
           <a href={`/join/doc/${row.mb_code}${q}`} className="text-[13px] text-[#7e0a1e] underline underline-offset-2">ใบยืนยันการสมัคร ›</a>
         </span>
-        {paid && <SavePdfButton targetId="receipt-sheet" fileName={`ใบเสร็จ-${row.mb_code}`} />}
+        {show && <SavePdfButton targetId="receipt-sheet" fileName={`${title}-${no}`} label={`ดาวน์โหลด${title} (PDF)`} />}
       </div>
 
-      {!paid ? (
+      {!show ? (
         <div className="mx-auto max-w-[520px] bg-white rounded-2xl text-center text-[#1d1414] shadow-[0_6px_30px_rgba(0,0,0,.18)]" style={{ padding: "36px 24px" }}>
-          <div className="text-[20px] font-semibold">{row.status === "pending_slip" ? "ใบเสร็จจะออกหลังทีมงานตรวจสลิป" : row.status === "refunded" ? "รายการนี้คืนเงินแล้ว" : "รายการนี้ไม่ได้รับการอนุมัติ"}</div>
-          <p className="text-[14px] text-[#6b5a50] mt-2 mb-0">{row.status === "pending_slip" ? "ทีมงานตรวจสลิปภายใน 2 ชม. (09:00–22:00) · เมื่อตรวจแล้วกลับมาที่หน้านี้เพื่อดาวน์โหลดใบเสร็จ (PDF) ได้ทันที" : "ติดต่อทีมงานทาง LINE หากมีข้อสงสัย"}</p>
+          <div className="text-[20px] font-semibold">{free ? "สมัครผ่านคำเชิญพิเศษ · ไม่มีค่าสมัคร" : row.status === "refunded" ? "รายการนี้คืนเงินแล้ว" : "รายการนี้ไม่ได้รับการอนุมัติ"}</div>
+          <p className="text-[14px] text-[#6b5a50] mt-2 mb-0">{free ? "ไม่มีใบแจ้งหนี้หรือใบเสร็จสำหรับการสมัครนี้" : "ติดต่อทีมงานทาง LINE หากมีข้อสงสัย"}</p>
           <div className="mt-4 text-[13px] text-[#6b5a50]">รหัสผู้สมัคร <b className="text-[#7e0a1e] tracking-[1px]">{row.mb_code}</b></div>
         </div>
       ) : (
         <article id="receipt-sheet" className="doc-sheet mx-auto w-full max-w-[210mm] bg-white text-[#1d1414] shadow-[0_6px_30px_rgba(0,0,0,.18)] px-[14mm] py-[12mm] text-[13px] leading-relaxed">
-          <header className="flex items-start justify-between gap-4 border-b-2 border-[#c9a24a] pb-3">
+          <header className="flex flex-col sm:flex-row items-start justify-between gap-4 border-b-2 border-[#c9a24a] pb-3">
             <div className="flex items-center gap-3 min-w-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/brand/logo.png" alt={BRAND.name} className="h-14 w-auto object-contain" />
@@ -86,19 +93,20 @@ export default async function ReceiptPage({ params, searchParams }: { params: Pr
                 <div>โทร {ISSUER.phone} · {ISSUER.email}</div>
               </div>
             </div>
-            <div className="text-right shrink-0">
-              <div className="text-[20px] font-bold text-[#7e0a1e]">ใบเสร็จรับเงิน</div>
-              <div className="text-[11px] text-[#6b5a50]">RECEIPT · ต้นฉบับ</div>
-              <table className="mt-2 ml-auto text-[12px]"><tbody>
-                <tr><th className={th}>เลขที่</th><td className="font-semibold">{no}</td></tr>
-                <tr><th className={th}>วันที่ชำระ</th><td>{thDate(new Date(row.created_at))}</td></tr>
+            <div className="sm:text-right shrink-0 w-full sm:w-auto">
+              <div className="text-[20px] font-bold text-[#7e0a1e]" data-doc-title={paid ? "receipt" : "invoice"}>{title}</div>
+              <div className="text-[11px] text-[#6b5a50]">{paid ? "RECEIPT" : "INVOICE"} · ต้นฉบับ</div>
+              <table className="mt-2 sm:ml-auto text-[12px]"><tbody>
+                <tr><th className={th}>เลขที่</th><td className="font-semibold" data-doc-no={no}>{no}</td></tr>
+                {paid && x.inv_no && <tr><th className={th}>อ้างอิงใบแจ้งหนี้</th><td>{x.inv_no}</td></tr>}
+                <tr><th className={th}>{paid ? "วันที่ชำระ" : "วันที่แจ้ง"}</th><td>{thDate(new Date(row.created_at))}</td></tr>
                 <tr><th className={th}>วันที่ออก</th><td>{thDate(new Date())}</td></tr>
               </tbody></table>
             </div>
           </header>
 
           <section className="mt-4 rounded-lg bg-[#f6f0e4]" style={{ padding: "10px 14px" }}>
-            <div className="text-[11.5px] text-[#6b5a50]">ได้รับเงินจาก</div>
+            <div className="text-[11.5px] text-[#6b5a50]">{paid ? "ได้รับเงินจาก" : "ลูกค้า"}</div>
             <div className="font-semibold text-[14px]">{fullName(row)}{row.nickname ? ` (${row.nickname})` : ""}</div>
             <div className="text-[12px]">รหัสผู้สมัคร {row.mb_code} · โทร {row.tel || "-"}{row.address ? ` · ${row.address}` : ""}</div>
           </section>
@@ -119,16 +127,16 @@ export default async function ReceiptPage({ params, searchParams }: { params: Pr
           </table>
 
           <div className="mt-4 text-[12px] text-[#4a3a30] flex flex-col gap-0.5">
-            <div>ชำระโดย: โอนผ่าน QR พร้อมเพย์ · ตรวจสอบสลิปแล้ว</div>
-            {x.invite && <div>สมัครผ่านลิงก์เชิญพิเศษ · ไม่เก็บค่าการันตี Branding</div>}
-            {!x.invite && <div>ค่าการันตี Branding เป็นเงินประกัน คืนเมื่อครบ 1 ปีตามเงื่อนไขในสัญญา</div>}
+            <div>{paid ? "ชำระโดย: โอนผ่าน QR พร้อมเพย์ · ตรวจสอบสลิปแล้ว" : "ได้รับสลิปการโอนแล้ว · รอทีมงานตรวจสอบ (ภายใน 2 ชม. 09:00–22:00) · ตรวจแล้วออกใบเสร็จรับเงินในหน้านี้"}</div>
+            {x.invite && <div>สมัครผ่านลิงก์เชิญพิเศษ</div>}
+            <div>{FEE_NOTE}</div>
           </div>
 
           <div className="grid grid-cols-2 gap-10 mt-14 text-center text-[12.5px] break-inside-avoid">
-            <div><div className="border-b border-dotted border-[#6b5a50] h-10" /><div className="mt-1">ผู้รับเงิน</div><div className="text-[#6b5a50]">{ISSUER.name}</div></div>
+            <div><div className="border-b border-dotted border-[#6b5a50] h-10" /><div className="mt-1">{paid ? "ผู้รับเงิน" : "ผู้ออกเอกสาร"}</div><div className="text-[#6b5a50]">{ISSUER.name}</div></div>
             <div><div className="border-b border-dotted border-[#6b5a50] h-10" /><div className="mt-1">วันที่</div><div className="text-[#6b5a50]">........../........../..........</div></div>
           </div>
-          <p className="text-[11px] text-[#6b5a50] mt-6 mb-0">เอกสารนี้ออกโดยระบบอัตโนมัติ · ใบเสร็จรับเงินไม่ใช่ใบกำกับภาษี</p>
+          <p className="text-[11px] text-[#6b5a50] mt-6 mb-0">เอกสารนี้ออกโดยระบบอัตโนมัติ{paid ? " · ใบเสร็จรับเงินไม่ใช่ใบกำกับภาษี" : ""}</p>
         </article>
       )}
     </div>

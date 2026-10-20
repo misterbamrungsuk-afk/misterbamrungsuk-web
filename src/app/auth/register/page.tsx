@@ -143,7 +143,7 @@ export default function RegisterPage() {
                 <button type="button" onClick={() => setAgree(!agree)} aria-pressed={agree} aria-label="ฉันอายุ 20 ปีขึ้นไป และยอมรับเงื่อนไขการใช้งานกับนโยบายความเป็นส่วนตัว" className="w-11 h-11 -m-[11px] grid place-items-center shrink-0"><span className="w-[22px] h-[22px] rounded-md grid place-items-center" style={{ border: `1.5px solid ${GOLD}`, background: agree ? GOLD : "transparent" }}>
                   {agree && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1b130b" strokeWidth="3" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg>}
                 </span></button>
-                <span><span onClick={() => setAgree(!agree)} className="cursor-pointer">ฉันอายุ 20 ปีขึ้นไป และยอมรับ</span><Link href="/page/terms" className="text-[#e8c472]">เงื่อนไขการใช้งาน</Link>กับ<Link href="/join/privacy" className="text-[#e8c472]">นโยบายความเป็นส่วนตัว</Link></span>
+                <span><span onClick={() => setAgree(!agree)} className="cursor-pointer">ฉันอายุ 20 ปีขึ้นไป และยอมรับ</span><Link href="/page/terms" className="text-[#e8c472]">เงื่อนไขการใช้งาน</Link>กับ<Link href="/privacy" className="text-[#e8c472]">ประกาศความเป็นส่วนตัว</Link> และให้ความยินยอมตาม<Link href="/privacy/consent" className="text-[#e8c472]">หนังสือให้ความยินยอม</Link></span>
               </div>
               {!smsOff && <Turnstile key={tsKey} onToken={setTs} />}
               {error && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{error}</p>}

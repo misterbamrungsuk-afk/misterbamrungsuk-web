@@ -29,10 +29,17 @@ export async function ptAmount(b: Booking): Promise<number> {
 
 async function completedThisMonth(parttime_id: string): Promise<number> {
   const start = new Date(); start.setDate(1); start.setHours(0, 0, 0, 0);
+  return completedBetween(parttime_id, start);
+}
+
+/** จำนวนงานที่จบสมบูรณ์ (completed) ในช่วงเวลา [from, to) */
+export async function completedBetween(parttime_id: string, from: Date, to?: Date): Promise<number> {
   if (isDemo) {
-    return rawForParttime(parttime_id).filter((b) => b.status === "completed" && b.completed_at && Date.parse(b.completed_at) >= +start).length;
+    return rawForParttime(parttime_id).filter((b) => b.status === "completed" && b.completed_at && Date.parse(b.completed_at) >= +from && (!to || Date.parse(b.completed_at) < +to)).length;
   }
-  const { count } = await db().from("bookings").select("id", { count: "exact", head: true }).eq("parttime_id", parttime_id).eq("status", "completed").gte("completed_at", start.toISOString());
+  let q = db().from("bookings").select("id", { count: "exact", head: true }).eq("parttime_id", parttime_id).eq("status", "completed").gte("completed_at", from.toISOString());
+  if (to) q = q.lt("completed_at", to.toISOString());
+  const { count } = await q;
   return count ?? 0;
 }
 

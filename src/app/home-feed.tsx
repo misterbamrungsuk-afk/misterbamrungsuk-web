@@ -5,6 +5,7 @@
 // มือถือ = ตามบอร์ด 390 · md+ การ์ด 3 คอลัมน์ · กดการ์ด → โปรไฟล์ตัวอย่าง /p/[id] (บอร์ด C-Profile) → แชทตัวอย่าง (บอร์ด C-ChatRoom)
 import { useEffect, useMemo, useRef, useState } from "react";
 import { readConsent } from "@/lib/consent";
+import { PACKAGES } from "@/lib/join/config";
 import Link from "next/link";
 import { PEOPLE, priceOf, type Person } from "@/lib/home/people";
 import { TabBar } from "@/components/shell";
@@ -96,7 +97,8 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
   const lo = +f.aMin || 20, hi = +f.aMax || 50, spot = f.spot.trim();
   const list = useMemo(() => {
     const by: Record<Sort, (a: P, b: P) => number> = {
-      top: (a, b) => (b.boost ? 1 : 0) - (a.boost ? 1 : 0) || (b.top ? 1 : 0) - (a.top ? 1 : 0) || (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0),
+      // คนโปรโมทขึ้นก่อน ตามลำดับสุ่มจากเซิร์ฟเวอร์ (sort คงลำดับเดิมเมื่อเท่ากัน) · คนไม่โปรโมทเรียง TOP → คะแนน
+      top: (a, b) => (b.boost ? 1 : 0) - (a.boost ? 1 : 0) || (a.boost && b.boost ? 0 : (b.top ? 1 : 0) - (a.top ? 1 : 0) || (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0)),
       rate: (a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0), price: (a, b) => price(a) - price(b),
     };
     return people.filter((p) => acts.every((a) => p.acts.includes(a)) && (!f.reg || PROV[provOf(p)] === f.reg) && (!f.prov || provOf(p) === f.prov)
@@ -200,7 +202,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
         {sample ? (
           /* หน้าตัวอย่าง: ชวนสมัครร่วมทีม */
           <Link href="/join" className="flex items-center gap-3 rounded-2xl text-[#1b130b] hover:text-[#1b130b]" style={{ margin: "14px 18px 0", padding: "12px 14px", background: "#f3ead9" }}>
-            <span className="flex-1 min-w-0 leading-[1.4]"><span className="block font-semibold text-[15px]">อยากเป็นเพื่อนกินเที่ยวแบบนี้?</span><span className="block text-[13px] font-normal text-[#4f4038]">อบรมเริ่มต้น ฿3,000 · เลือกวันเวลาเอง</span></span>
+            <span className="flex-1 min-w-0 leading-[1.4]"><span className="block font-semibold text-[15px]">อยากเป็นเพื่อนกินเที่ยวแบบนี้?</span><span className="block text-[13px] font-normal text-[#4f4038]">ค่าสมัครเริ่มต้น ฿{PACKAGES.A.price.toLocaleString("en-US")} (รวมอบรม) · เลือกวันเวลาเอง</span></span>
             <span className="shrink-0 h-10 px-4 rounded-full text-[#f3ead9] text-[13.5px] font-semibold flex items-center bg-[#1b130b]">สมัครร่วมทีม →</span>
           </Link>
         ) : (

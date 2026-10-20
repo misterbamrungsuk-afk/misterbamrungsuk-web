@@ -13,7 +13,7 @@ const yearBE = () => Number(new Intl.DateTimeFormat("en-US", { timeZone: "Asia/B
 const COLS: { title: string; links: [string, string][] }[] = [
   { title: "สำหรับลูกค้า", links: [["/", "ค้นหาเพื่อนกินเที่ยว"], ["/map", "แผนที่"], ["/quick", "เรียกด่วน"], ["/stay", "โรงแรม · สปา"], ["/market", "Marketplace"], ["/orders/track", "ติดตามคำสั่งซื้อ"]] },
   { title: "ร่วมงานกับเรา", links: [["/join", "สมัคร Part-Time"], ["/join/earnings", "รายได้ Part-Time"], ["/join/showcase", "หน้าตัวอย่างแอป"], ["/join/me", "เข้าโปรไฟล์ Part-Time"], ["/partner", "พาร์ทเนอร์สปา · โรงแรม"], ["/vendor", "เปิดร้านค้ากับเรา"]] },
-  { title: "ช่วยเหลือและนโยบาย", links: [["/page/terms", "ข้อกำหนดการใช้งาน"], ["/join/privacy", "นโยบายความเป็นส่วนตัว (PDPA)"], ["/policy", "กฎเกณฑ์และความปลอดภัย"], ["/sos", "SOS ฉุกเฉิน"]] },
+  { title: "ช่วยเหลือและนโยบาย", links: [["/page/terms", "ข้อกำหนดการใช้งาน"], ["/privacy", "นโยบายความเป็นส่วนตัว (PDPA)"], ["/policy", "กฎเกณฑ์และความปลอดภัย"], ["/sos", "SOS ฉุกเฉิน"]] },
 ];
 
 export function SiteFooter() {
@@ -29,7 +29,7 @@ export function SiteFooter() {
         <span className="inline-flex items-center gap-2"><img src="/brand/logo.png" alt="" className="w-8 h-8 object-contain" /><span className="font-brand text-[14px] text-[#e8c472]">Mister Bamrungsuk</span></span>
         <span>{phone && <>โทร {phone} · </>}LINE <span className="select-all">{LINE_OA_ID}</span></span>
         <nav aria-label="ลิงก์สำคัญ" className="flex flex-wrap gap-x-4">
-          {[["/page/terms", "ข้อกำหนด"], ["/join/privacy", "ความเป็นส่วนตัว"], ["/policy", "กฎเกณฑ์"], ["/work-with-us", "ร่วมงานกับเรา"]].map(([h, l]) => <Link key={h} href={h} className="min-h-9 inline-flex items-center text-[#d8c8b8] hover:text-[#f6efe4]">{l}</Link>)}
+          {[["/page/terms", "ข้อกำหนด"], ["/privacy", "ความเป็นส่วนตัว"], ["/policy", "กฎเกณฑ์"], ["/work-with-us", "ร่วมงานกับเรา"]].map(([h, l]) => <Link key={h} href={h} className="min-h-9 inline-flex items-center text-[#d8c8b8] hover:text-[#f6efe4]">{l}</Link>)}
         </nav>
         <span className="text-[11.5px] text-[#9a8a85]">© {yearBE()} Mister Bamrungsuk สงวนลิขสิทธิ์</span>
       </div>

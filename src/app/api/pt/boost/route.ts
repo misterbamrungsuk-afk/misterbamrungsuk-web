@@ -3,7 +3,7 @@ import { FileTypeError } from "@/lib/file-guard";
 import { limited as dbLimited } from "@/lib/rate-limit";
 import { currentParttime } from "@/lib/bookings/auth";
 import { balances } from "@/lib/wallet";
-import { BOOST_PLANS, BoostError, activeBoosts, buyBoostWithSlip, buyBoostWithWallet, listBoosts } from "@/lib/join/boost";
+import { BOOST_PLANS, BoostError, FREE_BOOST, activeBoosts, buyBoostWithSlip, buyBoostWithWallet, listBoostCodes, listBoosts, redeemBoostCode } from "@/lib/join/boost";
 import { notify } from "@/lib/bookings";
 import { extraOf } from "@/lib/join/store";
 import { GATE_MSG, isPtActive } from "@/lib/join/pt-ui";
@@ -11,20 +11,21 @@ import { GATE_MSG, isPtActive } from "@/lib/join/pt-ui";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// โปรโมทโปรไฟล์ Part-Time: GET ?mb=&t= → แผน + สถานะ · POST JSON { mb, t, plan, pay: "wallet" } หรือ multipart (mb, t, plan, slip)
+// โปรโมทโปรไฟล์ Part-Time: GET ?mb=&t= → แผน + สถานะ + โค้ดฟรีที่ยังไม่ใช้ · POST JSON { mb, t, plan, pay: "wallet" } / { mb, t, code } หรือ multipart (mb, t, plan, slip)
 export async function GET(req: Request) {
   const u = new URL(req.url);
   const a = await currentParttime(u.searchParams.get("mb") ?? "", u.searchParams.get("t"));
   if (!a) return NextResponse.json({ ok: false }, { status: 403 });
-  const [act, list, w] = await Promise.all([activeBoosts(), listBoosts(), balances("parttime", a.id).catch(() => ({} as Record<string, number>))]);
-  return NextResponse.json({ ok: true, active: isPtActive(extraOf(a)), plans: BOOST_PLANS, until: act.get(a.id) ?? null, pending: list.filter((b) => b.parttime_id === a.id && b.status === "pending").length, available: (w.available ?? 0) + (w.boost_credit ?? 0), boostCredit: w.boost_credit ?? 0 });
+  const [act, list, w, codes] = await Promise.all([activeBoosts(), listBoosts(), balances("parttime", a.id).catch(() => ({} as Record<string, number>)), listBoostCodes()]);
+  const mine = codes.filter((c) => c.parttime_id === a.id && c.status === "unused").map((c) => ({ code: c.code, days: c.days, reason: c.reason }));
+  return NextResponse.json({ ok: true, active: isPtActive(extraOf(a)), plans: BOOST_PLANS, codes: mine, free: FREE_BOOST, until: act.get(a.id) ?? null, pending: list.filter((b) => b.parttime_id === a.id && b.status === "pending").length, available: (w.available ?? 0) + (w.boost_credit ?? 0), boostCredit: w.boost_credit ?? 0 });
 }
 
 export async function POST(req: Request) {
   if (await dbLimited(`pboost:${(req.headers.get("x-forwarded-for") ?? "local").split(",")[0].trim()}`, 8, 10 * 60_000)) return Response.json({ ok: false, error: "ลองบ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
   const multipart = (req.headers.get("content-type") ?? "").includes("multipart/form-data");
   const fd = multipart ? await req.formData().catch(() => null) : null;
-  const b = multipart ? { mb: String(fd?.get("mb") ?? ""), t: String(fd?.get("t") ?? ""), plan: String(fd?.get("plan") ?? "") } : ((await req.json().catch(() => ({}))) as { mb?: string; t?: string; plan?: string; pay?: string });
+  const b = multipart ? { mb: String(fd?.get("mb") ?? ""), t: String(fd?.get("t") ?? ""), plan: String(fd?.get("plan") ?? ""), code: "" } : ((await req.json().catch(() => ({}))) as { mb?: string; t?: string; plan?: string; pay?: string; code?: string });
   const a = await currentParttime(String(b.mb ?? ""), b.t || null);
   if (!a) return NextResponse.json({ ok: false }, { status: 403 });
   // โปรโมทได้เฉพาะ Part-Time ที่อนุมัติและเปิดโปรไฟล์แล้ว (ยังไม่แสดงต่อลูกค้า = จ่ายไปก็ไม่มีผล)
@@ -38,6 +39,7 @@ export async function POST(req: Request) {
       if (r.status === "pending") await notify({ user_type: "admin", user_id: "finance", kind: "boost_slip", title: `สลิปโปรโมท ${a.mb_code} รอตรวจ`, body: `฿${(r.price_satang / 100).toLocaleString()} · ${r.days} วัน`, url: "/admin/boosts" });
       return NextResponse.json({ ok: true, status: r.status, until: r.ends_at });
     }
+    if (b.code) { const r = await redeemBoostCode(a, String(b.code)); return NextResponse.json({ ok: true, status: r.status, until: r.ends_at }); }
     const r = await buyBoostWithWallet(a, String(b.plan ?? ""));
     return NextResponse.json({ ok: true, status: r.status, until: r.ends_at });
   } catch (e) {

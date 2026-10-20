@@ -304,7 +304,7 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0, fix = false, inv
 
               <section className="flex flex-col gap-1.5">
                 <h2 style={h2}>รับทราบเงื่อนไขการรับงาน</h2>
-                {([["ack_hours", `รับทราบว่าการให้บริการต่อครั้งอยู่ที่ ${pkg === "A" ? "3–8" : "3–5"} ชม. แล้วแต่ที่ลูกค้าจอง`], ["ack_no_refuse", invite ? "รับทราบว่าจะไม่ปฏิเสธการรับลูกค้าในวันเวลาที่แจ้งไว้" : "รับทราบว่าจะไม่ปฏิเสธการรับลูกค้าในวันเวลาที่แจ้งไว้ (เงื่อนไขการรับคืนค่าการันตี Branding)"]] as const).map(([k, t]) => {
+                {([["ack_hours", `รับทราบว่าการให้บริการต่อครั้งอยู่ที่ ${pkg === "A" ? "3–8" : "3–5"} ชม. แล้วแต่ที่ลูกค้าจอง`], ["ack_no_refuse", "รับทราบว่าจะไม่ปฏิเสธการรับลูกค้าในวันเวลาที่แจ้งไว้"]] as const).map(([k, t]) => {
                   const on = f[k];
                   return (
                     <button key={k} type="button" role="checkbox" aria-checked={on} onClick={() => set(k, !on)} className="flex gap-3 items-start text-left bg-transparent w-full text-[#f3ead9]" style={{ padding: "6px 0", fontSize: 14.5, lineHeight: 1.6, minHeight: 44 }}>

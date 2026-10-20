@@ -5,6 +5,7 @@ const { execFileSync, spawn } = require("child_process");
 const WEB = path.join(__dirname, "..");
 for (const k of ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "NEXT_PUBLIC_SUPABASE_URL", "GOOGLE_SHEETS_WEBHOOK_URL", "GOOGLE_SHEETS_WEBHOOK_TOKEN", "RESEND_API_KEY", "SLIP2GO_API_SECRET", "THAIBULKSMS_API_KEY", "THAIBULKSMS_API_SECRET", "TURNSTILE_SECRET_KEY", "NEXT_PUBLIC_TURNSTILE_SITE_KEY", "VERCEL_OIDC_TOKEN", "VAPID_PRIVATE_KEY", "VAPID_PUBLIC_KEY", "VERCEL", "VERCEL_ENV"]) process.env[k] = "";
 process.env.MB_LOCAL_HTTP = "1";
+process.env.SITE_MODE ||= "full"; // ทดสอบโหมดรับสมัครอย่างเดียว: SITE_MODE=pt-only
 const port = process.argv[2] || "3300";
 const next = path.join(WEB, "node_modules/next/dist/bin/next");
 if (!process.env.SKIP_BUILD) execFileSync(process.execPath, [next, "build"], { cwd: WEB, stdio: "inherit", env: { ...process.env, NEXT_DIST_DIR: "" } });

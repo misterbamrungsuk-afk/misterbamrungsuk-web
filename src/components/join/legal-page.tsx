@@ -2,12 +2,12 @@ import Link from "next/link";
 import { BrandHeader } from "@/components/mb/ui";
 import { EFFECTIVE_DATE, type LegalSection } from "@/lib/join/legal";
 
-export function LegalPage({ title, version, sections }: { title: string; version: string; sections: LegalSection[] }) {
+export function LegalPage({ title, version, sections, back = { href: "/join", label: "กลับหน้าสมัคร" } }: { title: string; version: string; sections: LegalSection[]; back?: { href: string; label: string } }) {
   return (
     <div className="mb-v7 min-h-dvh">
-      <BrandHeader right={<Link href="/join" className="min-h-11 inline-flex items-center text-[14px] text-[#e8c472]">‹ กลับหน้าสมัคร</Link>} />
+      <BrandHeader right={<Link href={back.href} className="min-h-11 inline-flex items-center text-[14px] text-[#e8c472]">‹ {back.label}</Link>} />
       <main className="mx-auto w-full max-w-[720px] px-4 md:px-8 pb-12">
-        <h1 className="text-[26px] md:text-[32px] font-semibold mt-6 leading-tight">{title}</h1>
+        <h1 className="text-[24px] md:text-[30px] font-semibold mt-6 leading-[1.35]" style={{ textWrap: "balance" }}>{title}</h1>
         <p className="text-[12px] font-light text-[#b5a596] mt-1">ฉบับที่ {version} · มีผลตั้งแต่ {EFFECTIVE_DATE}</p>
         <div className="mt-6 flex flex-col gap-6">
           {sections.map((s) => (
@@ -27,7 +27,7 @@ export function LegalPage({ title, version, sections }: { title: string; version
             </section>
           ))}
         </div>
-        <Link href="/join#packages" className="btn-crimson min-h-[52px] mt-10 grid place-items-center font-semibold max-w-[420px]">กลับไปหน้าสมัคร</Link>
+        <Link href={back.href === "/join" ? "/join#packages" : back.href} className="btn-crimson min-h-[52px] mt-10 grid place-items-center font-semibold max-w-[420px]">{back.href === "/join" ? "กลับไปหน้าสมัคร" : back.label}</Link>
       </main>
     </div>
   );

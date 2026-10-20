@@ -16,7 +16,7 @@ export type BoostPlanId = (typeof BOOST_PLANS)[number]["id"];
 
 export interface Boost {
   id: string; parttime_id: string; mb: string; plan: BoostPlanId; days: number; price_satang: number;
-  status: "active" | "pending" | "rejected"; paid_via: "wallet" | "slip";
+  status: "active" | "pending" | "rejected"; paid_via: "wallet" | "slip" | "code";
   starts_at: string | null; ends_at: string | null; created_at: string;
   slip_path?: string | null; slip_check?: SlipCheck | null; note?: string | null;
 }
@@ -113,5 +113,55 @@ export async function decideBoost(id: string, approve: boolean, admin: string, n
   else b.status = "rejected";
   b.note = `${approve ? "อนุมัติ" : "ไม่อนุมัติ"} · ${admin}${note ? ` · ${note}` : ""}`.slice(0, 200);
   await save(list);
+  return b;
+}
+
+// ─── โค้ดโปรโมทฟรี (บอสกำหนด 20 ต.ค. 2569) ───
+// 30 วันแรกนับจากวันเปิดรับงาน (listed_at) ได้งานจบไม่ถึง 5 เคส → ระบบออกโค้ดโปรโมทฟรี 3 วันให้อัตโนมัติ (คนละครั้ง · free-boost.ts)
+// แอดมินออกเองเพิ่มได้ (reason "admin") · โค้ดผูกกับ Part-Time คนนั้น ใช้แล้วเปิดโปรโมททันที (ต่อจากของเดิม) ไม่ลงเงิน
+export const FREE_BOOST = { days: 3, windowDays: 30, minJobs: 5 } as const;
+export interface BoostCode {
+  code: string; parttime_id: string; mb: string; days: number;
+  reason: "low_jobs_30d" | "admin"; status: "unused" | "used";
+  issued_at: string; used_at?: string | null; boost_id?: string | null; by?: string | null; jobs?: number | null;
+}
+const CODES_PATH = "_config/boost-codes.json";
+const gc = globalThis as unknown as { __mbBoostCodes?: BoostCode[] };
+export async function listBoostCodes(): Promise<BoostCode[]> {
+  if (isDemo) return gc.__mbBoostCodes ?? [];
+  try {
+    const { data, error } = await db().storage.from("applicants").download(CODES_PATH);
+    if (error || !data) return [];
+    return JSON.parse(await data.text()) as BoostCode[];
+  } catch { return []; }
+}
+async function saveCodes(list: BoostCode[]) {
+  if (isDemo) { gc.__mbBoostCodes = list; return; }
+  const { error } = await db().storage.from("applicants").upload(CODES_PATH, new Blob([JSON.stringify(list)], { type: "application/json" }), { upsert: true, contentType: "application/json" });
+  if (error) throw error;
+}
+const newCode = () => "FREE" + Array.from(crypto.getRandomValues(new Uint8Array(6)), (b) => "ABCDEFGHJKMNPQRSTUVWXYZ23456789"[b % 31]).join("");
+
+/** ออกโค้ด · reason low_jobs_30d ออกได้คนละครั้ง (ออกแล้ว → null) */
+export async function issueBoostCode(a: Pick<Applicant, "id" | "mb_code">, reason: BoostCode["reason"], opts: { days?: number; by?: string; jobs?: number } = {}): Promise<BoostCode | null> {
+  const list = await listBoostCodes();
+  if (reason === "low_jobs_30d" && list.some((c) => c.parttime_id === a.id && c.reason === "low_jobs_30d")) return null;
+  const c: BoostCode = { code: newCode(), parttime_id: a.id, mb: a.mb_code, days: opts.days ?? FREE_BOOST.days, reason, status: "unused", issued_at: new Date().toISOString(), by: opts.by ?? null, jobs: opts.jobs ?? null };
+  await saveCodes([c, ...list]);
+  return c;
+}
+
+/** Part-Time ใช้โค้ดของตัวเอง → โปรโมทฟรีตามจำนวนวัน (ต่อจากที่เหลือ) */
+export async function redeemBoostCode(a: Applicant, code: string): Promise<Boost> {
+  const codes = await listBoostCodes();
+  const c = codes.find((x) => x.code === code.trim().toUpperCase() && x.parttime_id === a.id);
+  if (!c) throw new BoostError("โค้ดไม่ถูกต้อง");
+  if (c.status !== "unused") throw new BoostError("โค้ดนี้ใช้ไปแล้ว");
+  const list = await listBoosts();
+  const plan = (BOOST_PLANS.find((p) => p.days === c.days) ?? BOOST_PLANS[1]).id;
+  const b = await activate(list, { id: crypto.randomUUID(), parttime_id: a.id, mb: a.mb_code, plan, days: c.days, price_satang: 0, status: "pending", paid_via: "code", starts_at: null, ends_at: null, created_at: new Date().toISOString(), note: `โค้ด ${c.code}` });
+  await save([b, ...list]);
+  c.status = "used"; c.used_at = new Date().toISOString(); c.boost_id = b.id;
+  await saveCodes(codes);
   return b;
 }

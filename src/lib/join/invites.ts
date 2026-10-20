@@ -2,7 +2,7 @@ import "server-only";
 import { randomBytes } from "crypto";
 import { createClient } from "@supabase/supabase-js";
 
-// ลิงก์เชิญ (บอร์ด AdminInvites / JoinInvite) — ผู้สมัครจากลิงก์เชิญไม่ต้องชำระค่าการันตี Branding จ่ายเฉพาะค่าอบรม
+// ลิงก์เชิญ (บอร์ด AdminInvites / JoinInvite) — ช่องทางสมัครพิเศษ · ค่าสมัครเท่าสมัครปกติ (ป้ายในโปรไฟล์/หลังบ้าน)
 // เก็บเป็น JSON ใน Storage bucket "applicants" (_config/invites.json) เหมือนราคาและส่วนแบ่ง · โหมดเดโมเก็บในหน่วยความจำ
 
 export interface Invite {

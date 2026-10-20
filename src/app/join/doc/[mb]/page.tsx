@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { Forbidden } from "../../_kyc/ui";
 import { canResume } from "@/lib/join/resume";
 import { CONTROLLER } from "@/lib/join/legal";
-import { BRAND, COHORTS, GUARANTEE_REFUND_NOTE, PACKAGES, TERMS_SUMMARY, feeBreakdown } from "@/lib/join/config";
+import { BRAND, COHORTS, PACKAGES, TERMS_SUMMARY, feeBreakdown } from "@/lib/join/config";
 import { extraOf, fullName, getByMb } from "@/lib/join/store";
 import { TRAINING } from "@/lib/join/training";
 import { SavePdfButton } from "../../receipt/[mb]/save-pdf";
@@ -27,12 +27,11 @@ export default async function DocPage({ params, searchParams }: { params: Promis
   if (!row) notFound();
 
   const x = extraOf(row);
-  const fees = feeBreakdown(row.package, !!x.invite);
+  const fees = feeBreakdown(row.package, row.amount);
   const total = fees.reduce((a, f) => a + f.amount, 0);
   const cohort = x.cohort ? COHORTS.find((c) => c.key === x.cohort) : null;
   const group = cohort ? `${cohort.name} · ${cohort.date}` : x.cohort ? `กลุ่ม ${x.cohort}` : "รอจัดกลุ่ม (แจ้งทาง LINE)";
-  // ลิงก์เชิญ = ไม่เก็บค่าการันตี → ไม่แสดงข้อที่พูดถึงการชำระ/คืนค่าการันตี
-  const terms = (TERMS_SUMMARY.length ? TERMS_SUMMARY : [GUARANTEE_REFUND_NOTE]).map((t) => (x.invite && t.startsWith("ชำระค่าการันตี") ? "ชำระค่าอบรมเต็มจำนวนตามสายงานที่เลือก (ลิงก์เชิญ · ไม่เก็บค่าการันตี Branding)" : t)).filter((t) => !(x.invite && (t === GUARANTEE_REFUND_NOTE || /คืนเงินประกัน/.test(t))) || /ไม่ปฏิเสธ/.test(t)).map((t) => (x.invite ? t.replace(" (เงื่อนไขคืนเงินประกันเมื่อครบ 1 ปี)", "") : t));
+  const terms = TERMS_SUMMARY;
 
   const info: [string, string][] = [
     ["ชื่อ-นามสกุล", fullName(row)],
@@ -48,7 +47,7 @@ export default async function DocPage({ params, searchParams }: { params: Promis
     ["สถานะยืนยันตัวตน (KYC)", KYC_TEXT[x.kyc_status ?? "none"]],
     ["กลุ่มอบรม", group],
     ["วันอบรม", cohort ? `${TRAINING.datesLong}` : TRAINING.datesLong],
-    ["ช่องทางสมัคร", x.invite ? "ลิงก์เชิญพิเศษ (ไม่เก็บค่าการันตี)" : "สมัครปกติ"],
+    ["ช่องทางสมัคร", x.invite ? "ลิงก์เชิญพิเศษ" : "สมัครปกติ"],
     ["สถานที่อบรม", TRAINING.venue],
     ["เปิดให้บริการ", TRAINING.openService],
   ];

@@ -11,7 +11,7 @@ const baht = (n: number) => "฿" + n.toLocaleString("en-US");
 const until = (iso: string) => new Date(iso).toLocaleString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Bangkok" });
 
 export function BoostPanel({ mb, t }: { mb: string; t?: string | null }) {
-  const [info, setInfo] = useState<{ plans: Plan[]; until: string | null; pending: number; available: number } | null>(null);
+  const [info, setInfo] = useState<{ plans: Plan[]; until: string | null; pending: number; available: number; codes?: { code: string; days: number }[] } | null>(null);
   const [plan, setPlan] = useState("d3");
   const [qr, setQr] = useState(false);
   const [slip, setSlip] = useState<File | null>(null);
@@ -34,6 +34,11 @@ export function BoostPanel({ mb, t }: { mb: string; t?: string | null }) {
     const r = await fetch("/api/pt/boost", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mb, t, plan, pay: "wallet" }) }).catch(() => null);
     done((await r?.json().catch(() => null)) ?? null);
   };
+  const useCode = async (code: string) => {
+    setBusy(true); setMsg(null);
+    const r = await fetch("/api/pt/boost", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mb, t, code }) }).catch(() => null);
+    done((await r?.json().catch(() => null)) ?? null);
+  };
   const paySlip = async () => {
     if (!slip) return;
     setBusy(true); setMsg(null);
@@ -48,6 +53,12 @@ export function BoostPanel({ mb, t }: { mb: string; t?: string | null }) {
         ? <div className="rounded-xl text-[13px] font-semibold text-[#1b130b]" style={{ padding: "8px 12px", background: GOLD }}>★ โปรโมทอยู่ · ขึ้นหน้าแนะนำถึง {until(info.until)} · ซื้อเพิ่มได้ ต่อเวลาให้อัตโนมัติ</div>
         : <div className="text-[13px] text-[#d9c9b4] font-light">จ่ายแล้วโปรไฟล์ขึ้นอันดับต้นในหน้าแรก พร้อมป้าย &quot;แนะนำ&quot; ตามจำนวนวัน</div>}
       {!!info?.pending && <div className="text-[12.5px] text-[#e8c472]">มีสลิปรอทีมงานตรวจ {info.pending} รายการ</div>}
+      {(info?.codes ?? []).map((c) => (
+        <div key={c.code} data-free-code={c.code} className="flex items-center gap-3 rounded-xl" style={{ padding: "10px 12px", background: "rgba(127,214,163,0.12)", boxShadow: "inset 0 0 0 1px rgba(127,214,163,.45)" }}>
+          <span className="flex-1 min-w-0 leading-[1.4]"><b className="block text-[14px] text-[#7fd6a3]">โค้ดโปรโมทฟรี {c.days} วัน</b><span className="text-[12.5px] font-light text-[#d9c9b4] tracking-[1px]">{c.code}</span></span>
+          <button type="button" disabled={busy} onClick={() => useCode(c.code)} className="shrink-0 min-h-11 px-4 rounded-xl text-[13.5px] font-semibold bg-[#7fd6a3] text-[#10261a] disabled:opacity-40">ใช้โค้ด</button>
+        </div>
+      ))}
       {(info?.plans ?? []).map((x) => {
         const on = plan === x.id;
         return (

@@ -269,7 +269,7 @@ export function AccountLinks({ mb, t, reviewsHref, quickHref, strikesHref, delet
       {ask && !reqAt && (
         <div role="dialog" aria-label="ยืนยันลบบัญชี" className="rounded-[20px] bg-[#211a18] flex flex-col gap-2.5" style={{ padding: 16 }}>
           <div className="text-[16px] font-semibold">ขอลบบัญชีและข้อมูลส่วนตัว?</div>
-          <p className="m-0 text-[13.5px] font-light text-[#d9c9b4]">ทีมงานจะติดต่อยืนยันก่อนลบจริง · ค่าการันตีที่ชำระแล้วดำเนินการตามสัญญา · ลบแล้วกู้คืนไม่ได้</p>
+          <p className="m-0 text-[13.5px] font-light text-[#d9c9b4]">ทีมงานจะติดต่อยืนยันก่อนลบจริง · ค่าสมัครที่ชำระแล้วไม่คืนเงิน · ลบแล้วกู้คืนไม่ได้</p>
           <div className="grid grid-cols-2 gap-2">
             <button type="button" onClick={() => setAsk(false)} className="h-11 rounded-xl text-[14px] font-semibold" style={{ background: "rgba(243,234,217,0.1)" }}>ยกเลิก</button>
             <button type="button" onClick={del} className="h-11 rounded-xl text-[14px] font-semibold text-white" style={{ background: "#a3283c" }}>ยืนยันขอลบ</button>

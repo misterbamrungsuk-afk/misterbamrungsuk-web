@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { ADMIN_COOKIE, canAccess, homeFor, verifySession } from "@/lib/admin-auth";
 import { mfaEnforcedEdge } from "@/lib/admin-mfa-policy";
-import { GATE_COOKIE, gateExempt, gateToken, marketPublic } from "@/lib/site-gate";
+import { GATE_COOKIE, PT_ONLY, gateExempt, gateToken, marketPublic, ptOnlyOpen } from "@/lib/site-gate";
 
 // API ที่ใช้ได้แม้ยังไม่ผ่าน 2 ชั้นตอนเปิดบังคับ (ตั้งค่า 2 ชั้น · เข้าสู่ระบบ · ออกจากระบบ)
 const mfaFreeApi = (p: string) => ["/api/admin/security", "/api/admin/login", "/api/admin/logout"].some((x) => p === x || p.startsWith(x + "/"));
@@ -21,6 +21,25 @@ export async function middleware(request: NextRequest) {
     let foreign = request.headers.get("sec-fetch-site") === "cross-site";
     if (origin) { try { foreign ||= new URL(origin).host !== host; } catch { foreign = true; } }
     if (foreign) return NextResponse.json({ ok: false, error: "forbidden origin" }, { status: 403 });
+  }
+
+  // โหมดรับสมัคร Part-Time อย่างเดียว: หน้าอื่น → "เปิดให้บริการเร็ว ๆ นี้" · ทีมงาน (คุกกี้แอดมิน / รหัสเข้าเว็บ) ยังเปิดดูได้ทุกหน้า
+  if (PT_ONLY && !ptOnlyOpen(pathname)) {
+    const sitePw0 = process.env.SITE_PASSWORD;
+    const team = !!(await verifySession(request.cookies.get(ADMIN_COOKIE)?.value)) || (!!sitePw0 && request.cookies.get(GATE_COOKIE)?.value === (await gateToken(sitePw0)));
+    if (!team) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/soon";
+      url.search = "";
+      return NextResponse.rewrite(url);
+    }
+  }
+  // /login (ลูกค้า) ระหว่างโหมดนี้ → Part-Time เข้าสู่ระบบ
+  if (PT_ONLY && pathname === "/login") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/join/me";
+    url.search = "";
+    return NextResponse.redirect(url);
   }
 
   // รหัสเข้าเว็บ (ตั้ง SITE_PASSWORD) — ล็อกทุกหน้า ยกเว้นหน้ารับสมัคร /join
@@ -92,7 +111,7 @@ export async function middleware(request: NextRequest) {
     pathname === "/onboarding" ||
     pathname === "/sos" ||
     // ข้อกำหนด/นโยบาย ต้องอ่านได้ก่อนสมัคร (ลิงก์จากหน้าสมัคร + คุกกี้) · ค้นหาเพื่อนดูได้แบบเดียวกับหน้าแรก
-    pathname === "/page/terms" ||
+    pathname === "/page/terms" || pathname === "/privacy" || pathname.startsWith("/privacy/") || pathname === "/soon" ||
     pathname === "/search" ||
     // โปรเปิดเมมเบอร์ดูได้ก่อนล็อกอิน · Sale Man (หน้าขาย/แดชบอร์ดผ่านลิงก์) · ลิงก์แนะนำ /ref/CODE
     pathname === "/membership" || pathname === "/sales" || pathname.startsWith("/sales/") || pathname.startsWith("/ref/") ||

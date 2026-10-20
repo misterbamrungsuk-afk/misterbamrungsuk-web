@@ -90,7 +90,7 @@ export function PtIncoming({ mb, t }: { mb: string; t: string }) {
               // ยืนยันในหน้า (ไม่ใช้ window.confirm) + เตือนกติกาการปฏิเสธงานตามสัญญา
               <div role="dialog" aria-label="ยืนยันไม่สะดวกรับงาน" className="rounded-[14px] flex flex-col gap-2" style={{ padding: 12, background: "rgba(240,163,90,.1)", border: "1px solid rgba(240,163,90,.5)" }}>
                 <b className="font-semibold text-[15px]">ยืนยันว่าไม่สะดวกรับงานนี้?</b>
-                <span className="text-[13px] font-light text-[#f6c38e] leading-[1.55]">ตามสัญญา Part-Time ไม่ควรปฏิเสธลูกค้าโดยไม่มีเหตุอันควร · ปฏิเสธบ่อยมีผลต่ออันดับโปรไฟล์และการคืนค่าการันตี · ลูกค้าได้เงินคืนเต็มจำนวนทันที</span>
+                <span className="text-[13px] font-light text-[#f6c38e] leading-[1.55]">ตามสัญญา Part-Time ไม่ควรปฏิเสธลูกค้าโดยไม่มีเหตุอันควร · ปฏิเสธบ่อยมีผลต่ออันดับโปรไฟล์ · ลูกค้าได้เงินคืนเต็มจำนวนทันที</span>
                 <div className="grid grid-cols-2 gap-2">
                   <button type="button" onClick={() => setAsk("")} className="h-11 rounded-xl text-[14px] font-semibold" style={{ background: "rgba(243,234,217,0.1)" }}>กลับไปก่อน</button>
                   <button type="button" disabled={!!busy} onClick={() => act(b.id, false)} className="h-11 rounded-xl text-[14px] font-semibold text-white disabled:opacity-50" style={{ background: "#a3283c" }}>{busy === b.id ? "กำลังบันทึก…" : "ยืนยันไม่สะดวก"}</button>

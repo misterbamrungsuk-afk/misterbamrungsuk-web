@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { extraOf, getById, listApplicants, saveProfile, setKyc, setTier, updateApplicant, updateExtra, type ApplicantStatus, type KycReason } from "@/lib/join/store";
+import { ensureReceiptNo, extraOf, getById, listApplicants, saveProfile, setKyc, setTier, updateApplicant, updateExtra, type ApplicantStatus, type KycReason } from "@/lib/join/store";
 import { listCohorts } from "@/lib/join/cohorts";
 import { appendToSheet } from "@/lib/join/sheets";
 import { FIX_KEYS } from "@/lib/join/fixes";
@@ -72,7 +72,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const x = extraOf(cur);
     if (body.listed && (cur.status !== "verified" || x.kyc_status !== "approved" || !(x.photos?.length || cur.docs.photo)))
       return NextResponse.json({ ok: false, error: "แสดงได้เมื่อชำระแล้ว ผ่าน KYC และมีรูปโปรไฟล์" }, { status: 400 });
-    await saveProfile(cur.id, { listed: !!body.listed });
+    // วันเปิดรับงาน (ครั้งแรก) — นับ 30 วันสำหรับโค้ดโปรโมทฟรี
+    await saveProfile(cur.id, body.listed && !x.listed_at ? { listed: true, listed_at: new Date().toISOString() } : { listed: !!body.listed });
     const row = await getById(id);
     return row ? NextResponse.json({ ok: true, row: { ...row, ...extraOf(row) } }) : NextResponse.json({ ok: false }, { status: 404 });
   }
@@ -101,7 +102,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   // ปฏิเสธสลิป = ต้องมีเหตุผล (ผู้สมัครเห็นในแจ้งเตือน จะได้รู้ว่าต้องส่งอะไรใหม่)
   const reason = String(body.reason ?? "").trim().slice(0, 300);
   if (body.status === "rejected" && !reason) return NextResponse.json({ ok: false, error: "ระบุเหตุผลที่ปฏิเสธสลิป" }, { status: 400 });
-  const row = await updateApplicant(id, { status: body.status });
+  let row = await updateApplicant(id, { status: body.status });
+  // อนุมัติสลิป → ออกเลขใบเสร็จรับเงิน RI (ครั้งเดียว)
+  if (row && body.status === "verified") { await ensureReceiptNo(row).catch((e) => console.error("ri_no", (e as Error)?.message)); row = (await getById(id)) ?? row; }
   if (row && body.status === "rejected") {
     const by = (await session())?.email ?? "";
     // slip_reject ต้องเพิ่มใน store.ts (EXTRA_ONLY_KEYS) — ก่อนนั้นบันทึกไม่ได้ก็ไม่ให้ล้ม (เหตุผลยังไปถึงผู้สมัครทางแจ้งเตือน)

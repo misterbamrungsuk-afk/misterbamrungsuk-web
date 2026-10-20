@@ -8,7 +8,7 @@ import { JoinSalePage } from "../../join-sale";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "คำเชิญพิเศษ · Part-Time — Mister Bamrungsuk", robots: { index: false } };
 
-// บอร์ด JoinInvite — ลิงก์เชิญ /join/i/[รหัส] · ไม่เก็บค่าการันตี จ่ายเฉพาะค่าอบรม · ลิงก์ใช้ไม่ได้ → แจ้งเหตุผล + ไปหน้าสมัครปกติ
+// บอร์ด JoinInvite — ลิงก์เชิญ /join/i/[รหัส] · ค่าสมัครเท่าสมัครปกติ (ลิงก์เป็นช่องทางเข้า + ป้าย) · ลิงก์ใช้ไม่ได้ → แจ้งเหตุผล + ไปหน้าสมัครปกติ
 export default async function InvitePage({ params }: { params: Promise<{ code: string }> }) {
   const code = (await params).code.toUpperCase();
   const { state } = await findInvite(code);

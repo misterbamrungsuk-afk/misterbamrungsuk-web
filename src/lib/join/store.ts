@@ -67,7 +67,7 @@ export interface ApplicantInput {
   no_area?: string;
   /** ผลตรวจสลิปจาก Slip2Go (เก็บใน docs.extra) */
   slip_check?: SlipCheck | null;
-  /** รหัสลิงก์เชิญ (ไม่เก็บค่าการันตี · เก็บใน docs.extra) */
+  /** รหัสลิงก์เชิญ (ป้าย · เก็บใน docs.extra) */
   invite?: string | null;
   package: PackageKey;
   amount: number;
@@ -115,7 +115,7 @@ export interface PtWork { days: Record<string, { on: boolean; from: string; to: 
 export interface PtListing { title: string; rules: string; hidden: boolean; updated_at: string }
 export interface PtPost { text: string; time: string; zone: string; open: boolean; created_at: string }
 
-export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents" | "talents_other" | "activities_other" | "areas" | "no_area" | "slip_check" | "invite" | "kyc_status" | "kyc_reason" | "kyc_submitted_at" | "bank_book_path"> & { attendance?: Record<string, boolean>; /** เวลาเช็กชื่อรายรอบ (โหมดสาธิต / ฐานที่ยังไม่มีตาราง cohort_attendance) */ attendance_at?: Record<string, string>; photos?: string[]; card?: ProfileCard | null; form_done?: number[]; tier?: "top" | "silver"; pt_settings?: PtSettings | null; post?: PtPost | null; listing?: PtListing | null; work?: PtWork | null; listed?: boolean; delete_requested_at?: string | null; bank_consents?: { terms: boolean; pdpa: boolean; profile: boolean; at: string } | null; /** ตำแหน่งรูปในกรอบ (object-position "x% y%") ต่อ path รูป */ photo_pos?: Record<string, string> | null; /** ย่านที่ Part-Time ตั้งเองให้แสดงบนแผนที่ (ปัดเป็นช่อง ~1 กม. แล้ว ไม่ใช่ตำแหน่งจริง) */ geo?: PtGeo | null; /** แอดมินที่ออกลิงก์เข้าโปรไฟล์ล่าสุด (คนนี้อนุมัติ KYC ผู้สมัครคนนี้ไม่ได้) */ link_by?: { email: string; at: string } | null; /** โทเคนเข้าโปรไฟล์ที่ออกก่อนเวลานี้ใช้ไม่ได้ (ออกจากระบบทุกเครื่อง / แอดมินยกเลิกลิงก์) */ tokens_after?: string | null; /** เปลี่ยนบัญชีรับเงินหลังอนุมัติแล้ว — รอแอดมินตรวจบัญชีใหม่ (ถอนเงินไม่ได้จนตรวจ) · prev = บัญชีเดิม */ bank_review?: { at: string; prev: { bank: string; bank_account: string; bank_account_name: string; bank_book_path: string | null } } | null; /** เวลาที่แก้รายการที่ทีมงานตีกลับครบทุกรายการล่าสุด (หน้า /join/rejected แยก "ส่งแก้ไขครบแล้ว" กับ "ไม่มีรายการต้องแก้") */ fixes_done_at?: string | null; /** แอดมินทุกคนที่เคยออกลิงก์ให้ผู้สมัครคนนี้ (กันอนุมัติ KYC เอง) */ link_by_all?: { email: string; at: string }[] | null; /** เหตุผลล่าสุดที่ไม่อนุมัติสลิปค่าสมัคร */ slip_reject?: { reason: string; by: string; at: string } | null; /** รหัสผ่าน Part-Time (scrypt "salt:hash") — อ่านผ่าน getPwHash เท่านั้น ไม่ส่งออกจาก store */ pw_hash?: string | null; /** เวลาตั้งรหัสผ่านล่าสุด */ pw_at?: string | null };
+export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents" | "talents_other" | "activities_other" | "areas" | "no_area" | "slip_check" | "invite" | "kyc_status" | "kyc_reason" | "kyc_submitted_at" | "bank_book_path"> & { attendance?: Record<string, boolean>; /** เวลาเช็กชื่อรายรอบ (โหมดสาธิต / ฐานที่ยังไม่มีตาราง cohort_attendance) */ attendance_at?: Record<string, string>; photos?: string[]; card?: ProfileCard | null; form_done?: number[]; tier?: "top" | "silver"; pt_settings?: PtSettings | null; post?: PtPost | null; listing?: PtListing | null; work?: PtWork | null; listed?: boolean; delete_requested_at?: string | null; bank_consents?: { terms: boolean; pdpa: boolean; profile: boolean; at: string } | null; /** ตำแหน่งรูปในกรอบ (object-position "x% y%") ต่อ path รูป */ photo_pos?: Record<string, string> | null; /** ย่านที่ Part-Time ตั้งเองให้แสดงบนแผนที่ (ปัดเป็นช่อง ~1 กม. แล้ว ไม่ใช่ตำแหน่งจริง) */ geo?: PtGeo | null; /** แอดมินที่ออกลิงก์เข้าโปรไฟล์ล่าสุด (คนนี้อนุมัติ KYC ผู้สมัครคนนี้ไม่ได้) */ link_by?: { email: string; at: string } | null; /** โทเคนเข้าโปรไฟล์ที่ออกก่อนเวลานี้ใช้ไม่ได้ (ออกจากระบบทุกเครื่อง / แอดมินยกเลิกลิงก์) */ tokens_after?: string | null; /** เปลี่ยนบัญชีรับเงินหลังอนุมัติแล้ว — รอแอดมินตรวจบัญชีใหม่ (ถอนเงินไม่ได้จนตรวจ) · prev = บัญชีเดิม */ bank_review?: { at: string; prev: { bank: string; bank_account: string; bank_account_name: string; bank_book_path: string | null } } | null; /** เวลาที่แก้รายการที่ทีมงานตีกลับครบทุกรายการล่าสุด (หน้า /join/rejected แยก "ส่งแก้ไขครบแล้ว" กับ "ไม่มีรายการต้องแก้") */ fixes_done_at?: string | null; /** แอดมินทุกคนที่เคยออกลิงก์ให้ผู้สมัครคนนี้ (กันอนุมัติ KYC เอง) */ link_by_all?: { email: string; at: string }[] | null; /** เหตุผลล่าสุดที่ไม่อนุมัติสลิปค่าสมัคร */ slip_reject?: { reason: string; by: string; at: string } | null; /** รหัสผ่าน Part-Time (scrypt "salt:hash") — อ่านผ่าน getPwHash เท่านั้น ไม่ส่งออกจาก store */ pw_hash?: string | null; /** เวลาตั้งรหัสผ่านล่าสุด */ pw_at?: string | null; /** เลขใบแจ้งหนี้ (ออกตอนสมัคร) */ inv_no?: string | null; /** เลขใบเสร็จรับเงิน (ออกเมื่ออนุมัติสลิป) */ ri_no?: string | null; ri_at?: string | null; /** วันที่เปิดรับงาน (listed ครั้งแรก) — นับ 30 วันโค้ดโปรโมทฟรี */ listed_at?: string | null };
 export type PtGeo = { lat: number; lng: number; label: string; src: "gps" | "pin"; at: string };
 
 /** รวมคอลัมน์ 0003 กับ docs.extra — คอลัมน์จริงมาก่อน */
@@ -157,6 +157,10 @@ export function extraOf(a: Applicant): Extra {
     slip_reject: x.slip_reject ?? null,
     slip_check: x.slip_check ?? null,
     invite: x.invite ?? null,
+    inv_no: x.inv_no ?? null,
+    ri_no: x.ri_no ?? null,
+    ri_at: x.ri_at ?? null,
+    listed_at: x.listed_at ?? null,
     kyc_status: a.kyc_status && a.kyc_status !== "none" ? a.kyc_status : x.kyc_status ?? a.kyc_status ?? "none",
     kyc_reason: a.kyc_reason ?? x.kyc_reason ?? null,
     kyc_submitted_at: a.kyc_submitted_at ?? x.kyc_submitted_at ?? null,
@@ -259,6 +263,28 @@ export async function createApplicant(input: ApplicantInput, files: Partial<Reco
   return data as Applicant;
 }
 
+/** เลขเอกสารรันต่อเนื่องต่อเดือน: INV-2610-0001 (ใบแจ้งหนี้) / RI-2610-0001 (ใบเสร็จรับเงิน)
+ *  ออกใน DB แบบ atomic (supabase/join/0010_doc_numbers.sql) · ยังไม่รัน SQL → null (ผู้เรียกใช้เลขสำรอง) */
+const demoDocs = ((globalThis as unknown as { __mbDocNo?: Map<string, number> }).__mbDocNo ??= new Map());
+export async function nextDocNo(kind: "INV" | "RI"): Promise<string | null> {
+  if (isDemo) {
+    const p = `${kind}-${mbPrefix().slice(3)}-`;
+    const n = (demoDocs.get(p) ?? 0) + 1;
+    demoDocs.set(p, n);
+    return p + String(n).padStart(4, "0");
+  }
+  const { data, error } = await db().rpc("next_doc_no", { p_kind: kind });
+  if (error) { console.error("next_doc_no", error.message); return null; }
+  return (data as string) || null;
+}
+
+/** ออกเลขใบเสร็จ RI ครั้งเดียวเมื่อสถานะเป็น verified (อนุมัติซ้ำไม่ออกเลขใหม่) */
+export async function ensureReceiptNo(row: Applicant): Promise<void> {
+  if (row.status !== "verified" || !row.amount || extraOf(row).ri_no) return; // สายเชิญฟรี (ยอด 0) ไม่ออกใบเสร็จ
+  const ri = (await nextDocNo("RI")) ?? `RI-${row.mb_code.slice(3)}`;
+  await patchApplicant(row.id, { ri_no: ri, ri_at: new Date().toISOString() });
+}
+
 export async function getByMb(mb: string): Promise<Applicant | null> {
   if (isDemo) return noPw(demo.rows.find((r) => r.mb_code === mb) ?? null);
   const { data } = await db().from("applicants").select("*").eq("mb_code", mb).maybeSingle();
@@ -333,7 +359,7 @@ export async function updateExtra(id: string, patch: Pick<Extra, "cohort" | "lin
 
 const KYC_EXTRA_KEYS = ["kyc_status", "kyc_reason", "kyc_submitted_at", "bank_book_path"];
 /** เก็บใน docs.extra อย่างเดียว (ไม่มีคอลัมน์) */
-const EXTRA_ONLY_KEYS = ["pw_hash", "pw_at", "blocked_customers", "link_by_all", "slip_reject", "fixes_done_at", "bank_review", "tokens_after", "link_by", "geo", "photo_pos", "slip_check", "pt_settings", "post", "listing", "work", "listed", "delete_requested_at", "tier", "bank_consents", "areas", "no_area", "availability", "massage_cert", "ack_hours", "ack_no_refuse", "photos", "card", "form_done"];
+const EXTRA_ONLY_KEYS = ["pw_hash", "pw_at", "inv_no", "ri_no", "ri_at", "listed_at", "blocked_customers", "link_by_all", "slip_reject", "fixes_done_at", "bank_review", "tokens_after", "link_by", "geo", "photo_pos", "slip_check", "pt_settings", "post", "listing", "work", "listed", "delete_requested_at", "tier", "bank_consents", "areas", "no_area", "availability", "massage_cert", "ack_hours", "ack_no_refuse", "photos", "card", "form_done"];
 
 /** เขียนคอลัมน์ + docs (path ไฟล์ และ extra สำรอง) — คอลัมน์ 0006 ยังไม่มีก็เขียนเฉพาะคอลัมน์เดิม + docs */
 async function patchApplicant(id: string, allCols: Record<string, unknown>, docPaths: Partial<Record<DocKind, string>> = {}): Promise<Applicant | null> {
@@ -458,24 +484,6 @@ export async function getAttendance(id: string): Promise<Record<number, boolean>
   const { data, error } = await db().from("cohort_attendance").select("session, present").eq("applicant_id", id);
   if (error) return attendanceFromExtra(id); // ตารางยังไม่มี (ยังไม่รัน 0006)
   return Object.fromEntries((data as { session: number; present: boolean }[]).map((x) => [x.session, x.present]));
-}
-
-/** วันที่อบรมผ่าน = เวลาเช็กชื่อรอบหลักรอบสุดท้ายที่ทำให้ครบเกณฑ์ (null = ยังไม่ครบ) — เริ่มนับ 1 ปีคืนเงินประกัน */
-export async function trainedAt(id: string, isCoreDone: (att: Record<number, boolean>) => boolean, core: number[]): Promise<string | null> {
-  let rows: { session: number; present: boolean; at: string | null }[] | null = null;
-  if (!isDemo) {
-    const { data, error } = await db().from("cohort_attendance").select("session, present, marked_at").eq("applicant_id", id);
-    if (!error) rows = (data as { session: number; present: boolean; marked_at: string | null }[]).map((x) => ({ session: x.session, present: x.present, at: x.marked_at }));
-  }
-  if (!rows) {
-    const r = isDemo ? demo.rows.find((x) => x.id === id) : ((await db().from("applicants").select("docs").eq("id", id).maybeSingle()).data as Pick<Applicant, "docs"> | null);
-    const ex = r?.docs?.extra ?? {};
-    rows = Object.entries(ex.attendance ?? {}).map(([k, v]) => ({ session: Number(k), present: !!v, at: ex.attendance_at?.[k] ?? null }));
-  }
-  const att = Object.fromEntries(rows.map((x) => [x.session, x.present]));
-  if (!isCoreDone(att)) return null;
-  const ts = rows.filter((x) => x.present && core.includes(x.session) && x.at).map((x) => x.at as string).sort();
-  return ts.at(-1) ?? null;
 }
 
 /** แอดมินเช็กชื่อ */

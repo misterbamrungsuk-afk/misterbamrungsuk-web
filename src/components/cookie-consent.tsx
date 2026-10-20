@@ -44,7 +44,7 @@ function ConsentBanner() {
       <div className="pointer-events-auto mx-auto max-w-[480px] rounded-2xl border border-[#d4a72c]/60 bg-[#14110b]/95 backdrop-blur text-[#e9dfc7] shadow-[0_12px_40px_rgba(0,0,0,.5)] p-4">
         <p className="text-[13px] leading-relaxed">
           เราใช้คุกกี้ที่จำเป็นเพื่อให้แอปทำงาน และขออนุญาตใช้คุกกี้วิเคราะห์/การตลาดเพื่อปรับปรุงบริการ
-          {" "}<a href="/join/privacy" className="underline text-[#e8c25a]">นโยบายความเป็นส่วนตัว</a> · <a href="/page/terms" className="underline text-[#e8c25a]">เงื่อนไข</a>
+          {" "}<a href="/privacy" className="underline text-[#e8c25a]">นโยบายความเป็นส่วนตัว</a> · <a href="/page/terms" className="underline text-[#e8c25a]">เงื่อนไข</a>
         </p>
         {settings && (
           <div className="mt-2">

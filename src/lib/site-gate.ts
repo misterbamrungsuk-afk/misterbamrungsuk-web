@@ -16,7 +16,7 @@ export function marketPublic(p: string) {
 // หน้าที่เปิดได้โดยไม่ต้องใส่รหัส (หน้ารับสมัครมีผู้สมัครจริงใช้อยู่)
 export function gateExempt(p: string) {
   return (
-    p === "/gate" || p === "/api/gate" ||
+    p === "/gate" || p === "/api/gate" || p === "/soon" || p === "/privacy" || p.startsWith("/privacy/") ||
     p.startsWith("/api/cron/") || // Vercel Cron (ป้องกันด้วย CRON_SECRET เอง)
     p === "/join" || p.startsWith("/join/") || p.startsWith("/api/join/") || p.startsWith("/api/pt/") ||
     p.startsWith("/api/otp/") || // OTP ใช้ในหน้ารับสมัคร /join/pay (มี Turnstile + rate limit)
@@ -26,5 +26,23 @@ export function gateExempt(p: string) {
     p === "/products" || p.startsWith("/products/") || p === "/cart" || p.startsWith("/api/market/") || p === "/api/spas" ||
     p.startsWith("/_next") || p === "/favicon.ico" || p === "/manifest.webmanifest" ||
     p === "/sw.js" || p.startsWith("/pwa-icon") || p.startsWith("/brand")
+  );
+}
+
+// ─── โหมด "เปิดเฉพาะรับสมัคร Part-Time" (บอสสั่ง 20 ต.ค. 2569) ───
+// ค่าเริ่มต้น = เปิด · เปิดเว็บเต็ม: ตั้ง env SITE_MODE=full แล้ว redeploy
+export const PT_ONLY = process.env.SITE_MODE !== "full";
+
+/** หน้าที่เปิดได้ระหว่างโหมดรับสมัคร Part-Time — นอกนั้นแสดง "เปิดให้บริการเร็ว ๆ นี้" (/soon)
+ *  ปิดเฉพาะ "หน้า" · API ยังทำงาน (โปรไฟล์ Part-Time ใช้ API งาน/SOS/แจ้งเตือน และ API ลูกค้าต้องล็อกอินอยู่แล้ว) */
+export function ptOnlyOpen(p: string) {
+  const under = (b: string) => p === b || p.startsWith(`${b}/`);
+  return (
+    p === "/" || p === "/work-with-us" || under("/join") || under("/privacy") || p === "/page/terms" || under("/policy") ||
+    p === "/gate" || p === "/soon" || p === "/offline" || p === "/login" ||
+    under("/admin") || p === "/admin-login" ||
+    p.startsWith("/api") || p.startsWith("/_next") || p.startsWith("/pwa-icon") || p.startsWith("/brand") ||
+    // ไฟล์ (มีนามสกุล) เช่น favicon / manifest / sw.js / icon.png / robots.txt
+    /\/[^/]+\.[a-z0-9]+$/i.test(p) || p === "/manifest.webmanifest"
   );
 }
