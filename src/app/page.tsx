@@ -5,6 +5,7 @@ import { listNotices } from "@/lib/bookings";
 import { getEarnings } from "@/lib/join/earnings-settings";
 import { getLivePeople } from "@/lib/home/live";
 import { getMemberSettings } from "@/lib/member/tiers";
+import { PT_ONLY } from "@/lib/site-gate";
 
 export const metadata = { title: "Mister Bamrungsuk — เลือกเพื่อนของคุณ" };
 
@@ -27,5 +28,5 @@ export default async function HomePage() {
   const live = [...boosted, ...visible.filter((p) => !p.boost)];
   const unread = notices.filter((n) => n.kind === "message" && !n.read_at).length;
   // มี Part-Time จริงที่แอดมินเปิดแสดงแล้ว → แสดงเฉพาะคนจริง · ยังไม่มี → ตัวอย่าง
-  return <HomeFeed showEarnings={show} people={live.length ? live : undefined} me={me ? { name: prof?.name || me.email.split("@")[0] } : null} unread={unread} memberTier={prof?.member_tier ?? null} promo={{ gold: mcfg.tiers.gold, black: mcfg.tiers.black }} />;
+  return <HomeFeed showEarnings={show} people={live.length ? live : undefined} me={me ? { name: prof?.name || me.email.split("@")[0] } : null} unread={unread} memberTier={prof?.member_tier ?? null} promo={{ gold: mcfg.tiers.gold, black: mcfg.tiers.black }} recruit={PT_ONLY} />;
 }

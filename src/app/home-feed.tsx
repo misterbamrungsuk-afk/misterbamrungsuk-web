@@ -66,7 +66,7 @@ type Promo = { gold: { pay: number; credit: number }; black: { pay: number; cred
 const PROMO_DEFAULT: Promo = { gold: { pay: 50000, credit: 70000 }, black: { pay: 100000, credit: 150000 } };
 const fb = (n: number) => "฿" + n.toLocaleString("th-TH");
 
-export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", me = null, unread = 0, memberTier = null, promo = PROMO_DEFAULT }: { showEarnings?: boolean; people?: Person[]; mode?: "home" | "sample"; me?: { name: string } | null; unread?: number; memberTier?: "gold" | "black" | null; promo?: Promo }) {
+export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", me = null, unread = 0, memberTier = null, promo = PROMO_DEFAULT, recruit = false }: { showEarnings?: boolean; people?: Person[]; mode?: "home" | "sample"; me?: { name: string } | null; unread?: number; memberTier?: "gold" | "black" | null; promo?: Promo; recruit?: boolean }) {
   const sample = mode === "sample";
   const slider = useRef<HTMLDivElement>(null);
   const [slide, setSlide] = useState(0);
@@ -321,7 +321,28 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
       </nav> : <div className="md:hidden"><TabBar unread={unread} /></div>}
 
       {/* ป๊อปอัปโปรเมมเบอร์ (คนที่ยังไม่เป็นเมม) */}
-      {ad && !memberTier && (
+      {/* ช่วงเปิดรับสมัคร Part-Time อย่างเดียว (site-gate PT_ONLY): ป๊อปอัปชวนร่วมงานแทนโปรเมมเบอร์ */}
+      {ad && recruit && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto" style={{ background: "rgba(8,6,6,.78)", padding: "96px 20px 24px" }} onClick={closeAd}>
+          <div role="dialog" aria-modal="true" aria-label="ร่วมงานกับเรา Part-Time" data-popup="recruit" className="relative w-full max-w-[420px] rounded-[22px] overflow-hidden" style={{ background: "linear-gradient(160deg, #3a0a14 0%, #1c0d10 55%, #0d0909 100%)", boxShadow: "0 0 0 1.5px #e8c472, 0 24px 60px rgba(0,0,0,.6)" }} onClick={(e) => e.stopPropagation()}>
+            <button type="button" onClick={closeAd} aria-label="ปิด" className="absolute z-10 grid place-items-center w-10 h-10 rounded-full text-[#f3ead9] text-[18px]" style={{ top: 10, right: 10, background: "rgba(0,0,0,.45)" }}>✕</button>
+            <img src="/brand/home/join-hero.jpg" alt="" className="w-full h-[170px] object-cover block" style={{ objectPosition: "50% 30%" }} />
+            <div className="flex flex-col items-center text-center gap-3" style={{ padding: "18px 18px 18px" }}>
+              <span className="text-[13px] font-semibold text-[#e8c472]">ร่วมงานกับเรา · <span className="tracking-[.2em]">PART-TIME</span></span>
+              <span className="font-bold text-[24px] leading-[1.3] text-[#f3ead9]" style={{ textWrap: "balance" }}>เป็นเพื่อนกินเที่ยว Mister Bamrungsuk</span>
+              <ul className="m-0 pl-5 self-stretch text-left text-[14px] leading-[1.7] text-[#d9c9b4]">
+                <li>งานพาร์ทไทม์ เลือกวันเวลาเอง</li>
+                <li>ส่วนแบ่ง 40–60% ต่อนัด + ทิปเต็ม 100%</li>
+                <li>ค่าสมัครเริ่มต้น ฿{PACKAGES.A.price.toLocaleString("en-US")} รวมอบรม · ไม่มีประสบการณ์ก็สมัครได้</li>
+              </ul>
+              <Link href="/join" onClick={closeAd} className="self-stretch min-h-12 rounded-xl bg-[#e8c472] text-[#1b130b] font-semibold grid place-items-center hover:text-[#1b130b]">สมัคร Part-Time</Link>
+              <Link href="/join/earnings" onClick={closeAd} className="self-stretch min-h-11 rounded-xl text-[#e8c472] text-[14px] font-semibold grid place-items-center hover:text-[#e8c472]" style={{ boxShadow: "inset 0 0 0 1px rgba(232,196,114,.45)" }}>ดูรายได้และส่วนแบ่ง</Link>
+              <button type="button" onClick={closeAd} className="min-h-10 bg-transparent text-[#b5a596] text-[13px] font-light">ไว้ทีหลัง</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {ad && !recruit && !memberTier && (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto" style={{ background: "rgba(8,6,6,.78)", padding: "96px 20px 24px" }} onClick={closeAd}>
           <div role="dialog" aria-modal="true" aria-label="โปรเปิดเมมเบอร์" className="relative w-full max-w-[420px] rounded-[22px] overflow-hidden" style={{ background: "linear-gradient(160deg, #3a0a14 0%, #1c0d10 55%, #0d0909 100%)", boxShadow: "0 0 0 1.5px #e8c472, 0 24px 60px rgba(0,0,0,.6)" }} onClick={(e) => e.stopPropagation()}>
             <button type="button" onClick={closeAd} aria-label="ปิด" className="absolute z-10 grid place-items-center w-10 h-10 rounded-full text-[#f3ead9] text-[18px]" style={{ top: 10, right: 10, background: "rgba(0,0,0,.45)" }}>✕</button>
@@ -353,7 +374,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
         </div>
       )}
       {/* ป๊อปอัปโฆษณา (เมมเบอร์แล้ว) */}
-      {ad && memberTier && (
+      {ad && !recruit && memberTier && (
         <div className="fixed inset-0 z-50 flex items-start justify-center" style={{ background: "rgba(8,6,6,.72)", padding: "140px 24px 24px" }} onClick={closeAd}>
           <div role="dialog" aria-modal="true" aria-label="โฆษณา" className="w-full max-w-[400px] rounded-[20px] overflow-hidden bg-[#251d1b]" style={{ boxShadow: "0 20px 50px rgba(0,0,0,.5)" }} onClick={(e) => e.stopPropagation()}>
             <div className="relative aspect-[4/3]">
