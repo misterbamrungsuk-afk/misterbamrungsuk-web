@@ -1,5 +1,5 @@
-// หมวดสาวหล่อ (บอสสั่ง 21 ต.ค. 2569): สมัครที่ /join/tom · ค่าสมัครเท่าหนุ่มหล่อ · ที่นั่งอบรมแยกโควตา
-// · ใบสมัครเก็บ group = tom + คำนำหน้า นางสาว · หน้าแรกมีแท็บ หนุ่มหล่อ | สาวหล่อ · ป้ายในโปรไฟล์/หลังบ้าน
+// หมวดทอมหล่อ (บอสสั่ง 21 ต.ค. 2569): สมัครที่ /join/tom · ค่าสมัครเท่าหนุ่มหล่อ · ที่นั่งอบรมแยกโควตา
+// · ใบสมัครเก็บ group = tom + คำนำหน้า นางสาว · หน้าแรกมีแท็บ หนุ่มหล่อ | ทอมหล่อ · ป้ายในโปรไฟล์/หลังบ้าน
 const WEB = require('path').join(__dirname, '..');
 const fs = require('fs'), crypto = require('crypto');
 const { adm } = require('./_tok');
@@ -18,18 +18,18 @@ const seats = async (g) => J(await fetch(B + '/api/join/seats' + (g ? '?g=' + g 
 
 (async () => {
   let h = await (await fetch(B + '/join/tom')).text();
-  ok('/join/tom renders สาวหล่อ', h.includes('สาวหล่อ · เพื่อนกินเที่ยว') && h.includes('สาวหล่อ (ทอม) อายุ 20–50 ปี'));
+  ok('/join/tom renders ทอมหล่อ', h.includes('ทอมหล่อ · เพื่อนกินเที่ยว') && h.includes('ทอมหล่อ อายุ 20–50 ปี'));
   ok('/join/tom same fees', h.includes('9,500 บาท') && h.includes('15,900 บาท'));
   ok('/join/tom CTA carries group', h.includes('g=tom'));
   h = await (await fetch(B + '/join')).text();
-  ok('/join has หนุ่มหล่อ | สาวหล่อ switch', h.includes('data-group-tab="หนุ่มหล่อ"') && h.includes('href="/join/tom"'));
+  ok('/join has หนุ่มหล่อ | ทอมหล่อ switch', h.includes('data-group-tab="หนุ่มหล่อ"') && h.includes('href="/join/tom"'));
 
   ok('/join seat counter = taken / 50, no group name', /\d+ \/ 50 ที่/.test(h.replace(/<!-- -->/g, '')) && !h.includes('กลุ่มอบรมถัดไป'));
   const men0 = await seats(), tom0 = await seats('tom');
   ok('quota 50 · taken counted', men0.quota === 50 && men0.taken === 50 - men0.left, JSON.stringify(men0));
   ok('separate quota (same capacity)', tom0.quota === men0.quota && tom0.left === tom0.quota, JSON.stringify({ men0, tom0 }));
 
-  // สมัครสาวหล่อ
+  // สมัครทอมหล่อ
   const tel = '06' + String(Date.now()).slice(-8);
   const s = await J(await fetch(B + '/api/otp/send', { method: 'POST', headers: JSONH, body: JSON.stringify({ phone: tel }) }));
   let jar = '';
@@ -43,7 +43,7 @@ const seats = async (g) => J(await fetch(B + '/api/join/seats' + (g ? '?g=' + g 
   let row = (await J(await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ line_joined: false }) }))).row;
   ok('group = tom · title นางสาว · fee 9,500', row?.group === 'tom' && row?.title === 'นางสาว' && row?.amount === 9500, `${row?.group} ${row?.title} ${row?.amount}`);
 
-  // อนุมัติสลิป + KYC → นับเข้าที่นั่งสาวหล่อเท่านั้น
+  // อนุมัติสลิป + KYC → นับเข้าที่นั่งทอมหล่อเท่านั้น
   await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ status: 'verified' }) });
   await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ kyc_status: 'approved' }) });
   const men1 = await seats(), tom1 = await seats('tom');
@@ -60,11 +60,11 @@ const seats = async (g) => J(await fetch(B + '/api/join/seats' + (g ? '?g=' + g 
   ok('MS profile route works', (await fetch(B + `/join/profile/${mb}?t=${encodeURIComponent(tok(mb))}`)).status === 200);
   // ป้าย + หน้าแรก
   h = await (await fetch(B + `/join/profile/${mb}?t=${encodeURIComponent(tok(mb))}`)).text();
-  ok('profile shows สาวหล่อ badge', h.includes('data-pt-group="tom"'));
+  ok('profile shows ทอมหล่อ badge', h.includes('data-pt-group="tom"'));
   h = await (await fetch(B + '/admin/applicants', { headers: ADM })).text();
   ok('admin list data has group tom', h.replace(/\\"/g, '"').includes('"group":"tom"'));
   h = await (await fetch(B + '/')).text();
-  ok('home has หนุ่มหล่อ | สาวหล่อ tabs', h.includes('data-home-group="man"') && h.includes('data-home-group="tom"'));
+  ok('home has หนุ่มหล่อ | ทอมหล่อ tabs', h.includes('data-home-group="man"') && h.includes('data-home-group="tom"'));
 
   // สมัครหนุ่มหล่อปกติ ไม่มี group
   const men = (await J(await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ line_joined: false }) }))).row;

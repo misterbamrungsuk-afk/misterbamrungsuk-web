@@ -58,7 +58,7 @@ function PayInner() {
   const [invChecking, setInvChecking] = useState(true);
 
   useEffect(() => {
-    // หมวดสาวหล่อ (?g=tom จากหน้า /join/tom) — จำไว้เผื่อรีเฟรช
+    // หมวดทอมหล่อ (?g=tom จากหน้า /join/tom) — จำไว้เผื่อรีเฟรช
     let grp = params.get("g");
     try { if (grp === "tom") sessionStorage.setItem(GRP_KEY, grp); else if (params.get("pkg")) sessionStorage.removeItem(GRP_KEY); else grp = sessionStorage.getItem(GRP_KEY); } catch {}
     setTom(grp === "tom");
@@ -164,7 +164,7 @@ function PayInner() {
           <Link href={invite ? `/join/i/${invite}` : tom ? "/join/tom" : "/join"} aria-label="ย้อนกลับ" className="shrink-0 w-11 h-11 rounded-full bg-[#251d1b] text-[#f3ead9] grid place-items-center hover:text-[#f3ead9]">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
           </Link>
-          <div className="min-w-0"><div className="text-[13px] text-[#e8c472] font-light">{invite ? "✦ คำเชิญพิเศษ" : tom ? "สาวหล่อ · ก่อนกรอกใบสมัคร" : "ก่อนกรอกใบสมัคร"}</div><div className="font-semibold text-[20px] leading-[1.35]">{invite ? "สมัครด้วยคำเชิญ" : "ชำระค่าสมัคร"}</div></div>
+          <div className="min-w-0"><div className="text-[13px] text-[#e8c472] font-light">{invite ? "✦ คำเชิญพิเศษ" : tom ? "ทอมหล่อ · ก่อนกรอกใบสมัคร" : "ก่อนกรอกใบสมัคร"}</div><div className="font-semibold text-[20px] leading-[1.35]">{invite ? "สมัครด้วยคำเชิญ" : "ชำระค่าสมัคร"}</div></div>
         </div>
 
         {inviteErr && <p role="alert" className="m-0 mx-5 mt-2 rounded-xl text-[13.5px] text-[#ff8a9a]" style={{ padding: "10px 14px", background: "rgba(255,138,154,0.1)" }}>{inviteErr} · ยอดด้านล่างเป็นราคาสมัครปกติ</p>}

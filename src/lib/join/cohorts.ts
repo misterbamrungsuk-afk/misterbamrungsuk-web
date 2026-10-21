@@ -89,7 +89,7 @@ export async function cohortTaken(group: "tom" | null = null): Promise<{ cohorts
   for (const a of apps) {
     // นับเข้าที่นั่งเมื่อแอดมินอนุมัติครบทั้งสลิปค่าสมัคร (verified) และ KYC (approved) — ทั้งสายจ่ายการันตีและสายคำเชิญ
     if (a.status !== "verified" || extraOf(a).kyc_status !== "approved") continue;
-    // หนุ่มหล่อ / สาวหล่อ นับที่นั่งแยกกัน (โควตาเท่ากันตามความจุกลุ่ม)
+    // หนุ่มหล่อ / ทอมหล่อ นับที่นั่งแยกกัน (โควตาเท่ากันตามความจุกลุ่ม)
     if ((extraOf(a).group ?? null) !== group) continue;
     const k = extraOf(a).cohort;
     if (k && keys.has(k)) taken.set(k, (taken.get(k) ?? 0) + 1);
@@ -104,7 +104,7 @@ export async function cohortTaken(group: "tom" | null = null): Promise<{ cohorts
 }
 
 /** ที่นั่งอบรมรวม (บอสสั่ง 21 ต.ค. 2569: แสดง "ที่นั่งที่ใช้แล้ว / 50" ไม่แยกชื่อกลุ่ม) — โควตา = QUOTA ใน config
- *  นับคนที่สลิป + KYC ผ่านแล้ว แยกหนุ่มหล่อ / สาวหล่อ (คนละโควตา) · ปิดรับเมื่อไม่มีกลุ่มเปิดรับ */
+ *  นับคนที่สลิป + KYC ผ่านแล้ว แยกหนุ่มหล่อ / ทอมหล่อ (คนละโควตา) · ปิดรับเมื่อไม่มีกลุ่มเปิดรับ */
 export async function nextCohortSeats(group: "tom" | null = null): Promise<{ cohort: string; left: number; quota: number; taken: number; full: boolean }> {
   const { QUOTA } = await import("./config");
   const { cohorts, taken } = await cohortTaken(group);

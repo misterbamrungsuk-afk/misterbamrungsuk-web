@@ -1,4 +1,4 @@
--- รหัสสาวหล่อแยกจากหนุ่มหล่อ (21 ต.ค. 2569): หนุ่มหล่อ MB-YYMMNNN · สาวหล่อ MS-YYMMNNN นับเลขแยกกัน
+-- รหัสทอมหล่อแยกจากหนุ่มหล่อ (21 ต.ค. 2569): หนุ่มหล่อ MB-YYMMNNN · ทอมหล่อ MS-YYMMNNN นับเลขแยกกัน
 -- รันใน Supabase SQL Editor (production) · รันซ้ำได้ · ใช้ตาราง mb_counters เดิม (prefix คนละตัว)
 create or replace function public.next_brand_code(p_brand text) returns text
 language plpgsql security definer set search_path = public as $$
@@ -15,7 +15,7 @@ begin
 end $$;
 revoke all on function public.next_brand_code(text) from public, anon, authenticated;
 
--- สร้างผู้สมัคร: p->>'mb_brand' = 'MS' สำหรับสาวหล่อ (ไม่ส่ง = MB เหมือนเดิม)
+-- สร้างผู้สมัคร: p->>'mb_brand' = 'MS' สำหรับทอมหล่อ (ไม่ส่ง = MB เหมือนเดิม)
 create or replace function public.create_applicant(p jsonb) returns public.applicants
 language plpgsql security definer set search_path = public as $$
 declare

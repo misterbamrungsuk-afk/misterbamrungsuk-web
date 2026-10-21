@@ -32,7 +32,7 @@ const h2: React.CSSProperties = { margin: 0, fontWeight: 600, fontSize: 20 };
 export function JoinSalePage({ seats, showEarnings = true, invite, group = null }: { seats: Seats; showEarnings?: boolean; invite?: string; group?: "tom" | null }) {
   const tom = group === "tom";
   const g = tom ? "&g=tom" : "";
-  const looking = tom ? ["สาวหล่อ (ทอม) อายุ 20–50 ปี ดูแลตัวเองสม่ำเสมอ", ...LOOKING_FOR.slice(1)] : LOOKING_FOR;
+  const looking = tom ? ["ทอมหล่อ อายุ 20–50 ปี ดูแลตัวเองสม่ำเสมอ", ...LOOKING_FOR.slice(1)] : LOOKING_FOR;
   const faq = invite ? [FAQ_INVITE, ...FAQ.slice(1)] : FAQ;
   const [pick, setPick] = useState<PackageKey>("B");
   const [open, setOpen] = useState<Record<number, boolean>>({ 0: true });
@@ -48,13 +48,13 @@ export function JoinSalePage({ seats, showEarnings = true, invite, group = null 
       <div className="mx-auto max-w-[1200px] flex flex-col" style={{ padding: "20px 16px 0", gap: 26 }}>
         <section className="join-hero md:min-h-[340px] md:flex md:flex-col md:justify-end md:py-14 md:px-12" style={{ padding: "40px 22px 34px", borderRadius: 18 }}>
           <div className="text-[11px] font-semibold tracking-[2px] text-[#e8c472]">{invite ? <><span className="tracking-normal text-[13px]">✦ คำเชิญพิเศษ</span> · PART TIME</> : "PART TIME"}</div>
-          <h1 className="font-semibold text-[30px] md:text-[48px] leading-[1.32] text-[#f3ead9] md:max-w-[640px]" style={{ margin: "10px 0 6px" }}>{tom ? "สาวหล่อ · เพื่อนกินเที่ยว Mister Bamrungsuk" : "เพื่อนกินเที่ยว Mister Bamrungsuk"}</h1>
+          <h1 className="font-semibold text-[30px] md:text-[48px] leading-[1.32] text-[#f3ead9] md:max-w-[640px]" style={{ margin: "10px 0 6px" }}>{tom ? "ทอมหล่อ · เพื่อนกินเที่ยว Mister Bamrungsuk" : "เพื่อนกินเที่ยว Mister Bamrungsuk"}</h1>
           <p className="m-0 text-[15px] md:text-[18px] text-[#e6d6c4]">งานพาร์ทไทม์ เลือกวันเวลาเอง{invite ? " · คำเชิญพิเศษ: สมัครฟรี ได้ระดับ TOP" : ""}</p>
         </section>
 
-        {/* หนุ่มหล่อ / สาวหล่อ — สมัครแยกหมวด · ที่นั่งอบรมแยกโควตา */}
+        {/* หนุ่มหล่อ / ทอมหล่อ — สมัครแยกหมวด · ที่นั่งอบรมแยกโควตา */}
         {!invite && <nav aria-label="เลือกหมวด" className="self-center grid grid-cols-2 gap-1 rounded-full" style={{ padding: 4, background: "#251d1b" }}>
-          {([["/join", "หนุ่มหล่อ", !tom], ["/join/tom", "สาวหล่อ", tom]] as const).map(([href, label, on]) => (
+          {([["/join", "หนุ่มหล่อ", !tom], ["/join/tom", "ทอมหล่อ", tom]] as const).map(([href, label, on]) => (
             <Link key={href} href={href} aria-current={on ? "page" : undefined} data-group-tab={label} className="min-h-11 px-6 rounded-full grid place-items-center text-[15px] font-semibold" style={on ? { background: "#e8c472", color: "#1b130b" } : { color: "#e8c472" }}>{label}</Link>
           ))}
         </nav>}

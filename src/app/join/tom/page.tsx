@@ -5,9 +5,9 @@ import { JoinSalePage, type Seats } from "../join-sale";
 
 export const revalidate = 60;
 
-export const metadata = { title: "รับสมัครสาวหล่อ · Part-Time — Mister Bamrungsuk", description: "สาวหล่อ (ทอม) เพื่อนกินเที่ยว Mister Bamrungsuk · งานพาร์ทไทม์ เลือกวันเวลาเอง" };
+export const metadata = { title: "รับสมัครทอมหล่อ · Part-Time — Mister Bamrungsuk", description: "ทอมหล่อ เพื่อนกินเที่ยว Mister Bamrungsuk · งานพาร์ทไทม์ เลือกวันเวลาเอง" };
 
-// หมวดสาวหล่อ (บอสสั่ง 21 ต.ค. 2569) — ค่าสมัครเท่าหนุ่มหล่อ · ที่นั่งอบรมแยกโควตา (นับเฉพาะสาวหล่อ)
+// หมวดทอมหล่อ (บอสสั่ง 21 ต.ค. 2569) — ค่าสมัครเท่าหนุ่มหล่อ · ที่นั่งอบรมแยกโควตา (นับเฉพาะทอมหล่อ)
 export default async function JoinTomPage() {
   const [s, cfg] = await Promise.all([nextCohortSeats("tom").catch(() => ({ cohort: "", left: 0, quota: 0, taken: 0, full: true })), getEarnings()]);
   const seats: Seats = { left: s.left, quota: s.quota, taken: s.taken, cohort: s.cohort, closed: s.full || Date.now() > Date.parse(CLOSE_AT) };

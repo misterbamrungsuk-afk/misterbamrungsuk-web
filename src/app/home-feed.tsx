@@ -79,7 +79,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
   useEffect(() => { const t = setInterval(() => go((Math.round((slider.current?.scrollLeft ?? 0) / Math.max(1, slider.current?.clientWidth ?? 1)) + 1) % nSlides), 5000); return () => clearInterval(t); }, [nSlides]); // eslint-disable-line react-hooks/exhaustive-deps
   const [acts, setActs] = useState<Act[]>([]);
   const [sort, setSort] = useState<Sort>("top");
-  // หนุ่มหล่อ / สาวหล่อ — แยกแท็บ (เปิดมาเจอหนุ่มหล่อก่อน)
+  // หนุ่มหล่อ / ทอมหล่อ — แยกแท็บ (เปิดมาเจอหนุ่มหล่อก่อน)
   const [grp, setGrp] = useState<"man" | "tom">("man");
   const [ad, setAd] = useState(false);
   const [fOpen, setFOpen] = useState(false);
@@ -271,7 +271,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
           <div className="flex items-center gap-3 min-w-0">
             <div className="font-semibold text-[19px] shrink-0">เพื่อนในระบบ</div>
             <div role="tablist" aria-label="หมวด" className="grid grid-cols-2 gap-1 rounded-full" style={{ padding: 3, background: "#2c1a1f" }}>
-              {([["man", "หนุ่มหล่อ"], ["tom", "สาวหล่อ"]] as const).map(([k, label]) => (
+              {([["man", "หนุ่มหล่อ"], ["tom", "ทอมหล่อ"]] as const).map(([k, label]) => (
                 <button key={k} type="button" role="tab" aria-selected={grp === k} data-home-group={k} onClick={() => setGrp(k)} className="min-h-9 px-3.5 rounded-full text-[13.5px] font-semibold" style={grp === k ? { background: GOLD, color: "#1b130b" } : { color: GOLD }}>{label}</button>
               ))}
             </div>
@@ -302,9 +302,9 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
         ) : (
           grp === "tom" && !people.some((p) => p.group === "tom")
             ? <div data-tom-empty className="rounded-2xl text-center flex flex-col items-center gap-2 bg-[#2c1a1f]" style={{ margin: "0 18px", padding: 24 }}>
-                <b className="text-[16px]">สาวหล่อ เร็ว ๆ นี้</b>
-                <span className="text-[13px] font-light text-[#d9c9b4]">กำลังเปิดรับสมัครสาวหล่อรุ่นแรก</span>
-                <Link href="/join/tom" className="min-h-11 px-5 rounded-full grid place-items-center text-[14px] font-semibold text-[#1b130b] hover:text-[#1b130b]" style={{ background: GOLD }}>สมัครเป็นสาวหล่อ ›</Link>
+                <b className="text-[16px]">ทอมหล่อ เร็ว ๆ นี้</b>
+                <span className="text-[13px] font-light text-[#d9c9b4]">กำลังเปิดรับสมัครทอมหล่อรุ่นแรก</span>
+                <Link href="/join/tom" className="min-h-11 px-5 rounded-full grid place-items-center text-[14px] font-semibold text-[#1b130b] hover:text-[#1b130b]" style={{ background: GOLD }}>สมัครเป็นทอมหล่อ ›</Link>
               </div>
             : <div className="rounded-2xl text-center text-[13px] font-light bg-[#2c1a1f]" style={{ margin: "0 18px", padding: 24 }}>ยังไม่เจอเพื่อนที่ตรงใจ ลองเลือกกิจกรรมให้น้อยลงดูนะคะ</div>
         )}

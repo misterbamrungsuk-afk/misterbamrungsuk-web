@@ -53,7 +53,7 @@ export async function POST(req: Request) {
   if (!(await verifyTurnstile(s("turnstile", 2048), ip))) return bad(TURNSTILE_ERROR, 403);
 
   const pkg = s("package") as PackageKey;
-  // หมวดสาวหล่อ (/join/tom) — ที่นั่งอบรมแยกโควตาจากหนุ่มหล่อ
+  // หมวดทอมหล่อ (/join/tom) — ที่นั่งอบรมแยกโควตาจากหนุ่มหล่อ
   const group = s("group") === "tom" ? "tom" : null;
   if ((await (await import("@/lib/join/cohorts")).nextCohortSeats(group)).full) return bad("รับครบจำนวนแล้ว", 410);
   // ตัดทุกอย่างที่ไม่ใช่ตัวเลขก่อน (วาง "abc081-234-5678" ก็ได้ 0812345678) แล้วตรวจ 10 หลักด้านล่าง
