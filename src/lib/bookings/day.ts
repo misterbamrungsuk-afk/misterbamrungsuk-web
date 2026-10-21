@@ -117,9 +117,9 @@ async function split(live: Booking, actor: string, tip: number, beforeMove?: () 
 async function matureOne(b: Booking, actor: string): Promise<Booking> {
   const amt = await ptAmount(b);
   // สายคำเชิญพิเศษ: หักเงินประกันงานเคสละ ฿500 เข้า PT.bond (ครบ 90 วันย้ายเข้ายอดถอนได้ · work-bond.ts)
-  const { bondCut } = await import("@/lib/join/work-bond");
+  const { bondCut, bondApplies } = await import("@/lib/join/work-bond");
   const pt = amt > 0 ? await (await import("@/lib/join/store")).getById(b.parttime_id).catch(() => null) : null;
-  const cut = bondCut(!!(pt && (await import("@/lib/join/store")).extraOf(pt).invite), amt);
+  const cut = bondCut(!!pt && bondApplies((await import("@/lib/join/store")).extraOf(pt)), amt);
   return (await moveBooking(b.id, ["completed"], { matured_at: now() }, amt > 0 ? { kind: "mature", ref: { type: "booking", id: b.id }, idem: `mature:${b.id}`, note: `ปล่อยรายได้ ${b.code}${cut ? ` · หักเงินประกันงาน ฿${cut / 100}` : ""}`, actor, legs: ([
     { owner_type: "parttime", owner_id: b.parttime_id, bucket: "pending", amount: -amt },
     { owner_type: "parttime", owner_id: b.parttime_id, bucket: "available", amount: amt - cut },

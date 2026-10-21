@@ -7,6 +7,9 @@ import { PLATFORM, WalletError, balances, history, post } from "@/lib/wallet";
 // · หนีงาน/เทงาน → แอดมินหักจากช่อง bond (ปรับยอดพร้อมเหตุผล ที่ /admin/wallet)
 export const BOND = { perJobSatang: 50_000, lockDays: 90 } as const;
 
+/** ใช้กับคนที่สมัครฟรี: สายคำเชิญพิเศษ หรือหมวดทอมหล่อ */
+export const bondApplies = (x: { invite?: string | null; group?: string | null }) => !!x.invite || x.group === "tom";
+
 /** ส่วนที่หักเข้าเงินประกันจากรายได้นัดนี้ (สตางค์) */
 export const bondCut = (invite: boolean, amt: number) => (invite ? Math.max(0, Math.min(BOND.perJobSatang, amt)) : 0);
 

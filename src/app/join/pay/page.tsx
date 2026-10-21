@@ -54,6 +54,8 @@ function PayInner() {
   const [invite, setInvite] = useState<string | null>(null);
   const [inviteErr, setInviteErr] = useState("");
   const [tom, setTom] = useState(false);
+  // สมัครฟรี (ไม่มี QR/สลิป): ลิงก์เชิญพิเศษ หรือหมวดทอมหล่อ
+  const free = !!invite || tom;
   // กำลังตรวจรหัสเชิญ → ยังไม่แสดง QR (กันสายเชิญฟรีเห็น QR แวบหนึ่ง)
   const [invChecking, setInvChecking] = useState(true);
 
@@ -65,7 +67,8 @@ function PayInner() {
     const q = params.get("pkg");
     let pkg: string | null = q;
     try { if (q === "A" || q === "B") sessionStorage.setItem(PKG_KEY, q); else pkg = sessionStorage.getItem(PKG_KEY); } catch {}
-    if (pkg === "A" || pkg === "B") setK(pkg); else router.replace("/join");
+    // ทอมหล่อมีสายเดียว: เพื่อนกินเที่ยว (มีความสามารถในการนวด) = B
+    if (grp === "tom") setK("B"); else if (pkg === "A" || pkg === "B") setK(pkg); else router.replace("/join");
     let code = (params.get("invite") ?? "").toUpperCase();
     try { if (code) sessionStorage.setItem(INV_KEY, code); else code = sessionStorage.getItem(INV_KEY) ?? ""; } catch {}
     if (!code) setInvChecking(false);
@@ -118,7 +121,7 @@ function PayInner() {
     if (pw.a.length < 8) return setErr("ตั้งรหัสผ่านอย่างน้อย 8 ตัวอักษร");
     if (pw.a !== pw.b) return setErr("ยืนยันรหัสผ่านไม่ตรงกัน · พิมพ์ให้เหมือนกันทั้ง 2 ช่อง");
     if (!phoneOk) return setErr("ยืนยันเบอร์โทรด้วยรหัส OTP ก่อน");
-    if (!slip && !invite) return setErr("แนบสลิปการโอนก่อน");
+    if (!slip && !free) return setErr("แนบสลิปการโอนก่อน");
     if (!agree) return setErr("ติ๊กยอมรับและให้ความยินยอมให้ครบทั้ง 3 ข้อก่อนส่ง");
     setBusy(true); setErr("");
     try {
@@ -127,7 +130,7 @@ function PayInner() {
       fd.append("nickname", who.nickname.trim()); fd.append("tel", who.tel);
       fd.append("email", who.email.trim().toLowerCase()); fd.append("password", pw.a);
       fd.append("accept_terms", "true"); fd.append("consent_pdpa", "true"); fd.append("consent_criminal", "true"); fd.append("turnstile", ts);
-      if (!invite) fd.append("slip", await dataUrlToFile(slip, "slip.jpg"));
+      if (!free) fd.append("slip", await dataUrlToFile(slip, "slip.jpg"));
       if (invite) fd.append("invite", invite);
       const res = await fetch("/api/join/register", { method: "POST", body: fd });
       const data = (await res.json()) as { ok?: boolean; mb_code?: string; link?: string; error?: string; fields?: string[]; needOtp?: boolean; login?: string };
@@ -150,11 +153,11 @@ function PayInner() {
   const lastInitial = who.last_name.trim() ? ` ${who.last_name.trim()[0]}.` : "";
   const summary: [string, string][] = [["ผู้สมัคร", who.first_name.trim() ? `${tom ? "" : "นาย"}${who.first_name.trim()}${lastInitial}${who.nickname.trim() ? ` (${who.nickname.trim()})` : ""}` : "—"], ["กลุ่มอบรม", "กลุ่ม 1 · ภายใน 20 พ.ย."]];
   // ลิงก์เชิญพิเศษ: ไม่ต้องจ่าย · ได้ระดับ TOP
-  const items: [string, number][] = [["ค่าสมัคร (รวมค่าอบรม)", invite ? 0 : amount]];
+  const items: [string, number][] = [["ค่าสมัคร (รวมค่าอบรม)", free ? 0 : amount]];
   const perks = FEE_INCLUDES(k);
   const mm = String(Math.floor(sec / 60)).padStart(2, "0"), ss = String(sec % 60).padStart(2, "0");
   const expired = sec === 0;
-  const ready = (!!slip || !!invite) && agree && phoneOk && EMAIL_RE.test(who.email.trim()) && pw.a.length >= 8 && pw.a === pw.b && !busy;
+  const ready = (!!slip || free) && agree && phoneOk && EMAIL_RE.test(who.email.trim()) && pw.a.length >= 8 && pw.a === pw.b && !busy;
 
   return (
     <div className="mb-v7 min-h-dvh relative" style={{ background: "#171211", color: "#f3ead9", fontSize: 15, lineHeight: 1.7 }}>
@@ -164,7 +167,7 @@ function PayInner() {
           <Link href={invite ? `/join/i/${invite}` : tom ? "/join/tom" : "/join"} aria-label="ย้อนกลับ" className="shrink-0 w-11 h-11 rounded-full bg-[#251d1b] text-[#f3ead9] grid place-items-center hover:text-[#f3ead9]">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
           </Link>
-          <div className="min-w-0"><div className="text-[13px] text-[#e8c472] font-light">{invite ? "✦ คำเชิญพิเศษ" : tom ? "ทอมหล่อ · ก่อนกรอกใบสมัคร" : "ก่อนกรอกใบสมัคร"}</div><div className="font-semibold text-[20px] leading-[1.35]">{invite ? "สมัครด้วยคำเชิญ" : "ชำระค่าสมัคร"}</div></div>
+          <div className="min-w-0"><div className="text-[13px] text-[#e8c472] font-light">{invite ? "✦ คำเชิญพิเศษ" : tom ? "ทอมหล่อ · ก่อนกรอกใบสมัคร" : "ก่อนกรอกใบสมัคร"}</div><div className="font-semibold text-[20px] leading-[1.35]">{invite ? "สมัครด้วยคำเชิญ" : tom ? "สมัครทอมหล่อ" : "ชำระค่าสมัคร"}</div></div>
         </div>
 
         {inviteErr && <p role="alert" className="m-0 mx-5 mt-2 rounded-xl text-[13.5px] text-[#ff8a9a]" style={{ padding: "10px 14px", background: "rgba(255,138,154,0.1)" }}>{inviteErr} · ยอดด้านล่างเป็นราคาสมัครปกติ</p>}
@@ -198,9 +201,9 @@ function PayInner() {
             <div className="flex flex-col bg-[#251d1b]" style={{ ...box, gap: 13 }}>
               {summary.map(([n, v]) => <div key={n} className="flex justify-between gap-4 min-w-0"><span className="whitespace-nowrap shrink-0">{n}</span><span className="text-right min-w-0">{v}</span></div>)}
               <div style={{ height: 1, background: "rgba(243,234,217,0.07)", margin: "4px 0" }} />
-              {items.map(([n, v]) => <div key={n} className="flex justify-between items-baseline gap-4 min-w-0"><span className="min-w-0">{n}</span><span className="whitespace-nowrap shrink-0 font-semibold text-[18px] text-[#e8c472]">{invite ? "ฟรี" : baht(v)}</span></div>)}
+              {items.map(([n, v]) => <div key={n} className="flex justify-between items-baseline gap-4 min-w-0"><span className="min-w-0">{n}</span><span className="whitespace-nowrap shrink-0 font-semibold text-[18px] text-[#e8c472]">{free ? "ฟรี" : baht(v)}</span></div>)}
               {items.length > 1 && <div className="flex justify-between items-baseline gap-4 min-w-0 pt-2 border-t border-[rgba(243,234,217,0.07)]"><span className="min-w-0 font-semibold">รวมที่ต้องโอน</span><span className="whitespace-nowrap shrink-0 font-bold text-[20px] text-[#e8c472]" data-total="1">{baht(amount)}</span></div>}
-              <div className="text-[13px] font-light">{invite ? "✦ คำเชิญพิเศษ: ไม่ต้องชำระค่าสมัคร · ได้ระดับ TOP ทันที · หลังเริ่มงาน หักเงินประกันงานเคสละ ฿500 จากรายได้ (กันหนีงาน/เทงาน) · เงินแต่ละก้อนครบ 90 วันถอนคืนได้ (ค่าธรรมเนียมถอน 3%)" : FEE_NOTE}</div>
+              <div className="text-[13px] font-light">{!invite && tom ? "ทอมหล่อ: ไม่ต้องชำระค่าสมัคร · หลังเริ่มงาน หักเงินประกันงานเคสละ ฿500 จากรายได้ (กันหนีงาน/เทงาน) · เงินแต่ละก้อนครบ 90 วันถอนคืนได้ (ค่าธรรมเนียมถอน 3%)" : invite ? "✦ คำเชิญพิเศษ: ไม่ต้องชำระค่าสมัคร · ได้ระดับ TOP ทันที · หลังเริ่มงาน หักเงินประกันงานเคสละ ฿500 จากรายได้ (กันหนีงาน/เทงาน) · เงินแต่ละก้อนครบ 90 วันถอนคืนได้ (ค่าธรรมเนียมถอน 3%)" : FEE_NOTE}</div>
             </div>
             <div className="flex flex-col gap-2 bg-[#2c1a1f]" style={box}>
               <div className="font-semibold text-[17px]">ค่าสมัครรวม</div>
@@ -209,7 +212,7 @@ function PayInner() {
           </div>
 
           <div className="flex flex-col min-w-0" style={{ gap: 26 }}>
-            {!invite && !invChecking && <>
+            {!free && !invChecking && <>
             <div className="flex flex-col items-center gap-3 bg-[#272013]" style={box}>
               <div className="flex justify-between gap-2 flex-wrap w-full text-[14px]"><span className="text-[#e8c472] font-semibold">PromptPay</span><span>QR หมดอายุใน <b style={{ color: sec < 120 ? "#ff8a9a" : GOLD }}>{mm}:{ss}</b></span></div>
               <div className="rounded-xl" style={{ padding: 12, background: "#000", lineHeight: 0, opacity: expired ? 0.2 : 1 }}>
@@ -243,7 +246,7 @@ function PayInner() {
             </div>
             <Turnstile key={tsKey} onToken={setTs} />
             {err && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{err}{loginHint && <> · <Link href="/join/me" className="text-[#e8c472] underline">เข้าสู่ระบบ Part-Time</Link></>}</p>}
-            <button type="button" onClick={submit} disabled={busy} aria-busy={busy} className={cta} style={{ opacity: ready ? 1 : 0.45 }}>{invite ? (busy ? "กำลังส่งใบสมัคร…" : "ส่งใบสมัคร") : busy ? "กำลังส่งสลิปเพื่อตรวจสอบ…" : "ส่งสลิปเพื่อตรวจสอบ"}</button>
+            <button type="button" onClick={submit} disabled={busy} aria-busy={busy} className={cta} style={{ opacity: ready ? 1 : 0.45 }}>{free ? (busy ? "กำลังส่งใบสมัคร…" : "ส่งใบสมัคร") : busy ? "กำลังส่งสลิปเพื่อตรวจสอบ…" : "ส่งสลิปเพื่อตรวจสอบ"}</button>
           </div>
         </div>
       </div>
@@ -252,8 +255,8 @@ function PayInner() {
         <div role="dialog" aria-modal="true" aria-labelledby="paidT" className="fixed inset-0 z-50 flex justify-center items-center overflow-y-auto" style={{ background: "rgba(10,7,6,0.78)", padding: 20 }}>
           <div className="w-full max-w-[400px] rounded-[20px] bg-[#1b2322] flex flex-col items-center gap-[14px] text-center my-auto" style={{ padding: "28px 20px 20px" }}>
             <div className="w-[72px] h-[72px] rounded-full bg-[#e8c472] text-[#1b130b] grid place-items-center"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg></div>
-            <div id="paidT" className="font-semibold text-[22px] leading-[1.35] text-[#e8c472]">{invite ? "สมัครเรียบร้อย · ระดับ TOP" : "ได้รับข้อมูลแล้ว · รอทีมงานตรวจ"}</div>
-            <p className="m-0 text-[15px] leading-[1.7]">{invite ? "ไม่มีค่าใช้จ่าย" : "ได้รับสลิปแล้ว ทีมงานตรวจภายใน 2 ชม. (09:00–22:00)"}<br />ระหว่างนี้ไปกรอกรายละเอียดในโปรไฟล์ได้เลย</p>
+            <div id="paidT" className="font-semibold text-[22px] leading-[1.35] text-[#e8c472]">{invite ? "สมัครเรียบร้อย · ระดับ TOP" : tom ? "สมัครเรียบร้อย · ทอมหล่อ" : "ได้รับข้อมูลแล้ว · รอทีมงานตรวจ"}</div>
+            <p className="m-0 text-[15px] leading-[1.7]">{free ? "ไม่มีค่าใช้จ่าย" : "ได้รับสลิปแล้ว ทีมงานตรวจภายใน 2 ชม. (09:00–22:00)"}<br />ระหว่างนี้ไปกรอกรายละเอียดในโปรไฟล์ได้เลย</p>
             <Link href={`/join/profile/${done}`} className={cta + " hover:text-[#1b130b]"}>ไปที่โปรไฟล์ของฉัน</Link>
             <p className="m-0 text-[13.5px] leading-[1.6] text-[#e8c472]">ครั้งต่อไปเข้าที่ &quot;Part-Time เข้าสู่ระบบ&quot; ด้วยอีเมลและรหัสผ่านนี้</p>
             <div className="w-full rounded-2xl" style={{ padding: 14, background: "rgba(243,234,217,0.05)" }}><SaveLink mb={done} link={link} email={who.email.trim().toLowerCase()} /></div>

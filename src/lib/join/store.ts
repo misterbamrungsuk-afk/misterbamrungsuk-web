@@ -282,7 +282,7 @@ export async function nextDocNo(kind: "INV" | "RI"): Promise<string | null> {
 
 /** ออกเลขใบเสร็จ RI ครั้งเดียวเมื่อสถานะเป็น verified (อนุมัติซ้ำไม่ออกเลขใหม่) */
 export async function ensureReceiptNo(row: Applicant): Promise<void> {
-  if (row.status !== "verified" || !row.amount || extraOf(row).ri_no) return; // สายเชิญฟรี (ยอด 0) ไม่ออกใบเสร็จ
+  if (row.status !== "verified" || !row.amount || extraOf(row).ri_no) return; // สมัครฟรี (สายเชิญ / ทอมหล่อ · ยอด 0) ไม่ออกใบเสร็จ
   const ri = (await nextDocNo("RI")) ?? `RI-${row.mb_code.slice(3)}`;
   await patchApplicant(row.id, { ri_no: ri, ri_at: new Date().toISOString() });
 }

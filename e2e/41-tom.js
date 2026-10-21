@@ -19,8 +19,8 @@ const seats = async (g) => J(await fetch(B + '/api/join/seats' + (g ? '?g=' + g 
 (async () => {
   let h = await (await fetch(B + '/join/tom')).text();
   ok('/join/tom renders ทอมหล่อ', h.includes('ทอมหล่อ · เพื่อนกินเที่ยว') && h.includes('ทอมหล่อ อายุ 20–50 ปี'));
-  ok('/join/tom same fees', h.includes('9,500 บาท') && h.includes('15,900 บาท'));
-  ok('/join/tom CTA carries group', h.includes('g=tom'));
+  ok('/join/tom: massage track only, free', h.includes('data-fee="B"') && !h.includes('data-fee="A"') && h.includes('ฟรี') && !h.includes('15,900 บาท'));
+  ok('/join/tom CTA = free profile (pkg B, g=tom)', h.includes('pkg=B&amp;g=tom') && h.includes('เริ่มสร้างโปรไฟล์'));
   h = await (await fetch(B + '/join')).text();
   ok('/join has หนุ่มหล่อ | ทอมหล่อ switch', h.includes('data-group-tab="หนุ่มหล่อ"') && h.includes('href="/join/tom"'));
 
@@ -41,10 +41,9 @@ const seats = async (g) => J(await fetch(B + '/api/join/seats' + (g ? '?g=' + g 
   const at = list.indexOf('"mb_code":"' + mb + '"');
   const id = [...list.slice(Math.max(0, at - 6000), at).matchAll(/"id":"([0-9a-f-]{36})"/g)].pop()?.[1];
   let row = (await J(await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ line_joined: false }) }))).row;
-  ok('group = tom · title นางสาว · fee 9,500', row?.group === 'tom' && row?.title === 'นางสาว' && row?.amount === 9500, `${row?.group} ${row?.title} ${row?.amount}`);
+  ok('tom: group tom · นางสาว · free · forced massage track B · verified · no INV', row?.group === 'tom' && row?.title === 'นางสาว' && row?.amount === 0 && row?.package === 'B' && row?.status === 'verified' && !row?.inv_no, `${row?.group} ${row?.title} ${row?.amount} ${row?.package} ${row?.status} ${row?.inv_no}`);
 
-  // ยืนยันสลิป (จ่ายแล้ว) → นับลงที่นั่งทอมหล่อเท่านั้น (ไม่ต้องรอ KYC)
-  await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ status: 'verified' }) });
+  // สมัครฟรี = ยืนยันทันที → นับลงที่นั่งทอมหล่อเท่านั้น
   const men1 = await seats(), tom1 = await seats('tom');
   ok('tom seat counted in tom quota only', tom1.left === tom0.left - 1 && men1.left === men0.left, JSON.stringify({ men1, tom1 }));
 
@@ -77,6 +76,8 @@ const seats = async (g) => J(await fetch(B + '/api/join/seats' + (g ? '?g=' + g 
   // ป้าย + หน้าแรก
   h = await (await fetch(B + `/join/profile/${mb}?t=${encodeURIComponent(tok(mb))}`)).text();
   ok('profile shows ทอมหล่อ badge', h.includes('data-pt-group="tom"'));
+  const bd = await J(await fetch(B + `/api/pt/bond?mb=${mb}&t=${encodeURIComponent(tok(mb))}`));
+  ok('work bond applies to ทอมหล่อ', bd.ok && bd.applies === true, JSON.stringify(bd));
   h = await (await fetch(B + '/admin/applicants', { headers: ADM })).text();
   ok('admin list data has group tom', h.replace(/\\"/g, '"').includes('"group":"tom"'));
   h = await (await fetch(B + '/')).text();

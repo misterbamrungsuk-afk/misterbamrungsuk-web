@@ -7,7 +7,7 @@ import { EarnBoard } from "../_ptc";
 import { listWithdrawals, ptWallet } from "@/lib/bookings/day";
 import { listForParttime } from "@/lib/bookings";
 import { TX_KIND_TH } from "@/lib/join/pt-ui";
-import { BOND, bondStatus } from "@/lib/join/work-bond";
+import { BOND, bondApplies, bondStatus } from "@/lib/join/work-bond";
 import { BondCard } from "./bond-card";
 
 export const dynamic = "force-dynamic";
@@ -31,7 +31,7 @@ export default async function MyEarningsPage({ params, searchParams }: { params:
   const cases = (await listForParttime(c.row.id).catch(() => [])).filter((b) => b.status === "completed" && ym(b.completed_at ?? b.starts_at) === thisMonth).length;
   const hist = w.history.filter((h) => h.bucket === "pending" ? h.kind === "split" : h.bucket === "available" || h.bucket === "bond" || (h.bucket === "withdrawing" && h.kind === "withdraw_paid"));
   // เงินประกันงาน (เฉพาะสายคำเชิญพิเศษ)
-  const bond = c.x.invite ? await bondStatus(c.row.id).catch(() => null) : null;
+  const bond = bondApplies(c.x) ? await bondStatus(c.row.id).catch(() => null) : null;
   const empty = (t: string) => <div className="text-[14px] font-light text-[#b5a596]" style={{ padding: "12px 0" }}>{t}</div>;
 
   return (

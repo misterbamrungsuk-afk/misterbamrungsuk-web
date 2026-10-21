@@ -52,7 +52,8 @@ export async function POST(req: Request) {
   const s = (k: string, max = 200) => String(form.get(k) ?? "").trim().slice(0, max);
   if (!(await verifyTurnstile(s("turnstile", 2048), ip))) return bad(TURNSTILE_ERROR, 403);
 
-  const pkg = s("package") as PackageKey;
+  // ทอมหล่อมีสายเดียว: เพื่อนกินเที่ยว (มีความสามารถในการนวด) = B
+  const pkg = (s("group") === "tom" ? "B" : s("package")) as PackageKey;
   // หมวดทอมหล่อ (/join/tom) — ที่นั่งอบรมแยกโควตาจากหนุ่มหล่อ
   const group = s("group") === "tom" ? "tom" : null;
   if ((await (await import("@/lib/join/cohorts")).nextCohortSeats(group)).full) return bad("รับครบจำนวนแล้ว", 410);
@@ -80,7 +81,9 @@ export async function POST(req: Request) {
   // ลิงก์เชิญพิเศษ = ไม่ต้องจ่าย ไม่ต้องแนบสลิป (ตรวจรหัสด้านล่าง)
   const inviteCode = s("invite", 12).toUpperCase();
   const files: Partial<Record<DocKind, File>> = {};
-  for (const k of inviteCode ? [] : REQUIRED_DOCS) {
+  // สมัครฟรี (ไม่ต้องแนบสลิป): ลิงก์เชิญพิเศษ หรือหมวดทอมหล่อ
+  const freeSignup = !!inviteCode || group === "tom";
+  for (const k of freeSignup ? [] : REQUIRED_DOCS) {
     const f = form.get(k);
     if (f instanceof File && f.size > 0) {
       if (!IMAGE_TYPES.includes(f.type) || f.size > MAX_FILE) errors.push(k);
@@ -96,7 +99,8 @@ export async function POST(req: Request) {
     if (state !== "ok") return bad(state === "full" ? "ลิงก์เชิญนี้มีผู้ใช้ครบจำนวนแล้ว" : state === "expired" ? "ลิงก์เชิญนี้หมดอายุแล้ว" : "ลิงก์เชิญนี้ใช้ไม่ได้ กรุณาติดต่อแอดมิน", 410);
     invite = inviteCode;
   }
-  const amount = invite ? 0 : PACKAGES[pkg].price;
+  const free = !!invite || group === "tom";
+  const amount = free ? 0 : PACKAGES[pkg].price;
 
   // เบอร์ที่ส่งมาต้องตรงกับเบอร์ที่ยืนยัน OTP แล้ว (cookie ลงลายเซ็นจาก /api/otp/verify)
   const verifiedPhone = readPhoneToken((await cookies()).get(PHONE_COOKIE)?.value);
@@ -104,7 +108,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "กรุณายืนยันเบอร์โทรด้วยรหัส OTP ก่อนส่งใบสมัคร", fields: ["tel"], needOtp: true }, { status: 403 });
 
   // ตรวจสลิปกับ Slip2Go — สลิปซ้ำ หรือโอนเข้าบัญชีอื่น ไม่รับ; กรณีอื่นบันทึกผลให้แอดมินตัดสิน
-  const slipCheck = invite ? null : await verifySlip(files.slip!, amount);
+  const slipCheck = free ? null : await verifySlip(files.slip!, amount);
   if (slipCheck?.verdict === "dup") return NextResponse.json({ ok: false, error: "สลิปนี้เคยถูกใช้แล้ว กรุณาแนบสลิปของการโอนครั้งนี้", fields: ["slip"] }, { status: 400 });
   if (slipCheck?.verdict === "acct") return NextResponse.json({ ok: false, error: "สลิปนี้โอนเข้าบัญชีที่ไม่ใช่ของ Mister Bamrungsuk กรุณาโอนผ่าน QR ในหน้านี้ แล้วแนบสลิปใหม่", fields: ["slip"] }, { status: 400 });
 
@@ -135,9 +139,9 @@ export async function POST(req: Request) {
     // เก็บเฉพาะแฮช (docs.extra.pw_hash · store ไม่ส่งออก)
     // เลขใบแจ้งหนี้ INV (ยังไม่รัน SQL 0010 → ใช้เลขตามรหัส MB)
     // สายเชิญไม่มียอด → ไม่ออกเอกสาร · ถือว่าชำระแล้ว (verified) + ระดับ TOP
-    const inv_no = invite ? null : (await nextDocNo("INV").catch(() => null)) ?? `INV-${row.mb_code.slice(3)}`;
+    const inv_no = free ? null : (await nextDocNo("INV").catch(() => null)) ?? `INV-${row.mb_code.slice(3)}`;
     await saveProfile(row.id, { pw_hash: hashPw(password), pw_at: new Date().toISOString(), inv_no, ...(invite ? { tier: "top" } : {}), ...(group ? { group } : {}) });
-    if (invite) await updateApplicant(row.id, { status: "verified" });
+    if (free) await updateApplicant(row.id, { status: "verified" });
     if (invite) await consumeInvite(invite).catch((e) => console.error("consume invite failed", e));
     // sync ชีตแบบไม่ให้ล้มทั้งคำขอ — ถ้าไม่สำเร็จ แอดมินกด sync ซ้ำได้
     // อีเมลแจ้งผู้สมัคร + แอดมิน (ไม่รอ ไม่ทำให้คำขอล้ม)

@@ -5,7 +5,7 @@ import { extraOf, isDemo } from "@/lib/join/store";
 // at = เวลาสมมติ (เฉพาะโหมดสาธิต · ทดสอบครบ 90 วัน)
 const atOf = (v: unknown) => { const n = isDemo && !process.env.VERCEL && v ? Date.parse(String(v)) : NaN; return Number.isFinite(n) ? n : undefined; };
 import { WalletError } from "@/lib/wallet";
-import { BOND, bondStatus, releaseBond } from "@/lib/join/work-bond";
+import { BOND, bondApplies, bondStatus, releaseBond } from "@/lib/join/work-bond";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,7 +15,7 @@ export async function GET(req: Request) {
   const u = new URL(req.url);
   const a = await currentParttime(u.searchParams.get("mb") ?? "", u.searchParams.get("t"));
   if (!a) return NextResponse.json({ ok: false }, { status: 403 });
-  return NextResponse.json({ ok: true, applies: !!extraOf(a).invite, rules: BOND, ...(await bondStatus(a.id, atOf(u.searchParams.get("at")))) });
+  return NextResponse.json({ ok: true, applies: bondApplies(extraOf(a)), rules: BOND, ...(await bondStatus(a.id, atOf(u.searchParams.get("at")))) });
 }
 
 export async function POST(req: Request) {

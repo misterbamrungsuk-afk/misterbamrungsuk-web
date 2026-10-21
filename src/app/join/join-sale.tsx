@@ -17,6 +17,7 @@ const TR: Record<PackageKey, { name2: string; fee: string; lines: [string, strin
 };
 const TIMELINE: [string, string][] = [["20 ต.ค. – 10 พ.ย.", "เปิดรับสมัคร"], ["ไม่เกินต้น พ.ย.", "ประกาศกฎเกณฑ์การทำงาน"], ["ภายใน 20 พ.ย.", "อบรมกลุ่ม 1"], ["30 พ.ย.", "พร้อมเปิดให้บริการ"], ["30 พ.ย. – ต้น ธ.ค.", "อบรมกลุ่ม 2"]];
 const FAQ_INVITE: [string, string] = ["คำเชิญพิเศษต่างจากสมัครปกติอย่างไร?", "ผู้ได้รับคำเชิญไม่ต้องชำระค่าสมัคร และได้ระดับ TOP ทันที แค่กรอกข้อมูลสมัคร · หลังเริ่มงาน หักเงินประกันงานเคสละ ฿500 จากรายได้ (กันหนีงาน/เทงาน) · เงินแต่ละก้อนครบ 90 วันถอนคืนได้ (ค่าธรรมเนียมถอน 3%)"];
+const FAQ_TOM: [string, string] = ["ทอมหล่อต้องจ่ายค่าสมัครไหม?", "ไม่ต้องจ่าย สมัครฟรี ทอมหล่อรับเฉพาะสายเพื่อนกินเที่ยวที่มีความสามารถในการนวด · หลังเริ่มงาน หักเงินประกันงานเคสละ ฿500 จากรายได้ (กันหนีงาน/เทงาน) เงินแต่ละก้อนครบ 90 วันถอนคืนได้"];
 const FAQ: [string, string][] = [
   ["ค่าสมัครรวมอะไรบ้าง คืนได้ไหม?", `รวมค่าอบรมแล้ว ได้แชร์ข้อมูลทางกฎหมายที่เกี่ยวข้องกับการทำงานและทริคมัดใจลูกค้า (เพื่อนกินเที่ยว ${fmtB(PACKAGES.A.price)} · สายนวด ${fmtB(PACKAGES.B.price)}) · ค่าสมัครไม่คืนเงินทุกกรณี`],
   ["ถ้าเริ่มงานแล้วยังไม่ค่อยมีลูกค้า?", "30 วันแรกหลังเปิดรับงาน ถ้าได้งานไม่ถึง 5 เคส ระบบให้โค้ดโปรโมทโปรไฟล์ฟรี 3 วัน ขึ้นหน้าแนะนำให้ลูกค้าเห็นก่อน"],
@@ -34,8 +35,9 @@ export function JoinSalePage({ seats, showEarnings = true, invite, group = null 
   const [invGroup, setInvGroup] = useState<"man" | "tom">("man");
   const tom = invite ? invGroup === "tom" : group === "tom";
   const g = tom ? "&g=tom" : "";
+  const faq = invite ? [FAQ_INVITE, ...FAQ.slice(1)] : tom ? [FAQ_TOM, ...FAQ.slice(1)] : FAQ;
   const looking = tom ? ["ทอมหล่อ อายุ 20–50 ปี ดูแลตัวเองสม่ำเสมอ", ...LOOKING_FOR.slice(1)] : LOOKING_FOR;
-  const faq = invite ? [FAQ_INVITE, ...FAQ.slice(1)] : FAQ;
+
   const [pick, setPick] = useState<PackageKey>("B");
   const [open, setOpen] = useState<Record<number, boolean>>({ 0: true });
 
@@ -51,7 +53,7 @@ export function JoinSalePage({ seats, showEarnings = true, invite, group = null 
         <section className="join-hero md:min-h-[340px] md:flex md:flex-col md:justify-end md:py-14 md:px-12" style={{ padding: "40px 22px 34px", borderRadius: 18 }}>
           <div className="text-[11px] font-semibold tracking-[2px] text-[#e8c472]">{invite ? <><span className="tracking-normal text-[13px]">✦ คำเชิญพิเศษ</span> · PART TIME</> : "PART TIME"}</div>
           <h1 className="font-semibold text-[30px] md:text-[48px] leading-[1.32] text-[#f3ead9] md:max-w-[640px]" style={{ margin: "10px 0 6px" }}>{tom ? "ทอมหล่อ · เพื่อนกินเที่ยว Mister Bamrungsuk" : "เพื่อนกินเที่ยว Mister Bamrungsuk"}</h1>
-          <p className="m-0 text-[15px] md:text-[18px] text-[#e6d6c4]">งานพาร์ทไทม์ เลือกวันเวลาเอง{invite ? " · คำเชิญพิเศษ: สมัครฟรี ได้ระดับ TOP" : ""}</p>
+          <p className="m-0 text-[15px] md:text-[18px] text-[#e6d6c4]">งานพาร์ทไทม์ เลือกวันเวลาเอง{!invite && tom ? " · ทอมหล่อสมัครฟรี" : ""}{invite ? " · คำเชิญพิเศษ: สมัครฟรี ได้ระดับ TOP" : ""}</p>
         </section>
 
         {/* หนุ่มหล่อ / ทอมหล่อ — สมัครแยกหมวด · ที่นั่งอบรมแยกโควตา */}
@@ -69,8 +71,9 @@ export function JoinSalePage({ seats, showEarnings = true, invite, group = null 
         <section className="flex flex-col" style={{ gap: 18 }}>
           {/* ลิงก์เชิญพิเศษ: ไม่ต้องเลือกสาย (ทุกคนได้ TOP · ฟรี) → กดเริ่มสร้างโปรไฟล์ได้เลย */}
           {!invite && (
-          <div className="grid gap-[18px] md:grid-cols-2 md:gap-6" role="radiogroup" aria-label="เลือกสายงาน">
-              {(["B", "A"] as PackageKey[]).map((k) => {
+          <div className={`grid gap-[18px] md:gap-6 ${tom ? "max-w-[560px] w-full mx-auto" : "md:grid-cols-2"}`} role="radiogroup" aria-label="เลือกสายงาน">
+              {/* ทอมหล่อมีสายเดียว: เพื่อนกินเที่ยว ที่มีความสามารถในการนวด (B) · สมัครฟรี */}
+              {((tom ? ["B"] : ["B", "A"]) as PackageKey[]).map((k) => {
                 const on = pick === k, T = TR[k];
                 return (
                   <button key={k} type="button" role="radio" aria-checked={on} onClick={() => setPick(k)} className="w-full text-left flex flex-col"
@@ -83,8 +86,8 @@ export function JoinSalePage({ seats, showEarnings = true, invite, group = null 
                       {T.lines.map(([kk, v]) => <span key={kk} className="flex justify-between gap-[10px] text-[#fff7e8]"><span className="whitespace-nowrap shrink-0" style={{ color: T.kc }}>{kk}</span><span className="font-semibold text-right min-w-0">{v}</span></span>)}
                     </span>
                     <span className="flex flex-col gap-1 rounded-xl" style={{ padding: "12px 14px", background: "rgba(0,0,0,.32)" }}>
-                      <span className="flex justify-between gap-[10px] text-[#fff7e8]"><span className="text-[#e8c472] font-semibold">ค่าสมัคร (รวมอบรม)</span><span className="font-bold text-[17px] text-[#fff1c9]" data-fee={k}>{invite ? "ฟรี" : T.fee}</span></span>
-                      <span className="text-[13px] leading-[1.6] text-[#fff7e8] font-light">{FEE_INCLUDES(k).slice(1, 3).join(" · ")}<br />{invite ? "✦ คำเชิญพิเศษ: ไม่ต้องชำระ · ได้ระดับ TOP · เงินประกันงานเคสละ ฿500 (ครบ 90 วันถอนคืนได้)" : "ไม่คืนเงินทุกกรณี"}</span>
+                      <span className="flex justify-between gap-[10px] text-[#fff7e8]"><span className="text-[#e8c472] font-semibold">ค่าสมัคร (รวมอบรม)</span><span className="font-bold text-[17px] text-[#fff1c9]" data-fee={k}>{invite || tom ? "ฟรี" : T.fee}</span></span>
+                      <span className="text-[13px] leading-[1.6] text-[#fff7e8] font-light">{FEE_INCLUDES(k).slice(1, 3).join(" · ")}<br />{!invite && tom ? "ทอมหล่อ: สมัครฟรี · เงินประกันงานเคสละ ฿500 (ครบ 90 วันถอนคืนได้)" : invite ? "✦ คำเชิญพิเศษ: ไม่ต้องชำระ · ได้ระดับ TOP · เงินประกันงานเคสละ ฿500 (ครบ 90 วันถอนคืนได้)" : "ไม่คืนเงินทุกกรณี"}</span>
                     </span>
                   </button>
                 );
@@ -100,7 +103,7 @@ export function JoinSalePage({ seats, showEarnings = true, invite, group = null 
             {showEarnings && !invite && <Link href="/join/earnings" className="min-h-12 rounded-[14px] text-[#e8c472] font-semibold grid place-items-center text-center hover:text-[#e8c472]" style={{ background: "rgba(232,196,114,0.16)" }}>ดูรายได้และส่วนแบ่ง · คำนวณรายได้ต่อเดือน</Link>}
             {seats.closed
               ? <span aria-disabled="true" className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center" style={{ marginTop: 6, opacity: 0.45 }}>ปิดรับสมัครแล้ว</span>
-              : <Link href={invite ? `/join/pay?pkg=A&invite=${invite}${g}` : `/join/pay?pkg=${pick}${g}`} className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center hover:text-[#1b130b]" style={{ marginTop: 6 }}>{invite ? "เริ่มสร้างโปรไฟล์" : "ชำระเงินและรับรหัสสมัคร"}</Link>}
+              : <Link href={invite ? `/join/pay?pkg=${tom ? "B" : "A"}&invite=${invite}${g}` : tom ? "/join/pay?pkg=B&g=tom" : `/join/pay?pkg=${pick}${g}`} className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center hover:text-[#1b130b]" style={{ marginTop: 6 }}>{invite || tom ? "เริ่มสร้างโปรไฟล์" : "ชำระเงินและรับรหัสสมัคร"}</Link>}
             {invite && <p className="m-0 text-[13px] text-center text-[#b5a596] font-light">ลิงก์ส่วนตัว กรุณาอย่าเผยแพร่</p>}
             <Link href="/join/me" className="self-center min-h-11 inline-flex items-center text-[14px] text-[#e8c472] hover:text-[#e8c472]">สมัครแล้ว? เข้าสู่ระบบ Part-Time ›</Link>
           </div>

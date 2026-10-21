@@ -5,7 +5,7 @@ import { JoinSalePage, type Seats } from "../join-sale";
 
 export const revalidate = 60;
 
-export const metadata = { title: "รับสมัครทอมหล่อ · Part-Time — Mister Bamrungsuk", description: "ทอมหล่อ เพื่อนกินเที่ยว Mister Bamrungsuk · งานพาร์ทไทม์ เลือกวันเวลาเอง" };
+export const metadata = { title: "รับสมัครทอมหล่อ · Part-Time — Mister Bamrungsuk", description: "ทอมหล่อ เพื่อนกินเที่ยว (สายนวด) Mister Bamrungsuk · สมัครฟรี · งานพาร์ทไทม์ เลือกวันเวลาเอง" };
 
 // หมวดทอมหล่อ (บอสสั่ง 21 ต.ค. 2569) — ค่าสมัครเท่าหนุ่มหล่อ · ที่นั่งอบรมแยกโควตา (นับเฉพาะทอมหล่อ)
 export default async function JoinTomPage() {

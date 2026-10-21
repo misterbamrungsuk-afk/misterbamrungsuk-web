@@ -47,7 +47,7 @@ export default async function ReceiptPage({ params, searchParams }: { params: Pr
   const paid = row.status === "verified";
   const invoice = row.status === "pending_slip";
   // สมัครผ่านคำเชิญพิเศษ (ไม่มียอด) → ไม่มีใบแจ้งหนี้/ใบเสร็จ
-  const free = !!x.invite && !row.amount;
+  const free = (!!x.invite || x.group === "tom") && !row.amount;
   const show = (paid || invoice) && !free;
   const no = paid ? x.ri_no || `RC-${mb.slice(3)}` : x.inv_no || `INV-${mb.slice(3)}`;
   const title = paid ? "ใบเสร็จรับเงิน" : "ใบแจ้งหนี้";
@@ -76,7 +76,7 @@ export default async function ReceiptPage({ params, searchParams }: { params: Pr
 
       {!show ? (
         <div className="mx-auto max-w-[520px] bg-white rounded-2xl text-center text-[#1d1414] shadow-[0_6px_30px_rgba(0,0,0,.18)]" style={{ padding: "36px 24px" }}>
-          <div className="text-[20px] font-semibold">{free ? "สมัครผ่านคำเชิญพิเศษ · ไม่มีค่าสมัคร" : row.status === "refunded" ? "รายการนี้คืนเงินแล้ว" : "รายการนี้ไม่ได้รับการอนุมัติ"}</div>
+          <div className="text-[20px] font-semibold">{free ? (x.invite ? "สมัครผ่านคำเชิญพิเศษ · ไม่มีค่าสมัคร" : "ทอมหล่อ · ไม่มีค่าสมัคร") : row.status === "refunded" ? "รายการนี้คืนเงินแล้ว" : "รายการนี้ไม่ได้รับการอนุมัติ"}</div>
           <p className="text-[14px] text-[#6b5a50] mt-2 mb-0">{free ? "ไม่มีใบแจ้งหนี้หรือใบเสร็จสำหรับการสมัครนี้" : "ติดต่อทีมงานทาง LINE หากมีข้อสงสัย"}</p>
           <div className="mt-4 text-[13px] text-[#6b5a50]">รหัสผู้สมัคร <b className="text-[#7e0a1e] tracking-[1px]">{row.mb_code}</b></div>
         </div>
