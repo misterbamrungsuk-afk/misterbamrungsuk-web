@@ -69,8 +69,8 @@ export function JoinSalePage({ seats, showEarnings = true, invite, group = null 
         </div>}
 
         <section className="flex flex-col" style={{ gap: 18 }}>
-          {/* ลิงก์เชิญพิเศษ: ไม่ต้องเลือกสาย (ทุกคนได้ TOP · ฟรี) → กดเริ่มสร้างโปรไฟล์ได้เลย */}
-          {!invite && (
+          {/* ลิงก์เชิญพิเศษ + ทอมหล่อ: ไม่ต้องเลือกสาย (ฟรี · ทอมหล่อใช้สายนวด B อย่างเดียว) → กดเริ่มสร้างโปรไฟล์ได้เลย */}
+          {!invite && !tom && (
           <div className={`grid gap-[18px] md:gap-6 ${tom ? "max-w-[560px] w-full mx-auto" : "md:grid-cols-2"}`} role="radiogroup" aria-label="เลือกสายงาน">
               {/* ทอมหล่อมีสายเดียว: เพื่อนกินเที่ยว ที่มีความสามารถในการนวด (B) · สมัครฟรี */}
               {((tom ? ["B"] : ["B", "A"]) as PackageKey[]).map((k) => {
@@ -104,6 +104,7 @@ export function JoinSalePage({ seats, showEarnings = true, invite, group = null 
             {seats.closed
               ? <span aria-disabled="true" className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center" style={{ marginTop: 6, opacity: 0.45 }}>ปิดรับสมัครแล้ว</span>
               : <Link href={invite ? `/join/pay?pkg=${tom ? "B" : "A"}&invite=${invite}${g}` : tom ? "/join/pay?pkg=B&g=tom" : `/join/pay?pkg=${pick}${g}`} className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center hover:text-[#1b130b]" style={{ marginTop: 6 }}>{invite || tom ? "เริ่มสร้างโปรไฟล์" : "ชำระเงินและรับรหัสสมัคร"}</Link>}
+            {!invite && tom && <p className="m-0 text-[13px] text-center text-[#b5a596] font-light" data-tom-free>สมัครฟรี · เงินประกันงานเคสละ ฿500 (ครบ 90 วันถอนคืนได้)</p>}
             {invite && <p className="m-0 text-[13px] text-center text-[#b5a596] font-light">ลิงก์ส่วนตัว กรุณาอย่าเผยแพร่</p>}
             <Link href="/join/me" className="self-center min-h-11 inline-flex items-center text-[14px] text-[#e8c472] hover:text-[#e8c472]">สมัครแล้ว? เข้าสู่ระบบ Part-Time ›</Link>
           </div>

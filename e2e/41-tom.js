@@ -19,7 +19,7 @@ const seats = async (g) => J(await fetch(B + '/api/join/seats' + (g ? '?g=' + g 
 (async () => {
   let h = await (await fetch(B + '/join/tom')).text();
   ok('/join/tom renders ทอมหล่อ', h.includes('ทอมหล่อ · เพื่อนกินเที่ยว') && h.includes('ทอมหล่อ อายุ 20–50 ปี'));
-  ok('/join/tom: massage track only, free', h.includes('data-fee="B"') && !h.includes('data-fee="A"') && h.includes('ฟรี') && !h.includes('15,900 บาท'));
+  ok('/join/tom: no track cards, free note', !h.includes('data-fee=') && h.includes('data-tom-free') && h.includes('สมัครฟรี') && !h.includes('15,900 บาท'));
   ok('/join/tom CTA = free profile (pkg B, g=tom)', h.includes('pkg=B&amp;g=tom') && h.includes('เริ่มสร้างโปรไฟล์'));
   h = await (await fetch(B + '/join')).text();
   ok('/join has หนุ่มหล่อ | ทอมหล่อ switch', h.includes('data-group-tab="หนุ่มหล่อ"') && h.includes('href="/join/tom"'));
