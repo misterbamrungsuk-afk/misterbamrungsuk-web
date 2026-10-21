@@ -108,8 +108,9 @@ export const BANK = {
 };
 
 /** LINE OA สำหรับยืนยันคิวอบรม */
-export const LINE_OA_ID = "@madame_gor";
-export const lineAddUrl = () => "https://lin.ee/V9zmZDK";
+/** LINE Official Account (ใหม่ 21 ต.ค. 2569 · lin.ee/rnqFY2n → @350oyqnc) */
+export const LINE_OA_ID = "@350oyqnc";
+export const lineAddUrl = () => "https://lin.ee/rnqFY2n";
 
 export const HERO_IMAGE =
   "https://images.unsplash.com/photo-1745270029066-8c1dfb37c03c?auto=format&fit=crop&w=1200&q=75";
