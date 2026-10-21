@@ -88,7 +88,7 @@ export function JoinSalePage({ seats, showEarnings = true, invite, group = null 
             <div className="self-center flex gap-5"><Link href="/join/terms" className="tap text-[14px] text-[#e8c472]">อ่านสัญญา</Link><Link href="/join/showcase" className="tap text-[14px] text-[#e8c472]">ดูหน้าตัวอย่างแอป ›</Link></div>
             {!invite && <div className="flex justify-between items-center rounded-xl text-[13px] font-light" style={{ padding: "10px 14px", background: "rgba(232,196,114,0.10)" }}>
               <span>{seats.closed ? "ปิดรับสมัครรอบนี้แล้ว" : "กลุ่มอบรม"}</span>
-              <span className="text-[#e8c472] font-semibold">{seats.closed ? "เต็มแล้ว" : `${seats.taken ?? seats.quota - seats.left} / ${seats.quota} ที่`}</span>
+              <span className="text-[#e8c472] font-semibold">{seats.closed ? "เต็มแล้ว" : `เหลือ ${seats.left} ที่`}</span>
             </div>}
             {showEarnings && !invite && <Link href="/join/earnings" className="min-h-12 rounded-[14px] text-[#e8c472] font-semibold grid place-items-center text-center hover:text-[#e8c472]" style={{ background: "rgba(232,196,114,0.16)" }}>ดูรายได้และส่วนแบ่ง · คำนวณรายได้ต่อเดือน</Link>}
             {seats.closed

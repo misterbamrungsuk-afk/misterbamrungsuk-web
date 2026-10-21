@@ -24,7 +24,7 @@ const seats = async (g) => J(await fetch(B + '/api/join/seats' + (g ? '?g=' + g 
   h = await (await fetch(B + '/join')).text();
   ok('/join has หนุ่มหล่อ | ทอมหล่อ switch', h.includes('data-group-tab="หนุ่มหล่อ"') && h.includes('href="/join/tom"'));
 
-  ok('/join seat counter = taken / 50, no group name', /\d+ \/ 50 ที่/.test(h.replace(/<!-- -->/g, '')) && !h.includes('กลุ่มอบรมถัดไป'));
+  ok('/join seat counter = เหลือ N ที่, no group name', /เหลือ \d+ ที่/.test(h.replace(/<!-- -->/g, '')) && !h.includes('กลุ่มอบรมถัดไป'));
   const men0 = await seats(), tom0 = await seats('tom');
   ok('quota 50 · taken counted', men0.quota === 50 && men0.taken === 50 - men0.left, JSON.stringify(men0));
   ok('separate quota (same capacity)', tom0.quota === men0.quota && tom0.left === tom0.quota, JSON.stringify({ men0, tom0 }));
@@ -43,9 +43,8 @@ const seats = async (g) => J(await fetch(B + '/api/join/seats' + (g ? '?g=' + g 
   let row = (await J(await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ line_joined: false }) }))).row;
   ok('group = tom · title นางสาว · fee 9,500', row?.group === 'tom' && row?.title === 'นางสาว' && row?.amount === 9500, `${row?.group} ${row?.title} ${row?.amount}`);
 
-  // อนุมัติสลิป + KYC → นับเข้าที่นั่งทอมหล่อเท่านั้น
+  // ยืนยันสลิป (จ่ายแล้ว) → นับลงที่นั่งทอมหล่อเท่านั้น (ไม่ต้องรอ KYC)
   await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ status: 'verified' }) });
-  await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ kyc_status: 'approved' }) });
   const men1 = await seats(), tom1 = await seats('tom');
   ok('tom seat counted in tom quota only', tom1.left === tom0.left - 1 && men1.left === men0.left, JSON.stringify({ men1, tom1 }));
 

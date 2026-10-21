@@ -87,8 +87,8 @@ export async function cohortTaken(group: "tom" | null = null): Promise<{ cohorts
   const taken = new Map<string, number>(cohorts.map((c) => [c.key, 0]));
   let unassigned = 0;
   for (const a of apps) {
-    // นับเข้าที่นั่งเมื่อแอดมินอนุมัติครบทั้งสลิปค่าสมัคร (verified) และ KYC (approved) — ทั้งสายจ่ายการันตีและสายคำเชิญ
-    if (a.status !== "verified" || extraOf(a).kyc_status !== "approved") continue;
+    // นับเข้าที่นั่งเมื่อจ่ายเงินแล้วและแอดมินยืนยันสลิป (verified) — บอสสั่ง 21 ต.ค. 2569 · สายคำเชิญ (ฟรี) นับตอนสมัครเสร็จ
+    if (a.status !== "verified") continue;
     // หนุ่มหล่อ / ทอมหล่อ นับที่นั่งแยกกัน (โควตาเท่ากันตามความจุกลุ่ม)
     if ((extraOf(a).group ?? null) !== group) continue;
     const k = extraOf(a).cohort;
