@@ -151,7 +151,7 @@ function PayInner() {
   };
 
   const lastInitial = who.last_name.trim() ? ` ${who.last_name.trim()[0]}.` : "";
-  const summary: [string, string][] = [["ผู้สมัคร", who.first_name.trim() ? `${tom ? "" : "นาย"}${who.first_name.trim()}${lastInitial}${who.nickname.trim() ? ` (${who.nickname.trim()})` : ""}` : "—"], ["กลุ่มอบรม", "กลุ่ม 1 · ภายใน 20 พ.ย."]];
+  const summary: [string, string][] = [["ผู้สมัคร", who.first_name.trim() ? `${tom ? "" : "นาย"}${who.first_name.trim()}${lastInitial}${who.nickname.trim() ? ` (${who.nickname.trim()})` : ""}` : "—"], ["กลุ่มอบรม", "ภายใน 20 พ.ย."]];
   // ลิงก์เชิญพิเศษ: ไม่ต้องจ่าย · ได้ระดับ TOP
   const items: [string, number][] = [["ค่าสมัคร (รวมค่าอบรม)", free ? 0 : amount]];
   const perks = FEE_INCLUDES(k);
