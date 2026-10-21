@@ -23,7 +23,9 @@ export async function bondStatus(parttime_id: string, now = Date.now()): Promise
   const ripe = ins.filter((e) => Date.parse(e.created_at) <= cutoff).reduce((s, e) => s + e.amount, 0);
   const matured = Math.max(0, Math.min(balance, ripe - released));
   const pend = ins.filter((e) => Date.parse(e.created_at) > cutoff).sort((a, b) => a.created_at.localeCompare(b.created_at))[0];
-  return { balance, matured, locked: balance - matured, next: pend ? { at: new Date(Date.parse(pend.created_at) + BOND.lockDays * 86400_000).toISOString(), amount: pend.amount } : null, jobs: ins.length };
+  const locked = balance - matured;
+  // ก้อนถัดไปแสดงเฉพาะเมื่อยังมีเงินค้าง (ถูกย้ายออก/หักไปหมดแล้ว = ไม่มีก้อนถัดไป)
+  return { balance, matured, locked, next: pend && locked > 0 ? { at: new Date(Date.parse(pend.created_at) + BOND.lockDays * 86400_000).toISOString(), amount: Math.min(pend.amount, locked) } : null, jobs: ins.length };
 }
 
 /** Part-Time ย้ายเงินประกันที่ครบ 90 วันเข้ายอดถอนได้ */

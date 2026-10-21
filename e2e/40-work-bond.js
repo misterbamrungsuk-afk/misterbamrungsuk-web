@@ -73,6 +73,8 @@ const DAY = 86400e3;
   ok('after 90 days: matured', g.matured === 50000 && g.locked === 0, JSON.stringify(g));
   j = await J(await fetch(B + '/api/pt/bond', { method: 'POST', headers: JSONH, body: JSON.stringify({ mb, t: T, at: later }) }));
   ok('release moves ฿500 to available', j.ok && j.moved === 50000 && j.balance === 0, JSON.stringify(j));
+  g = await J(await fetch(B + `/api/pt/bond?mb=${mb}&t=${encodeURIComponent(T)}`));
+  ok('after release (today): nothing locked, no next portion', g.balance === 0 && g.locked === 0 && g.next === null, JSON.stringify(g));
   const w2 = await J(await fetch(B + `/api/pt/wallet?mb=${mb}&t=${encodeURIComponent(T)}`));
   ok('available +500, bond 0', w2.available === w.available + 50000 && w2.bond === 0, `${w2.available} ${w2.bond}`);
   r = await fetch(B + '/api/pt/bond', { method: 'POST', headers: JSONH, body: JSON.stringify({ mb, t: T, at: later }) });
