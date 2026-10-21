@@ -103,15 +103,13 @@ export async function cohortTaken(group: "tom" | null = null): Promise<{ cohorts
   return { cohorts, taken };
 }
 
-/** ที่นั่งกลุ่มอบรมถัดไป (นับจริง) — กลุ่มแรกที่ "เปิดรับสมัคร" และยังว่าง */
-export async function nextCohortSeats(group: "tom" | null = null): Promise<{ cohort: string; left: number; quota: number; full: boolean }> {
+/** ที่นั่งอบรมรวม (บอสสั่ง 21 ต.ค. 2569: แสดง "ที่นั่งที่ใช้แล้ว / 50" ไม่แยกชื่อกลุ่ม) — โควตา = QUOTA ใน config
+ *  นับคนที่สลิป + KYC ผ่านแล้ว แยกหนุ่มหล่อ / สาวหล่อ (คนละโควตา) · ปิดรับเมื่อไม่มีกลุ่มเปิดรับ */
+export async function nextCohortSeats(group: "tom" | null = null): Promise<{ cohort: string; left: number; quota: number; taken: number; full: boolean }> {
+  const { QUOTA } = await import("./config");
   const { cohorts, taken } = await cohortTaken(group);
-  const open = cohorts.filter((c) => c.status === "open");
-  if (!open.length) return { cohort: "", left: 0, quota: 0, full: true };
-  for (const c of open) {
-    const left = c.capacity - (taken.get(c.key) ?? 0);
-    if (left > 0) return { cohort: c.name, left, quota: c.capacity, full: false };
-  }
-  const last = open[open.length - 1];
-  return { cohort: last.name, left: 0, quota: last.capacity, full: true };
+  const used = [...taken.values()].reduce((a, n) => a + n, 0);
+  const open = cohorts.some((c) => c.status === "open");
+  const left = Math.max(0, QUOTA - used);
+  return { cohort: "กลุ่มอบรม", left, quota: QUOTA, taken: Math.min(used, QUOTA), full: !open || left <= 0 };
 }

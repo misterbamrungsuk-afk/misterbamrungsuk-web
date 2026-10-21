@@ -9,7 +9,7 @@ export const metadata = { title: "รับสมัครสาวหล่อ 
 
 // หมวดสาวหล่อ (บอสสั่ง 21 ต.ค. 2569) — ค่าสมัครเท่าหนุ่มหล่อ · ที่นั่งอบรมแยกโควตา (นับเฉพาะสาวหล่อ)
 export default async function JoinTomPage() {
-  const [s, cfg] = await Promise.all([nextCohortSeats("tom").catch(() => ({ cohort: "", left: 0, quota: 0, full: true })), getEarnings()]);
-  const seats: Seats = { left: s.left, quota: s.quota, cohort: s.cohort, closed: s.full || Date.now() > Date.parse(CLOSE_AT) };
+  const [s, cfg] = await Promise.all([nextCohortSeats("tom").catch(() => ({ cohort: "", left: 0, quota: 0, taken: 0, full: true })), getEarnings()]);
+  const seats: Seats = { left: s.left, quota: s.quota, taken: s.taken, cohort: s.cohort, closed: s.full || Date.now() > Date.parse(CLOSE_AT) };
   return <JoinSalePage seats={seats} showEarnings={cfg.show} group="tom" />;
 }

@@ -33,6 +33,6 @@ export default async function InvitePage({ params }: { params: Promise<{ code: s
       </main>
     );
   }
-  const s = await nextCohortSeats().catch(() => ({ cohort: "", left: 0, quota: 0, full: true }));
+  const s = await nextCohortSeats().catch(() => ({ cohort: "", left: 0, quota: 0, taken: 0, full: true }));
   return <JoinSalePage seats={{ left: s.left, quota: s.quota, cohort: s.cohort, closed: s.full || Date.now() > Date.parse(CLOSE_AT) }} invite={code} />;
 }

@@ -9,7 +9,7 @@ export const metadata = { title: "รับสมัคร Part-Time — Mister 
 
 // ที่นั่งคงเหลือ = นับจริงจากกลุ่มอบรมที่แอดมินเปิดรับ (/admin/cohorts) กับผู้สมัครที่ยัง active
 export default async function JoinPage() {
-  const [s, cfg] = await Promise.all([nextCohortSeats().catch(() => ({ cohort: "", left: 0, quota: 0, full: true })), getEarnings()]);
-  const seats: Seats = { left: s.left, quota: s.quota, cohort: s.cohort, closed: s.full || Date.now() > Date.parse(CLOSE_AT) };
+  const [s, cfg] = await Promise.all([nextCohortSeats().catch(() => ({ cohort: "", left: 0, quota: 0, taken: 0, full: true })), getEarnings()]);
+  const seats: Seats = { left: s.left, quota: s.quota, taken: s.taken, cohort: s.cohort, closed: s.full || Date.now() > Date.parse(CLOSE_AT) };
   return <JoinSalePage seats={seats} showEarnings={cfg.show} />;
 }
