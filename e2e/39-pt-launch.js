@@ -30,7 +30,7 @@ const rowOf = async (mb) => {
   return { id, row };
 };
 const patch = async (id, body) => (await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify(body) })).json();
-const NO_GUARANTEE = (h) => !/การันตี|เงินประกัน|Refundable|คืนเมื่อครบ 1 ปี/.test(h);
+const NO_GUARANTEE = (h) => !/การันตี|เงินประกัน(?!งาน)|Refundable|คืนเมื่อครบ 1 ปี/.test(h);
 
 async function register(pkg, extra = {}) {
   const d = device();

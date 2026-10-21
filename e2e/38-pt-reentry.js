@@ -191,11 +191,11 @@ const setPw = (d, o) => d.req('/api/join/password', { method: 'POST', headers: J
   const I2 = device();
   r = await login(I2, iemail, IPW); ok('invite applicant logs in on another device', r.status === 200, String(r.status));
   r = await I2.req('/join/profile/' + imb); h = await r.text(); ok('invite applicant profile opens after login', !h.includes('ไม่มีสิทธิ์') && h.includes(imb));
-  ok('invite profile: lane badge, no guarantee wording', h.includes('สายคำเชิญ') && !/การันตี|เงินประกัน/.test(h));
+  ok('invite profile: lane badge, no guarantee wording', h.includes('สายคำเชิญ') && !/การันตี|เงินประกัน(?!งาน)/.test(h));
 
   // ── สมัครปกติ: ไม่มีคำว่าการันตี/เงินประกัน · ไม่มีป้ายสาย ──
   h = await (await Bdev.req('/join/profile/' + mb)).text();
-  ok('normal profile: no guarantee wording, no lane badge', !/การันตี|เงินประกัน/.test(h) && !h.includes('data-pt-lane') && (h.includes('ชำระค่าสมัครแล้ว') || h.includes('ส่งสลิปแล้ว')));
+  ok('normal profile: no guarantee wording, no lane badge', !/การันตี|เงินประกัน(?!งาน)/.test(h) && !h.includes('data-pt-lane') && (h.includes('ชำระค่าสมัครแล้ว') || h.includes('ส่งสลิปแล้ว')));
   r = await login(device(), iemail, 'wrong-password'); ok('invite wrong password → generic', r.status === 401 || r.status === 400, String(r.status));
 
   // ── หน้า ──

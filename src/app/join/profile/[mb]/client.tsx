@@ -19,7 +19,8 @@ export type HubData = {
   mb: string; t: string; nickname: string; fullName: string; statusLine: string; track: string; trackShort: string;
   main: string; mainPath: string; pos: string; photos: string[]; age: number | null; area: string; price: number; tier: "top" | "silver"; verified: boolean;
   fixes: number;
-  wallet: { available: number; pending: number; month: number };
+  /** bond = เงินประกันงาน (สายคำเชิญพิเศษ) · null = ไม่ใช่สายเชิญ */
+  wallet: { available: number; pending: number; month: number; bond: number | null };
   steps: { t: string; sub: string; ok: boolean; href: "" | "form" | "form2" | "kyc" | "rejected" }[];
   contractDone: boolean; card: ProfileCard;
   /** งานถัดไปที่ยืนยันแล้ว · งานรอตอบรับ · คะแนนรีวิวจริง · แจ้งเตือนที่ยังไม่อ่าน */
@@ -153,7 +154,7 @@ export function ProfileHub({ d }: { d: HubData }) {
                 <span className="flex items-center gap-2 text-[14px] font-semibold text-[#e8c472]"><Ico><path d="M3 7a2 2 0 0 1 2-2h13v4" /><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z" /><circle cx="16" cy="14.5" r="1.3" /></Ico>กระเป๋าเงิน</span>
                 <Link href={`/join/profile/${d.mb}/earnings${q}`} className="tap text-[13px] text-[#e8c472] font-light">เช็คเรทรายได้ ›</Link>
               </div>
-              <div><div className="text-[13px] text-[#d9c9b4] font-light">ยอดใช้ได้</div><div className="font-semibold text-[32px] leading-[1.15]">{baht(d.wallet.available)}</div><div className="text-[13px] text-[#d9c9b4] mt-0.5 font-light">รอปล่อยเงิน {baht(d.wallet.pending)} · รายได้เดือนนี้ {baht(d.wallet.month)}</div></div>
+              <div><div className="text-[13px] text-[#d9c9b4] font-light">ยอดใช้ได้</div><div className="font-semibold text-[32px] leading-[1.15]">{baht(d.wallet.available)}</div><div className="text-[13px] text-[#d9c9b4] mt-0.5 font-light">รอปล่อยเงิน {baht(d.wallet.pending)} · รายได้เดือนนี้ {baht(d.wallet.month)}{d.wallet.bond != null && <> · เงินประกันงาน {baht(d.wallet.bond)}</>}</div></div>
               {/* ยังไม่อนุมัติ/ยังไม่เปิดโปรไฟล์ → ยังไม่ใช่ Part-Time ที่ทำงานจริง: ซ่อนถอน/โปรโมท/ชวนเปิดเมม (API ก็ตอบ 409) */}
               {!d.active && <p className="m-0 rounded-xl text-[13px] text-[#f6c38e] font-light leading-[1.5]" style={{ padding: "8px 12px", background: "rgba(240,163,90,.1)" }}>ถอนเงิน · โปรโมทโปรไฟล์ · ชวนเปิดเมม {GATE_SHORT}<span className="block text-[12px] text-[#d9c9b4]">{GATE_MSG}</span></p>}
               {d.active && <div className="grid grid-cols-2 gap-2">

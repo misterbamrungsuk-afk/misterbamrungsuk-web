@@ -13,7 +13,7 @@ export type OwnerRow = { type: AdjOwnerType; id: string; name: string };
 /** ช่องที่ปรับยอดได้ต่อประเภท — ห้ามแตะ held/escrow/withdrawing (ผูกกับการจอง/คำขอถอน กระทบยอดจะพัง) */
 export const ADJUST_BUCKETS: Record<AdjOwnerType, readonly string[]> = {
   customer: ["available"],
-  parttime: ["available", "pending", "boost_credit"],
+  parttime: ["available", "pending", "boost_credit", "bond"],
   partner: ["available"],
   vendor: ["available"],
   sales: ["available"],

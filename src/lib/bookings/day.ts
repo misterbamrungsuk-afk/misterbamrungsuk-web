@@ -116,10 +116,15 @@ async function split(live: Booking, actor: string, tip: number, beforeMove?: () 
 /** ปล่อยรายได้ของนัดที่จบแล้ว: PT.pending → PT.available (ครั้งเดียวต่อการจอง · กันซ้ำด้วยสถานะ matured_at + idem) */
 async function matureOne(b: Booking, actor: string): Promise<Booking> {
   const amt = await ptAmount(b);
-  return (await moveBooking(b.id, ["completed"], { matured_at: now() }, amt > 0 ? { kind: "mature", ref: { type: "booking", id: b.id }, idem: `mature:${b.id}`, note: `ปล่อยรายได้ ${b.code}`, actor, legs: [
+  // สายคำเชิญพิเศษ: หักเงินประกันงานเคสละ ฿500 เข้า PT.bond (ครบ 90 วันย้ายเข้ายอดถอนได้ · work-bond.ts)
+  const { bondCut } = await import("@/lib/join/work-bond");
+  const pt = amt > 0 ? await (await import("@/lib/join/store")).getById(b.parttime_id).catch(() => null) : null;
+  const cut = bondCut(!!(pt && (await import("@/lib/join/store")).extraOf(pt).invite), amt);
+  return (await moveBooking(b.id, ["completed"], { matured_at: now() }, amt > 0 ? { kind: "mature", ref: { type: "booking", id: b.id }, idem: `mature:${b.id}`, note: `ปล่อยรายได้ ${b.code}${cut ? ` · หักเงินประกันงาน ฿${cut / 100}` : ""}`, actor, legs: ([
     { owner_type: "parttime", owner_id: b.parttime_id, bucket: "pending", amount: -amt },
-    { owner_type: "parttime", owner_id: b.parttime_id, bucket: "available", amount: amt },
-  ] } : null)) ?? b;
+    { owner_type: "parttime", owner_id: b.parttime_id, bucket: "available", amount: amt - cut },
+    { owner_type: "parttime", owner_id: b.parttime_id, bucket: "bond", amount: cut },
+  ] as Leg[]).filter((l) => l.amount !== 0) } : null)) ?? b;
 }
 
 /** แอดมินอนุมัติรายได้เข้ากระเป๋า (หน้า /admin/payroll) — ทุกนัดที่จบแล้วแต่ยังไม่ปล่อยของ Part-Time คนนี้ (หรือเฉพาะ ids ที่เลือก) */
@@ -342,7 +347,7 @@ export async function ratingSummary(ids: string[]): Promise<Map<string, { avg: n
 // ── ถอนเงิน (Part-Time) ──
 export async function ptWallet(parttime_id: string) {
   const [b, h] = await Promise.all([balances("parttime", parttime_id), history("parttime", parttime_id, 50)]);
-  return { pending: b.pending ?? 0, available: b.available ?? 0, withdrawing: b.withdrawing ?? 0, history: h };
+  return { pending: b.pending ?? 0, available: b.available ?? 0, withdrawing: b.withdrawing ?? 0, bond: b.bond ?? 0, history: h };
 }
 export async function requestWithdraw(a: Applicant, amountBaht: number): Promise<Withdrawal> {
   const m = await getMoney();

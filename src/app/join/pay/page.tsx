@@ -194,7 +194,7 @@ function PayInner() {
               <div style={{ height: 1, background: "rgba(243,234,217,0.07)", margin: "4px 0" }} />
               {items.map(([n, v]) => <div key={n} className="flex justify-between items-baseline gap-4 min-w-0"><span className="min-w-0">{n}</span><span className="whitespace-nowrap shrink-0 font-semibold text-[18px] text-[#e8c472]">{invite ? "ฟรี" : baht(v)}</span></div>)}
               {items.length > 1 && <div className="flex justify-between items-baseline gap-4 min-w-0 pt-2 border-t border-[rgba(243,234,217,0.07)]"><span className="min-w-0 font-semibold">รวมที่ต้องโอน</span><span className="whitespace-nowrap shrink-0 font-bold text-[20px] text-[#e8c472]" data-total="1">{baht(amount)}</span></div>}
-              <div className="text-[13px] font-light">{invite ? "✦ คำเชิญพิเศษ: ไม่ต้องชำระค่าสมัคร · ได้ระดับ TOP ทันที · แค่กรอกข้อมูลสมัคร" : FEE_NOTE}</div>
+              <div className="text-[13px] font-light">{invite ? "✦ คำเชิญพิเศษ: ไม่ต้องชำระค่าสมัคร · ได้ระดับ TOP ทันที · หลังเริ่มงาน หักเงินประกันงานเคสละ ฿500 จากรายได้ (กันหนีงาน/เทงาน) · เงินแต่ละก้อนครบ 90 วันถอนคืนได้ (ค่าธรรมเนียมถอน 3%)" : FEE_NOTE}</div>
             </div>
             <div className="flex flex-col gap-2 bg-[#2c1a1f]" style={box}>
               <div className="font-semibold text-[17px]">ค่าสมัครรวม</div>

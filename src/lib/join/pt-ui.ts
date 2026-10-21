@@ -15,7 +15,7 @@ export const AUTO_REPLY_DEFAULT = "ขอบคุณที่ทักมาน
 export const TX_KIND_TH: Record<string, string> = {
   split: "รายได้จากงาน", mature: "ปล่อยเงิน · ถอนได้", withdraw_req: "ขอถอน", withdraw_paid: "โอนแล้ว", withdraw_fail: "โอนไม่สำเร็จ · คืนยอด", adjust: "ปรับยอดโดยทีมงาน",
   commission: "ค่าคอมชวนเปิดเมม", boost: "ซื้อโปรโมทโปรไฟล์", promo: "โปรโมชัน", gift: "ของขวัญ", member: "สมาชิก", sales_payout: "โอนค่าคอม", refund: "คืนเงิน", reversal: "กลับรายการ",
-  topup: "เติมเงิน", hold: "พักเงิน", confirm: "ยืนยันนัด", release: "คืนยอดพัก", market_sale: "ขายสินค้า", payout: "จ่ายเงิน",
+  topup: "เติมเงิน", hold: "พักเงิน", confirm: "ยืนยันนัด", release: "คืนยอดพัก", market_sale: "ขายสินค้า", payout: "จ่ายเงิน", bond_release: "เงินประกันงานครบ 90 วัน · ถอนได้",
 };
 
 /** สถานะการจอง → ป้ายภาษาไทย + สี (หน้า "งาน" ส่วนประวัติ) */

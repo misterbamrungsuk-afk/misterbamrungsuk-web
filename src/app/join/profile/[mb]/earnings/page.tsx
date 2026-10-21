@@ -7,6 +7,8 @@ import { EarnBoard } from "../_ptc";
 import { listWithdrawals, ptWallet } from "@/lib/bookings/day";
 import { listForParttime } from "@/lib/bookings";
 import { TX_KIND_TH } from "@/lib/join/pt-ui";
+import { BOND, bondStatus } from "@/lib/join/work-bond";
+import { BondCard } from "./bond-card";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "รายได้ของฉัน — Mister Bamrungsuk" };
@@ -27,7 +29,9 @@ export default async function MyEarningsPage({ params, searchParams }: { params:
   const ym = (iso: string) => new Date(Date.parse(iso) + 7 * 3600_000).toISOString().slice(0, 7);
   const thisMonth = ym(new Date().toISOString());
   const cases = (await listForParttime(c.row.id).catch(() => [])).filter((b) => b.status === "completed" && ym(b.completed_at ?? b.starts_at) === thisMonth).length;
-  const hist = w.history.filter((h) => h.bucket === "pending" ? h.kind === "split" : h.bucket === "available" || (h.bucket === "withdrawing" && h.kind === "withdraw_paid"));
+  const hist = w.history.filter((h) => h.bucket === "pending" ? h.kind === "split" : h.bucket === "available" || h.bucket === "bond" || (h.bucket === "withdrawing" && h.kind === "withdraw_paid"));
+  // เงินประกันงาน (เฉพาะสายคำเชิญพิเศษ)
+  const bond = c.x.invite ? await bondStatus(c.row.id).catch(() => null) : null;
   const empty = (t: string) => <div className="text-[14px] font-light text-[#b5a596]" style={{ padding: "12px 0" }}>{t}</div>;
 
   return (
@@ -44,6 +48,7 @@ export default async function MyEarningsPage({ params, searchParams }: { params:
             <div className="flex gap-[18px] text-[13px] font-light mt-1"><span>รอปล่อยเงิน {baht(w.pending / 100)}</span><span>ถอนแล้ว {baht(paid / 100)}</span></div>
             <Link href={ptHref(c, "withdraw")} className="w-full h-[50px] mt-3.5 rounded-[14px] bg-[#e8c472] text-[#1b130b] font-semibold text-[16px] grid place-items-center hover:text-[#1b130b]">{acct ? `ถอนเข้า ${acct.name} ${acct.tail}` : "ถอนเงิน"}</Link>
           </div>
+          {bond && <BondCard mb={c.row.mb_code} t={c.t ?? ""} s={bond} perJob={BOND.perJobSatang} lockDays={BOND.lockDays} />}
           <div className="rounded-[20px] bg-[#1b2322]" style={{ padding: 16 }}>
             <div className="flex justify-between items-baseline gap-2"><span className="font-medium text-[16px]">ใบเสร็จรับเงิน</span><Link href={ptHref(c, "docs")} className="tap text-[13px] text-[#e8c472] font-light shrink-0">ดูทั้งหมด ›</Link></div>
             <div className="text-[12.5px] font-light opacity-70 mt-0.5">ออกให้อัตโนมัติทุกครั้งที่โอนเงินสำเร็จ</div>
@@ -53,7 +58,7 @@ export default async function MyEarningsPage({ params, searchParams }: { params:
             <div className="font-medium text-[16px] mb-1">ประวัติ</div>
             {!hist.length ? empty("ยังไม่มีรายการ · รายได้จะขึ้นที่นี่หลังจบเคสแรก") : hist.slice(0, 20).map((h, i) => (
               <div key={`${h.tx_id}-${i}`} className="flex justify-between items-center gap-3 text-[14px]" style={{ padding: "10px 0", borderBottom: "1px solid rgba(243,234,217,0.07)" }}>
-                <span className="flex flex-col min-w-0"><span>{TX_KIND_TH[h.kind] ?? "รายการอื่น"}</span><span className="text-[12px] font-light text-[#b5a596] truncate">{new Date(h.created_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", dateStyle: "medium", timeStyle: "short" })}{h.note ? ` · ${h.note}` : ""}</span></span>
+                <span className="flex flex-col min-w-0"><span>{h.bucket === "bond" ? (h.amount > 0 ? "หักเงินประกันงาน" : h.kind === "bond_release" ? "ย้ายเงินประกันเข้ายอดถอนได้" : "หักจากเงินประกันงาน") : TX_KIND_TH[h.kind] ?? "รายการอื่น"}</span><span className="text-[12px] font-light text-[#b5a596] truncate">{new Date(h.created_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", dateStyle: "medium", timeStyle: "short" })}{h.note ? ` · ${h.note}` : ""}</span></span>
                 <span className="tabular-nums font-semibold shrink-0" style={{ color: h.amount > 0 ? "#7fd6a3" : "#f3ead9" }}>{h.amount > 0 ? "+" : "−"}{baht(Math.abs(h.amount) / 100)}</span>
               </div>
             ))}

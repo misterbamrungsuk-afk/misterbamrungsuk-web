@@ -53,7 +53,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
     rating: r ? { avg: Math.round(r.avg * 10) / 10, count: r.count } : null,
     unread: notices.filter((n) => !n.read_at).length,
     active: isPtActive(x), kycApproved: kyc === "approved", listed: !!x.listed, hasCert: !!row.docs.cert_doc, deleteRequested: x.delete_requested_at ?? null,
-    wallet: { available: (w?.available ?? 0) / 100, pending: (w?.pending ?? 0) / 100, month: month / 100 },
+    wallet: { available: (w?.available ?? 0) / 100, pending: (w?.pending ?? 0) / 100, month: month / 100, bond: x.invite ? (w?.bond ?? 0) / 100 : null },
     mb, t: t ?? "", nickname: row.nickname, fullName: `${row.first_name} ${row.last_name}`,
     statusLine: x.invite && !row.amount ? "คำเชิญพิเศษ · ไม่มีค่าสมัคร · ระดับ TOP" : `${x.invite ? "คำเชิญพิเศษ" : "สมัครปกติ"} · ${row.status === "verified" ? "ชำระค่าสมัครแล้ว" : "ส่งสลิปแล้ว · รอทีมงานตรวจ"}`,
     track: row.package === "B" ? "เพื่อนกินเที่ยว · นวด" : "เพื่อนกินเที่ยว", trackShort: row.package === "B" ? "สายนวด" : "สายกินเที่ยว",
