@@ -57,6 +57,23 @@ const seats = async (g) => J(await fetch(B + '/api/join/seats' + (g ? '?g=' + g 
   ok('man still gets MB-', /^MB-\d{7}$/.test(man.mb_code || ''), JSON.stringify(man));
   ok('MS and MB counters independent', reg.mb_code.slice(-3) === '001' || reg.mb_code.slice(3, 7) === man.mb_code.slice(3, 7), `${reg.mb_code} ${man.mb_code}`);
   ok('MS profile route works', (await fetch(B + `/join/profile/${mb}?t=${encodeURIComponent(tok(mb))}`)).status === 200);
+  // ลิงก์เชิญ: เลือกทอมหล่อได้ → ฟรี + TOP + รหัส MS- + หมวดทอมหล่อ
+  const exp = new Date(Date.now() + 7 * 86400e3).toISOString().slice(0, 10);
+  const inv = (await J(await fetch(B + '/api/admin/invites', { method: 'POST', headers: ADM, body: JSON.stringify({ name: 'e2e tom invite', limit: 1, expires: exp }) }))).data;
+  let ih = await (await fetch(B + '/join/i/' + inv.code)).text();
+  ok('invite page has หนุ่มหล่อ | ทอมหล่อ choice', ih.includes('data-invite-group="man"') && ih.includes('data-invite-group="tom"'));
+  const tel3 = '06' + String(Date.now() + 13).slice(-8);
+  const s3 = await J(await fetch(B + '/api/otp/send', { method: 'POST', headers: JSONH, body: JSON.stringify({ phone: tel3 }) }));
+  let jar3 = '';
+  if (s3.devCode) { const v = await fetch(B + '/api/otp/verify', { method: 'POST', headers: JSONH, body: JSON.stringify({ phone: tel3, code: s3.devCode }) }); jar3 = (v.headers.get('set-cookie') || '').split(';')[0]; }
+  const it = await J(await fetch(B + '/api/join/register', { method: 'POST', headers: { cookie: jar3, 'x-forwarded-for': '10.8.8.10' }, body: form({ package: 'A', group: 'tom', invite: inv.code, first_name: 'เชิญ', last_name: 'ทอม', nickname: 'ทอมเชิญ', tel: tel3, email: `tinv${tel3}@test.local`, password: 'tinv-' + tel3, accept_terms: 'true', consent_pdpa: 'true', consent_criminal: 'true' }) }));
+  ok('invite tom gets MS- code', /^MS-\d{7}$/.test(it.mb_code || ''), JSON.stringify(it));
+  const l3 = (await (await fetch(B + '/admin/applicants', { headers: ADM })).text()).replace(/\\"/g, '"');
+  const a3 = l3.indexOf('"mb_code":"' + it.mb_code + '"');
+  const id3 = [...l3.slice(Math.max(0, a3 - 6000), a3).matchAll(/"id":"([0-9a-f-]{36})"/g)].pop()?.[1];
+  const r3 = (await J(await fetch(B + '/api/admin/applicants/' + id3, { method: 'PATCH', headers: ADM, body: JSON.stringify({ line_joined: false }) }))).row;
+  ok('invite tom: free, TOP, verified, group tom', r3?.amount === 0 && r3?.tier === 'top' && r3?.status === 'verified' && r3?.group === 'tom' && r3?.invite === inv.code, `${r3?.amount} ${r3?.tier} ${r3?.status} ${r3?.group}`);
+
   // ป้าย + หน้าแรก
   h = await (await fetch(B + `/join/profile/${mb}?t=${encodeURIComponent(tok(mb))}`)).text();
   ok('profile shows ทอมหล่อ badge', h.includes('data-pt-group="tom"'));

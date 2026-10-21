@@ -30,7 +30,9 @@ const h2: React.CSSProperties = { margin: 0, fontWeight: 600, fontSize: 20 };
 
 /** invite = รหัสลิงก์เชิญ (บอร์ด JoinInvite): ค่าสมัครเท่ากัน · ไม่มีแถบที่นั่ง · ปุ่ม "เริ่มสร้างโปรไฟล์" */
 export function JoinSalePage({ seats, showEarnings = true, invite, group = null }: { seats: Seats; showEarnings?: boolean; invite?: string; group?: "tom" | null }) {
-  const tom = group === "tom";
+  // ลิงก์เชิญ: เลือกหนุ่มหล่อ / ทอมหล่อ ในหน้านี้ (ไม่มีหน้าแยก) · สมัครปกติ: แยกหน้า /join กับ /join/tom
+  const [invGroup, setInvGroup] = useState<"man" | "tom">("man");
+  const tom = invite ? invGroup === "tom" : group === "tom";
   const g = tom ? "&g=tom" : "";
   const looking = tom ? ["ทอมหล่อ อายุ 20–50 ปี ดูแลตัวเองสม่ำเสมอ", ...LOOKING_FOR.slice(1)] : LOOKING_FOR;
   const faq = invite ? [FAQ_INVITE, ...FAQ.slice(1)] : FAQ;
@@ -58,6 +60,11 @@ export function JoinSalePage({ seats, showEarnings = true, invite, group = null 
             <Link key={href} href={href} aria-current={on ? "page" : undefined} data-group-tab={label} className="min-h-11 px-6 rounded-full grid place-items-center text-[15px] font-semibold" style={on ? { background: "#e8c472", color: "#1b130b" } : { color: "#e8c472" }}>{label}</Link>
           ))}
         </nav>}
+        {invite && <div role="radiogroup" aria-label="เลือกหมวด" className="self-center grid grid-cols-2 gap-1 rounded-full" style={{ padding: 4, background: "#251d1b" }}>
+          {([["man", "หนุ่มหล่อ"], ["tom", "ทอมหล่อ"]] as const).map(([k, label]) => (
+            <button key={k} type="button" role="radio" aria-checked={invGroup === k} data-invite-group={k} onClick={() => setInvGroup(k)} className="min-h-11 px-6 rounded-full grid place-items-center text-[15px] font-semibold" style={invGroup === k ? { background: "#e8c472", color: "#1b130b" } : { color: "#e8c472" }}>{label}</button>
+          ))}
+        </div>}
 
         <section className="flex flex-col" style={{ gap: 18 }}>
           {/* ลิงก์เชิญพิเศษ: ไม่ต้องเลือกสาย (ทุกคนได้ TOP · ฟรี) → กดเริ่มสร้างโปรไฟล์ได้เลย */}
@@ -93,7 +100,7 @@ export function JoinSalePage({ seats, showEarnings = true, invite, group = null 
             {showEarnings && !invite && <Link href="/join/earnings" className="min-h-12 rounded-[14px] text-[#e8c472] font-semibold grid place-items-center text-center hover:text-[#e8c472]" style={{ background: "rgba(232,196,114,0.16)" }}>ดูรายได้และส่วนแบ่ง · คำนวณรายได้ต่อเดือน</Link>}
             {seats.closed
               ? <span aria-disabled="true" className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center" style={{ marginTop: 6, opacity: 0.45 }}>ปิดรับสมัครแล้ว</span>
-              : <Link href={invite ? `/join/pay?pkg=A&invite=${invite}` : `/join/pay?pkg=${pick}${g}`} className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center hover:text-[#1b130b]" style={{ marginTop: 6 }}>{invite ? "เริ่มสร้างโปรไฟล์" : "ชำระเงินและรับรหัสสมัคร"}</Link>}
+              : <Link href={invite ? `/join/pay?pkg=A&invite=${invite}${g}` : `/join/pay?pkg=${pick}${g}`} className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center hover:text-[#1b130b]" style={{ marginTop: 6 }}>{invite ? "เริ่มสร้างโปรไฟล์" : "ชำระเงินและรับรหัสสมัคร"}</Link>}
             {invite && <p className="m-0 text-[13px] text-center text-[#b5a596] font-light">ลิงก์ส่วนตัว กรุณาอย่าเผยแพร่</p>}
             <Link href="/join/me" className="self-center min-h-11 inline-flex items-center text-[14px] text-[#e8c472] hover:text-[#e8c472]">สมัครแล้ว? เข้าสู่ระบบ Part-Time ›</Link>
           </div>
