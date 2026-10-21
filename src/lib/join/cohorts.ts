@@ -80,7 +80,7 @@ export async function deleteCohort(key: string): Promise<void> {
 /** ที่นั่งที่ถูกใช้จริงต่อกลุ่ม (ใช้ทั้งหน้า /join และหน้าแอดมิน ให้ตัวเลขตรงกัน) · นับเฉพาะคนที่สลิป + KYC ผ่านแล้ว
  *  = ผู้สมัครที่ยัง active (รอตรวจสลิป/ผ่านแล้ว) ที่จัดเข้ากลุ่มนั้น + คนที่ยังไม่ถูกจัดกลุ่ม (เติมเข้ากลุ่ม "เปิดรับสมัคร" แรกที่ยังว่าง)
  *  ผู้สมัครในกลุ่มที่อบรมเสร็จแล้ว/ร่าง นับเฉพาะคนที่จัดเข้ากลุ่มนั้นแล้ว */
-export async function cohortTaken(): Promise<{ cohorts: Cohort[]; taken: Map<string, number> }> {
+export async function cohortTaken(group: "tom" | null = null): Promise<{ cohorts: Cohort[]; taken: Map<string, number> }> {
   const { listApplicants, extraOf } = await import("./store");
   const [cohorts, apps] = await Promise.all([listCohorts(), listApplicants()]);
   const keys = new Set(cohorts.map((c) => c.key));
@@ -89,6 +89,8 @@ export async function cohortTaken(): Promise<{ cohorts: Cohort[]; taken: Map<str
   for (const a of apps) {
     // นับเข้าที่นั่งเมื่อแอดมินอนุมัติครบทั้งสลิปค่าสมัคร (verified) และ KYC (approved) — ทั้งสายจ่ายการันตีและสายคำเชิญ
     if (a.status !== "verified" || extraOf(a).kyc_status !== "approved") continue;
+    // หนุ่มหล่อ / สาวหล่อ นับที่นั่งแยกกัน (โควตาเท่ากันตามความจุกลุ่ม)
+    if ((extraOf(a).group ?? null) !== group) continue;
     const k = extraOf(a).cohort;
     if (k && keys.has(k)) taken.set(k, (taken.get(k) ?? 0) + 1);
     else unassigned++;
@@ -102,8 +104,8 @@ export async function cohortTaken(): Promise<{ cohorts: Cohort[]; taken: Map<str
 }
 
 /** ที่นั่งกลุ่มอบรมถัดไป (นับจริง) — กลุ่มแรกที่ "เปิดรับสมัคร" และยังว่าง */
-export async function nextCohortSeats(): Promise<{ cohort: string; left: number; quota: number; full: boolean }> {
-  const { cohorts, taken } = await cohortTaken();
+export async function nextCohortSeats(group: "tom" | null = null): Promise<{ cohort: string; left: number; quota: number; full: boolean }> {
+  const { cohorts, taken } = await cohortTaken(group);
   const open = cohorts.filter((c) => c.status === "open");
   if (!open.length) return { cohort: "", left: 0, quota: 0, full: true };
   for (const c of open) {

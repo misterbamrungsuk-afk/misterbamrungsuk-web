@@ -174,7 +174,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
                   style={{ background: sel?.id === r.id ? "rgba(240,200,90,.16)" : "transparent" }}>
                   <span className="text-[#ffd76a]">{r.mb_code}</span>
                   <span className="truncate pr-2">{r.first_name} {r.last_name}</span>
-                  <span className="text-[#d3c7bc] pr-1">{r.package} · {r.invite && <span className="text-[#e8c472]">✦ เชิญ </span>}{fmt(r.amount)}</span>
+                  <span className="text-[#d3c7bc] pr-1">{r.group === "tom" && <span className="text-[#f6a5c0]">สาวหล่อ · </span>}{r.package} · {r.invite && <span className="text-[#e8c472]">✦ เชิญ </span>}{fmt(r.amount)}</span>
                   <span className="flex flex-col leading-tight text-[11.5px]"><span style={{ color: r.status === "verified" ? "#4ade80" : r.status === "pending_slip" ? "#eed58a" : "#fca5a5" }}>{LABEL[r.status]}</span><span style={{ color: KYC_LABEL[r.kyc_status ?? "none"][1] }}>{KYC_LABEL[r.kyc_status ?? "none"][0]}</span></span>
                   <span className="text-[#d3c7bc]">{cohortName(r.cohort)}</span>
                   <span style={{ color: r.line_joined ? "#4ade80" : "#eed58a" }}>{r.line_joined ? "✓ เข้ากลุ่มแล้ว" : "ยังไม่เข้า"}</span>

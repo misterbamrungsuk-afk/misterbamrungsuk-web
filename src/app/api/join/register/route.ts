@@ -42,7 +42,6 @@ export async function POST(req: Request) {
   if (limited(ip)) return bad("ส่งบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่", 429);
 
   if (Date.now() > Date.parse(CLOSE_AT)) return bad("ปิดรับสมัครแล้ว", 410);
-  if ((await (await import("@/lib/join/cohorts")).nextCohortSeats()).full) return bad("รับครบจำนวนแล้ว", 410);
 
   let form: FormData;
   try {
@@ -54,6 +53,9 @@ export async function POST(req: Request) {
   if (!(await verifyTurnstile(s("turnstile", 2048), ip))) return bad(TURNSTILE_ERROR, 403);
 
   const pkg = s("package") as PackageKey;
+  // หมวดสาวหล่อ (/join/tom) — ที่นั่งอบรมแยกโควตาจากหนุ่มหล่อ
+  const group = s("group") === "tom" ? "tom" : null;
+  if ((await (await import("@/lib/join/cohorts")).nextCohortSeats(group)).full) return bad("รับครบจำนวนแล้ว", 410);
   // ตัดทุกอย่างที่ไม่ใช่ตัวเลขก่อน (วาง "abc081-234-5678" ก็ได้ 0812345678) แล้วตรวจ 10 หลักด้านล่าง
   const tel = s("tel").replace(/\D/g, "");
 
@@ -110,7 +112,7 @@ export async function POST(req: Request) {
     const row = await createApplicant(
       {
         // ข้อมูลใบสมัครที่เหลือกรอกหลังชำระเงิน → ตอนนี้ค่าว่าง (คอลัมน์ NOT NULL ใส่ค่าว่าง ไม่ต้องแก้ฐานข้อมูล)
-        title: "นาย", first_name: s("first_name"), last_name: s("last_name"), nickname: s("nickname"),
+        title: group === "tom" ? "นางสาว" : "นาย", first_name: s("first_name"), last_name: s("last_name"), nickname: s("nickname"),
         birthdate: null, weight: 0, height: 0, nationality: "ไทย", ethnicity: "ไทย",
         religion: "", education: "", marital: "", start_date: null,
         tel, line_id: "", email, address: "", zipcode: "",
@@ -133,7 +135,7 @@ export async function POST(req: Request) {
     // เลขใบแจ้งหนี้ INV (ยังไม่รัน SQL 0010 → ใช้เลขตามรหัส MB)
     // สายเชิญไม่มียอด → ไม่ออกเอกสาร · ถือว่าชำระแล้ว (verified) + ระดับ TOP
     const inv_no = invite ? null : (await nextDocNo("INV").catch(() => null)) ?? `INV-${row.mb_code.slice(3)}`;
-    await saveProfile(row.id, { pw_hash: hashPw(password), pw_at: new Date().toISOString(), inv_no, ...(invite ? { tier: "top" } : {}) });
+    await saveProfile(row.id, { pw_hash: hashPw(password), pw_at: new Date().toISOString(), inv_no, ...(invite ? { tier: "top" } : {}), ...(group ? { group } : {}) });
     if (invite) await updateApplicant(row.id, { status: "verified" });
     if (invite) await consumeInvite(invite).catch((e) => console.error("consume invite failed", e));
     // sync ชีตแบบไม่ให้ล้มทั้งคำขอ — ถ้าไม่สำเร็จ แอดมินกด sync ซ้ำได้

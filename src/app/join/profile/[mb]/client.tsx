@@ -16,6 +16,8 @@ import { EstimateCard, PromoCard, SaveLinkCard } from "./hub-cards";
 export type HubData = {
   /** สมัครผ่านลิงก์เชิญ (ป้าย) */
   invite: boolean;
+  /** หมวดสาวหล่อ (ป้าย) */
+  tom: boolean;
   mb: string; t: string; nickname: string; fullName: string; statusLine: string; track: string; trackShort: string;
   main: string; mainPath: string; pos: string; photos: string[]; age: number | null; area: string; price: number; tier: "top" | "silver"; verified: boolean;
   fixes: number;
@@ -134,6 +136,7 @@ export function ProfileHub({ d }: { d: HubData }) {
                 </div>
                 <div className="flex flex-wrap gap-1.5 mt-1">
                   <span className="rounded-full text-[13px] text-[#e8c472] bg-[#251d1b] font-light" style={{ padding: "3px 10px" }}>{d.track}</span>
+                  {d.tom && <span data-pt-group="tom" className="rounded-full text-[13px] font-light text-[#f3ead9]" style={{ padding: "3px 10px", background: "rgba(246,165,192,0.18)" }}>สาวหล่อ</span>}
                   {d.invite && <span data-pt-lane="invite" className="rounded-full text-[13px] font-light text-[#f3ead9]" style={{ padding: "3px 10px", background: "rgba(232,196,114,0.18)" }}>✦ สายคำเชิญ</span>}
                 </div>
               </div>

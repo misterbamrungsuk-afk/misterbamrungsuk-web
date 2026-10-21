@@ -18,6 +18,7 @@ import { SaveLink } from "@/components/save-link";
 const GOLD = "#e8c472";
 const QR_TTL = 900;
 const PKG_KEY = "mb_join_pkg";
+const GRP_KEY = "mb_join_group";
 const INV_KEY = "mb_join_invite";
 const box: CSSProperties = { padding: 20, borderRadius: 16, minWidth: 0, overflowWrap: "anywhere" };
 const cta = "min-h-14 w-full rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[17px] grid place-items-center text-center px-4";
@@ -52,10 +53,15 @@ function PayInner() {
   // ลิงก์เชิญ: null = สมัครปกติ · "…" = รหัสที่ตรวจแล้วใช้ได้ · inviteErr = ลิงก์ใช้ไม่ได้
   const [invite, setInvite] = useState<string | null>(null);
   const [inviteErr, setInviteErr] = useState("");
+  const [tom, setTom] = useState(false);
   // กำลังตรวจรหัสเชิญ → ยังไม่แสดง QR (กันสายเชิญฟรีเห็น QR แวบหนึ่ง)
   const [invChecking, setInvChecking] = useState(true);
 
   useEffect(() => {
+    // หมวดสาวหล่อ (?g=tom จากหน้า /join/tom) — จำไว้เผื่อรีเฟรช
+    let grp = params.get("g");
+    try { if (grp === "tom") sessionStorage.setItem(GRP_KEY, grp); else if (params.get("pkg")) sessionStorage.removeItem(GRP_KEY); else grp = sessionStorage.getItem(GRP_KEY); } catch {}
+    setTom(grp === "tom");
     const q = params.get("pkg");
     let pkg: string | null = q;
     try { if (q === "A" || q === "B") sessionStorage.setItem(PKG_KEY, q); else pkg = sessionStorage.getItem(PKG_KEY); } catch {}
@@ -117,7 +123,7 @@ function PayInner() {
     setBusy(true); setErr("");
     try {
       const fd = new FormData();
-      fd.append("package", k); fd.append("first_name", who.first_name.trim()); fd.append("last_name", who.last_name.trim());
+      fd.append("package", k); if (tom) fd.append("group", "tom"); fd.append("first_name", who.first_name.trim()); fd.append("last_name", who.last_name.trim());
       fd.append("nickname", who.nickname.trim()); fd.append("tel", who.tel);
       fd.append("email", who.email.trim().toLowerCase()); fd.append("password", pw.a);
       fd.append("accept_terms", "true"); fd.append("consent_pdpa", "true"); fd.append("consent_criminal", "true"); fd.append("turnstile", ts);
@@ -132,7 +138,7 @@ function PayInner() {
         setErr(data.error || "ส่งข้อมูลไม่สำเร็จ");
         throw null;
       }
-      try { sessionStorage.removeItem(PKG_KEY); sessionStorage.removeItem(INV_KEY); } catch {}
+      try { sessionStorage.removeItem(PKG_KEY); sessionStorage.removeItem(INV_KEY); sessionStorage.removeItem(GRP_KEY); } catch {}
       setLink(data.link ?? "");
       setDone(data.mb_code);
     } catch (e) {
@@ -142,7 +148,7 @@ function PayInner() {
   };
 
   const lastInitial = who.last_name.trim() ? ` ${who.last_name.trim()[0]}.` : "";
-  const summary: [string, string][] = [["ผู้สมัคร", who.first_name.trim() ? `นาย${who.first_name.trim()}${lastInitial}${who.nickname.trim() ? ` (${who.nickname.trim()})` : ""}` : "—"], ["กลุ่มอบรม", "กลุ่ม 1 · ภายใน 20 พ.ย."]];
+  const summary: [string, string][] = [["ผู้สมัคร", who.first_name.trim() ? `${tom ? "" : "นาย"}${who.first_name.trim()}${lastInitial}${who.nickname.trim() ? ` (${who.nickname.trim()})` : ""}` : "—"], ["กลุ่มอบรม", "กลุ่ม 1 · ภายใน 20 พ.ย."]];
   // ลิงก์เชิญพิเศษ: ไม่ต้องจ่าย · ได้ระดับ TOP
   const items: [string, number][] = [["ค่าสมัคร (รวมค่าอบรม)", invite ? 0 : amount]];
   const perks = FEE_INCLUDES(k);
@@ -155,10 +161,10 @@ function PayInner() {
       <BrandHeader tone="bar" small />
       <div className="mb-panel mx-auto w-full max-w-[1000px]">
         <div className="flex items-center gap-3" style={{ padding: "20px 20px 10px" }}>
-          <Link href={invite ? `/join/i/${invite}` : "/join"} aria-label="ย้อนกลับ" className="shrink-0 w-11 h-11 rounded-full bg-[#251d1b] text-[#f3ead9] grid place-items-center hover:text-[#f3ead9]">
+          <Link href={invite ? `/join/i/${invite}` : tom ? "/join/tom" : "/join"} aria-label="ย้อนกลับ" className="shrink-0 w-11 h-11 rounded-full bg-[#251d1b] text-[#f3ead9] grid place-items-center hover:text-[#f3ead9]">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
           </Link>
-          <div className="min-w-0"><div className="text-[13px] text-[#e8c472] font-light">{invite ? "✦ คำเชิญพิเศษ" : "ก่อนกรอกใบสมัคร"}</div><div className="font-semibold text-[20px] leading-[1.35]">{invite ? "สมัครด้วยคำเชิญ" : "ชำระค่าสมัคร"}</div></div>
+          <div className="min-w-0"><div className="text-[13px] text-[#e8c472] font-light">{invite ? "✦ คำเชิญพิเศษ" : tom ? "สาวหล่อ · ก่อนกรอกใบสมัคร" : "ก่อนกรอกใบสมัคร"}</div><div className="font-semibold text-[20px] leading-[1.35]">{invite ? "สมัครด้วยคำเชิญ" : "ชำระค่าสมัคร"}</div></div>
         </div>
 
         {inviteErr && <p role="alert" className="m-0 mx-5 mt-2 rounded-xl text-[13.5px] text-[#ff8a9a]" style={{ padding: "10px 14px", background: "rgba(255,138,154,0.1)" }}>{inviteErr} · ยอดด้านล่างเป็นราคาสมัครปกติ</p>}

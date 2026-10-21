@@ -29,7 +29,10 @@ export type Seats = { left: number; quota: number; cohort: string; closed: boole
 const h2: React.CSSProperties = { margin: 0, fontWeight: 600, fontSize: 20 };
 
 /** invite = รหัสลิงก์เชิญ (บอร์ด JoinInvite): ค่าสมัครเท่ากัน · ไม่มีแถบที่นั่ง · ปุ่ม "เริ่มสร้างโปรไฟล์" */
-export function JoinSalePage({ seats, showEarnings = true, invite }: { seats: Seats; showEarnings?: boolean; invite?: string }) {
+export function JoinSalePage({ seats, showEarnings = true, invite, group = null }: { seats: Seats; showEarnings?: boolean; invite?: string; group?: "tom" | null }) {
+  const tom = group === "tom";
+  const g = tom ? "&g=tom" : "";
+  const looking = tom ? ["สาวหล่อ (ทอม) อายุ 20–50 ปี ดูแลตัวเองสม่ำเสมอ", ...LOOKING_FOR.slice(1)] : LOOKING_FOR;
   const faq = invite ? [FAQ_INVITE, ...FAQ.slice(1)] : FAQ;
   const [pick, setPick] = useState<PackageKey>("B");
   const [open, setOpen] = useState<Record<number, boolean>>({ 0: true });
@@ -45,9 +48,16 @@ export function JoinSalePage({ seats, showEarnings = true, invite }: { seats: Se
       <div className="mx-auto max-w-[1200px] flex flex-col" style={{ padding: "20px 16px 0", gap: 26 }}>
         <section className="join-hero md:min-h-[340px] md:flex md:flex-col md:justify-end md:py-14 md:px-12" style={{ padding: "40px 22px 34px", borderRadius: 18 }}>
           <div className="text-[11px] font-semibold tracking-[2px] text-[#e8c472]">{invite ? <><span className="tracking-normal text-[13px]">✦ คำเชิญพิเศษ</span> · PART TIME</> : "PART TIME"}</div>
-          <h1 className="font-semibold text-[30px] md:text-[48px] leading-[1.32] text-[#f3ead9] md:max-w-[640px]" style={{ margin: "10px 0 6px" }}>เพื่อนกินเที่ยว Mister Bamrungsuk</h1>
+          <h1 className="font-semibold text-[30px] md:text-[48px] leading-[1.32] text-[#f3ead9] md:max-w-[640px]" style={{ margin: "10px 0 6px" }}>{tom ? "สาวหล่อ · เพื่อนกินเที่ยว Mister Bamrungsuk" : "เพื่อนกินเที่ยว Mister Bamrungsuk"}</h1>
           <p className="m-0 text-[15px] md:text-[18px] text-[#e6d6c4]">งานพาร์ทไทม์ เลือกวันเวลาเอง{invite ? " · คำเชิญพิเศษ: สมัครฟรี ได้ระดับ TOP" : ""}</p>
         </section>
+
+        {/* หนุ่มหล่อ / สาวหล่อ — สมัครแยกหมวด · ที่นั่งอบรมแยกโควตา */}
+        {!invite && <nav aria-label="เลือกหมวด" className="self-center grid grid-cols-2 gap-1 rounded-full" style={{ padding: 4, background: "#251d1b" }}>
+          {([["/join", "หนุ่มหล่อ", !tom], ["/join/tom", "สาวหล่อ", tom]] as const).map(([href, label, on]) => (
+            <Link key={href} href={href} aria-current={on ? "page" : undefined} data-group-tab={label} className="min-h-11 px-6 rounded-full grid place-items-center text-[15px] font-semibold" style={on ? { background: "#e8c472", color: "#1b130b" } : { color: "#e8c472" }}>{label}</Link>
+          ))}
+        </nav>}
 
         <section className="flex flex-col" style={{ gap: 18 }}>
           {/* ลิงก์เชิญพิเศษ: ไม่ต้องเลือกสาย (ทุกคนได้ TOP · ฟรี) → กดเริ่มสร้างโปรไฟล์ได้เลย */}
@@ -83,7 +93,7 @@ export function JoinSalePage({ seats, showEarnings = true, invite }: { seats: Se
             {showEarnings && !invite && <Link href="/join/earnings" className="min-h-12 rounded-[14px] text-[#e8c472] font-semibold grid place-items-center text-center hover:text-[#e8c472]" style={{ background: "rgba(232,196,114,0.16)" }}>ดูรายได้และส่วนแบ่ง · คำนวณรายได้ต่อเดือน</Link>}
             {seats.closed
               ? <span aria-disabled="true" className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center" style={{ marginTop: 6, opacity: 0.45 }}>ปิดรับสมัครแล้ว</span>
-              : <Link href={invite ? `/join/pay?pkg=A&invite=${invite}` : `/join/pay?pkg=${pick}`} className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center hover:text-[#1b130b]" style={{ marginTop: 6 }}>{invite ? "เริ่มสร้างโปรไฟล์" : "ชำระเงินและรับรหัสสมัคร"}</Link>}
+              : <Link href={invite ? `/join/pay?pkg=A&invite=${invite}` : `/join/pay?pkg=${pick}${g}`} className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center hover:text-[#1b130b]" style={{ marginTop: 6 }}>{invite ? "เริ่มสร้างโปรไฟล์" : "ชำระเงินและรับรหัสสมัคร"}</Link>}
             {invite && <p className="m-0 text-[13px] text-center text-[#b5a596] font-light">ลิงก์ส่วนตัว กรุณาอย่าเผยแพร่</p>}
             <Link href="/join/me" className="self-center min-h-11 inline-flex items-center text-[14px] text-[#e8c472] hover:text-[#e8c472]">สมัครแล้ว? เข้าสู่ระบบ Part-Time ›</Link>
           </div>
@@ -106,7 +116,7 @@ export function JoinSalePage({ seats, showEarnings = true, invite }: { seats: Se
           <section className="rounded-2xl bg-[#2c1a1f] md:!px-7 md:!py-6" style={{ padding: "18px 20px" }}>
             <h2 className="font-semibold text-[16px] text-[#f3ead9]" style={{ margin: "0 0 8px" }}>คุณสมบัติที่เรามองหา</h2>
             <div className="flex flex-col gap-1.5 text-[14px] leading-[1.5] md:grid md:grid-cols-3 md:gap-6 md:text-[15px]">
-              {LOOKING_FOR.map((x) => (
+              {looking.map((x) => (
                 <div key={x} className="flex gap-[10px] items-start"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e8c472" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 mt-0.5"><path d="M5 12l5 5 9-10" /></svg><span>{x}</span></div>
               ))}
             </div>

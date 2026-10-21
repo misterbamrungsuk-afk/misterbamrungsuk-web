@@ -7,6 +7,8 @@ export type Person = {
   area: string; prov?: string; /** ย่านที่ Part-Time ตั้งเอง (ช่อง ~1 กม.) — มีแล้วใช้แทนพิกัดจากชื่อเขต */ geo?: [number, number]; acts: Act[]; free: number; height: number; langs: string; bio: string; review: [string, string];
   /** true = Part-Time จริงจากระบบสมัคร (ยังไม่มีสถิติ/รีวิว) */
   real?: boolean;
+  /** หมวด: "tom" = สาวหล่อ · ไม่มี = หนุ่มหล่อ */
+  group?: "tom";
   /** ป้ายความน่าเชื่อถือ — โชว์เฉพาะที่เป็นจริง: อบรมครบรอบหลัก · ผลตรวจประวัติผ่าน */
   trained?: boolean; checked?: boolean;
   /** โปรโมทอยู่ (จ่ายแผนโปรโมท) = ขึ้นอันดับต้น + ป้าย "แนะนำ" */

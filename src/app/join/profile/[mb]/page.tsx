@@ -65,7 +65,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
       { t: "วันเวลาที่รับงาน", sub: bad("form2") ? "ทีมงานขอให้แก้ไข" : "วัน ช่วงเวลา ชั่วโมงต่อวัน ประสบการณ์", ok: done.has(2) && !bad("form2"), href: bad("form2") ? "rejected" : "form2" },
       { t: "ยืนยันตัวตน + บัญชีรับเงิน", sub: bad("kyc", "bank") ? "เอกสารต้องแก้ไข" : "บัตรประชาชน เซลฟี่ บัญชีธนาคาร", ok: kyc !== "none" && !bad("kyc", "bank") && !!row.bank_account, href: bad("kyc", "bank") ? "rejected" : "kyc" },
     ],
-    invite: !!x.invite,
+    invite: !!x.invite, tom: x.group === "tom",
     contractDone: !!row.contract_accepted_at, fixes: fixes.length,
     card: x.card ?? { activities: [], places: [], partner_spas: [], skills: [] },
     estimate: { tiers: cfg.tiers, tipPct: cfg.tipPct, payout: cfg.payout, show: cfg.show },

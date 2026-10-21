@@ -50,6 +50,7 @@ export async function getLivePeople(): Promise<Person[]> {
       area: x.geo ? `แถว${x.geo.label}` : area[1] || area[0] || "กรุงเทพฯ", prov: x.geo ? undefined : area[0] && area[0] !== "กรุงเทพฯ" ? area[0] : undefined,
       ...(x.geo ? { geo: [x.geo.lat, x.geo.lng] as [number, number] } : {}),
       acts: acts.length ? acts : ["eat"], free: 0, bio: x.listing?.title || a.intro || "Part-Time ที่ผ่านการอบรมมาตรฐาน Mister Bamrungsuk",
+      ...(x.group === "tom" ? { group: "tom" as const } : {}),
       review: ["", ""], real: true, trained: coreDone(att.get(a.id) ?? {}), checked: a.criminal_check === "passed", boost: boosts.has(a.id), price: top ? svc.top : svc.silver, photos: Math.min(9, photoPaths(a).length), pos: mainPos(a),
     } satisfies Person;
   });
