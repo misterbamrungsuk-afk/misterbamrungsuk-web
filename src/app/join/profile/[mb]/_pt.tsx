@@ -11,7 +11,7 @@ export type PtCtx = { mb: string; t: string; q: string; row: Applicant; x: Extra
 export async function loadPt(params: Promise<{ mb: string }>, searchParams: Promise<{ t?: string }>): Promise<PtCtx | "forbidden" | null> {
   const { mb } = await params;
   const { t } = await searchParams;
-  if (!/^MB-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return "forbidden";
+  if (!/^M[BS]-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return "forbidden";
   const row = await getByMb(mb);
   if (!row) return null;
   return { mb, t: t ?? "", q: t ? `?t=${encodeURIComponent(t)}` : "", row, x: extraOf(row) };

@@ -211,10 +211,10 @@ type DemoStore = { rows: Applicant[]; files: Map<string, DemoFile> };
 const g = globalThis as unknown as { __mbJoinDemo?: DemoStore };
 const demo: DemoStore = (g.__mbJoinDemo ??= { rows: [], files: new Map() });
 
-/** MB-YYMMNNN: ปี ค.ศ. 2 หลัก + เดือน + ลำดับในเดือนนั้น (เวลาไทย) */
-function mbPrefix(d = new Date()) {
+/** MB-YYMMNNN (หนุ่มหล่อ) / MS-YYMMNNN (สาวหล่อ · นับเลขแยก): ปี ค.ศ. 2 หลัก + เดือน + ลำดับในเดือนนั้น (เวลาไทย) */
+function mbPrefix(d = new Date(), brand: "MB" | "MS" = "MB") {
   const th = new Date(d.getTime() + 7 * 3600_000);
-  return `MB-${String(th.getUTCFullYear()).slice(2)}${String(th.getUTCMonth() + 1).padStart(2, "0")}`;
+  return `${brand}-${String(th.getUTCFullYear()).slice(2)}${String(th.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
 /** จำนวนที่นับเข้าโควตา (ไม่นับที่ถูกปฏิเสธหรือคืนเงินแล้ว) */
@@ -235,7 +235,7 @@ export async function putFile(path: string, file: File) {
   if (error) throw error;
 }
 
-export async function createApplicant(input: ApplicantInput, files: Partial<Record<DocKind, File>>): Promise<Applicant> {
+export async function createApplicant(input: ApplicantInput, files: Partial<Record<DocKind, File>>, brand: "MB" | "MS" = "MB"): Promise<Applicant> {
   const id = crypto.randomUUID();
   const docs: Applicant["docs"] = {};
   for (const k of DOC_KINDS) {
@@ -249,7 +249,7 @@ export async function createApplicant(input: ApplicantInput, files: Partial<Reco
   docs.extra = { activities: input.activities ?? [], massage_cert: input.massage_cert ?? null, availability: input.availability, ack_hours: input.ack_hours ?? false, ack_no_refuse: input.ack_no_refuse ?? false, phone_verified_at: input.phone_verified_at ?? null, talents: input.talents ?? [], talents_other: input.talents_other ?? "", activities_other: input.activities_other ?? "", areas: input.areas ?? [], no_area: input.no_area ?? "", slip_check: input.slip_check ?? null, invite: input.invite ?? null };
 
   if (isDemo) {
-    const prefix = mbPrefix();
+    const prefix = mbPrefix(new Date(), brand);
     const seq = demo.rows.filter((r) => r.mb_code.startsWith(prefix)).length + 1;
     const row: Applicant = {
       ...input, id, docs, mb_code: `${prefix}${String(seq).padStart(3, "0")}`,
@@ -259,7 +259,8 @@ export async function createApplicant(input: ApplicantInput, files: Partial<Reco
     return row;
   }
   // รหัส MB ออกใน DB แบบ atomic (ฟังก์ชัน create_applicant ใน migration)
-  const { data, error } = await db().rpc("create_applicant", { p: { ...input, id, docs } });
+  // สาวหล่อ = MS-YYMMNNN นับแยก (supabase/join/0011_ms_codes.sql · ยังไม่รัน = ได้ MB ตามเดิม)
+  const { data, error } = await db().rpc("create_applicant", { p: { ...input, id, docs, mb_brand: brand } });
   if (error) throw error;
   return data as Applicant;
 }

@@ -11,7 +11,7 @@ export const metadata = { title: "สัญญาและข้อตกลง 
 export default async function ContractPage({ params, searchParams }: { params: Promise<{ mb: string }>; searchParams: Promise<{ t?: string }> }) {
   const { mb } = await params;
   const { t } = await searchParams;
-  if (!/^MB-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
+  if (!/^M[BS]-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
   const row = await getByMb(mb);
   if (!row) notFound();
   return <ContractForm mb={mb} t={t ?? ""} accepted={!!row.contract_accepted_at} />;

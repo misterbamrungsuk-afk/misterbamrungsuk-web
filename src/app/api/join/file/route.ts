@@ -11,7 +11,7 @@ export async function GET(req: Request) {
   const u = new URL(req.url);
   const mb = u.searchParams.get("mb") ?? "";
   const path = u.searchParams.get("path") ?? "";
-  if (!/^MB-\d{7,}$/.test(mb) || !OK.test(path) || !(await canResume(mb, u.searchParams.get("t")))) return new Response("forbidden", { status: 403 });
+  if (!/^M[BS]-\d{7,}$/.test(mb) || !OK.test(path) || !(await canResume(mb, u.searchParams.get("t")))) return new Response("forbidden", { status: 403 });
   const row = await getByMb(mb);
   if (!row || !path.startsWith(`${row.id}/`)) return new Response("forbidden", { status: 403 });
   const f = await readFile(path);

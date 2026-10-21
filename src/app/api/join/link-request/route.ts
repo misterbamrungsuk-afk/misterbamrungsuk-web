@@ -13,8 +13,8 @@ const GENERIC = "ถ้าข้อมูลตรงกับใบสมัค
 /** เบอร์ 10 หลัก (รับ +66 / 66 / ขีด / เว้นวรรค) หรือ รหัส MB-xxxxxxx */
 function parseQ(raw: string): { tel?: string; mb?: string } | null {
   const v = raw.trim().toUpperCase();
-  const m = /^MB-?(\d{7,})$/.exec(v.replace(/\s/g, ""));
-  if (m) return { mb: `MB-${m[1]}` };
+  const m = /^(M[BS])-?(\d{7,})$/.exec(v.replace(/\s/g, ""));
+  if (m) return { mb: `${m[1]}-${m[2]}` };
   let d = v.replace(/\D/g, "");
   if (/^66\d{9}$/.test(d)) d = "0" + d.slice(2);
   return /^0\d{9}$/.test(d) ? { tel: d } : null;

@@ -17,7 +17,7 @@ export default async function DonePage({ params, searchParams }: { params: Promi
   const { mb } = await params;
   const { t } = await searchParams;
   // ข้อมูลส่วนตัว: ต้องมี cookie mb_resume หรือ ?t= ของรหัสนี้ (ตรวจก่อนค้นฐานข้อมูล ไม่บอกว่ารหัสมีจริงไหม)
-  if (!/^MB-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
+  if (!/^M[BS]-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
   const q = t ? `?t=${encodeURIComponent(t)}` : "";
   const row = await getByMb(mb);
   if (!row) notFound();

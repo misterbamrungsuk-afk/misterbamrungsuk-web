@@ -45,7 +45,7 @@ export function BoostsClient({ list, codes }: { list: Boost[]; codes: BoostCode[
         <p className="m-0 text-[#9a8a85]">ระบบออกให้อัตโนมัติทุกวัน: เปิดรับงานครบ 30 วันแต่ได้งานไม่ถึง 5 เคส → ฟรี 3 วัน (คนละครั้ง) · ออกเองเพิ่มได้</p>
         <div className="flex gap-2 flex-wrap">
           <input value={mb} onChange={(e) => setMb(e.target.value)} placeholder="รหัส MB เช่น MB-2610001" aria-label="รหัส MB" className="input-dark h-10 px-3 rounded-xl min-w-0 flex-1" />
-          <button type="button" disabled={!!busy || !/^MB-\d{7,}$/i.test(mb.trim())} onClick={() => issue("issue_code")} className="h-10 px-4 rounded-xl font-semibold bg-[#f0c75a] text-[#1b130b] disabled:opacity-40">ออกโค้ด 3 วัน</button>
+          <button type="button" disabled={!!busy || !/^M[BS]-\d{7,}$/i.test(mb.trim())} onClick={() => issue("issue_code")} className="h-10 px-4 rounded-xl font-semibold bg-[#f0c75a] text-[#1b130b] disabled:opacity-40">ออกโค้ด 3 วัน</button>
           <button type="button" disabled={!!busy} onClick={() => issue("sweep_free")} className="h-10 px-4 rounded-xl border" style={{ borderColor: LINE }}>ตรวจรอบ 30 วันตอนนี้</button>
         </div>
         {codes.length > 0 && (

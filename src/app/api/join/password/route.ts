@@ -16,7 +16,7 @@ export async function GET(req: Request) {
   const u = new URL(req.url);
   const mb = u.searchParams.get("mb") ?? "";
   const t = u.searchParams.get("t");
-  if (!/^MB-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return NextResponse.json({ ok: false }, { status: 401 });
+  if (!/^M[BS]-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return NextResponse.json({ ok: false }, { status: 401 });
   const row = await getByMb(mb);
   if (!row) return NextResponse.json({ ok: false }, { status: 404 });
   const tok = readResume(t) === mb ? t : (await cookies()).get(RESUME_COOKIE)?.value;
@@ -26,7 +26,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const b = (await req.json().catch(() => null)) as { mb?: string; t?: string; current?: unknown; password?: unknown; email?: unknown } | null;
   const mb = String(b?.mb ?? "");
-  if (!/^MB-\d{7,}$/.test(mb) || !(await canResume(mb, b?.t))) return NextResponse.json({ ok: false, error: "ไม่มีสิทธิ์เข้าโปรไฟล์นี้" }, { status: 401 });
+  if (!/^M[BS]-\d{7,}$/.test(mb) || !(await canResume(mb, b?.t))) return NextResponse.json({ ok: false, error: "ไม่มีสิทธิ์เข้าโปรไฟล์นี้" }, { status: 401 });
   if (await limited(`jpw:${mb}`, 8, 15 * 60_000)) return NextResponse.json({ ok: false, error: "ลองบ่อยเกินไป กรุณารอ 15 นาที" }, { status: 429 });
   const row = await getByMb(mb);
   if (!row) return NextResponse.json({ ok: false }, { status: 404 });

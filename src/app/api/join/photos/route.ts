@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     const x = form.get("file");
     f = x instanceof File && x.size > 0 ? x : null;
   }
-  if (!/^MB-\d{7,}$/.test(mb) || !(await canResume(mb, t || null))) return bad("ลิงก์หมดอายุหรือไม่มีสิทธิ์", 403);
+  if (!/^M[BS]-\d{7,}$/.test(mb) || !(await canResume(mb, t || null))) return bad("ลิงก์หมดอายุหรือไม่มีสิทธิ์", 403);
   const row = await getByMb(mb);
   if (!row) return bad("ไม่พบใบสมัคร", 404);
   const photos = [...(extraOf(row).photos ?? [])];

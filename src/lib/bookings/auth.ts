@@ -6,7 +6,7 @@ import { getBooking, type Booking } from "./index";
 
 /** Part-Time ที่เป็นเจ้าของ mb (คุกกี้ mb_resume หรือ ?t=) */
 export async function currentParttime(mb: string, t?: string | null) {
-  if (!/^MB-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return null;
+  if (!/^M[BS]-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return null;
   return getByMb(mb);
 }
 

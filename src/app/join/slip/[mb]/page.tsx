@@ -12,7 +12,7 @@ export const metadata = { title: "ส่งสลิปใหม่ — Mister B
 export default async function SlipPage({ params, searchParams }: { params: Promise<{ mb: string }>; searchParams: Promise<{ t?: string }> }) {
   const { mb } = await params;
   const { t } = await searchParams;
-  if (!/^MB-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
+  if (!/^M[BS]-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
   const row = await getByMb(mb);
   if (!row) notFound();
   const x = extraOf(row);

@@ -130,6 +130,7 @@ export async function POST(req: Request) {
         package: pkg, amount, payment_method: "qr", ip,
       },
       files,
+      group === "tom" ? "MS" : "MB",
     );
     // เก็บเฉพาะแฮช (docs.extra.pw_hash · store ไม่ส่งออก)
     // เลขใบแจ้งหนี้ INV (ยังไม่รัน SQL 0010 → ใช้เลขตามรหัส MB)

@@ -10,7 +10,7 @@ export const metadata = { title: "บัญชีรับเงิน — Miste
 export default async function BankPage({ params, searchParams }: { params: Promise<{ mb: string }>; searchParams: Promise<{ t?: string; fix?: string }> }) {
   const { mb } = await params;
   const { t, fix } = await searchParams;
-  if (!/^MB-\d{7,}$/.test(mb)) notFound();
+  if (!/^M[BS]-\d{7,}$/.test(mb)) notFound();
   if (!(await canResume(mb, t))) return <Forbidden />;
   const row = await getByMb(mb);
   if (!row) notFound();

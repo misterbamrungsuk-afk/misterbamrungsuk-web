@@ -33,7 +33,7 @@ const seats = async (g) => J(await fetch(B + '/api/join/seats' + (g ? '?g=' + g 
   let jar = '';
   if (s.devCode) { const v = await fetch(B + '/api/otp/verify', { method: 'POST', headers: JSONH, body: JSON.stringify({ phone: tel, code: s.devCode }) }); jar = (v.headers.get('set-cookie') || '').split(';')[0]; }
   const reg = await J(await fetch(B + '/api/join/register', { method: 'POST', headers: { cookie: jar, 'x-forwarded-for': '10.8.8.8' }, body: form({ package: 'A', group: 'tom', first_name: 'สาว', last_name: 'หล่อ', nickname: 'ทอม', tel, email: `tom${tel}@test.local`, password: 'tom-' + tel, accept_terms: 'true', consent_pdpa: 'true', consent_criminal: 'true' }, { slip: new File([img], 's.jpg', { type: 'image/jpeg' }) }) }));
-  ok('tom registers', !!reg.mb_code, JSON.stringify(reg));
+  ok('tom registers with separate code MS-', /^MS-\d{7}$/.test(reg.mb_code || ''), JSON.stringify(reg));
   const mb = reg.mb_code;
   const list = (await (await fetch(B + '/admin/applicants', { headers: ADM })).text()).replace(/\\"/g, '"');
   const at = list.indexOf('"mb_code":"' + mb + '"');
@@ -47,6 +47,15 @@ const seats = async (g) => J(await fetch(B + '/api/join/seats' + (g ? '?g=' + g 
   const men1 = await seats(), tom1 = await seats('tom');
   ok('tom seat counted in tom quota only', tom1.left === tom0.left - 1 && men1.left === men0.left, JSON.stringify({ men1, tom1 }));
 
+  // หนุ่มหล่อยังได้ MB- (นับเลขแยก)
+  const tel2 = '06' + String(Date.now() + 7).slice(-8);
+  const s2 = await J(await fetch(B + '/api/otp/send', { method: 'POST', headers: JSONH, body: JSON.stringify({ phone: tel2 }) }));
+  let jar2 = '';
+  if (s2.devCode) { const v = await fetch(B + '/api/otp/verify', { method: 'POST', headers: JSONH, body: JSON.stringify({ phone: tel2, code: s2.devCode }) }); jar2 = (v.headers.get('set-cookie') || '').split(';')[0]; }
+  const man = await J(await fetch(B + '/api/join/register', { method: 'POST', headers: { cookie: jar2, 'x-forwarded-for': '10.8.8.9' }, body: form({ package: 'A', first_name: 'หนุ่ม', last_name: 'หล่อ', nickname: 'แมน', tel: tel2, email: `man${tel2}@test.local`, password: 'man-' + tel2, accept_terms: 'true', consent_pdpa: 'true', consent_criminal: 'true' }, { slip: new File([img], 's.jpg', { type: 'image/jpeg' }) }) }));
+  ok('man still gets MB-', /^MB-\d{7}$/.test(man.mb_code || ''), JSON.stringify(man));
+  ok('MS and MB counters independent', reg.mb_code.slice(-3) === '001' || reg.mb_code.slice(3, 7) === man.mb_code.slice(3, 7), `${reg.mb_code} ${man.mb_code}`);
+  ok('MS profile route works', (await fetch(B + `/join/profile/${mb}?t=${encodeURIComponent(tok(mb))}`)).status === 200);
   // ป้าย + หน้าแรก
   h = await (await fetch(B + `/join/profile/${mb}?t=${encodeURIComponent(tok(mb))}`)).text();
   ok('profile shows สาวหล่อ badge', h.includes('data-pt-group="tom"'));

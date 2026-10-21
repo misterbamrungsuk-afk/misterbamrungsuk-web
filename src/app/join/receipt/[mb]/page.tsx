@@ -35,7 +35,7 @@ function thaiBaht(n: number) {
 export default async function ReceiptPage({ params, searchParams }: { params: Promise<{ mb: string }>; searchParams: Promise<{ t?: string }> }) {
   const { mb } = await params;
   const { t } = await searchParams;
-  if (!/^MB-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
+  if (!/^M[BS]-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
   const q = t ? `?t=${encodeURIComponent(t)}` : "";
   let row = await getByMb(mb);
   if (!row) notFound();
