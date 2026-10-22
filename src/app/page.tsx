@@ -28,8 +28,13 @@ export default async function HomePage() {
   for (let i = boosted.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [boosted[i], boosted[j]] = [boosted[j], boosted[i]]; }
   const live = [...boosted, ...visible.filter((p) => !p.boost)];
   const unread = notices.filter((n) => n.kind === "message" && !n.read_at).length;
-  // ช่วงเปิดเฉพาะรับสมัคร (PT_ONLY = หน้าตัวอย่าง): คนจริงขึ้นก่อน แล้วต่อด้วยตัวอย่าง → แต่ละแท็บไม่โล่งเมื่อเพิ่งมีคนจริงไม่กี่คน
-  // เปิดเว็บเต็ม: มีคนจริง → แสดงเฉพาะคนจริง · ยังไม่มี → ตัวอย่าง
-  const people = PT_ONLY ? [...live, ...PEOPLE] : live.length ? live : undefined;
+  // คนจริงแทนที่ตัวอย่างทีละคน (แยกหมวด หนุ่มหล่อ / ทอมหล่อ · บอสสั่ง 22 ต.ค. 2569):
+  // คนจริง N คน → ตัดตัวอย่างท้ายรายการออก N คน · คนจริงครบจำนวนตัวอย่างแล้ว = เหลือแต่คนจริง
+  const isTom = (p: { group?: string }) => p.group === "tom";
+  const fill = (tom: boolean) => {
+    const real = live.filter((p) => isTom(p) === tom), samples = PEOPLE.filter((p) => isTom(p) === tom);
+    return [...real, ...samples.slice(0, Math.max(0, samples.length - real.length))];
+  };
+  const people = [...fill(false), ...fill(true)];
   return <HomeFeed showEarnings={show} people={people} me={me ? { name: prof?.name || me.email.split("@")[0] } : null} unread={unread} memberTier={prof?.member_tier ?? null} promo={{ gold: mcfg.tiers.gold, black: mcfg.tiers.black }} recruit={PT_ONLY} />;
 }
