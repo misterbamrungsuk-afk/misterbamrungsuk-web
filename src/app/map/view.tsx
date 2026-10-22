@@ -10,7 +10,7 @@ import type { LayerGroup, Map as LMap } from "leaflet";
 import type { Act } from "@/lib/home/people";
 import { sized } from "@/lib/thumb-url";
 
-export type MapPerson = { id: string; nick: string; age: number; img: string; pos?: string; rating: string; top: boolean; acts: Act[]; area: string; price: number; free: number; lat: number; lng: number; real: boolean };
+export type MapPerson = { id: string; nick: string; age: number; img: string; pos?: string; rating: string; top: boolean; acts: Act[]; area: string; price: number; priceTBD?: boolean; free: number; lat: number; lng: number; real: boolean };
 export type MapVenue = { id: string; name: string; area: string; lat: number; lng: number; sample?: boolean };
 
 const ACTS: [Act, string][] = [["eat", "กิน & เที่ยว"], ["massage", "นวดผ่อนคลาย"], ["cafe", "คาเฟ่"], ["photo", "ถ่ายรูป"], ["movie", "ดูหนัง"], ["gym", "ออกกำลัง"], ["chill", "นั่งชิล"]];
@@ -142,7 +142,7 @@ export function MapView({ people, venues, sample }: { people: MapPerson[]; venue
                 <div className="flex justify-between items-center gap-2"><b className="text-[18px] font-semibold">{sp.nick}{sp.age ? `, ${sp.age}` : ""}</b><span className="text-[13px] text-[#e8c472]">★ {sp.rating}</span></div>
                 <div className="text-[12.5px] font-light text-[#d9c9b4]">{sp.area}{me ? ` · ห่างประมาณ ${kmText(km({ lat: me[0], lng: me[1] }, sp))}` : ""}</div>
                 <div className="flex flex-wrap gap-1">{sp.acts.slice(0, 3).map((a) => <span key={a} className="text-[11.5px] font-light rounded-full px-2 py-0.5" style={{ border: "1px solid rgba(243,234,217,0.12)" }}>{LABEL[a]}</span>)}</div>
-                <div className="font-semibold text-[#e8c472]">{baht(sp.price)} <span className="text-[11px] font-light text-[#b5a596]">/ 3 ชม.</span></div>
+                <div className="font-semibold text-[#e8c472]">{sp.priceTBD ? "฿xx,xxx" : baht(sp.price)} <span className="text-[11px] font-light text-[#b5a596]">/ 3 ชม.</span></div>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -161,7 +161,7 @@ export function MapView({ people, venues, sample }: { people: MapPerson[]; venue
             {ps.map((p) => (
               <button key={p.id} type="button" onClick={() => focus(p.lat, p.lng, { kind: "p", id: p.id })} className="shrink-0 w-[220px] rounded-2xl flex gap-2.5 p-2 text-left text-[#f3ead9]" style={{ ...glass, background: "rgba(33,26,24,.94)" }}>
                 <img src={sized(p.img, 240)} alt="" className="w-[64px] h-[80px] rounded-xl object-cover shrink-0" style={p.pos ? { objectPosition: p.pos } : undefined} />
-                <span className="min-w-0 flex flex-col gap-0.5"><b className="font-semibold text-[14px] truncate">{p.nick}{p.age ? `, ${p.age}` : ""}</b><span className="text-[11.5px] font-light text-[#d9c9b4] truncate">★ {p.rating} · {me ? `~${kmText(km({ lat: me[0], lng: me[1] }, p))}` : p.area}</span><span className="text-[13px] font-semibold text-[#e8c472] mt-auto">{baht(p.price)}<span className="text-[11.5px] font-light text-[#b5a596]"> / 3 ชม.</span></span></span>
+                <span className="min-w-0 flex flex-col gap-0.5"><b className="font-semibold text-[14px] truncate">{p.nick}{p.age ? `, ${p.age}` : ""}</b><span className="text-[11.5px] font-light text-[#d9c9b4] truncate">★ {p.rating} · {me ? `~${kmText(km({ lat: me[0], lng: me[1] }, p))}` : p.area}</span><span className="text-[13px] font-semibold text-[#e8c472] mt-auto">{p.priceTBD ? "฿xx,xxx" : baht(p.price)}<span className="text-[11.5px] font-light text-[#b5a596]"> / 3 ชม.</span></span></span>
               </button>
             ))}
           </div>

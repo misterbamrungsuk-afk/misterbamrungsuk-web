@@ -15,6 +15,8 @@ export type Person = {
   boost?: boolean;
   /** ระดับ Secret (ลิงก์เชิญ Secret) — แสดงแบบ TOP แต่ป้าย Secret กรอบดำเรืองแสง · ขึ้นก่อน TOP */
   secret?: boolean;
+  /** ราคายังไม่ประกาศ → แสดง "฿xx,xxx" (ตัวอย่าง Secret) */
+  priceTBD?: boolean;
   /** ราคา 3 ชม. จริงจากหน้า "ราคาและส่วนแบ่ง" (คนจริง) */
   price?: number;
   /** จำนวนรูป (คนจริง) */
@@ -34,6 +36,8 @@ const P = (id: string, nick: string, age: number, img: string, top: boolean, rat
 
 // ตัวอย่าง: ต้น + กอล์ฟ = จ่ายโปรโมทอยู่ (กรอบทอง + ป้ายแนะนำ ขึ้นก่อน) — ให้เห็นหน้าตาก่อนมีคนจ่ายจริง
 const BOOSTED = new Set(["ton", "golf", "t-june", "t-earth"]);
+// ตัวอย่าง Secret (บอสขอ 22 ต.ค. 2569): ป้าย SECRET + แนะนำ · ราคา ฿xx,xxx (Secret ราคาแอดมินกำหนดรายคน)
+const SECRET_SAMPLE = new Set(["ton", "golf", "t-june"]);
 export const PEOPLE: Person[] = (() => [
   P("ton", "ต้น", 29, "/brand/home/p-ton.jpg", true, "5.0", "วัฒนา", ["eat", "massage", "cafe"], 0, "ชอบพาไปลองร้านใหม่ ๆ คุยสนุก ฟังเก่ง ถ่ายรูปสวย และมีสกิลนวดผ่อนคลาย (มีใบรับรอง)"),
   P("phum", "ภูมิ", 31, "/brand/home/p-phum.jpg", true, "4.9", "ทองหล่อ", ["massage", "gym", "eat"], 20, "สายสุขภาพ ชวนออกกำลังเบา ๆ แล้วไปมื้อดี ๆ ต่อ ใจเย็นและตรงเวลา"),
@@ -76,7 +80,7 @@ export const PEOPLE: Person[] = (() => [
   P("t-jiw", "จิ๋ว", 27, "/brand/home/t-18.jpg", false, "4.8", "อารีย์", ["chill", "eat", "movie"], 0, "ชอบคราฟต์เบียร์ คุยเพลิน เป็นกันเอง", { group: "tom" }),
   P("t-fah", "ฟ้า", 30, "/brand/home/t-19.jpg", true, "4.9", "สุขุมวิท", ["eat", "chill", "cafe"], 5, "ชอบอาหารญี่ปุ่น พาไปร้านอิซากายะเด็ด ๆ", { group: "tom" }),
   P("t-kaew", "แก้ว", 25, "/brand/home/t-20.jpg", false, "4.8", "ปทุมวัน", ["photo", "cafe", "movie"], 0, "ชอบพิพิธภัณฑ์และนิทรรศการ ถ่ายรูปสวย", { group: "tom" }),
-].map((p) => (BOOSTED.has(p.id) ? { ...p, boost: true } : p)))();
+].map((p) => (BOOSTED.has(p.id) ? { ...p, boost: true } : p)).map((p) => (SECRET_SAMPLE.has(p.id) ? { ...p, secret: true, priceTBD: true } : p)))();
 
 export const personById = (id: string) => PEOPLE.find((p) => p.id === id);
 export const priceOf = (p: Person) => p.price ?? (p.top ? 10000 : 6500);

@@ -18,7 +18,7 @@ export default async function MapPage() {
   const live = all.filter((p) => !blocked.has(p.id));
   const people: MapPerson[] = (live.length ? live : PEOPLE).map((p) => {
     const [lat, lng] = p.geo ? jitterSmall(p.geo, p.id) : jitter(coordsOf(p.prov, p.area), p.id);
-    return { id: p.id, nick: p.nick, age: p.age, img: p.img, pos: p.pos, rating: p.rating, top: p.top, acts: p.acts, area: p.prov ? `${p.area} · ${p.prov}` : p.area, price: priceOf(p), free: p.free, lat, lng, real: !!p.real };
+    return { id: p.id, nick: p.nick, age: p.age, img: p.img, pos: p.pos, rating: p.rating, top: p.top, acts: p.acts, area: p.prov ? `${p.area} · ${p.prov}` : p.area, price: priceOf(p), ...(p.priceTBD ? { priceTBD: true } : {}), free: p.free, lat, lng, real: !!p.real };
   });
   let venues: MapVenue[] = [];
   try {

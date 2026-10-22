@@ -130,7 +130,7 @@ export function ProfileView({ p, reviews = [], vers = [], free = null, preview =
               {([3, 5] as const).map((h) => (
                 <button key={h} type="button" aria-pressed={svc === h} onClick={() => setSvc(h)} className="flex justify-between items-center rounded-2xl text-[#f3ead9] text-left" style={{ padding: 14, border: `1.5px solid ${svc === h ? "#e8c472" : "rgba(232,196,114,0.14)"}`, background: svc === h ? "rgba(232,196,114,0.16)" : "#211a18" }}>
                   <span><span className="block font-semibold text-[14px]">นัด {h} ชม.</span><span className="block text-[12px] text-[#d9c9b4] font-light">{h === 3 ? "กิน เที่ยว คาเฟ่ ดูหนัง" : "เหมาครึ่งวัน เปลี่ยนกิจกรรมได้"}</span></span>
-                  <span className="font-bold text-[18px] text-[#e8c472]">{baht(price[h])}</span>
+                  <span className="font-bold text-[18px] text-[#e8c472]">{p.priceTBD ? "฿xx,xxx" : baht(price[h])}</span>
                 </button>
               ))}
             </div>
@@ -164,7 +164,7 @@ export function ProfileView({ p, reviews = [], vers = [], free = null, preview =
       {/* แถบล่าง */}
       <div className="fixed inset-x-0 bottom-0 z-40" style={{ background: "rgba(23,18,17,.97)", borderTop: line }}>
         <div className="mx-auto max-w-[1120px] flex items-center justify-between gap-3 lg:px-8" style={{ padding: "12px 18px calc(18px + env(safe-area-inset-bottom))" }}>
-          <div><div className="text-[12px] text-[#d9c9b4] font-light">{svc} ชม.</div><div className="font-bold text-[22px] text-[#e8c472]">{baht(price[svc])}</div></div>
+          <div><div className="text-[12px] text-[#d9c9b4] font-light">{svc} ชม.</div><div className="font-bold text-[22px] text-[#e8c472]">{p.priceTBD ? "฿xx,xxx" : baht(price[svc])}</div></div>
           <div className="flex gap-2">
             {!p.real && <Link href={`/p/${p.id}/chat`} aria-label={`แชทกับ${p.nick}`} className="h-[52px] rounded-full flex items-center gap-2 text-[#e8c472] font-semibold hover:text-[#e8c472]" style={{ padding: "0 20px", border: "1.5px solid rgba(232,196,114,.6)" }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" /></svg>แชท

@@ -127,7 +127,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
       <div style={{ padding: "9px 10px 11px" }}>
         <div className="flex justify-between items-center"><span className="font-semibold text-[15px]" style={p.boost ? { color: "#f3d27e" } : undefined}>{p.nick}, {p.age}</span><span className="text-[13px] text-[#e8c472] font-normal">★ {p.rating}</span></div>
         <div className="text-[13px] mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis font-thin">{p.acts.map(labelOf).join(" · ")}</div>
-        <div className="font-semibold text-[#e8c472] mt-1.5 text-[15px]">฿{price(p).toLocaleString("en-US")} <span className="font-thin text-[11.5px] text-[#b5a596]">/ 3 ชม.</span></div>
+        <div className="font-semibold text-[#e8c472] mt-1.5 text-[15px]">{p.priceTBD ? "฿xx,xxx" : `฿${price(p).toLocaleString("en-US")}`} <span className="font-thin text-[11.5px] text-[#b5a596]">/ 3 ชม.</span></div>
       </div>
     </Link>
   );
