@@ -17,7 +17,7 @@ const STATUSES: ApplicantStatus[] = ["pending_slip", "verified", "rejected", "re
 
 type Body = {
   listed?: boolean; status?: ApplicantStatus; sync?: boolean; cohort?: string | null; line_joined?: boolean;
-  tier?: "top" | "silver" | "secret"; secret_price?: number | null; reason?: string;
+  package?: "A" | "B"; tier?: "top" | "silver" | "secret"; secret_price?: number | null; reason?: string;
   kyc_status?: "approved" | "rejected"; kyc_reason?: Partial<Record<string, string>> | null;
 };
 
@@ -79,6 +79,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     // วันเปิดรับงาน (ครั้งแรก) — นับ 30 วันสำหรับโค้ดโปรโมทฟรี
     await saveProfile(cur.id, body.listed && !x.listed_at ? { listed: true, listed_at: new Date().toISOString() } : { listed: !!body.listed });
     const row = await getById(id);
+    return row ? NextResponse.json({ ok: true, row: { ...row, ...extraOf(row) } }) : NextResponse.json({ ok: false }, { status: 404 });
+  }
+  // ย้ายสาย A ↔ B (แอดมิน · เช่น ลิงก์เชิญที่ลงสาย A ผิด) — ไม่เปลี่ยนยอดที่จ่ายแล้ว
+  if (body.package !== undefined) {
+    if (body.package !== "A" && body.package !== "B") return NextResponse.json({ ok: false }, { status: 400 });
+    const row = await updateApplicant(id, { package: body.package });
     return row ? NextResponse.json({ ok: true, row: { ...row, ...extraOf(row) } }) : NextResponse.json({ ok: false }, { status: 404 });
   }
   if (body.tier !== undefined) {

@@ -71,13 +71,14 @@ function PayInner() {
     let pkg: string | null = q;
     try { if (q === "A" || q === "B") sessionStorage.setItem(PKG_KEY, q); else pkg = sessionStorage.getItem(PKG_KEY); } catch {}
     // ทอมหล่อมีสายเดียว: เพื่อนกินเที่ยว (มีความสามารถในการนวด) = B
-    if (grp === "tom") setK("B"); else if (pkg === "A" || pkg === "B") setK(pkg); else router.replace("/join");
     let code = (params.get("invite") ?? "").toUpperCase();
     try { if (code) sessionStorage.setItem(INV_KEY, code); else code = sessionStorage.getItem(INV_KEY) ?? ""; } catch {}
+    // ลิงก์เชิญ (TOP / Secret) ก็สาย B เหมือนทอมหล่อ
+    if (grp === "tom" || code) setK("B"); else if (pkg === "A" || pkg === "B") setK(pkg); else router.replace("/join");
     if (!code) setInvChecking(false);
     if (code) fetch(`/api/join/invite?code=${encodeURIComponent(code)}`, { cache: "no-store" }).then((r) => r.json()).then((d: { ok?: boolean; state?: string; secret?: boolean }) => {
       if (d.ok) { setInvite(code); setSecretInv(!!d.secret); }
-      else { setInviteErr(d.state === "full" ? "ลิงก์เชิญนี้มีผู้ใช้ครบจำนวนแล้ว" : d.state === "expired" ? "ลิงก์เชิญนี้หมดอายุแล้ว" : "ลิงก์เชิญนี้ใช้ไม่ได้"); try { sessionStorage.removeItem(INV_KEY); } catch {} }
+      else { if (grp !== "tom" && (pkg === "A" || pkg === "B")) setK(pkg); setInviteErr(d.state === "full" ? "ลิงก์เชิญนี้มีผู้ใช้ครบจำนวนแล้ว" : d.state === "expired" ? "ลิงก์เชิญนี้หมดอายุแล้ว" : "ลิงก์เชิญนี้ใช้ไม่ได้"); try { sessionStorage.removeItem(INV_KEY); } catch {} }
     }).catch(() => {}).finally(() => setInvChecking(false));
   }, [params, router]);
 

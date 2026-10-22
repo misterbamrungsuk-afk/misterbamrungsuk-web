@@ -53,7 +53,8 @@ export async function POST(req: Request) {
   if (!(await verifyTurnstile(s("turnstile", 2048), ip))) return bad(TURNSTILE_ERROR, 403);
 
   // ทอมหล่อมีสายเดียว: เพื่อนกินเที่ยว (มีความสามารถในการนวด) = B
-  const pkg = (s("group") === "tom" ? "B" : s("package")) as PackageKey;
+  // ทอมหล่อ + ลิงก์เชิญ (TOP / Secret) = สาย B "เพื่อนกินเที่ยว พร้อมทักษะการนวด" เสมอ (บอสสั่ง 22 ต.ค. 2569)
+  const pkg = (s("group") === "tom" || s("invite", 12) ? "B" : s("package")) as PackageKey;
   // หมวดทอมหล่อ (/join/tom) — ที่นั่งอบรมแยกโควตาจากหนุ่มหล่อ
   const group = s("group") === "tom" ? "tom" : null;
   if ((await (await import("@/lib/join/cohorts")).nextCohortSeats(group)).full) return bad("รับครบจำนวนแล้ว", 410);

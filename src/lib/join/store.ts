@@ -323,7 +323,7 @@ export async function getById(id: string): Promise<Applicant | null> {
   return noPw((data as Applicant) ?? null);
 }
 
-export async function updateApplicant(id: string, patch: Partial<Pick<Applicant, "status" | "contract_accepted_at" | "sheet_synced">>) {
+export async function updateApplicant(id: string, patch: Partial<Pick<Applicant, "status" | "contract_accepted_at" | "sheet_synced" | "package">>) {
   if (isDemo) {
     const r = demo.rows.find((x) => x.id === id);
     if (r) Object.assign(r, patch);

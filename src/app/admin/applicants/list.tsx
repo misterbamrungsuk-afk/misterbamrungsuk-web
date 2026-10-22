@@ -220,6 +220,9 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
             </div>
             <Progress r={sel} />
             {sel.invite && <p className="text-[12.5px] text-[#e8c472] m-0">✦ สมัครผ่านลิงก์เชิญ ({sel.invite}) · ค่าสมัครเต็มเท่าคนทั่วไป</p>}
+            <div className="flex justify-between items-center gap-2"><span className="text-[#cdbfb3]">สายงาน</span>
+              <span className="flex gap-1">{(["A", "B"] as const).map((k) => { const on = sel.package === k; return <button key={k} data-set-package={k} onClick={async () => { if (on) return; const d = await patch(sel.id, { package: k }); say(d, `ย้ายไปสาย ${k} · ${PACKAGES[k].name} แล้ว`); }} aria-pressed={on} title={PACKAGES[k].name} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={{ borderColor: on ? GOLD : LINE_BD, background: on ? GOLD : "transparent", color: on ? "#1a1206" : "#d3c7bc" }}>{k === "A" ? "A · กินเที่ยว" : "B · พร้อมนวด"}</button>; })}</span>
+            </div>
             <div className="flex justify-between items-center gap-2"><span className="text-[#cdbfb3]">ระดับ (หลังอบรม)</span>
               <span className="flex gap-1">{(["silver", "top", "secret"] as const).map((t) => { const on = (sel.tier ?? "silver") === t; const sc = t === "secret"; return <button key={t} data-set-tier={t} onClick={() => setTier(sel.id, t)} aria-pressed={on} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={sc ? { borderColor: "rgba(185,166,255,.75)", background: on ? "#07060a" : "transparent", color: "#e9e1ff", boxShadow: on ? "0 0 10px rgba(185,166,255,.55)" : "none" } : { borderColor: on ? GOLD : LINE_BD, background: on ? GOLD : "transparent", color: on ? "#1a1206" : "#d3c7bc" }}>{sc ? "Secret" : t === "top" ? "TOP" : "Silver"}</button>; })}</span>
             </div>

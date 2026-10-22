@@ -44,7 +44,7 @@ const publicId = (mb) => 'r' + crypto.createHash('sha256').update(`mb-public:${m
   const id = [...list.slice(Math.max(0, at - 6000), at).matchAll(/"id":"([0-9a-f-]{36})"/g)].pop()?.[1];
   const P = (body) => fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify(body) }).then(J);
   let row = (await P({ line_joined: false })).row;
-  ok('Secret: free · verified · tier secret', row?.amount === 0 && row?.status === 'verified' && row?.tier === 'secret' && row?.invite === sec.code, `${row?.amount} ${row?.status} ${row?.tier}`);
+  ok('Secret: free · verified · tier secret · track B', row?.package === 'B' && row?.amount === 0 && row?.status === 'verified' && row?.tier === 'secret' && row?.invite === sec.code, `${row?.amount} ${row?.status} ${row?.tier}`);
 
   // ใบสมัคร (รูป) → KYC อนุมัติ → ขึ้นหน้าแรกอัตโนมัติ
   const pf = await J(await fetch(B + '/api/join/profile', { method: 'POST', body: form({ mb, t: T, step: '1', first_name: 'ลับ', last_name: 'สุด', nickname: 'ซีเคร็ต', birthdate: '1995-05-05', line_id: 'x', address: 'อโศก', areas: 'กรุงเทพฯ › วัฒนา' }, { photo: new File([img], 'a.jpg', { type: 'image/jpeg' }), other_doc: new File([img], 'b.jpg', { type: 'image/jpeg' }) }) }));
@@ -57,7 +57,7 @@ const publicId = (mb) => 'r' + crypto.createHash('sha256').update(`mb-public:${m
   const cd = await J(await fetch(B + '/api/join/profile', { method: 'POST', body: (() => { const f = form({ mb, t: T, step: 'card' }); for (const v of ['คาเฟ่', 'นวดผ่อนคลาย']) f.append('activities', v); for (const v of ['massage', 'photo']) f.append('skills', v); f.append('places', 'คาเฟ่ / ร้านอาหาร'); return f; })() }));
   ok('massage skill kept with cert', cd.ok && !(cd.dropped || []).length, JSON.stringify(cd));
   h = await (await fetch(B + '/join/i/' + sec.code)).text();
-  ok('invite page shows เพื่อนกินเที่ยว · นวดผ่อนคลาย', h.includes('data-invite-tracks') && h.includes('เพื่อนกินเที่ยว · นวดผ่อนคลาย'));
+  ok('invite page shows เพื่อนกินเที่ยว · พร้อมทักษะการนวด', h.includes('data-invite-tracks') && h.includes('เพื่อนกินเที่ยว · พร้อมทักษะการนวด'));
   row = (await P({ kyc_status: 'approved' })).row;
   ok('Secret without price: KYC approve does NOT list yet', row?.listed === false && row?.secret_price == null, `${row?.listed} ${row?.secret_price}`);
   const lst = await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ listed: true }) });
@@ -93,6 +93,14 @@ const publicId = (mb) => 'r' + crypto.createHash('sha256').update(`mb-public:${m
   const need = bk.need ?? bk.data?.need;
   if (/บ่อยเกินไป/.test(bk.error || '')) console.log('SKIP booking price check (customer rate-limited in long runs)'); else ok('booking priced at Secret rate', bk.ok || (typeof need === 'number' && need >= 1200000 && need < 1400000), JSON.stringify(bk).slice(0, 240));
 
+  // แอดมินย้ายสาย A ↔ B เองได้
+  row = (await P({ package: 'A' })).row;
+  ok('admin moves track → A', row?.package === 'A', row?.package);
+  row = (await P({ package: 'B' })).row;
+  ok('admin moves track → B', row?.package === 'B', row?.package);
+  ok('bad track refused', (await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ package: 'C' }) })).status === 400);
+  h = await (await fetch(B + '/admin/applicants', { headers: ADM })).text();
+  ok('admin drawer has track buttons', h.includes('data-set-package="B"'));
   // แอดมินเปลี่ยนกลับเป็น TOP ได้
   row = (await P({ tier: 'top' })).row;
   ok('admin can switch Secret → TOP', row?.tier === 'top');
