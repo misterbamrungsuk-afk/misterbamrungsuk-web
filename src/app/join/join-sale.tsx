@@ -71,6 +71,11 @@ export function JoinSalePage({ seats, showEarnings = true, invite, group = null,
 
         <section className="flex flex-col" style={{ gap: 18 }}>
           {/* ลิงก์เชิญพิเศษ + ทอมหล่อ: ไม่ต้องเลือกสาย (ฟรี · ทอมหล่อใช้สายนวด B อย่างเดียว) → กดเริ่มสร้างโปรไฟล์ได้เลย */}
+          {/* ลิงก์เชิญ: บอกให้ชัดว่ารับได้ทั้งเพื่อนกินเที่ยว + นวดผ่อนคลาย (แนบใบรับรองเปิดสกิลนวด) */}
+          {invite && <div data-invite-tracks className="w-full max-w-[560px] mx-auto flex flex-col gap-2 rounded-2xl" style={{ padding: "14px 16px", background: secret ? "#0b0910" : "rgba(232,196,114,0.10)", boxShadow: secret ? "inset 0 0 0 1px rgba(185,166,255,.5)" : "inset 0 0 0 1px rgba(232,196,114,.35)" }}>
+            <div className="flex justify-between items-center gap-2"><span className="font-semibold text-[16px]">เพื่อนกินเที่ยว · นวดผ่อนคลาย</span><span className="shrink-0 rounded-full text-[12px] font-bold tracking-[.15em]" style={secret ? { padding: "3px 10px", background: "#07060a", color: "#e9e1ff", boxShadow: "inset 0 0 0 1px rgba(185,166,255,.75)" } : { padding: "3px 10px", background: "linear-gradient(135deg, #fff1c9, #e8c472)", color: "#1b130b" }}>{secret ? "SECRET" : "TOP"}</span></div>
+            <span className="text-[13.5px] font-light text-[#d9c9b4] leading-[1.6]">รับงานเพื่อนกินเที่ยว และนวดผ่อนคลายได้ (แนบใบรับรองการนวดในใบสมัคร) · สมัครฟรี ไม่มีค่าสมัคร</span>
+          </div>}
           {!invite && !tom && (
           <div className={`grid gap-[18px] md:gap-6 ${tom ? "max-w-[560px] w-full mx-auto" : "md:grid-cols-2"}`} role="radiogroup" aria-label="เลือกสายงาน">
               {/* ทอมหล่อมีสายเดียว: เพื่อนกินเที่ยว ที่มีความสามารถในการนวด (B) · สมัครฟรี */}

@@ -49,6 +49,15 @@ const publicId = (mb) => 'r' + crypto.createHash('sha256').update(`mb-public:${m
   // ใบสมัคร (รูป) → KYC อนุมัติ → ขึ้นหน้าแรกอัตโนมัติ
   const pf = await J(await fetch(B + '/api/join/profile', { method: 'POST', body: form({ mb, t: T, step: '1', first_name: 'ลับ', last_name: 'สุด', nickname: 'ซีเคร็ต', birthdate: '1995-05-05', line_id: 'x', address: 'อโศก', areas: 'กรุงเทพฯ › วัฒนา' }, { photo: new File([img], 'a.jpg', { type: 'image/jpeg' }), other_doc: new File([img], 'b.jpg', { type: 'image/jpeg' }) }) }));
   ok('Secret fills form with photos (same docs as others)', pf.ok, JSON.stringify(pf));
+  // ลิงก์เชิญ (สาย A) แนบใบนวดได้ในใบสมัครขั้น 2 → เลือกสกิลนวดได้ → หน้าแรกขึ้น "นวดผ่อนคลาย"
+  let fh = await (await fetch(B + `/join/form/${mb}?step=2&t=${encodeURIComponent(T)}`)).text();
+  ok('invite (A) form step 2 has massage cert upload', fh.includes('data-cert-upload'));
+  const s2 = await J(await fetch(B + '/api/join/profile', { method: 'POST', body: form({ mb, t: T, step: '2', hours_band: '5–6 ชม.', ack_hours: 'true', ack_no_refuse: 'true', week_days: 'ศ', periods: 'กลางคืน' }, { cert_doc: new File([img], 'c.jpg', { type: 'image/jpeg' }) }) }));
+  ok('cert uploaded on A track', s2.ok, JSON.stringify(s2));
+  const cd = await J(await fetch(B + '/api/join/profile', { method: 'POST', body: (() => { const f = form({ mb, t: T, step: 'card' }); for (const v of ['คาเฟ่', 'นวดผ่อนคลาย']) f.append('activities', v); for (const v of ['massage', 'photo']) f.append('skills', v); f.append('places', 'คาเฟ่ / ร้านอาหาร'); return f; })() }));
+  ok('massage skill kept with cert', cd.ok && !(cd.dropped || []).length, JSON.stringify(cd));
+  h = await (await fetch(B + '/join/i/' + sec.code)).text();
+  ok('invite page shows เพื่อนกินเที่ยว · นวดผ่อนคลาย', h.includes('data-invite-tracks') && h.includes('เพื่อนกินเที่ยว · นวดผ่อนคลาย'));
   row = (await P({ kyc_status: 'approved' })).row;
   ok('Secret without price: KYC approve does NOT list yet', row?.listed === false && row?.secret_price == null, `${row?.listed} ${row?.secret_price}`);
   const lst = await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ listed: true }) });
@@ -66,6 +75,7 @@ const publicId = (mb) => 'r' + crypto.createHash('sha256').update(`mb-public:${m
   h = await (await fetch(B + '/')).text();
   const cardAt = h.indexOf(`/p/${pid}`);
   ok('home: Secret card with glow frame', cardAt > 0 && /data-secret="1"/.test(h.slice(Math.max(0, cardAt - 400), cardAt + 400)), String(cardAt));
+  ok('home: certified A-track PT listed with นวดผ่อนคลาย', /นวดผ่อนคลาย/.test(h.slice(cardAt, cardAt + 3000)), h.slice(cardAt, cardAt + 3000).match(/[ก-๙ &·]+ · [ก-๙ &·]+/)?.[0]);
   ok('home: SECRET badge + price 12,000', h.includes('>SECRET<') && h.includes('12,000'));
   // Secret ขึ้นก่อนคนจริงที่ไม่ใช่ Secret (เช่น MBM-2610001 จาก 01–06)
   const other = h.indexOf(`/p/${publicId('MBM-2610001')}`);

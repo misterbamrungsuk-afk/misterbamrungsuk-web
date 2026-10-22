@@ -1,4 +1,5 @@
 import "server-only";
+import { MASSAGE_SKILL, isMassage } from "@/lib/join/pt-ui";
 import { tierPrice } from "@/lib/join/config";
 import { createHash } from "crypto";
 import { getAttendance } from "@/lib/join/store";
@@ -42,7 +43,9 @@ export async function getLivePeople(): Promise<Person[]> {
     const id = publicId(a.mb_code);
     const secret = x.tier === "secret", top = x.tier === "top" || secret;
     const svc = a.package === "B" ? cfg.price3h.massage : cfg.price3h.eat;
-    const acts = [...new Set([...(a.package === "B" ? ["massage" as Act] : []), ...(x.card?.activities ?? []).map((t) => ACT_OF[t]).filter(Boolean)])] as Act[];
+    // นวดผ่อนคลาย: สายนวด (B) หรือสายอื่นที่แนบใบรับรอง + เลือกสกิล/กิจกรรมนวด (เช่น ลิงก์เชิญที่นวดได้)
+    const massage = a.package === "B" || (!!a.docs.cert_doc && (!!x.card?.skills?.includes(MASSAGE_SKILL) || !!x.card?.activities?.some(isMassage)));
+    const acts = [...new Set([...(massage ? ["massage" as Act] : []), ...(x.card?.activities ?? []).map((t) => ACT_OF[t]).filter(Boolean)])] as Act[];
     const area = (x.areas ?? [])[0]?.split(" › ") ?? [];
     return {
       id, nick: a.nickname, age: a.birthdate ? ageFrom(a.birthdate) ?? 0 : 0, img: `/api/public/pt-photo?id=${id}&i=0`, top, rating: st?.count ? st.avg.toFixed(1) : "ใหม่",

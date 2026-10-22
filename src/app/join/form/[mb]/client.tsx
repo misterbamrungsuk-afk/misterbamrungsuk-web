@@ -296,12 +296,12 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0, fix = false, inv
                 <label className="block"><span className="jf-lb" style={lb}>ประสบการณ์ด้านงานบริการ / การนวด (ถ้ามี)</span>
                   <textarea rows={3} maxLength={500} placeholder="เช่น เคยทำงานโรงแรม 2 ปี, นวดแผนไทยได้" value={f.experience} onChange={(e) => set("experience", e.target.value)} className="w-full rounded-xl bg-[#251d1b] text-[#f3ead9] text-[15px] leading-[1.6] outline-none border border-transparent focus:border-[#e8c472] placeholder:text-[#b5a596]" style={{ padding: "12px 14px", resize: "vertical" }} />
                 </label>
-                {pkg === "B" && (
-                  <div className="flex flex-col gap-1.5">
-                    <span className="jf-lb" style={{ ...lb, margin: 0 }}>ใบรับรองการนวด (สายนวด · ไม่บังคับ)</span>
-                    <Upload label="แนบใบรับรอง" done={!!f.cert_doc || init.hasCert} onPick={(x) => onFile("cert_doc", x)} err={errs.cert_doc} />
-                  </div>
-                )}
+                {/* ทุกสายแนบได้ (22 ต.ค. 2569): สายกินเที่ยว/ลิงก์เชิญที่นวดได้ → แนบแล้วเปิดสกิล "นวดผ่อนคลาย" บนโปรไฟล์ */}
+                <div className="flex flex-col gap-1.5" data-cert-upload>
+                  <span className="jf-lb" style={{ ...lb, margin: 0 }}>{pkg === "B" ? "ใบรับรองการนวด (สายนวด · ไม่บังคับ)" : "ใบรับรองการนวด (ถ้านวดได้ · ไม่บังคับ)"}</span>
+                  <Upload label="แนบใบรับรอง" done={!!f.cert_doc || init.hasCert} onPick={(x) => onFile("cert_doc", x)} err={errs.cert_doc} />
+                  {pkg !== "B" && <span className="text-[12.5px] font-light text-[#b5a596]">แนบแล้วเลือกสกิล "นวดผ่อนคลาย" บนโปรไฟล์ได้ · ลูกค้าเห็นว่ารับนวดด้วย</span>}
+                </div>
               </section>
 
               <section className="flex flex-col" style={{ gap: 10 }}>

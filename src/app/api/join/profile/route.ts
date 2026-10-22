@@ -83,7 +83,7 @@ export async function POST(req: Request) {
         experience: s("experience", 500), intro: s("intro", 300),
         availability: { slots: periods, days: weekDays.length, hours: HOUR_BANDS[band], week_days: weekDays, hours_band: band },
         ack_hours: true, ack_no_refuse: true, form_done: [...done],
-        ...(row.package === "B" && (cert || row.docs.cert_doc) ? { massage_cert: true } : {}),
+        ...((cert || row.docs.cert_doc) ? { massage_cert: true } : {}),
       }, { cert_doc: cert instanceof File ? cert : undefined });
       await clearFixes(row, ["schedule", ...(cert instanceof File ? ["cert_doc"] : [])]);
       return NextResponse.json({ ok: true });
