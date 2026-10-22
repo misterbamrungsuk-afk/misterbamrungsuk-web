@@ -2,7 +2,7 @@
 const WEB = require('path').join(__dirname, '..');
 const fs = require('fs'), crypto = require('crypto');
 const { adm } = require('./_tok');
-const B = 'http://localhost:3210', mb = 'MB-2610001';
+const B = 'http://localhost:3210', mb = 'MBM-2610001';
 const ENV = fs.readFileSync(WEB + '/.env.local', 'utf8');
 const env = (k) => (new RegExp('^' + k + '=(.*)$', 'm').exec(ENV)?.[1] || '').trim().replace(/^["']|["']$/g, '');
 const KEY = env('ADMIN_SESSION_SECRET') || 'hamoo-demo-secret';

@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   let form: FormData;
   try { form = await req.formData(); } catch { return bad("ข้อมูลไม่ถูกต้อง"); }
   const mb = String(form.get("mb") ?? "").trim();
-  if (!/^M[BS]-\d{7,}$/.test(mb) || !(await canResume(mb, String(form.get("t") ?? "") || new URL(req.url).searchParams.get("t"))))
+  if (!/^MB[MT]?-\d{7,}$/.test(mb) || !(await canResume(mb, String(form.get("t") ?? "") || new URL(req.url).searchParams.get("t"))))
     return bad("ลิงก์หมดอายุหรือไม่มีสิทธิ์ กรุณาติดต่อแอดมิน", 403);
   const row = await getByMb(mb);
   if (!row) return bad("ไม่พบใบสมัคร", 404);

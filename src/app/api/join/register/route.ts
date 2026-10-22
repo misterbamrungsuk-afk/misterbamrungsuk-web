@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { FileTypeError } from "@/lib/file-guard";
 import { limited as dbLimited } from "@/lib/rate-limit";
 import { CLOSE_AT, PACKAGES, type PackageKey } from "@/lib/join/config";
-import { createApplicant, getByEmail, nextDocNo, saveProfile, updateApplicant, type DocKind } from "@/lib/join/store";
+import { codeNo, createApplicant, getByEmail, nextDocNo, saveProfile, updateApplicant, type DocKind } from "@/lib/join/store";
 import { consumeInvite, findInvite } from "@/lib/join/invites";
 import { appendToSheet } from "@/lib/join/sheets";
 import { applicantRegistered, sendAll } from "@/lib/email";
@@ -134,12 +134,12 @@ export async function POST(req: Request) {
         package: pkg, amount, payment_method: "qr", ip,
       },
       files,
-      group === "tom" ? "MS" : "MB",
+      group === "tom" ? "MBT" : "MBM",
     );
     // เก็บเฉพาะแฮช (docs.extra.pw_hash · store ไม่ส่งออก)
     // เลขใบแจ้งหนี้ INV (ยังไม่รัน SQL 0010 → ใช้เลขตามรหัส MB)
     // สายเชิญไม่มียอด → ไม่ออกเอกสาร · ถือว่าชำระแล้ว (verified) + ระดับ TOP
-    const inv_no = free ? null : (await nextDocNo("INV").catch(() => null)) ?? `INV-${row.mb_code.slice(3)}`;
+    const inv_no = free ? null : (await nextDocNo("INV").catch(() => null)) ?? `INV-${codeNo(row.mb_code)}`;
     await saveProfile(row.id, { pw_hash: hashPw(password), pw_at: new Date().toISOString(), inv_no, ...(invite ? { tier: "top" } : {}), ...(group ? { group } : {}) });
     if (free) await updateApplicant(row.id, { status: "verified" });
     if (invite) await consumeInvite(invite).catch((e) => console.error("consume invite failed", e));

@@ -1,7 +1,7 @@
-// #35 ลิงก์เข้าโปรไฟล์: แอดมินสร้างลิงก์ → เครื่องใหม่ (ไม่มีคุกกี้) เปิด /join/go → ได้คุกกี้ → เข้าโปรไฟล์ได้ (โหมดเดโม · ต้องมี MB-2610001 จาก fix-e2e)
+// #35 ลิงก์เข้าโปรไฟล์: แอดมินสร้างลิงก์ → เครื่องใหม่ (ไม่มีคุกกี้) เปิด /join/go → ได้คุกกี้ → เข้าโปรไฟล์ได้ (โหมดเดโม · ต้องมี MBM-2610001 จาก fix-e2e)
 const WEB = require('path').join(__dirname, '..');
 const { adm } = require('./_tok');
-const B = 'http://localhost:3210', mb = 'MB-2610001';
+const B = 'http://localhost:3210', mb = 'MBM-2610001';
 let fails = 0;
 const ok = (n, c, x = '') => { if (!c) fails++; console.log((c ? 'PASS ' : 'FAIL ') + n + (x ? ' · ' + x : '')); };
 const ADM = { cookie: 'mord_admin=' + adm, 'content-type': 'application/json' };

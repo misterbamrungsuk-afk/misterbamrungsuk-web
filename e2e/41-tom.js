@@ -35,7 +35,7 @@ const seats = async (g) => J(await fetch(B + '/api/join/seats' + (g ? '?g=' + g 
   let jar = '';
   if (s.devCode) { const v = await fetch(B + '/api/otp/verify', { method: 'POST', headers: JSONH, body: JSON.stringify({ phone: tel, code: s.devCode }) }); jar = (v.headers.get('set-cookie') || '').split(';')[0]; }
   const reg = await J(await fetch(B + '/api/join/register', { method: 'POST', headers: { cookie: jar, 'x-forwarded-for': '10.8.8.8' }, body: form({ package: 'A', group: 'tom', first_name: 'สาว', last_name: 'หล่อ', nickname: 'ทอม', tel, email: `tom${tel}@test.local`, password: 'tom-' + tel, accept_terms: 'true', consent_pdpa: 'true', consent_criminal: 'true' }, { slip: new File([img], 's.jpg', { type: 'image/jpeg' }) }) }));
-  ok('tom registers with separate code MS-', /^MS-\d{7}$/.test(reg.mb_code || ''), JSON.stringify(reg));
+  ok('tom registers with separate code MBT-', /^MBT-\d{7}$/.test(reg.mb_code || ''), JSON.stringify(reg));
   const mb = reg.mb_code;
   const list = (await (await fetch(B + '/admin/applicants', { headers: ADM })).text()).replace(/\\"/g, '"');
   const at = list.indexOf('"mb_code":"' + mb + '"');
@@ -53,8 +53,8 @@ const seats = async (g) => J(await fetch(B + '/api/join/seats' + (g ? '?g=' + g 
   let jar2 = '';
   if (s2.devCode) { const v = await fetch(B + '/api/otp/verify', { method: 'POST', headers: JSONH, body: JSON.stringify({ phone: tel2, code: s2.devCode }) }); jar2 = (v.headers.get('set-cookie') || '').split(';')[0]; }
   const man = await J(await fetch(B + '/api/join/register', { method: 'POST', headers: { cookie: jar2, 'x-forwarded-for': '10.8.8.9' }, body: form({ package: 'A', first_name: 'หนุ่ม', last_name: 'หล่อ', nickname: 'แมน', tel: tel2, email: `man${tel2}@test.local`, password: 'man-' + tel2, accept_terms: 'true', consent_pdpa: 'true', consent_criminal: 'true' }, { slip: new File([img], 's.jpg', { type: 'image/jpeg' }) }) }));
-  ok('man still gets MB-', /^MB-\d{7}$/.test(man.mb_code || ''), JSON.stringify(man));
-  ok('MS and MB counters independent', reg.mb_code.slice(-3) === '001' || reg.mb_code.slice(3, 7) === man.mb_code.slice(3, 7), `${reg.mb_code} ${man.mb_code}`);
+  ok('man still gets MBM-', /^MBM-\d{7}$/.test(man.mb_code || ''), JSON.stringify(man));
+  ok('MS and MB counters independent', reg.mb_code.slice(-3) === '001' || reg.mb_code.slice(4, 8) === man.mb_code.slice(4, 8), `${reg.mb_code} ${man.mb_code}`);
   ok('MS profile route works', (await fetch(B + `/join/profile/${mb}?t=${encodeURIComponent(tok(mb))}`)).status === 200);
   // ลิงก์เชิญ: เลือกทอมหล่อได้ → ฟรี + TOP + รหัส MS- + หมวดทอมหล่อ
   const exp = new Date(Date.now() + 7 * 86400e3).toISOString().slice(0, 10);
@@ -66,7 +66,7 @@ const seats = async (g) => J(await fetch(B + '/api/join/seats' + (g ? '?g=' + g 
   let jar3 = '';
   if (s3.devCode) { const v = await fetch(B + '/api/otp/verify', { method: 'POST', headers: JSONH, body: JSON.stringify({ phone: tel3, code: s3.devCode }) }); jar3 = (v.headers.get('set-cookie') || '').split(';')[0]; }
   const it = await J(await fetch(B + '/api/join/register', { method: 'POST', headers: { cookie: jar3, 'x-forwarded-for': '10.8.8.10' }, body: form({ package: 'A', group: 'tom', invite: inv.code, first_name: 'เชิญ', last_name: 'ทอม', nickname: 'ทอมเชิญ', tel: tel3, email: `tinv${tel3}@test.local`, password: 'tinv-' + tel3, accept_terms: 'true', consent_pdpa: 'true', consent_criminal: 'true' }) }));
-  ok('invite tom gets MS- code', /^MS-\d{7}$/.test(it.mb_code || ''), JSON.stringify(it));
+  ok('invite tom gets MBT- code', /^MBT-\d{7}$/.test(it.mb_code || ''), JSON.stringify(it));
   const l3 = (await (await fetch(B + '/admin/applicants', { headers: ADM })).text()).replace(/\\"/g, '"');
   const a3 = l3.indexOf('"mb_code":"' + it.mb_code + '"');
   const id3 = [...l3.slice(Math.max(0, a3 - 6000), a3).matchAll(/"id":"([0-9a-f-]{36})"/g)].pop()?.[1];

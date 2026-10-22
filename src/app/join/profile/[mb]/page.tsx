@@ -21,7 +21,7 @@ export const metadata = { title: "โปรไฟล์ของฉัน — Mi
 export default async function ProfilePage({ params, searchParams }: { params: Promise<{ mb: string }>; searchParams: Promise<{ t?: string }> }) {
   const { mb } = await params;
   const { t } = await searchParams;
-  if (!/^M[BS]-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
+  if (!/^MB[MT]?-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
   const row = await getByMb(mb);
   if (!row) notFound();
   const x = extraOf(row);

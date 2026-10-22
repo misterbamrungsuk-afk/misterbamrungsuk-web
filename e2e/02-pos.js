@@ -1,10 +1,10 @@
-// ตำแหน่งรูปหลัก: ผู้สมัครบันทึก → หน้าแรก/โปรไฟล์/แผนที่ ใช้ object-position เดียวกัน (โหมดเดโม · ต้องมี MB-2610001 จาก fix-e2e)
+// ตำแหน่งรูปหลัก: ผู้สมัครบันทึก → หน้าแรก/โปรไฟล์/แผนที่ ใช้ object-position เดียวกัน (โหมดเดโม · ต้องมี MBM-2610001 จาก fix-e2e)
 const WEB = require('path').join(__dirname, '..');
 const fs = require('fs'), crypto = require('crypto');
 const env = fs.readFileSync(WEB + '/.env.local', 'utf8');
 const secret = (/^ADMIN_SESSION_SECRET=(.*)$/m.exec(env)?.[1] || '').trim().replace(/^["']|["']$/g, '') || 'hamoo-demo-secret';
 const { adm } = require('./_tok');
-const B = 'http://localhost:3210', mb = 'MB-2610001';
+const B = 'http://localhost:3210', mb = 'MBM-2610001';
 const body = Buffer.from(JSON.stringify({ mb, iat: Date.now(), exp: Date.now() + 3600_000 })).toString('base64url');
 const t = body + '.' + crypto.createHmac('sha256', secret).update('resume:' + body).digest('base64url');
 let fails = 0;

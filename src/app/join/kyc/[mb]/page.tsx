@@ -10,7 +10,7 @@ export const metadata = { title: "ยืนยันตัวตน — Mister B
 export default async function KycPage({ params, searchParams }: { params: Promise<{ mb: string }>; searchParams: Promise<{ t?: string; fix?: string }> }) {
   const { mb } = await params;
   const { t, fix } = await searchParams;
-  if (!/^M[BS]-\d{7,}$/.test(mb)) notFound();
+  if (!/^MB[MT]?-\d{7,}$/.test(mb)) notFound();
   if (!(await canResume(mb, t))) return <Forbidden />;
   const row = await getByMb(mb);
   if (!row) notFound();

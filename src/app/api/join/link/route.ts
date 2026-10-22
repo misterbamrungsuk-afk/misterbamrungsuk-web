@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 // GET  = ออกลิงก์ใหม่ (อายุ 30 วัน) ไว้คัดลอก / ส่งเข้า LINE ตัวเอง + อีเมลที่ใช้สมัครแบบซ่อนบางส่วน
 // POST = ส่งลิงก์ไปอีเมลที่ใช้สมัครอีกครั้ง (3 ครั้ง/ชม. ต่อคน)
 async function owner(mb: string, t: string | null | undefined) {
-  if (!/^M[BS]-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return null;
+  if (!/^MB[MT]?-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return null;
   return getByMb(mb);
 }
 

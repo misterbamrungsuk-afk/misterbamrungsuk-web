@@ -10,10 +10,10 @@ export const runtime = "nodejs";
 // ตอบข้อความเดียวกันเสมอ (เจอ/ไม่เจอ/ไม่มีอีเมล/ถูกจำกัด) → ใช้เดาว่าใครสมัครไม่ได้ · ลิงก์ส่งไปอีเมลที่ใช้สมัครเท่านั้น
 const GENERIC = "ถ้าข้อมูลตรงกับใบสมัคร เราส่งลิงก์ไปที่อีเมลที่ใช้สมัครแล้ว · ตรวจกล่องจดหมายและสแปม";
 
-/** เบอร์ 10 หลัก (รับ +66 / 66 / ขีด / เว้นวรรค) หรือ รหัส MB-xxxxxxx */
+/** เบอร์ 10 หลัก (รับ +66 / 66 / ขีด / เว้นวรรค) หรือ รหัส MBM-/MBT-xxxxxxx */
 function parseQ(raw: string): { tel?: string; mb?: string } | null {
   const v = raw.trim().toUpperCase();
-  const m = /^(M[BS])-?(\d{7,})$/.exec(v.replace(/\s/g, ""));
+  const m = /^(MB[MT]?)-?(\d{7,})$/.exec(v.replace(/\s/g, ""));
   if (m) return { mb: `${m[1]}-${m[2]}` };
   let d = v.replace(/\D/g, "");
   if (/^66\d{9}$/.test(d)) d = "0" + d.slice(2);
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
   const body = (await req.json().catch(() => null)) as { q?: unknown; turnstile?: unknown } | null;
   if (!(await verifyTurnstile(body?.turnstile, ip))) return NextResponse.json({ ok: false, error: TURNSTILE_ERROR }, { status: 403 });
   const q = parseQ(String(body?.q ?? "").slice(0, 40));
-  if (!q) return NextResponse.json({ ok: false, error: "ใส่เบอร์โทร 10 หลักที่ใช้สมัคร หรือรหัส MB (เช่น MB-2610001)" }, { status: 400 });
+  if (!q) return NextResponse.json({ ok: false, error: "ใส่เบอร์โทร 10 หลักที่ใช้สมัคร หรือรหัส MB (เช่น MBM-2610001)" }, { status: 400 });
 
   try {
     const rows = q.mb ? [await getByMb(q.mb)].filter((r) => !!r) : await getByTel(q.tel!);

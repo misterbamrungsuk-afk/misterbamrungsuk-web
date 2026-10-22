@@ -3,7 +3,7 @@
 const WEB = require('path').join(__dirname, '..');
 const fs = require('fs'), crypto = require('crypto');
 const { adm } = require('./_tok');
-const B = 'http://localhost:3210', mb0 = 'MB-2610001';
+const B = 'http://localhost:3210', mb0 = 'MBM-2610001';
 const ENV = fs.readFileSync(WEB + '/.env.local', 'utf8');
 const KEY = (/^ADMIN_SESSION_SECRET=(.*)$/m.exec(ENV)?.[1] || '').trim().replace(/^["']|["']$/g, '') || 'hamoo-demo-secret';
 let fails = 0;
@@ -68,7 +68,7 @@ const JSONH = { 'content-type': 'application/json' };
   row = (await (await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ line_joined: false }) })).json()).row;
   ok('delete flag cleared', !row?.delete_requested_at);
 
-  // ── กล่องแจ้งเตือน (Part-Time ที่ใช้งานจริง MB-2610001 มีแจ้งเตือนจากชุดก่อนหน้า) ──
+  // ── กล่องแจ้งเตือน (Part-Time ที่ใช้งานจริง MBM-2610001 มีแจ้งเตือนจากชุดก่อนหน้า) ──
   ok('notifications need pt auth', (await fetch(B + `/api/pt/notifications?mb=${mb0}`)).status === 403);
   let n = await J(await fetch(B + `/api/pt/notifications?mb=${mb0}&t=${encodeURIComponent(T)}`));
   ok('notifications list', n.ok && Array.isArray(n.notices) && n.notices.length > 0, `${n.notices?.length} · unread ${n.unread}`);

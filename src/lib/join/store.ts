@@ -211,8 +211,11 @@ type DemoStore = { rows: Applicant[]; files: Map<string, DemoFile> };
 const g = globalThis as unknown as { __mbJoinDemo?: DemoStore };
 const demo: DemoStore = (g.__mbJoinDemo ??= { rows: [], files: new Map() });
 
-/** MB-YYMMNNN (หนุ่มหล่อ) / MS-YYMMNNN (ทอมหล่อ · นับเลขแยก): ปี ค.ศ. 2 หลัก + เดือน + ลำดับในเดือนนั้น (เวลาไทย) */
-function mbPrefix(d = new Date(), brand: "MB" | "MS" = "MB") {
+/** MBM-YYMMNNN (หนุ่มหล่อ) / MBT-YYMMNNN (ทอมหล่อ · นับเลขแยก · บอสเปลี่ยน 22 ต.ค. 2569): ปี ค.ศ. 2 หลัก + เดือน + ลำดับในเดือนนั้น (เวลาไทย) */
+export type Brand = "MBM" | "MBT";
+/** เลขท้ายรหัส (ตัดตัวอักษรหน้า): MBM-2610001 → 2610001 */
+export const codeNo = (mb: string) => mb.replace(/^[A-Z]+-/, "");
+function mbPrefix(d = new Date(), brand: Brand = "MBM") {
   const th = new Date(d.getTime() + 7 * 3600_000);
   return `${brand}-${String(th.getUTCFullYear()).slice(2)}${String(th.getUTCMonth() + 1).padStart(2, "0")}`;
 }
@@ -235,7 +238,7 @@ export async function putFile(path: string, file: File) {
   if (error) throw error;
 }
 
-export async function createApplicant(input: ApplicantInput, files: Partial<Record<DocKind, File>>, brand: "MB" | "MS" = "MB"): Promise<Applicant> {
+export async function createApplicant(input: ApplicantInput, files: Partial<Record<DocKind, File>>, brand: Brand = "MBM"): Promise<Applicant> {
   const id = crypto.randomUUID();
   const docs: Applicant["docs"] = {};
   for (const k of DOC_KINDS) {
@@ -259,7 +262,7 @@ export async function createApplicant(input: ApplicantInput, files: Partial<Reco
     return row;
   }
   // รหัส MB ออกใน DB แบบ atomic (ฟังก์ชัน create_applicant ใน migration)
-  // ทอมหล่อ = MS-YYMMNNN นับแยก (supabase/join/0011_ms_codes.sql · ยังไม่รัน = ได้ MB ตามเดิม)
+  // หนุ่มหล่อ MBM- · ทอมหล่อ MBT- นับแยก (supabase/join/0012_mbm_mbt_codes.sql)
   const { data, error } = await db().rpc("create_applicant", { p: { ...input, id, docs, mb_brand: brand } });
   if (error) throw error;
   return data as Applicant;
@@ -270,7 +273,7 @@ export async function createApplicant(input: ApplicantInput, files: Partial<Reco
 const demoDocs = ((globalThis as unknown as { __mbDocNo?: Map<string, number> }).__mbDocNo ??= new Map());
 export async function nextDocNo(kind: "INV" | "RI"): Promise<string | null> {
   if (isDemo) {
-    const p = `${kind}-${mbPrefix().slice(3)}-`;
+    const p = `${kind}-${codeNo(mbPrefix())}-`;
     const n = (demoDocs.get(p) ?? 0) + 1;
     demoDocs.set(p, n);
     return p + String(n).padStart(4, "0");
@@ -283,7 +286,7 @@ export async function nextDocNo(kind: "INV" | "RI"): Promise<string | null> {
 /** ออกเลขใบเสร็จ RI ครั้งเดียวเมื่อสถานะเป็น verified (อนุมัติซ้ำไม่ออกเลขใหม่) */
 export async function ensureReceiptNo(row: Applicant): Promise<void> {
   if (row.status !== "verified" || !row.amount || extraOf(row).ri_no) return; // สมัครฟรี (สายเชิญ / ทอมหล่อ · ยอด 0) ไม่ออกใบเสร็จ
-  const ri = (await nextDocNo("RI")) ?? `RI-${row.mb_code.slice(3)}`;
+  const ri = (await nextDocNo("RI")) ?? `RI-${codeNo(row.mb_code)}`;
   await patchApplicant(row.id, { ri_no: ri, ri_at: new Date().toISOString() });
 }
 

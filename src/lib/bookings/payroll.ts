@@ -53,7 +53,7 @@ export async function payrollRows(day: string): Promise<{ rows: PayRow[]; sample
     { id: "s3", code: "BK-3NV6PA", starts_at: at(-6), completed_at: at(-3), hours: 3, customer: "คุณ ซี.", price: 350000, tip: 20000, pct: 40, pt: 160000, matured: true },
   ];
   return { sample: true, rows: [{
-    parttime_id: "sample", mb: "MB-2610001", name: "ธนกร ใจดี", nick: "ต้น", sample: true,
+    parttime_id: "sample", mb: "MBM-2610001", name: "ธนกร ใจดี", nick: "ต้น", sample: true,
     todayJobs: 2, todayGross: 875000, todayPt: 400000, todayUpcoming: 1, waitingJobs: 2, waiting: 400000,
     pending: 400000, available: 160000, withdrawing: 0, jobs,
   }] };

@@ -3,7 +3,7 @@ import { Forbidden } from "../../_kyc/ui";
 import { canResume } from "@/lib/join/resume";
 import { ISSUER } from "@/lib/join/legal";
 import { BRAND, FEE_NOTE, PACKAGES, feeBreakdown } from "@/lib/join/config";
-import { ensureReceiptNo, extraOf, fullName, getByMb } from "@/lib/join/store";
+import { codeNo, ensureReceiptNo, extraOf, fullName, getByMb } from "@/lib/join/store";
 import { SavePdfButton } from "./save-pdf";
 
 // ใบแจ้งหนี้ / ใบเสร็จรับเงิน (A4 · ดาวน์โหลด PDF) — รอตรวจสลิป = ใบแจ้งหนี้เลข INV · อนุมัติแล้ว = ใบเสร็จรับเงินเลข RI (อ้างอิง INV)
@@ -35,7 +35,7 @@ function thaiBaht(n: number) {
 export default async function ReceiptPage({ params, searchParams }: { params: Promise<{ mb: string }>; searchParams: Promise<{ t?: string }> }) {
   const { mb } = await params;
   const { t } = await searchParams;
-  if (!/^M[BS]-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
+  if (!/^MB[MT]?-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
   const q = t ? `?t=${encodeURIComponent(t)}` : "";
   let row = await getByMb(mb);
   if (!row) notFound();
@@ -49,7 +49,7 @@ export default async function ReceiptPage({ params, searchParams }: { params: Pr
   // สมัครผ่านคำเชิญพิเศษ (ไม่มียอด) → ไม่มีใบแจ้งหนี้/ใบเสร็จ
   const free = (!!x.invite || x.group === "tom") && !row.amount;
   const show = (paid || invoice) && !free;
-  const no = paid ? x.ri_no || `RC-${mb.slice(3)}` : x.inv_no || `INV-${mb.slice(3)}`;
+  const no = paid ? x.ri_no || `RC-${codeNo(mb)}` : x.inv_no || `INV-${codeNo(mb)}`;
   const title = paid ? "ใบเสร็จรับเงิน" : "ใบแจ้งหนี้";
   const th = "text-left font-normal text-[#6b5a50] py-1 pr-4 align-top whitespace-nowrap";
 

@@ -1,7 +1,7 @@
 // #21 ใบเสร็จรับเงินตอนถอน (ไม่มี 50 ทวิ) — รันหลัง 06-day (มีการถอนที่โอนแล้ว)
 const WEB = require('path').join(__dirname, '..');
 const fs = require('fs'), crypto = require('crypto');
-const B = 'http://localhost:3210', mb = 'MB-2610001';
+const B = 'http://localhost:3210', mb = 'MBM-2610001';
 const ENV = fs.readFileSync(WEB + '/.env.local', 'utf8');
 const KEY = (/^ADMIN_SESSION_SECRET=(.*)$/m.exec(ENV)?.[1] || '').trim().replace(/^["']|["']$/g, '') || 'hamoo-demo-secret';
 let fails = 0;

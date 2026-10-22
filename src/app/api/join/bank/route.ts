@@ -15,7 +15,7 @@ export async function POST(req: Request) {
   try { form = await req.formData(); } catch { return bad("ข้อมูลไม่ถูกต้อง"); }
   const s = (k: string, max = 200) => String(form.get(k) ?? "").trim().slice(0, max);
   const mb = s("mb");
-  if (!/^M[BS]-\d{7,}$/.test(mb) || !(await canResume(mb, s("t", 2048) || new URL(req.url).searchParams.get("t"))))
+  if (!/^MB[MT]?-\d{7,}$/.test(mb) || !(await canResume(mb, s("t", 2048) || new URL(req.url).searchParams.get("t"))))
     return bad("ลิงก์หมดอายุหรือไม่มีสิทธิ์ กรุณาติดต่อแอดมิน", 403);
   const row = await getByMb(mb);
   if (!row) return bad("ไม่พบใบสมัคร", 404);

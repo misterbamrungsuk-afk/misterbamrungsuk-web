@@ -11,7 +11,7 @@ export const metadata = { title: "ใบสมัคร — Mister Bamrungsuk" }
 export default async function JoinFormPage({ params, searchParams }: { params: Promise<{ mb: string }>; searchParams: Promise<{ t?: string; step?: string; fix?: string }> }) {
   const { mb } = await params;
   const { t, step, fix } = await searchParams;
-  if (!/^M[BS]-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
+  if (!/^MB[MT]?-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
   const row = await getByMb(mb);
   if (!row) notFound();
   const x = extraOf(row);

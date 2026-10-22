@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   const message = str(b.message, 400);
   if (!message || NOISE.test(message) || NOISE.test(str(b.stack, 400))) return new NextResponse(null, { status: 204 });
   // เส้นทางเท่านั้น (ไม่เก็บ query เพราะอาจมีโทเคน ?t=)
-  const path = str(b.path, 200).split("?")[0].replace(/\/(MB-\d+|[0-9a-f-]{36}|r[0-9a-f]{10})(?=\/|$)/gi, "/:id");
+  const path = str(b.path, 200).split("?")[0].replace(/\/(MB[MT]?-\d+|[0-9a-f-]{36}|r[0-9a-f]{10})(?=\/|$)/gi, "/:id");
   await recordClientError({
     kind: str(b.kind, 20) || "error", message, path, stack: str(b.stack, 800),
     ua: str(req.headers.get("user-agent"), 200), vw: Number(b.vw) || 0, vh: Number(b.vh) || 0, sw: !!b.sw, ms: Math.round(Number(b.ms) || 0),

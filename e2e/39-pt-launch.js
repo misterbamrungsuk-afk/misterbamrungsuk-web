@@ -1,11 +1,11 @@
 // เปิดรับสมัคร Part-Time รอบ 20 ต.ค. 2569: ค่าสมัครยอดเดียว (A 9,500 · B 15,900 · สายเชิญพิเศษฟรี + TOP) ไม่มีคำว่าการันตี
 // · ความยินยอม 3 ข้อ (ข้อมูลอ่อนไหวแยก) · เลขเอกสาร INV ตอนสมัคร → RI ตอนอนุมัติ (ครั้งเดียว · รันต่อเนื่อง)
 // · โค้ดโปรโมทฟรี 3 วัน (แอดมินออก / รอบ 30 วันแรกงานไม่ถึง 5 เคส · คนละครั้ง) · เอกสาร PDPA ใหม่
-// ต้องรันหลัง 01–05 (ใช้ Part-Time ที่เปิดรับงานแล้ว MB-2610001) · โหมดสาธิต :3210
+// ต้องรันหลัง 01–05 (ใช้ Part-Time ที่เปิดรับงานแล้ว MBM-2610001) · โหมดสาธิต :3210
 const WEB = require('path').join(__dirname, '..');
 const fs = require('fs'), crypto = require('crypto');
 const { adm } = require('./_tok');
-const B = 'http://localhost:3210', mb0 = 'MB-2610001';
+const B = 'http://localhost:3210', mb0 = 'MBM-2610001';
 let fails = 0;
 const ok = (n, c, x = '') => { if (!c) fails++; console.log((c ? 'PASS ' : 'FAIL ') + n + (x ? ' · ' + x : '')); };
 const ADM = { cookie: 'mord_admin=' + adm, 'content-type': 'application/json' };
@@ -143,7 +143,7 @@ async function register(pkg, extra = {}) {
   const again = await sweep(100);
   ok('sweep again → no duplicates', again.ok && again.issued === 0, JSON.stringify(again));
   g = await (await fetch(B + `/api/pt/boost?mb=${mb0}&t=${encodeURIComponent(T0)}`)).json();
-  // MB-2610001 มีงานจริงจากชุดก่อน (ถ้าเปิดรับงานหลังมีระบบ listed_at = วันนี้ → 30 วันแรกนับงานจริง) → มีหรือไม่มีโค้ดก็ได้ · ตรวจว่าไม่เกิน 1 ใบจากรอบอัตโนมัติ
+  // MBM-2610001 มีงานจริงจากชุดก่อน (ถ้าเปิดรับงานหลังมีระบบ listed_at = วันนี้ → 30 วันแรกนับงานจริง) → มีหรือไม่มีโค้ดก็ได้ · ตรวจว่าไม่เกิน 1 ใบจากรอบอัตโนมัติ
   ok('PT has at most 1 auto code', (g.codes || []).filter((c) => c.reason === 'low_jobs_30d').length <= 1);
   const n = await (await fetch(B + `/api/pt/notifications?mb=${mb0}&t=${encodeURIComponent(T0)}`)).json();
   ok('free-code notification sent', (n.notices || []).some((x) => /โค้ดโปรโมทฟรี/.test(x.title)), (n.notices || []).map((x) => x.title).slice(0, 3).join(' | '));

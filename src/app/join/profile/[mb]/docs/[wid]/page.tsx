@@ -20,7 +20,7 @@ const words = (s: number) => { const b = Math.floor(s / 100), st = s % 100; retu
 export default async function WithdrawReceiptPage({ params, searchParams }: { params: Promise<{ mb: string; wid: string }>; searchParams: Promise<{ t?: string }> }) {
   const { mb, wid } = await params;
   const { t } = await searchParams;
-  if (!/^M[BS]-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
+  if (!/^MB[MT]?-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
   const row = await getByMb(mb);
   if (!row) notFound();
   const w = (await listWithdrawals({ parttime_id: row.id }).catch(() => [])).find((x) => x.id === wid);

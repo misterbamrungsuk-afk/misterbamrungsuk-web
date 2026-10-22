@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 // ผู้สมัครกดยอมรับสัญญาฉบับเต็มหลังชำระเงิน — บันทึกเวลาไว้เป็นหลักฐาน
 export async function POST(req: Request) {
   const { mb, t } = (await req.json().catch(() => ({}))) as { mb?: string; t?: string };
-  if (!mb || !/^M[BS]-\d{7,}$/.test(mb)) return NextResponse.json({ ok: false }, { status: 400 });
+  if (!mb || !/^MB[MT]?-\d{7,}$/.test(mb)) return NextResponse.json({ ok: false }, { status: 400 });
   // ยอมรับสัญญาได้เฉพาะเจ้าของรหัส (cookie mb_resume หรือโทเคน t)
   if (!(await canResume(mb, typeof t === "string" ? t.slice(0, 2048) : null))) return NextResponse.json({ ok: false }, { status: 403 });
   const row = await getByMb(mb);

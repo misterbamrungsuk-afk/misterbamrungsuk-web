@@ -83,10 +83,10 @@ const DAY = 86400e3;
   // ── หน้า + สายปกติไม่ถูกหัก + ledger ──
   let h = await (await fetch(B + `/join/profile/${mb}/earnings?t=${encodeURIComponent(T)}`)).text();
   ok('earnings page shows bond card', h.includes('data-bond-card') && h.includes('เงินประกันงาน'));
-  const T0 = tok('MB-2610001');
-  g = await J(await fetch(B + `/api/pt/bond?mb=MB-2610001&t=${encodeURIComponent(T0)}`));
+  const T0 = tok('MBM-2610001');
+  g = await J(await fetch(B + `/api/pt/bond?mb=MBM-2610001&t=${encodeURIComponent(T0)}`));
   ok('normal PT: bond not applied', g.ok && g.applies === false && g.balance === 0, JSON.stringify(g));
-  h = await (await fetch(B + `/join/profile/MB-2610001/earnings?t=${encodeURIComponent(T0)}`)).text();
+  h = await (await fetch(B + `/join/profile/MBM-2610001/earnings?t=${encodeURIComponent(T0)}`)).text();
   ok('normal PT: no bond card', !h.includes('data-bond-card'));
   h = await (await fetch(B + '/join/terms')).text();
   ok('terms mention work bond', h.includes('เงินประกันงาน') && h.includes('90 วัน'));
