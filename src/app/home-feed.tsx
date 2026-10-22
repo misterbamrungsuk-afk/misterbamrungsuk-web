@@ -105,7 +105,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
     };
     return people.filter((p) => (grp === "tom") === (p.group === "tom")).filter((p) => acts.every((a) => p.acts.includes(a)) && (!f.reg || PROV[provOf(p)] === f.reg) && (!f.prov || provOf(p) === f.prov)
       && (!spot || p.area.includes(spot) || spot.includes(p.area)) && (!f.type || (f.type === "massage") === p.acts.includes("massage"))
-      && (!f.tier || (f.tier === "top") === p.top) && (!f.act || p.acts.includes(f.act as Act)) && ageOf(p) >= lo && ageOf(p) <= hi).sort(by[sort]);
+      && (!f.tier || (f.tier === "top") === p.top) && (!f.act || p.acts.includes(f.act as Act)) && ageOf(p) >= lo && ageOf(p) <= hi).sort((a, b) => (b.real ? 1 : 0) - (a.real ? 1 : 0) || by[sort](a, b)); // คนจริงขึ้นก่อนตัวอย่างเสมอ (ทุกการเรียง)
   }, [people, grp, acts, sort, f.reg, f.prov, spot, f.type, f.tier, f.act, lo, hi]);
   const nF = acts.length + [f.reg, f.prov, spot, f.type, f.tier, f.act].filter(Boolean).length + (lo !== 20 || hi !== 50 ? 1 : 0);
   const provOpts = Object.keys(PROV).filter((k) => !f.reg || PROV[k] === f.reg).sort((a, b) => a.localeCompare(b, "th"));
