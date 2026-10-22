@@ -46,17 +46,21 @@ const publicId = (mb) => 'r' + crypto.createHash('sha256').update(`mb-public:${m
   let row = (await P({ line_joined: false })).row;
   ok('Secret: free · verified · tier secret', row?.amount === 0 && row?.status === 'verified' && row?.tier === 'secret' && row?.invite === sec.code, `${row?.amount} ${row?.status} ${row?.tier}`);
 
+  // ใบสมัคร (รูป) → KYC อนุมัติ → ขึ้นหน้าแรกอัตโนมัติ
+  const pf = await J(await fetch(B + '/api/join/profile', { method: 'POST', body: form({ mb, t: T, step: '1', first_name: 'ลับ', last_name: 'สุด', nickname: 'ซีเคร็ต', birthdate: '1995-05-05', line_id: 'x', address: 'อโศก', areas: 'กรุงเทพฯ › วัฒนา' }, { photo: new File([img], 'a.jpg', { type: 'image/jpeg' }), other_doc: new File([img], 'b.jpg', { type: 'image/jpeg' }) }) }));
+  ok('Secret fills form with photos (same docs as others)', pf.ok, JSON.stringify(pf));
+  row = (await P({ kyc_status: 'approved' })).row;
+  ok('Secret without price: KYC approve does NOT list yet', row?.listed === false && row?.secret_price == null, `${row?.listed} ${row?.secret_price}`);
+  const lst = await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ listed: true }) });
+  ok('manual list refused until price set', lst.status === 400, String(lst.status));
   // แอดมินตั้งราคา Secret
   row = (await P({ tier: 'secret', secret_price: 12000 })).row;
   ok('admin sets Secret price', row?.tier === 'secret' && row?.secret_price === 12000, `${row?.tier} ${row?.secret_price}`);
   const bad = await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ tier: 'secret', secret_price: -5 }) });
   ok('bad price refused', bad.status === 400, String(bad.status));
 
-  // ใบสมัคร (รูป) → KYC อนุมัติ → ขึ้นหน้าแรกอัตโนมัติ
-  const pf = await J(await fetch(B + '/api/join/profile', { method: 'POST', body: form({ mb, t: T, step: '1', first_name: 'ลับ', last_name: 'สุด', nickname: 'ซีเคร็ต', birthdate: '1995-05-05', line_id: 'x', address: 'อโศก', areas: 'กรุงเทพฯ › วัฒนา' }, { photo: new File([img], 'a.jpg', { type: 'image/jpeg' }), other_doc: new File([img], 'b.jpg', { type: 'image/jpeg' }) }) }));
-  ok('Secret fills form with photos (same docs as others)', pf.ok, JSON.stringify(pf));
-  row = (await P({ kyc_status: 'approved' })).row;
-  ok('KYC approve → listed', row?.listed === true, String(row?.listed));
+  ok('price set → auto listed', row?.listed === true, String(row?.listed));
+
 
   const pid = publicId(mb);
   h = await (await fetch(B + '/')).text();

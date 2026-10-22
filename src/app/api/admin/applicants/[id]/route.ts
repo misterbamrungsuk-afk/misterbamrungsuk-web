@@ -73,6 +73,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const x = extraOf(cur);
     if (body.listed && (cur.status !== "verified" || x.kyc_status !== "approved" || !(x.photos?.length || cur.docs.photo)))
       return NextResponse.json({ ok: false, error: "แสดงได้เมื่อชำระแล้ว ผ่าน KYC และมีรูปโปรไฟล์" }, { status: 400 });
+    // Secret ยังไม่มีราคา (แอดมินต้องตั้งเอง) → ยังเปิดแสดงไม่ได้
+    if (body.listed && x.tier === "secret" && !x.secret_price)
+      return NextResponse.json({ ok: false, error: "ตั้งราคา Secret ก่อน แล้วค่อยเปิดแสดงบนหน้าแรก" }, { status: 400 });
     // วันเปิดรับงาน (ครั้งแรก) — นับ 30 วันสำหรับโค้ดโปรโมทฟรี
     await saveProfile(cur.id, body.listed && !x.listed_at ? { listed: true, listed_at: new Date().toISOString() } : { listed: !!body.listed });
     const row = await getById(id);
@@ -83,7 +86,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     // Secret: ราคา 3 ชม. รายคน (บาท) · ไม่ส่ง = คงเดิม · null/0 = ใช้ราคา TOP
     const sp = body.secret_price === undefined ? undefined : body.secret_price === null ? null : Math.round(Number(body.secret_price));
     if (sp !== undefined && sp !== null && (!Number.isFinite(sp) || sp < 0 || sp > 1_000_000)) return NextResponse.json({ ok: false, error: "ราคาไม่ถูกต้อง" }, { status: 400 });
-    const row = await setTier(id, body.tier, sp === 0 ? null : sp);
+    let row = await setTier(id, body.tier, sp === 0 ? null : sp);
+    if (row && body.tier === "secret" && sp) row = await autoList(row); // ตั้งราคา Secret แล้ว (ผ่าน KYC แล้ว) → ขึ้นหน้าแรกเอง
     return row ? NextResponse.json({ ok: true, row: { ...row, ...extraOf(row) } }) : NextResponse.json({ ok: false }, { status: 404 });
   }
   // จัดกลุ่มอบรม / สถานะกลุ่ม LINE
@@ -123,6 +127,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 async function autoList(row: Applicant): Promise<Applicant> {
   const x = extraOf(row);
   if (x.listed || x.listed_at || row.status !== "verified" || x.kyc_status !== "approved" || !(x.photos?.length || row.docs.photo)) return row;
+  if (x.tier === "secret" && !x.secret_price) return row; // Secret: รอแอดมินตั้งราคาก่อน (ตั้งราคาแล้ว → เปิดให้เอง ดู tier)
   await saveProfile(row.id, { listed: true, listed_at: new Date().toISOString() });
   return (await getById(row.id)) ?? row;
 }

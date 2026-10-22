@@ -107,7 +107,7 @@ export function JoinSalePage({ seats, showEarnings = true, invite, group = null,
               : <Link href={invite ? `/join/pay?pkg=${tom ? "B" : "A"}&invite=${invite}${g}` : tom ? "/join/pay?pkg=B&g=tom" : `/join/pay?pkg=${pick}${g}`} className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center hover:text-[#1b130b]" style={{ marginTop: 6 }}>{invite || tom ? "เริ่มสร้างโปรไฟล์" : "ชำระเงินและรับรหัสสมัคร"}</Link>}
             {!invite && tom && <p className="m-0 text-[13px] text-center text-[#b5a596] font-light" data-tom-free>สมัครฟรี · เงินประกันงานเคสละ ฿500 (ครบ 90 วันถอนคืนได้)</p>}
             {invite && <p className="m-0 text-[13px] text-center text-[#b5a596] font-light">ลิงก์ส่วนตัว กรุณาอย่าเผยแพร่</p>}
-            <Link href="/join/me" className="self-center min-h-11 inline-flex items-center text-[14px] text-[#e8c472] hover:text-[#e8c472]">สมัครแล้ว? เข้าสู่ระบบ Part-Time ›</Link>
+            <Link href="/join/me" data-pt-login className="min-h-12 rounded-2xl border-[1.5px] border-[#e8c472] text-[#e8c472] font-semibold text-[16px] grid place-items-center text-center px-4 hover:text-[#e8c472] hover:bg-[rgba(232,196,114,0.08)]">สมัครแล้ว? เข้าสู่ระบบ Part-Time</Link>
           </div>
         </section>
 

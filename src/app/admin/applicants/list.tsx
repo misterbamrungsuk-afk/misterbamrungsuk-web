@@ -108,7 +108,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
   const setTier = async (id: string, tier: "top" | "silver" | "secret") => { const d = await patch(id, { tier }); say(d, `ตั้งระดับ ${tier === "secret" ? "Secret" : tier === "top" ? "TOP" : "Silver"} แล้ว`); };
   // ราคา Secret (3 ชม.) รายคน — ว่าง/0 = ใช้ราคา TOP
   const [spDraft, setSpDraft] = useState<Record<string, string>>({});
-  const saveSecretPrice = async (id: string) => { const v = (spDraft[id] ?? "").replace(/\D/g, ""); const d = await patch(id, { tier: "secret", secret_price: v ? Number(v) : null }); say(d, v ? `ตั้งราคา Secret ฿${Number(v).toLocaleString("en-US")} / 3 ชม. แล้ว` : "ใช้ราคา TOP สำหรับ Secret"); };
+  const saveSecretPrice = async (id: string) => { const v = (spDraft[id] ?? "").replace(/\D/g, ""); const d = await patch(id, { tier: "secret", secret_price: v ? Number(v) : null }); say(d, v ? `ตั้งราคา Secret ฿${Number(v).toLocaleString("en-US")} / 3 ชม. แล้ว` : "ล้างราคา Secret แล้ว · ยังไม่แสดงบนหน้าแรกจนกว่าจะตั้งราคา"); };
   const assign = async (id: string, cohort: string | null) => { const d = await patch(id, { cohort }); say(d, `จัดเข้า${cohort ? cohortName(cohort) : " (ไม่ระบุกลุ่ม)"}`); };
   const setLine = async (id: string, v: boolean) => { const d = await patch(id, { line_joined: v }); say(d, v ? "บันทึก: เข้ากลุ่ม LINE แล้ว" : "บันทึก: ยังไม่เข้ากลุ่ม"); router.refresh(); };
   const copyLine = async (r: Applicant) => {
@@ -223,9 +223,9 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
             <div className="flex justify-between items-center gap-2"><span className="text-[#cdbfb3]">ระดับ (หลังอบรม)</span>
               <span className="flex gap-1">{(["silver", "top", "secret"] as const).map((t) => { const on = (sel.tier ?? "silver") === t; const sc = t === "secret"; return <button key={t} data-set-tier={t} onClick={() => setTier(sel.id, t)} aria-pressed={on} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={sc ? { borderColor: "rgba(185,166,255,.75)", background: on ? "#07060a" : "transparent", color: "#e9e1ff", boxShadow: on ? "0 0 10px rgba(185,166,255,.55)" : "none" } : { borderColor: on ? GOLD : LINE_BD, background: on ? GOLD : "transparent", color: on ? "#1a1206" : "#d3c7bc" }}>{sc ? "Secret" : t === "top" ? "TOP" : "Silver"}</button>; })}</span>
             </div>
-            {sel.tier === "secret" && <div className="flex justify-between items-center gap-2"><span className="text-[#cdbfb3]">ราคา Secret · 3 ชม.</span>
+            {sel.tier === "secret" && <div className="flex justify-between items-center gap-2"><span className="text-[#cdbfb3]">ราคา Secret · 3 ชม.{!sel.secret_price && <span className="block text-[11.5px] text-[#ff8a9a]">ยังไม่ตั้ง · ยังไม่ขึ้นหน้าแรก</span>}</span>
               <span className="flex gap-1.5 items-center">
-                <input data-secret-price inputMode="numeric" aria-label="ราคา Secret ต่อ 3 ชม." placeholder={sel.secret_price ? String(sel.secret_price) : "ใช้ราคา TOP"} value={spDraft[sel.id] ?? (sel.secret_price ? String(sel.secret_price) : "")} onChange={(e) => setSpDraft((m) => ({ ...m, [sel.id]: e.target.value.replace(/\D/g, "") }))} className="h-8 w-28 rounded-lg border border-[rgba(185,166,255,.5)] bg-[#07060a] px-2 text-right text-[13px] text-[#e9e1ff] outline-none tabular-nums" />
+                <input data-secret-price inputMode="numeric" aria-label="ราคา Secret ต่อ 3 ชม." placeholder={sel.secret_price ? String(sel.secret_price) : "ยังไม่ตั้ง"} value={spDraft[sel.id] ?? (sel.secret_price ? String(sel.secret_price) : "")} onChange={(e) => setSpDraft((m) => ({ ...m, [sel.id]: e.target.value.replace(/\D/g, "") }))} className="h-8 w-28 rounded-lg border border-[rgba(185,166,255,.5)] bg-[#07060a] px-2 text-right text-[13px] text-[#e9e1ff] outline-none tabular-nums" />
                 <button type="button" onClick={() => saveSecretPrice(sel.id)} className="h-8 px-3 rounded-full text-[12px] font-semibold" style={{ background: "#07060a", color: "#e9e1ff", boxShadow: "inset 0 0 0 1px rgba(185,166,255,.75)" }}>บันทึก</button>
               </span>
             </div>}
