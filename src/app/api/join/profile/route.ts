@@ -59,6 +59,7 @@ export async function POST(req: Request) {
       await saveProfile(row.id, {
         first_name: s("first_name"), last_name: s("last_name"), nickname: s("nickname"), birthdate: s("birthdate"),
         line_id: s("line_id", 60), address: s("address", 300), areas, no_area: s("no_area", 300), form_done: [...done],
+        ...(extraOf(row).group === "tom" ? { trans: s("trans") === "true" } : {}),
       }, { photo: photo instanceof File ? photo : undefined, other_doc: body instanceof File ? body : undefined });
       await clearFixes(row, ["info", ...(photo instanceof File ? ["photo"] : []), ...(body instanceof File ? ["other_doc"] : [])]);
       return NextResponse.json({ ok: true });

@@ -32,6 +32,9 @@ const isTodo = (r: Applicant) => r.status === "pending_slip" || r.kyc_status ===
 const match = (r: Applicant, f: Filter) => f === "all" ? true : f === "todo" ? isTodo(r) : f === "fix" ? r.kyc_status === "rejected" : r.status === f;
 const FILTERS: [Filter, string][] = [["todo", "รอตรวจ"], ["fix", "ตีกลับ · รอแก้"], ["verified", "ชำระแล้ว"], ["pending_slip", "รอตรวจสลิป"], ["rejected", "ปฏิเสธ"], ["refunded", "คืนเงินแล้ว"], ["all", "ทั้งหมด"]];
 const PKG_TABS: [Pkg, string, string][] = [["all", "ทั้งหมด", "ผู้สมัครทุกสาย"], ["A", "สาย A", PACKAGES.A.name], ["B", "สาย B", PACKAGES.B.name]];
+type Grp = "all" | "man" | "tom";
+const GRP_TABS: [Grp, string][] = [["all", "ทั้งหมด"], ["man", "หนุ่มหล่อ"], ["tom", "ทอมหล่อ"]];
+const inGrp = (g: Grp) => (r: Applicant) => g === "all" || (g === "tom") === (r.group === "tom");
 const PN: Record<Pkg, string> = { all: "ทุกสาย", A: "สาย A", B: "สาย B" };
 const GRID = "grid grid-cols-[110px_minmax(0,1.4fr)_100px_100px_90px_120px_100px]";
 
@@ -42,6 +45,8 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
   const router = useRouter();
   const [rows, setRows] = useState(initial);
   const [pkg, setPkg] = useState<Pkg>(initialPkg);
+  // แยกหมวด หนุ่มหล่อ / ทอมหล่อ (บอสสั่ง 22 ต.ค. 2569) — ตัวเลข การ์ดยอด และรายการทั้งหมดนับตามหมวดที่เลือก
+  const [grp, setGrp] = useState<Grp>("all");
   const [filter, setFilter] = useState<Filter>(() => initial.some(isTodo) ? "todo" : "verified");
   const [showDocs, setShowDocs] = useState(false);
   const { msg, flash, fromRes } = useFlash();
@@ -53,17 +58,18 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
   const canKyc = canAccess(role, "/admin/kyc");
   const cohortName = (k?: string | null) => cohorts.find((c) => c.key === k)?.name ?? "—";
 
-  const paid = rows.filter((r) => r.status === "verified");
+  const gRows = rows.filter(inGrp(grp));
+  const paid = gRows.filter((r) => r.status === "verified");
   const nOf = (k: Pkg, list = paid) => list.filter((r) => k === "all" || r.package === k).length;
   const nA = nOf("A"), nB = nOf("B");
   // ยอดจริงที่ผู้สมัครจ่าย (amount) — ใบเก่าก่อนเปลี่ยนราคา/สายเชิญนับตามที่จ่ายจริง
   const inPkg = (k: Pkg) => (r: Applicant) => k === "all" || r.package === k;
   const sumAmt = (list: Applicant[]) => list.reduce((a, r) => a + (r.amount || 0), 0);
-  const waiting = rows.filter((r) => r.status === "pending_slip");
+  const waiting = gRows.filter((r) => r.status === "pending_slip");
   const notLine = paid.filter((r) => !r.line_joined).length;
 
   const t = q.trim().toLowerCase();
-  const shown = useMemo(() => rows.filter((r) => (pkg === "all" || r.package === pkg) && match(r, filter) && hit(r, t)), [rows, pkg, filter, t]);
+  const shown = useMemo(() => rows.filter((r) => inGrp(grp)(r) && (pkg === "all" || r.package === pkg) && match(r, filter) && hit(r, t)), [rows, grp, pkg, filter, t]);
   const [open, setOpen] = useState<string | null>(shown[0]?.id ?? null);
   // pin = คนที่เพิ่งกดทำรายการ — ถ้าย้ายออกจากแท็บปัจจุบัน แผงยังค้างที่คนเดิม (ไม่สลับไปคนอื่นเงียบ ๆ แล้วกดผิดคน)
   const [pin, setPin] = useState<string | null>(null);
@@ -131,10 +137,18 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
             <button onClick={exportCsv} className="h-10 px-4 rounded-full border border-[rgba(240,200,90,.38)] text-[#d3c7bc] hover:text-[#f6efe4]">ส่งออกไฟล์ Excel / CSV</button>
           </div>
         </div>
+        <div className="grid grid-cols-3 gap-1 rounded-full self-start" role="tablist" aria-label="หมวด" style={{ padding: 4, background: "#130e0e", border: `1px solid ${LINE_BD}` }}>
+          {GRP_TABS.map(([k, l]) => {
+            const on = grp === k;
+            const n = rows.filter(inGrp(k)).length;
+            return <button key={k} role="tab" aria-selected={on} data-admin-group={k} onClick={() => { setGrp(k); setPin(null); }} className="h-10 px-5 rounded-full text-[14px] font-semibold flex items-center justify-center gap-1.5"
+              style={{ background: on ? (k === "tom" ? "#f6a5c0" : GOLD) : "transparent", color: on ? "#1a1206" : k === "tom" ? "#f6a5c0" : "#d3c7bc" }}>{l}<span className="text-[11.5px] font-normal opacity-80">{n}</span></button>;
+          })}
+        </div>
         <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="สถานะ">
           {FILTERS.map(([k, l]) => {
             const on = filter === k;
-            const n = rows.filter((r) => (pkg === "all" || r.package === pkg) && match(r, k) && hit(r, t)).length;
+            const n = gRows.filter((r) => (pkg === "all" || r.package === pkg) && match(r, k) && hit(r, t)).length;
             const hot = (k === "todo" || k === "fix") && n > 0;
             return <button key={k} role="tab" aria-selected={on} onClick={() => { setFilter(k); setPin(null); }} className="h-9 px-3.5 rounded-full border text-[12.5px] font-semibold flex items-center gap-1.5"
               style={{ borderColor: on ? GOLD : LINE_BD, background: on ? GOLD : "transparent", color: on ? "#1a1206" : "#d3c7bc" }}>{l}<span className="min-w-5 h-5 px-1.5 rounded-full text-[11px] grid place-items-center" style={{ background: on ? "rgba(26,18,6,.15)" : hot ? (k === "todo" ? "#c8102e" : "rgba(239,68,68,.25)") : "rgba(240,200,90,.14)", color: on ? "#1a1206" : hot ? "#fff" : "#cdbfb3" }}>{n}</span></button>;
@@ -174,7 +188,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
                   style={{ background: sel?.id === r.id ? "rgba(240,200,90,.16)" : "transparent" }}>
                   <span className="text-[#ffd76a]">{r.mb_code}</span>
                   <span className="truncate pr-2">{r.first_name} {r.last_name}</span>
-                  <span className="text-[#d3c7bc] pr-1">{r.group === "tom" && <span className="text-[#f6a5c0]">ทอมหล่อ · </span>}{r.package} · {r.invite && <span className="text-[#e8c472]">✦ เชิญ </span>}{fmt(r.amount)}</span>
+                  <span className="text-[#d3c7bc] pr-1">{r.group === "tom" && <span className="text-[#f6a5c0]">{r.trans ? "ทอมหล่อ (Trans)" : "ทอมหล่อ"} · </span>}{r.package} · {r.invite && <span className="text-[#e8c472]">✦ เชิญ </span>}{fmt(r.amount)}</span>
                   <span className="flex flex-col leading-tight text-[11.5px]"><span style={{ color: r.status === "verified" ? "#4ade80" : r.status === "pending_slip" ? "#eed58a" : "#fca5a5" }}>{LABEL[r.status]}</span><span style={{ color: KYC_LABEL[r.kyc_status ?? "none"][1] }}>{KYC_LABEL[r.kyc_status ?? "none"][0]}</span></span>
                   <span className="text-[#d3c7bc]">{cohortName(r.cohort)}</span>
                   <span style={{ color: r.line_joined ? "#4ade80" : "#eed58a" }}>{r.line_joined ? "✓ เข้ากลุ่มแล้ว" : "ยังไม่เข้า"}</span>

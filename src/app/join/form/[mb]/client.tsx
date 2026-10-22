@@ -58,7 +58,7 @@ function Err({ msg }: { msg?: string }) {
 function Field({ label, err, children }: { label: string; err?: string; children: ReactNode }) {
   return <label className="block min-w-0"><span className="jf-lb" style={lb}>{label}</span>{children}<Err msg={err} /></label>;
 }
-export type FormInit = Pick<JoinForm, "first_name" | "last_name" | "nickname" | "birthdate" | "tel" | "line_id" | "address" | "areas" | "no_area" | "week_days" | "periods" | "hours_band" | "experience" | "intro" | "ack_hours" | "ack_no_refuse"> & { hasPhoto: boolean; hasBody: boolean; hasCert: boolean };
+export type FormInit = Pick<JoinForm, "first_name" | "last_name" | "nickname" | "birthdate" | "tel" | "line_id" | "address" | "areas" | "no_area" | "week_days" | "periods" | "hours_band" | "experience" | "intro" | "ack_hours" | "ack_no_refuse"> & { trans: boolean; hasPhoto: boolean; hasBody: boolean; hasCert: boolean };
 
 function Upload({ label, done, onPick, err }: { label: string; done: boolean; onPick: (f?: File) => void; err?: string }) {
   return (
@@ -74,10 +74,12 @@ function Upload({ label, done, onPick, err }: { label: string; done: boolean; on
   );
 }
 
-export function JoinFormClient({ mb, t, pkg, init, step: step0, fix = false, invite = false }: { mb: string; t: string; pkg: PackageKey; init: FormInit; step: 1 | 2; fix?: boolean; invite?: boolean }) {
+export function JoinFormClient({ mb, t, pkg, init, step: step0, fix = false, invite = false, tom = false }: { mb: string; t: string; pkg: PackageKey; init: FormInit; step: 1 | 2; fix?: boolean; invite?: boolean; tom?: boolean }) {
   const router = useRouter();
   const [f, setF] = useState<JoinForm>({ ...emptyForm, ...init, package: pkg });
   const [step, setStep] = useState<1 | 2>(step0);
+  // ทอมหล่อ: ติ๊ก = Trans (แปลงเพศแล้ว) · ไม่ติ๊ก = ทอม
+  const [trans, setTrans] = useState(init.trans);
   const [errs, setErrs] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [loc, setLoc] = useState({ r: "", p: "", d: "", t: "" });
@@ -140,6 +142,7 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0, fix = false, inv
     fd.set("mb", mb); if (t) fd.set("t", t); fd.set("step", String(step));
     if (step === 1) {
       for (const k of ["first_name", "last_name", "nickname", "birthdate", "line_id", "address", "no_area"] as const) fd.set(k, f[k]);
+      if (tom) fd.set("trans", String(trans));
       f.areas.forEach((a) => fd.append("areas", a));
       if (f.photo) fd.set("photo", await dataUrlToFile(f.photo, "photo.jpg"));
       if (f.other_doc) fd.set("other_doc", await dataUrlToFile(f.other_doc, "body.jpg"));
@@ -202,6 +205,10 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0, fix = false, inv
                   <Field label="ชื่อเล่น" err={errs.nickname}><input className={inCls} placeholder="ชื่อเล่น" value={f.nickname} onChange={(e) => set("nickname", e.target.value)} /></Field>
                   <Field label="วันเกิด" err={errs.birthdate}><input type="date" className={inCls} style={{ colorScheme: "dark" }} value={f.birthdate} onChange={(e) => set("birthdate", e.target.value)} /></Field>
                 </div>
+                {tom && <label data-trans-check className="flex items-start gap-3 rounded-xl cursor-pointer" style={{ padding: "12px 14px", background: "#251d1b" }}>
+                  <input type="checkbox" checked={trans} onChange={(e) => setTrans(e.target.checked)} className="mt-0.5 w-5 h-5 shrink-0 accent-[#e8c472]" />
+                  <span className="flex flex-col gap-0.5"><span className="text-[15px] font-semibold">Trans (แปลงเพศแล้ว)</span><span className="text-[13px] text-[#b5a596] font-light">ไม่ติ๊ก = ทอม</span></span>
+                </label>}
                 <div className="text-[13px] font-light" style={{ marginTop: -4 }}>รับสมัครอายุ 20–50 ปี</div>
                 <Field label="เบอร์โทรศัพท์"><input className={inCls} value={f.tel} readOnly aria-readonly="true" style={{ opacity: 0.8 }} /></Field>
                 <Field label="LINE ID" err={errs.line_id}><input className={inCls} placeholder="LINE ID" value={f.line_id} onChange={(e) => set("line_id", e.target.value)} /></Field>

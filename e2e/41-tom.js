@@ -85,6 +85,20 @@ const seats = async (g) => J(await fetch(B + '/api/join/seats' + (g ? '?g=' + g 
   await fetch(B + '/api/admin/applicants/' + idm, { method: 'PATCH', headers: ADM, body: JSON.stringify({ status: 'verified' }) });
   const mh2 = await (await fetch(B + `/join/profile/${man.mb_code}?t=${encodeURIComponent(tok(man.mb_code))}`)).text();
   ok('man after slip approved sees หนุ่มหล่อ LINE group', mh2.includes('data-line-group="man"') && mh2.includes('t2xMQBRyuN') && !mh2.includes('XAyQXejkUc'));
+  // ใบสมัคร: ทอมหล่อมีช่องติ๊ก Trans · หนุ่มหล่อไม่มี
+  let fh = await (await fetch(B + `/join/form/${mb}?t=${encodeURIComponent(tok(mb))}`)).text();
+  ok('tom form has Trans checkbox', fh.includes('data-trans-check') && fh.includes('Trans (แปลงเพศแล้ว)'));
+  fh = await (await fetch(B + `/join/form/${man.mb_code}?t=${encodeURIComponent(tok(man.mb_code))}`)).text();
+  ok('man form has no Trans checkbox', !fh.includes('data-trans-check'));
+  const pf = (trans) => fetch(B + '/api/join/profile', { method: 'POST', body: form({ mb, t: tok(mb), step: '1', first_name: 'สาว', last_name: 'หล่อ', nickname: 'ทอม', birthdate: '1999-03-03', line_id: 'x', address: 'อโศก', areas: 'กรุงเทพฯ › วัฒนา', trans: String(trans) }, { photo: new File([img], 'a.jpg', { type: 'image/jpeg' }), other_doc: new File([img], 'b.jpg', { type: 'image/jpeg' }) }) }).then(J);
+  let pr = await pf(true);
+  let tr = (await J(await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ line_joined: false }) }))).row;
+  ok('tom ticks Trans → saved', pr.ok && tr?.trans === true, JSON.stringify(pr) + ' ' + tr?.trans);
+  pr = await pf(false);
+  tr = (await J(await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ line_joined: false }) }))).row;
+  ok('untick → ทอมปกติ', pr.ok && tr?.trans === false, String(tr?.trans));
+  h = await (await fetch(B + '/admin/applicants', { headers: ADM })).text();
+  ok('admin has หนุ่มหล่อ | ทอมหล่อ tabs', h.includes('data-admin-group="man"') && h.includes('data-admin-group="tom"'));
   const ih2 = await (await fetch(B + `/join/profile/${it.mb_code}?t=${encodeURIComponent(tok(it.mb_code))}`)).text();
   ok('invite tom sees ทอมหล่อ group', ih2.includes('XAyQXejkUc'));
   const bd = await J(await fetch(B + `/api/pt/bond?mb=${mb}&t=${encodeURIComponent(tok(mb))}`));
