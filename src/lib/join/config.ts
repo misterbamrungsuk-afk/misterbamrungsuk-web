@@ -111,6 +111,14 @@ export const BANK = {
 /** LINE Official Account (ใหม่ 21 ต.ค. 2569 · lin.ee/rnqFY2n → @350oyqnc) */
 export const LINE_OA_ID = "@350oyqnc";
 export const lineAddUrl = () => "https://lin.ee/rnqFY2n";
+/** กลุ่ม LINE Part-Time แยกหมวด (บอสให้ 22 ต.ค. 2569) — ปุ่มขึ้นเมื่อจ่ายค่าสมัครแล้ว (ดู ptLineGroup) */
+export const LINE_GROUPS = { man: "https://line.me/ti/g/t2xMQBRyuN", tom: "https://line.me/ti/g/XAyQXejkUc" } as const;
+/** ลิงก์กลุ่ม LINE ของผู้สมัคร: ชำระแล้ว = ทีมงานอนุมัติสลิป / สมัครฟรี (verified) หรือ Slip2Go ยืนยันยอดตรง · ยังไม่ชำระ = null */
+export function ptLineGroup(row: { status: string }, x: { group?: "tom" | null; slip_check?: { verdict?: string } | null }): { url: string; label: string } | null {
+  const paid = row.status === "verified" || x.slip_check?.verdict === "ok";
+  if (!paid) return null;
+  return x.group === "tom" ? { url: LINE_GROUPS.tom, label: "เข้ากลุ่ม LINE ทอมหล่อ" } : { url: LINE_GROUPS.man, label: "เข้ากลุ่ม LINE หนุ่มหล่อ" };
+}
 
 export const HERO_IMAGE =
   "https://images.unsplash.com/photo-1745270029066-8c1dfb37c03c?auto=format&fit=crop&w=1200&q=75";

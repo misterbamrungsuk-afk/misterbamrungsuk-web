@@ -18,6 +18,8 @@ export type HubData = {
   invite: boolean;
   /** หมวดทอมหล่อ (ป้าย) */
   tom: boolean;
+  /** ปุ่มเข้ากลุ่ม LINE ตามหมวด — ขึ้นเมื่อชำระค่าสมัครแล้ว (null = ยังไม่ชำระ) */
+  lineGroup: { url: string; label: string } | null;
   mb: string; t: string; nickname: string; fullName: string; statusLine: string; track: string; trackShort: string;
   main: string; mainPath: string; pos: string; photos: string[]; age: number | null; area: string; price: number; tier: "top" | "silver"; verified: boolean;
   fixes: number;
@@ -142,6 +144,9 @@ export function ProfileHub({ d }: { d: HubData }) {
               </div>
             </div>
 
+            {d.lineGroup && <a href={d.lineGroup.url} target="_blank" rel="noopener" data-line-group={d.tom ? "tom" : "man"} className="min-h-[52px] rounded-[14px] bg-[#06c755] text-white text-[15px] font-semibold flex items-center justify-center gap-[10px] hover:text-white">
+              <Ico size={22} d="M12 4C7 4 3 7.2 3 11c0 3.4 3 6.2 7.2 6.9L10 21l3.6-3.1C18 17.4 21 14.5 21 11c0-3.8-4-7-9-7z" />{d.lineGroup.label}
+            </a>}
             <div className="grid grid-cols-2 gap-[10px]">
               <Link href={`/join/profile/${d.mb}/jobs${q}`} className="rounded-2xl bg-[#211a18] flex flex-col gap-0.5 min-w-0 hover:text-inherit" style={{ padding: 14 }}><span className="text-[12px] font-light text-[#b5a596]">งานถัดไป</span>
                 {d.next

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { canResume } from "@/lib/join/resume";
-import { FEE_NOTE, PACKAGES, lineAddUrl } from "@/lib/join/config";
+import { FEE_NOTE, PACKAGES, lineAddUrl, ptLineGroup } from "@/lib/join/config";
 import { extraOf, getByMb } from "@/lib/join/store";
 import { TRAINING, sessionsLabel } from "@/lib/join/training";
 import { Forbidden } from "../../_kyc/ui";
@@ -27,6 +27,7 @@ export default async function DonePage({ params, searchParams }: { params: Promi
   if (!row.contract_accepted_at) redirect(`/join/contract/${mb}${q}`);
 
   const P = PACKAGES[row.package];
+  const lg = ptLineGroup(row, x);
   const group = x.cohort ? `กลุ่ม ${x.cohort}` : TRAINING.group;
   const info: [string, string][] = [["วันอบรม", TRAINING.window], ["สถานที่", TRAINING.venue], ["จำนวนรอบ", `${sessionsLabel(row.package)} · ทีมงานเช็กชื่อที่หน้างาน`], ["เปิดให้บริการ", TRAINING.openService]];
   const fee = `${x.invite ? "สมัครผ่านลิงก์เชิญ · " : ""}${row.package === "B" ? "เพื่อนกินเที่ยว (สำหรับผู้มีความสามารถด้านการนวด)" : "เพื่อนกินเที่ยว (ตามความสามารถพิเศษ)"}: ${(x.invite || x.group === "tom") && !row.amount ? (x.invite ? "ไม่มีค่าสมัคร · ระดับ TOP" : "ทอมหล่อ · ไม่มีค่าสมัคร") : `ค่าสมัคร (รวมค่าอบรม) ${baht(row.amount || P.price)} · ${FEE_NOTE}`}`;
@@ -48,8 +49,8 @@ export default async function DonePage({ params, searchParams }: { params: Promi
             <CopyButton code={row.mb_code} />
           </div>
           <div className="flex flex-col gap-4">
-            <a href={lineAddUrl()} target="_blank" rel="noopener" className="min-h-[52px] rounded-[14px] bg-[#06c755] text-white text-[15px] flex items-center justify-center gap-[10px] hover:text-white">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 4C7 4 3 7.2 3 11c0 3.4 3 6.2 7.2 6.9L10 21l3.6-3.1C18 17.4 21 14.5 21 11c0-3.8-4-7-9-7z" /></svg>เข้ากลุ่ม LINE กลุ่มอบรม
+            <a href={lg?.url ?? lineAddUrl()} data-line-group={lg ? (x.group === "tom" ? "tom" : "man") : undefined} target="_blank" rel="noopener" className="min-h-[52px] rounded-[14px] bg-[#06c755] text-white text-[15px] flex items-center justify-center gap-[10px] hover:text-white">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 4C7 4 3 7.2 3 11c0 3.4 3 6.2 7.2 6.9L10 21l3.6-3.1C18 17.4 21 14.5 21 11c0-3.8-4-7-9-7z" /></svg>{lg?.label ?? "ติดต่อทีมงานทาง LINE"}
             </a>
             <div className="flex flex-col gap-3 rounded-2xl bg-[#211a18] border border-[rgba(243,234,217,0.07)]" style={{ padding: 16 }}>
               <div className="font-semibold text-[15px] text-[#e8c472]">{`กลุ่มอบรมของคุณ · ${group}`}</div>

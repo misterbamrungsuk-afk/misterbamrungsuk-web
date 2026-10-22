@@ -76,6 +76,17 @@ const seats = async (g) => J(await fetch(B + '/api/join/seats' + (g ? '?g=' + g 
   // ป้าย + หน้าแรก
   h = await (await fetch(B + `/join/profile/${mb}?t=${encodeURIComponent(tok(mb))}`)).text();
   ok('profile shows ทอมหล่อ badge', h.includes('data-pt-group="tom"'));
+  ok('tom (free = paid) sees ทอมหล่อ LINE group button', h.includes('data-line-group="tom"') && h.includes('line.me/ti/g/XAyQXejkUc') && !h.includes('t2xMQBRyuN'));
+  const mh = await (await fetch(B + `/join/profile/${man.mb_code}?t=${encodeURIComponent(tok(man.mb_code))}`)).text();
+  ok('man: no tom group link (หนุ่มหล่อ group only once paid)', !mh.includes('XAyQXejkUc') && (!mh.includes('data-line-group') || mh.includes('t2xMQBRyuN')));
+  const lm = (await (await fetch(B + '/admin/applicants', { headers: ADM })).text()).replace(/\\"/g, '"');
+  const am = lm.indexOf('"mb_code":"' + man.mb_code + '"');
+  const idm = [...lm.slice(Math.max(0, am - 6000), am).matchAll(/"id":"([0-9a-f-]{36})"/g)].pop()?.[1];
+  await fetch(B + '/api/admin/applicants/' + idm, { method: 'PATCH', headers: ADM, body: JSON.stringify({ status: 'verified' }) });
+  const mh2 = await (await fetch(B + `/join/profile/${man.mb_code}?t=${encodeURIComponent(tok(man.mb_code))}`)).text();
+  ok('man after slip approved sees หนุ่มหล่อ LINE group', mh2.includes('data-line-group="man"') && mh2.includes('t2xMQBRyuN') && !mh2.includes('XAyQXejkUc'));
+  const ih2 = await (await fetch(B + `/join/profile/${it.mb_code}?t=${encodeURIComponent(tok(it.mb_code))}`)).text();
+  ok('invite tom sees ทอมหล่อ group', ih2.includes('XAyQXejkUc'));
   const bd = await J(await fetch(B + `/api/pt/bond?mb=${mb}&t=${encodeURIComponent(tok(mb))}`));
   ok('work bond applies to ทอมหล่อ', bd.ok && bd.applies === true, JSON.stringify(bd));
   h = await (await fetch(B + '/admin/applicants', { headers: ADM })).text();
