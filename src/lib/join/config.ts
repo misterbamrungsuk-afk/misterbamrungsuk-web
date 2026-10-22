@@ -105,7 +105,9 @@ export const BANK = {
   qrImage: "",
   /** หมายเลขพร้อมเพย์ของบัญชีรับเงิน (เบอร์มือถือหรือเลขบัตร) → สร้าง QR ฝังยอดอัตโนมัติ; ตั้งใน env NEXT_PUBLIC_PROMPTPAY_ID */
   // ว่าง ("") = ปิด QR → ทุกหน้าจ่ายเงินแสดงเลขบัญชี + ปุ่มคัดลอกแทน (components/bank-transfer) · 22 ต.ค. 2569 รอเบอร์พร้อมเพย์ใหม่
-  promptPayId: process.env.NEXT_PUBLIC_PROMPTPAY_ID || "0970592995",
+  // 22 ต.ค. 2569: เปลี่ยนเป็น 088-639-5324 (ทดสอบสแกน QR 1 บาทผ่านแล้ว) · 0970592995 เดิมไม่ได้ผูกพร้อมเพย์
+  // ไม่อ่าน env NEXT_PUBLIC_PROMPTPAY_ID เดิม (อาจยังเป็นเบอร์เก่าบน Vercel) → ใช้ NEXT_PUBLIC_PROMPTPAY_ID_V2 ถ้าจะเปลี่ยนผ่าน env
+  promptPayId: process.env.NEXT_PUBLIC_PROMPTPAY_ID_V2 || "0886395324",
 };
 
 /** LINE OA สำหรับยืนยันคิวอบรม */

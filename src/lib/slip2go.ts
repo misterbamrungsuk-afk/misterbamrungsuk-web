@@ -24,7 +24,7 @@ export interface SlipCheck {
 }
 
 /** บัญชีรับเงินของร้าน (ตรงกับที่ตั้งใน Slip2Go → บัญชีธนาคาร) — เพิ่ม/แก้ได้ด้วย env SLIP2GO_RECEIVERS คั่นด้วย , */
-const RECEIVERS = (process.env.SLIP2GO_RECEIVERS || "004999252592844,1912499789").split(",").map((x) => x.replace(/\D/g, "")).filter(Boolean);
+const RECEIVERS = (process.env.SLIP2GO_RECEIVERS || "004999252592844,1912499789,0886395324").split(",").map((x) => x.replace(/\D/g, "")).filter(Boolean);
 
 /** เลขบัญชีในสลิปมักถูกปิดบางหลัก เช่น "xxx-x-x4997-x" → เทียบเฉพาะหลักที่เห็น (ชิดขวา) ต้องเห็นอย่างน้อย 3 หลัก */
 function maskMatches(masked: string, full: string): boolean {
