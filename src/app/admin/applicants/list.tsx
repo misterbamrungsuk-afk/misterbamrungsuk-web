@@ -105,7 +105,10 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
     fromRes(res, d?.ok ? "ยกเลิกลิงก์เข้าโปรไฟล์ทั้งหมดแล้ว" : "ยกเลิกลิงก์ไม่สำเร็จ", !!d?.ok);
   };
   const setListed = async (id: string, listed: boolean) => { const d = await patch(id, { listed }); say(d, listed ? "แสดงบนหน้าแรกแล้ว" : "ซ่อนจากหน้าแรกแล้ว"); };
-  const setTier = async (id: string, tier: "top" | "silver") => { const d = await patch(id, { tier }); say(d, `ตั้งระดับ ${tier === "top" ? "TOP" : "Silver"} แล้ว`); };
+  const setTier = async (id: string, tier: "top" | "silver" | "secret") => { const d = await patch(id, { tier }); say(d, `ตั้งระดับ ${tier === "secret" ? "Secret" : tier === "top" ? "TOP" : "Silver"} แล้ว`); };
+  // ราคา Secret (3 ชม.) รายคน — ว่าง/0 = ใช้ราคา TOP
+  const [spDraft, setSpDraft] = useState<Record<string, string>>({});
+  const saveSecretPrice = async (id: string) => { const v = (spDraft[id] ?? "").replace(/\D/g, ""); const d = await patch(id, { tier: "secret", secret_price: v ? Number(v) : null }); say(d, v ? `ตั้งราคา Secret ฿${Number(v).toLocaleString("en-US")} / 3 ชม. แล้ว` : "ใช้ราคา TOP สำหรับ Secret"); };
   const assign = async (id: string, cohort: string | null) => { const d = await patch(id, { cohort }); say(d, `จัดเข้า${cohort ? cohortName(cohort) : " (ไม่ระบุกลุ่ม)"}`); };
   const setLine = async (id: string, v: boolean) => { const d = await patch(id, { line_joined: v }); say(d, v ? "บันทึก: เข้ากลุ่ม LINE แล้ว" : "บันทึก: ยังไม่เข้ากลุ่ม"); router.refresh(); };
   const copyLine = async (r: Applicant) => {
@@ -188,7 +191,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
                   style={{ background: sel?.id === r.id ? "rgba(240,200,90,.16)" : "transparent" }}>
                   <span className="text-[#ffd76a]">{r.mb_code}</span>
                   <span className="truncate pr-2">{r.first_name} {r.last_name}</span>
-                  <span className="text-[#d3c7bc] pr-1">{r.group === "tom" && <span className="text-[#f6a5c0]">{r.trans ? "ทอมหล่อ (Trans)" : "ทอมหล่อ"} · </span>}{r.package} · {r.invite && <span className="text-[#e8c472]">✦ เชิญ </span>}{fmt(r.amount)}</span>
+                  <span className="text-[#d3c7bc] pr-1">{r.group === "tom" && <span className="text-[#f6a5c0]">{r.trans ? "ทอมหล่อ (Trans)" : "ทอมหล่อ"} · </span>}{r.package} · {r.tier === "secret" ? <span className="text-[#d9ccff]">✦ Secret </span> : r.invite && <span className="text-[#e8c472]">✦ เชิญ </span>}{fmt(r.amount)}</span>
                   <span className="flex flex-col leading-tight text-[11.5px]"><span style={{ color: r.status === "verified" ? "#4ade80" : r.status === "pending_slip" ? "#eed58a" : "#fca5a5" }}>{LABEL[r.status]}</span><span style={{ color: KYC_LABEL[r.kyc_status ?? "none"][1] }}>{KYC_LABEL[r.kyc_status ?? "none"][0]}</span></span>
                   <span className="text-[#d3c7bc]">{cohortName(r.cohort)}</span>
                   <span style={{ color: r.line_joined ? "#4ade80" : "#eed58a" }}>{r.line_joined ? "✓ เข้ากลุ่มแล้ว" : "ยังไม่เข้า"}</span>
@@ -218,8 +221,14 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
             <Progress r={sel} />
             {sel.invite && <p className="text-[12.5px] text-[#e8c472] m-0">✦ สมัครผ่านลิงก์เชิญ ({sel.invite}) · ค่าสมัครเต็มเท่าคนทั่วไป</p>}
             <div className="flex justify-between items-center gap-2"><span className="text-[#cdbfb3]">ระดับ (หลังอบรม)</span>
-              <span className="flex gap-1">{(["silver", "top"] as const).map((t) => { const on = (sel.tier ?? "silver") === t; return <button key={t} onClick={() => setTier(sel.id, t)} aria-pressed={on} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={{ borderColor: on ? GOLD : LINE_BD, background: on ? GOLD : "transparent", color: on ? "#1a1206" : "#d3c7bc" }}>{t === "top" ? "TOP" : "Silver"}</button>; })}</span>
+              <span className="flex gap-1">{(["silver", "top", "secret"] as const).map((t) => { const on = (sel.tier ?? "silver") === t; const sc = t === "secret"; return <button key={t} data-set-tier={t} onClick={() => setTier(sel.id, t)} aria-pressed={on} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={sc ? { borderColor: "rgba(185,166,255,.75)", background: on ? "#07060a" : "transparent", color: "#e9e1ff", boxShadow: on ? "0 0 10px rgba(185,166,255,.55)" : "none" } : { borderColor: on ? GOLD : LINE_BD, background: on ? GOLD : "transparent", color: on ? "#1a1206" : "#d3c7bc" }}>{sc ? "Secret" : t === "top" ? "TOP" : "Silver"}</button>; })}</span>
             </div>
+            {sel.tier === "secret" && <div className="flex justify-between items-center gap-2"><span className="text-[#cdbfb3]">ราคา Secret · 3 ชม.</span>
+              <span className="flex gap-1.5 items-center">
+                <input data-secret-price inputMode="numeric" aria-label="ราคา Secret ต่อ 3 ชม." placeholder={sel.secret_price ? String(sel.secret_price) : "ใช้ราคา TOP"} value={spDraft[sel.id] ?? (sel.secret_price ? String(sel.secret_price) : "")} onChange={(e) => setSpDraft((m) => ({ ...m, [sel.id]: e.target.value.replace(/\D/g, "") }))} className="h-8 w-28 rounded-lg border border-[rgba(185,166,255,.5)] bg-[#07060a] px-2 text-right text-[13px] text-[#e9e1ff] outline-none tabular-nums" />
+                <button type="button" onClick={() => saveSecretPrice(sel.id)} className="h-8 px-3 rounded-full text-[12px] font-semibold" style={{ background: "#07060a", color: "#e9e1ff", boxShadow: "inset 0 0 0 1px rgba(185,166,255,.75)" }}>บันทึก</button>
+              </span>
+            </div>}
             <div className="flex justify-between items-center gap-2"><span className="text-[#cdbfb3]">แสดงบนหน้าแรก (เปิดรับงาน)</span>
               <button type="button" role="switch" aria-checked={!!sel.listed} onClick={() => setListed(sel.id, !sel.listed)} className="w-11 h-[26px] rounded-full relative shrink-0" style={{ background: sel.listed ? GOLD : "rgba(243,234,217,0.18)" }}><span className="absolute top-[3px] w-5 h-5 rounded-full bg-white transition-all" style={{ left: sel.listed ? 21 : 3 }} /></button>
             </div>

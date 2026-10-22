@@ -17,7 +17,7 @@ const STATUSES: ApplicantStatus[] = ["pending_slip", "verified", "rejected", "re
 
 type Body = {
   listed?: boolean; status?: ApplicantStatus; sync?: boolean; cohort?: string | null; line_joined?: boolean;
-  tier?: "top" | "silver"; reason?: string;
+  tier?: "top" | "silver" | "secret"; secret_price?: number | null; reason?: string;
   kyc_status?: "approved" | "rejected"; kyc_reason?: Partial<Record<string, string>> | null;
 };
 
@@ -79,8 +79,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return row ? NextResponse.json({ ok: true, row: { ...row, ...extraOf(row) } }) : NextResponse.json({ ok: false }, { status: 404 });
   }
   if (body.tier !== undefined) {
-    if (body.tier !== "top" && body.tier !== "silver") return NextResponse.json({ ok: false }, { status: 400 });
-    const row = await setTier(id, body.tier);
+    if (body.tier !== "top" && body.tier !== "silver" && body.tier !== "secret") return NextResponse.json({ ok: false }, { status: 400 });
+    // Secret: ราคา 3 ชม. รายคน (บาท) · ไม่ส่ง = คงเดิม · null/0 = ใช้ราคา TOP
+    const sp = body.secret_price === undefined ? undefined : body.secret_price === null ? null : Math.round(Number(body.secret_price));
+    if (sp !== undefined && sp !== null && (!Number.isFinite(sp) || sp < 0 || sp > 1_000_000)) return NextResponse.json({ ok: false, error: "ราคาไม่ถูกต้อง" }, { status: 400 });
+    const row = await setTier(id, body.tier, sp === 0 ? null : sp);
     return row ? NextResponse.json({ ok: true, row: { ...row, ...extraOf(row) } }) : NextResponse.json({ ok: false }, { status: 404 });
   }
   // จัดกลุ่มอบรม / สถานะกลุ่ม LINE

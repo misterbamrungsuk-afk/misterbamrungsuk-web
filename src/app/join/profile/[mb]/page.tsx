@@ -12,7 +12,7 @@ import { listForParttime, listNotices } from "@/lib/bookings";
 import { isPtActive } from "@/lib/join/pt-ui";
 import { BOOST_PLANS, FREE_BOOST, listBoostCodes } from "@/lib/join/boost";
 import { getMemberSettings } from "@/lib/member/tiers";
-import { ptLineGroup } from "@/lib/join/config";
+import { ptLineGroup, tierPrice } from "@/lib/join/config";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "โปรไฟล์ของฉัน — Mister Bamrungsuk" };
@@ -56,10 +56,10 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
     active: isPtActive(x), kycApproved: kyc === "approved", listed: !!x.listed, hasCert: !!row.docs.cert_doc, deleteRequested: x.delete_requested_at ?? null,
     wallet: { available: (w?.available ?? 0) / 100, pending: (w?.pending ?? 0) / 100, month: month / 100, bond: x.invite || x.group === "tom" ? (w?.bond ?? 0) / 100 : null },
     mb, t: t ?? "", nickname: row.nickname, fullName: `${row.first_name} ${row.last_name}`,
-    statusLine: x.invite && !row.amount ? "คำเชิญพิเศษ · ไม่มีค่าสมัคร · ระดับ TOP" : x.group === "tom" && !row.amount ? "ทอมหล่อ · ไม่มีค่าสมัคร" : `${x.invite ? "คำเชิญพิเศษ" : "สมัครปกติ"} · ${row.status === "verified" ? "ชำระค่าสมัครแล้ว" : "ส่งสลิปแล้ว · รอทีมงานตรวจ"}`,
+    statusLine: x.invite && !row.amount ? `คำเชิญพิเศษ · ไม่มีค่าสมัคร · ระดับ ${x.tier === "secret" ? "Secret" : "TOP"}` : x.group === "tom" && !row.amount ? "ทอมหล่อ · ไม่มีค่าสมัคร" : `${x.invite ? "คำเชิญพิเศษ" : "สมัครปกติ"} · ${row.status === "verified" ? "ชำระค่าสมัครแล้ว" : "ส่งสลิปแล้ว · รอทีมงานตรวจ"}`,
     track: row.package === "B" ? "เพื่อนกินเที่ยว · นวด" : "เพื่อนกินเที่ยว", trackShort: row.package === "B" ? "สายนวด" : "สายกินเที่ยว",
     main, mainPath, pos: (mainPath && x.photo_pos?.[mainPath]) || "50% 50%", photos, age: row.birthdate ? ageFrom(row.birthdate) : null, area: (x.areas ?? [])[0]?.split(" › ").pop() ?? "",
-    price: x.tier === "top" ? svc.top : svc.silver, tier: x.tier === "top" ? "top" : "silver", verified: row.status === "verified",
+    price: tierPrice(x, svc), tier: x.tier ?? "silver", verified: row.status === "verified",
     steps: [
       { t: "ชำระเงิน", sub: bad("slip") ? "สลิปต้องส่งใหม่" : row.status === "verified" ? "ตรวจสลิปแล้ว" : "ส่งสลิปแล้ว · รอทีมงานตรวจ", ok: !bad("slip"), href: bad("slip") ? "rejected" : "" },
       { t: "ข้อมูลส่วนตัว", sub: bad("form") ? "ทีมงานขอให้แก้ไข" : "ชื่อ เบอร์โทร LINE ที่พัก", ok: done.has(1) && !bad("form"), href: bad("form") ? "rejected" : "form" },

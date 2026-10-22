@@ -1,7 +1,7 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { verifiedType } from "@/lib/file-guard";
-import type { PackageKey } from "./config";
+import type { PackageKey, PtTier } from "./config";
 import type { SlipCheck } from "@/lib/slip2go";
 
 // ที่เก็บข้อมูลผู้สมัคร
@@ -115,7 +115,7 @@ export interface PtWork { days: Record<string, { on: boolean; from: string; to: 
 export interface PtListing { title: string; rules: string; hidden: boolean; updated_at: string }
 export interface PtPost { text: string; time: string; zone: string; open: boolean; created_at: string }
 
-export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents" | "talents_other" | "activities_other" | "areas" | "no_area" | "slip_check" | "invite" | "kyc_status" | "kyc_reason" | "kyc_submitted_at" | "bank_book_path"> & { attendance?: Record<string, boolean>; /** เวลาเช็กชื่อรายรอบ (โหมดสาธิต / ฐานที่ยังไม่มีตาราง cohort_attendance) */ attendance_at?: Record<string, string>; photos?: string[]; card?: ProfileCard | null; form_done?: number[]; tier?: "top" | "silver"; pt_settings?: PtSettings | null; post?: PtPost | null; listing?: PtListing | null; work?: PtWork | null; listed?: boolean; delete_requested_at?: string | null; bank_consents?: { terms: boolean; pdpa: boolean; profile: boolean; at: string } | null; /** ตำแหน่งรูปในกรอบ (object-position "x% y%") ต่อ path รูป */ photo_pos?: Record<string, string> | null; /** ย่านที่ Part-Time ตั้งเองให้แสดงบนแผนที่ (ปัดเป็นช่อง ~1 กม. แล้ว ไม่ใช่ตำแหน่งจริง) */ geo?: PtGeo | null; /** แอดมินที่ออกลิงก์เข้าโปรไฟล์ล่าสุด (คนนี้อนุมัติ KYC ผู้สมัครคนนี้ไม่ได้) */ link_by?: { email: string; at: string } | null; /** โทเคนเข้าโปรไฟล์ที่ออกก่อนเวลานี้ใช้ไม่ได้ (ออกจากระบบทุกเครื่อง / แอดมินยกเลิกลิงก์) */ tokens_after?: string | null; /** เปลี่ยนบัญชีรับเงินหลังอนุมัติแล้ว — รอแอดมินตรวจบัญชีใหม่ (ถอนเงินไม่ได้จนตรวจ) · prev = บัญชีเดิม */ bank_review?: { at: string; prev: { bank: string; bank_account: string; bank_account_name: string; bank_book_path: string | null } } | null; /** เวลาที่แก้รายการที่ทีมงานตีกลับครบทุกรายการล่าสุด (หน้า /join/rejected แยก "ส่งแก้ไขครบแล้ว" กับ "ไม่มีรายการต้องแก้") */ fixes_done_at?: string | null; /** แอดมินทุกคนที่เคยออกลิงก์ให้ผู้สมัครคนนี้ (กันอนุมัติ KYC เอง) */ link_by_all?: { email: string; at: string }[] | null; /** เหตุผลล่าสุดที่ไม่อนุมัติสลิปค่าสมัคร */ slip_reject?: { reason: string; by: string; at: string } | null; /** รหัสผ่าน Part-Time (scrypt "salt:hash") — อ่านผ่าน getPwHash เท่านั้น ไม่ส่งออกจาก store */ pw_hash?: string | null; /** เวลาตั้งรหัสผ่านล่าสุด */ pw_at?: string | null; /** เลขใบแจ้งหนี้ (ออกตอนสมัคร) */ inv_no?: string | null; /** เลขใบเสร็จรับเงิน (ออกเมื่ออนุมัติสลิป) */ ri_no?: string | null; ri_at?: string | null; /** วันที่เปิดรับงาน (listed ครั้งแรก) — นับ 30 วันโค้ดโปรโมทฟรี */ listed_at?: string | null; /** หมวด: "tom" = ทอมหล่อ · ไม่มี = หนุ่มหล่อ (บอสสั่ง 21 ต.ค. 2569 · ที่นั่งอบรมแยกโควตา) */ group?: "tom" | null; /** ทอมหล่อที่แปลงเพศแล้ว (ติ๊กในใบสมัคร) · ไม่ติ๊ก = ทอม */ trans?: boolean | null };
+export type Extra = Pick<Applicant, "activities" | "massage_cert" | "availability" | "ack_hours" | "ack_no_refuse" | "cohort" | "line_joined" | "phone_verified_at" | "talents" | "talents_other" | "activities_other" | "areas" | "no_area" | "slip_check" | "invite" | "kyc_status" | "kyc_reason" | "kyc_submitted_at" | "bank_book_path"> & { attendance?: Record<string, boolean>; /** เวลาเช็กชื่อรายรอบ (โหมดสาธิต / ฐานที่ยังไม่มีตาราง cohort_attendance) */ attendance_at?: Record<string, string>; photos?: string[]; card?: ProfileCard | null; form_done?: number[]; tier?: PtTier; /** ราคา 3 ชม. ของระดับ Secret (บาท · แอดมินตั้ง) */ secret_price?: number | null; pt_settings?: PtSettings | null; post?: PtPost | null; listing?: PtListing | null; work?: PtWork | null; listed?: boolean; delete_requested_at?: string | null; bank_consents?: { terms: boolean; pdpa: boolean; profile: boolean; at: string } | null; /** ตำแหน่งรูปในกรอบ (object-position "x% y%") ต่อ path รูป */ photo_pos?: Record<string, string> | null; /** ย่านที่ Part-Time ตั้งเองให้แสดงบนแผนที่ (ปัดเป็นช่อง ~1 กม. แล้ว ไม่ใช่ตำแหน่งจริง) */ geo?: PtGeo | null; /** แอดมินที่ออกลิงก์เข้าโปรไฟล์ล่าสุด (คนนี้อนุมัติ KYC ผู้สมัครคนนี้ไม่ได้) */ link_by?: { email: string; at: string } | null; /** โทเคนเข้าโปรไฟล์ที่ออกก่อนเวลานี้ใช้ไม่ได้ (ออกจากระบบทุกเครื่อง / แอดมินยกเลิกลิงก์) */ tokens_after?: string | null; /** เปลี่ยนบัญชีรับเงินหลังอนุมัติแล้ว — รอแอดมินตรวจบัญชีใหม่ (ถอนเงินไม่ได้จนตรวจ) · prev = บัญชีเดิม */ bank_review?: { at: string; prev: { bank: string; bank_account: string; bank_account_name: string; bank_book_path: string | null } } | null; /** เวลาที่แก้รายการที่ทีมงานตีกลับครบทุกรายการล่าสุด (หน้า /join/rejected แยก "ส่งแก้ไขครบแล้ว" กับ "ไม่มีรายการต้องแก้") */ fixes_done_at?: string | null; /** แอดมินทุกคนที่เคยออกลิงก์ให้ผู้สมัครคนนี้ (กันอนุมัติ KYC เอง) */ link_by_all?: { email: string; at: string }[] | null; /** เหตุผลล่าสุดที่ไม่อนุมัติสลิปค่าสมัคร */ slip_reject?: { reason: string; by: string; at: string } | null; /** รหัสผ่าน Part-Time (scrypt "salt:hash") — อ่านผ่าน getPwHash เท่านั้น ไม่ส่งออกจาก store */ pw_hash?: string | null; /** เวลาตั้งรหัสผ่านล่าสุด */ pw_at?: string | null; /** เลขใบแจ้งหนี้ (ออกตอนสมัคร) */ inv_no?: string | null; /** เลขใบเสร็จรับเงิน (ออกเมื่ออนุมัติสลิป) */ ri_no?: string | null; ri_at?: string | null; /** วันที่เปิดรับงาน (listed ครั้งแรก) — นับ 30 วันโค้ดโปรโมทฟรี */ listed_at?: string | null; /** หมวด: "tom" = ทอมหล่อ · ไม่มี = หนุ่มหล่อ (บอสสั่ง 21 ต.ค. 2569 · ที่นั่งอบรมแยกโควตา) */ group?: "tom" | null; /** ทอมหล่อที่แปลงเพศแล้ว (ติ๊กในใบสมัคร) · ไม่ติ๊ก = ทอม */ trans?: boolean | null };
 export type PtGeo = { lat: number; lng: number; label: string; src: "gps" | "pin"; at: string };
 
 /** รวมคอลัมน์ 0003 กับ docs.extra — คอลัมน์จริงมาก่อน */
@@ -139,6 +139,7 @@ export function extraOf(a: Applicant): Extra {
     card: x.card ?? null,
     form_done: x.form_done ?? [],
     tier: x.tier ?? "silver",
+    secret_price: x.secret_price ?? null,
     pt_settings: x.pt_settings ?? null,
     post: x.post ?? null,
     listing: x.listing ?? null,
@@ -365,7 +366,7 @@ export async function updateExtra(id: string, patch: Pick<Extra, "cohort" | "lin
 
 const KYC_EXTRA_KEYS = ["kyc_status", "kyc_reason", "kyc_submitted_at", "bank_book_path"];
 /** เก็บใน docs.extra อย่างเดียว (ไม่มีคอลัมน์) */
-const EXTRA_ONLY_KEYS = ["group", "trans", "pw_hash", "pw_at", "inv_no", "ri_no", "ri_at", "listed_at", "blocked_customers", "link_by_all", "slip_reject", "fixes_done_at", "bank_review", "tokens_after", "link_by", "geo", "photo_pos", "slip_check", "pt_settings", "post", "listing", "work", "listed", "delete_requested_at", "tier", "bank_consents", "areas", "no_area", "availability", "massage_cert", "ack_hours", "ack_no_refuse", "photos", "card", "form_done"];
+const EXTRA_ONLY_KEYS = ["group", "trans", "secret_price", "pw_hash", "pw_at", "inv_no", "ri_no", "ri_at", "listed_at", "blocked_customers", "link_by_all", "slip_reject", "fixes_done_at", "bank_review", "tokens_after", "link_by", "geo", "photo_pos", "slip_check", "pt_settings", "post", "listing", "work", "listed", "delete_requested_at", "tier", "bank_consents", "areas", "no_area", "availability", "massage_cert", "ack_hours", "ack_no_refuse", "photos", "card", "form_done"];
 
 /** เขียนคอลัมน์ + docs (path ไฟล์ และ extra สำรอง) — คอลัมน์ 0006 ยังไม่มีก็เขียนเฉพาะคอลัมน์เดิม + docs */
 async function patchApplicant(id: string, allCols: Record<string, unknown>, docPaths: Partial<Record<DocKind, string>> = {}): Promise<Applicant | null> {
@@ -414,9 +415,9 @@ export async function saveProfile(id: string, cols: Record<string, unknown>, fil
 export async function addProfilePhoto(id: string, f: File) {
   return putKycFile(id, "profile", f);
 }
-/** แอดมินกำหนดระดับ TOP / Silver หลังอบรม → ราคาบนการ์ดโปรไฟล์ */
-export async function setTier(id: string, tier: "top" | "silver") {
-  return patchApplicant(id, { tier });
+/** แอดมินกำหนดระดับ TOP / Silver / Secret → ราคาบนการ์ดโปรไฟล์ (Secret: ราคา 3 ชม. รายคน) */
+export async function setTier(id: string, tier: PtTier, secret_price?: number | null) {
+  return patchApplicant(id, { tier, ...(secret_price !== undefined ? { secret_price } : {}) });
 }
 export async function setProfilePhotos(id: string, photos: string[]) {
   return patchApplicant(id, { photos: photos.slice(0, 9) });

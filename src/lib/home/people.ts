@@ -13,6 +13,8 @@ export type Person = {
   trained?: boolean; checked?: boolean;
   /** โปรโมทอยู่ (จ่ายแผนโปรโมท) = ขึ้นอันดับต้น + ป้าย "แนะนำ" */
   boost?: boolean;
+  /** ระดับ Secret (ลิงก์เชิญ Secret) — แสดงแบบ TOP แต่ป้าย Secret กรอบดำเรืองแสง · ขึ้นก่อน TOP */
+  secret?: boolean;
   /** ราคา 3 ชม. จริงจากหน้า "ราคาและส่วนแบ่ง" (คนจริง) */
   price?: number;
   /** จำนวนรูป (คนจริง) */

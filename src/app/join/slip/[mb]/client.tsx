@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
 import { promptPayPayload } from "@/lib/join/promptpay";
+import { BankTransfer } from "@/components/bank-transfer";
 import { BottomBar, ctaStyle } from "../../_kyc/ui";
 import { dataUrlToFile, resizeImage } from "@/lib/join/form";
 
@@ -62,6 +63,7 @@ export function SlipForm({ mb, t, amount, reason, promptPayId, accountName, allo
             <b className="font-semibold">ทีมงานแจ้ง:</b> {reason}
           </div>
         )}
+        {!promptPayPayload(promptPayId, amount) ? <div className="flex flex-col gap-3 rounded-2xl bg-[#251d1b]" style={{ padding: 20 }}><BankTransfer amount={amount} /><span className="text-[12.5px] font-light text-[#b5a596]">ถ้าโอนแล้ว ไม่ต้องโอนซ้ำ · แนบสลิปเดิมที่ชัดเจนได้เลย</span></div> :
         <div className="flex flex-col items-center gap-3 rounded-2xl bg-[#251d1b]" style={{ padding: 20 }}>
           <div className="flex justify-between w-full text-[14px]"><span className="text-[#e8c472] font-semibold">PromptPay</span><span>ยอด <b className="text-[#e8c472]">{baht(amount)}</b></span></div>
           <div className="rounded-xl bg-white p-2">
@@ -69,7 +71,7 @@ export function SlipForm({ mb, t, amount, reason, promptPayId, accountName, allo
           </div>
           <span className="text-[13px] font-light text-[#d9c9b4]">ชื่อบัญชี {accountName}</span>
           <span className="text-[12.5px] font-light text-[#b5a596] text-center">ถ้าโอนแล้ว ไม่ต้องโอนซ้ำ · แนบสลิปเดิมที่ชัดเจนได้เลย</span>
-        </div>
+        </div>}
         <label className="rounded-2xl bg-[#251d1b] flex flex-col items-center justify-center gap-2 cursor-pointer overflow-hidden text-center" style={{ padding: url ? 0 : 20, minHeight: 260 }}>
           {url ? <img src={url} alt="สลิปที่แนบ" className="w-full max-h-[420px] object-contain" /> : <>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M5 20h14" /></svg>

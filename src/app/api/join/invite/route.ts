@@ -8,6 +8,6 @@ export const runtime = "nodejs";
 export async function GET(req: Request) {
   if (await dbLimited(`inv:${(req.headers.get("x-forwarded-for") ?? "local").split(",")[0].trim()}`, 20, 15 * 60_000)) return Response.json({ ok: false, error: "ลองบ่อยเกินไป กรุณารอสักครู่" }, { status: 429 });
   const code = new URL(req.url).searchParams.get("code") ?? "";
-  const { state } = await findInvite(code);
-  return NextResponse.json({ ok: state === "ok", state }, { headers: { "Cache-Control": "no-store" } });
+  const { state, invite } = await findInvite(code);
+  return NextResponse.json({ ok: state === "ok", state, ...(state === "ok" && invite?.kind === "secret" ? { secret: true } : {}) }, { headers: { "Cache-Control": "no-store" } });
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { tierPrice } from "@/lib/join/config";
 import { notFound } from "next/navigation";
 import { getEarnings } from "@/lib/join/earnings-settings";
 import { Forbidden } from "../../../_kyc/ui";
@@ -20,7 +21,7 @@ export default async function MyEarningsPage({ params, searchParams }: { params:
   if (c === "forbidden") return <Forbidden />;
   if (!c) notFound();
   const cfg = await getEarnings();
-  const top = c.x.tier === "top";
+  const top = c.x.tier === "top" || c.x.tier === "secret";
   const svc = c.row.package === "B" ? cfg.price3h.massage : cfg.price3h.eat;
   const acct = acctOf(c.row);
   const [w, ws] = await Promise.all([ptWallet(c.row.id).catch(() => ({ available: 0, pending: 0, withdrawing: 0, history: [] as { tx_id: number; kind: string; note: string | null; bucket: string; amount: number; created_at: string }[] })), listWithdrawals({ parttime_id: c.row.id }).catch(() => [])]);
@@ -39,7 +40,7 @@ export default async function MyEarningsPage({ params, searchParams }: { params:
       <PtHead back={ptHref(c)} title="รายได้ของฉัน" />
       <div className="px-4 flex flex-col gap-3.5 md:grid md:grid-cols-2 md:items-start">
         <div className="flex flex-col gap-3.5 min-w-0">
-          <EarnBoard price={top ? svc.top : svc.silver} tiers={cfg.tiers} top={top} real={cases} />
+          <EarnBoard price={tierPrice(c.x, svc)} tiers={cfg.tiers} top={top} secret={c.x.tier === "secret"} real={cases} />
         </div>
         <div className="flex flex-col gap-3.5 min-w-0">
           <div className="rounded-[22px]" style={{ padding: 18, background: "linear-gradient(180deg, #2a2120 0%, #1f1817 100%)" }}>

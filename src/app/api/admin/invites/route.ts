@@ -21,7 +21,7 @@ export async function GET() {
 export async function POST(req: Request) {
   const s = await session();
   if (!s) return bad("ไม่มีสิทธิ์", 401);
-  const b = (await req.json().catch(() => null)) as { name?: string; limit?: number | null; expires?: string } | null;
+  const b = (await req.json().catch(() => null)) as { name?: string; limit?: number | null; expires?: string; kind?: string } | null;
   const name = String(b?.name ?? "").trim().slice(0, 60);
   const limit = b?.limit === null || b?.limit === undefined ? null : Number(b.limit);
   const expires = String(b?.expires ?? "");
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(expires) || Number.isNaN(Date.parse(expires))) return bad("เลือกวันหมดอายุ");
   if (Date.parse(`${expires}T23:59:59+07:00`) < Date.now()) return bad("วันหมดอายุต้องไม่ใช่วันที่ผ่านมาแล้ว");
   try {
-    return NextResponse.json({ ok: true, data: await createInvite(name, limit, expires, s.email) });
+    return NextResponse.json({ ok: true, data: await createInvite(name, limit, expires, s.email, b?.kind === "secret" ? "secret" : undefined) });
   } catch (e) {
     console.error("create invite failed", e);
     return bad("บันทึกไม่สำเร็จ", 500);

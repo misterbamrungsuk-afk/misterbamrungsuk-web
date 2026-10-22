@@ -17,6 +17,7 @@ const TR: Record<PackageKey, { name2: string; fee: string; lines: [string, strin
 };
 const TIMELINE: [string, string][] = [["20 ต.ค. – 10 พ.ย.", "เปิดรับสมัคร"], ["ไม่เกินต้น พ.ย.", "ประกาศกฎเกณฑ์การทำงาน"], ["ภายใน 20 พ.ย.", "อบรมกลุ่ม 1"], ["30 พ.ย.", "พร้อมเปิดให้บริการ"], ["30 พ.ย. – ต้น ธ.ค.", "อบรมกลุ่ม 2"]];
 const FAQ_INVITE: [string, string] = ["คำเชิญพิเศษต่างจากสมัครปกติอย่างไร?", "ผู้ได้รับคำเชิญไม่ต้องชำระค่าสมัคร และได้ระดับ TOP ทันที แค่กรอกข้อมูลสมัคร · หลังเริ่มงาน หักเงินประกันงานเคสละ ฿500 จากรายได้ (กันหนีงาน/เทงาน) · เงินแต่ละก้อนครบ 90 วันถอนคืนได้ (ค่าธรรมเนียมถอน 3%)"];
+const FAQ_SECRET: [string, string] = ["คำเชิญ Secret คืออะไร?", "ลิงก์นี้สำหรับผู้ได้รับเชิญเป็น Secret เท่านั้น · ไม่ต้องชำระค่าสมัคร · โปรไฟล์แสดงเป็นระดับ Secret ขึ้นก่อน TOP · ราคาต่อครั้งทีมงานกำหนดให้รายคน · หลังเริ่มงาน หักเงินประกันงานเคสละ ฿500 จากรายได้ เงินแต่ละก้อนครบ 90 วันถอนคืนได้ (ค่าธรรมเนียมถอน 3%)"];
 const FAQ_TOM: [string, string] = ["ทอมหล่อต้องจ่ายค่าสมัครไหม?", "ไม่ต้องจ่าย สมัครฟรี ทอมหล่อรับเฉพาะสายเพื่อนกินเที่ยวที่มีความสามารถในการนวด · หลังเริ่มงาน หักเงินประกันงานเคสละ ฿500 จากรายได้ (กันหนีงาน/เทงาน) เงินแต่ละก้อนครบ 90 วันถอนคืนได้"];
 const FAQ: [string, string][] = [
   ["ค่าสมัครรวมอะไรบ้าง คืนได้ไหม?", `รวมค่าอบรมแล้ว ได้แชร์ข้อมูลทางกฎหมายที่เกี่ยวข้องกับการทำงานและทริคมัดใจลูกค้า (เพื่อนกินเที่ยว ${fmtB(PACKAGES.A.price)} · สายนวด ${fmtB(PACKAGES.B.price)}) · ค่าสมัครไม่คืนเงินทุกกรณี`],
@@ -30,12 +31,12 @@ export type Seats = { left: number; quota: number; cohort: string; closed: boole
 const h2: React.CSSProperties = { margin: 0, fontWeight: 600, fontSize: 20 };
 
 /** invite = รหัสลิงก์เชิญ (บอร์ด JoinInvite): ค่าสมัครเท่ากัน · ไม่มีแถบที่นั่ง · ปุ่ม "เริ่มสร้างโปรไฟล์" */
-export function JoinSalePage({ seats, showEarnings = true, invite, group = null }: { seats: Seats; showEarnings?: boolean; invite?: string; group?: "tom" | null }) {
+export function JoinSalePage({ seats, showEarnings = true, invite, group = null, secret = false }: { seats: Seats; showEarnings?: boolean; invite?: string; group?: "tom" | null; secret?: boolean }) {
   // ลิงก์เชิญ: เลือกหนุ่มหล่อ / ทอมหล่อ ในหน้านี้ (ไม่มีหน้าแยก) · สมัครปกติ: แยกหน้า /join กับ /join/tom
   const [invGroup, setInvGroup] = useState<"man" | "tom">("man");
   const tom = invite ? invGroup === "tom" : group === "tom";
   const g = tom ? "&g=tom" : "";
-  const faq = invite ? [FAQ_INVITE, ...FAQ.slice(1)] : tom ? [FAQ_TOM, ...FAQ.slice(1)] : FAQ;
+  const faq = invite ? [secret ? FAQ_SECRET : FAQ_INVITE, ...FAQ.slice(1)] : tom ? [FAQ_TOM, ...FAQ.slice(1)] : FAQ;
   const looking = tom ? ["ทอมหล่อ อายุ 20–50 ปี ดูแลตัวเองสม่ำเสมอ", ...LOOKING_FOR.slice(1)] : LOOKING_FOR;
 
   const [pick, setPick] = useState<PackageKey>("B");
@@ -50,10 +51,10 @@ export function JoinSalePage({ seats, showEarnings = true, invite, group = null 
       </div>
 
       <div className="mx-auto max-w-[1200px] flex flex-col" style={{ padding: "20px 16px 0", gap: 26 }}>
-        <section className="join-hero md:min-h-[340px] md:flex md:flex-col md:justify-end md:py-14 md:px-12" style={{ padding: "40px 22px 34px", borderRadius: 18 }}>
-          <div className="text-[11px] font-semibold tracking-[2px] text-[#e8c472]">{invite ? <><span className="tracking-normal text-[13px]">✦ คำเชิญพิเศษ</span> · PART TIME</> : "PART TIME"}</div>
+        <section data-secret-hero={secret ? "1" : undefined} className={`join-hero md:min-h-[340px] md:flex md:flex-col md:justify-end md:py-14 md:px-12${secret ? " secret-glow" : ""}`} style={{ padding: "40px 22px 34px", borderRadius: 18, ...(secret ? { border: "1.5px solid rgba(185,166,255,.75)", filter: "saturate(.6)" } : {}) }}>
+          <div className="text-[11px] font-semibold tracking-[2px] text-[#e8c472]">{invite ? <><span className="tracking-normal text-[13px]" style={secret ? { color: "#d9ccff", textShadow: "0 0 12px rgba(185,166,255,.8)" } : undefined}>{secret ? "✦ คำเชิญพิเศษสำหรับ Secret เท่านั้น" : "✦ คำเชิญพิเศษ"}</span> · PART TIME</> : "PART TIME"}</div>
           <h1 className="font-semibold text-[30px] md:text-[48px] leading-[1.32] text-[#f3ead9] md:max-w-[640px]" style={{ margin: "10px 0 6px" }}>{tom ? "ทอมหล่อ · เพื่อนกินเที่ยว Mister Bamrungsuk" : "เพื่อนกินเที่ยว Mister Bamrungsuk"}</h1>
-          <p className="m-0 text-[15px] md:text-[18px] text-[#e6d6c4]">งานพาร์ทไทม์ เลือกวันเวลาเอง{!invite && tom ? " · ทอมหล่อสมัครฟรี" : ""}{invite ? " · คำเชิญพิเศษ: สมัครฟรี ได้ระดับ TOP" : ""}</p>
+          <p className="m-0 text-[15px] md:text-[18px] text-[#e6d6c4]">งานพาร์ทไทม์ เลือกวันเวลาเอง{!invite && tom ? " · ทอมหล่อสมัครฟรี" : ""}{invite ? (secret ? " · Secret: สมัครฟรี · ราคาทีมงานกำหนดรายคน" : " · คำเชิญพิเศษ: สมัครฟรี ได้ระดับ TOP") : ""}</p>
         </section>
 
         {/* หนุ่มหล่อ / ทอมหล่อ — สมัครแยกหมวด · ที่นั่งอบรมแยกโควตา */}

@@ -1,4 +1,5 @@
 import "server-only";
+import { tierPrice } from "@/lib/join/config";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { PLATFORM, WalletError, balances, move, type Leg, type MoveTx } from "@/lib/wallet";
 import { getById, extraOf, type Applicant } from "@/lib/join/store";
@@ -58,7 +59,7 @@ export class BookingError extends Error { constructor(msg: string, public code =
 export async function priceFor(a: Applicant, hours: 3 | 5): Promise<number> {
   const cfg = await getEarnings();
   const svc = a.package === "B" ? cfg.price3h.massage : cfg.price3h.eat;
-  const p3 = extraOf(a).tier === "top" ? svc.top : svc.silver;
+  const p3 = tierPrice(extraOf(a), svc);
   return hours === 5 ? Math.round(p3 * (cfg.fiveHourMultiplier || 1.5)) : p3;
 }
 

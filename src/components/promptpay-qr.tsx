@@ -5,6 +5,7 @@ import QRCode from "qrcode";
 import { baht } from "./ui";
 import { BANK } from "@/lib/join/config";
 import { promptPayPayload } from "@/lib/join/promptpay";
+import { BankTransfer } from "./bank-transfer";
 
 /** การ์ด QR พร้อมเพย์ฝังยอด (สไตล์เดียวกับหน้า checkout) */
 export default function PromptPayCard({ amount }: { amount: number }) {
@@ -13,6 +14,7 @@ export default function PromptPayCard({ amount }: { amount: number }) {
     const payload = promptPayPayload(BANK.promptPayId, amount);
     if (payload) QRCode.toDataURL(payload, { margin: 1, width: 440 }).then(setSrc).catch(() => setSrc(""));
   }, [amount]);
+  if (!promptPayPayload(BANK.promptPayId, amount)) return <div className="w-full max-w-[360px] rounded-2xl" style={{ padding: 14, background: "#211a18" }}><BankTransfer amount={amount} /></div>;
   return (
     <div className="w-full max-w-[260px] rounded-2xl bg-white overflow-hidden text-[#1a1206]">
       <div className="bg-[#113566] text-white text-center py-2 text-[12px] font-semibold tracking-wide">THAI QR PAYMENT · พร้อมเพย์</div>

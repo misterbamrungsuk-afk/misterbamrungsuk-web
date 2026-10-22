@@ -16,6 +16,8 @@ export interface Invite {
   enabled: boolean;
   created_at: string;
   created_by: string;
+  /** "secret" = ลิงก์เชิญเฉพาะระดับ Secret (สมัครฟรี · ราคาแอดมินกำหนดรายคน · บอสสั่ง 22 ต.ค. 2569) · ไม่มี = เชิญปกติ (ฟรี + TOP) */
+  kind?: "secret";
 }
 export type InviteState = "ok" | "off" | "expired" | "full" | "missing";
 
@@ -61,11 +63,11 @@ export async function findInvite(code: string) {
   return { invite, state: stateOf(invite) };
 }
 
-export async function createInvite(name: string, limit: number | null, expires: string, by: string) {
+export async function createInvite(name: string, limit: number | null, expires: string, by: string, kind?: "secret") {
   const list = await listInvites();
   let code = newCode();
   while (list.some((i) => i.code === code)) code = newCode();
-  const inv: Invite = { code, name, limit, used: 0, expires, enabled: true, created_at: new Date().toISOString(), created_by: by };
+  const inv: Invite = { code, name, limit, used: 0, expires, enabled: true, created_at: new Date().toISOString(), created_by: by, ...(kind ? { kind } : {}) };
   await saveAll([inv, ...list]);
   return inv;
 }

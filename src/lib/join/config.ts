@@ -104,6 +104,7 @@ export const BANK = {
   /** รูป QR รับเงิน: บันทึกรูปจากแชทไว้ที่ join/public/qr.png แล้วใส่ "/qr.png" — ว่างไว้ = แสดงเลขบัญชีแทน */
   qrImage: "",
   /** หมายเลขพร้อมเพย์ของบัญชีรับเงิน (เบอร์มือถือหรือเลขบัตร) → สร้าง QR ฝังยอดอัตโนมัติ; ตั้งใน env NEXT_PUBLIC_PROMPTPAY_ID */
+  // ว่าง ("") = ปิด QR → ทุกหน้าจ่ายเงินแสดงเลขบัญชี + ปุ่มคัดลอกแทน (components/bank-transfer) · 22 ต.ค. 2569 รอเบอร์พร้อมเพย์ใหม่
   promptPayId: process.env.NEXT_PUBLIC_PROMPTPAY_ID || "0970592995",
 };
 
@@ -189,6 +190,12 @@ export const EARNINGS = {
 } as const;
 export type EarnSvc = keyof typeof EARNINGS.price3h;
 export type EarnTier = "top" | "silver";
+/** ระดับ Part-Time: Secret = ลิงก์เชิญ Secret (บอสสั่ง 22 ต.ค. 2569) · แสดงแบบ TOP แต่ป้าย "Secret" กรอบดำเรืองแสง · ขึ้นก่อน TOP · ราคาแอดมินกำหนดรายคน */
+export type PtTier = "top" | "silver" | "secret";
+export const tierLabel = (t?: string | null) => (t === "secret" ? "Secret" : t === "top" ? "TOP" : "Silver");
+/** ราคา 3 ชม. ตามระดับ — Secret = ราคาที่แอดมินตั้งรายคน (ยังไม่ตั้ง = ราคา TOP) */
+export const tierPrice = (x: { tier?: string | null; secret_price?: number | null }, svc: { top: number; silver: number }) =>
+  x.tier === "secret" ? (x.secret_price && x.secret_price > 0 ? x.secret_price : svc.top) : x.tier === "top" ? svc.top : svc.silver;
 export function sharePct(cases: number): number {
   let pct: number = EARNINGS.tiers[0].pct;
   for (const t of EARNINGS.tiers) if (cases >= t.min) pct = t.pct;

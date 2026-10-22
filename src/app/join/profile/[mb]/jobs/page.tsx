@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { tierLabel, tierPrice } from "@/lib/join/config";
 import { notFound } from "next/navigation";
 import { getEarnings } from "@/lib/join/earnings-settings";
 import { TRAINING } from "@/lib/join/training";
@@ -20,11 +21,10 @@ export default async function JobsPage({ params, searchParams }: { params: Promi
   const p0 = c.x.photos?.[0] ?? c.row.docs.photo ?? "";
   const photo = p0 ? `/api/join/file?mb=${c.mb}&path=${encodeURIComponent(p0)}${c.t ? `&t=${encodeURIComponent(c.t)}` : ""}` : "";
   const cfg = await getEarnings();
-  const top = c.x.tier === "top";
   const svc = c.row.package === "B" ? cfg.price3h.massage : cfg.price3h.eat;
   const active = isPtActive(c.x);
   const fans = active ? await interestsForPt(c.row).catch(() => ({ count: 0, list: [] })) : { count: 0, list: [] };
-  const meta = `${top ? "TOP" : "Silver"} · 3 ชม. ${baht(top ? svc.top : svc.silver)} · ${c.row.package === "B" ? "สายนวด" : "สายกินเที่ยว"}`;
+  const meta = `${tierLabel(c.x.tier)} · 3 ชม. ${baht(tierPrice(c.x, svc))} · ${c.row.package === "B" ? "สายนวด" : "สายกินเที่ยว"}`;
 
   return (
     <PtPage>

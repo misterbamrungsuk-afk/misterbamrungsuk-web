@@ -443,3 +443,11 @@ html { scroll-behavior: smooth; }
 /* ปุ่ม SOS — มือถือ: เหนือแถบเมนูล่าง ชิดขอบขวาของคอลัมน์ (เมนูล่างกว้างสุด 640px) · คอม (เมนูเป็นแถบซ้าย): มุมขวาล่างของจอ */
 .sos-fab { right: max(16px, calc(50% - 304px)); bottom: calc(96px + env(safe-area-inset-bottom)); }
 @media (min-width: 1024px) { .sos-fab { right: 32px; bottom: 32px; } }
+
+/* ระดับ Secret: กรอบดำเรืองแสงเป็นจังหวะ (การ์ดหน้าแรก + รูปโปรไฟล์) */
+@keyframes secretGlow {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(185, 166, 255, .2), 0 0 16px rgba(185, 166, 255, .3); }
+  50% { box-shadow: 0 0 0 1px rgba(185, 166, 255, .45), 0 0 30px rgba(185, 166, 255, .6); }
+}
+.secret-glow { animation: secretGlow 2.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .secret-glow { animation: none; } }

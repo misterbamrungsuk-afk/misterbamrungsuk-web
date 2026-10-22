@@ -30,7 +30,7 @@ export default async function DonePage({ params, searchParams }: { params: Promi
   const lg = ptLineGroup(row, x);
   const group = x.cohort ? `กลุ่ม ${x.cohort}` : TRAINING.group;
   const info: [string, string][] = [["วันอบรม", TRAINING.window], ["สถานที่", TRAINING.venue], ["จำนวนรอบ", `${sessionsLabel(row.package)} · ทีมงานเช็กชื่อที่หน้างาน`], ["เปิดให้บริการ", TRAINING.openService]];
-  const fee = `${x.invite ? "สมัครผ่านลิงก์เชิญ · " : ""}${row.package === "B" ? "เพื่อนกินเที่ยว (สำหรับผู้มีความสามารถด้านการนวด)" : "เพื่อนกินเที่ยว (ตามความสามารถพิเศษ)"}: ${(x.invite || x.group === "tom") && !row.amount ? (x.invite ? "ไม่มีค่าสมัคร · ระดับ TOP" : "ทอมหล่อ · ไม่มีค่าสมัคร") : `ค่าสมัคร (รวมค่าอบรม) ${baht(row.amount || P.price)} · ${FEE_NOTE}`}`;
+  const fee = `${x.invite ? "สมัครผ่านลิงก์เชิญ · " : ""}${row.package === "B" ? "เพื่อนกินเที่ยว (สำหรับผู้มีความสามารถด้านการนวด)" : "เพื่อนกินเที่ยว (ตามความสามารถพิเศษ)"}: ${(x.invite || x.group === "tom") && !row.amount ? (x.invite ? `ไม่มีค่าสมัคร · ระดับ ${x.tier === "secret" ? "Secret" : "TOP"}` : "ทอมหล่อ · ไม่มีค่าสมัคร") : `ค่าสมัคร (รวมค่าอบรม) ${baht(row.amount || P.price)} · ${FEE_NOTE}`}`;
 
   return (
     <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9", lineHeight: "normal" }}>

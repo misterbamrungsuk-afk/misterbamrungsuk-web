@@ -94,8 +94,10 @@ export async function POST(req: Request) {
 
   // ลิงก์เชิญพิเศษ (บอสกำหนด 20 ต.ค. 2569): ไม่ต้องจ่ายค่าสมัคร · ได้ระดับ TOP ทันที · แค่สมัคร
   let invite: string | null = null;
+  let secret = false; // ลิงก์เชิญ Secret → ระดับ Secret (ราคาแอดมินตั้งรายคน)
   if (inviteCode) {
-    const { state } = await findInvite(inviteCode);
+    const { state, invite: inv } = await findInvite(inviteCode);
+    secret = inv?.kind === "secret";
     if (state !== "ok") return bad(state === "full" ? "ลิงก์เชิญนี้มีผู้ใช้ครบจำนวนแล้ว" : state === "expired" ? "ลิงก์เชิญนี้หมดอายุแล้ว" : "ลิงก์เชิญนี้ใช้ไม่ได้ กรุณาติดต่อแอดมิน", 410);
     invite = inviteCode;
   }
@@ -140,7 +142,7 @@ export async function POST(req: Request) {
     // เลขใบแจ้งหนี้ INV (ยังไม่รัน SQL 0010 → ใช้เลขตามรหัส MB)
     // สายเชิญไม่มียอด → ไม่ออกเอกสาร · ถือว่าชำระแล้ว (verified) + ระดับ TOP
     const inv_no = free ? null : (await nextDocNo("INV").catch(() => null)) ?? `INV-${codeNo(row.mb_code)}`;
-    await saveProfile(row.id, { pw_hash: hashPw(password), pw_at: new Date().toISOString(), inv_no, ...(invite ? { tier: "top" } : {}), ...(group ? { group } : {}) });
+    await saveProfile(row.id, { pw_hash: hashPw(password), pw_at: new Date().toISOString(), inv_no, ...(invite ? { tier: secret ? "secret" : "top" } : {}), ...(group ? { group } : {}) });
     if (free) await updateApplicant(row.id, { status: "verified" });
     if (invite) await consumeInvite(invite).catch((e) => console.error("consume invite failed", e));
     // sync ชีตแบบไม่ให้ล้มทั้งคำขอ — ถ้าไม่สำเร็จ แอดมินกด sync ซ้ำได้

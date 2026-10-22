@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+import { tierLabel, tierPrice } from "@/lib/join/config";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEarnings } from "@/lib/join/earnings-settings";
@@ -22,7 +23,6 @@ export default async function PostsPage({ params, searchParams }: { params: Prom
   const card = c.x.card ?? { activities: [], places: [], partner_spas: [], skills: [] };
   const cfg = await getEarnings();
   const svc = c.row.package === "B" ? cfg.price3h.massage : cfg.price3h.eat;
-  const top = c.x.tier === "top";
   const l = c.x.listing;
   const chip = "inline-flex items-center min-h-9 rounded-full text-[13px] font-light";
   // คนที่สนใจประกาศ "วันนี้ว่าง" (ลูกค้ากด "สนใจ" ในโปรไฟล์) — ชื่อแรกปิดบัง · ไม่มีข้อมูลติดต่อ
@@ -67,10 +67,10 @@ export default async function PostsPage({ params, searchParams }: { params: Prom
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2.5">
-            <div className="flex flex-col gap-1.5"><span className="text-[13px] text-[#d9c9b4]">ราคา 3 ชม.</span><div className="h-12 rounded-[14px] bg-[#211a18] flex items-center px-3.5 text-[15px]" style={{ border: "1px solid rgba(243,234,217,0.07)" }}>{baht(top ? svc.top : svc.silver)}</div></div>
+            <div className="flex flex-col gap-1.5"><span className="text-[13px] text-[#d9c9b4]">ราคา 3 ชม.</span><div className="h-12 rounded-[14px] bg-[#211a18] flex items-center px-3.5 text-[15px]" style={{ border: "1px solid rgba(243,234,217,0.07)" }}>{baht(tierPrice(c.x, svc))}</div></div>
             <div className="flex flex-col gap-1.5"><span className="text-[13px] text-[#d9c9b4]">ช่วงเวลา</span><div className="h-12 rounded-[14px] bg-[#211a18] flex items-center px-3.5 text-[15px]" style={{ border: "1px solid rgba(243,234,217,0.07)" }}>3 ชม. / 5 ชม.</div></div>
           </div>
-          <span className="text-[12px] font-light text-[#b5a596] -mt-2">ราคาตามระดับ {top ? "TOP" : "Silver"} · ทีมงานเป็นผู้กำหนด</span>
+          <span className="text-[12px] font-light text-[#b5a596] -mt-2">ราคาตามระดับ {tierLabel(c.x.tier)} · ทีมงานเป็นผู้กำหนด</span>
         </div>
         {/* ยังไม่อนุมัติ/ยังไม่เปิดโปรไฟล์ → ลงโพสต์ไม่ได้ (API ตอบ 409) */}
         {isPtActive(c.x)

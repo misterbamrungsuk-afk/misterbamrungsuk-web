@@ -6,20 +6,25 @@ import { findInvite } from "@/lib/join/invites";
 import { JoinSalePage } from "../../join-sale";
 
 export const dynamic = "force-dynamic";
-// ปกลิงก์ (LINE / Facebook / Messenger) แยกจากหน้าสมัครปกติ — เห็นทันทีว่าเป็นคำเชิญพิเศษ
-const OG_DESC = "สมัครฟรี ไม่มีค่าสมัคร · ได้ระดับ TOP ทันที · ลิงก์ส่วนตัว";
-export const metadata = {
-  title: "✦ คำเชิญพิเศษ · Part-Time — Mister Bamrungsuk",
-  description: OG_DESC,
-  robots: { index: false },
-  openGraph: { title: "✦ คำเชิญพิเศษ · เพื่อนกินเที่ยว Part-Time", description: OG_DESC, siteName: "Mister Bamrungsuk", images: [{ url: "/brand/og-invite.jpg", width: 1200, height: 630 }], locale: "th_TH", type: "website" },
-  twitter: { card: "summary_large_image", title: "✦ คำเชิญพิเศษ · เพื่อนกินเที่ยว Part-Time", description: OG_DESC, images: ["/brand/og-invite.jpg"] },
+// ปกลิงก์ (LINE / Facebook / Messenger) แยกจากหน้าสมัครปกติ — เห็นทันทีว่าเป็นคำเชิญพิเศษ · ลิงก์ Secret มีปกของตัวเอง
+const META = {
+  normal: { title: "✦ คำเชิญพิเศษ · เพื่อนกินเที่ยว Part-Time", desc: "สมัครฟรี ไม่มีค่าสมัคร · ได้ระดับ TOP ทันที · ลิงก์ส่วนตัว", img: "/brand/og-invite.jpg" },
+  secret: { title: "✦ คำเชิญพิเศษสำหรับ Secret เท่านั้น", desc: "สมัครฟรี ไม่มีค่าสมัคร · ระดับ Secret · ลิงก์ส่วนตัว ห้ามเผยแพร่", img: "/brand/og-secret.jpg" },
 };
+export async function generateMetadata({ params }: { params: Promise<{ code: string }> }) {
+  const { invite } = await findInvite((await params).code.toUpperCase()).catch(() => ({ invite: undefined }));
+  const m = invite?.kind === "secret" ? META.secret : META.normal;
+  return {
+    title: `${m.title} — Mister Bamrungsuk`, description: m.desc, robots: { index: false },
+    openGraph: { title: m.title, description: m.desc, siteName: "Mister Bamrungsuk", images: [{ url: m.img, width: 1200, height: 630 }], locale: "th_TH", type: "website" },
+    twitter: { card: "summary_large_image", title: m.title, description: m.desc, images: [m.img] },
+  };
+}
 
 // บอร์ด JoinInvite — ลิงก์เชิญ /join/i/[รหัส] · ค่าสมัครเท่าสมัครปกติ (ลิงก์เป็นช่องทางเข้า + ป้าย) · ลิงก์ใช้ไม่ได้ → แจ้งเหตุผล + ไปหน้าสมัครปกติ
 export default async function InvitePage({ params }: { params: Promise<{ code: string }> }) {
   const code = (await params).code.toUpperCase();
-  const { state } = await findInvite(code);
+  const { state, invite } = await findInvite(code);
   if (state !== "ok") {
     const why = state === "full" ? "ลิงก์เชิญนี้มีผู้ใช้ครบจำนวนแล้ว" : state === "expired" ? "ลิงก์เชิญนี้หมดอายุแล้ว" : state === "off" ? "ลิงก์เชิญนี้ถูกปิดแล้ว" : "ไม่พบลิงก์เชิญนี้";
     return (
@@ -34,5 +39,5 @@ export default async function InvitePage({ params }: { params: Promise<{ code: s
     );
   }
   const s = await nextCohortSeats().catch(() => ({ cohort: "", left: 0, quota: 0, taken: 0, full: true }));
-  return <JoinSalePage seats={{ left: s.left, quota: s.quota, cohort: s.cohort, closed: s.full || Date.now() > Date.parse(CLOSE_AT) }} invite={code} />;
+  return <JoinSalePage seats={{ left: s.left, quota: s.quota, cohort: s.cohort, closed: s.full || Date.now() > Date.parse(CLOSE_AT) }} invite={code} secret={invite?.kind === "secret"} />;
 }

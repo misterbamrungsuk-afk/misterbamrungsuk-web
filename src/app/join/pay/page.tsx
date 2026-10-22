@@ -7,6 +7,7 @@ import { Suspense, useEffect, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import QRCode from "qrcode";
+import { BankTransfer } from "@/components/bank-transfer";
 import { BANK, FEE_INCLUDES, FEE_NOTE, PACKAGES, type PackageKey } from "@/lib/join/config";
 import { dataUrlToFile, resizeImage } from "@/lib/join/form";
 import { promptPayPayload } from "@/lib/join/promptpay";
@@ -53,6 +54,8 @@ function PayInner() {
   // ลิงก์เชิญ: null = สมัครปกติ · "…" = รหัสที่ตรวจแล้วใช้ได้ · inviteErr = ลิงก์ใช้ไม่ได้
   const [invite, setInvite] = useState<string | null>(null);
   const [inviteErr, setInviteErr] = useState("");
+  const [secretInv, setSecretInv] = useState(false); // ลิงก์เชิญ Secret
+  const invTier = secretInv ? "Secret" : "TOP";
   const [tom, setTom] = useState(false);
   // สมัครฟรี (ไม่มี QR/สลิป): ลิงก์เชิญพิเศษ หรือหมวดทอมหล่อ
   const free = !!invite || tom;
@@ -72,8 +75,8 @@ function PayInner() {
     let code = (params.get("invite") ?? "").toUpperCase();
     try { if (code) sessionStorage.setItem(INV_KEY, code); else code = sessionStorage.getItem(INV_KEY) ?? ""; } catch {}
     if (!code) setInvChecking(false);
-    if (code) fetch(`/api/join/invite?code=${encodeURIComponent(code)}`, { cache: "no-store" }).then((r) => r.json()).then((d: { ok?: boolean; state?: string }) => {
-      if (d.ok) setInvite(code);
+    if (code) fetch(`/api/join/invite?code=${encodeURIComponent(code)}`, { cache: "no-store" }).then((r) => r.json()).then((d: { ok?: boolean; state?: string; secret?: boolean }) => {
+      if (d.ok) { setInvite(code); setSecretInv(!!d.secret); }
       else { setInviteErr(d.state === "full" ? "ลิงก์เชิญนี้มีผู้ใช้ครบจำนวนแล้ว" : d.state === "expired" ? "ลิงก์เชิญนี้หมดอายุแล้ว" : "ลิงก์เชิญนี้ใช้ไม่ได้"); try { sessionStorage.removeItem(INV_KEY); } catch {} }
     }).catch(() => {}).finally(() => setInvChecking(false));
   }, [params, router]);
@@ -167,7 +170,7 @@ function PayInner() {
           <Link href={invite ? `/join/i/${invite}` : tom ? "/join/tom" : "/join"} aria-label="ย้อนกลับ" className="shrink-0 w-11 h-11 rounded-full bg-[#251d1b] text-[#f3ead9] grid place-items-center hover:text-[#f3ead9]">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
           </Link>
-          <div className="min-w-0"><div className="text-[13px] text-[#e8c472] font-light">{invite ? "✦ คำเชิญพิเศษ" : tom ? "ทอมหล่อ · ก่อนกรอกใบสมัคร" : "ก่อนกรอกใบสมัคร"}</div><div className="font-semibold text-[20px] leading-[1.35]">{invite ? "สมัครด้วยคำเชิญ" : tom ? "สมัครทอมหล่อ" : "ชำระค่าสมัคร"}</div></div>
+          <div className="min-w-0"><div className="text-[13px] text-[#e8c472] font-light">{invite ? (secretInv ? "✦ คำเชิญพิเศษ · Secret" : "✦ คำเชิญพิเศษ") : tom ? "ทอมหล่อ · ก่อนกรอกใบสมัคร" : "ก่อนกรอกใบสมัคร"}</div><div className="font-semibold text-[20px] leading-[1.35]">{invite ? "สมัครด้วยคำเชิญ" : tom ? "สมัครทอมหล่อ" : "ชำระค่าสมัคร"}</div></div>
         </div>
 
         {inviteErr && <p role="alert" className="m-0 mx-5 mt-2 rounded-xl text-[13.5px] text-[#ff8a9a]" style={{ padding: "10px 14px", background: "rgba(255,138,154,0.1)" }}>{inviteErr} · ยอดด้านล่างเป็นราคาสมัครปกติ</p>}
@@ -203,7 +206,7 @@ function PayInner() {
               <div style={{ height: 1, background: "rgba(243,234,217,0.07)", margin: "4px 0" }} />
               {items.map(([n, v]) => <div key={n} className="flex justify-between items-baseline gap-4 min-w-0"><span className="min-w-0">{n}</span><span className="whitespace-nowrap shrink-0 font-semibold text-[18px] text-[#e8c472]">{free ? "ฟรี" : baht(v)}</span></div>)}
               {items.length > 1 && <div className="flex justify-between items-baseline gap-4 min-w-0 pt-2 border-t border-[rgba(243,234,217,0.07)]"><span className="min-w-0 font-semibold">รวมที่ต้องโอน</span><span className="whitespace-nowrap shrink-0 font-bold text-[20px] text-[#e8c472]" data-total="1">{baht(amount)}</span></div>}
-              <div className="text-[13px] font-light">{!invite && tom ? "ทอมหล่อ: ไม่ต้องชำระค่าสมัคร · หลังเริ่มงาน หักเงินประกันงานเคสละ ฿500 จากรายได้ (กันหนีงาน/เทงาน) · เงินแต่ละก้อนครบ 90 วันถอนคืนได้ (ค่าธรรมเนียมถอน 3%)" : invite ? "✦ คำเชิญพิเศษ: ไม่ต้องชำระค่าสมัคร · ได้ระดับ TOP ทันที · หลังเริ่มงาน หักเงินประกันงานเคสละ ฿500 จากรายได้ (กันหนีงาน/เทงาน) · เงินแต่ละก้อนครบ 90 วันถอนคืนได้ (ค่าธรรมเนียมถอน 3%)" : FEE_NOTE}</div>
+              <div className="text-[13px] font-light">{!invite && tom ? "ทอมหล่อ: ไม่ต้องชำระค่าสมัคร · หลังเริ่มงาน หักเงินประกันงานเคสละ ฿500 จากรายได้ (กันหนีงาน/เทงาน) · เงินแต่ละก้อนครบ 90 วันถอนคืนได้ (ค่าธรรมเนียมถอน 3%)" : invite ? `✦ คำเชิญพิเศษ: ไม่ต้องชำระค่าสมัคร · ได้ระดับ ${invTier} ทันที · หลังเริ่มงาน หักเงินประกันงานเคสละ ฿500 จากรายได้ (กันหนีงาน/เทงาน) · เงินแต่ละก้อนครบ 90 วันถอนคืนได้ (ค่าธรรมเนียมถอน 3%)` : FEE_NOTE}</div>
             </div>
             <div className="flex flex-col gap-2 bg-[#2c1a1f]" style={box}>
               <div className="font-semibold text-[17px]">ค่าสมัครรวม</div>
@@ -213,6 +216,7 @@ function PayInner() {
 
           <div className="flex flex-col min-w-0" style={{ gap: 26 }}>
             {!free && !invChecking && <>
+            {!promptPayPayload(BANK.promptPayId, amount) ? <div className="flex flex-col items-center gap-3 bg-[#272013]" style={box}><BankTransfer amount={amount} /></div> : (
             <div className="flex flex-col items-center gap-3 bg-[#272013]" style={box}>
               <div className="flex justify-between gap-2 flex-wrap w-full text-[14px]"><span className="text-[#e8c472] font-semibold">PromptPay</span><span>QR หมดอายุใน <b style={{ color: sec < 120 ? "#ff8a9a" : GOLD }}>{mm}:{ss}</b></span></div>
               <div className="rounded-xl" style={{ padding: 12, background: "#000", lineHeight: 0, opacity: expired ? 0.2 : 1 }}>
@@ -221,7 +225,7 @@ function PayInner() {
               </div>
               <div className="text-[13px] text-center font-light">{`${BANK.accountName} · ${BANK.accountNo}`}</div>
               {expired && <button type="button" onClick={() => setSec(QR_TTL)} className={ghost} style={{ background: "rgba(232,196,114,0.16)" }}>สร้าง QR ใหม่</button>}
-            </div>
+            </div>)}
             <div>
               <span style={{ display: "block", fontSize: 13, marginBottom: 6 }}>อัปโหลดสลิปการโอน</span>
               <label className="w-full rounded-2xl flex items-center justify-center gap-[10px] text-[14px] cursor-pointer text-center px-3" style={{ minHeight: 88, background: "rgba(232,196,114,0.16)", color: slip ? "#b5a596" : "#f3ead9" }}>
@@ -255,7 +259,7 @@ function PayInner() {
         <div role="dialog" aria-modal="true" aria-labelledby="paidT" className="fixed inset-0 z-50 flex justify-center items-center overflow-y-auto" style={{ background: "rgba(10,7,6,0.78)", padding: 20 }}>
           <div className="w-full max-w-[400px] rounded-[20px] bg-[#1b2322] flex flex-col items-center gap-[14px] text-center my-auto" style={{ padding: "28px 20px 20px" }}>
             <div className="w-[72px] h-[72px] rounded-full bg-[#e8c472] text-[#1b130b] grid place-items-center"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg></div>
-            <div id="paidT" className="font-semibold text-[22px] leading-[1.35] text-[#e8c472]">{invite ? "สมัครเรียบร้อย · ระดับ TOP" : tom ? "สมัครเรียบร้อย · ทอมหล่อ" : "ได้รับข้อมูลแล้ว · รอทีมงานตรวจ"}</div>
+            <div id="paidT" className="font-semibold text-[22px] leading-[1.35] text-[#e8c472]">{invite ? `สมัครเรียบร้อย · ระดับ ${invTier}` : tom ? "สมัครเรียบร้อย · ทอมหล่อ" : "ได้รับข้อมูลแล้ว · รอทีมงานตรวจ"}</div>
             <p className="m-0 text-[15px] leading-[1.7]">{free ? "ไม่มีค่าใช้จ่าย" : "ได้รับสลิปแล้ว ทีมงานตรวจภายใน 2 ชม. (09:00–22:00)"}<br />ระหว่างนี้ไปกรอกรายละเอียดในโปรไฟล์ได้เลย</p>
             <Link href={`/join/profile/${done}`} className={cta + " hover:text-[#1b130b]"}>ไปที่โปรไฟล์ของฉัน</Link>
             <p className="m-0 text-[13.5px] leading-[1.6] text-[#e8c472]">ครั้งต่อไปเข้าที่ &quot;Part-Time เข้าสู่ระบบ&quot; ด้วยอีเมลและรหัสผ่านนี้</p>

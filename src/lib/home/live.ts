@@ -1,4 +1,5 @@
 import "server-only";
+import { tierPrice } from "@/lib/join/config";
 import { createHash } from "crypto";
 import { getAttendance } from "@/lib/join/store";
 import { coreDone } from "@/lib/join/training";
@@ -39,7 +40,7 @@ export async function getLivePeople(): Promise<Person[]> {
     const st = stars.get(a.id);
     const x = extraOf(a);
     const id = publicId(a.mb_code);
-    const top = x.tier === "top";
+    const secret = x.tier === "secret", top = x.tier === "top" || secret;
     const svc = a.package === "B" ? cfg.price3h.massage : cfg.price3h.eat;
     const acts = [...new Set([...(a.package === "B" ? ["massage" as Act] : []), ...(x.card?.activities ?? []).map((t) => ACT_OF[t]).filter(Boolean)])] as Act[];
     const area = (x.areas ?? [])[0]?.split(" › ") ?? [];
@@ -51,7 +52,7 @@ export async function getLivePeople(): Promise<Person[]> {
       ...(x.geo ? { geo: [x.geo.lat, x.geo.lng] as [number, number] } : {}),
       acts: acts.length ? acts : ["eat"], free: 0, bio: x.listing?.title || a.intro || "Part-Time ที่ผ่านการอบรมมาตรฐาน Mister Bamrungsuk",
       ...(x.group === "tom" ? { group: "tom" as const } : {}),
-      review: ["", ""], real: true, trained: coreDone(att.get(a.id) ?? {}), checked: a.criminal_check === "passed", boost: boosts.has(a.id), price: top ? svc.top : svc.silver, photos: Math.min(9, photoPaths(a).length), pos: mainPos(a),
+      review: ["", ""], real: true, trained: coreDone(att.get(a.id) ?? {}), checked: a.criminal_check === "passed", boost: boosts.has(a.id), price: tierPrice(x, svc), ...(secret ? { secret: true } : {}), photos: Math.min(9, photoPaths(a).length), pos: mainPos(a),
     } satisfies Person;
   });
 }

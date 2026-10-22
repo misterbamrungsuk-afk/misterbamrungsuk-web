@@ -27,7 +27,7 @@ const caseLabel = (t: Tier) => (t.max === null ? `${t.min} เคสขึ้น
 
 /** บอร์ด MyEarnings — การ์ด "ภารกิจเดือนนี้" (ส่วนแบ่งตอนนี้ · เคสเดือนนี้ ± · หมุดขั้น) + ตาราง "ส่วนแบ่ง" + "รายได้ประมาณการเดือนนี้"
  *  เริ่มจากเคสจริงเดือนนี้ (งานที่จบแล้ว) — ปุ่ม ± ใช้ลองคำนวณ (ไม่บันทึก) */
-export function EarnBoard({ price, tiers, top, real = 0 }: { price: number; tiers: Tier[]; top: boolean; real?: number }) {
+export function EarnBoard({ price, tiers, top, secret = false, real = 0 }: { price: number; tiers: Tier[]; top: boolean; secret?: boolean; real?: number }) {
   const [c, setC] = useState(real);
   const cur = tiers.reduce((p, t, i) => (c >= t.min ? i : p), 0);
   const col = (i: number) => COL[Math.min(i, COL.length - 1)];
@@ -43,8 +43,8 @@ export function EarnBoard({ price, tiers, top, real = 0 }: { price: number; tier
         <div className="flex justify-between items-center gap-2">
           <span className="text-[13px] font-medium tracking-[.08em] text-[#e8c472]">ภารกิจเดือนนี้</span>
           <span className="inline-flex items-center gap-1.5 h-[26px] rounded-full text-[12.5px] font-semibold" style={{ padding: "0 12px", background: "rgba(243,234,217,0.08)" }}>
-            {top ? "TOP (Gold)" : "Silver"}
-            {top && <span className="inline-flex items-center h-4 rounded text-[9px] font-bold tracking-[.2em] text-[#1b130b]" style={{ padding: "0 6px", background: "linear-gradient(135deg, #fff1c9 0%, #e8c472 45%, #a8781f 100%)" }}>TOP</span>}
+            {secret ? "Secret" : top ? "TOP (Gold)" : "Silver"}
+            {top && !secret && <span className="inline-flex items-center h-4 rounded text-[9px] font-bold tracking-[.2em] text-[#1b130b]" style={{ padding: "0 6px", background: "linear-gradient(135deg, #fff1c9 0%, #e8c472 45%, #a8781f 100%)" }}>TOP</span>}
           </span>
         </div>
         <div className="flex justify-between items-end gap-3">
