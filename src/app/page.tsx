@@ -4,6 +4,7 @@ import { currentCustomer } from "@/lib/customer/auth";
 import { listNotices } from "@/lib/bookings";
 import { getEarnings } from "@/lib/join/earnings-settings";
 import { getLivePeople } from "@/lib/home/live";
+import { PEOPLE } from "@/lib/home/people";
 import { getMemberSettings } from "@/lib/member/tiers";
 import { PT_ONLY } from "@/lib/site-gate";
 
@@ -27,6 +28,8 @@ export default async function HomePage() {
   for (let i = boosted.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [boosted[i], boosted[j]] = [boosted[j], boosted[i]]; }
   const live = [...boosted, ...visible.filter((p) => !p.boost)];
   const unread = notices.filter((n) => n.kind === "message" && !n.read_at).length;
-  // มี Part-Time จริงที่แอดมินเปิดแสดงแล้ว → แสดงเฉพาะคนจริง · ยังไม่มี → ตัวอย่าง
-  return <HomeFeed showEarnings={show} people={live.length ? live : undefined} me={me ? { name: prof?.name || me.email.split("@")[0] } : null} unread={unread} memberTier={prof?.member_tier ?? null} promo={{ gold: mcfg.tiers.gold, black: mcfg.tiers.black }} recruit={PT_ONLY} />;
+  // ช่วงเปิดเฉพาะรับสมัคร (PT_ONLY = หน้าตัวอย่าง): คนจริงขึ้นก่อน แล้วต่อด้วยตัวอย่าง → แต่ละแท็บไม่โล่งเมื่อเพิ่งมีคนจริงไม่กี่คน
+  // เปิดเว็บเต็ม: มีคนจริง → แสดงเฉพาะคนจริง · ยังไม่มี → ตัวอย่าง
+  const people = PT_ONLY ? [...live, ...PEOPLE] : live.length ? live : undefined;
+  return <HomeFeed showEarnings={show} people={people} me={me ? { name: prof?.name || me.email.split("@")[0] } : null} unread={unread} memberTier={prof?.member_tier ?? null} promo={{ gold: mcfg.tiers.gold, black: mcfg.tiers.black }} recruit={PT_ONLY} />;
 }
