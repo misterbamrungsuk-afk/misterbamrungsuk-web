@@ -97,6 +97,12 @@ const seats = async (g) => J(await fetch(B + '/api/join/seats' + (g ? '?g=' + g 
   pr = await pf(false);
   tr = (await J(await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ line_joined: false }) }))).row;
   ok('untick → ทอมปกติ', pr.ok && tr?.trans === false, String(tr?.trans));
+  // อนุมัติ KYC (ชำระแล้ว + มีรูปจากใบสมัคร) → เปิดแสดงบนหน้าแรกอัตโนมัติ
+  let kr = (await J(await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ kyc_status: 'approved' }) }))).row;
+  ok('KYC approve → auto listed', kr?.listed === true && !!kr?.listed_at, `${kr?.listed} ${kr?.listed_at}`);
+  await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ listed: false }) });
+  kr = (await J(await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ kyc_status: 'approved' }) }))).row;
+  ok('re-approve does not re-list after admin hid', kr?.listed === false, String(kr?.listed));
   h = await (await fetch(B + '/admin/applicants', { headers: ADM })).text();
   ok('admin has หนุ่มหล่อ | ทอมหล่อ tabs', h.includes('data-admin-group="man"') && h.includes('data-admin-group="tom"'));
   const ih2 = await (await fetch(B + `/join/profile/${it.mb_code}?t=${encodeURIComponent(tok(it.mb_code))}`)).text();

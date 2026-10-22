@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ensureReceiptNo, extraOf, getById, listApplicants, saveProfile, setKyc, setTier, updateApplicant, updateExtra, type ApplicantStatus, type KycReason } from "@/lib/join/store";
+import { ensureReceiptNo, extraOf, getById, listApplicants, saveProfile, setKyc, setTier, updateApplicant, updateExtra, type Applicant, type ApplicantStatus, type KycReason } from "@/lib/join/store";
 import { listCohorts } from "@/lib/join/cohorts";
 import { appendToSheet } from "@/lib/join/sheets";
 import { FIX_KEYS } from "@/lib/join/fixes";
@@ -60,7 +60,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       }
       if (!Object.keys(reason).length) return NextResponse.json({ ok: false, error: "ระบุรายการที่ไม่ผ่านอย่างน้อย 1 รายการ" }, { status: 400 });
     }
-    const row = await setKyc(id, body.kyc_status, reason);
+    let row = await setKyc(id, body.kyc_status, reason);
+    if (row && body.kyc_status === "approved") row = await autoList(row);
     return row ? NextResponse.json({ ok: true, row: { ...row, ...extraOf(row) } }) : NextResponse.json({ ok: false }, { status: 404 });
   }
 
@@ -104,7 +105,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (body.status === "rejected" && !reason) return NextResponse.json({ ok: false, error: "ระบุเหตุผลที่ปฏิเสธสลิป" }, { status: 400 });
   let row = await updateApplicant(id, { status: body.status });
   // อนุมัติสลิป → ออกเลขใบเสร็จรับเงิน RI (ครั้งเดียว)
-  if (row && body.status === "verified") { await ensureReceiptNo(row).catch((e) => console.error("ri_no", (e as Error)?.message)); row = (await getById(id)) ?? row; }
+  if (row && body.status === "verified") { await ensureReceiptNo(row).catch((e) => console.error("ri_no", (e as Error)?.message)); row = (await getById(id)) ?? row; row = await autoList(row); }
   if (row && body.status === "rejected") {
     const by = (await session())?.email ?? "";
     // slip_reject ต้องเพิ่มใน store.ts (EXTRA_ONLY_KEYS) — ก่อนนั้นบันทึกไม่ได้ก็ไม่ให้ล้ม (เหตุผลยังไปถึงผู้สมัครทางแจ้งเตือน)
@@ -112,4 +113,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     await import("@/lib/bookings").then((m) => m.notify({ user_type: "parttime", user_id: row.id, kind: "slip_rejected", title: "สลิปชำระเงินไม่ผ่านการตรวจ", body: reason, url: `/join/profile/${row.mb_code}` })).catch(() => {});
   }
   return row ? NextResponse.json({ ok: true, row: { ...row, ...extraOf(row) } }) : NextResponse.json({ ok: false }, { status: 404 });
+}
+
+/** อนุมัติ KYC แล้ว → เปิดแสดงบนหน้าแรกอัตโนมัติ (บอสสั่ง 22 ต.ค. 2569)
+ *  เงื่อนไขเดียวกับสวิตช์ "แสดงบนหน้าแรก": ชำระแล้ว + ผ่าน KYC + มีรูปโปรไฟล์ · ทำครั้งแรกเท่านั้น (เคยเปิดแล้ว = ไม่ทับที่แอดมินปิดไว้) */
+async function autoList(row: Applicant): Promise<Applicant> {
+  const x = extraOf(row);
+  if (x.listed || x.listed_at || row.status !== "verified" || x.kyc_status !== "approved" || !(x.photos?.length || row.docs.photo)) return row;
+  await saveProfile(row.id, { listed: true, listed_at: new Date().toISOString() });
+  return (await getById(row.id)) ?? row;
 }
