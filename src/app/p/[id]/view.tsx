@@ -32,6 +32,8 @@ export function ProfileView({ p, reviews = [], vers = [], free = null, preview =
     if (r?.status === 401) { setFav(!next); router.push(login(`/p/${p.id}`)); }
   };
   const [pic, setPic] = useState(0);
+  // ปัดรูปซ้าย/ขวาบนมือถือ (ปัดแนวนอน ≥ 40px และมากกว่าแนวตั้ง · วนรอบ)
+  const [touch, setTouch] = useState<{ x: number; y: number } | null>(null);
   // รูปจริง: ใส่รุ่น (&v=) → แคชยาว · รูปใหญ่ 960 · รูปเล็กด้านล่าง 240
   const pics = p.real && p.photos ? Array.from({ length: p.photos }, (_, i) => `/api/public/pt-photo?id=${p.id}&i=${i}${vers[i] ? `&v=${vers[i]}` : ""}`) : [p.img];
   // ประกาศ "วันนี้ว่าง": สนใจ = บอกเพื่อนว่ามีคนสนใจ (เพื่อนไม่เห็นข้อมูลติดต่อ) · ยังไม่ล็อกอิน → หน้าเข้าสู่ระบบ
@@ -55,11 +57,21 @@ export function ProfileView({ p, reviews = [], vers = [], free = null, preview =
   return (
     <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9", lineHeight: "normal" }}>
       <BrandBar />
+      {/* ช่วงเปิดเฉพาะรับสมัคร: ป้ายอยู่ในหน้า (ไม่ลอยทับรูป) */}
+      {preview && <div className="flex justify-center px-[18px] pb-2 lg:pt-2"><Link href="/soon" data-preview-banner className="rounded-full text-[12.5px] font-semibold text-[#1b130b] hover:text-[#1b130b]" style={{ padding: "6px 14px", background: "#e8c472" }}>{p.real ? "เปิดให้จองเร็ว ๆ นี้" : "ตัวอย่าง · เปิดให้บริการเร็ว ๆ นี้"}</Link></div>}
       <div className="mx-auto w-full max-w-[1120px] lg:grid lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)] lg:gap-10 lg:px-8 lg:pt-4" style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}>
         {/* รูป */}
         <div className="relative h-[380px] md:h-[520px] lg:h-[640px] lg:sticky lg:top-[84px] rounded-[24px] lg:rounded-[28px] overflow-hidden mx-[18px] mt-1 lg:mx-0 lg:mt-0" style={p.boost ? { border: "2px solid #e8c472", boxShadow: "0 0 0 1px rgba(255,241,201,.35), 0 12px 36px rgba(232,196,114,.3)" } : undefined}>
-          <img src={sized(pics[pic] ?? p.img, 960)} alt={p.nick} className="w-full h-full object-cover block" style={pic === 0 && p.pos ? { objectPosition: p.pos } : undefined} />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(23,18,17,.35) 0%, rgba(23,18,17,0) 30%, rgba(23,18,17,0) 60%, #171211 100%)" }} />
+          <img src={sized(pics[pic] ?? p.img, 960)} alt={p.nick} draggable={false} data-swipe-photo
+            onTouchStart={(e) => setTouch({ x: e.touches[0].clientX, y: e.touches[0].clientY })}
+            onTouchEnd={(e) => {
+              if (!touch || pics.length < 2) return;
+              const dx = e.changedTouches[0].clientX - touch.x, dy = e.changedTouches[0].clientY - touch.y;
+              setTouch(null);
+              if (Math.abs(dx) >= 40 && Math.abs(dx) > Math.abs(dy)) setPic((i) => (i + (dx < 0 ? 1 : -1) + pics.length) % pics.length);
+            }}
+            className="w-full h-full object-cover block select-none" style={pic === 0 && p.pos ? { objectPosition: p.pos } : undefined} />
+          <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(180deg, rgba(23,18,17,.35) 0%, rgba(23,18,17,0) 30%, rgba(23,18,17,0) 60%, #171211 100%)" }} />
           <SmartBack href="/" className={`absolute top-[14px] left-[14px] ${round} text-[#f3ead9] hover:text-[#f3ead9]`} style={glass}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
           </SmartBack>
@@ -67,8 +79,8 @@ export function ProfileView({ p, reviews = [], vers = [], free = null, preview =
             <svg width="18" height="18" viewBox="0 0 24 24" fill={fav ? "#c9283d" : "none"} stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 20s-7-4.4-9-9a4.8 4.8 0 0 1 9-3 4.8 4.8 0 0 1 9 3c-2 4.6-9 9-9 9z" /></svg>
           </button>
           {pics.length > 1 && (
-            <div className="absolute left-[18px] bottom-4 flex gap-2">
-              {pics.slice(0, 5).map((src, i) => <button key={src} type="button" onClick={() => setPic(i)} aria-label={`ดูรูปที่ ${i + 1}`} className="w-[52px] h-[52px] rounded-xl overflow-hidden p-0 bg-[#211a18]" style={{ border: `2px solid ${i === pic ? "#e8c472" : "rgba(246,239,228,.25)"}` }}><img src={sized(src, 240)} alt="" className="w-full h-full object-cover block" /></button>)}
+            <div className="absolute left-[18px] right-[18px] bottom-4 flex gap-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+              {pics.slice(0, 9).map((src, i) => <button key={src} type="button" onClick={() => setPic(i)} aria-label={`ดูรูปที่ ${i + 1}`} className="shrink-0 w-[52px] h-[52px] rounded-xl overflow-hidden p-0 bg-[#211a18]" style={{ border: `2px solid ${i === pic ? "#e8c472" : "rgba(246,239,228,.25)"}` }}><img src={sized(src, 240)} alt="" className="w-full h-full object-cover block" /></button>)}
             </div>
           )}
         </div>
