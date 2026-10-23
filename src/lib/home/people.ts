@@ -37,10 +37,10 @@ const P = (id: string, nick: string, age: number, img: string, top: boolean, rat
 // ตัวอย่าง: ต้น + กอล์ฟ = จ่ายโปรโมทอยู่ (กรอบทอง + ป้ายแนะนำ ขึ้นก่อน) — ให้เห็นหน้าตาก่อนมีคนจ่ายจริง
 const BOOSTED = new Set(["ton", "golf", "t-june", "t-earth"]);
 // ตัวอย่าง Secret (บอสขอ 22 ต.ค. 2569): ป้าย SECRET + แนะนำ · ราคา ฿xx,xxx (Secret ราคาแอดมินกำหนดรายคน)
-const SECRET_SAMPLE = new Set(["ton", "golf", "t-june"]);
+const SECRET_SAMPLE = new Set(["ton", "golf", "t-june", "t-earth"]);
 /** Secret ไม่โชว์หน้า (บอสขอ 23 ต.ค. 2569): ใช้รูปเงา/หันหลัง (สร้างจาก ChatGPT) แทนรูปจริงทั้งตัวอย่างและคนจริง */
 export const SECRET_SILHOUETTES = { man: ["/brand/home/s-m1.jpg", "/brand/home/s-m2.jpg"], tom: ["/brand/home/s-t1.jpg", "/brand/home/s-t2.jpg"] } as const;
-const SECRET_IMG: Record<string, string> = { ton: SECRET_SILHOUETTES.man[0], golf: SECRET_SILHOUETTES.man[1], "t-june": SECRET_SILHOUETTES.tom[0] };
+const SECRET_IMG: Record<string, string> = { ton: SECRET_SILHOUETTES.man[0], golf: SECRET_SILHOUETTES.man[1], "t-june": SECRET_SILHOUETTES.tom[0], "t-earth": SECRET_SILHOUETTES.tom[1] };
 export const PEOPLE: Person[] = (() => [
   P("ton", "ต้น", 29, "/brand/home/p-ton.jpg", true, "5.0", "วัฒนา", ["eat", "massage", "cafe"], 0, "ชอบพาไปลองร้านใหม่ ๆ คุยสนุก ฟังเก่ง ถ่ายรูปสวย และมีสกิลนวดผ่อนคลาย (มีใบรับรอง)"),
   P("phum", "ภูมิ", 31, "/brand/home/p-phum.jpg", true, "4.9", "ทองหล่อ", ["massage", "gym", "eat"], 20, "สายสุขภาพ ชวนออกกำลังเบา ๆ แล้วไปมื้อดี ๆ ต่อ ใจเย็นและตรงเวลา"),
