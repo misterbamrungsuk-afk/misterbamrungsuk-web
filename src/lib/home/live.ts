@@ -52,7 +52,7 @@ export async function getLivePeople(): Promise<Person[]> {
       id, nick: a.nickname, age: a.birthdate ? ageFrom(a.birthdate) ?? 0 : 0, img: `/api/public/pt-photo?id=${id}&i=0`, top, rating: st?.count ? st.avg.toFixed(1) : "ใหม่",
       reviews: st?.count ?? 0, jobs: 0, years: 0, height: a.height || 0, langs: "TH",
       // แสดงระดับเขต/อำเภอ (ไม่ลงถึงแขวง) · จังหวัดแสดงเมื่อไม่ใช่กรุงเทพฯ
-      area: x.geo ? `แถว${x.geo.label}` : area[1] || area[0] || "กรุงเทพฯ", prov: x.geo ? undefined : area[0] && area[0] !== "กรุงเทพฯ" ? area[0] : undefined,
+      area: x.geo ? `แถว${x.geo.label}` : area[1] || area[0] || "กรุงเทพฯ", prov: x.geo ? undefined : area[1] && area[0] !== "กรุงเทพฯ" ? area[0] : undefined,
       ...(x.geo ? { geo: [x.geo.lat, x.geo.lng] as [number, number] } : {}),
       acts: acts.length ? acts : ["eat"], free: 0, bio: x.listing?.title || a.intro || "Part-Time ที่ผ่านการอบรมมาตรฐาน Mister Bamrungsuk",
       ...(x.group === "tom" ? { group: "tom" as const } : {}),
