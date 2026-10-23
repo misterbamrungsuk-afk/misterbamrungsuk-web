@@ -1,6 +1,7 @@
 import { readFile } from "@/lib/join/store";
 import { fileHeaders } from "@/lib/file-guard";
 import { findLiveByPublicId, photoPaths } from "@/lib/home/live";
+import { extraOf } from "@/lib/join/store";
 import { CACHE_LONG, CACHE_SHORT, fileVer, parseWidth, thumb } from "@/lib/thumb";
 
 export const runtime = "nodejs";
@@ -17,6 +18,8 @@ export async function GET(req: Request) {
   const a = await findLiveByPublicId(id);
   const path = a ? photoPaths(a)[i] : undefined;
   if (!a || !path) return new Response("not found", { status: 404 });
+  // Secret ไม่เปิดรูปจริงต่อสาธารณะ (หน้าแรก/โปรไฟล์ใช้รูปเงาแทน)
+  if (extraOf(a).tier === "secret") return new Response("not found", { status: 404 });
   const f = await readFile(path);
   if (!f) return new Response("not found", { status: 404 });
   const out = await thumb(path, f, w);

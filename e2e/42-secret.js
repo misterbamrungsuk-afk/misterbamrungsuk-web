@@ -81,6 +81,8 @@ const publicId = (mb) => 'r' + crypto.createHash('sha256').update(`mb-public:${m
   const other = h.indexOf(`/p/${publicId('MBM-2610001')}`);
   ok('home: Secret before other real PTs', other < 0 || cardAt < other, `${cardAt} vs ${other}`);
   h = await (await fetch(B + `/p/${pid}`)).text();
+  ok('profile: Secret shows silhouette, no real photos', /s-[mt][12]\.jpg/.test(h) && !h.includes(`pt-photo?id=${pid}`));
+  ok('real Secret photo not public', (await fetch(B + `/api/public/pt-photo?id=${pid}&i=0`)).status === 404);
   ok('profile: SECRET badge + Secret tier + glow', h.includes('data-tier="secret"') && h.includes('>Secret<') && h.includes('secret-glow'));
 
   // PT hub + ราคาจอง
