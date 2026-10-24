@@ -4,6 +4,7 @@ import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
 import { overview, systemChecks } from "@/lib/admin/overview";
 import { Card, PageHead, Pill } from "./admin-nav";
 import { PingButton } from "./ping-button";
+import { iceServers } from "@/lib/calls";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,9 @@ export const dynamic = "force-dynamic";
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("th-TH", { maximumFractionDigits: 2 });
 
 export default async function AdminHome() {
-  const [o, checks] = [await overview(), systemChecks()];
+  // TURN: ตั้งคีย์แล้ว → ลองขอ credential จริงจาก Cloudflare (ได้ turn: = ใช้งานได้)
+  const [o, checks0, ice] = [await overview(), systemChecks(), await iceServers().catch(() => ({ turn: false }))];
+  const checks = checks0.map((c) => (c.key === "turn" && c.ok ? { ...c, ok: ice.turn, need: ice.turn ? "ทดสอบขอคีย์ชั่วคราวจาก Cloudflare สำเร็จ" : "ตั้งคีย์แล้วแต่ Cloudflare ปฏิเสธ · ตรวจค่าที่ใส่" } : c));
   const role = (await verifySession((await cookies()).get(ADMIN_COOKIE)?.value))?.role;
   const q = o.queues, m = o.money, b = o.bookings, f = o.recon?.figures;
   const all: [string, number, string, string?][] = [

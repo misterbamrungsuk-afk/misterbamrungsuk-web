@@ -76,6 +76,8 @@ export function systemChecks() {
     { key: "email", label: "อีเมล (Resend)", ok: has("RESEND_API_KEY", "EMAIL_FROM"), need: "ไม่มี = ลืมรหัสผ่าน/อีเมล SOS ไม่ส่ง" },
     { key: "sms", label: "SMS OTP (ThaiBulkSMS)", ok: has("THAIBULKSMS_API_KEY", "THAIBULKSMS_API_SECRET"), need: "ไม่มี = สมัครไม่ยืนยันเบอร์" },
     { key: "turnstile", label: "กันบอท (Turnstile)", ok: has("TURNSTILE_SECRET_KEY", "NEXT_PUBLIC_TURNSTILE_SITE_KEY"), need: "แนะนำ" },
+    { key: "turn", label: "โทรในแอป · TURN (Cloudflare Realtime)", ok: has("CLOUDFLARE_TURN_KEY_ID", "CLOUDFLARE_TURN_KEY_API_TOKEN"), need: "ไม่มี = บางเครือข่ายโทรไม่ติด" },
+    { key: "ga", label: "Google Analytics (NEXT_PUBLIC_GA_ID)", ok: has("NEXT_PUBLIC_GA_ID"), need: "ไม่มี = ไม่นับคนเข้าเว็บ" },
     { key: "sheets", label: "Google Sheet ผู้สมัคร", ok: has("GOOGLE_SHEETS_WEBHOOK_URL"), need: "ไม่บังคับ" },
   ];
 }
