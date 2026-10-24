@@ -96,9 +96,16 @@ async function idOf(mb) {
   const w = await J(await fetch(B + '/api/sales/me', { headers: { cookie: salesA } }));
   const avail = w.summary?.available ?? w.available;
   ok('A wallet available = ฿2,500', avail === 250000, JSON.stringify(w).slice(0, 200));
+  const dash = (await (await fetch(B + '/sales/me', { headers: { cookie: salesA } })).text()).replace(/<!-- -->/g, '');
+  ok('dashboard: summary (2 doctors) + wallet + withdraw-all + history', dash.includes('data-sales-summary') && dash.includes('2 คน') && dash.includes('data-sales-wallet') && dash.includes('เบิกทั้งหมด ฿2,500') && dash.includes('data-sales-history') && dash.includes('ค่าตอบแทนชวน Part-Time'));
   const pr = await J(await fetch(B + '/api/sales/me', { method: 'POST', headers: { cookie: salesA, ...JSONH }, body: JSON.stringify({ amount: 2500 }) }));
   ok('A requests payout of recruit earnings', pr.ok, JSON.stringify(pr));
 
+  const dash2 = (await (await fetch(B + '/sales/me', { headers: { cookie: salesA } })).text()).replace(/<!-- -->/g, '');
+  ok('after withdraw: shows pending request, available ฿0', dash2.includes('รอ CEO อนุมัติ') && dash2.includes('กำลังโอน ฿2,500'));
+  const av = await fetch(B + '/api/avatar', { method: 'POST', headers: { cookie: salesA, origin: B }, body: form({ as: 'sales' }, { file: new File([img], 'me.jpg', { type: 'image/jpeg' }) }) });
+  const avg = await J(await fetch(B + '/api/avatar?as=sales', { headers: { cookie: salesA } }));
+  ok('Sale Man uploads own profile photo', av.status === 200 && !!avg.avatar, `${av.status} ${JSON.stringify(avg)}`);
   // แอดมิน
   let h = (await (await fetch(B + '/admin/sales', { headers: ADM })).text()).replace(/<!-- -->/g, '');
   ok('admin sales: recruit counts + ID + rate inputs', h.includes('data-recruit-count') && h.includes('ID: ' + uname) && h.includes('data-recruit-rate="B"'));

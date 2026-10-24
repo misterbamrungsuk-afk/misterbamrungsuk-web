@@ -14,7 +14,7 @@ const bahtN = (n: number) => "฿" + n.toLocaleString("th-TH");
 const dt = (iso: string) => new Date(iso).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit", timeZone: "Asia/Bangkok" });
 const PST: Record<string, string> = { requested: "รอ CEO อนุมัติ", approved: "อนุมัติแล้ว · รอโอน", paid: "โอนแล้ว", failed: "ไม่สำเร็จ · คืนยอดแล้ว" };
 
-export function SalesBoard({ who, mb, t, summary, link, tiers, boostMult, recruit }: { who: "parttime" | "external"; mb?: string; t?: string; summary: Summary; link: string; tiers: Record<"gold" | "black", { name: string; pay: number; commission: number }>; boostMult: number; recruit?: { link: string; rates: { A: number; B: number; free: number } } }) {
+export function SalesBoard({ who, mb, t, summary, link, tiers, boostMult, recruit, hideMoney = false }: { who: "parttime" | "external"; mb?: string; t?: string; summary: Summary; link: string; tiers: Record<"gold" | "black", { name: string; pay: number; commission: number }>; boostMult: number; recruit?: { link: string; rates: { A: number; B: number; free: number } }; /** หน้า Sale Man ภายนอกมีกระเป๋าเงินแยก (SalesWallet) → ซ่อนยอด/ขอรับในบอร์ด */ hideMoney?: boolean }) {
   const router = useRouter();
   const [copied, setCopied] = useState("");
   const [busy, setBusy] = useState("");
@@ -81,13 +81,13 @@ export function SalesBoard({ who, mb, t, summary, link, tiers, boostMult, recrui
         ))}
       </section>
 
-      <section className="grid grid-cols-3 gap-2 text-center">
+      {!hideMoney && <section className="grid grid-cols-3 gap-2 text-center">
         {[["ค่าคอมทั้งหมด", baht(summary.earned)], [who === "parttime" ? "ถอนได้ (รวมรายได้งาน)" : "ขอรับได้", baht(summary.available)], who === "parttime" ? ["วงเงินโปรโมท", baht(summary.boostCredit)] : ["กำลังโอน", baht(summary.withdrawing)]].map(([k, v]) => (
           <div key={k} className="rounded-2xl bg-[#211a18]" style={{ padding: "10px 6px" }}><div className="text-[12px] text-[#b5a596]">{k}</div><b className="text-[16px] tabular-nums">{v}</b></div>
         ))}
-      </section>
+      </section>}
 
-      {who === "external" && (
+      {who === "external" && !hideMoney && (
         <section className={card} style={{ padding: 14 }}>
           <b className="text-[15px]">ขอรับค่าคอมเข้าบัญชี</b>
           <div className="flex gap-2"><input inputMode="numeric" value={amt} onChange={(e) => setAmt(e.target.value.replace(/\D/g, "").slice(0, 7))} placeholder="จำนวนเงิน (บาท)" className="flex-1 min-w-0 h-12 rounded-xl px-3 bg-[#171211] text-[16px] text-[#f3ead9] outline-none" style={{ border: "1px solid rgba(243,234,217,.12)" }} />

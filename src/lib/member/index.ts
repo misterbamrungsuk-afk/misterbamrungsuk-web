@@ -1,6 +1,6 @@
 import "server-only";
 import { createHmac, timingSafeEqual } from "crypto";
-import { PLATFORM, WalletError, balances, move, post, transRefUsed, type Leg, type OwnerType } from "@/lib/wallet";
+import { PLATFORM, WalletError, balances, history, move, post, transRefUsed, type Leg, type OwnerType } from "@/lib/wallet";
 import { verifySlip } from "@/lib/slip2go";
 import { notify } from "@/lib/bookings";
 import { getProfile, updateProfile } from "@/lib/customer/profile";
@@ -196,7 +196,10 @@ export async function repSummary(rep: SalesRep) {
     earned: mine.filter((r) => r.status === "credited").reduce((t, r) => t + r.commission_satang, 0) + recruits.filter((r) => r.credited).reduce((t, r) => t + r.commission, 0),
     recruits,
     available: bal.available ?? 0, boostCredit: bal.boost_credit ?? 0, withdrawing: bal.withdrawing ?? 0,
+    paidOut: payouts.filter((p) => p.status === "paid").reduce((t, p) => t + p.amount_satang, 0),
     payouts: payouts.slice(0, 20),
+    // ความเคลื่อนไหวกระเป๋า (Sale Man ภายนอก): เงินเข้า/ขอเบิก/คืนยอด — ยอด "เบิกได้"
+    history: rep.kind === "external" ? (await history("sales", rep.id, 40).catch(() => [])).filter((e) => e.bucket === "available").map((e) => ({ id: e.tx_id, note: e.note ?? e.kind, amount: e.amount, at: e.created_at })) : [],
   };
 }
 
