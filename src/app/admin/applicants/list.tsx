@@ -32,6 +32,16 @@ const isTodo = (r: Applicant) => r.status === "pending_slip" || r.kyc_status ===
 const match = (r: Applicant, f: Filter) => f === "all" ? true : f === "inactive" ? !!r.inactive : f === "todo" ? isTodo(r) : f === "fix" ? r.kyc_status === "rejected" : r.status === f;
 const FILTERS: [Filter, string][] = [["todo", "รอตรวจ"], ["fix", "ตีกลับ · รอแก้"], ["verified", "ชำระแล้ว"], ["pending_slip", "รอตรวจสลิป"], ["rejected", "ปฏิเสธ"], ["refunded", "คืนเงินแล้ว"], ["inactive", "Non Active"], ["all", "ทั้งหมด"]];
 const PKG_TABS: [Pkg, string, string][] = [["all", "ทั้งหมด", "ผู้สมัครทุกสาย"], ["A", "สาย A", PACKAGES.A.name], ["B", "สาย B", PACKAGES.B.name]];
+/** สมัครมาแบบไหน (บอสขอ 24 ต.ค. 2569 · ดูง่าย ป้ายเดียวต่อคน) — จ่ายเงิน / คำเชิญ TOP / Secret / ทอมหล่อฟรี */
+type Ch = "paid" | "invite" | "secret" | "tom";
+const chOf = (r: Applicant): Ch => (r.tier === "secret" ? "secret" : r.invite ? "invite" : r.amount ? "paid" : "tom");
+const CH: Record<Ch, { label: string; c: string; bg: string }> = {
+  paid: { label: "จ่ายเงิน", c: "#4ade80", bg: "rgba(74,222,128,.14)" },
+  invite: { label: "✦ คำเชิญ TOP", c: "#ffd76a", bg: "rgba(240,200,90,.16)" },
+  secret: { label: "✦ Secret", c: "#d9ccff", bg: "rgba(185,166,255,.16)" },
+  tom: { label: "ทอมหล่อ · ฟรี", c: "#f6a5c0", bg: "rgba(246,165,192,.14)" },
+};
+const ChPill = ({ r }: { r: Applicant }) => { const k = chOf(r), t = CH[k]; return <span data-ch={k} className="inline-flex items-center h-6 px-2.5 rounded-full text-[12px] font-semibold whitespace-nowrap" style={{ color: t.c, background: t.bg }}>{t.label}{k === "paid" ? ` ${fmt(r.amount)}` : ""}</span>; };
 type Grp = "all" | "man" | "tom";
 const GRP_TABS: [Grp, string][] = [["all", "ทั้งหมด"], ["man", "หนุ่มหล่อ"], ["tom", "ทอมหล่อ"]];
 const inGrp = (g: Grp) => (r: Applicant) => g === "all" || (g === "tom") === (r.group === "tom");
@@ -47,6 +57,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
   const [pkg, setPkg] = useState<Pkg>(initialPkg);
   // แยกหมวด หนุ่มหล่อ / ทอมหล่อ (บอสสั่ง 22 ต.ค. 2569) — ตัวเลข การ์ดยอด และรายการทั้งหมดนับตามหมวดที่เลือก
   const [grp, setGrp] = useState<Grp>("all");
+  const [ch, setCh] = useState<Ch | "all">("all");
   const [filter, setFilter] = useState<Filter>(() => initial.some(isTodo) ? "todo" : "verified");
   const [showDocs, setShowDocs] = useState(false);
   const { msg, flash, fromRes } = useFlash();
@@ -58,7 +69,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
   const canKyc = canAccess(role, "/admin/kyc");
   const cohortName = (k?: string | null) => cohorts.find((c) => c.key === k)?.name ?? "—";
 
-  const gRows = rows.filter(inGrp(grp));
+  const gRows = rows.filter(inGrp(grp)).filter((r) => ch === "all" || chOf(r) === ch);
   const paid = gRows.filter((r) => r.status === "verified");
   const nOf = (k: Pkg, list = paid) => list.filter((r) => k === "all" || r.package === k).length;
   const nA = nOf("A"), nB = nOf("B");
@@ -69,7 +80,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
   const notLine = paid.filter((r) => !r.line_joined).length;
 
   const t = q.trim().toLowerCase();
-  const shown = useMemo(() => rows.filter((r) => inGrp(grp)(r) && (pkg === "all" || r.package === pkg) && match(r, filter) && hit(r, t)), [rows, grp, pkg, filter, t]);
+  const shown = useMemo(() => rows.filter((r) => inGrp(grp)(r) && (ch === "all" || chOf(r) === ch) && (pkg === "all" || r.package === pkg) && match(r, filter) && hit(r, t)), [rows, grp, ch, pkg, filter, t]);
   const [open, setOpen] = useState<string | null>(shown[0]?.id ?? null);
   // pin = คนที่เพิ่งกดทำรายการ — ถ้าย้ายออกจากแท็บปัจจุบัน แผงยังค้างที่คนเดิม (ไม่สลับไปคนอื่นเงียบ ๆ แล้วกดผิดคน)
   const [pin, setPin] = useState<string | null>(null);
@@ -151,6 +162,14 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
               style={{ background: on ? (k === "tom" ? "#f6a5c0" : GOLD) : "transparent", color: on ? "#1a1206" : k === "tom" ? "#f6a5c0" : "#d3c7bc" }}>{l}<span className="text-[11.5px] font-normal opacity-80">{n}</span></button>;
           })}
         </div>
+        <div data-ch-filter className="flex flex-wrap items-center gap-1.5" role="tablist" aria-label="สมัครแบบ">
+          <span className="text-[12px] text-[#9a8a85] mr-1">สมัครแบบ</span>
+          {([["all", "ทั้งหมด", "#f0c75a", "rgba(240,200,90,.16)"], ...(Object.keys(CH) as Ch[]).map((k) => [k, CH[k].label, CH[k].c, CH[k].bg] as const)] as const).map(([k, l, c, bg]) => {
+            const on = ch === k;
+            const n = rows.filter(inGrp(grp)).filter((r) => k === "all" || chOf(r) === k).length;
+            return <button key={k} role="tab" aria-selected={on} data-ch-tab={k} onClick={() => { setCh(k as Ch | "all"); setPin(null); }} className="h-8 px-3 rounded-full text-[12.5px] font-semibold flex items-center gap-1.5" style={on ? { background: c, color: "#130e0e" } : { color: c, background: bg }}>{l}<span className="text-[11px] opacity-80">{n}</span></button>;
+          })}
+        </div>
         <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="สถานะ">
           {FILTERS.map(([k, l]) => {
             const on = filter === k;
@@ -162,17 +181,11 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
         </div>
         {note && <p className="rounded-xl border border-[rgba(240,200,90,.3)] px-3 py-2 text-xs text-[#cdbfb3]">{note}</p>}
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="flex flex-wrap items-center gap-1.5" role="tablist" aria-label="สายงาน">
+          <span className="text-[12px] text-[#9a8a85] mr-1">สายงาน</span>
           {PKG_TABS.map(([k, code, name]) => {
             const on = pkg === k;
-            return (
-              <button key={k} onClick={() => { setPkg(k); setPin(null); }} aria-pressed={on} className="px-4 py-3.5 rounded-2xl border-[1.5px] text-left flex flex-col gap-1"
-                style={{ borderColor: on ? GOLD : LINE_BD, background: on ? "rgba(240,200,90,.14)" : "#241717", boxShadow: on ? "0 0 0 3px rgba(240,200,90,.15)" : "none" }}>
-                <span className="flex justify-between items-center w-full"><span className="text-[11px] tracking-[1.5px] text-[#f0c75a] font-semibold">{code}</span><span className="text-xs text-[#cdbfb3]">{nOf(k)} คน</span></span>
-                <span className="font-lux font-semibold text-[15px]">{name}</span>
-                <span className="font-lux font-bold text-2xl text-[#ffd76a]">{fmt(sumAmt(paid.filter(inPkg(k))))}</span>
-              </button>
-            );
+            return <button key={k} role="tab" aria-selected={on} title={name} onClick={() => { setPkg(k); setPin(null); }} className="h-8 px-3 rounded-full border text-[12.5px] font-semibold flex items-center gap-1.5" style={{ borderColor: on ? GOLD : LINE_BD, background: on ? GOLD : "transparent", color: on ? "#1a1206" : "#d3c7bc" }}>{k === "all" ? "ทุกสาย" : k === "A" ? "A · กินเที่ยว" : "B · พร้อมนวด"}<span className="text-[11px] opacity-80">{nOf(k, gRows)}</span></button>;
           })}
         </div>
 
@@ -186,7 +199,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
 
         <div className="rounded-2xl border border-[rgba(240,200,90,.38)] overflow-x-auto text-[13px]">
           <div className="min-w-[740px]">
-            <div className={`${GRID} px-3.5 py-2.5 bg-[#130e0e] text-[#9a8a85] text-xs`}><span>รหัส MB</span><span>ชื่อ</span><span>สายงาน</span><span>สลิป · เอกสาร</span><span>กลุ่ม</span><span>กลุ่ม LINE</span><span>ตรวจประวัติ</span></div>
+            <div className={`${GRID} px-3.5 py-2.5 bg-[#130e0e] text-[#9a8a85] text-xs`}><span>รหัส MB</span><span>ชื่อ</span><span>สมัครแบบ</span><span>สลิป · เอกสาร</span><span>กลุ่ม</span><span>กลุ่ม LINE</span><span>ตรวจประวัติ</span></div>
             {shown.map((r) => {
               const c = CRIMINAL[r.criminal_check ?? "pending"];
               return (
@@ -194,7 +207,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
                   style={{ background: sel?.id === r.id ? "rgba(240,200,90,.16)" : "transparent" }}>
                   <span className="text-[#ffd76a]">{r.mb_code}{r.inactive && <span data-nonactive className="block text-[11px] font-semibold text-[#9a8a85]">Non Active</span>}</span>
                   <span className="truncate pr-2">{r.first_name} {r.last_name}</span>
-                  <span className="text-[#d3c7bc] pr-1">{r.group === "tom" && <span className="text-[#f6a5c0]">{r.trans ? "ทอมหล่อ (Trans)" : "ทอมหล่อ"} · </span>}{r.package} · {r.tier === "secret" ? <span className="text-[#d9ccff]">✦ Secret </span> : r.invite && <span className="text-[#e8c472]">✦ เชิญ </span>}{r.sales_ref && <span data-sales-ref className="text-[#7fd6a3]">Sale {r.sales_ref.code} </span>}{r.disclose === "no" && <span data-face-blur className="text-[#f6c38e]">เบลอหน้า </span>}{fmt(r.amount)}</span>
+                  <span className="flex flex-col items-start gap-0.5 pr-1"><ChPill r={r} /><span className="text-[11.5px] text-[#9a8a85]">สาย {r.package}{r.group === "tom" ? (r.trans ? " · ทอม (Trans)" : " · ทอมหล่อ") : ""}{r.sales_ref ? ` · Sale ${r.sales_ref.code}` : ""}{r.disclose === "no" ? " · เบลอหน้า" : ""}</span>{r.sales_ref && <span data-sales-ref hidden />}{r.disclose === "no" && <span data-face-blur hidden />}</span>
                   <span className="flex flex-col leading-tight text-[11.5px]"><span style={{ color: r.status === "verified" ? "#4ade80" : r.status === "pending_slip" ? "#eed58a" : "#fca5a5" }}>{LABEL[r.status]}</span><span style={{ color: KYC_LABEL[r.kyc_status ?? "none"][1] }}>{KYC_LABEL[r.kyc_status ?? "none"][0]}</span></span>
                   <span className="text-[#d3c7bc]">{cohortName(r.cohort)}</span>
                   <span style={{ color: r.line_joined ? "#4ade80" : "#eed58a" }}>{r.line_joined ? "✓ เข้ากลุ่มแล้ว" : "ยังไม่เข้า"}</span>
@@ -207,7 +220,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
         </div>
       </div>
 
-      <aside className="w-full lg:w-[300px] shrink-0 p-[18px] rounded-[18px] border border-[rgba(245,210,110,.85)] bg-[#241717] flex flex-col gap-2.5 text-[13px] lg:sticky lg:top-[22px] lg:min-h-[calc(100dvh-44px)] max-h-[calc(100dvh-44px)] overflow-y-auto">
+      <aside className="w-full lg:w-[300px] shrink-0 p-[18px] rounded-[18px] border border-[rgba(245,210,110,.85)] bg-[#241717] flex flex-col gap-2.5 [&>*]:shrink-0 text-[13px] lg:sticky lg:top-[22px] lg:min-h-[calc(100dvh-44px)] max-h-[calc(100dvh-44px)] overflow-y-auto">
         {sel ? (
           <>
             {movedTo && (
@@ -219,29 +232,65 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
             <div className="flex gap-3 items-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={sel.photos?.[0] ? file(sel.photos[0]) : sel.docs.photo ? file(sel.docs.photo) : ""} alt="" className="w-14 h-14 rounded-[14px] object-cover bg-[#130e0e]" />
-              <div className="min-w-0"><div className="font-lux font-semibold text-[17px] truncate">{sel.first_name} {sel.last_name}</div><div className="text-[#ffd76a] text-xs">{sel.mb_code} · {sel.package} · {sel.invite ? "ลิงก์เชิญ · " : ""}{fmt(sel.amount)}{sel.inv_no ? ` · ${sel.inv_no}` : ""}{sel.ri_no ? ` · ${sel.ri_no}` : ""}</div></div>
+              <div className="min-w-0"><div className="font-lux font-semibold text-[17px] truncate">{sel.first_name} {sel.last_name}</div><div className="text-[#ffd76a] text-xs">{sel.mb_code} · สาย {sel.package}{sel.inv_no ? ` · ${sel.inv_no}` : ""}{sel.ri_no ? ` · ${sel.ri_no}` : ""}</div><div className="mt-1" data-drawer-ch><ChPill r={sel} /></div></div>
             </div>
             <Progress r={sel} />
-            {sel.invite && <p className="text-[12.5px] text-[#e8c472] m-0">✦ สมัครผ่านลิงก์เชิญ ({sel.invite}) · ค่าสมัครเต็มเท่าคนทั่วไป</p>}
-            <div data-active-row className="flex flex-col gap-1.5 rounded-xl border p-2.5" style={{ borderColor: sel.inactive ? "rgba(154,138,133,.6)" : "rgba(74,222,128,.35)" }}>
-              <div className="flex justify-between items-center gap-2"><span className="text-[#cdbfb3]">สถานะ Part-Time</span>
-                <span className="flex gap-1">
-                  <button type="button" data-set-active="1" aria-pressed={!sel.inactive} onClick={() => sel.inactive && setActive(sel.id, true)} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={{ borderColor: !sel.inactive ? "#4ade80" : LINE_BD, background: !sel.inactive ? "rgba(74,222,128,.18)" : "transparent", color: !sel.inactive ? "#4ade80" : "#d3c7bc" }}>Active</button>
-                  <button type="button" data-set-active="0" aria-pressed={!!sel.inactive} onClick={() => !sel.inactive && setResign({ id: sel.id, reason: "", at: new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10) })} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={{ borderColor: sel.inactive ? "#9a8a85" : LINE_BD, background: sel.inactive ? "rgba(154,138,133,.25)" : "transparent", color: sel.inactive ? "#f6efe4" : "#d3c7bc" }}>Non Active</button>
-                </span>
-              </div>
-              {sel.inactive && <span className="text-[12.5px] text-[#cdbfb3]">ลาออก {new Date(sel.inactive.at).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" })} · {sel.inactive.reason} <span className="text-[#9a8a85]">(บันทึกโดย {sel.inactive.by})</span></span>}
-              {resign?.id === sel.id && !sel.inactive && <div className="flex flex-col gap-1.5">
-                <div className="flex flex-wrap gap-1">{["ลาออกเอง", "ย้ายงาน / ไม่สะดวกรับงาน", "ติดต่อไม่ได้", "ผิดกฎ / ทีมงานให้ออก", "พักงานชั่วคราว"].map((q) => <button key={q} type="button" onClick={() => setResign({ ...resign, reason: q })} className="h-7 px-2.5 rounded-full border text-[11.5px]" style={{ borderColor: resign.reason === q ? GOLD : LINE_BD, color: resign.reason === q ? GOLD : "#d3c7bc" }}>{q}</button>)}</div>
-                <input data-resign-reason value={resign.reason} onChange={(e) => setResign({ ...resign, reason: e.target.value })} placeholder="เหตุผลที่ลาออก / Non Active" className="h-9 rounded-lg border bg-[#130e0e] px-3 text-[13px] text-[#f6efe4] outline-none" style={{ borderColor: LINE_BD }} />
-                <label className="flex items-center gap-2 text-[12.5px] text-[#cdbfb3]">วันที่ลาออก<input data-resign-at type="date" value={resign.at} onChange={(e) => setResign({ ...resign, at: e.target.value })} className="h-9 rounded-lg border bg-[#130e0e] px-2 text-[13px] text-[#f6efe4]" style={{ borderColor: LINE_BD, colorScheme: "dark" }} /></label>
-                <div className="flex gap-1.5 justify-end">
-                  <button type="button" onClick={() => setResign(null)} className="h-8 px-3 rounded-full border text-[12px]" style={{ borderColor: LINE_BD }}>ยกเลิก</button>
-                  <button type="button" data-confirm-nonactive disabled={!resign.reason.trim() || !resign.at} onClick={() => setActive(sel.id, false, resign.reason, resign.at)} className="h-8 px-3 rounded-full text-[12px] font-semibold disabled:opacity-40" style={{ background: "#9a8a85", color: "#130e0e" }}>ยืนยัน Non Active</button>
+            {sel.invite && <p className="text-[12.5px] text-[#e8c472] m-0">✦ สมัครผ่านลิงก์เชิญ ({sel.invite}) · ไม่มีค่าสมัคร · ระดับ {sel.tier === "secret" ? "Secret" : "TOP"}</p>}
+            {/* สถานะ Part-Time: Active / Non Active — การ์ดแยก สีชัด (เขียว = ทำงานอยู่ · ส้มแดง = ลาออก) */}
+            {(() => {
+              const off = !!sel.inactive;
+              const tone = off ? { c: "#ff9b7a", bg: "linear-gradient(160deg, rgba(255,120,90,.16), rgba(255,120,90,.04))", bd: "rgba(255,155,122,.55)" } : { c: "#4ade80", bg: "linear-gradient(160deg, rgba(74,222,128,.14), rgba(74,222,128,.03))", bd: "rgba(74,222,128,.5)" };
+              const thd = (d: string) => new Date(d).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" });
+              return (
+                <div data-active-row className="shrink-0 rounded-2xl border overflow-hidden" style={{ borderColor: tone.bd, background: tone.bg }}>
+                  <div className="flex items-center gap-3 px-3.5 pt-3 pb-2.5">
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: tone.c, boxShadow: `0 0 10px ${tone.c}` }} />
+                    <div className="flex-1 min-w-0 leading-tight">
+                      <div className="text-[11px] tracking-[.08em] text-[#cdbfb3]">สถานะ Part-Time</div>
+                      <div className="text-[17px] font-semibold" style={{ color: tone.c }}>{off ? "Non Active · ลาออกแล้ว" : "Active · ทำงานอยู่"}</div>
+                    </div>
+                  </div>
+                  <div role="radiogroup" aria-label="สถานะ Part-Time" className="mx-3.5 mb-3 grid grid-cols-2 gap-1 rounded-full p-1" style={{ background: "rgba(0,0,0,.35)" }}>
+                    <button type="button" role="radio" data-set-active="1" aria-checked={!off} onClick={() => off && setActive(sel.id, true)} className="h-9 rounded-full text-[13px] font-semibold transition" style={!off ? { background: "#4ade80", color: "#0c1a10" } : { color: "#d3c7bc" }}>Active</button>
+                    <button type="button" role="radio" data-set-active="0" aria-checked={off} onClick={() => !off && setResign({ id: sel.id, reason: "", at: new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10) })} className="h-9 rounded-full text-[13px] font-semibold transition" style={off ? { background: "#ff9b7a", color: "#24100a" } : { color: "#d3c7bc" }}>Non Active</button>
+                  </div>
+                  {off && sel.inactive && (
+                    <dl className="mx-3.5 mb-3 grid grid-cols-[88px_minmax(0,1fr)] gap-x-3 gap-y-1.5 rounded-xl px-3 py-2.5 text-[13px]" style={{ background: "rgba(0,0,0,.28)" }}>
+                      <dt className="text-[#b5a596]">วันที่ลาออก</dt><dd className="m-0 font-semibold text-[#f6efe4]">{thd(sel.inactive.at)}</dd>
+                      <dt className="text-[#b5a596]">เหตุผล</dt><dd className="m-0 text-[#f6efe4]">{sel.inactive.reason}</dd>
+                      <dt className="text-[#b5a596]">บันทึกโดย</dt><dd className="m-0 text-[#cdbfb3] break-all">{sel.inactive.by}</dd>
+                    </dl>
+                  )}
+                  {resign?.id === sel.id && !off && (
+                    <div className="mx-3.5 mb-3 flex flex-col gap-2 rounded-xl px-3 py-3" style={{ background: "rgba(0,0,0,.3)", border: "1px solid rgba(255,155,122,.45)" }}>
+                      <b className="text-[13.5px] text-[#ff9b7a]">ตั้งเป็น Non Active</b>
+                      <span className="text-[12px] text-[#b5a596]">เหตุผล</span>
+                      <div className="flex flex-wrap gap-1.5">{["ลาออกเอง", "ย้ายงาน / ไม่สะดวกรับงาน", "ติดต่อไม่ได้", "ผิดกฎ / ทีมงานให้ออก", "พักงานชั่วคราว"].map((q) => <button key={q} type="button" onClick={() => setResign({ ...resign, reason: q })} className="h-8 px-3 rounded-full border text-[12px] font-medium" style={resign.reason === q ? { borderColor: "#ff9b7a", background: "rgba(255,155,122,.18)", color: "#ffd2c2" } : { borderColor: LINE_BD, color: "#d3c7bc" }}>{q}</button>)}</div>
+                      <input data-resign-reason value={resign.reason} onChange={(e) => setResign({ ...resign, reason: e.target.value })} placeholder="หรือพิมพ์เหตุผลเอง" className="h-10 rounded-lg border bg-[#130e0e] px-3 text-[13px] text-[#f6efe4] outline-none focus:border-[#ff9b7a]" style={{ borderColor: LINE_BD }} />
+                      <label className="flex items-center justify-between gap-2 text-[12.5px] text-[#cdbfb3]">วันที่ลาออก<input data-resign-at type="date" value={resign.at} onChange={(e) => setResign({ ...resign, at: e.target.value })} className="h-10 rounded-lg border bg-[#130e0e] px-2 text-[13px] text-[#f6efe4]" style={{ borderColor: LINE_BD, colorScheme: "dark" }} /></label>
+                      <span className="text-[11.5px] text-[#b5a596]">ซ่อนจากหน้าแรกทันที · รหัสเดิมคงไว้ ไม่นำกลับมาใช้</span>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button type="button" onClick={() => setResign(null)} className="h-10 rounded-full border text-[13px]" style={{ borderColor: LINE_BD }}>ยกเลิก</button>
+                        <button type="button" data-confirm-nonactive disabled={!resign.reason.trim() || !resign.at} onClick={() => setActive(sel.id, false, resign.reason, resign.at)} className="h-10 rounded-full text-[13px] font-semibold disabled:opacity-40" style={{ background: "#ff9b7a", color: "#24100a" }}>ยืนยัน Non Active</button>
+                      </div>
+                    </div>
+                  )}
+                  {!!sel.active_log?.length && (
+                    <details className="border-t px-3.5 py-2.5" style={{ borderColor: "rgba(255,255,255,.08)" }}>
+                      <summary className="cursor-pointer text-[12.5px] text-[#cdbfb3]">ประวัติสถานะ ({sel.active_log.length})</summary>
+                      <ol className="m-0 mt-2 pl-0 list-none flex flex-col gap-2">
+                        {sel.active_log.map((l, i) => (
+                          <li key={i} className="flex gap-2.5 text-[12.5px]">
+                            <span className="mt-1.5 w-2 h-2 rounded-full shrink-0" style={{ background: l.active ? "#4ade80" : "#ff9b7a" }} />
+                            <span className="min-w-0"><b style={{ color: l.active ? "#4ade80" : "#ff9b7a" }}>{l.active ? "Active" : "Non Active"}</b> · {thd(l.at)} · <span className="text-[#f6efe4]">{l.reason}</span><span className="block text-[11.5px] text-[#9a8a85] break-all">{l.by}</span></span>
+                          </li>
+                        ))}
+                      </ol>
+                    </details>
+                  )}
                 </div>
-              </div>}
-              {!!sel.active_log?.length && <details className="text-[12px] text-[#9a8a85]"><summary className="cursor-pointer">ประวัติ ({sel.active_log.length})</summary>{sel.active_log.map((l, i) => <div key={i}>{l.active ? "Active" : "Non Active"} · {l.at} · {l.reason} · {l.by}</div>)}</details>}
-            </div>
+              );
+            })()}
             <div className="flex justify-between items-center gap-2"><span className="text-[#cdbfb3]">สายงาน</span>
               <span className="flex gap-1">{(["A", "B"] as const).map((k) => { const on = sel.package === k; return <button key={k} data-set-package={k} onClick={async () => { if (on) return; const d = await patch(sel.id, { package: k }); say(d, `ย้ายไปสาย ${k} · ${PACKAGES[k].name} แล้ว`); }} aria-pressed={on} title={PACKAGES[k].name} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={{ borderColor: on ? GOLD : LINE_BD, background: on ? GOLD : "transparent", color: on ? "#1a1206" : "#d3c7bc" }}>{k === "A" ? "A · กินเที่ยว" : "B · พร้อมนวด"}</button>; })}</span>
             </div>
