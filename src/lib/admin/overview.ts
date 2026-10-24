@@ -77,7 +77,7 @@ export function systemChecks() {
     { key: "sms", label: "SMS OTP (ThaiBulkSMS)", ok: has("THAIBULKSMS_API_KEY", "THAIBULKSMS_API_SECRET"), need: "ไม่มี = สมัครไม่ยืนยันเบอร์" },
     { key: "turnstile", label: "กันบอท (Turnstile)", ok: has("TURNSTILE_SECRET_KEY", "NEXT_PUBLIC_TURNSTILE_SITE_KEY"), need: "แนะนำ" },
     { key: "turn", label: "โทรในแอป · TURN (Cloudflare Realtime)", ok: has("CLOUDFLARE_TURN_KEY_ID", "CLOUDFLARE_TURN_KEY_API_TOKEN"), need: "ไม่มี = บางเครือข่ายโทรไม่ติด" },
-    { key: "ga", label: "Google Analytics (NEXT_PUBLIC_GA_ID)", ok: has("NEXT_PUBLIC_GA_ID"), need: "ไม่มี = ไม่นับคนเข้าเว็บ" },
+    { key: "ga", label: `Google Analytics (${process.env.NEXT_PUBLIC_GA_ID || "G-D36RHJT6HM"})`, ok: true, need: "นับเฉพาะผู้ที่ยินยอมคุกกี้วิเคราะห์" },
     { key: "sheets", label: "Google Sheet ผู้สมัคร", ok: has("GOOGLE_SHEETS_WEBHOOK_URL"), need: "ไม่บังคับ" },
   ];
 }
