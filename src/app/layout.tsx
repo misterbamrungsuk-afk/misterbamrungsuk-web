@@ -8,6 +8,7 @@ import { CookieConsent } from "@/components/cookie-consent";
 import { NavTrack } from "@/components/smart-back";
 import { ErrorReporter, EARLY_ERROR_SCRIPT } from "@/components/error-reporter";
 import { GoogleAnalytics } from "@/components/ga";
+import { SiteTracker } from "@/components/site-tracker";
 import { Suspense } from "react";
 
 const plex = IBM_Plex_Sans_Thai({ subsets: ["thai", "latin"], weight: ["400", "500", "600", "700"], variable: "--font-plex" });
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ScrollReveal />
         <CookieConsent />
         <Suspense fallback={null}><GoogleAnalytics /></Suspense>
+        <SiteTracker />
         <NavTrack />
         <ErrorReporter />
       </body>

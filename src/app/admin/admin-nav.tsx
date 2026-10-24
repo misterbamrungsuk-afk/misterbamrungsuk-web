@@ -12,6 +12,7 @@ export type AdminTab = { href: string; label: string; exact?: boolean; divider?:
 export const ADMIN_GROUPS = ["ภาพรวม · การเงิน", "ระบบ Part-Time", "ระบบ Partner สปา · โรงแรม", "ระบบ Collab · MB x Bars", "ระบบร้านค้า Marketplace", "ลูกค้า", "ตั้งค่า"] as const;
 export const ADMIN_TABS: AdminTab[] = [
   { group: "ภาพรวม · การเงิน", href: "/admin", label: "ภาพรวม", exact: true },
+  { group: "ภาพรวม · การเงิน", href: "/admin/traffic", label: "สถิติผู้เข้าชมเว็บ" },
   { group: "ภาพรวม · การเงิน", href: "/admin/income", label: "ยอดเงินเข้า · ใครโอน จากระบบไหน" },
   { group: "ภาพรวม · การเงิน", href: "/admin/payroll", label: "CEO · อนุมัติรายได้ / ถอน" },
   { group: "ภาพรวม · การเงิน", href: "/admin/payouts", label: "โอนเงินออก · Part-Time / พาร์ทเนอร์ / ร้านค้า" },
