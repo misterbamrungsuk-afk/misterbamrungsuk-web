@@ -14,7 +14,7 @@ const LINE = "rgba(240,200,90,.38)";
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US", { maximumFractionDigits: 2 });
 const VERDICT: Record<string, [string, string]> = { ok: ["✓ ยอดตรง", "#4ade80"], check: ["ยอดตรง · ต้องเทียบบัญชี/วันที่เอง", "#eed58a"], dup: ["สลิปซ้ำ", "#fca5a5"], acct: ["โอนเข้าบัญชีอื่น", "#fca5a5"], amt: ["ยอดไม่ตรง", "#fca5a5"], fake: ["ไม่พบรายการ", "#fca5a5"], error: ["ตรวจไม่สำเร็จ", "#eed58a"] };
 const STATUS: Record<string, [string, string]> = { pending: ["รอตรวจ", "#eed58a"], credited: ["เข้ากระเป๋าแล้ว", "#4ade80"], rejected: ["ไม่ผ่าน", "#fca5a5"] };
-const OWNER: Record<string, string> = { customer: "ลูกค้า", parttime: "Part-Time", partner: "พาร์ทเนอร์", vendor: "ร้านค้า", sales: "Sale Man", platform: "บริษัท" };
+const OWNER: Record<string, string> = { customer: "ลูกค้า", parttime: "Part-Time", partner: "พาร์ทเนอร์", vendor: "ร้านค้า", sales: "Recruit", platform: "บริษัท" };
 const BUCKET: Record<string, string> = { available: "ใช้ได้", pending: "รอปล่อย", boost_credit: "วงเงินโปรโมท", held: "พักไว้", withdrawing: "กำลังถอน" };
 type Ask = { text: string; run: () => Promise<unknown> };
 

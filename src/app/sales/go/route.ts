@@ -6,8 +6,8 @@ import { sameOrigin, switchPage } from "@/lib/switch-confirm";
 
 export const runtime = "nodejs";
 
-// ลิงก์เข้าแดชบอร์ด Sale Man ภายนอก (แอดมินส่งให้) — ตรวจโทเคนแล้วจำเครื่องนี้ไว้ 90 วัน
-// เครื่องนี้เข้าแดชบอร์ด Sale Man คนอื่นอยู่ = ถามยืนยันก่อนสลับ
+// ลิงก์เข้าแดชบอร์ด Recruit ภายนอก (แอดมินส่งให้) — ตรวจโทเคนแล้วจำเครื่องนี้ไว้ 90 วัน
+// เครื่องนี้เข้าแดชบอร์ด Recruit คนอื่นอยู่ = ถามยืนยันก่อนสลับ
 function enter(url: URL, t: string) {
   const res = NextResponse.redirect(new URL("/sales/me", url), 303);
   res.cookies.set(SALES_COOKIE, t, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 90 * 86400 });
@@ -22,7 +22,7 @@ export async function GET(req: Request) {
   const cur = readSalesLink((await cookies()).get(SALES_COOKIE)?.value);
   if (cur && cur !== id) {
     const [a, b] = await Promise.all([findRep({ id }).catch(() => null), findRep({ id: cur }).catch(() => null)]);
-    return switchPage("/sales/go", { t }, a?.name ?? "Sale Man", b?.name ?? "Sale Man อีกคน");
+    return switchPage("/sales/go", { t }, a?.name ?? "Recruit", b?.name ?? "Recruit อีกคน");
   }
   return enter(url, t);
 }

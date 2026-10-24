@@ -120,7 +120,7 @@ export async function middleware(request: NextRequest) {
     // ข้อกำหนด/นโยบาย ต้องอ่านได้ก่อนสมัคร (ลิงก์จากหน้าสมัคร + คุกกี้) · ค้นหาเพื่อนดูได้แบบเดียวกับหน้าแรก
     pathname === "/page/terms" || pathname === "/privacy" || pathname.startsWith("/privacy/") || pathname === "/soon" ||
     pathname === "/search" ||
-    // โปรเปิดเมมเบอร์ดูได้ก่อนล็อกอิน · Sale Man (หน้าขาย/แดชบอร์ดผ่านลิงก์) · ลิงก์แนะนำ /ref/CODE
+    // โปรเปิดเมมเบอร์ดูได้ก่อนล็อกอิน · Recruit (หน้าขาย/แดชบอร์ดผ่านลิงก์) · ลิงก์แนะนำ /ref/CODE
     pathname === "/membership" || pathname === "/sales" || pathname.startsWith("/sales/") || pathname.startsWith("/ref/") ||
     // หน้ารับสมัคร Part-Time (sale funnel) เปิดสาธารณะ
     pathname === "/join" ||

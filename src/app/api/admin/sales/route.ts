@@ -22,7 +22,7 @@ export async function GET(req: Request) {
 }
 
 // แอดมิน: approve / reject (สลิปเปิดเมม) · rep_create / rep_toggle / rep_link · payout_paid / payout_failed
-// CEO เท่านั้น: settings (ตัวเลขระดับ) · payout_approve / payout_reject (ค่าคอม Sale Man ภายนอก)
+// CEO เท่านั้น: settings (ตัวเลขระดับ) · payout_approve / payout_reject (ค่าคอม Recruit ภายนอก)
 export async function POST(req: Request) {
   const s = await admin();
   if (!s) return NextResponse.json({ ok: false }, { status: 401 });
@@ -34,17 +34,17 @@ export async function POST(req: Request) {
     if (act === "approve") return NextResponse.json({ ok: true, row: await creditMembership(id, actor) });
     if (act === "reject") return NextResponse.json({ ok: true, row: await rejectMembership(id, actor, String(b.reason ?? "")) });
     if (act === "rep_create") {
-      // ต้องมีบัญชีรับค่าคอม (ธนาคาร + เลขบัญชี + ชื่อบัญชี) — ไม่งั้น Sale Man ขอรับค่าคอมไม่ได้
+      // ต้องมีบัญชีรับค่าคอม (ธนาคาร + เลขบัญชี + ชื่อบัญชี) — ไม่งั้น Recruit ขอรับค่าคอมไม่ได้
       const r = await createExternalRep({ name: String(b.name ?? ""), phone: String(b.phone ?? ""), bank: b.bank }, s.email);
       return NextResponse.json({ ok: true, rep: r, link: `${new URL(req.url).origin}/sales/go?t=${encodeURIComponent(signSalesLink(r.id))}` });
     }
     if (act === "rep_update") return NextResponse.json({ ok: true, rep: await updateExternalRep(id, { name: b.name, phone: b.phone, bank: b.bank }) });
-    if (act === "rep_toggle") { const r = await findRep({ id }); if (!r) throw new MemberError("ไม่พบ Sale Man"); return NextResponse.json({ ok: true, rep: await patchRep(id, { active: !r.active }) }); }
-    if (act === "rep_link") { const r = await findRep({ id }); if (!r || r.kind !== "external") throw new MemberError("ไม่พบ Sale Man"); return NextResponse.json({ ok: true, link: `${new URL(req.url).origin}/sales/go?t=${encodeURIComponent(signSalesLink(r.id))}` }); }
+    if (act === "rep_toggle") { const r = await findRep({ id }); if (!r) throw new MemberError("ไม่พบ Recruit"); return NextResponse.json({ ok: true, rep: await patchRep(id, { active: !r.active }) }); }
+    if (act === "rep_link") { const r = await findRep({ id }); if (!r || r.kind !== "external") throw new MemberError("ไม่พบ Recruit"); return NextResponse.json({ ok: true, link: `${new URL(req.url).origin}/sales/go?t=${encodeURIComponent(signSalesLink(r.id))}` }); }
     // ID / รหัสผ่านเข้าแดชบอร์ด (ทีมงานออกให้) — รหัสผ่านแสดงครั้งเดียว
     if (act === "rep_login") {
       const r = await findRep({ id });
-      if (!r || r.kind !== "external") throw new MemberError("ไม่พบ Sale Man");
+      if (!r || r.kind !== "external") throw new MemberError("ไม่พบ Recruit");
       try { return NextResponse.json({ ok: true, login: await issueSalesLogin(r, String(b.username ?? ""), s.email) }); }
       catch (e) { throw new MemberError(e instanceof Error ? e.message : "ตั้ง ID ไม่สำเร็จ"); }
     }

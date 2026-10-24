@@ -27,7 +27,7 @@ export default async function PayrollPage({ searchParams }: { searchParams: Prom
   const wds = allW.filter((w) => w.status === "requested");
   const info = await withdrawInfo(wds, allW);
   const reqs: WReq[] = wds.map((w) => ({ id: w.id, mb: w.parttime_mb, name: info[w.id]?.name ?? "", newBank: !!info[w.id]?.newBank, firstTime: !!info[w.id]?.firstTime, nick: rows.find((r) => r.parttime_id === w.parttime_id)?.nick ?? (info[w.id]?.nick || w.parttime_mb), amount: w.amount_satang, fee: w.fee_satang, wht: w.wht_satang, net: w.net_satang, bank: `${w.bank.bank} · ${w.bank.account} · ${w.bank.name}`, at: w.created_at }));
-  const salesReqs = sp.map((p) => { const r = reps.find((x) => x.id === p.rep_id); return { id: p.id, name: r?.name ?? "Sale Man", code: r?.code ?? "", amount: p.amount_satang, bank: p.bank ? `${p.bank.bank} · ${p.bank.account} · ${p.bank.name}` : "-", at: p.created_at }; });
+  const salesReqs = sp.map((p) => { const r = reps.find((x) => x.id === p.rep_id); return { id: p.id, name: r?.name ?? "Recruit", code: r?.code ?? "", amount: p.amount_satang, bank: p.bank ? `${p.bank.bank} · ${p.bank.account} · ${p.bank.name}` : "-", at: p.created_at }; });
   return (
     <>
       <PageHead title="CEO · อนุมัติรายได้และถอนเงิน" sub={`ตรวจงานวันที่ ${new Date(`${day}T12:00:00+07:00`).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", dateStyle: "long" })} · ${money.releaseMode === "auto" ? `ตอนนี้ปล่อยรายได้อัตโนมัติหลัง ${money.releaseHours} ชม. (เปลี่ยนได้ที่ "กระเป๋าเงิน")` : "รายได้เข้ากระเป๋าเมื่อ CEO อนุมัติ"} · ${s?.role === "ceo" ? "คุณคือ CEO" : "ดูอย่างเดียว — อนุมัติได้เฉพาะ CEO"}`} />

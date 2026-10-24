@@ -6,17 +6,17 @@ import { notify } from "@/lib/bookings";
 import { extraOf, getById, listApplicants, saveProfile, type Applicant } from "@/lib/join/store";
 import { hashPw, verifyPw } from "@/lib/join/pt-password";
 import { tierLabel } from "@/lib/join/config";
-import { getMemberSettings } from "./tiers";
 import { findRep, type SalesRep } from "./store";
 
-// Sale Man ชวน Part-Time (หมอ) — บอสสั่ง 24 ต.ค. 2569
-// ลิงก์ /join/s/<โค้ด> → คุกกี้ mb_sm 30 วัน → สมัครแล้วผูก docs.extra.sales_ref · ชำระค่าสมัครแล้ว (verified) → ค่าตอบแทนเข้ากระเป๋า Sale Man ครั้งเดียว
-// เงินออกจาก platform.marketing เหมือนค่าคอมเปิดเมม · อัตรา CEO ตั้งที่ /admin/sales (recruit A / B / สมัครฟรี)
+// Recruit ชวน Part-Time (หมอ) — บอสสั่ง 24 ต.ค. 2569 (ปรับรอบ 2: ค่าแนะนำ ฿500 ต่อคนทุกแผน)
+// ลิงก์ /join/s/<โค้ด> (คุกกี้ mb_sm 30 วัน) หรือกรอกเลขแนะนำตอนสมัคร → ผูก docs.extra.sales_ref
+// · สมัครแบบจ่ายเงิน: ชำระแล้ว (verified) → ฿500 จาก platform.marketing เข้ากระเป๋า Recruit ครั้งเดียว
+// · สมัครฟรี (เชิญ/ทอมหล่อ): ได้ ฿500 เมื่อหมอได้งานแรกและระบบหักค่าสมัครงานแรกแล้ว (bookings/day.ts matureOne)
 export const RECRUIT_COOKIE = "mb_sm";
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("th-TH");
 const ownerOf = (r: SalesRep): { type: OwnerType; id: string } => (r.kind === "parttime" ? { type: "parttime", id: r.parttime_id! } : { type: "sales", id: r.id });
 
-/** โค้ดที่ใช้ชวนได้ (Sale Man ภายนอก หรือ Part-Time ที่เปิดใช้อยู่) */
+/** โค้ดที่ใช้ชวนได้ (Recruit ภายนอก หรือ Part-Time ที่เปิดใช้อยู่) */
 export async function recruitRep(code: string | null | undefined): Promise<SalesRep | null> {
   const c = String(code ?? "").trim().toUpperCase();
   if (!/^[A-Z0-9]{4,12}$/.test(c)) return null;
@@ -24,16 +24,14 @@ export async function recruitRep(code: string | null | undefined): Promise<Sales
   return r?.active ? r : null;
 }
 
-/** ค่าตอบแทนต่อคนตามสาย (สตางค์) — สมัครฟรี (ไม่มียอด) ใช้อัตรา free */
-export async function recruitRate(a: Pick<Applicant, "amount" | "package">): Promise<number> {
-  const r = (await getMemberSettings()).recruit;
-  return Math.round((a.amount ? r[a.package] : r.free) * 100);
-}
+/** ค่าแนะนำต่อคน (สตางค์) — ทุกแผนเท่ากัน */
+export const RECRUIT_FEE_SATANG = 50_000;
+export async function recruitRate(_a?: Pick<Applicant, "amount" | "package">): Promise<number> { return RECRUIT_FEE_SATANG; }
 
-/** ชำระค่าสมัครแล้ว → จ่ายค่าตอบแทนให้ Sale Man ที่ชวน (ครั้งเดียวต่อผู้สมัคร · idem recruit:<id>) */
+/** สมัครแบบจ่ายเงิน ชำระแล้ว → จ่ายค่าแนะนำให้ Recruit ที่ชวน (ครั้งเดียวต่อผู้สมัคร · idem recruit:<id>) · สมัครฟรีไปจ่ายตอนงานแรก */
 export async function creditRecruit(applicantId: string, actor: string): Promise<number> {
   const a = await getById(applicantId);
-  if (!a || a.status !== "verified") return 0;
+  if (!a || a.status !== "verified" || !a.amount) return 0;
   const x = extraOf(a);
   if (!x.sales_ref || x.recruit_at) return 0;
   const rep = await findRep({ id: x.sales_ref.rep_id });
@@ -41,34 +39,52 @@ export async function creditRecruit(applicantId: string, actor: string): Promise
   const amt = await recruitRate(a);
   if (amt > 0) {
     const o = ownerOf(rep);
-    await post("commission", { type: "applicant", id: a.id }, `recruit:${a.id}`, `ค่าตอบแทนชวน Part-Time ${a.mb_code}`, actor, [
+    await post("commission", { type: "applicant", id: a.id }, `recruit:${a.id}`, `ค่าแนะนำ Recruit · ${a.mb_code}`, actor, [
       { owner_type: "platform", owner_id: PLATFORM, bucket: "marketing", amount: -amt },
       { owner_type: o.type, owner_id: o.id, bucket: "available", amount: amt },
     ]);
-    if (o.type === "parttime") await notify({ user_type: "parttime", user_id: o.id, kind: "commission", title: `ได้ค่าตอบแทนชวน Part-Time ${baht(amt)}`, body: a.mb_code, url: "" }).catch(() => {});
+    if (o.type === "parttime") await notify({ user_type: "parttime", user_id: o.id, kind: "commission", title: `ได้ค่าแนะนำ ${baht(amt)}`, body: a.mb_code, url: "" }).catch(() => {});
   }
   await saveProfile(a.id, { recruit_satang: amt, recruit_at: new Date().toISOString() });
   return amt;
 }
 
-/** หมอที่ Sale Man คนนี้ชวน (เห็นเฉพาะของตัวเอง · ชื่อเล่น + อักษรแรกนามสกุล) */
+/** งานแรกของหมอสมัครฟรีที่ Recruit แนะนำ (ยังไม่เคยจ่ายค่าแนะนำ) → ปลายทางของเงินที่หัก + แจ้งเตือน · null = ไม่มี Recruit / จ่ายไปแล้ว */
+export async function firstJobRecruit(a: Applicant): Promise<{ code: string; owner: { type: OwnerType; id: string }; notify: (amt: number) => Promise<unknown> } | null> {
+  const x = extraOf(a);
+  if (!x.sales_ref || x.recruit_at || a.amount) return null;
+  const rep = await findRep({ id: x.sales_ref.rep_id }).catch(() => null);
+  if (!rep) return null;
+  const o = ownerOf(rep);
+  return {
+    code: rep.code, owner: o,
+    notify: async (amt) => { if (o.type === "parttime") await notify({ user_type: "parttime", user_id: o.id, kind: "commission", title: `ได้ค่าแนะนำ ${baht(amt)}`, body: `${a.mb_code} ได้งานแรกแล้ว`, url: "" }); },
+  };
+}
+
+/** หมอที่ Recruit คนนี้ชวน (เห็นเฉพาะของตัวเอง · ชื่อเล่น + อักษรแรกนามสกุล) + ได้งานหรือยัง */
 export async function recruitsOf(rep: SalesRep) {
   const rows = (await listApplicants().catch(() => [] as Applicant[])).filter((a) => extraOf(a).sales_ref?.rep_id === rep.id);
+  const { listForParttime } = await import("@/lib/bookings");
   const out = [];
   for (const a of rows) {
     const x = extraOf(a);
     const paid = a.status === "verified";
+    const jobs = paid ? (await listForParttime(a.id).catch(() => [])).filter((b) => b.status === "completed").length : 0;
+    const free = !a.amount;
     out.push({
       id: a.id, mb: a.mb_code, who: `${a.nickname || a.first_name}${a.last_name ? ` ${a.last_name.trim()[0] ?? ""}.` : ""}`,
-      pack: `สาย ${a.package}${x.group === "tom" ? " · ทอมหล่อ" : ""}${x.tier && x.tier !== "silver" ? ` · ${tierLabel(x.tier)}` : ""}${!a.amount ? " · สมัครฟรี" : ""}`,
-      status: paid ? "ชำระแล้ว" : a.status === "rejected" ? "ไม่ผ่าน" : a.status === "refunded" ? "คืนเงินแล้ว" : "รอตรวจสลิป",
-      commission: x.recruit_at ? x.recruit_satang ?? 0 : await recruitRate(a), credited: !!x.recruit_at, at: x.recruit_at ?? a.created_at,
+      pack: `สาย ${a.package}${x.group === "tom" ? " · ทอมหล่อ" : ""}${x.tier && x.tier !== "silver" ? ` · ${tierLabel(x.tier)}` : ""}${free ? " · สมัครฟรี" : ""}`,
+      status: a.status === "rejected" ? "ไม่ผ่าน" : a.status === "refunded" ? "คืนเงินแล้ว" : !paid ? "รอตรวจสลิป" : x.inactive ? "Non Active" : !x.listed ? "รอเปิดรับงาน" : jobs ? `ได้งานแล้ว ${jobs} งาน` : "ยังไม่ได้งาน",
+      jobs, free,
+      commission: x.recruit_at ? x.recruit_satang ?? 0 : RECRUIT_FEE_SATANG, credited: !!x.recruit_at, at: x.recruit_at ?? a.created_at,
+      wait: x.recruit_at ? "ได้รับแล้ว" : free ? "ได้เมื่อหมอได้งานแรก" : "ได้เมื่อหมอชำระค่าสมัคร",
     });
   }
   return out;
 }
 
-// ── ID / รหัสผ่าน Sale Man ภายนอก (ทีมงานออกให้) · เก็บแฮชใน Storage _config/sales-logins.json ──
+// ── ID / รหัสผ่าน Recruit ภายนอก (ทีมงานออกให้) · เก็บแฮชใน Storage _config/sales-logins.json ──
 type Login = { rep_id: string; username: string; pw_hash: string; updated_at: string; by: string };
 const PATH = "_config/sales-logins.json";
 const isDemo = !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -88,7 +104,7 @@ export const usernameOk = (u: string) => /^[a-z0-9._-]{4,32}$/.test(u);
 /** รหัสผ่านสุ่ม 10 ตัว (ตัดตัวที่สับสนง่าย) */
 const newPassword = () => [...randomBytes(10)].map((b) => "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"[b % 55]).join("");
 
-/** แอดมินออก ID/รหัสผ่านใหม่ให้ Sale Man (คืนรหัสผ่านครั้งเดียว · เก็บแค่แฮช) */
+/** แอดมินออก ID/รหัสผ่านใหม่ให้ Recruit (คืนรหัสผ่านครั้งเดียว · เก็บแค่แฮช) */
 export async function issueSalesLogin(rep: SalesRep, username: string, by: string): Promise<{ username: string; password: string }> {
   const u = cleanUsername(username);
   if (!usernameOk(u)) throw new Error("ID ใช้ a-z 0-9 . _ - ยาว 4–32 ตัว");

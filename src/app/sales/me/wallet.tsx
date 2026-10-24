@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-// กระเป๋าเงิน Sale Man: สรุปผลงาน (ชวนใคร · รายได้) · เบิกได้ · กดเบิกเอง · ประวัติเงินเข้า-ออก (บอสสั่ง 24 ต.ค. 2569)
+// กระเป๋าเงิน Recruit: สรุปผลงาน (ชวนใคร · รายได้) · เบิกได้ · กดเบิกเอง · ประวัติเงินเข้า-ออก (บอสสั่ง 24 ต.ค. 2569)
 type Payout = { id: string; amount_satang: number; status: string; created_at: string; note: string | null };
 type Row = { id: number; note: string; amount: number; at: string };
 export type WalletData = {

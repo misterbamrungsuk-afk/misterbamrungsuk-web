@@ -7,7 +7,7 @@ import { sameOrigin } from "@/lib/switch-confirm";
 
 export const runtime = "nodejs";
 
-// เข้าแดชบอร์ด Sale Man ด้วย ID / รหัสผ่านที่ทีมงานออกให้ → คุกกี้ mb_sales 30 วัน (เห็นเฉพาะข้อมูลของตัวเอง)
+// เข้าแดชบอร์ด Recruit ด้วย ID / รหัสผ่านที่ทีมงานออกให้ → คุกกี้ mb_sales 30 วัน (เห็นเฉพาะข้อมูลของตัวเอง)
 export async function POST(req: Request) {
   if (!sameOrigin(req)) return NextResponse.json({ ok: false }, { status: 403 });
   const ip = (req.headers.get("x-forwarded-for") ?? "local").split(",")[0].trim();

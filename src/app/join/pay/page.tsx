@@ -57,6 +57,21 @@ function PayInner() {
   const [secretInv, setSecretInv] = useState(false); // ลิงก์เชิญ Secret
   const invTier = secretInv ? "Secret" : "TOP";
   const [tom, setTom] = useState(false);
+  // เลขแนะนำจาก Recruit (ไม่บังคับ) — เปิดผ่านลิงก์ Recruit แล้วเติมให้อัตโนมัติ · ตรวจกับ /api/sales/ref (แสดงชื่อตัวแรก + ***)
+  const [ref, setRef] = useState("");
+  const [refInfo, setRefInfo] = useState<{ code: string; ok: boolean; name: string | null } | null>(null);
+  useEffect(() => {
+    fetch("/api/sales/ref").then((r) => r.json()).then((j: { code?: string | null; name?: string | null }) => { if (j.code) { setRef(j.code); setRefInfo({ code: j.code, ok: true, name: j.name ?? null }); } }).catch(() => {});
+  }, []);
+  useEffect(() => {
+    const c = ref.trim().toUpperCase();
+    if (!c || refInfo?.code === c) return;
+    if (!/^[A-Z0-9]{4,12}$/.test(c)) { setRefInfo({ code: c, ok: false, name: null }); return; }
+    const t = setTimeout(() => {
+      fetch(`/api/sales/ref?code=${encodeURIComponent(c)}`).then((r) => r.json()).then((j: { valid?: boolean; name?: string | null }) => setRefInfo({ code: c, ok: !!j.valid, name: j.name ?? null })).catch(() => {});
+    }, 400);
+    return () => clearTimeout(t);
+  }, [ref, refInfo?.code]);
   // สมัครฟรี (ไม่มี QR/สลิป): ลิงก์เชิญพิเศษ หรือหมวดทอมหล่อ
   const free = !!invite || tom;
   // กำลังตรวจรหัสเชิญ → ยังไม่แสดง QR (กันสายเชิญฟรีเห็น QR แวบหนึ่ง)
@@ -127,6 +142,7 @@ function PayInner() {
     if (!phoneOk) return setErr("ยืนยันเบอร์โทรด้วยรหัส OTP ก่อน");
     if (!slip && !free) return setErr("แนบสลิปการโอนก่อน");
     if (!agree) return setErr("ติ๊กยอมรับและให้ความยินยอมให้ครบทั้ง 3 ข้อก่อนส่ง");
+    if (ref.trim() && refInfo && !refInfo.ok) return setErr("เลขแนะนำไม่ถูกต้อง · ตรวจกับ Recruit อีกครั้ง หรือลบออก");
     setBusy(true); setErr("");
     try {
       const fd = new FormData();
@@ -136,6 +152,7 @@ function PayInner() {
       fd.append("accept_terms", "true"); fd.append("consent_pdpa", "true"); fd.append("consent_criminal", "true"); fd.append("turnstile", ts);
       if (!free) fd.append("slip", await dataUrlToFile(slip, "slip.jpg"));
       if (invite) fd.append("invite", invite);
+      if (ref.trim()) fd.append("recruit_code", ref.trim().toUpperCase());
       const res = await fetch("/api/join/register", { method: "POST", body: fd });
       const data = (await res.json()) as { ok?: boolean; mb_code?: string; link?: string; error?: string; fields?: string[]; needOtp?: boolean; login?: string };
       if (!res.ok || !data.ok || !data.mb_code) {
@@ -201,13 +218,19 @@ function PayInner() {
                 {pw.b && pw.a !== pw.b && <div className="text-[12.5px] text-[#ff8a9a]">รหัสผ่านยังไม่ตรงกัน</div>}
                 <div className="text-[12.5px] font-light text-[#d9c9b4]">ใช้อีเมลกับรหัสผ่านนี้ เข้าสู่ระบบ Part-Time จากเครื่องไหนก็ได้</div>
               </div>
+              <div className="flex flex-col gap-1" data-recruit-field>
+                <input className={inCls + " uppercase tracking-[.08em]"} autoCapitalize="characters" autoComplete="off" spellCheck={false} placeholder="เลขแนะนำจาก Recruit (ถ้ามี)" aria-label="เลขแนะนำจาก Recruit" aria-describedby="refHelp" value={ref} onChange={(e) => { setRef(e.target.value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 12)); setErr(""); }} />
+                <div id="refHelp" className="text-[12.5px] font-light" style={{ color: !ref.trim() ? "#d9c9b4" : refInfo?.code !== ref.trim().toUpperCase() ? "#d9c9b4" : refInfo.ok ? "#7fd6a3" : "#ff8a9a" }}>
+                  {!ref.trim() ? "มีคนแนะนำมา? กรอกเลขแนะนำของเขา · ไม่มีเว้นว่างได้" : refInfo?.code !== ref.trim().toUpperCase() ? "กำลังตรวจเลขแนะนำ…" : refInfo.ok ? `✓ แนะนำโดย ${refInfo.name ?? refInfo.code}` : "ไม่พบเลขแนะนำนี้"}
+                </div>
+              </div>
             </div>
             <div className="flex flex-col bg-[#251d1b]" style={{ ...box, gap: 13 }}>
               {summary.map(([n, v]) => <div key={n} className="flex justify-between gap-4 min-w-0"><span className="whitespace-nowrap shrink-0">{n}</span><span className="text-right min-w-0">{v}</span></div>)}
               <div style={{ height: 1, background: "rgba(243,234,217,0.07)", margin: "4px 0" }} />
               {items.map(([n, v]) => <div key={n} className="flex justify-between items-baseline gap-4 min-w-0"><span className="min-w-0">{n}</span><span className="whitespace-nowrap shrink-0 font-semibold text-[18px] text-[#e8c472]">{free ? "ฟรี" : baht(v)}</span></div>)}
               {items.length > 1 && <div className="flex justify-between items-baseline gap-4 min-w-0 pt-2 border-t border-[rgba(243,234,217,0.07)]"><span className="min-w-0 font-semibold">รวมที่ต้องโอน</span><span className="whitespace-nowrap shrink-0 font-bold text-[20px] text-[#e8c472]" data-total="1">{baht(amount)}</span></div>}
-              <div className="text-[13px] font-light">{!invite && tom ? "ทอมหล่อ: ไม่ต้องชำระค่าสมัคร · หลังเริ่มงาน หักเงินประกันงานเคสละ ฿500 จากรายได้ (กันหนีงาน/เทงาน) · เงินแต่ละก้อนครบ 90 วันถอนคืนได้ (ค่าธรรมเนียมถอน 3%)" : invite ? `✦ คำเชิญพิเศษ: ไม่ต้องชำระค่าสมัคร · ได้ระดับ ${invTier} ทันที · หลังเริ่มงาน หักเงินประกันงานเคสละ ฿500 จากรายได้ (กันหนีงาน/เทงาน) · เงินแต่ละก้อนครบ 90 วันถอนคืนได้ (ค่าธรรมเนียมถอน 3%)` : FEE_NOTE}</div>
+              <div className="text-[13px] font-light">{!invite && tom ? "ทอมหล่อ: ไม่ต้องชำระค่าสมัครตอนนี้ · เมื่อเริ่มรับงาน ระบบหักค่าสมัครจากรายได้งานละ ฿500 จนครบ ฿10,000 แล้วเลิกหัก" : invite ? `✦ คำเชิญพิเศษ: ไม่ต้องชำระค่าสมัครตอนนี้ · ได้ระดับ ${invTier} ทันที · เมื่อเริ่มรับงาน ระบบหักค่าสมัครจากรายได้งานละ ฿500 จนครบ ฿10,000 แล้วเลิกหัก` : FEE_NOTE}</div>
             </div>
             <div className="flex flex-col gap-2 bg-[#2c1a1f]" style={box}>
               <div className="font-semibold text-[17px]">ค่าสมัครรวม</div>

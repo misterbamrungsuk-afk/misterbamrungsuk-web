@@ -140,7 +140,7 @@ export function PayrollClient({ day, today, rows, sample, reqs, salesReqs = [], 
           ))}
         </div>
       </div>
-      <h2 className="m-0 mt-4 text-[17px] font-semibold">ค่าคอม Sale Man ภายนอก <span className="text-[13px] font-normal text-[#9a8a85]">(อนุมัติแล้วไปหน้า "เมมเบอร์ · Sale Man" ให้แอดมินโอน)</span></h2>
+      <h2 className="m-0 mt-4 text-[17px] font-semibold">ค่าคอม Recruit ภายนอก <span className="text-[13px] font-normal text-[#9a8a85]">(อนุมัติแล้วไปหน้า "เมมเบอร์ · Recruit" ให้แอดมินโอน)</span></h2>
       <div className="rounded-2xl border" style={{ borderColor: LINE }}>
         {!salesReqs.length && <p className="m-0 p-5 text-center text-[#9a8a85]">ไม่มีคำขอรับค่าคอมรออนุมัติ</p>}
         {salesReqs.map((w) => (

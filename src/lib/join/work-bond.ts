@@ -7,6 +7,13 @@ import { PLATFORM, WalletError, balances, history, post } from "@/lib/wallet";
 // · หนีงาน/เทงาน → แอดมินหักจากช่อง bond (ปรับยอดพร้อมเหตุผล ที่ /admin/wallet)
 export const BOND = { perJobSatang: 50_000, lockDays: 90 } as const;
 
+// ค่าสมัครหักจากงาน (บอสกำหนด 24 ต.ค. 2569 · แทนเงินประกันงานสำหรับงานใหม่) — คนที่สมัครฟรีทุกแผน (เชิญ TOP/Secret · ทอมหล่อ)
+// · ปล่อยรายได้แต่ละนัด หักเพิ่มงานละ ฿500 (ไม่เกินรายได้นัดนั้น) จนครบ ฿10,000 แล้วเลิกหัก · ยอดสะสมเก็บที่ docs.extra.fee_paid_satang
+// · งานแรกของคนที่ Recruit แนะนำ: ฿500 ที่หักไปเป็นค่าแนะนำของ Recruit คนนั้น (recruit.ts) · งานอื่นเข้ารายได้บริษัท
+export const JOB_FEE = { perJobSatang: 50_000, capSatang: 1_000_000 } as const;
+/** ส่วนที่หักเป็นค่าสมัครจากรายได้นัดนี้ (สตางค์) */
+export const jobFeeCut = (applies: boolean, amt: number, paid: number) => (applies ? Math.max(0, Math.min(JOB_FEE.perJobSatang, amt, JOB_FEE.capSatang - paid)) : 0);
+
 /** ใช้กับคนที่สมัครฟรี: สายคำเชิญพิเศษ หรือหมวดทอมหล่อ */
 export const bondApplies = (x: { invite?: string | null; group?: string | null }) => !!x.invite || x.group === "tom";
 

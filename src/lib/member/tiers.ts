@@ -1,7 +1,7 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
 
-// ระดับเมมเบอร์ Gold / Black + ค่าคอม Sale Man + แต้ม — ตั้งค่าใน Storage JSON (_config/member.json) · แก้ได้เฉพาะ CEO (/admin/sales)
+// ระดับเมมเบอร์ Gold / Black + ค่าคอม Recruit + แต้ม — ตั้งค่าใน Storage JSON (_config/member.json) · แก้ได้เฉพาะ CEO (/admin/sales)
 // ตัวเลขเริ่มต้นตามบรีฟ (17 ต.ค. 2569): จ่าย 50,000 ได้ 70,000 · จ่าย 100,000 ได้ 150,000 · คอม 2,000 / 5,000 หรือวงเงินโปรโมท ×2
 export type TierId = "gold" | "black";
 export interface TierCfg { id: TierId; name: string; pay: number; credit: number; commission: number; pointsPer100: number }
@@ -10,7 +10,7 @@ export interface MemberSettings {
   boostMult: number;        // ค่าคอมแปลงเป็นวงเงินโปรโมท × เท่า (เฉพาะ Part-Time)
   basePointsPer100: number; // แต้มของคนที่ยังไม่เป็นเมม ต่อการใช้จ่าย ฿100
   tiers: Record<TierId, TierCfg>;
-  /** ค่าตอบแทน Sale Man ชวน Part-Time (หมอ) ต่อคน (บาท) — ได้เมื่อชำระค่าสมัครแล้ว · A/B = สายที่จ่ายค่าสมัคร · free = สมัครฟรี (ลิงก์เชิญ TOP/Secret · ทอมหล่อ) */
+  /** ค่าตอบแทน Recruit ชวน Part-Time (หมอ) ต่อคน (บาท) — ได้เมื่อชำระค่าสมัครแล้ว · A/B = สายที่จ่ายค่าสมัคร · free = สมัครฟรี (ลิงก์เชิญ TOP/Secret · ทอมหล่อ) */
   recruit: { A: number; B: number; free: number };
   history: { at: string; by: string; note: string }[];
 }

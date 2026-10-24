@@ -24,7 +24,7 @@ export const ADMIN_TABS: AdminTab[] = [
   { group: "ระบบ Part-Time", href: "/admin/earnings", label: "ราคาและส่วนแบ่ง" },
   { group: "ระบบ Part-Time", href: "/admin/invites", label: "ลิงก์เชิญ · Secret" },
   { group: "ระบบ Part-Time", href: "/admin/boosts", label: "โปรโมทโปรไฟล์" },
-  { group: "ระบบ Part-Time", href: "/admin/sales", label: "Sale Man · เมมเบอร์" },
+  { group: "ระบบ Part-Time", href: "/admin/sales", label: "Recruit · เมมเบอร์" },
   { group: "ระบบ Part-Time", href: "/admin/orders", label: "ตรวจงาน" },
   { group: "ระบบ Part-Time", href: "/admin/chats", label: "แชท · คำห้ามส่ง" },
   { group: "ระบบ Part-Time", href: "/admin/appeals", label: "อุทธรณ์ใบเตือน" },

@@ -9,9 +9,9 @@ import { AvatarEditor } from "@/components/avatar-editor";
 import { SalesWallet } from "./wallet";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "แดชบอร์ด Sale Man — Mister Bamrungsuk", robots: { index: false } };
+export const metadata = { title: "แดชบอร์ด Recruit — Mister Bamrungsuk", robots: { index: false } };
 
-// แดชบอร์ด Sale Man ภายนอก (เข้าผ่านลิงก์ที่ทีมงานส่งให้ /sales/go?t=)
+// แดชบอร์ด Recruit ภายนอก (เข้าผ่านลิงก์ที่ทีมงานส่งให้ /sales/go?t=)
 export default async function SalesMe() {
   const id = readSalesLink((await cookies()).get(SALES_COOKIE)?.value);
   const rep = id ? await findRep({ id }) : null;
@@ -24,7 +24,7 @@ export default async function SalesMe() {
       <BrandBar />
       <main className="mx-auto w-full max-w-[640px] flex flex-col gap-3.5" style={{ padding: "12px 16px 32px", lineHeight: 1.6 }}>
         <div className="flex flex-col items-center gap-1"><AvatarEditor as="sales" letter={rep.name} size={104} /></div>
-        <h1 className="m-0 text-[22px] font-semibold text-center">สวัสดี {rep.name} · Sale Man</h1>
+        <h1 className="m-0 text-[22px] font-semibold text-center">สวัสดี {rep.name} · Recruit</h1>
         <p className="m-0 -mt-2 text-center text-[13px] text-[#b5a596]">โค้ด {rep.code} · แตะรูปเพื่อเปลี่ยนรูปโปรไฟล์</p>
         <SalesWallet d={{
           recruits: sum.recruits.length, recruitsPaid: sum.recruits.filter((r) => r.credited).length,
@@ -40,9 +40,9 @@ export default async function SalesMe() {
             : <span className="text-[14px] text-[#ff8a9a]">ยังไม่มีบัญชีรับเงิน · ติดต่อทีมงานเพื่อเพิ่มบัญชีก่อนขอรับค่าคอม</span>}
           <span className="text-[12px] text-[#b5a596]">ต้องการเปลี่ยนบัญชี ติดต่อทีมงานทาง LINE</span>
         </section>
-        <SalesBoard who="external" summary={sum} link={`${origin}/ref/${rep.code}`} tiers={{ gold: cfg.tiers.gold, black: cfg.tiers.black }} boostMult={cfg.boostMult} recruit={{ link: `${origin}/join/s/${rep.code}`, rates: cfg.recruit }} hideMoney />
+        <SalesBoard who="external" summary={sum} link={`${origin}/ref/${rep.code}`} tiers={{ gold: cfg.tiers.gold, black: cfg.tiers.black }} boostMult={cfg.boostMult} recruit={{ link: `${origin}/join/s/${rep.code}`, code: rep.code }} hideMoney />
         <form action="/api/sales/logout" method="post" className="mt-2">
-          <button type="submit" className="w-full h-12 rounded-full text-[14px] font-semibold text-[#e8c472]" style={{ border: "1px solid rgba(232,196,114,.45)" }}>ออกจากระบบ Sale Man</button>
+          <button type="submit" className="w-full h-12 rounded-full text-[14px] font-semibold text-[#e8c472]" style={{ border: "1px solid rgba(232,196,114,.45)" }}>ออกจากระบบ Recruit</button>
         </form>
       </main>
     </div>

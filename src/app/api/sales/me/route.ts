@@ -12,7 +12,7 @@ async function rep() {
   return r?.active && r.kind === "external" ? r : null;
 }
 
-// แดชบอร์ด Sale Man ภายนอก: GET = ผลงาน + ค่าคอม · POST { amount } = ขอรับค่าคอม (CEO อนุมัติ → แอดมินโอน)
+// แดชบอร์ด Recruit ภายนอก: GET = ผลงาน + ค่าคอม · POST { amount } = ขอรับค่าคอม (CEO อนุมัติ → แอดมินโอน)
 export async function GET(req: Request) {
   const r = await rep();
   if (!r) return NextResponse.json({ ok: false }, { status: 401 });

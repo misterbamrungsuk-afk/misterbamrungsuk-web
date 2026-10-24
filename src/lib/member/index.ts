@@ -13,13 +13,13 @@ import {
 } from "./store";
 import { recruitsOf } from "./recruit";
 
-// เปิดเมม Gold/Black (จ่าย QR+สลิป → เครดิตเข้ากระเป๋า + โบนัสค่าการตลาด) · ค่าคอม Sale Man · แต้ม
+// เปิดเมม Gold/Black (จ่าย QR+สลิป → เครดิตเข้ากระเป๋า + โบนัสค่าการตลาด) · ค่าคอม Recruit · แต้ม
 // เงินทุกก้อนผ่าน ledger บัญชีคู่: เปิดเมม = bank −จ่าย · marketing −โบนัส · customer.available +เครดิต (ใน transaction เดียวกับการเปลี่ยนสถานะ)
 export class MemberError extends Error {}
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("th-TH");
 const RANK: Record<TierId, number> = { gold: 1, black: 2 };
 
-/** ผู้แนะนำ: โค้ด Sale Man (Part-Time หรือภายนอก) ที่ยังเปิดใช้ */
+/** ผู้แนะนำ: โค้ด Recruit (Part-Time หรือภายนอก) ที่ยังเปิดใช้ */
 async function referrerOf(code: string | null | undefined): Promise<SalesRep | null> {
   const c = String(code ?? "").trim().toUpperCase();
   if (!/^[A-Z0-9]{4,12}$/.test(c)) return null;
@@ -147,7 +147,7 @@ export async function awardPoints(customer_id: string, email: string, paidSatang
   return pts;
 }
 
-// ── Sale Man ──
+// ── Recruit ──
 const newCode = () => Array.from(crypto.getRandomValues(new Uint8Array(6)), (b) => "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[b % 32]).join("");
 async function uniqueCode() { for (let i = 0; i < 8; i++) { const c = newCode(); if (!(await findRep({ code: c }))) return c; } throw new Error("code"); }
 
@@ -159,32 +159,32 @@ export async function repForParttime(a: { id: string; nickname?: string | null; 
 export function cleanBank(b: unknown): NonNullable<SalesRep["bank"]> {
   const x = (b ?? {}) as { bank?: unknown; account?: unknown; name?: unknown };
   const bank = String(x.bank ?? "").trim().slice(0, 60), account = String(x.account ?? "").replace(/\D/g, ""), name = String(x.name ?? "").trim().slice(0, 80);
-  if (!bank) throw new MemberError("กรอกธนาคารของ Sale Man");
+  if (!bank) throw new MemberError("กรอกธนาคารของ Recruit");
   if (account.length < 10 || account.length > 15) throw new MemberError("เลขบัญชีต้องเป็นตัวเลข 10–15 หลัก");
   if (!name) throw new MemberError("กรอกชื่อบัญชี");
   return { bank, account, name };
 }
 export async function createExternalRep(input: { name: string; phone: string; bank: unknown }, by: string): Promise<SalesRep> {
-  if (!input.name.trim()) throw new MemberError("กรอกชื่อ Sale Man");
+  if (!input.name.trim()) throw new MemberError("กรอกชื่อ Recruit");
   const bank = cleanBank(input.bank);
   return insertRep({ code: await uniqueCode(), kind: "external", parttime_id: null, name: input.name.trim().slice(0, 80), phone: input.phone.replace(/[^\d+]/g, "").slice(0, 20) || null, bank, active: true, created_by: by });
 }
-/** แอดมินแก้ชื่อ/เบอร์/บัญชีของ Sale Man ภายนอก */
+/** แอดมินแก้ชื่อ/เบอร์/บัญชีของ Recruit ภายนอก */
 export async function updateExternalRep(id: string, input: { name?: unknown; phone?: unknown; bank?: unknown }): Promise<SalesRep> {
   const r = await findRep({ id });
-  if (!r || r.kind !== "external") throw new MemberError("ไม่พบ Sale Man");
+  if (!r || r.kind !== "external") throw new MemberError("ไม่พบ Recruit");
   const patch: Partial<SalesRep> = {};
-  if (input.name !== undefined) { const n = String(input.name ?? "").trim().slice(0, 80); if (!n) throw new MemberError("กรอกชื่อ Sale Man"); patch.name = n; }
+  if (input.name !== undefined) { const n = String(input.name ?? "").trim().slice(0, 80); if (!n) throw new MemberError("กรอกชื่อ Recruit"); patch.name = n; }
   if (input.phone !== undefined) patch.phone = String(input.phone ?? "").replace(/[^\d+]/g, "").slice(0, 20) || null;
   if (input.bank !== undefined) patch.bank = cleanBank(input.bank);
   const out = await patchRep(id, patch);
-  if (!out) throw new MemberError("ไม่พบ Sale Man");
+  if (!out) throw new MemberError("ไม่พบ Recruit");
   return out;
 }
 /** เลขบัญชีแบบปิดบัง เช่น xxx-x-x4978-9 → "••••••9789" */
 export const maskAccount = (acct: string | null | undefined) => { const d = String(acct ?? "").replace(/\D/g, ""); return d ? `••••••${d.slice(-4)}` : ""; };
 
-/** สรุปผลงาน Sale Man: คนที่ชวน (ชื่อปิดบางส่วน) + ค่าคอม + ยอดในกระเป๋า */
+/** สรุปผลงาน Recruit: คนที่ชวน (ชื่อปิดบางส่วน) + ค่าคอม + ยอดในกระเป๋า */
 export async function repSummary(rep: SalesRep) {
   const o = ownerOf(rep);
   const [rows, bal, payouts, recruits] = await Promise.all([listPurchases({ referrer_id: o.id }), balances(o.type, o.id).catch(() => ({} as Record<string, number>)), rep.kind === "external" ? listPayouts({ rep_id: rep.id }) : Promise.resolve([] as SalesPayout[]), recruitsOf(rep)]);
@@ -198,12 +198,12 @@ export async function repSummary(rep: SalesRep) {
     available: bal.available ?? 0, boostCredit: bal.boost_credit ?? 0, withdrawing: bal.withdrawing ?? 0,
     paidOut: payouts.filter((p) => p.status === "paid").reduce((t, p) => t + p.amount_satang, 0),
     payouts: payouts.slice(0, 20),
-    // ความเคลื่อนไหวกระเป๋า (Sale Man ภายนอก): เงินเข้า/ขอเบิก/คืนยอด — ยอด "เบิกได้"
+    // ความเคลื่อนไหวกระเป๋า (Recruit ภายนอก): เงินเข้า/ขอเบิก/คืนยอด — ยอด "เบิกได้"
     history: rep.kind === "external" ? (await history("sales", rep.id, 40).catch(() => [])).filter((e) => e.bucket === "available").map((e) => ({ id: e.tx_id, note: e.note ?? e.kind, amount: e.amount, at: e.created_at })) : [],
   };
 }
 
-// ลิงก์เข้าแดชบอร์ด Sale Man ภายนอก (ลงลายเซ็น · อายุ 90 วัน) — แบบเดียวกับ /join/go ของ Part-Time
+// ลิงก์เข้าแดชบอร์ด Recruit ภายนอก (ลงลายเซ็น · อายุ 90 วัน) — แบบเดียวกับ /join/go ของ Part-Time
 export const SALES_COOKIE = "mb_sales";
 export function signSalesLink(repId: string, days = 90) {
   const body = Buffer.from(JSON.stringify({ r: repId, exp: Date.now() + days * 86400_000 })).toString("base64url");
@@ -217,7 +217,7 @@ export function readSalesLink(t: string | null | undefined): string | null {
   try { const v = JSON.parse(Buffer.from(body, "base64url").toString()) as { r: string; exp: number }; return v.exp > Date.now() ? v.r : null; } catch { return null; }
 }
 
-// ── จ่ายค่าคอม Sale Man ภายนอก: ขอ → CEO อนุมัติ → แอดมินโอนแล้วเช็ก ──
+// ── จ่ายค่าคอม Recruit ภายนอก: ขอ → CEO อนุมัติ → แอดมินโอนแล้วเช็ก ──
 export async function requestSalesPayout(rep: SalesRep, amountBaht: number): Promise<SalesPayout> {
   if (rep.kind !== "external") throw new MemberError("Part-Time ถอนค่าคอมผ่านหน้าถอนเงินของตัวเอง");
   if (!rep.bank?.account) throw new MemberError("ยังไม่มีบัญชีรับเงิน · ติดต่อทีมงาน");
@@ -233,7 +233,7 @@ export async function requestSalesPayout(rep: SalesRep, amountBaht: number): Pro
         { owner_type: "sales", owner_id: rep.id, bucket: "withdrawing", amount: amt },
       ] });
     if (!r) throw new MemberError("สร้างคำขอไม่สำเร็จ");
-    await notify({ user_type: "admin", user_id: "ceo", kind: "sales_payout", title: `ขอรับค่าคอม Sale Man ${rep.name} ${baht(amt)} · รอ CEO อนุมัติ`, body: rep.code, url: "/admin/payroll" });
+    await notify({ user_type: "admin", user_id: "ceo", kind: "sales_payout", title: `ขอรับค่าคอม Recruit ${rep.name} ${baht(amt)} · รอ CEO อนุมัติ`, body: rep.code, url: "/admin/payroll" });
     return r;
   } catch (e) {
     await dropPayout(row.id).catch(() => {});
@@ -244,7 +244,7 @@ export async function requestSalesPayout(rep: SalesRep, amountBaht: number): Pro
 export async function approveSalesPayout(id: string, ceo: string) {
   const r = await patchPayout(id, ["requested"], { status: "approved", approved_by: ceo, approved_at: now() });
   if (!r) throw new MemberError("คำขอนี้ไม่ได้รออนุมัติ");
-  await notify({ user_type: "admin", user_id: "finance", kind: "sales_payout", title: "CEO อนุมัติค่าคอม Sale Man · รอโอน", body: baht(r.amount_satang), url: "/admin/sales" });
+  await notify({ user_type: "admin", user_id: "finance", kind: "sales_payout", title: "CEO อนุมัติค่าคอม Recruit · รอโอน", body: baht(r.amount_satang), url: "/admin/sales" });
   return r;
 }
 /** ปิดคำขอ: โอนแล้ว (ต้อง CEO อนุมัติก่อน) / ไม่สำเร็จหรือไม่อนุมัติ = คืนยอด */

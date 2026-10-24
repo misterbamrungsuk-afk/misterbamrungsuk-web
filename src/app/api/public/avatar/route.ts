@@ -5,7 +5,7 @@ import { CACHE_LONG, CACHE_SHORT, parseWidth, thumb } from "@/lib/thumb";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// โลโก้สาธารณะ: เฉพาะพาร์ทเนอร์ (โรงแรม/สปา) และร้านค้า — รูปลูกค้า/Sale Man ไม่เปิดผ่านเส้นนี้
+// โลโก้สาธารณะ: เฉพาะพาร์ทเนอร์ (โรงแรม/สปา) และร้านค้า — รูปลูกค้า/Recruit ไม่เปิดผ่านเส้นนี้
 // ?w=240|480|960 = รูปย่อ · ?v= (เวลาอัปเดตรูป จาก avatarOf) = URL เปลี่ยนเมื่อเปลี่ยนรูป → แคชยาว · ไม่มี v = แคชสั้น
 export async function GET(req: Request) {
   const u = new URL(req.url);

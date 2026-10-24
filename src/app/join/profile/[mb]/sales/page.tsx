@@ -10,7 +10,7 @@ import { GATE_MSG, GATE_SHORT, isPtActive } from "@/lib/join/pt-ui";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "ชวนเปิดเมม · ค่าคอม — Mister Bamrungsuk" };
 
-// Part-Time = Sale Man: โค้ด/ลิงก์ของตัวเอง · คนที่ชวนเปิดเมม · ค่าคอม (ถอนได้ หรือแปลงเป็นวงเงินโปรโมท ×2)
+// Part-Time = Recruit: โค้ด/ลิงก์ของตัวเอง · คนที่ชวนเปิดเมม · ค่าคอม (ถอนได้ หรือแปลงเป็นวงเงินโปรโมท ×2)
 export default async function PtSalesPage({ params, searchParams }: { params: Promise<{ mb: string }>; searchParams: Promise<{ t?: string }> }) {
   const c = await loadPt(params, searchParams);
   if (c === "forbidden") return <Forbidden />;
@@ -31,7 +31,7 @@ export default async function PtSalesPage({ params, searchParams }: { params: Pr
     <PtPage>
       <PtHead back={ptHref(c)} title="ชวนเปิดเมม · ค่าคอม" />
       <main className="flex flex-col gap-3.5 max-w-[640px]" style={{ padding: "16px 16px 24px", lineHeight: 1.6 }}>
-        <SalesBoard who="parttime" mb={c.mb} t={c.t} summary={sum} link={`${origin}/ref/${rep.code}`} tiers={{ gold: cfg.tiers.gold, black: cfg.tiers.black }} boostMult={cfg.boostMult} />
+        <SalesBoard who="parttime" mb={c.mb} t={c.t} summary={sum} link={`${origin}/ref/${rep.code}`} tiers={{ gold: cfg.tiers.gold, black: cfg.tiers.black }} boostMult={cfg.boostMult} recruit={{ link: `${origin}/join/s/${rep.code}`, code: rep.code }} />
       </main>
       <PtNav c={c} active="earnings" />
     </PtPage>

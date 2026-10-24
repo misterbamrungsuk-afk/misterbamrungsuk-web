@@ -3,7 +3,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { SlipCheck } from "@/lib/slip2go";
 import type { TierId } from "./tiers";
 
-// ข้อมูลเปิดเมม / Sale Man / คำขอรับค่าคอม / แต้ม — Supabase (0008_members_sales.sql) หรือหน่วยความจำ (โหมดสาธิต)
+// ข้อมูลเปิดเมม / Recruit / คำขอรับค่าคอม / แต้ม — Supabase (0008_members_sales.sql) หรือหน่วยความจำ (โหมดสาธิต)
 export type MemberPurchase = {
   id: string; customer_id: string; customer_email: string | null; tier: TierId;
   pay_satang: number; credit_satang: number; bonus_satang: number;
@@ -61,7 +61,7 @@ export async function transRefTaken(ref: string): Promise<boolean> {
   return (count ?? 0) > 0;
 }
 
-// ── Sale Man ──
+// ── Recruit ──
 export async function listReps(): Promise<SalesRep[]> {
   if (isDemo) return [...demo.reps];
   const { data, error } = await db().from("sales_reps").select().order("created_at", { ascending: false });
@@ -89,7 +89,7 @@ export async function patchRep(id: string, patch: Partial<SalesRep>): Promise<Sa
   return (data as SalesRep) ?? null;
 }
 
-// ── คำขอรับค่าคอม (Sale Man ภายนอก) ──
+// ── คำขอรับค่าคอม (Recruit ภายนอก) ──
 export async function insertPayout(row: Omit<SalesPayout, "id" | "created_at" | "paid_at" | "approved_by" | "approved_at">): Promise<SalesPayout> {
   const full: SalesPayout = { ...row, id: crypto.randomUUID(), created_at: now(), paid_at: null, approved_by: null, approved_at: null };
   if (isDemo) { if (demo.payouts.some((p) => p.rep_id === row.rep_id && (p.status === "requested" || p.status === "approved"))) throw new Error("open_payout"); demo.payouts.unshift(full); return full; }

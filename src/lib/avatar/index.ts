@@ -2,7 +2,7 @@ import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { putFile, readFile } from "@/lib/join/store";
 
-// รูปโปรไฟล์ของทุกบัญชี (ลูกค้า / พาร์ทเนอร์ / ร้านค้า / Sale Man) — ไฟล์ส่วนตัวใน bucket applicants · ตำแหน่ง+ซูมเก็บในตาราง profile_avatars
+// รูปโปรไฟล์ของทุกบัญชี (ลูกค้า / พาร์ทเนอร์ / ร้านค้า / Recruit) — ไฟล์ส่วนตัวใน bucket applicants · ตำแหน่ง+ซูมเก็บในตาราง profile_avatars
 export type AvatarOwner = "customer" | "partner" | "vendor" | "sales";
 export type Avatar = { owner_type: AvatarOwner; owner_id: string; path: string; pos: string; zoom: number; updated_at: string };
 export const AVATAR_OWNERS: AvatarOwner[] = ["customer", "partner", "vendor", "sales"];
@@ -46,7 +46,7 @@ export async function avatarFile(t: AvatarOwner, id: string) {
   return a ? readFile(a.path) : null;
 }
 
-/** โลโก้สาธารณะของพาร์ทเนอร์ / ร้านค้า (ลูกค้า/Sale Man ไม่เปิดสาธารณะ) */
+/** โลโก้สาธารณะของพาร์ทเนอร์ / ร้านค้า (ลูกค้า/Recruit ไม่เปิดสาธารณะ) */
 export type Logo = { src: string; pos: string; zoom: number };
 export async function publicLogo(t: "partner" | "vendor", id: string): Promise<Logo | null> {
   const a = await getAvatar(t, id).catch(() => null);

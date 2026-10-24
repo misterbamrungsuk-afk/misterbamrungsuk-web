@@ -116,15 +116,24 @@ async function split(live: Booking, actor: string, tip: number, beforeMove?: () 
 /** ปล่อยรายได้ของนัดที่จบแล้ว: PT.pending → PT.available (ครั้งเดียวต่อการจอง · กันซ้ำด้วยสถานะ matured_at + idem) */
 async function matureOne(b: Booking, actor: string): Promise<Booking> {
   const amt = await ptAmount(b);
-  // สายคำเชิญพิเศษ: หักเงินประกันงานเคสละ ฿500 เข้า PT.bond (ครบ 90 วันย้ายเข้ายอดถอนได้ · work-bond.ts)
-  const { bondCut, bondApplies } = await import("@/lib/join/work-bond");
-  const pt = amt > 0 ? await (await import("@/lib/join/store")).getById(b.parttime_id).catch(() => null) : null;
-  const cut = bondCut(!!pt && bondApplies((await import("@/lib/join/store")).extraOf(pt)), amt);
-  return (await moveBooking(b.id, ["completed"], { matured_at: now() }, amt > 0 ? { kind: "mature", ref: { type: "booking", id: b.id }, idem: `mature:${b.id}`, note: `ปล่อยรายได้ ${b.code}${cut ? ` · หักเงินประกันงาน ฿${cut / 100}` : ""}`, actor, legs: ([
+  // สมัครฟรี (เชิญ/ทอมหล่อ): หักค่าสมัครงานละ ฿500 จนครบ ฿10,000 (work-bond.ts) · งานแรกของคนที่ Recruit แนะนำ → ค่าแนะนำเข้ากระเป๋า Recruit
+  const { jobFeeCut, bondApplies } = await import("@/lib/join/work-bond");
+  const st = await import("@/lib/join/store");
+  const pt = amt > 0 ? await st.getById(b.parttime_id).catch(() => null) : null;
+  const x = pt ? st.extraOf(pt) : null;
+  const paid = x?.fee_paid_satang ?? 0;
+  const cut = jobFeeCut(!!x && bondApplies(x), amt, paid);
+  const rec = cut > 0 && pt ? await (await import("@/lib/member/recruit")).firstJobRecruit(pt) : null;
+  const r = await moveBooking(b.id, ["completed"], { matured_at: now() }, amt > 0 ? { kind: "mature", ref: { type: "booking", id: b.id }, idem: `mature:${b.id}`, note: `ปล่อยรายได้ ${b.code}${cut ? ` · หักค่าสมัคร ฿${cut / 100} (สะสม ฿${((paid + cut) / 100).toLocaleString("th-TH")}/฿10,000)${rec ? ` · ค่าแนะนำ Recruit ${rec.code}` : ""}` : ""}`, actor, legs: ([
     { owner_type: "parttime", owner_id: b.parttime_id, bucket: "pending", amount: -amt },
     { owner_type: "parttime", owner_id: b.parttime_id, bucket: "available", amount: amt - cut },
-    { owner_type: "parttime", owner_id: b.parttime_id, bucket: "bond", amount: cut },
-  ] as Leg[]).filter((l) => l.amount !== 0) } : null)) ?? b;
+    rec ? { owner_type: rec.owner.type, owner_id: rec.owner.id, bucket: "available", amount: cut } : { owner_type: "platform", owner_id: PLATFORM, bucket: "revenue", amount: cut },
+  ] as Leg[]).filter((l) => l.amount !== 0) } : null);
+  if (r && cut > 0 && pt) {
+    await st.saveProfile(pt.id, { fee_paid_satang: paid + cut, ...(rec ? { recruit_satang: cut, recruit_at: now() } : {}) }).catch((e) => console.error("fee_paid", e));
+    if (rec) await rec.notify(cut).catch(() => {});
+  }
+  return r ?? b;
 }
 
 /** แอดมินอนุมัติรายได้เข้ากระเป๋า (หน้า /admin/payroll) — ทุกนัดที่จบแล้วแต่ยังไม่ปล่อยของ Part-Time คนนี้ (หรือเฉพาะ ids ที่เลือก) */

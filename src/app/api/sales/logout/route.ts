@@ -4,7 +4,7 @@ import { sameOrigin } from "@/lib/switch-confirm";
 
 export const runtime = "nodejs";
 
-// ออกจากแดชบอร์ด Sale Man บนเครื่องนี้ — ลบ cookie mb_sales (เข้าใหม่ด้วยลิงก์จากทีมงาน)
+// ออกจากแดชบอร์ด Recruit บนเครื่องนี้ — ลบ cookie mb_sales (เข้าใหม่ด้วยลิงก์จากทีมงาน)
 // form POST จาก /sales/me → กลับหน้า /sales · fetch (Accept json) → { ok }
 export async function POST(req: Request) {
   if (!sameOrigin(req)) return new Response("forbidden", { status: 403 });

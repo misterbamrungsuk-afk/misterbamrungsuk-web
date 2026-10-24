@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-// ลิงก์แนะนำของ Sale Man: /ref/CODE → จำโค้ด 30 วัน แล้วพาไปหน้าโปรเมมเบอร์ (โค้ดจะกรอกให้อัตโนมัติตอนเปิดเมม)
+// ลิงก์แนะนำของ Recruit: /ref/CODE → จำโค้ด 30 วัน แล้วพาไปหน้าโปรเมมเบอร์ (โค้ดจะกรอกให้อัตโนมัติตอนเปิดเมม)
 export async function GET(req: Request, { params }: { params: Promise<{ code: string }> }) {
   const code = (await params).code.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
   const res = NextResponse.redirect(new URL(`/membership${code ? `?ref=${code}` : ""}`, req.url));

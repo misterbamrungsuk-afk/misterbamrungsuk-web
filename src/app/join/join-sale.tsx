@@ -16,9 +16,9 @@ const TR: Record<PackageKey, { name2: string; fee: string; lines: [string, strin
     bg: "linear-gradient(160deg, #6a1a28, #3a0d16)", kc: "#f0d6d0", sh: "0 0 0 4px rgba(232,196,114,.18), 0 14px 32px rgba(200,16,46,.35)" },
 };
 const TIMELINE: [string, string][] = [["20 ต.ค. – 10 พ.ย.", "เปิดรับสมัคร"], ["ไม่เกินต้น พ.ย.", "ประกาศกฎเกณฑ์การทำงาน"], ["ภายใน 20 พ.ย.", "อบรมกลุ่ม 1"], ["30 พ.ย.", "พร้อมเปิดให้บริการ"], ["30 พ.ย. – ต้น ธ.ค.", "อบรมกลุ่ม 2"]];
-const FAQ_INVITE: [string, string] = ["คำเชิญพิเศษต่างจากสมัครปกติอย่างไร?", "ผู้ได้รับคำเชิญไม่ต้องชำระค่าสมัคร และได้ระดับ TOP ทันที แค่กรอกข้อมูลสมัคร · หลังเริ่มงาน หักเงินประกันงานเคสละ ฿500 จากรายได้ (กันหนีงาน/เทงาน) · เงินแต่ละก้อนครบ 90 วันถอนคืนได้ (ค่าธรรมเนียมถอน 3%)"];
-const FAQ_SECRET: [string, string] = ["คำเชิญ Secret คืออะไร?", "ลิงก์นี้สำหรับผู้ได้รับเชิญเป็น Secret เท่านั้น · ไม่ต้องชำระค่าสมัคร · โปรไฟล์แสดงเป็นระดับ Secret ขึ้นก่อน TOP · ราคาต่อครั้งทีมงานกำหนดให้รายคน · หลังเริ่มงาน หักเงินประกันงานเคสละ ฿500 จากรายได้ เงินแต่ละก้อนครบ 90 วันถอนคืนได้ (ค่าธรรมเนียมถอน 3%)"];
-const FAQ_TOM: [string, string] = ["ทอมหล่อต้องจ่ายค่าสมัครไหม?", "ไม่ต้องจ่าย สมัครฟรี ทอมหล่อรับเฉพาะสายเพื่อนกินเที่ยวที่มีความสามารถในการนวด · หลังเริ่มงาน หักเงินประกันงานเคสละ ฿500 จากรายได้ (กันหนีงาน/เทงาน) เงินแต่ละก้อนครบ 90 วันถอนคืนได้"];
+const FAQ_INVITE: [string, string] = ["คำเชิญพิเศษต่างจากสมัครปกติอย่างไร?", "ผู้ได้รับคำเชิญไม่ต้องชำระค่าสมัคร และได้ระดับ TOP ทันที แค่กรอกข้อมูลสมัคร · เมื่อเริ่มรับงาน ระบบหักค่าสมัครจากรายได้งานละ ฿500 จนครบ ฿10,000 แล้วเลิกหัก"];
+const FAQ_SECRET: [string, string] = ["คำเชิญ Secret คืออะไร?", "ลิงก์นี้สำหรับผู้ได้รับเชิญเป็น Secret เท่านั้น · ไม่ต้องชำระค่าสมัคร · โปรไฟล์แสดงเป็นระดับ Secret ขึ้นก่อน TOP · ราคาต่อครั้งทีมงานกำหนดให้รายคน · เมื่อเริ่มรับงาน ระบบหักค่าสมัครจากรายได้งานละ ฿500 จนครบ ฿10,000 แล้วเลิกหัก"];
+const FAQ_TOM: [string, string] = ["ทอมหล่อต้องจ่ายค่าสมัครไหม?", "ไม่ต้องจ่าย สมัครฟรี ทอมหล่อรับเฉพาะสายเพื่อนกินเที่ยวที่มีความสามารถในการนวด · เมื่อเริ่มรับงาน ระบบหักค่าสมัครจากรายได้งานละ ฿500 จนครบ ฿10,000 แล้วเลิกหัก"];
 const FAQ: [string, string][] = [
   ["ค่าสมัครรวมอะไรบ้าง คืนได้ไหม?", `รวมค่าอบรมแล้ว ได้แชร์ข้อมูลทางกฎหมายที่เกี่ยวข้องกับการทำงานและทริคมัดใจลูกค้า (เพื่อนกินเที่ยว ${fmtB(PACKAGES.A.price)} · สายนวด ${fmtB(PACKAGES.B.price)}) · ค่าสมัครไม่คืนเงินทุกกรณี`],
   ["ถ้าเริ่มงานแล้วยังไม่ค่อยมีลูกค้า?", "30 วันแรกหลังเปิดรับงาน ถ้าได้งานไม่ถึง 5 เคส ระบบให้โค้ดโปรโมทโปรไฟล์ฟรี 3 วัน ขึ้นหน้าแนะนำให้ลูกค้าเห็นก่อน"],
@@ -93,7 +93,7 @@ export function JoinSalePage({ seats, showEarnings = true, invite, group = null,
                     </span>
                     <span className="flex flex-col gap-1 rounded-xl" style={{ padding: "12px 14px", background: "rgba(0,0,0,.32)" }}>
                       <span className="flex justify-between gap-[10px] text-[#fff7e8]"><span className="text-[#e8c472] font-semibold">ค่าสมัคร (รวมอบรม)</span><span className="font-bold text-[17px] text-[#fff1c9]" data-fee={k}>{invite || tom ? "ฟรี" : T.fee}</span></span>
-                      <span className="text-[13px] leading-[1.6] text-[#fff7e8] font-light">{FEE_INCLUDES(k).slice(1, 3).join(" · ")}<br />{!invite && tom ? "ทอมหล่อ: สมัครฟรี · เงินประกันงานเคสละ ฿500 (ครบ 90 วันถอนคืนได้)" : invite ? "✦ คำเชิญพิเศษ: ไม่ต้องชำระ · ได้ระดับ TOP · เงินประกันงานเคสละ ฿500 (ครบ 90 วันถอนคืนได้)" : "ไม่คืนเงินทุกกรณี"}</span>
+                      <span className="text-[13px] leading-[1.6] text-[#fff7e8] font-light">{FEE_INCLUDES(k).slice(1, 3).join(" · ")}<br />{!invite && tom ? "ทอมหล่อ: สมัครฟรี · หักค่าสมัครจากงาน งานละ ฿500 จนครบ ฿10,000" : invite ? "✦ คำเชิญพิเศษ: ไม่ต้องชำระตอนสมัคร · ได้ระดับ TOP · หักค่าสมัครจากงาน งานละ ฿500 จนครบ ฿10,000" : "ไม่คืนเงินทุกกรณี"}</span>
                     </span>
                   </button>
                 );
@@ -110,7 +110,7 @@ export function JoinSalePage({ seats, showEarnings = true, invite, group = null,
             {seats.closed
               ? <span aria-disabled="true" className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center" style={{ marginTop: 6, opacity: 0.45 }}>ปิดรับสมัครแล้ว</span>
               : <Link href={invite ? `/join/pay?pkg=B&invite=${invite}${g}` : tom ? "/join/pay?pkg=B&g=tom" : `/join/pay?pkg=${pick}${g}`} className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center hover:text-[#1b130b]" style={{ marginTop: 6 }}>{invite || tom ? "เริ่มสร้างโปรไฟล์" : "ชำระเงินและรับรหัสสมัคร"}</Link>}
-            {!invite && tom && <p className="m-0 text-[13px] text-center text-[#b5a596] font-light" data-tom-free>สมัครฟรี · เงินประกันงานเคสละ ฿500 (ครบ 90 วันถอนคืนได้)</p>}
+            {!invite && tom && <p className="m-0 text-[13px] text-center text-[#b5a596] font-light" data-tom-free>สมัครฟรี · หักค่าสมัครจากงาน งานละ ฿500 จนครบ ฿10,000</p>}
             {invite && <p className="m-0 text-[13px] text-center text-[#b5a596] font-light">ลิงก์ส่วนตัว กรุณาอย่าเผยแพร่</p>}
             <Link href="/join/me" data-pt-login className="min-h-12 rounded-2xl border-[1.5px] border-[#e8c472] text-[#e8c472] font-semibold text-[16px] grid place-items-center text-center px-4 hover:text-[#e8c472] hover:bg-[rgba(232,196,114,0.08)]">สมัครแล้ว? เข้าสู่ระบบ Part-Time</Link>
           </div>
