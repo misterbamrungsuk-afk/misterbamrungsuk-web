@@ -22,7 +22,7 @@ export type HubData = {
   /** ปุ่มเข้ากลุ่ม LINE ตามหมวด — ขึ้นเมื่อชำระค่าสมัครแล้ว (null = ยังไม่ชำระ) */
   lineGroup: { url: string; label: string } | null;
   mb: string; t: string; nickname: string; fullName: string; statusLine: string; track: string; trackShort: string;
-  main: string; mainPath: string; pos: string; photos: string[]; age: number | null; area: string; price: number; tier: PtTier; verified: boolean;
+  main: string; mainPath: string; pos: string; photos: string[]; age: number | null; area: string; price: number; tier: PtTier; basic: boolean; verified: boolean;
   fixes: number;
   /** bond = เงินประกันงาน (สายคำเชิญพิเศษ) · null = ไม่ใช่สายเชิญ */
   wallet: { available: number; pending: number; month: number; bond: number | null };
@@ -280,7 +280,7 @@ export function ProfileHub({ d }: { d: HubData }) {
                 </div>
 
                 <div className="flex flex-col gap-2 rounded-2xl bg-[#241c29]" style={{ padding: 14 }}>
-                  <div className="flex justify-between items-center"><span className="text-[14px] flex items-center gap-1.5">ราคา 3 ชม. <TierBadge tier={d.tier} /></span><span className="font-semibold text-[19px] text-[#e8c472]">{baht(d.price)}</span></div>
+                  <div className="flex justify-between items-center"><span className="text-[14px] flex items-center gap-1.5">ราคา 3 ชม. <TierBadge tier={d.tier} basic={d.basic} /></span><span className="font-semibold text-[19px] text-[#e8c472]">{baht(d.price)}</span></div>
                   <div className="text-[13px] flex items-center gap-1.5 font-light"><Ico size={14}><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></Ico>กำหนดโดยทีมงานตามระดับ · แก้ไขเองไม่ได้</div>
                 </div>
 
@@ -305,7 +305,7 @@ export function ProfileHub({ d }: { d: HubData }) {
                   {d.main ? <PosPhoto key={d.mainPath} d={d} /> : <div className="w-full h-[340px] bg-[#251d1b]" />}
                   <div className="flex flex-col gap-2" style={{ padding: 14 }}>
                     <div className="flex justify-between items-baseline">
-                      <span className="flex items-center gap-1.5"><span className="font-semibold text-[20px]">{d.nickname}{d.age ? ` · ${d.age} ปี` : ""}</span><TierBadge tier={d.tier} /></span>
+                      <span className="flex items-center gap-1.5"><span className="font-semibold text-[20px]">{d.nickname}{d.age ? ` · ${d.age} ปี` : ""}</span><TierBadge tier={d.tier} basic={d.basic} /></span>
                       <span className="text-[13px] text-[#e8c472] font-light">{d.rating ? `★ ${d.rating.avg.toFixed(1)} (${d.rating.count})` : "ยังไม่มีรีวิว"}</span>
                     </div>
                     <div className="flex flex-wrap gap-1.5">{picked.map((a) => <span key={a} className="text-[13px] rounded-full font-light" style={{ padding: "4px 10px", background: "rgba(243,234,217,0.07)" }}>{a}</span>)}</div>
@@ -368,8 +368,9 @@ function PosPhoto({ d }: { d: HubData }) {
   );
 }
 
-/** ป้ายระดับ: TOP = ทอง (ตามบอร์ด) · Silver = เงิน */
-function TierBadge({ tier }: { tier: PtTier }) {
+/** ป้ายระดับ: TOP = ทอง · Secret = ดำเรืองแสง · สมัครฟรี = BASIC · Silver (จ่ายค่าสมัคร) ไม่มีป้าย */
+function TierBadge({ tier, basic }: { tier: PtTier; basic: boolean }) {
+  if (tier === "silver") return basic ? <span data-tier="basic" style={{ display: "inline-flex", alignItems: "center", height: 18, padding: "0 7px", borderRadius: 4, background: "#3a3230", color: "#e6d6c4", fontWeight: 700, fontSize: 9.5, letterSpacing: ".2em", boxShadow: "inset 0 0 0 1px rgba(243,234,217,.35)" }}>BASIC</span> : null;
   if (tier === "secret") return <span data-tier="secret" className="inline-flex items-center h-[18px] px-[7px] rounded text-[9.5px] font-bold tracking-[.2em] text-[#e9e1ff]" style={{ background: "#0b0910", boxShadow: "inset 0 0 0 1px rgba(185,166,255,.7), 0 0 10px rgba(185,166,255,.55)" }}>SECRET</span>;
   return <span className="inline-flex items-center h-[18px] px-[7px] rounded text-[9.5px] font-bold tracking-[.2em] text-[#1b130b]" style={{ background: tier === "top" ? "linear-gradient(135deg, #fff1c9 0%, #e8c472 45%, #a8781f 100%)" : "linear-gradient(135deg, #f3ead9 0%, #b5a596 100%)", boxShadow: "inset 0 0 0 1px rgba(255,241,201,.5), 0 2px 6px rgba(0,0,0,.35)" }}>{tier === "top" ? "TOP" : "SILVER"}</span>;
 }

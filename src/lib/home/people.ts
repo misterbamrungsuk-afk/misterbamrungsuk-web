@@ -15,6 +15,8 @@ export type Person = {
   boost?: boolean;
   /** ระดับ Secret (ลิงก์เชิญ Secret) — แสดงแบบ TOP แต่ป้าย Secret กรอบดำเรืองแสง · ขึ้นก่อน TOP */
   secret?: boolean;
+  /** สมัครฟรี (ไม่ได้จ่ายค่าสมัคร) และไม่ใช่ TOP/Secret → ป้าย BASIC · Silver (จ่ายแล้ว) ไม่มีป้าย */
+  basic?: boolean;
   /** ราคายังไม่ประกาศ → แสดง "฿xx,xxx" (ตัวอย่าง Secret) */
   priceTBD?: boolean;
   /** ราคา 3 ชม. จริงจากหน้า "ราคาและส่วนแบ่ง" (คนจริง) */

@@ -92,13 +92,14 @@ export function ProfileView({ p, reviews = [], vers = [], free = null, preview =
               {p.boost && <span className="rounded-full text-[12px] font-semibold text-[#1b130b]" style={{ padding: "3px 10px", background: "linear-gradient(135deg, #fff1c9, #e8c472)" }}>★ แนะนำ</span>}
               {p.secret ? <span data-tier="secret" className="inline-flex items-center h-[18px] rounded text-[9.5px] font-bold tracking-[.22em] text-[#e9e1ff]" style={{ padding: "0 8px", background: "#07060a", boxShadow: "inset 0 0 0 1px rgba(185,166,255,.75), 0 0 10px rgba(185,166,255,.6)" }}>SECRET</span>
                 : p.top && <span className="inline-flex items-center h-[18px] rounded text-[9.5px] font-bold tracking-[.2em] text-[#1b130b]" style={{ padding: "0 7px", background: "linear-gradient(135deg, #fff1c9 0%, #e8c472 45%, #a8781f 100%)" }}>TOP</span>}
+              {!p.secret && !p.top && p.basic && <span data-tier="basic" style={{ display: "inline-flex", alignItems: "center", height: 18, padding: "0 7px", borderRadius: 4, background: "#3a3230", color: "#e6d6c4", fontWeight: 700, fontSize: 9.5, letterSpacing: ".2em", boxShadow: "inset 0 0 0 1px rgba(243,234,217,.35)" }}>BASIC</span>}
               {(!p.real || p.checked) && <span className="h-[26px] rounded-full text-[12px] font-light text-[#e8c472] flex items-center" style={{ padding: "0 10px", border: "1px solid rgba(212,175,55,.6)" }}>✓ ยืนยันตัวตน + ตรวจประวัติ</span>}
             </div>
             <div className="text-[13px] text-[#d9c9b4] mt-1 font-light">{[p.age ? `${p.age} ปี` : "", p.height ? `${p.height} ซม.` : "", where].filter(Boolean).join(" · ")}</div>
           </div>
 
           <div className="grid grid-cols-4 text-center" style={{ borderTop: line, borderBottom: line, padding: "12px 0" }}>
-            {(p.real ? [[avg ?? "ใหม่", avg ? `${reviews.length} รีวิว` : "Part-Time ใหม่", true], [p.trained ? "✓" : "—", p.trained ? "ผ่านอบรม" : "รออบรม"], ["✓", "ยืนยันตัวตน"], [p.secret ? "Secret" : p.top ? "TOP" : "Silver", "ระดับ"]] : [[p.rating, `${p.reviews} รีวิว`, true], [String(p.jobs), "นัดสำเร็จ"], [`${p.years} ปี`, "ประสบการณ์"], ["98%", "ตอบกลับ"]]).map(([v, l, g], i) => (
+            {(p.real ? [[avg ?? "ใหม่", avg ? `${reviews.length} รีวิว` : "Part-Time ใหม่", true], [p.trained ? "✓" : "—", p.trained ? "ผ่านอบรม" : "รออบรม"], ["✓", "ยืนยันตัวตน"], [p.secret ? "Secret" : p.top ? "TOP" : p.basic ? "Basic" : "Silver", "ระดับ"]] : [[p.rating, `${p.reviews} รีวิว`, true], [String(p.jobs), "นัดสำเร็จ"], [`${p.years} ปี`, "ประสบการณ์"], ["98%", "ตอบกลับ"]]).map(([v, l, g], i) => (
               <div key={String(l)} style={{ borderLeft: i ? line : undefined }}><div className="font-semibold text-[18px]" style={{ color: g ? "#e8c472" : undefined }}>{v}</div><div className="text-[12px] text-[#d9c9b4] font-light">{l}</div></div>
             ))}
           </div>

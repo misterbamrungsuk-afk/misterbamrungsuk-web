@@ -59,7 +59,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
     statusLine: x.inactive ? `Non Active · ลาออก ${x.inactive.at} · ติดต่อทีมงานหากต้องการกลับมาทำงาน` : x.invite && !row.amount ? `คำเชิญพิเศษ · ไม่มีค่าสมัคร · ระดับ ${x.tier === "secret" ? "Secret" : "TOP"}` : x.group === "tom" && !row.amount ? "ทอมหล่อ · ไม่มีค่าสมัคร" : `${x.invite ? "คำเชิญพิเศษ" : "สมัครปกติ"} · ${row.status === "verified" ? "ชำระค่าสมัครแล้ว" : "ส่งสลิปแล้ว · รอทีมงานตรวจ"}`,
     track: row.package === "B" ? "เพื่อนกินเที่ยว · นวด" : "เพื่อนกินเที่ยว", trackShort: row.package === "B" ? "สายนวด" : "สายกินเที่ยว",
     main, mainPath, pos: (mainPath && x.photo_pos?.[mainPath]) || "50% 50%", photos, age: row.birthdate ? ageFrom(row.birthdate) : null, area: (x.areas ?? [])[0]?.split(" › ").pop() ?? "",
-    price: tierPrice(x, svc), tier: x.tier ?? "silver", verified: row.status === "verified",
+    price: tierPrice(x, svc), tier: x.tier ?? "silver", basic: !row.amount && (x.tier ?? "silver") === "silver", verified: row.status === "verified",
     steps: [
       { t: "ชำระเงิน", sub: bad("slip") ? "สลิปต้องส่งใหม่" : row.status === "verified" ? "ตรวจสลิปแล้ว" : "ส่งสลิปแล้ว · รอทีมงานตรวจ", ok: !bad("slip"), href: bad("slip") ? "rejected" : "" },
       { t: "ข้อมูลส่วนตัว", sub: bad("form") ? "ทีมงานขอให้แก้ไข" : "ชื่อ เบอร์โทร LINE ที่พัก", ok: done.has(1) && !bad("form"), href: bad("form") ? "rejected" : "form" },
