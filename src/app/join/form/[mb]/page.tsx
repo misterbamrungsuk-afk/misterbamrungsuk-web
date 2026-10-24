@@ -22,7 +22,7 @@ export default async function JoinFormPage({ params, searchParams }: { params: P
         first_name: row.first_name, last_name: row.last_name, nickname: row.nickname, birthdate: row.birthdate ?? "", tel: row.tel,
         line_id: row.line_id, address: row.address, areas: x.areas ?? [], no_area: x.no_area ?? "",
         week_days: a?.week_days ?? [], periods: a?.slots ?? [], hours_band: a?.hours_band ?? "", experience: row.experience, intro: row.intro,
-        ack_hours: !!x.ack_hours, ack_no_refuse: !!x.ack_no_refuse, trans: !!x.trans,
+        ack_hours: !!x.ack_hours, ack_no_refuse: !!x.ack_no_refuse, trans: !!x.trans, disclose: x.disclose ?? null, blurAck: !!x.blur_ack,
         hasPhoto: !!row.docs.photo, hasBody: !!row.docs.other_doc, hasCert: !!row.docs.cert_doc,
       }} />
   );

@@ -47,7 +47,7 @@ const publicId = (mb) => 'r' + crypto.createHash('sha256').update(`mb-public:${m
   ok('Secret: free · verified · tier secret · track B', row?.package === 'B' && row?.amount === 0 && row?.status === 'verified' && row?.tier === 'secret' && row?.invite === sec.code, `${row?.amount} ${row?.status} ${row?.tier}`);
 
   // ใบสมัคร (รูป) → KYC อนุมัติ → ขึ้นหน้าแรกอัตโนมัติ
-  const pf = await J(await fetch(B + '/api/join/profile', { method: 'POST', body: form({ mb, t: T, step: '1', first_name: 'ลับ', last_name: 'สุด', nickname: 'ซีเคร็ต', birthdate: '1995-05-05', line_id: 'x', address: 'อโศก', areas: 'กรุงเทพฯ › วัฒนา' }, { photo: new File([img], 'a.jpg', { type: 'image/jpeg' }), other_doc: new File([img], 'b.jpg', { type: 'image/jpeg' }) }) }));
+  const pf = await J(await fetch(B + '/api/join/profile', { method: 'POST', body: form({ mb, t: T, step: '1', disclose: 'yes', first_name: 'ลับ', last_name: 'สุด', nickname: 'ซีเคร็ต', birthdate: '1995-05-05', line_id: 'x', address: 'อโศก', areas: 'กรุงเทพฯ › วัฒนา' }, { photo: new File([img], 'a.jpg', { type: 'image/jpeg' }), other_doc: new File([img], 'b.jpg', { type: 'image/jpeg' }) }) }));
   ok('Secret fills form with photos (same docs as others)', pf.ok, JSON.stringify(pf));
   // ลิงก์เชิญ (สาย A) แนบใบนวดได้ในใบสมัครขั้น 2 → เลือกสกิลนวดได้ → หน้าแรกขึ้น "นวดผ่อนคลาย"
   let fh = await (await fetch(B + `/join/form/${mb}?step=2&t=${encodeURIComponent(T)}`)).text();

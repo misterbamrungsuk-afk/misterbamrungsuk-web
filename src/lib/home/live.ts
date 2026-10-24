@@ -1,6 +1,7 @@
 import "server-only";
 import { MASSAGE_SKILL, isMassage } from "@/lib/join/pt-ui";
 import { SECRET_SILHOUETTES } from "./people";
+import { pubVer } from "@/lib/join/face-blur";
 import { tierPrice } from "@/lib/join/config";
 import { createHash } from "crypto";
 import { getAttendance } from "@/lib/join/store";
@@ -49,7 +50,7 @@ export async function getLivePeople(): Promise<Person[]> {
     const acts = [...new Set([...(massage ? ["massage" as Act] : []), ...(x.card?.activities ?? []).map((t) => ACT_OF[t]).filter(Boolean)])] as Act[];
     const area = (x.areas ?? [])[0]?.split(" › ") ?? [];
     return {
-      id, nick: a.nickname, age: a.birthdate ? ageFrom(a.birthdate) ?? 0 : 0, img: `/api/public/pt-photo?id=${id}&i=0`, top, rating: st?.count ? st.avg.toFixed(1) : "ใหม่",
+      id, nick: a.nickname, age: a.birthdate ? ageFrom(a.birthdate) ?? 0 : 0, img: `/api/public/pt-photo?id=${id}&i=0${photoPaths(a)[0] ? `&v=${pubVer(photoPaths(a)[0], x)}` : ""}`, top, rating: st?.count ? st.avg.toFixed(1) : "ใหม่",
       reviews: st?.count ?? 0, jobs: 0, years: 0, height: a.height || 0, langs: "TH",
       // แสดงระดับเขต/อำเภอ (ไม่ลงถึงแขวง) · จังหวัดแสดงเมื่อไม่ใช่กรุงเทพฯ
       area: x.geo ? `แถว${x.geo.label}` : area[1] || area[0] || "กรุงเทพฯ", prov: x.geo ? undefined : area[1] && area[0] !== "กรุงเทพฯ" ? area[0] : undefined,

@@ -58,7 +58,7 @@ function Err({ msg }: { msg?: string }) {
 function Field({ label, err, children }: { label: string; err?: string; children: ReactNode }) {
   return <label className="block min-w-0"><span className="jf-lb" style={lb}>{label}</span>{children}<Err msg={err} /></label>;
 }
-export type FormInit = Pick<JoinForm, "first_name" | "last_name" | "nickname" | "birthdate" | "tel" | "line_id" | "address" | "areas" | "no_area" | "week_days" | "periods" | "hours_band" | "experience" | "intro" | "ack_hours" | "ack_no_refuse"> & { trans: boolean; hasPhoto: boolean; hasBody: boolean; hasCert: boolean };
+export type FormInit = Pick<JoinForm, "first_name" | "last_name" | "nickname" | "birthdate" | "tel" | "line_id" | "address" | "areas" | "no_area" | "week_days" | "periods" | "hours_band" | "experience" | "intro" | "ack_hours" | "ack_no_refuse"> & { trans: boolean; disclose: "yes" | "no" | null; blurAck: boolean; hasPhoto: boolean; hasBody: boolean; hasCert: boolean };
 
 function Upload({ label, done, onPick, err }: { label: string; done: boolean; onPick: (f?: File) => void; err?: string }) {
   return (
@@ -80,6 +80,9 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0, fix = false, inv
   const [step, setStep] = useState<1 | 2>(step0);
   // ทอมหล่อ: ติ๊ก = Trans (แปลงเพศแล้ว) · ไม่ติ๊ก = ทอม
   const [trans, setTrans] = useState(init.trans);
+  // เปิดเผยใบหน้า (บอสสั่ง 24 ต.ค. 2569): ไม่เปิดเผย = เบลอหน้าในรูปที่ลูกค้าเห็น + ต้องติ๊กรับทราบว่ามีผลต่อจำนวนงาน
+  const [disclose, setDisclose] = useState<"yes" | "no" | null>(init.disclose);
+  const [blurAck, setBlurAck] = useState(init.blurAck);
   const [errs, setErrs] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [loc, setLoc] = useState({ r: "", p: "", d: "", t: "" });
@@ -118,6 +121,8 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0, fix = false, inv
   const v1 = () => {
     const e: Record<string, string> = {};
     if (!f.first_name.trim()) e.first_name = "กรอกชื่อจริง";
+    if (!disclose) e.disclose = "เลือกว่ายอมรับเปิดเผยใบหน้าหรือไม่";
+    else if (disclose === "no" && !blurAck) e.disclose = "ติ๊กรับทราบว่าการเบลอหน้ามีผลต่อจำนวนงาน";
     if (!f.last_name.trim()) e.last_name = "กรอกนามสกุล";
     if (!f.nickname.trim()) e.nickname = "กรอกชื่อเล่น";
     if (!f.birthdate) e.birthdate = "กรอกวันเกิด"; else { const ae = ageError(pkg, ageFrom(f.birthdate)); if (ae) e.birthdate = ae; }
@@ -143,6 +148,7 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0, fix = false, inv
     if (step === 1) {
       for (const k of ["first_name", "last_name", "nickname", "birthdate", "line_id", "address", "no_area"] as const) fd.set(k, f[k]);
       if (tom) fd.set("trans", String(trans));
+      fd.set("disclose", disclose ?? ""); fd.set("blur_ack", String(disclose === "no" && blurAck));
       f.areas.forEach((a) => fd.append("areas", a));
       if (f.photo) fd.set("photo", await dataUrlToFile(f.photo, "photo.jpg"));
       if (f.other_doc) fd.set("other_doc", await dataUrlToFile(f.other_doc, "body.jpg"));
@@ -216,6 +222,24 @@ export function JoinFormClient({ mb, t, pkg, init, step: step0, fix = false, inv
                 <div className="grid grid-cols-2 gap-[10px]">
                   <Upload label="รูปหน้าตรง" done={!!f.photo || init.hasPhoto} onPick={(x) => onFile("photo", x)} err={errs.photo} />
                   <Upload label="รูปเต็มตัว" done={!!f.other_doc || init.hasBody} onPick={(x) => onFile("other_doc", x)} err={errs.other_doc} />
+                </div>
+                <div data-disclose className="flex flex-col gap-2">
+                  <span className="jf-lb" style={{ ...lb, margin: 0 }}>การเปิดเผยใบหน้าบนโปรไฟล์</span>
+                  <div role="radiogroup" aria-label="การเปิดเผยใบหน้า" className="grid grid-cols-2 gap-2">
+                    {([["yes", "ยอมรับเปิดเผยข้อมูล", "แสดงใบหน้าตามรูปจริง"], ["no", "ไม่สามารถเปิดเผยข้อมูล", "เบลอใบหน้าในรูปที่ลูกค้าเห็น"]] as const).map(([v, t1, t2]) => (
+                      <button key={v} type="button" role="radio" aria-checked={disclose === v} data-disclose-opt={v} onClick={() => setDisclose(v)} className="rounded-xl text-left flex flex-col gap-0.5" style={{ padding: "10px 12px", background: disclose === v ? "rgba(232,196,114,0.16)" : "#251d1b", border: `1.5px solid ${disclose === v ? "#e8c472" : "transparent"}` }}>
+                        <span className="text-[14.5px] font-semibold">{t1}</span><span className="text-[12.5px] text-[#b5a596] font-light">{t2}</span>
+                      </button>
+                    ))}
+                  </div>
+                  {disclose === "no" && <>
+                    <p className="m-0 rounded-xl text-[13.5px] leading-[1.6] text-[#f6c38e]" style={{ padding: "10px 12px", background: "rgba(240,163,90,.1)" }}>การเบลอใบหน้าจะมีผลต่อจำนวนงานที่จะเข้ามา เพราะลูกค้ามักเลือกจากรูปที่เห็นหน้าชัด · ปรับจุดเบลอให้ตรงใบหน้าได้ที่หน้า &quot;รูปโปรไฟล์&quot; · เปลี่ยนเป็นเปิดเผยได้ภายหลัง</p>
+                    <label data-blur-ack className="flex items-start gap-3 rounded-xl cursor-pointer" style={{ padding: "10px 12px", background: "#251d1b" }}>
+                      <input type="checkbox" checked={blurAck} onChange={(e) => setBlurAck(e.target.checked)} className="mt-0.5 w-5 h-5 shrink-0 accent-[#e8c472]" />
+                      <span className="text-[14px]">รับทราบว่าการเบลอหน้าจะมีผลต่อจำนวนงานที่จะเข้ามา</span>
+                    </label>
+                  </>}
+                  {errs.disclose && <span role="alert" className="text-[13px] text-[#ff8a9a]">{errs.disclose}</span>}
                 </div>
               </section>
 

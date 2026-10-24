@@ -54,12 +54,17 @@ export async function POST(req: Request) {
       const photo = file("photo"), body = file("other_doc");
       if (photo === "bad") errors.push("photo"); else if (!photo && !row.docs.photo) errors.push("photo");
       if (body === "bad") errors.push("other_doc"); else if (!body && !row.docs.other_doc) errors.push("other_doc");
+      // เปิดเผยใบหน้า: ต้องเลือก · ไม่เปิดเผย = ต้องรับทราบผลต่อจำนวนงาน
+      const disclose = s("disclose");
+      if (disclose !== "yes" && disclose !== "no") errors.push("disclose");
+      else if (disclose === "no" && s("blur_ack") !== "true") errors.push("disclose");
       if (errors.length) return bad("กรอกข้อมูลไม่ครบหรือไม่ถูกต้อง", 400, errors);
       done.add(1);
       await saveProfile(row.id, {
         first_name: s("first_name"), last_name: s("last_name"), nickname: s("nickname"), birthdate: s("birthdate"),
         line_id: s("line_id", 60), address: s("address", 300), areas, no_area: s("no_area", 300), form_done: [...done],
         ...(extraOf(row).group === "tom" ? { trans: s("trans") === "true" } : {}),
+        disclose, blur_ack: disclose === "no",
       }, { photo: photo instanceof File ? photo : undefined, other_doc: body instanceof File ? body : undefined });
       await clearFixes(row, ["info", ...(photo instanceof File ? ["photo"] : []), ...(body instanceof File ? ["other_doc"] : [])]);
       return NextResponse.json({ ok: true });

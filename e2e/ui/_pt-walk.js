@@ -147,6 +147,7 @@ const note = (s) => { issues.push('NOTE ' + s); console.log('NOTE ' + s); };
   await page.getByPlaceholder('เช่น ลาดพร้าว, บางนา').fill('ลาดพร้าว');
   const fins = page.locator('input[type=file]');
   await fins.nth(0).setInputFiles(imgs[1]); await fins.nth(1).setInputFiles(imgs[2]);
+  await page.locator('[data-disclose-opt="yes"]').click(); // ยอมรับเปิดเผยใบหน้า (24 ต.ค. 2569)
   const sels = page.locator('select');
   await sels.nth(0).selectOption('กรุงเทพฯ และปริมณฑล'); await sels.nth(1).selectOption('กรุงเทพมหานคร'); await sels.nth(2).selectOption('ปทุมวัน');
   await page.getByRole('button', { name: '+ เพิ่มพื้นที่นี้' }).click();

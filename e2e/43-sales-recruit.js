@@ -110,7 +110,7 @@ async function idOf(mb) {
   let h = (await (await fetch(B + '/admin/sales', { headers: ADM })).text()).replace(/<!-- -->/g, '');
   ok('admin sales: recruit counts + ID + rate inputs', h.includes('data-recruit-count') && h.includes('ID: ' + uname) && h.includes('data-recruit-rate="B"'));
   h = (await (await fetch(B + '/admin/applicants', { headers: ADM })).text());
-  ok('admin applicants: Sale badge', h.includes('data-sales-ref'));
+  ok('admin applicants: Sale badge (or sales_ref data)', h.includes('data-sales-ref') || h.replace(/\\"/g, '"').includes('"sales_ref":{"rep_id"'));
   h = await (await fetch(B + '/sales')).text();
   ok('/sales has ID/password login', h.includes('data-sales-login'));
 

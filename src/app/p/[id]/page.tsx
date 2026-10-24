@@ -4,7 +4,8 @@ import { getLiveApplicants, getLivePeople, photoPaths, publicId } from "@/lib/ho
 import { reviewsFor } from "@/lib/bookings/day";
 import { myBlocked } from "@/lib/customer/profile";
 import { openPost } from "@/lib/interests";
-import { fileVer } from "@/lib/thumb";
+import { pubVer } from "@/lib/join/face-blur";
+import { extraOf } from "@/lib/join/store";
 import { ProfileView } from "./view";
 import { PT_ONLY } from "@/lib/site-gate";
 
@@ -30,7 +31,7 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
   if (!p) notFound();
   const a = p.real ? (await getLiveApplicants().catch(() => [])).find((x) => publicId(x.mb_code) === p.id) : null;
   const reviews = a ? (await reviewsFor(a.id).catch(() => [])).map((r) => ({ rating: r.rating, tags: r.tags, body: r.body, created_at: r.created_at })) : [];
-  const vers = a ? photoPaths(a).slice(0, 9).map(fileVer) : [];
+  const vers = a ? photoPaths(a).slice(0, 9).map((path) => pubVer(path, extraOf(a))) : [];
   const post = a ? openPost(a) : null;
   const blocked = post ? (await myBlocked().catch(() => new Set<string>())).has(p.id) : false;
   const free = post && !blocked ? { text: post.text, time: post.time, zone: post.zone } : null;

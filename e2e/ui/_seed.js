@@ -45,7 +45,7 @@ async function newApplicant({ pkg = 'A', profile = true, kyc = true, bank = true
   if (!mb) throw new Error('register failed: ' + JSON.stringify(reg));
   const t = ptToken(mb);
   if (profile) {
-    await jreq('/api/join/profile', { method: 'POST', body: form({ mb, t, step: '1', first_name: first, last_name: last, nickname: nick, birthdate: '1998-05-05', line_id: 'line' + nick, address: 'อโศก', areas: ['กรุงเทพฯ › วัฒนา'] }, { photo: IMG('a.jpg'), other_doc: IMG('b.jpg') }) });
+    await jreq('/api/join/profile', { method: 'POST', body: form({ mb, t, step: '1', disclose: 'yes', first_name: first, last_name: last, nickname: nick, birthdate: '1998-05-05', line_id: 'line' + nick, address: 'อโศก', areas: ['กรุงเทพฯ › วัฒนา'] }, { photo: IMG('a.jpg'), other_doc: IMG('b.jpg') }) });
     await jreq('/api/join/profile', { method: 'POST', body: form({ mb, t, step: '2', hours_band: '5–6 ชม.', ack_hours: 'true', ack_no_refuse: 'true', week_days: ['ศ', 'ส'], periods: ['กลางคืน'] }) });
   }
   if (kyc) await jreq('/api/join/kyc', { method: 'POST', body: form({ mb, t }, { id_card: IMG('i.jpg'), id_copy: IMG('c.jpg'), selfie: IMG('f.jpg') }) });

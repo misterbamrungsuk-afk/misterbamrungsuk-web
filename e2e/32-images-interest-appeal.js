@@ -59,7 +59,7 @@ const ptStrikes = () => fetch(B + `/api/pt/appeals?${q}`).then(J);
     ok('wrong version → short cache', r.status === 200 && !/s-maxage=604800/.test(r.headers.get('cache-control') || ''), r.headers.get('cache-control'));
   }
   const home = await (await fetch(B + '/')).text();
-  ok('home cards request thumbnails', /pt-photo\?id=r[0-9a-f]{10}(?:&amp;|&)i=0(?:&amp;|&)w=480/.test(home) || !/pt-photo/.test(home));
+  ok('home cards request thumbnails', /pt-photo\?id=r[0-9a-f]{10}(?:&amp;|&)i=0(?:(?:&amp;|&)v=[0-9a-f]{8})?(?:&amp;|&)w=480/.test(home) || !/pt-photo/.test(home));
 
   // ── 2) "สนใจ" ประกาศวันนี้ว่าง ──
   const fd0 = new FormData(); fd0.set('mb', mb); fd0.set('t', T); fd0.set('step', 'post'); fd0.set('text', 'ว่างไปคาเฟ่แถวอโศก'); fd0.set('time', '18:00–22:00'); fd0.set('zone', 'อโศก');

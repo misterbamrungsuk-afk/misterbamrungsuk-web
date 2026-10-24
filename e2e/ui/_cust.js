@@ -29,7 +29,7 @@ async function livePT() {
   const j = await (await req('/api/join/register', { method: 'POST', body: form({ package: 'A', first_name: 'ลูกค้า', last_name: 'ทดสอบ', nickname: 'มายด์', tel, email: 'pt' + tel + '@test.local', password: 'test-pass-1234', accept_terms: 'true', consent_pdpa: 'true', consent_criminal: 'true' }, { slip: F('s.jpg') }) })).json();
   const mb = j.mb_code; if (!mb) throw new Error('seed register failed ' + JSON.stringify(j));
   const t = ptToken(mb);
-  await req('/api/join/profile', { method: 'POST', body: form({ mb, step: '1', first_name: 'ลูกค้า', last_name: 'ทดสอบ', nickname: 'มายด์', birthdate: '1998-03-03', line_id: 'x', address: 'อโศก', areas: ['กรุงเทพฯ › วัฒนา'] }, { photo: F('a.jpg'), other_doc: F('b.jpg') }) });
+  await req('/api/join/profile', { method: 'POST', body: form({ mb, step: '1', disclose: 'yes', first_name: 'ลูกค้า', last_name: 'ทดสอบ', nickname: 'มายด์', birthdate: '1998-03-03', line_id: 'x', address: 'อโศก', areas: ['กรุงเทพฯ › วัฒนา'] }, { photo: F('a.jpg'), other_doc: F('b.jpg') }) });
   await req('/api/join/profile', { method: 'POST', body: form({ mb, step: '2', hours_band: '5–6 ชม.', ack_hours: 'true', ack_no_refuse: 'true', week_days: ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา'], periods: ['กลางวัน', 'กลางคืน'] }) });
   await req('/api/join/kyc', { method: 'POST', body: form({ mb }, { id_card: F('i.jpg'), id_copy: F('c.jpg'), selfie: F('f.jpg') }) });
   await req('/api/join/bank', { method: 'POST', body: form({ mb, bank: 'กสิกรไทย (KBank)', bank_account: '1234567890', bank_account_name: 'ลูกค้า ทดสอบ', ck_terms: 'true', ck_pdpa: 'true', ck_profile: 'true' }, { bankbook: F('bb.jpg') }) });

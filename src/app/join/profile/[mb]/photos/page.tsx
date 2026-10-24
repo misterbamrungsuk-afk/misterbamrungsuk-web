@@ -14,5 +14,6 @@ export default async function PhotosPage({ params, searchParams }: { params: Pro
   if (!/^MB[MT]?-\d{7,}$/.test(mb) || !(await canResume(mb, t))) return <Forbidden />;
   const row = await getByMb(mb);
   if (!row) notFound();
-  return <PhotosClient mb={mb} t={t ?? ""} initial={extraOf(row).photos ?? []} />;
+  const x = extraOf(row);
+  return <PhotosClient mb={mb} t={t ?? ""} initial={x.photos ?? []} disclose={x.disclose ?? null} boxes={x.face_blur ?? {}} />;
 }
