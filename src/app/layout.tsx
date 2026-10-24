@@ -7,6 +7,8 @@ import { ScrollReveal } from "@/components/scroll-reveal";
 import { CookieConsent } from "@/components/cookie-consent";
 import { NavTrack } from "@/components/smart-back";
 import { ErrorReporter, EARLY_ERROR_SCRIPT } from "@/components/error-reporter";
+import { GoogleAnalytics } from "@/components/ga";
+import { Suspense } from "react";
 
 const plex = IBM_Plex_Sans_Thai({ subsets: ["thai", "latin"], weight: ["400", "500", "600", "700"], variable: "--font-plex" });
 const kanit = Kanit({ subsets: ["thai", "latin"], weight: ["500", "600", "700", "800"], variable: "--font-kanit" });
@@ -45,6 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <PwaRegister />
         <ScrollReveal />
         <CookieConsent />
+        <Suspense fallback={null}><GoogleAnalytics /></Suspense>
         <NavTrack />
         <ErrorReporter />
       </body>
