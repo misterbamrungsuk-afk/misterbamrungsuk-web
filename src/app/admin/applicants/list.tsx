@@ -26,11 +26,11 @@ const thTime = (iso: string) => new Date(iso).toLocaleString("th-TH", { timeZone
 const ageOf = (b: string | null) => { if (!b) return null; const d = new Date(b); if (isNaN(+d)) return null; const n = new Date(); let a = n.getFullYear() - d.getFullYear(); if (n < new Date(n.getFullYear(), d.getMonth(), d.getDate())) a--; return a; };
 
 type Pkg = "all" | PackageKey;
-type Filter = ApplicantStatus | "all" | "todo" | "fix";
+type Filter = ApplicantStatus | "all" | "todo" | "fix" | "inactive";
 /** รอแอดมิน = สลิปยังไม่ตรวจ หรือเอกสารส่งมารอตรวจ */
 const isTodo = (r: Applicant) => r.status === "pending_slip" || r.kyc_status === "submitted";
-const match = (r: Applicant, f: Filter) => f === "all" ? true : f === "todo" ? isTodo(r) : f === "fix" ? r.kyc_status === "rejected" : r.status === f;
-const FILTERS: [Filter, string][] = [["todo", "รอตรวจ"], ["fix", "ตีกลับ · รอแก้"], ["verified", "ชำระแล้ว"], ["pending_slip", "รอตรวจสลิป"], ["rejected", "ปฏิเสธ"], ["refunded", "คืนเงินแล้ว"], ["all", "ทั้งหมด"]];
+const match = (r: Applicant, f: Filter) => f === "all" ? true : f === "inactive" ? !!r.inactive : f === "todo" ? isTodo(r) : f === "fix" ? r.kyc_status === "rejected" : r.status === f;
+const FILTERS: [Filter, string][] = [["todo", "รอตรวจ"], ["fix", "ตีกลับ · รอแก้"], ["verified", "ชำระแล้ว"], ["pending_slip", "รอตรวจสลิป"], ["rejected", "ปฏิเสธ"], ["refunded", "คืนเงินแล้ว"], ["inactive", "Non Active"], ["all", "ทั้งหมด"]];
 const PKG_TABS: [Pkg, string, string][] = [["all", "ทั้งหมด", "ผู้สมัครทุกสาย"], ["A", "สาย A", PACKAGES.A.name], ["B", "สาย B", PACKAGES.B.name]];
 type Grp = "all" | "man" | "tom";
 const GRP_TABS: [Grp, string][] = [["all", "ทั้งหมด"], ["man", "หนุ่มหล่อ"], ["tom", "ทอมหล่อ"]];
@@ -106,6 +106,9 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
   };
   const setListed = async (id: string, listed: boolean) => { const d = await patch(id, { listed }); say(d, listed ? "แสดงบนหน้าแรกแล้ว" : "ซ่อนจากหน้าแรกแล้ว"); };
   const setTier = async (id: string, tier: "top" | "silver" | "secret") => { const d = await patch(id, { tier }); say(d, `ตั้งระดับ ${tier === "secret" ? "Secret" : tier === "top" ? "TOP" : "Silver"} แล้ว`); };
+  // Active / Non Active (ลาออก) — เหตุผล + วันที่ลาออก
+  const [resign, setResign] = useState<{ id: string; reason: string; at: string } | null>(null);
+  const setActive = async (id: string, active: boolean, reason = "", at = "") => { const d = await patch(id, active ? { active: true } : { active: false, resign_reason: reason, resigned_at: at }); say(d, active ? "ตั้งเป็น Active แล้ว" : "ตั้งเป็น Non Active แล้ว · ซ่อนจากหน้าแรก"); if (d.ok) setResign(null); };
   // ราคา Secret (3 ชม.) รายคน — ว่าง/0 = ใช้ราคา TOP
   const [spDraft, setSpDraft] = useState<Record<string, string>>({});
   const saveSecretPrice = async (id: string) => { const v = (spDraft[id] ?? "").replace(/\D/g, ""); const d = await patch(id, { tier: "secret", secret_price: v ? Number(v) : null }); say(d, v ? `ตั้งราคา Secret ฿${Number(v).toLocaleString("en-US")} / 3 ชม. แล้ว` : "ล้างราคา Secret แล้ว · ยังไม่แสดงบนหน้าแรกจนกว่าจะตั้งราคา"); };
@@ -189,7 +192,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
               return (
                 <button key={r.id} onClick={() => pick(r.id)} className={`w-full ${GRID} px-3.5 py-[11px] border-t border-[rgba(240,200,90,.38)] text-left items-center`}
                   style={{ background: sel?.id === r.id ? "rgba(240,200,90,.16)" : "transparent" }}>
-                  <span className="text-[#ffd76a]">{r.mb_code}</span>
+                  <span className="text-[#ffd76a]">{r.mb_code}{r.inactive && <span data-nonactive className="block text-[11px] font-semibold text-[#9a8a85]">Non Active</span>}</span>
                   <span className="truncate pr-2">{r.first_name} {r.last_name}</span>
                   <span className="text-[#d3c7bc] pr-1">{r.group === "tom" && <span className="text-[#f6a5c0]">{r.trans ? "ทอมหล่อ (Trans)" : "ทอมหล่อ"} · </span>}{r.package} · {r.tier === "secret" ? <span className="text-[#d9ccff]">✦ Secret </span> : r.invite && <span className="text-[#e8c472]">✦ เชิญ </span>}{r.sales_ref && <span data-sales-ref className="text-[#7fd6a3]">Sale {r.sales_ref.code} </span>}{r.disclose === "no" && <span data-face-blur className="text-[#f6c38e]">เบลอหน้า </span>}{fmt(r.amount)}</span>
                   <span className="flex flex-col leading-tight text-[11.5px]"><span style={{ color: r.status === "verified" ? "#4ade80" : r.status === "pending_slip" ? "#eed58a" : "#fca5a5" }}>{LABEL[r.status]}</span><span style={{ color: KYC_LABEL[r.kyc_status ?? "none"][1] }}>{KYC_LABEL[r.kyc_status ?? "none"][0]}</span></span>
@@ -220,6 +223,25 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
             </div>
             <Progress r={sel} />
             {sel.invite && <p className="text-[12.5px] text-[#e8c472] m-0">✦ สมัครผ่านลิงก์เชิญ ({sel.invite}) · ค่าสมัครเต็มเท่าคนทั่วไป</p>}
+            <div data-active-row className="flex flex-col gap-1.5 rounded-xl border p-2.5" style={{ borderColor: sel.inactive ? "rgba(154,138,133,.6)" : "rgba(74,222,128,.35)" }}>
+              <div className="flex justify-between items-center gap-2"><span className="text-[#cdbfb3]">สถานะ Part-Time</span>
+                <span className="flex gap-1">
+                  <button type="button" data-set-active="1" aria-pressed={!sel.inactive} onClick={() => sel.inactive && setActive(sel.id, true)} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={{ borderColor: !sel.inactive ? "#4ade80" : LINE_BD, background: !sel.inactive ? "rgba(74,222,128,.18)" : "transparent", color: !sel.inactive ? "#4ade80" : "#d3c7bc" }}>Active</button>
+                  <button type="button" data-set-active="0" aria-pressed={!!sel.inactive} onClick={() => !sel.inactive && setResign({ id: sel.id, reason: "", at: new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10) })} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={{ borderColor: sel.inactive ? "#9a8a85" : LINE_BD, background: sel.inactive ? "rgba(154,138,133,.25)" : "transparent", color: sel.inactive ? "#f6efe4" : "#d3c7bc" }}>Non Active</button>
+                </span>
+              </div>
+              {sel.inactive && <span className="text-[12.5px] text-[#cdbfb3]">ลาออก {new Date(sel.inactive.at).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" })} · {sel.inactive.reason} <span className="text-[#9a8a85]">(บันทึกโดย {sel.inactive.by})</span></span>}
+              {resign?.id === sel.id && !sel.inactive && <div className="flex flex-col gap-1.5">
+                <div className="flex flex-wrap gap-1">{["ลาออกเอง", "ย้ายงาน / ไม่สะดวกรับงาน", "ติดต่อไม่ได้", "ผิดกฎ / ทีมงานให้ออก", "พักงานชั่วคราว"].map((q) => <button key={q} type="button" onClick={() => setResign({ ...resign, reason: q })} className="h-7 px-2.5 rounded-full border text-[11.5px]" style={{ borderColor: resign.reason === q ? GOLD : LINE_BD, color: resign.reason === q ? GOLD : "#d3c7bc" }}>{q}</button>)}</div>
+                <input data-resign-reason value={resign.reason} onChange={(e) => setResign({ ...resign, reason: e.target.value })} placeholder="เหตุผลที่ลาออก / Non Active" className="h-9 rounded-lg border bg-[#130e0e] px-3 text-[13px] text-[#f6efe4] outline-none" style={{ borderColor: LINE_BD }} />
+                <label className="flex items-center gap-2 text-[12.5px] text-[#cdbfb3]">วันที่ลาออก<input data-resign-at type="date" value={resign.at} onChange={(e) => setResign({ ...resign, at: e.target.value })} className="h-9 rounded-lg border bg-[#130e0e] px-2 text-[13px] text-[#f6efe4]" style={{ borderColor: LINE_BD, colorScheme: "dark" }} /></label>
+                <div className="flex gap-1.5 justify-end">
+                  <button type="button" onClick={() => setResign(null)} className="h-8 px-3 rounded-full border text-[12px]" style={{ borderColor: LINE_BD }}>ยกเลิก</button>
+                  <button type="button" data-confirm-nonactive disabled={!resign.reason.trim() || !resign.at} onClick={() => setActive(sel.id, false, resign.reason, resign.at)} className="h-8 px-3 rounded-full text-[12px] font-semibold disabled:opacity-40" style={{ background: "#9a8a85", color: "#130e0e" }}>ยืนยัน Non Active</button>
+                </div>
+              </div>}
+              {!!sel.active_log?.length && <details className="text-[12px] text-[#9a8a85]"><summary className="cursor-pointer">ประวัติ ({sel.active_log.length})</summary>{sel.active_log.map((l, i) => <div key={i}>{l.active ? "Active" : "Non Active"} · {l.at} · {l.reason} · {l.by}</div>)}</details>}
+            </div>
             <div className="flex justify-between items-center gap-2"><span className="text-[#cdbfb3]">สายงาน</span>
               <span className="flex gap-1">{(["A", "B"] as const).map((k) => { const on = sel.package === k; return <button key={k} data-set-package={k} onClick={async () => { if (on) return; const d = await patch(sel.id, { package: k }); say(d, `ย้ายไปสาย ${k} · ${PACKAGES[k].name} แล้ว`); }} aria-pressed={on} title={PACKAGES[k].name} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={{ borderColor: on ? GOLD : LINE_BD, background: on ? GOLD : "transparent", color: on ? "#1a1206" : "#d3c7bc" }}>{k === "A" ? "A · กินเที่ยว" : "B · พร้อมนวด"}</button>; })}</span>
             </div>

@@ -18,7 +18,7 @@ const STATUSES: ApplicantStatus[] = ["pending_slip", "verified", "rejected", "re
 
 type Body = {
   listed?: boolean; status?: ApplicantStatus; sync?: boolean; cohort?: string | null; line_joined?: boolean;
-  package?: "A" | "B"; tier?: "top" | "silver" | "secret"; secret_price?: number | null; reason?: string;
+  package?: "A" | "B"; active?: boolean; resign_reason?: string; resigned_at?: string; tier?: "top" | "silver" | "secret"; secret_price?: number | null; reason?: string;
   kyc_status?: "approved" | "rejected"; kyc_reason?: Partial<Record<string, string>> | null;
 };
 
@@ -74,11 +74,33 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const x = extraOf(cur);
     if (body.listed && (cur.status !== "verified" || x.kyc_status !== "approved" || !(x.photos?.length || cur.docs.photo)))
       return NextResponse.json({ ok: false, error: "แสดงได้เมื่อชำระแล้ว ผ่าน KYC และมีรูปโปรไฟล์" }, { status: 400 });
+    if (body.listed && x.inactive) return NextResponse.json({ ok: false, error: "Part-Time คนนี้เป็น Non Active · ตั้งเป็น Active ก่อน" }, { status: 400 });
     // Secret ยังไม่มีราคา (แอดมินต้องตั้งเอง) → ยังเปิดแสดงไม่ได้
     if (body.listed && x.tier === "secret" && !x.secret_price)
       return NextResponse.json({ ok: false, error: "ตั้งราคา Secret ก่อน แล้วค่อยเปิดแสดงบนหน้าแรก" }, { status: 400 });
     // วันเปิดรับงาน (ครั้งแรก) — นับ 30 วันสำหรับโค้ดโปรโมทฟรี
     await saveProfile(cur.id, body.listed && !x.listed_at ? { listed: true, listed_at: new Date().toISOString() } : { listed: !!body.listed });
+    const row = await getById(id);
+    return row ? NextResponse.json({ ok: true, row: { ...row, ...extraOf(row) } }) : NextResponse.json({ ok: false }, { status: 404 });
+  }
+  // Active / Non Active (ลาออก · เหตุผล + วันที่ลาออก) — Non Active = ปิดแสดงบนหน้าแรก รับงานไม่ได้ · รหัสเดิมคงไว้ไม่ใช้ซ้ำ
+  if (body.active !== undefined) {
+    const cur = await getById(id);
+    if (!cur) return NextResponse.json({ ok: false }, { status: 404 });
+    const x = extraOf(cur);
+    const me = await session();
+    const by = me?.email ?? "admin";
+    const now = new Date().toISOString();
+    const log = [...(x.active_log ?? [])];
+    if (body.active === false) {
+      const reason = String(body.resign_reason ?? "").trim().slice(0, 300);
+      const at = String(body.resigned_at ?? "").slice(0, 10);
+      if (!reason) return NextResponse.json({ ok: false, error: "ระบุเหตุผลที่ลาออก / Non Active" }, { status: 400 });
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(at) || Number.isNaN(Date.parse(at))) return NextResponse.json({ ok: false, error: "ระบุวันที่ลาออก" }, { status: 400 });
+      await saveProfile(cur.id, { inactive: { reason, at, by, set_at: now }, listed: false, active_log: [{ active: false, reason, at, by, set_at: now }, ...log].slice(0, 30) });
+    } else {
+      await saveProfile(cur.id, { inactive: null, active_log: [{ active: true, reason: String(body.resign_reason ?? "กลับมาทำงาน").trim().slice(0, 300) || "กลับมาทำงาน", at: now.slice(0, 10), by, set_at: now }, ...log].slice(0, 30) });
+    }
     const row = await getById(id);
     return row ? NextResponse.json({ ok: true, row: { ...row, ...extraOf(row) } }) : NextResponse.json({ ok: false }, { status: 404 });
   }
@@ -134,6 +156,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 async function autoList(row: Applicant): Promise<Applicant> {
   const x = extraOf(row);
   if (x.listed || x.listed_at || row.status !== "verified" || x.kyc_status !== "approved" || !(x.photos?.length || row.docs.photo)) return row;
+  if (x.inactive) return row;
   if (x.tier === "secret" && !x.secret_price) return row; // Secret: รอแอดมินตั้งราคาก่อน (ตั้งราคาแล้ว → เปิดให้เอง ดู tier)
   await saveProfile(row.id, { listed: true, listed_at: new Date().toISOString() });
   return (await getById(row.id)) ?? row;
