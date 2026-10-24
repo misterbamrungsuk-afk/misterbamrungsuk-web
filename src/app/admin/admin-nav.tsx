@@ -7,34 +7,37 @@ import { Fragment, useEffect, useRef } from "react";
 import { ROLE_LABEL, canAccess, type AdminRole } from "@/lib/admin-auth";
 import { ModeSwitch } from "@/components/mode-switch";
 
-export type AdminTab = { href: string; label: string; exact?: boolean; divider?: boolean; badge?: number };
+export type AdminTab = { href: string; label: string; exact?: boolean; divider?: boolean; badge?: number; group?: string };
+// เมนูแบ่งตามระบบหลัก (บอส/SIRI 24 ต.ค. 2569): Part-Time · Partner สปา/โรงแรม · Collab MB x Bars · ร้านค้า Marketplace — ภายในเป็นหน้าบริหารย่อย
+export const ADMIN_GROUPS = ["ภาพรวม · การเงิน", "ระบบ Part-Time", "ระบบ Partner สปา · โรงแรม", "ระบบ Collab · MB x Bars", "ระบบร้านค้า Marketplace", "ลูกค้า", "ตั้งค่า"] as const;
 export const ADMIN_TABS: AdminTab[] = [
-  { href: "/admin", label: "ภาพรวม", exact: true },
-  { href: "/admin/audit", label: "SOS · แจ้งเตือนระบบ" },
-  { href: "/admin/errors", label: "ข้อผิดพลาดหน้าเว็บ" },
-  { href: "/admin/orders", label: "ตรวจงาน" },
-  { href: "/admin/chats", label: "แชท · คำห้ามส่ง" },
-  { href: "/admin/reports", label: "รายงานผู้ใช้" },
-  { href: "/admin/appeals", label: "อุทธรณ์ใบเตือน" },
-  { href: "/admin/members", label: "สมาชิกลูกค้า" },
-  { href: "/admin/applicants", label: "ผู้สมัคร" },
-  { href: "/admin/slips", label: "ตรวจสลิป · Slip2Go" },
-  { href: "/admin/wallet", label: "กระเป๋าเงิน · เติมเงิน" },
-  { href: "/admin/stays", label: "จองห้องพัก" },
-  { href: "/admin/kyc", label: "คิว KYC" },
-  { href: "/admin/cohorts", label: "กลุ่มอบรม / เช็กชื่อ" },
-  { href: "/admin/earnings", label: "ราคาและส่วนแบ่ง" },
-  { href: "/admin/invites", label: "ลิงก์เชิญ" },
-  { href: "/admin/payroll", label: "CEO · อนุมัติรายได้ / ถอน" },
-  { href: "/admin/payouts", label: "โอนเงิน · Part-Time / พาร์ทเนอร์ / ร้านค้า" },
-  { href: "/admin/boosts", label: "โปรโมทโปรไฟล์ Part-Time" },
-  { href: "/admin/sales", label: "เมมเบอร์ · Sale Man" },
-  { href: "/admin/partners", label: "พาร์ทเนอร์ / พื้นที่โปรโมท" },
-  { href: "/admin/market", label: "ร้านค้า Marketplace" },
-  { href: "/admin/promos", label: "โค้ดโปรโมชัน · ของขวัญ" },
-  { href: "/admin/covers", label: "รูปหน้าปก", divider: true },
-  { href: "/admin/security", label: "ความปลอดภัยบัญชี" },
-  
+  { group: "ภาพรวม · การเงิน", href: "/admin", label: "ภาพรวม", exact: true },
+  { group: "ภาพรวม · การเงิน", href: "/admin/income", label: "ยอดเงินเข้า · ใครโอน จากระบบไหน" },
+  { group: "ภาพรวม · การเงิน", href: "/admin/payroll", label: "CEO · อนุมัติรายได้ / ถอน" },
+  { group: "ภาพรวม · การเงิน", href: "/admin/payouts", label: "โอนเงินออก · Part-Time / พาร์ทเนอร์ / ร้านค้า" },
+  { group: "ภาพรวม · การเงิน", href: "/admin/audit", label: "SOS · แจ้งเตือนระบบ" },
+  { group: "ระบบ Part-Time", href: "/admin/applicants", label: "ผู้สมัคร · Active / Non Active" },
+  { group: "ระบบ Part-Time", href: "/admin/slips", label: "ตรวจสลิปค่าสมัคร · Slip2Go" },
+  { group: "ระบบ Part-Time", href: "/admin/kyc", label: "คิว KYC" },
+  { group: "ระบบ Part-Time", href: "/admin/cohorts", label: "กลุ่มอบรม / เช็กชื่อ" },
+  { group: "ระบบ Part-Time", href: "/admin/earnings", label: "ราคาและส่วนแบ่ง" },
+  { group: "ระบบ Part-Time", href: "/admin/invites", label: "ลิงก์เชิญ · Secret" },
+  { group: "ระบบ Part-Time", href: "/admin/boosts", label: "โปรโมทโปรไฟล์" },
+  { group: "ระบบ Part-Time", href: "/admin/sales", label: "Sale Man · เมมเบอร์" },
+  { group: "ระบบ Part-Time", href: "/admin/orders", label: "ตรวจงาน" },
+  { group: "ระบบ Part-Time", href: "/admin/chats", label: "แชท · คำห้ามส่ง" },
+  { group: "ระบบ Part-Time", href: "/admin/appeals", label: "อุทธรณ์ใบเตือน" },
+  { group: "ระบบ Part-Time", href: "/admin/reports", label: "รายงานผู้ใช้" },
+  { group: "ระบบ Partner สปา · โรงแรม", href: "/admin/partners", label: "พาร์ทเนอร์ / พื้นที่โปรโมท" },
+  { group: "ระบบ Partner สปา · โรงแรม", href: "/admin/stays", label: "จองห้องพัก" },
+  { group: "ระบบ Collab · MB x Bars", href: "/admin/collab", label: "Collab MB x Bars" },
+  { group: "ระบบร้านค้า Marketplace", href: "/admin/market", label: "ร้านค้า Marketplace" },
+  { group: "ระบบร้านค้า Marketplace", href: "/admin/promos", label: "โค้ดโปรโมชัน · ของขวัญ" },
+  { group: "ลูกค้า", href: "/admin/members", label: "สมาชิกลูกค้า" },
+  { group: "ลูกค้า", href: "/admin/wallet", label: "กระเป๋าเงิน · เติมเงิน" },
+  { group: "ตั้งค่า", href: "/admin/covers", label: "รูปหน้าปก" },
+  { group: "ตั้งค่า", href: "/admin/errors", label: "ข้อผิดพลาดหน้าเว็บ" },
+  { group: "ตั้งค่า", href: "/admin/security", label: "ความปลอดภัยบัญชี" },
 ];
 
 export function AdminNav({ email, role }: { email: string; role: AdminRole }) {
@@ -67,9 +70,9 @@ export function AdminNav({ email, role }: { email: string; role: AdminRole }) {
           </div>
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar flex flex-col gap-0.5 -mx-1 px-1">
-        {tabs.map((t) => (
+        {tabs.map((t, i) => (
           <Fragment key={t.href}>
-            {"divider" in t && t.divider && <div className="h-px shrink-0 bg-[rgba(240,200,90,.38)] my-1.5" />}
+            {t.group && t.group !== tabs[i - 1]?.group && <div data-nav-group className={`shrink-0 px-3 pt-2.5 pb-1 text-[11px] font-semibold tracking-[.06em] text-[#f0c75a] ${i ? "mt-1.5 border-t border-[rgba(240,200,90,.2)]" : ""}`}>{t.group}</div>}
             <Link href={t.href} aria-current={isOn(t) ? "page" : undefined}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-[10px] border transition ${isOn(t) ? "bg-[rgba(176,24,44,.2)] border-[rgba(201,40,61,.55)] text-[#f6efe4]" : "border-transparent text-[#cdbfb3] hover:text-[#f6efe4]"}`}>
               <span className="flex-1">{t.label}</span>
@@ -97,11 +100,14 @@ export function AdminNav({ email, role }: { email: string; role: AdminRole }) {
         </div>
         <div className="px-4 pb-2.5 flex items-center gap-2"><div className="flex-1 min-w-0"><ModeSwitch /></div><Link href="/" className="shrink-0 text-[12px] text-[#ffd76a] min-h-9 px-1 inline-flex items-center">กลับหน้าแอป</Link></div>
         <nav ref={chips} aria-label="เมนูแอดมิน (มือถือ)" className="relative flex gap-2 overflow-x-auto overscroll-x-contain no-scrollbar max-w-full min-w-0 px-4 pb-3">
-          {tabs.map((t) => (
-            <Link key={t.href} href={t.href} aria-current={isOn(t) ? "page" : undefined} className={`chip whitespace-nowrap h-9 px-3.5 inline-flex items-center gap-1.5 ${isOn(t) ? "chip-red" : ""}`}>
+          {tabs.map((t, i) => (
+            <Fragment key={t.href}>
+            {t.group && t.group !== tabs[i - 1]?.group && <span className="shrink-0 self-center text-[11px] font-semibold text-[#f0c75a] whitespace-nowrap pl-1">{t.group}</span>}
+            <Link href={t.href} aria-current={isOn(t) ? "page" : undefined} className={`chip whitespace-nowrap h-9 px-3.5 inline-flex items-center gap-1.5 ${isOn(t) ? "chip-red" : ""}`}>
               {t.label}
               {"badge" in t && t.badge ? <span className="min-w-4 h-4 px-1 rounded-full bg-crimson-500 text-white text-[10px] grid place-items-center">{t.badge}</span> : null}
             </Link>
+            </Fragment>
           ))}
         </nav>
       </header>

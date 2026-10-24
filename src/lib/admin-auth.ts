@@ -20,6 +20,8 @@ export const PATH_ROLES: { prefix: string; roles: AdminRole[] }[] = [
   { prefix: "/admin/security", roles: ["super", "finance", "cs", "kyc"] }, // ตั้งค่า 2 ชั้นของบัญชีตัวเอง — ทุกบทบาท
   { prefix: "/admin/settings", roles: ["super"] },
   { prefix: "/admin/payouts", roles: ["super", "finance"] },
+  { prefix: "/admin/income", roles: ["super", "finance"] },
+  { prefix: "/admin/collab", roles: ["super", "finance"] },
   { prefix: "/admin/payroll", roles: ["super", "finance"] },
   { prefix: "/admin/boosts", roles: ["super", "finance"] },
   { prefix: "/admin/sales", roles: ["super", "finance"] },

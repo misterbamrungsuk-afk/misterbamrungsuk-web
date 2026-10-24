@@ -35,6 +35,16 @@ export default async function AdminHome() {
   return (
     <>
       <PageHead title="ภาพรวม" sub={`ข้อมูลจริง ณ ${new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}`} />
+      {/* ระบบหลัก (บอส/SIRI 24 ต.ค. 2569) — กดเข้าหน้าบริหารย่อยของแต่ละระบบ */}
+      <div data-admin-systems className="grid grid-cols-2 xl:grid-cols-5 gap-2.5 mb-5">
+        {([["ยอดเงินเข้า", "ใครโอน · จากระบบไหน", "/admin/income", "#ffd76a"], ["ระบบ Part-Time", "ผู้สมัคร · KYC · อบรม · Sale Man", "/admin/applicants", "#e8c472"], ["ระบบ Partner", "สปา · โรงแรม · จองห้อง", "/admin/partners", "#7fd6a3"], ["ระบบ Collab", "MB x Bars · กำลังเตรียม", "/admin/collab", "#d9ccff"], ["ระบบร้านค้า", "Marketplace · โค้ดโปร", "/admin/market", "#f6a5c0"]] as const)
+          .filter(([, , href]) => role && canAccess(role, href))
+          .map(([t, d, href, c]) => (
+            <Link key={href} href={href} className="rounded-2xl border px-4 py-3.5 flex flex-col gap-0.5 text-inherit hover:text-inherit hover:bg-[rgba(240,200,90,.06)]" style={{ borderColor: c, background: "#1c1414" }}>
+              <b className="text-[16px]" style={{ color: c }}>{t}</b><span className="text-[12px] text-[#cdbfb3]">{d}</span>
+            </Link>
+          ))}
+      </div>
       {o.alerts.sos.map((s) => (
         <Link key={s.id} href="/admin/audit" className="mb-3 flex items-center gap-3 rounded-2xl border border-crimson-500 bg-crimson-500/10 px-4 py-3">
           <span className="w-2.5 h-2.5 rounded-full bg-crimson-500 animate-pulse shrink-0" />
