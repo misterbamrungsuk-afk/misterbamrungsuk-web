@@ -49,6 +49,12 @@ export function SalesBoard({ who, mb, t, summary, link, tiers, boostMult, recrui
             <button type="button" onClick={() => copy(recruit.link, "rlink")} className="h-10 px-3 rounded-lg text-[13px] font-semibold text-[#1b130b] bg-[#e8c472]">{copied === "rlink" ? "คัดลอกแล้ว" : "คัดลอกลิงก์"}</button></div>
           <div className="rounded-xl bg-[#171211] flex items-baseline justify-between gap-2" style={{ padding: "10px 12px" }} data-recruit-fee><span className="text-[13px] text-[#d9c9b4]">ค่าแนะนำ ทุกแผน (ชาย · ทอม)</span><b className="text-[20px]" style={{ color: GOLD }}>{bahtN(500)} / คน</b></div>
           <span className="text-[12.5px] text-[#b5a596] leading-[1.6]">หมอเปิดลิงก์นี้แล้วสมัครภายใน 30 วัน หรือกรอกเลขแนะนำของคุณตอนสมัคร · สมัครแบบจ่ายเงิน: ได้เมื่อหมอชำระค่าสมัคร · สมัครฟรี (เชิญ/ทอมหล่อ): ได้เมื่อหมอได้งานแรก</span>
+          {(() => { const c = summary.recruits?.filter((r) => r.credited).length ?? 0; const got = Math.floor(c / 5); return (
+            <div data-recruit-bonus className="rounded-xl flex flex-col gap-1.5" style={{ padding: "10px 12px", background: "rgba(232,196,114,.1)", border: "1px solid rgba(232,196,114,.35)" }}>
+              <div className="flex items-baseline justify-between gap-2"><span className="text-[13.5px] font-semibold">โบนัสครบทุก 5 คน</span><b className="text-[16px]" style={{ color: GOLD }}>+{bahtN(1000)}</b></div>
+              <div className="h-2 rounded-full overflow-hidden" style={{ background: "rgba(243,234,217,.08)" }}><div className="h-full rounded-full" style={{ width: `${((c % 5) / 5) * 100}%`, background: GOLD }} /></div>
+              <span className="text-[12px] text-[#b5a596]">ได้ค่าแนะนำแล้ว {c} คน · รอบนี้ {c % 5}/5{got ? ` · ได้โบนัสแล้ว ${got} ครั้ง (${bahtN(got * 1000)})` : ""}</span>
+            </div>); })()}
           <b className="text-[14.5px] mt-1">หมอที่คุณชวน ({summary.recruits?.length ?? 0})</b>
           {!summary.recruits?.length && <span className="text-[13.5px] text-[#b5a596]">ยังไม่มี · ส่งลิงก์ด้านบนให้หมอที่สนใจ</span>}
           {summary.recruits?.map((r) => (

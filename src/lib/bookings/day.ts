@@ -131,7 +131,7 @@ async function matureOne(b: Booking, actor: string): Promise<Booking> {
   ] as Leg[]).filter((l) => l.amount !== 0) } : null);
   if (r && cut > 0 && pt) {
     await st.saveProfile(pt.id, { fee_paid_satang: paid + cut, ...(rec ? { recruit_satang: cut, recruit_at: now() } : {}) }).catch((e) => console.error("fee_paid", e));
-    if (rec) await rec.notify(cut).catch(() => {});
+    if (rec) { await rec.notify(cut).catch(() => {}); await (await import("@/lib/member/recruit")).creditRecruitBonus(rec.repId, actor).catch((e) => console.error("recruit bonus", e)); }
   }
   return r ?? b;
 }

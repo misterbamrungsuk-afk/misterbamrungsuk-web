@@ -26,6 +26,25 @@ export async function recruitRep(code: string | null | undefined): Promise<Sales
 
 /** ค่าแนะนำต่อคน (สตางค์) — ทุกแผนเท่ากัน */
 export const RECRUIT_FEE_SATANG = 50_000;
+/** โบนัสแยก: ได้ค่าแนะนำครบทุก ๆ 5 คน → +฿1,000 (นับเฉพาะคนที่จ่ายค่าแนะนำแล้ว · ได้ซ้ำทุกรอบ 5/10/15…) */
+export const RECRUIT_BONUS = { every: 5, satang: 100_000 } as const;
+export const recruitBonusCount = (credited: number) => Math.floor(credited / RECRUIT_BONUS.every);
+
+/** จ่ายโบนัสรอบที่ถึงแล้วแต่ยังไม่จ่าย (idem recruit-bonus:<rep>:<รอบ> · เรียกซ้ำได้ ไม่จ่ายซ้ำ) */
+export async function creditRecruitBonus(repId: string, actor: string): Promise<void> {
+  const rep = await findRep({ id: repId }).catch(() => null);
+  if (!rep) return;
+  const n = (await listApplicants().catch(() => [] as Applicant[])).filter((a) => { const x = extraOf(a); return x.sales_ref?.rep_id === repId && !!x.recruit_at; }).length;
+  const due = recruitBonusCount(n);
+  const o = ownerOf(rep);
+  for (let k = 1; k <= due; k++) {
+    await post("commission", { type: "recruit_bonus", id: rep.id }, `recruit-bonus:${rep.id}:${k}`, `โบนัส Recruit ครบ ${k * RECRUIT_BONUS.every} คน`, actor, [
+      { owner_type: "platform", owner_id: PLATFORM, bucket: "marketing", amount: -RECRUIT_BONUS.satang },
+      { owner_type: o.type, owner_id: o.id, bucket: "available", amount: RECRUIT_BONUS.satang },
+    ]);
+  }
+  if (due && n % RECRUIT_BONUS.every === 0 && o.type === "parttime") await notify({ user_type: "parttime", user_id: o.id, kind: "commission", title: `ได้โบนัส Recruit ${baht(RECRUIT_BONUS.satang)}`, body: `ครบ ${n} คน`, url: "" }).catch(() => {});
+}
 export async function recruitRate(_a?: Pick<Applicant, "amount" | "package">): Promise<number> { return RECRUIT_FEE_SATANG; }
 
 /** สมัครแบบจ่ายเงิน ชำระแล้ว → จ่ายค่าแนะนำให้ Recruit ที่ชวน (ครั้งเดียวต่อผู้สมัคร · idem recruit:<id>) · สมัครฟรีไปจ่ายตอนงานแรก */
@@ -46,18 +65,19 @@ export async function creditRecruit(applicantId: string, actor: string): Promise
     if (o.type === "parttime") await notify({ user_type: "parttime", user_id: o.id, kind: "commission", title: `ได้ค่าแนะนำ ${baht(amt)}`, body: a.mb_code, url: "" }).catch(() => {});
   }
   await saveProfile(a.id, { recruit_satang: amt, recruit_at: new Date().toISOString() });
+  await creditRecruitBonus(rep.id, actor).catch((e) => console.error("recruit bonus", e));
   return amt;
 }
 
 /** งานแรกของหมอสมัครฟรีที่ Recruit แนะนำ (ยังไม่เคยจ่ายค่าแนะนำ) → ปลายทางของเงินที่หัก + แจ้งเตือน · null = ไม่มี Recruit / จ่ายไปแล้ว */
-export async function firstJobRecruit(a: Applicant): Promise<{ code: string; owner: { type: OwnerType; id: string }; notify: (amt: number) => Promise<unknown> } | null> {
+export async function firstJobRecruit(a: Applicant): Promise<{ repId: string; code: string; owner: { type: OwnerType; id: string }; notify: (amt: number) => Promise<unknown> } | null> {
   const x = extraOf(a);
   if (!x.sales_ref || x.recruit_at || a.amount) return null;
   const rep = await findRep({ id: x.sales_ref.rep_id }).catch(() => null);
   if (!rep) return null;
   const o = ownerOf(rep);
   return {
-    code: rep.code, owner: o,
+    repId: rep.id, code: rep.code, owner: o,
     notify: async (amt) => { if (o.type === "parttime") await notify({ user_type: "parttime", user_id: o.id, kind: "commission", title: `ได้ค่าแนะนำ ${baht(amt)}`, body: `${a.mb_code} ได้งานแรกแล้ว`, url: "" }); },
   };
 }

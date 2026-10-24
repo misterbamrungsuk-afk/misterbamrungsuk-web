@@ -5,7 +5,7 @@ import { getMemberSettings } from "@/lib/member/tiers";
 import { PageHead } from "../admin-nav";
 import { SalesAdmin } from "./client";
 import { extraOf, listApplicants } from "@/lib/join/store";
-import { loginUsernames } from "@/lib/member/recruit";
+import { RECRUIT_BONUS, loginUsernames, recruitBonusCount } from "@/lib/member/recruit";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "เมมเบอร์ · Recruit — แอดมิน" };
@@ -19,7 +19,7 @@ export default async function SalesAdminPage() {
   const repStats = reps.map((r) => {
     const mine = purchases.filter((p) => p.ref_code === r.code);
     const rc = recruits.filter(({ x }) => x.sales_ref?.rep_id === r.id);
-    return { ...r, count: mine.filter((p) => p.status === "credited").length, earned: mine.filter((p) => p.status === "credited").reduce((t, p) => t + p.commission_satang, 0) + rc.reduce((t, { x }) => t + (x.recruit_at ? x.recruit_satang ?? 0 : 0), 0), recruits: rc.length, recruitsPaid: rc.filter(({ a }) => a.status === "verified").length, username: logins[r.id] ?? null };
+    return { ...r, count: mine.filter((p) => p.status === "credited").length, earned: mine.filter((p) => p.status === "credited").reduce((t, p) => t + p.commission_satang, 0) + rc.reduce((t, { x }) => t + (x.recruit_at ? x.recruit_satang ?? 0 : 0), 0) + recruitBonusCount(rc.filter(({ x }) => x.recruit_at).length) * RECRUIT_BONUS.satang, recruits: rc.length, recruitsPaid: rc.filter(({ a }) => a.status === "verified").length, username: logins[r.id] ?? null };
   });
   const members = purchases.filter((p) => p.status === "credited");
   return (
