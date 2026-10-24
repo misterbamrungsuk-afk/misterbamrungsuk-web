@@ -1,0 +1,111 @@
+import "server-only";
+import { randomBytes } from "crypto";
+import { createClient } from "@supabase/supabase-js";
+import { PLATFORM, post, type OwnerType } from "@/lib/wallet";
+import { notify } from "@/lib/bookings";
+import { extraOf, getById, listApplicants, saveProfile, type Applicant } from "@/lib/join/store";
+import { hashPw, verifyPw } from "@/lib/join/pt-password";
+import { tierLabel } from "@/lib/join/config";
+import { getMemberSettings } from "./tiers";
+import { findRep, type SalesRep } from "./store";
+
+// Sale Man ชวน Part-Time (หมอ) — บอสสั่ง 24 ต.ค. 2569
+// ลิงก์ /join/s/<โค้ด> → คุกกี้ mb_sm 30 วัน → สมัครแล้วผูก docs.extra.sales_ref · ชำระค่าสมัครแล้ว (verified) → ค่าตอบแทนเข้ากระเป๋า Sale Man ครั้งเดียว
+// เงินออกจาก platform.marketing เหมือนค่าคอมเปิดเมม · อัตรา CEO ตั้งที่ /admin/sales (recruit A / B / สมัครฟรี)
+export const RECRUIT_COOKIE = "mb_sm";
+const baht = (s: number) => "฿" + (s / 100).toLocaleString("th-TH");
+const ownerOf = (r: SalesRep): { type: OwnerType; id: string } => (r.kind === "parttime" ? { type: "parttime", id: r.parttime_id! } : { type: "sales", id: r.id });
+
+/** โค้ดที่ใช้ชวนได้ (Sale Man ภายนอก หรือ Part-Time ที่เปิดใช้อยู่) */
+export async function recruitRep(code: string | null | undefined): Promise<SalesRep | null> {
+  const c = String(code ?? "").trim().toUpperCase();
+  if (!/^[A-Z0-9]{4,12}$/.test(c)) return null;
+  const r = await findRep({ code: c }).catch(() => null);
+  return r?.active ? r : null;
+}
+
+/** ค่าตอบแทนต่อคนตามสาย (สตางค์) — สมัครฟรี (ไม่มียอด) ใช้อัตรา free */
+export async function recruitRate(a: Pick<Applicant, "amount" | "package">): Promise<number> {
+  const r = (await getMemberSettings()).recruit;
+  return Math.round((a.amount ? r[a.package] : r.free) * 100);
+}
+
+/** ชำระค่าสมัครแล้ว → จ่ายค่าตอบแทนให้ Sale Man ที่ชวน (ครั้งเดียวต่อผู้สมัคร · idem recruit:<id>) */
+export async function creditRecruit(applicantId: string, actor: string): Promise<number> {
+  const a = await getById(applicantId);
+  if (!a || a.status !== "verified") return 0;
+  const x = extraOf(a);
+  if (!x.sales_ref || x.recruit_at) return 0;
+  const rep = await findRep({ id: x.sales_ref.rep_id });
+  if (!rep) return 0;
+  const amt = await recruitRate(a);
+  if (amt > 0) {
+    const o = ownerOf(rep);
+    await post("commission", { type: "applicant", id: a.id }, `recruit:${a.id}`, `ค่าตอบแทนชวน Part-Time ${a.mb_code}`, actor, [
+      { owner_type: "platform", owner_id: PLATFORM, bucket: "marketing", amount: -amt },
+      { owner_type: o.type, owner_id: o.id, bucket: "available", amount: amt },
+    ]);
+    if (o.type === "parttime") await notify({ user_type: "parttime", user_id: o.id, kind: "commission", title: `ได้ค่าตอบแทนชวน Part-Time ${baht(amt)}`, body: a.mb_code, url: "" }).catch(() => {});
+  }
+  await saveProfile(a.id, { recruit_satang: amt, recruit_at: new Date().toISOString() });
+  return amt;
+}
+
+/** หมอที่ Sale Man คนนี้ชวน (เห็นเฉพาะของตัวเอง · ชื่อเล่น + อักษรแรกนามสกุล) */
+export async function recruitsOf(rep: SalesRep) {
+  const rows = (await listApplicants().catch(() => [] as Applicant[])).filter((a) => extraOf(a).sales_ref?.rep_id === rep.id);
+  const out = [];
+  for (const a of rows) {
+    const x = extraOf(a);
+    const paid = a.status === "verified";
+    out.push({
+      id: a.id, mb: a.mb_code, who: `${a.nickname || a.first_name}${a.last_name ? ` ${a.last_name.trim()[0] ?? ""}.` : ""}`,
+      pack: `สาย ${a.package}${x.group === "tom" ? " · ทอมหล่อ" : ""}${x.tier && x.tier !== "silver" ? ` · ${tierLabel(x.tier)}` : ""}${!a.amount ? " · สมัครฟรี" : ""}`,
+      status: paid ? "ชำระแล้ว" : a.status === "rejected" ? "ไม่ผ่าน" : a.status === "refunded" ? "คืนเงินแล้ว" : "รอตรวจสลิป",
+      commission: x.recruit_at ? x.recruit_satang ?? 0 : await recruitRate(a), credited: !!x.recruit_at, at: x.recruit_at ?? a.created_at,
+    });
+  }
+  return out;
+}
+
+// ── ID / รหัสผ่าน Sale Man ภายนอก (ทีมงานออกให้) · เก็บแฮชใน Storage _config/sales-logins.json ──
+type Login = { rep_id: string; username: string; pw_hash: string; updated_at: string; by: string };
+const PATH = "_config/sales-logins.json";
+const isDemo = !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY;
+const g = globalThis as unknown as { __mbSalesLogins?: Login[] };
+const db = () => createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } });
+async function loadLogins(): Promise<Login[]> {
+  if (isDemo) return g.__mbSalesLogins ?? [];
+  try { const { data, error } = await db().storage.from("applicants").download(PATH); if (error || !data) return []; return JSON.parse(await data.text()) as Login[]; } catch { return []; }
+}
+async function saveLogins(list: Login[]) {
+  if (isDemo) { g.__mbSalesLogins = list; return; }
+  const { error } = await db().storage.from("applicants").upload(PATH, new Blob([JSON.stringify(list)], { type: "application/json" }), { upsert: true, contentType: "application/json" });
+  if (error) throw error;
+}
+export const cleanUsername = (u: unknown) => String(u ?? "").trim().toLowerCase();
+export const usernameOk = (u: string) => /^[a-z0-9._-]{4,32}$/.test(u);
+/** รหัสผ่านสุ่ม 10 ตัว (ตัดตัวที่สับสนง่าย) */
+const newPassword = () => [...randomBytes(10)].map((b) => "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"[b % 55]).join("");
+
+/** แอดมินออก ID/รหัสผ่านใหม่ให้ Sale Man (คืนรหัสผ่านครั้งเดียว · เก็บแค่แฮช) */
+export async function issueSalesLogin(rep: SalesRep, username: string, by: string): Promise<{ username: string; password: string }> {
+  const u = cleanUsername(username);
+  if (!usernameOk(u)) throw new Error("ID ใช้ a-z 0-9 . _ - ยาว 4–32 ตัว");
+  const list = await loadLogins();
+  if (list.some((l) => l.username === u && l.rep_id !== rep.id)) throw new Error("ID นี้ถูกใช้แล้ว");
+  const password = newPassword();
+  const row: Login = { rep_id: rep.id, username: u, pw_hash: hashPw(password), updated_at: new Date().toISOString(), by };
+  await saveLogins([row, ...list.filter((l) => l.rep_id !== rep.id)]);
+  return { username: u, password };
+}
+export async function loginUsernames(): Promise<Record<string, string>> {
+  return Object.fromEntries((await loadLogins()).map((l) => [l.rep_id, l.username]));
+}
+/** ตรวจ ID/รหัสผ่าน → rep id (ไม่บอกว่าผิดตรงไหน) */
+export async function checkSalesLogin(username: unknown, password: unknown): Promise<string | null> {
+  const u = cleanUsername(username);
+  const row = (await loadLogins()).find((l) => l.username === u);
+  const ok = verifyPw(String(password ?? ""), row?.pw_hash);
+  return ok && row ? row.rep_id : null;
+}

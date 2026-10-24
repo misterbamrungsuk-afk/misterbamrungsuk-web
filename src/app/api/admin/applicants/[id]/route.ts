@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { creditRecruit } from "@/lib/member/recruit";
 import { ensureReceiptNo, extraOf, getById, listApplicants, saveProfile, setKyc, setTier, updateApplicant, updateExtra, type Applicant, type ApplicantStatus, type KycReason } from "@/lib/join/store";
 import { listCohorts } from "@/lib/join/cohorts";
 import { appendToSheet } from "@/lib/join/sheets";
@@ -118,7 +119,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (body.status === "rejected" && !reason) return NextResponse.json({ ok: false, error: "ระบุเหตุผลที่ปฏิเสธสลิป" }, { status: 400 });
   let row = await updateApplicant(id, { status: body.status });
   // อนุมัติสลิป → ออกเลขใบเสร็จรับเงิน RI (ครั้งเดียว)
-  if (row && body.status === "verified") { await ensureReceiptNo(row).catch((e) => console.error("ri_no", (e as Error)?.message)); row = (await getById(id)) ?? row; row = await autoList(row); }
+  if (row && body.status === "verified") { await ensureReceiptNo(row).catch((e) => console.error("ri_no", (e as Error)?.message)); row = (await getById(id)) ?? row; row = await autoList(row); await creditRecruit(id, "admin:slip").catch((e) => console.error("recruit credit", e)); row = (await getById(id)) ?? row; }
   if (row && body.status === "rejected") {
     const by = (await session())?.email ?? "";
     // slip_reject ต้องเพิ่มใน store.ts (EXTRA_ONLY_KEYS) — ก่อนนั้นบันทึกไม่ได้ก็ไม่ให้ล้ม (เหตุผลยังไปถึงผู้สมัครทางแจ้งเตือน)

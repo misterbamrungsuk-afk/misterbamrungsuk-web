@@ -6,6 +6,7 @@ import { MemberError, approveSalesPayout, createExternalRep, creditMembership, r
 import { getPurchase, patchRep, findRep, listPayouts } from "@/lib/member/store";
 import { getMemberSettings, saveMemberSettings, validateMember, TIER_IDS, type MemberSettings } from "@/lib/member/tiers";
 import { readFile } from "@/lib/join/store";
+import { issueSalesLogin } from "@/lib/member/recruit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,6 +41,13 @@ export async function POST(req: Request) {
     if (act === "rep_update") return NextResponse.json({ ok: true, rep: await updateExternalRep(id, { name: b.name, phone: b.phone, bank: b.bank }) });
     if (act === "rep_toggle") { const r = await findRep({ id }); if (!r) throw new MemberError("ไม่พบ Sale Man"); return NextResponse.json({ ok: true, rep: await patchRep(id, { active: !r.active }) }); }
     if (act === "rep_link") { const r = await findRep({ id }); if (!r || r.kind !== "external") throw new MemberError("ไม่พบ Sale Man"); return NextResponse.json({ ok: true, link: `${new URL(req.url).origin}/sales/go?t=${encodeURIComponent(signSalesLink(r.id))}` }); }
+    // ID / รหัสผ่านเข้าแดชบอร์ด (ทีมงานออกให้) — รหัสผ่านแสดงครั้งเดียว
+    if (act === "rep_login") {
+      const r = await findRep({ id });
+      if (!r || r.kind !== "external") throw new MemberError("ไม่พบ Sale Man");
+      try { return NextResponse.json({ ok: true, login: await issueSalesLogin(r, String(b.username ?? ""), s.email) }); }
+      catch (e) { throw new MemberError(e instanceof Error ? e.message : "ตั้ง ID ไม่สำเร็จ"); }
+    }
     if (act === "payout_approve") return NextResponse.json({ ok: true, row: await approveSalesPayout(id, `ceo:${s.email}`) });
     if (act === "payout_reject") return NextResponse.json({ ok: true, row: await settleSalesPayout(id, `ceo:${s.email}`, false, String(b.note ?? "CEO ไม่อนุมัติ")) });
     if (act === "payout_paid") return NextResponse.json({ ok: true, row: await settleSalesPayout(id, actor, true) });
@@ -55,6 +63,7 @@ export async function POST(req: Request) {
       const num = (v: unknown, d: number) => (Number.isFinite(Number(v)) ? Number(v) : d);
       const next = {
         enabled: m?.enabled === undefined ? cur.enabled : !!m.enabled, boostMult: num(m?.boostMult, cur.boostMult), basePointsPer100: num(m?.basePointsPer100, cur.basePointsPer100),
+        recruit: { A: Math.round(num((m?.recruit as Record<string, unknown> | undefined)?.A, cur.recruit.A)), B: Math.round(num((m?.recruit as Record<string, unknown> | undefined)?.B, cur.recruit.B)), free: Math.round(num((m?.recruit as Record<string, unknown> | undefined)?.free, cur.recruit.free)) },
         tiers: Object.fromEntries(TIER_IDS.map((k) => { const t = (m?.tiers?.[k] ?? {}) as Partial<MemberSettings["tiers"]["gold"]>; const c = cur.tiers[k]; return [k, { id: k, name: String(t.name ?? c.name).slice(0, 30), pay: num(t.pay, c.pay), credit: num(t.credit, c.credit), commission: num(t.commission, c.commission), pointsPer100: num(t.pointsPer100, c.pointsPer100) }]; })) as MemberSettings["tiers"],
       };
       const err = validateMember(next);

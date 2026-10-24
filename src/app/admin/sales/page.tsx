@@ -4,6 +4,8 @@ import { listPayouts, listPurchases, listReps } from "@/lib/member/store";
 import { getMemberSettings } from "@/lib/member/tiers";
 import { PageHead } from "../admin-nav";
 import { SalesAdmin } from "./client";
+import { extraOf, listApplicants } from "@/lib/join/store";
+import { loginUsernames } from "@/lib/member/recruit";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "เมมเบอร์ · Sale Man — แอดมิน" };
@@ -11,10 +13,13 @@ export const metadata = { title: "เมมเบอร์ · Sale Man — แ�
 // เปิดเมม Gold/Black: สลิปรอตรวจ · Sale Man (สร้าง/ลิงก์/ปิด) · โอนค่าคอมที่ CEO อนุมัติแล้ว · ตั้งค่าระดับ (CEO เท่านั้น)
 export default async function SalesAdminPage() {
   const s = await verifySession((await cookies()).get(ADMIN_COOKIE)?.value);
-  const [purchases, reps, payouts, cfg] = await Promise.all([listPurchases().catch(() => []), listReps().catch(() => []), listPayouts().catch(() => []), getMemberSettings()]);
+  const [purchases, reps, payouts, cfg, apps, logins] = await Promise.all([listPurchases().catch(() => []), listReps().catch(() => []), listPayouts().catch(() => []), getMemberSettings(), listApplicants().catch(() => []), loginUsernames().catch(() => ({} as Record<string, string>))]);
+  // หมอที่ Sale Man แต่ละคนชวน (ผูกตอนสมัครผ่าน /join/s/<โค้ด>)
+  const recruits = apps.map((a) => ({ a, x: extraOf(a) })).filter(({ x }) => x.sales_ref);
   const repStats = reps.map((r) => {
     const mine = purchases.filter((p) => p.ref_code === r.code);
-    return { ...r, count: mine.filter((p) => p.status === "credited").length, earned: mine.filter((p) => p.status === "credited").reduce((t, p) => t + p.commission_satang, 0) };
+    const rc = recruits.filter(({ x }) => x.sales_ref?.rep_id === r.id);
+    return { ...r, count: mine.filter((p) => p.status === "credited").length, earned: mine.filter((p) => p.status === "credited").reduce((t, p) => t + p.commission_satang, 0) + rc.reduce((t, { x }) => t + (x.recruit_at ? x.recruit_satang ?? 0 : 0), 0), recruits: rc.length, recruitsPaid: rc.filter(({ a }) => a.status === "verified").length, username: logins[r.id] ?? null };
   });
   const members = purchases.filter((p) => p.status === "credited");
   return (

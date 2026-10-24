@@ -9,7 +9,7 @@ const LINE = "rgba(240,200,90,.25)";
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("th-TH");
 const dt = (iso: string | null) => (iso ? new Date(iso).toLocaleString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Bangkok" }) : "-");
 const inp = "h-10 rounded-xl border bg-[#130e0e] px-3 text-[#f6efe4] text-[13.5px] min-w-0";
-type Rep = SalesRep & { count: number; earned: number };
+type Rep = SalesRep & { count: number; earned: number; recruits: number; recruitsPaid: number; username: string | null };
 
 export function SalesAdmin({ isCeo, cfg, purchases, reps, payouts }: { isCeo: boolean; cfg: MemberSettings; purchases: MemberPurchase[]; reps: Rep[]; payouts: SalesPayout[] }) {
   const router = useRouter();
@@ -18,6 +18,8 @@ export function SalesAdmin({ isCeo, cfg, purchases, reps, payouts }: { isCeo: bo
   const [note, setNote] = useState<Record<string, string>>({});
   const [nr, setNr] = useState({ name: "", phone: "", bank: "", account: "", acctName: "" });
   const [link, setLink] = useState("");
+  const [login, setLogin] = useState<{ id: string; username: string } | null>(null);
+  const [issued, setIssued] = useState<{ name: string; username: string; password: string } | null>(null);
   const [m, setM] = useState(cfg);
   // ยืนยันในหน้าก่อนทำรายการเงิน (อนุมัติ/ไม่อนุมัติ/โอนแล้ว/ไม่สำเร็จ)
   const [ask, setAsk] = useState<{ body: Record<string, unknown>; ok: string; text: string } | null>(null);
@@ -102,12 +104,13 @@ export function SalesAdmin({ isCeo, cfg, purchases, reps, payouts }: { isCeo: bo
         {link && <div className="rounded-xl p-3 text-[12.5px] break-all" style={{ background: "#130e0e" }}>ลิงก์เข้าแดชบอร์ด (อายุ 90 วัน): <span className="select-all text-[#f0c75a]">{link}</span></div>}
         <div className="rounded-xl border overflow-x-auto" style={{ borderColor: LINE }}>
           <div className="min-w-[720px]">
-            <div className="grid grid-cols-[100px_minmax(0,1fr)_90px_80px_110px_200px] gap-2 px-3 py-2 bg-[#130e0e] text-[#9a8a85] text-xs"><span>โค้ด</span><span>ชื่อ</span><span>ประเภท</span><span>ชวนได้</span><span>ค่าคอมรวม</span><span /></div>
+            <div className="grid grid-cols-[100px_minmax(0,1fr)_90px_80px_90px_110px_280px] gap-2 px-3 py-2 bg-[#130e0e] text-[#9a8a85] text-xs"><span>โค้ด</span><span>ชื่อ</span><span>ประเภท</span><span>เปิดเมม</span><span>ชวนหมอ</span><span>ค่าตอบแทนรวม</span><span /></div>
             {!reps.length && <p className="m-0 p-4 text-center text-[#9a8a85]">ยังไม่มี Sale Man · Part-Time ได้โค้ดอัตโนมัติเมื่อเปิดหน้า &quot;ชวนเปิดเมม&quot;</p>}
             {reps.map((r) => (
-              <div key={r.id} className="grid grid-cols-[100px_minmax(0,1fr)_90px_80px_110px_200px] gap-2 px-3 py-2 border-t items-center" style={{ borderColor: LINE, opacity: r.active ? 1 : 0.5 }}>
-                <b className="text-[#ffd76a] tracking-wider">{r.code}</b><span className="truncate">{r.name || "-"}{r.phone ? ` · ${r.phone}` : ""}{r.kind === "external" ? (r.bank?.account ? ` · ${r.bank.bank} ••${r.bank.account.slice(-4)}` : " · ⚠ ไม่มีบัญชี") : ""}</span><span>{r.kind === "parttime" ? "Part-Time" : "ภายนอก"}</span><span>{r.count} คน</span><span>{baht(r.earned)}</span>
+              <div key={r.id} className="grid grid-cols-[100px_minmax(0,1fr)_90px_80px_90px_110px_280px] gap-2 px-3 py-2 border-t items-center" style={{ borderColor: LINE, opacity: r.active ? 1 : 0.5 }}>
+                <b className="text-[#ffd76a] tracking-wider">{r.code}</b><span className="truncate">{r.name || "-"}{r.phone ? ` · ${r.phone}` : ""}{r.kind === "external" ? (r.bank?.account ? ` · ${r.bank.bank} ••${r.bank.account.slice(-4)}` : " · ⚠ ไม่มีบัญชี") : ""}</span><span>{r.kind === "parttime" ? "Part-Time" : "ภายนอก"}{r.username && <span className="block text-[11.5px] text-[#9a8a85]">ID: {r.username}</span>}</span><span>{r.count} คน</span><span data-recruit-count>{r.recruits} คน{r.recruits ? <span className="block text-[11.5px] text-[#9a8a85]">ชำระแล้ว {r.recruitsPaid}</span> : null}</span><span>{baht(r.earned)}</span>
                 <span className="flex gap-1.5">
+                  {r.kind === "external" && <button type="button" data-rep-login disabled={!!busy} onClick={() => { setIssued(null); setLogin({ id: r.id, username: r.username ?? "" }); }} className="h-8 px-2.5 rounded-lg border text-[12px]" style={{ borderColor: LINE }}>{r.username ? "รหัสผ่านใหม่" : "ตั้ง ID"}</button>}
                   {r.kind === "external" && <button type="button" disabled={!!busy} onClick={() => call({ action: "rep_link", id: r.id }, "สร้างลิงก์ใหม่แล้ว")} className="h-8 px-2.5 rounded-lg border text-[12px]" style={{ borderColor: LINE }}>ลิงก์เข้า</button>}
                   {r.kind === "external" && <button type="button" disabled={!!busy} onClick={() => setEdit({ id: r.id, name: r.name, phone: r.phone ?? "", bank: r.bank?.bank ?? "", account: r.bank?.account ?? "", acctName: r.bank?.name ?? "" })} className="h-8 px-2.5 rounded-lg border text-[12px]" style={{ borderColor: LINE }}>แก้ไข</button>}
                   <button type="button" disabled={!!busy} onClick={() => call({ action: "rep_toggle", id: r.id }, r.active ? "ปิดโค้ดแล้ว" : "เปิดโค้ดแล้ว")} className="h-8 px-2.5 rounded-lg border text-[12px]" style={{ borderColor: LINE }}>{r.active ? "ปิดโค้ด" : "เปิดโค้ด"}</button>
@@ -116,6 +119,20 @@ export function SalesAdmin({ isCeo, cfg, purchases, reps, payouts }: { isCeo: bo
             ))}
           </div>
         </div>
+        {login && (
+          <div className="rounded-xl border p-3 flex flex-wrap items-end gap-2" style={{ borderColor: "#e8c472" }}>
+            <b className="w-full">ID / รหัสผ่านเข้าแดชบอร์ด · {repName(login.id)}</b>
+            <label className="flex flex-col gap-1 text-[12px] text-[#cdbfb3]">ID (a-z 0-9 . _ - · 4–32 ตัว)<input value={login.username} onChange={(e) => setLogin({ ...login, username: e.target.value.toLowerCase() })} className={`${inp} w-56`} style={{ borderColor: LINE }} /></label>
+            <button type="button" onClick={() => setLogin(null)} className="h-10 px-4 rounded-xl border" style={{ borderColor: LINE }}>ยกเลิก</button>
+            <button type="button" disabled={!!busy || login.username.trim().length < 4} onClick={async () => { const j = await call({ action: "rep_login", id: login.id, username: login.username }, "ออก ID / รหัสผ่านแล้ว · ส่งให้ Sale Man (รหัสผ่านแสดงครั้งเดียว)"); if (j?.ok) { setIssued({ name: repName(login.id), ...j.login }); setLogin(null); } }} className="h-10 px-4 rounded-xl font-semibold text-white bg-crimson-500 disabled:opacity-40">ออกรหัสผ่านใหม่</button>
+            <span className="w-full text-[12px] text-[#9a8a85]">ระบบสุ่มรหัสผ่านให้ · ออกใหม่เมื่อไหร่ รหัสเดิมใช้ไม่ได้ทันที</span>
+          </div>
+        )}
+        {issued && <div data-issued-login className="rounded-xl p-3 text-[13.5px] flex flex-col gap-1" style={{ background: "#130e0e", border: "1px solid #4ade80" }}>
+          <b>ส่งให้ {issued.name} (แสดงครั้งเดียว · ปิดหน้านี้แล้วดูอีกไม่ได้)</b>
+          <span>เข้าที่: <span className="select-all text-[#f0c75a]">{typeof window !== "undefined" ? window.location.origin : ""}/sales</span></span>
+          <span>ID: <span className="select-all text-[#f0c75a]">{issued.username}</span> · รหัสผ่าน: <span className="select-all text-[#f0c75a] font-mono">{issued.password}</span></span>
+        </div>}
         {edit && (
           <div className="rounded-xl border p-3 grid gap-2 md:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto_auto] items-end" style={{ borderColor: "#e8c472" }}>
             <b className="md:col-span-7">แก้ไข Sale Man</b>
@@ -145,6 +162,9 @@ export function SalesAdmin({ isCeo, cfg, purchases, reps, payouts }: { isCeo: bo
           ))}
         </div>
         <div className="flex flex-wrap gap-3 items-end">
+          {([["A", "ชวนหมอ สาย A (บาท/คน)"], ["B", "ชวนหมอ สาย B (บาท/คน)"], ["free", "ชวนหมอ สมัครฟรี (บาท/คน)"]] as const).map(([k, l]) => (
+            <label key={k} className="flex flex-col gap-1 text-[12px] text-[#cdbfb3]">{l}<input data-recruit-rate={k} disabled={!isCeo} inputMode="numeric" value={String(m.recruit[k])} onChange={(e) => setM({ ...m, recruit: { ...m.recruit, [k]: Number(e.target.value.replace(/\D/g, "")) || 0 } })} className={`${inp} w-36`} style={{ borderColor: LINE }} /></label>
+          ))}
           <label className="flex flex-col gap-1 text-[12px] text-[#cdbfb3]">วงเงินโปรโมท × เท่า (Part-Time)<input disabled={!isCeo} value={String(m.boostMult)} onChange={(e) => setM({ ...m, boostMult: Number(e.target.value) || 0 })} className={`${inp} w-32`} style={{ borderColor: LINE }} /></label>
           <label className="flex flex-col gap-1 text-[12px] text-[#cdbfb3]">แต้มคนทั่วไปต่อ ฿100<input disabled={!isCeo} value={String(m.basePointsPer100)} onChange={(e) => setM({ ...m, basePointsPer100: Number(e.target.value) || 0 })} className={`${inp} w-32`} style={{ borderColor: LINE }} /></label>
           <button type="button" disabled={!isCeo || !!busy} onClick={() => call({ action: "settings", member: m, note: "แก้ตั้งค่าเมมเบอร์" }, "บันทึกตั้งค่าแล้ว")} className="h-10 px-5 rounded-xl font-semibold text-white bg-crimson-500 disabled:opacity-40">บันทึกตั้งค่า</button>

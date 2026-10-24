@@ -15,6 +15,7 @@ import { RESUME_COOKIE, RESUME_TTL_MS, signResume } from "@/lib/join/resume";
 import { EMAIL_ERROR, cleanEmail, linkable } from "@/lib/join/link-mail";
 import { hashPw, pwProblem } from "@/lib/join/pt-password";
 import { siteUrl } from "@/lib/site-url";
+import { RECRUIT_COOKIE, creditRecruit, recruitRep } from "@/lib/member/recruit";
 
 export const runtime = "nodejs";
 
@@ -106,7 +107,10 @@ export async function POST(req: Request) {
   const amount = free ? 0 : PACKAGES[pkg].price;
 
   // เบอร์ที่ส่งมาต้องตรงกับเบอร์ที่ยืนยัน OTP แล้ว (cookie ลงลายเซ็นจาก /api/otp/verify)
-  const verifiedPhone = readPhoneToken((await cookies()).get(PHONE_COOKIE)?.value);
+  const jar = await cookies();
+  const verifiedPhone = readPhoneToken(jar.get(PHONE_COOKIE)?.value);
+  // Sale Man ที่ชวนมา (ลิงก์ /join/s/<โค้ด>) — โค้ดปิดแล้ว/ไม่ถูกต้อง = ไม่ผูก
+  const salesRep = await recruitRep(jar.get(RECRUIT_COOKIE)?.value).catch(() => null);
   if (otpRequired() && (!verifiedPhone || verifiedPhone !== normalizePhone(tel)))
     return NextResponse.json({ ok: false, error: "กรุณายืนยันเบอร์โทรด้วยรหัส OTP ก่อนส่งใบสมัคร", fields: ["tel"], needOtp: true }, { status: 403 });
 
@@ -143,8 +147,9 @@ export async function POST(req: Request) {
     // เลขใบแจ้งหนี้ INV (ยังไม่รัน SQL 0010 → ใช้เลขตามรหัส MB)
     // สายเชิญไม่มียอด → ไม่ออกเอกสาร · ถือว่าชำระแล้ว (verified) + ระดับ TOP
     const inv_no = free ? null : (await nextDocNo("INV").catch(() => null)) ?? `INV-${codeNo(row.mb_code)}`;
-    await saveProfile(row.id, { pw_hash: hashPw(password), pw_at: new Date().toISOString(), inv_no, ...(invite ? { tier: secret ? "secret" : "top" } : {}), ...(group ? { group } : {}) });
+    await saveProfile(row.id, { pw_hash: hashPw(password), pw_at: new Date().toISOString(), inv_no, ...(invite ? { tier: secret ? "secret" : "top" } : {}), ...(group ? { group } : {}), ...(salesRep ? { sales_ref: { rep_id: salesRep.id, code: salesRep.code } } : {}) });
     if (free) await updateApplicant(row.id, { status: "verified" });
+    if (free && salesRep) await creditRecruit(row.id, "system:register").catch((e) => console.error("recruit credit", e));
     if (invite) await consumeInvite(invite).catch((e) => console.error("consume invite failed", e));
     // sync ชีตแบบไม่ให้ล้มทั้งคำขอ — ถ้าไม่สำเร็จ แอดมินกด sync ซ้ำได้
     // อีเมลแจ้งผู้สมัคร + แอดมิน (ไม่รอ ไม่ทำให้คำขอล้ม)

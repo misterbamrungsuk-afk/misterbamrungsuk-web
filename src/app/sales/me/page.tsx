@@ -32,7 +32,7 @@ export default async function SalesMe() {
             : <span className="text-[14px] text-[#ff8a9a]">ยังไม่มีบัญชีรับเงิน · ติดต่อทีมงานเพื่อเพิ่มบัญชีก่อนขอรับค่าคอม</span>}
           <span className="text-[12px] text-[#b5a596]">ต้องการเปลี่ยนบัญชี ติดต่อทีมงานทาง LINE</span>
         </section>
-        <SalesBoard who="external" summary={sum} link={`${origin}/ref/${rep.code}`} tiers={{ gold: cfg.tiers.gold, black: cfg.tiers.black }} boostMult={cfg.boostMult} />
+        <SalesBoard who="external" summary={sum} link={`${origin}/ref/${rep.code}`} tiers={{ gold: cfg.tiers.gold, black: cfg.tiers.black }} boostMult={cfg.boostMult} recruit={{ link: `${origin}/join/s/${rep.code}`, rates: cfg.recruit }} />
         <form action="/api/sales/logout" method="post" className="mt-2">
           <button type="submit" className="w-full h-12 rounded-full text-[14px] font-semibold text-[#e8c472]" style={{ border: "1px solid rgba(232,196,114,.45)" }}>ออกจากระบบ Sale Man</button>
         </form>

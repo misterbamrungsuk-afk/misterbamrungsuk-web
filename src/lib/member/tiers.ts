@@ -10,6 +10,8 @@ export interface MemberSettings {
   boostMult: number;        // ค่าคอมแปลงเป็นวงเงินโปรโมท × เท่า (เฉพาะ Part-Time)
   basePointsPer100: number; // แต้มของคนที่ยังไม่เป็นเมม ต่อการใช้จ่าย ฿100
   tiers: Record<TierId, TierCfg>;
+  /** ค่าตอบแทน Sale Man ชวน Part-Time (หมอ) ต่อคน (บาท) — ได้เมื่อชำระค่าสมัครแล้ว · A/B = สายที่จ่ายค่าสมัคร · free = สมัครฟรี (ลิงก์เชิญ TOP/Secret · ทอมหล่อ) */
+  recruit: { A: number; B: number; free: number };
   history: { at: string; by: string; note: string }[];
 }
 export const DEFAULT_MEMBER: MemberSettings = {
@@ -18,6 +20,7 @@ export const DEFAULT_MEMBER: MemberSettings = {
     gold: { id: "gold", name: "Gold", pay: 50000, credit: 70000, commission: 2000, pointsPer100: 1.5 },
     black: { id: "black", name: "Black", pay: 100000, credit: 150000, commission: 5000, pointsPer100: 2 },
   },
+  recruit: { A: 0, B: 0, free: 0 },
   history: [],
 };
 export const TIER_IDS: TierId[] = ["gold", "black"];
@@ -34,7 +37,7 @@ export async function getMemberSettings(): Promise<MemberSettings> {
     const { data, error } = await db().storage.from("applicants").download(PATH);
     if (error || !data) return DEFAULT_MEMBER;
     const v = JSON.parse(await data.text()) as Partial<MemberSettings>;
-    return { ...DEFAULT_MEMBER, ...v, tiers: { gold: { ...DEFAULT_MEMBER.tiers.gold, ...v.tiers?.gold, id: "gold" }, black: { ...DEFAULT_MEMBER.tiers.black, ...v.tiers?.black, id: "black" } } };
+    return { ...DEFAULT_MEMBER, ...v, tiers: { gold: { ...DEFAULT_MEMBER.tiers.gold, ...v.tiers?.gold, id: "gold" }, black: { ...DEFAULT_MEMBER.tiers.black, ...v.tiers?.black, id: "black" } }, recruit: { ...DEFAULT_MEMBER.recruit, ...v.recruit } };
   } catch { return DEFAULT_MEMBER; }
 }
 
@@ -47,6 +50,7 @@ export function validateMember(s: Omit<MemberSettings, "history">): string | nul
     if (!(t.pointsPer100 >= 0 && t.pointsPer100 <= 20)) return `${t.name}: แต้มต่อ ฿100 อยู่ระหว่าง 0–20`;
   }
   if (!(s.boostMult >= 1 && s.boostMult <= 5)) return "วงเงินโปรโมท 1–5 เท่า";
+  for (const [k, v] of Object.entries(s.recruit)) if (!(Number.isInteger(v) && v >= 0 && v <= 50000)) return `ค่าตอบแทนชวนหมอ (${k === "free" ? "สมัครฟรี" : `สาย ${k}`}) 0–50,000 บาท`;
   if (!(s.basePointsPer100 >= 0 && s.basePointsPer100 <= 20)) return "แต้มทั่วไปต่อ ฿100 อยู่ระหว่าง 0–20";
   return null;
 }
