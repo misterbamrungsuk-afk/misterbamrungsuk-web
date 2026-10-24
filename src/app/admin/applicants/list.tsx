@@ -239,50 +239,51 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
             {/* สถานะ Part-Time: Active / Non Active — การ์ดแยก สีชัด (เขียว = ทำงานอยู่ · ส้มแดง = ลาออก) */}
             {(() => {
               const off = !!sel.inactive;
-              const tone = off ? { c: "#ff9b7a", bg: "linear-gradient(160deg, rgba(255,120,90,.16), rgba(255,120,90,.04))", bd: "rgba(255,155,122,.55)" } : { c: "#4ade80", bg: "linear-gradient(160deg, rgba(74,222,128,.14), rgba(74,222,128,.03))", bd: "rgba(74,222,128,.5)" };
+              // การ์ดขาว (บอสขอ 24 ต.ค. 2569) · สีสถานะ: เขียว = Active · ส้มแดง = Non Active
+              const tone = off ? { c: "#d9480f", soft: "#fff1ea", bd: "#ffc9b3" } : { c: "#15803d", soft: "#ecfdf3", bd: "#bbf7d0" };
               const thd = (d: string) => new Date(d).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" });
               return (
-                <div data-active-row className="shrink-0 rounded-2xl border overflow-hidden" style={{ borderColor: tone.bd, background: tone.bg }}>
+                <div data-active-row className="shrink-0 rounded-2xl border overflow-hidden text-[#2a1d1a]" style={{ borderColor: tone.bd, background: "#ffffff", boxShadow: "0 6px 20px rgba(0,0,0,.25)" }}>
                   <div className="flex items-center gap-3 px-3.5 pt-3 pb-2.5">
                     <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: tone.c, boxShadow: `0 0 10px ${tone.c}` }} />
                     <div className="flex-1 min-w-0 leading-tight">
-                      <div className="text-[11px] tracking-[.08em] text-[#cdbfb3]">สถานะ Part-Time</div>
+                      <div className="text-[11px] tracking-[.08em] text-[#8a7b75]">สถานะ Part-Time</div>
                       <div className="text-[17px] font-semibold" style={{ color: tone.c }}>{off ? "Non Active · ลาออกแล้ว" : "Active · ทำงานอยู่"}</div>
                     </div>
                   </div>
-                  <div role="radiogroup" aria-label="สถานะ Part-Time" className="mx-3.5 mb-3 grid grid-cols-2 gap-1 rounded-full p-1" style={{ background: "rgba(0,0,0,.35)" }}>
-                    <button type="button" role="radio" data-set-active="1" aria-checked={!off} onClick={() => off && setActive(sel.id, true)} className="h-9 rounded-full text-[13px] font-semibold transition" style={!off ? { background: "#4ade80", color: "#0c1a10" } : { color: "#d3c7bc" }}>Active</button>
-                    <button type="button" role="radio" data-set-active="0" aria-checked={off} onClick={() => !off && setResign({ id: sel.id, reason: "", at: new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10) })} className="h-9 rounded-full text-[13px] font-semibold transition" style={off ? { background: "#ff9b7a", color: "#24100a" } : { color: "#d3c7bc" }}>Non Active</button>
+                  <div role="radiogroup" aria-label="สถานะ Part-Time" className="mx-3.5 mb-3 grid grid-cols-2 gap-1 rounded-full p-1" style={{ background: "#f3efed" }}>
+                    <button type="button" role="radio" data-set-active="1" aria-checked={!off} onClick={() => off && setActive(sel.id, true)} className="h-9 rounded-full text-[13px] font-semibold transition" style={!off ? { background: tone.c, color: "#fff" } : { color: "#6b5d58" }}>Active</button>
+                    <button type="button" role="radio" data-set-active="0" aria-checked={off} onClick={() => !off && setResign({ id: sel.id, reason: "", at: new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10) })} className="h-9 rounded-full text-[13px] font-semibold transition" style={off ? { background: tone.c, color: "#fff" } : { color: "#6b5d58" }}>Non Active</button>
                   </div>
                   {off && sel.inactive && (
-                    <dl className="mx-3.5 mb-3 grid grid-cols-[88px_minmax(0,1fr)] gap-x-3 gap-y-1.5 rounded-xl px-3 py-2.5 text-[13px]" style={{ background: "rgba(0,0,0,.28)" }}>
-                      <dt className="text-[#b5a596]">วันที่ลาออก</dt><dd className="m-0 font-semibold text-[#f6efe4]">{thd(sel.inactive.at)}</dd>
-                      <dt className="text-[#b5a596]">เหตุผล</dt><dd className="m-0 text-[#f6efe4]">{sel.inactive.reason}</dd>
-                      <dt className="text-[#b5a596]">บันทึกโดย</dt><dd className="m-0 text-[#cdbfb3] break-all">{sel.inactive.by}</dd>
+                    <dl className="mx-3.5 mb-3 grid grid-cols-[88px_minmax(0,1fr)] gap-x-3 gap-y-1.5 rounded-xl px-3 py-2.5 text-[13px]" style={{ background: tone.soft }}>
+                      <dt className="text-[#8a7b75]">วันที่ลาออก</dt><dd className="m-0 font-semibold text-[#2a1d1a]">{thd(sel.inactive.at)}</dd>
+                      <dt className="text-[#8a7b75]">เหตุผล</dt><dd className="m-0 text-[#2a1d1a]">{sel.inactive.reason}</dd>
+                      <dt className="text-[#8a7b75]">บันทึกโดย</dt><dd className="m-0 text-[#6b5d58] break-all">{sel.inactive.by}</dd>
                     </dl>
                   )}
                   {resign?.id === sel.id && !off && (
-                    <div className="mx-3.5 mb-3 flex flex-col gap-2 rounded-xl px-3 py-3" style={{ background: "rgba(0,0,0,.3)", border: "1px solid rgba(255,155,122,.45)" }}>
-                      <b className="text-[13.5px] text-[#ff9b7a]">ตั้งเป็น Non Active</b>
-                      <span className="text-[12px] text-[#b5a596]">เหตุผล</span>
-                      <div className="flex flex-wrap gap-1.5">{["ลาออกเอง", "ย้ายงาน / ไม่สะดวกรับงาน", "ติดต่อไม่ได้", "ผิดกฎ / ทีมงานให้ออก", "พักงานชั่วคราว"].map((q) => <button key={q} type="button" onClick={() => setResign({ ...resign, reason: q })} className="h-8 px-3 rounded-full border text-[12px] font-medium" style={resign.reason === q ? { borderColor: "#ff9b7a", background: "rgba(255,155,122,.18)", color: "#ffd2c2" } : { borderColor: LINE_BD, color: "#d3c7bc" }}>{q}</button>)}</div>
-                      <input data-resign-reason value={resign.reason} onChange={(e) => setResign({ ...resign, reason: e.target.value })} placeholder="หรือพิมพ์เหตุผลเอง" className="h-10 rounded-lg border bg-[#130e0e] px-3 text-[13px] text-[#f6efe4] outline-none focus:border-[#ff9b7a]" style={{ borderColor: LINE_BD }} />
-                      <label className="flex items-center justify-between gap-2 text-[12.5px] text-[#cdbfb3]">วันที่ลาออก<input data-resign-at type="date" value={resign.at} onChange={(e) => setResign({ ...resign, at: e.target.value })} className="h-10 rounded-lg border bg-[#130e0e] px-2 text-[13px] text-[#f6efe4]" style={{ borderColor: LINE_BD, colorScheme: "dark" }} /></label>
-                      <span className="text-[11.5px] text-[#b5a596]">ซ่อนจากหน้าแรกทันที · รหัสเดิมคงไว้ ไม่นำกลับมาใช้</span>
+                    <div className="mx-3.5 mb-3 flex flex-col gap-2 rounded-xl px-3 py-3" style={{ background: "#fff7f3", border: "1px solid #ffc9b3" }}>
+                      <b className="text-[13.5px] text-[#d9480f]">ตั้งเป็น Non Active</b>
+                      <span className="text-[12px] text-[#8a7b75]">เหตุผล</span>
+                      <div className="flex flex-wrap gap-1.5">{["ลาออกเอง", "ย้ายงาน / ไม่สะดวกรับงาน", "ติดต่อไม่ได้", "ผิดกฎ / ทีมงานให้ออก", "พักงานชั่วคราว"].map((q) => <button key={q} type="button" onClick={() => setResign({ ...resign, reason: q })} className="h-8 px-3 rounded-full border text-[12px] font-medium" style={resign.reason === q ? { borderColor: "#d9480f", background: "#d9480f", color: "#fff" } : { borderColor: "#e5dcd8", color: "#4a3d38", background: "#fff" }}>{q}</button>)}</div>
+                      <input data-resign-reason value={resign.reason} onChange={(e) => setResign({ ...resign, reason: e.target.value })} placeholder="หรือพิมพ์เหตุผลเอง" className="h-10 rounded-lg border bg-white px-3 text-[13px] text-[#2a1d1a] outline-none focus:border-[#d9480f]" style={{ borderColor: "#e5dcd8" }} />
+                      <label className="flex items-center justify-between gap-2 text-[12.5px] text-[#6b5d58]">วันที่ลาออก<input data-resign-at type="date" value={resign.at} onChange={(e) => setResign({ ...resign, at: e.target.value })} className="h-10 rounded-lg border bg-white px-2 text-[13px] text-[#2a1d1a]" style={{ borderColor: "#e5dcd8", colorScheme: "light" }} /></label>
+                      <span className="text-[11.5px] text-[#8a7b75]">ซ่อนจากหน้าแรกทันที · รหัสเดิมคงไว้ ไม่นำกลับมาใช้</span>
                       <div className="grid grid-cols-2 gap-2">
-                        <button type="button" onClick={() => setResign(null)} className="h-10 rounded-full border text-[13px]" style={{ borderColor: LINE_BD }}>ยกเลิก</button>
-                        <button type="button" data-confirm-nonactive disabled={!resign.reason.trim() || !resign.at} onClick={() => setActive(sel.id, false, resign.reason, resign.at)} className="h-10 rounded-full text-[13px] font-semibold disabled:opacity-40" style={{ background: "#ff9b7a", color: "#24100a" }}>ยืนยัน Non Active</button>
+                        <button type="button" onClick={() => setResign(null)} className="h-10 rounded-full border text-[13px] text-[#4a3d38]" style={{ borderColor: "#e5dcd8" }}>ยกเลิก</button>
+                        <button type="button" data-confirm-nonactive disabled={!resign.reason.trim() || !resign.at} onClick={() => setActive(sel.id, false, resign.reason, resign.at)} className="h-10 rounded-full text-[13px] font-semibold disabled:opacity-40" style={{ background: "#d9480f", color: "#fff" }}>ยืนยัน Non Active</button>
                       </div>
                     </div>
                   )}
                   {!!sel.active_log?.length && (
-                    <details className="border-t px-3.5 py-2.5" style={{ borderColor: "rgba(255,255,255,.08)" }}>
-                      <summary className="cursor-pointer text-[12.5px] text-[#cdbfb3]">ประวัติสถานะ ({sel.active_log.length})</summary>
+                    <details className="border-t px-3.5 py-2.5" style={{ borderColor: "#efe8e5" }}>
+                      <summary className="cursor-pointer text-[12.5px] text-[#6b5d58]">ประวัติสถานะ ({sel.active_log.length})</summary>
                       <ol className="m-0 mt-2 pl-0 list-none flex flex-col gap-2">
                         {sel.active_log.map((l, i) => (
                           <li key={i} className="flex gap-2.5 text-[12.5px]">
-                            <span className="mt-1.5 w-2 h-2 rounded-full shrink-0" style={{ background: l.active ? "#4ade80" : "#ff9b7a" }} />
-                            <span className="min-w-0"><b style={{ color: l.active ? "#4ade80" : "#ff9b7a" }}>{l.active ? "Active" : "Non Active"}</b> · {thd(l.at)} · <span className="text-[#f6efe4]">{l.reason}</span><span className="block text-[11.5px] text-[#9a8a85] break-all">{l.by}</span></span>
+                            <span className="mt-1.5 w-2 h-2 rounded-full shrink-0" style={{ background: l.active ? "#15803d" : "#d9480f" }} />
+                            <span className="min-w-0"><b style={{ color: l.active ? "#15803d" : "#d9480f" }}>{l.active ? "Active" : "Non Active"}</b> · {thd(l.at)} · <span className="text-[#2a1d1a]">{l.reason}</span><span className="block text-[11.5px] text-[#8a7b75] break-all">{l.by}</span></span>
                           </li>
                         ))}
                       </ol>
