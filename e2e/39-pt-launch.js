@@ -150,7 +150,7 @@ async function register(pkg, extra = {}) {
 
   // ── หลังบ้าน: ยอดจริง ไม่มีการันตี ──
   h = await (await fetch(B + '/admin/applicants', { headers: ADM })).text();
-  ok('admin applicants: no guarantee tiles', !h.includes('ค่าการันตี Branding') && h.includes('ค่าสมัครที่ได้รับ'));
+  ok('admin applicants: no guarantee tiles', !h.includes('ค่าการันตี Branding') && h.includes('ค่าสมัครรวม'));
   h = await (await fetch(B + '/admin/boosts', { headers: ADM })).text();
   ok('admin boosts: free code section', h.includes('โค้ดโปรโมทฟรี') && h.includes(code));
 
