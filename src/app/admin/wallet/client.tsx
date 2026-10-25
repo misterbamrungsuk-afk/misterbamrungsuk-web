@@ -12,8 +12,8 @@ type Data = { topups: Topup[]; accounts: Acc[]; sum: number };
 const GOLD = "#f0c75a";
 const LINE = "rgba(240,200,90,.38)";
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US", { maximumFractionDigits: 2 });
-const VERDICT: Record<string, [string, string]> = { ok: ["✓ ยอดตรง", "#4ade80"], check: ["ยอดตรง · ต้องเทียบบัญชี/วันที่เอง", "#eed58a"], dup: ["สลิปซ้ำ", "#fca5a5"], acct: ["โอนเข้าบัญชีอื่น", "#fca5a5"], amt: ["ยอดไม่ตรง", "#fca5a5"], fake: ["ไม่พบรายการ", "#fca5a5"], error: ["ตรวจไม่สำเร็จ", "#eed58a"] };
-const STATUS: Record<string, [string, string]> = { pending: ["รอตรวจ", "#eed58a"], credited: ["เข้ากระเป๋าแล้ว", "#4ade80"], rejected: ["ไม่ผ่าน", "#fca5a5"] };
+const VERDICT: Record<string, [string, string]> = { ok: ["✓ ยอดตรง", "#2f7a46"], check: ["ยอดตรง · ต้องเทียบบัญชี/วันที่เอง", "#eed58a"], dup: ["สลิปซ้ำ", "#b42335"], acct: ["โอนเข้าบัญชีอื่น", "#b42335"], amt: ["ยอดไม่ตรง", "#b42335"], fake: ["ไม่พบรายการ", "#b42335"], error: ["ตรวจไม่สำเร็จ", "#eed58a"] };
+const STATUS: Record<string, [string, string]> = { pending: ["รอตรวจ", "#eed58a"], credited: ["เข้ากระเป๋าแล้ว", "#2f7a46"], rejected: ["ไม่ผ่าน", "#b42335"] };
 const OWNER: Record<string, string> = { customer: "ลูกค้า", parttime: "Part-Time", partner: "พาร์ทเนอร์", vendor: "ร้านค้า", sales: "Recruit", platform: "บริษัท" };
 const BUCKET: Record<string, string> = { available: "ใช้ได้", pending: "รอปล่อย", boost_credit: "วงเงินโปรโมท", held: "พักไว้", withdrawing: "กำลังถอน" };
 type Ask = { text: string; run: () => Promise<unknown> };
@@ -56,13 +56,13 @@ export function WalletAdmin({ initial, money, recon, isCeo = false, owners = [],
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap gap-3 justify-between items-end">
         <div><div className="text-[11px] tracking-[2.5px] font-semibold" style={{ color: GOLD }}>WALLET</div><h1 className="mt-0.5 font-lux font-bold text-2xl">กระเป๋าเงิน · เติมเงิน</h1></div>
-        <span className="text-[13px] rounded-full px-3 py-1.5 border" style={{ borderColor: d.sum === 0 ? "rgba(74,222,128,.5)" : "rgba(239,68,68,.6)", color: d.sum === 0 ? "#4ade80" : "#fca5a5" }}>{d.sum === 0 ? "✓ ผลรวม ledger = 0 (สมดุล)" : Number.isNaN(d.sum) ? "⚠ ยังไม่ได้รัน migration กระเป๋าเงิน" : `⚠ ผลรวม ledger = ${d.sum} สตางค์ — ตรวจด่วน`}</span>
+        <span className="text-[13px] rounded-full px-3 py-1.5 border" style={{ borderColor: d.sum === 0 ? "rgba(74,222,128,.5)" : "rgba(239,68,68,.6)", color: d.sum === 0 ? "#2f7a46" : "#b42335" }}>{d.sum === 0 ? "✓ ผลรวม ledger = 0 (สมดุล)" : Number.isNaN(d.sum) ? "⚠ ยังไม่ได้รัน migration กระเป๋าเงิน" : `⚠ ผลรวม ledger = ${d.sum} สตางค์ — ตรวจด่วน`}</span>
       </div>
-      {recon && <div className="rounded-2xl border p-3 text-[13px]" style={{ borderColor: recon.ok ? "rgba(74,222,128,.4)" : "rgba(239,68,68,.6)", background: recon.ok ? "rgba(74,222,128,.05)" : "rgba(239,68,68,.08)" }}><b style={{ color: recon.ok ? "#4ade80" : "#fca5a5" }}>{recon.ok ? "✓ กระทบยอดตรง: ledger · เงินพัก · เงินกันไว้ · ยอดกำลังถอน · เงินพักร้านค้า · เงินพักห้องพัก ตรงกับรายการจริง" : `⚠ กระทบยอดไม่ตรง ${recon.issues.length} รายการ`}</b>{!recon.ok && <ul className="mt-1.5 list-disc pl-5 text-[#fca5a5]">{recon.issues.map((i) => <li key={i}>{i}</li>)}</ul>}<div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-0.5 text-[12px] text-[#cdbfb3]">{([["เงินพักร้านค้า", "marketEscrow", "expMarket"], ["เงินพักห้องพัก", "hotelEscrow", "expHotel"]] as const).map(([l, a, e]) => recon.figures[a] == null ? <span key={a}>{l}: อ่านยอดไม่ได้ (ข้าม)</span> : <span key={a}>{l} {baht(recon.figures[a])} · ควรเป็น {baht(recon.figures[e])} <b style={{ color: recon.figures[a] === recon.figures[e] ? "#4ade80" : "#fca5a5" }}>{recon.figures[a] === recon.figures[e] ? "✓" : "≠"}</b></span>)}</div><div className="mt-1 text-[11.5px] text-[#9a8a85]">ตรวจตอนเปิดหน้านี้ + รอบรายวัน 10:00 (ไม่ตรง = แจ้งเตือน + อีเมลแอดมิน)</div></div>}
+      {recon && <div className="rounded-2xl border p-3 text-[13px]" style={{ borderColor: recon.ok ? "rgba(74,222,128,.4)" : "rgba(239,68,68,.6)", background: recon.ok ? "rgba(74,222,128,.05)" : "rgba(239,68,68,.08)" }}><b style={{ color: recon.ok ? "#2f7a46" : "#b42335" }}>{recon.ok ? "✓ กระทบยอดตรง: ledger · เงินพัก · เงินกันไว้ · ยอดกำลังถอน · เงินพักร้านค้า · เงินพักห้องพัก ตรงกับรายการจริง" : `⚠ กระทบยอดไม่ตรง ${recon.issues.length} รายการ`}</b>{!recon.ok && <ul className="mt-1.5 list-disc pl-5 text-[#fca5a5]">{recon.issues.map((i) => <li key={i}>{i}</li>)}</ul>}<div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-0.5 text-[12px] text-[#cdbfb3]">{([["เงินพักร้านค้า", "marketEscrow", "expMarket"], ["เงินพักห้องพัก", "hotelEscrow", "expHotel"]] as const).map(([l, a, e]) => recon.figures[a] == null ? <span key={a}>{l}: อ่านยอดไม่ได้ (ข้าม)</span> : <span key={a}>{l} {baht(recon.figures[a])} · ควรเป็น {baht(recon.figures[e])} <b style={{ color: recon.figures[a] === recon.figures[e] ? "#2f7a46" : "#b42335" }}>{recon.figures[a] === recon.figures[e] ? "✓" : "≠"}</b></span>)}</div><div className="mt-1 text-[11.5px] text-[#9a8a85]">ตรวจตอนเปิดหน้านี้ + รอบรายวัน 10:00 (ไม่ตรง = แจ้งเตือน + อีเมลแอดมิน)</div></div>}
       {msg && <p role="status" className="text-sm text-[#eed58a]">{msg}</p>}
       {expired && <p role="alert" className="text-sm text-[#fca5a5]">เซสชันหมดอายุ · <a href="/admin-login" className="underline text-[#f0c75a]">เข้าสู่ระบบใหม่</a></p>}
       {ask && (
-        <div role="alertdialog" aria-label="ยืนยันรายการ" className="sticky top-2 z-20 rounded-2xl border p-3 flex flex-wrap items-center gap-2 text-[13px]" style={{ borderColor: GOLD, background: "#241717" }}>
+        <div role="alertdialog" aria-label="ยืนยันรายการ" className="sticky top-2 z-20 rounded-2xl border p-3 flex flex-wrap items-center gap-2 text-[13px]" style={{ borderColor: GOLD, background: "#ffffff" }}>
           <span className="flex-1 min-w-[220px]">{ask.text}</span>
           <button type="button" onClick={() => setAsk(null)} className="h-10 px-4 rounded-full border" style={{ borderColor: LINE }}>ยกเลิก</button>
           <button type="button" disabled={busy} onClick={async () => { const a = ask; setAsk(null); await a.run(); }} className="btn-red-lux h-10 px-5 rounded-full text-white font-semibold disabled:opacity-40">ยืนยัน</button>
@@ -70,19 +70,19 @@ export function WalletAdmin({ initial, money, recon, isCeo = false, owners = [],
       )}
 
       {!!platform.length && <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {platform.map((a) => <div key={a.bucket} className="rounded-2xl border px-4 py-3" style={{ borderColor: LINE, background: "#241717" }}><div className="text-[12px] text-[#cdbfb3]">บริษัท · {a.bucket}</div><div className="font-lux font-bold text-xl">{baht(a.balance)}</div></div>)}
+        {platform.map((a) => <div key={a.bucket} className="rounded-2xl border px-4 py-3" style={{ borderColor: LINE, background: "#ffffff" }}><div className="text-[12px] text-[#cdbfb3]">บริษัท · {a.bucket}</div><div className="font-lux font-bold text-xl">{baht(a.balance)}</div></div>)}
       </div>}
 
       <section className="flex flex-col gap-2">
         <div className="flex flex-wrap gap-2">
-          {(["pending", "all"] as const).map((k) => <button key={k} onClick={() => setTab(k)} aria-pressed={tab === k} className="h-9 px-4 rounded-full border text-[13px] font-semibold" style={{ borderColor: tab === k ? GOLD : LINE, background: tab === k ? GOLD : "transparent", color: tab === k ? "#1a1206" : "#d3c7bc" }}>{k === "pending" ? `รอตรวจ ${pending.length}` : "ทั้งหมด"}</button>)}
+          {(["pending", "all"] as const).map((k) => <button key={k} onClick={() => setTab(k)} aria-pressed={tab === k} className="h-9 px-4 rounded-full border text-[13px] font-semibold" style={{ borderColor: tab === k ? GOLD : LINE, background: tab === k ? GOLD : "transparent", color: tab === k ? "#1a1206" : "#5c4f48" }}>{k === "pending" ? `รอตรวจ ${pending.length}` : "ทั้งหมด"}</button>)}
         </div>
         {!shown.length && <p className="rounded-2xl border px-4 py-10 text-center text-[#9a8a85]" style={{ borderColor: LINE }}>ไม่มีคำขอเติมเงิน</p>}
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {shown.map((t) => {
-            const v = t.slip_check ? VERDICT[t.slip_check.verdict] ?? [t.slip_check.verdict, "#cdbfb3"] : ["ไม่ได้ตรวจ (ไม่มี Slip2Go)", "#9a8a85"];
+            const v = t.slip_check ? VERDICT[t.slip_check.verdict] ?? [t.slip_check.verdict, "#6b5d58"] : ["ไม่ได้ตรวจ (ไม่มี Slip2Go)", "#8a7b75"];
             return (
-              <div key={t.id} className="rounded-2xl border p-3 flex gap-3" style={{ borderColor: LINE, background: "#241717" }}>
+              <div key={t.id} className="rounded-2xl border p-3 flex gap-3" style={{ borderColor: LINE, background: "#ffffff" }}>
                 <a href={`/api/wallet/slip?id=${t.id}`} target="_blank" rel="noopener noreferrer" className="shrink-0"><img src={`/api/wallet/slip?id=${t.id}`} alt="สลิป" className="w-24 h-32 object-cover rounded-lg bg-[#130e0e]" /></a>
                 <div className="flex-1 min-w-0 flex flex-col gap-1 text-[13px]">
                   <div className="flex justify-between gap-2"><b className="font-lux text-[18px]">{baht(t.amount_satang)}</b><span style={{ color: STATUS[t.status][1] }}>{STATUS[t.status][0]}</span></div>
@@ -107,7 +107,7 @@ export function WalletAdmin({ initial, money, recon, isCeo = false, owners = [],
         </div>
       </section>
 
-      {isCeo ? <form onSubmit={(e) => { e.preventDefault(); setAsk({ text: "บันทึกตั้งค่าการเงิน? มีผลกับการถอน/ปล่อยเงิน/ยกเลิกทั้งหมดทันที", run: () => act({ action: "settings", money: m, note: "แก้ตั้งค่าการเงิน" }) }); }} className="rounded-2xl border p-4 flex flex-col gap-3 text-[13px]" style={{ borderColor: LINE, background: "#241717" }}>
+      {isCeo ? <form onSubmit={(e) => { e.preventDefault(); setAsk({ text: "บันทึกตั้งค่าการเงิน? มีผลกับการถอน/ปล่อยเงิน/ยกเลิกทั้งหมดทันที", run: () => act({ action: "settings", money: m, note: "แก้ตั้งค่าการเงิน" }) }); }} className="rounded-2xl border p-4 flex flex-col gap-3 text-[13px]" style={{ borderColor: LINE, background: "#ffffff" }}>
         <b>ตั้งค่าการเงิน (CEO)</b>
         <div className="grid gap-2 grid-cols-2 lg:grid-cols-7">
           {([["minWithdraw", "ถอนขั้นต่ำ (บาท)"], ["feePct", "ค่าธรรมเนียมถอน (%)"], ["whtPct", "หัก ณ ที่จ่าย (%)"], ["releaseHours", "ปล่อยเงินหลังจบงาน (ชม.)"], ["autoCompleteHours", "จบงานอัตโนมัติ (ชม.)"], ["autoPayoutLimit", "วงเงินถอนอัตโนมัติ/วัน"], ["quickSeconds", "เรียกด่วน รอรับ (วินาที)"]] as const).map(([k, l]) => (
@@ -152,7 +152,7 @@ export function WalletAdmin({ initial, money, recon, isCeo = false, owners = [],
             {!holders.length && <p className="border-t px-4 py-8 text-center text-[#9a8a85]" style={{ borderColor: LINE }}>ยังไม่มียอดในกระเป๋า</p>}
           </div>
         </div>
-        {isCeo && <form onSubmit={(e) => { e.preventDefault(); const who = nameOf.get(`${adj.owner_type}:${adj.owner_id}`) ?? adj.owner_id; setAsk({ text: `ปรับยอด ${OWNER[adj.owner_type]} ${who} · ช่อง ${BUCKET[adj.bucket] ?? adj.bucket} · ${Number(adj.amount_baht) > 0 ? "+" : ""}${adj.amount_baht} บาท · เหตุผล: ${adj.reason}?`, run: async () => { if (await act({ action: "adjust", ...adj, idem: crypto.randomUUID() })) setAdj({ ...adj, amount_baht: "", reason: "" }); } }); }} className="rounded-2xl border p-4 flex flex-col gap-2 text-[13px]" style={{ borderColor: LINE, background: "#241717" }}>
+        {isCeo && <form onSubmit={(e) => { e.preventDefault(); const who = nameOf.get(`${adj.owner_type}:${adj.owner_id}`) ?? adj.owner_id; setAsk({ text: `ปรับยอด ${OWNER[adj.owner_type]} ${who} · ช่อง ${BUCKET[adj.bucket] ?? adj.bucket} · ${Number(adj.amount_baht) > 0 ? "+" : ""}${adj.amount_baht} บาท · เหตุผล: ${adj.reason}?`, run: async () => { if (await act({ action: "adjust", ...adj, idem: crypto.randomUUID() })) setAdj({ ...adj, amount_baht: "", reason: "" }); } }); }} className="rounded-2xl border p-4 flex flex-col gap-2 text-[13px]" style={{ borderColor: LINE, background: "#ffffff" }}>
           <b>ปรับยอดพร้อมเหตุผล (CEO)</b>
           <span className="text-[12px] text-[#cdbfb3]">บันทึกเป็นรายการใหม่ (แก้/ลบรายการเดิมไม่ได้) · ใส่ติดลบเพื่อหักยอด · ช่องพักไว้/เงินพักบริษัทปรับไม่ได้</span>
           <select aria-label="ประเภทบัญชี" value={adj.owner_type} onChange={(e) => { const t = e.target.value as AdjOwnerType; setAdj({ ...adj, owner_type: t, owner_id: "", bucket: buckets[t][0] }); setOq(""); }} className={inp} style={{ borderColor: LINE }}>

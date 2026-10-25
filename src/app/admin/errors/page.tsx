@@ -30,7 +30,7 @@ export default async function ErrorsPage() {
           <details key={r.key} className="border-t first:border-t-0 px-3.5 py-3" style={{ borderColor: LN }}>
             <summary className="cursor-pointer flex flex-wrap gap-x-3 gap-y-1 items-baseline">
               <b className="text-[#f0c75a] tabular-nums">{r.count}×</b>
-              <span className="text-[12px] rounded-full px-2 py-0.5" style={{ background: "rgba(240,199,90,.12)", color: "#f0c75a" }}>{KIND[r.kind] ?? r.kind}</span>
+              <span className="text-[12px] rounded-full px-2 py-0.5" style={{ background: "rgba(240,199,90,.12)", color: "#a8781f" }}>{KIND[r.kind] ?? r.kind}</span>
               <span className="font-medium">{r.path}</span>
               <span className="text-[12.5px] text-[#9a8a85]">ล่าสุด {when(r.last_at)} · {device(r.ua)} · จอ {r.vw}×{r.vh}</span>
             </summary>

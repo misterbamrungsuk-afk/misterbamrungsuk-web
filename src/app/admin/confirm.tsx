@@ -22,7 +22,7 @@ export function useConfirm(): [React.ReactNode, (o: ConfirmOpts) => Promise<bool
   const ui = opts ? (
     <div role="dialog" aria-modal="true" aria-labelledby="adm-confirm-t" className="fixed inset-0 z-[100] grid place-items-center bg-black/60 px-4" onClick={() => close(false)}>
       <div onClick={(e) => e.stopPropagation()} className="w-full max-w-[420px] rounded-2xl border border-[rgba(240,200,90,.38)] bg-[#1c1414] p-5 text-[#f6efe4] shadow-[0_16px_48px_rgba(0,0,0,.6)] flex flex-col gap-3 text-[14px]">
-        <b id="adm-confirm-t" className="font-lux text-[17px]" style={{ color: opts.danger ? "#fecaca" : "#ffd76a" }}>{opts.title}</b>
+        <b id="adm-confirm-t" className="font-lux text-[17px]" style={{ color: opts.danger ? "#b42335" : "#ffd76a" }}>{opts.title}</b>
         {opts.body && <div className="text-[13.5px] leading-relaxed text-[#d3c7bc] whitespace-pre-line">{opts.body}</div>}
         <div className="grid grid-cols-2 gap-2 mt-1">
           <button type="button" onClick={() => close(false)} className="h-11 rounded-full border border-[rgba(240,200,90,.38)] text-[#d3c7bc]">{opts.cancel ?? "ยกเลิก"}</button>
@@ -55,7 +55,7 @@ export function useFlash(ms = 4000) {
 
 export function FlashMsg({ msg, className = "text-sm" }: { msg: { text: string; expired?: boolean; ok?: boolean } | null; className?: string }) {
   if (!msg) return null;
-  const color = msg.expired ? "#fca5a5" : msg.ok === false ? "#fca5a5" : msg.ok ? "#4ade80" : "#eed58a";
+  const color = msg.expired ? "#b42335" : msg.ok === false ? "#b42335" : msg.ok ? "#2f7a46" : "#eed58a";
   return (
     <p role="status" className={`m-0 whitespace-pre-line break-words ${className}`} style={{ color }}>
       {msg.text}

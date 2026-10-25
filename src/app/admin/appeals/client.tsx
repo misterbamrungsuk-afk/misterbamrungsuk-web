@@ -8,7 +8,7 @@ import { FlashMsg, useConfirm, useFlash } from "../confirm";
 const LINE = "rgba(240,200,90,.25)";
 const REASON: Record<string, string> = { no_show: "ไม่มาตามนัด" };
 const dt = (iso: string | null) => (iso ? new Date(iso).toLocaleString("th-TH", { day: "numeric", month: "short", year: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Bangkok" }) : "-");
-const ST: Record<Appeal["status"], [string, string]> = { pending: ["รอตรวจ", "#f0c75a"], accepted: ["รับอุทธรณ์ · ยกเลิกใบเตือน", "#4ade80"], rejected: ["ไม่รับ", "#fca5a5"] };
+const ST: Record<Appeal["status"], [string, string]> = { pending: ["รอตรวจ", "#f0c75a"], accepted: ["รับอุทธรณ์ · ยกเลิกใบเตือน", "#2f7a46"], rejected: ["ไม่รับ", "#b42335"] };
 
 export function AppealsClient({ list }: { list: Appeal[] }) {
   const router = useRouter();
@@ -40,13 +40,13 @@ export function AppealsClient({ list }: { list: Appeal[] }) {
       <FlashMsg msg={msg} />
       <div className="flex gap-2">
         {([["pending", `รอตรวจ (${pending.length})`], ["done", `ตัดสินแล้ว (${done.length})`]] as const).map(([k, l]) => (
-          <button key={k} type="button" aria-pressed={tab === k} onClick={() => setTab(k)} className="h-9 px-4 rounded-full border text-[13px]" style={{ borderColor: LINE, background: tab === k ? "#f0c75a" : "transparent", color: tab === k ? "#1a1206" : "#d3c7bc" }}>{l}</button>
+          <button key={k} type="button" aria-pressed={tab === k} onClick={() => setTab(k)} className="h-9 px-4 rounded-full border text-[13px]" style={{ borderColor: LINE, background: tab === k ? "#f0c75a" : "transparent", color: tab === k ? "#1a1206" : "#5c4f48" }}>{l}</button>
         ))}
       </div>
       {!rows.length && <p className="m-0 text-[#9a8a85]">{tab === "pending" ? "ไม่มีคำอุทธรณ์รอตรวจ" : "ยังไม่มีคำอุทธรณ์ที่ตัดสินแล้ว"}</p>}
       <div className="grid gap-3 md:grid-cols-2">
         {rows.map((a) => (
-          <div key={a.id} className="rounded-2xl border p-3.5 flex flex-col gap-2 min-w-0" style={{ borderColor: LINE, background: "#1c1414" }}>
+          <div key={a.id} className="rounded-2xl border p-3.5 flex flex-col gap-2 min-w-0" style={{ borderColor: LINE, background: "#ffffff" }}>
             <div className="flex justify-between items-baseline gap-2 flex-wrap">
               <b>{a.mb} · {REASON[a.strike_reason] ?? a.strike_reason}</b>
               <span className="text-[12px]" style={{ color: ST[a.status][1] }}>{ST[a.status][0]}</span>

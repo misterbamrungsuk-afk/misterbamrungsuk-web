@@ -7,7 +7,7 @@ import { useConfirm } from "../confirm";
 export type Member = { id: string; cohort: string; name: string; code: string; att: Record<number, boolean> };
 
 const STATUS_LABEL: Record<CohortStatus, string> = { done: "อบรมเสร็จแล้ว", open: "เปิดรับสมัคร", draft: "ร่าง" };
-const STATUS_COLOR: Record<CohortStatus, string> = { done: "#7fd6a3", open: "#f0c75a", draft: "#ffd76a" };
+const STATUS_COLOR: Record<CohortStatus, string> = { done: "#2f7a46", open: "#f0c75a", draft: "#ffd76a" };
 
 const GOLD_BD = "rgba(240,200,90,.38)";
 const HEAD = "var(--font-cormorant), var(--font-kanit), serif";
@@ -17,12 +17,12 @@ const RED_BTN: React.CSSProperties = {
   background: "linear-gradient(100deg, #7e0a1e 0%, #c8102e 24%, #ff5068 50%, #c8102e 76%, #7e0a1e 100%)",
   boxShadow: "0 8px 24px rgba(255,40,70,.45)", color: "#fff", cursor: "pointer",
 };
-const CARD: React.CSSProperties = { padding: 14, borderRadius: 16, background: "#241717", border: `1px solid ${GOLD_BD}` };
+const CARD: React.CSSProperties = { padding: 14, borderRadius: 16, background: "#ffffff", border: `1px solid ${GOLD_BD}` };
 const IN: React.CSSProperties = {
-  height: 48, borderRadius: 12, border: `1px solid ${GOLD_BD}`, background: "#21191a", color: "#f6efe4",
+  height: 48, borderRadius: 12, border: `1px solid ${GOLD_BD}`, background: "#ffffff", color: "#2a1d1a",
   padding: "0 14px", fontSize: 14, boxSizing: "border-box", width: "100%", fontFamily: "inherit",
 };
-const LBL: React.CSSProperties = { fontSize: 12, color: "#cdbfb3", margin: "0 0 6px" };
+const LBL: React.CSSProperties = { fontSize: 12, color: "#6b5d58", margin: "0 0 6px" };
 
 export function CohortsClient({ initialCohorts, initialMembers, taken = {} }: { initialCohorts: Cohort[]; initialMembers: Member[]; taken?: Record<string, number> }) {
   const [cohorts, setCohorts] = useState(initialCohorts);
@@ -103,10 +103,10 @@ export function CohortsClient({ initialCohorts, initialMembers, taken = {} }: { 
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 18, color: "#f6efe4", fontFamily: "var(--font-cormorant), var(--font-plex), sans-serif", fontVariantNumeric: "lining-nums" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 18, color: "#2a1d1a", fontFamily: "var(--font-cormorant), var(--font-plex), sans-serif", fontVariantNumeric: "lining-nums" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
         <div>
-          <div style={{ fontSize: 11, letterSpacing: 2.5, color: "#f0c75a", fontWeight: 600 }}>COHORTS</div>
+          <div style={{ fontSize: 11, letterSpacing: 2.5, color: "#a8781f", fontWeight: 600 }}>COHORTS</div>
           <h1 style={{ margin: "2px 0 0", fontFamily: HEAD, fontWeight: 700, fontSize: 26 }}>กลุ่มอบรม Part-Time</h1>
         </div>
         <button type="button" onClick={() => setCreating((c) => !c)} style={RED_BTN}>{creating ? "ปิด" : "สร้างกลุ่มใหม่"}</button>
@@ -143,16 +143,16 @@ export function CohortsClient({ initialCohorts, initialMembers, taken = {} }: { 
             const meta = [c.date_text, c.venue].filter(Boolean).join(" · ");
             return (
               <button key={c.key} type="button" onClick={() => setSel(i)} aria-pressed={on}
-                style={{ textAlign: "left", padding: 14, borderRadius: 16, background: on ? "rgba(176,24,44,.16)" : "#241717", border: `1px solid ${on ? "rgba(201,40,61,.55)" : GOLD_BD}`, color: "#f6efe4", display: "flex", flexDirection: "column", gap: 6, minHeight: 44, cursor: "pointer", fontFamily: "inherit" }}>
+                style={{ textAlign: "left", padding: 14, borderRadius: 16, background: on ? "rgba(176,24,44,.16)" : "#ffffff", border: `1px solid ${on ? "rgba(201,40,61,.55)" : GOLD_BD}`, color: "#2a1d1a", display: "flex", flexDirection: "column", gap: 6, minHeight: 44, cursor: "pointer", fontFamily: "inherit" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
                   <span style={{ fontFamily: HEAD, fontWeight: 600, fontSize: 16 }}>{c.name}</span>
                   <span style={{ fontSize: 11, padding: "3px 10px", borderRadius: 99, border: `1px solid ${sc}`, color: sc }}>{STATUS_LABEL[c.status] ?? c.status}</span>
                 </div>
-                <span style={{ fontSize: 12, color: "#cdbfb3" }}>{meta || "วันอบรมรอประกาศ"}</span>
-                <div style={{ height: 6, borderRadius: 99, background: "#21191a", width: "100%" }}>
+                <span style={{ fontSize: 12, color: "#6b5d58" }}>{meta || "วันอบรมรอประกาศ"}</span>
+                <div style={{ height: 6, borderRadius: 99, background: "#ffffff", width: "100%" }}>
                   <div style={{ height: 6, borderRadius: 99, background: "#f0c75a", width: `${Math.min(100, Math.round((n / Math.max(1, c.capacity)) * 100))}%` }} />
                 </div>
-                <span style={{ fontSize: 11.5, color: "#ffd76a" }}>{n} / {c.capacity} ที่นั่ง{n > assigned ? ` · จัดกลุ่มแล้ว ${assigned} · รอจัด/รอตรวจสลิป ${n - assigned}` : ""}</span>
+                <span style={{ fontSize: 11.5, color: "#a8781f" }}>{n} / {c.capacity} ที่นั่ง{n > assigned ? ` · จัดกลุ่มแล้ว ${assigned} · รอจัด/รอตรวจสลิป ${n - assigned}` : ""}</span>
               </button>
             );
           })}
@@ -162,9 +162,9 @@ export function CohortsClient({ initialCohorts, initialMembers, taken = {} }: { 
           {cur && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "flex-end" }}>
               <button type="button" onClick={() => setEdit(edit ? null : { name: cur.name, date_text: cur.date_text, venue: cur.venue, sessions: String(cur.sessions), capacity: String(cur.capacity), status: cur.status })}
-                style={{ minHeight: 44, padding: "0 14px", borderRadius: 12, fontSize: 13, border: `1px solid ${GOLD_BD}`, background: "#21191a", color: "#ffd76a", cursor: "pointer", fontFamily: "inherit" }}>{edit ? "ยกเลิกแก้ไข" : "แก้ไขกลุ่มนี้"}</button>
+                style={{ minHeight: 44, padding: "0 14px", borderRadius: 12, fontSize: 13, border: `1px solid ${GOLD_BD}`, background: "#ffffff", color: "#a8781f", cursor: "pointer", fontFamily: "inherit" }}>{edit ? "ยกเลิกแก้ไข" : "แก้ไขกลุ่มนี้"}</button>
               {!rows.length && <button type="button" disabled={busy} onClick={remove}
-                style={{ minHeight: 44, padding: "0 14px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(201,40,61,.6)", background: "transparent", color: "#fecaca", cursor: "pointer", fontFamily: "inherit" }}>ลบกลุ่ม</button>}
+                style={{ minHeight: 44, padding: "0 14px", borderRadius: 12, fontSize: 13, border: "1px solid rgba(201,40,61,.6)", background: "transparent", color: "#b42335", cursor: "pointer", fontFamily: "inherit" }}>ลบกลุ่ม</button>}
             </div>
           )}
           {cur && edit && (
@@ -184,36 +184,36 @@ export function CohortsClient({ initialCohorts, initialMembers, taken = {} }: { 
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ minWidth: 0 }}>
               <div style={{ fontFamily: HEAD, fontWeight: 600, fontSize: 18 }}>เช็กชื่อ · {cur?.name ?? "-"}</div>
-              <div style={{ fontSize: 12, color: "#cdbfb3" }}>แตะช่องเพื่อสลับ มา / ขาด · เข้าร่วม {present} จาก {rows.length * sessions} ช่อง</div>
+              <div style={{ fontSize: 12, color: "#6b5d58" }}>แตะช่องเพื่อสลับ มา / ขาด · เข้าร่วม {present} จาก {rows.length * sessions} ช่อง</div>
             </div>
             <button type="button" onClick={markAll} disabled={!rows.length}
-              style={{ minHeight: 44, padding: "0 16px", borderRadius: 12, fontSize: 13, fontWeight: 600, border: `1px solid ${GOLD_BD}`, background: "#241717", color: "#ffd76a", cursor: "pointer", fontFamily: "inherit", opacity: rows.length ? 1 : 0.5 }}>
+              style={{ minHeight: 44, padding: "0 16px", borderRadius: 12, fontSize: 13, fontWeight: 600, border: `1px solid ${GOLD_BD}`, background: "#ffffff", color: "#a8781f", cursor: "pointer", fontFamily: "inherit", opacity: rows.length ? 1 : 0.5 }}>
               เช็กชื่อทั้งหมดรอบล่าสุด
             </button>
           </div>
           <div style={{ overflowX: "auto" }}>
-            <div style={{ display: "grid", gridTemplateColumns: `minmax(110px,1.6fr) minmax(80px,1fr) repeat(${sessions}, 64px) 90px`, gap: 6, fontSize: 12, color: "#cdbfb3", padding: "0 4px", marginBottom: 6 }}>
+            <div style={{ display: "grid", gridTemplateColumns: `minmax(110px,1.6fr) minmax(80px,1fr) repeat(${sessions}, 64px) 90px`, gap: 6, fontSize: 12, color: "#6b5d58", padding: "0 4px", marginBottom: 6 }}>
               <span>ชื่อ</span><span>รหัส</span>
               {Array.from({ length: sessions }, (_, i) => <span key={i}>รอบ {i + 1}</span>)}
               <span>รวม</span>
             </div>
-            {rows.length === 0 && <p style={{ fontSize: 13, color: "#9a8a85", padding: "12px 4px", borderTop: `1px solid ${GOLD_BD}`, margin: 0 }}>ยังไม่มีผู้สมัครในกลุ่มนี้ — จัดกลุ่มได้ที่หน้าผู้สมัคร</p>}
+            {rows.length === 0 && <p style={{ fontSize: 13, color: "#8a7b75", padding: "12px 4px", borderTop: `1px solid ${GOLD_BD}`, margin: 0 }}>ยังไม่มีผู้สมัครในกลุ่มนี้ — จัดกลุ่มได้ที่หน้าผู้สมัคร</p>}
             {rows.map((m) => {
               const tot = Array.from({ length: sessions }, (_, i) => m.att[i + 1]).filter(Boolean).length;
               return (
                 <div key={m.id} style={{ display: "grid", gridTemplateColumns: `minmax(110px,1.6fr) minmax(80px,1fr) repeat(${sessions}, 64px) 90px`, gap: 6, alignItems: "center", padding: 4, borderTop: `1px solid ${GOLD_BD}`, fontSize: 13 }}>
                   <span>{m.name}</span>
-                  <span style={{ color: "#cdbfb3", fontFamily: HEAD }}>{m.code}</span>
+                  <span style={{ color: "#6b5d58", fontFamily: HEAD }}>{m.code}</span>
                   {Array.from({ length: sessions }, (_, i) => {
                     const v = !!m.att[i + 1];
                     return (
                       <button key={i} type="button" onClick={() => toggle(m, i + 1)} aria-label={`${m.name} รอบ ${i + 1}`} aria-pressed={v}
-                        style={{ height: 44, borderRadius: 10, border: `1px solid ${v ? "rgba(60,170,110,.5)" : GOLD_BD}`, background: v ? "rgba(60,170,110,.14)" : "#21191a", color: v ? "#7fd6a3" : "#9a8a85", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
+                        style={{ height: 44, borderRadius: 10, border: `1px solid ${v ? "rgba(60,170,110,.5)" : GOLD_BD}`, background: v ? "rgba(60,170,110,.14)" : "#ffffff", color: v ? "#2f7a46" : "#8a7b75", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
                         {v ? "มา" : "ขาด"}
                       </button>
                     );
                   })}
-                  <span style={{ color: tot === sessions ? "#7fd6a3" : "#ffd76a", fontFamily: HEAD }}>{tot} / {sessions}</span>
+                  <span style={{ color: tot === sessions ? "#2f7a46" : "#ffd76a", fontFamily: HEAD }}>{tot} / {sessions}</span>
                 </div>
               );
             })}

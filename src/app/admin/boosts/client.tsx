@@ -40,7 +40,7 @@ export function BoostsClient({ list, codes }: { list: Boost[]; codes: BoostCode[
   };
   return (
     <div className="flex flex-col gap-4 text-[13.5px]">
-      <section className="rounded-2xl border p-3 flex flex-col gap-2" style={{ borderColor: LINE, background: "#1c1414" }}>
+      <section className="rounded-2xl border p-3 flex flex-col gap-2" style={{ borderColor: LINE, background: "#ffffff" }}>
         <h2 className="m-0 text-[16px] font-semibold">โค้ดโปรโมทฟรี</h2>
         <p className="m-0 text-[#9a8a85]">ระบบออกให้อัตโนมัติทุกวัน: เปิดรับงานครบ 30 วันแต่ได้งานไม่ถึง 5 เคส → ฟรี 3 วัน (คนละครั้ง) · ออกเองเพิ่มได้</p>
         <div className="flex gap-2 flex-wrap">
@@ -50,7 +50,7 @@ export function BoostsClient({ list, codes }: { list: Boost[]; codes: BoostCode[
         </div>
         {codes.length > 0 && (
           <div className="overflow-x-auto"><table className="w-full text-[12.5px]"><thead><tr className="text-[#9a8a85] text-left"><th className="py-1 pr-3 font-normal">โค้ด</th><th className="py-1 pr-3 font-normal">MB</th><th className="py-1 pr-3 font-normal">เหตุผล</th><th className="py-1 pr-3 font-normal">สถานะ</th><th className="py-1 font-normal">ออกเมื่อ</th></tr></thead>
-            <tbody>{codes.slice(0, 50).map((c) => <tr key={c.code} className="border-t" style={{ borderColor: LINE }}><td className="py-1 pr-3 tracking-[1px]">{c.code}</td><td className="py-1 pr-3">{c.mb}</td><td className="py-1 pr-3">{c.reason === "admin" ? `แอดมิน${c.by ? ` · ${c.by}` : ""}` : `30 วันแรกได้ ${c.jobs ?? 0} เคส`}</td><td className="py-1 pr-3" style={{ color: c.status === "used" ? "#4ade80" : "#eed58a" }}>{c.status === "used" ? `ใช้แล้ว ${dt(c.used_at ?? null)}` : "ยังไม่ใช้"}</td><td className="py-1">{dt(c.issued_at)}</td></tr>)}</tbody></table></div>
+            <tbody>{codes.slice(0, 50).map((c) => <tr key={c.code} className="border-t" style={{ borderColor: LINE }}><td className="py-1 pr-3 tracking-[1px]">{c.code}</td><td className="py-1 pr-3">{c.mb}</td><td className="py-1 pr-3">{c.reason === "admin" ? `แอดมิน${c.by ? ` · ${c.by}` : ""}` : `30 วันแรกได้ ${c.jobs ?? 0} เคส`}</td><td className="py-1 pr-3" style={{ color: c.status === "used" ? "#2f7a46" : "#eed58a" }}>{c.status === "used" ? `ใช้แล้ว ${dt(c.used_at ?? null)}` : "ยังไม่ใช้"}</td><td className="py-1">{dt(c.issued_at)}</td></tr>)}</tbody></table></div>
         )}
       </section>
       {msg && <p role="status" className="m-0 text-[#f0c75a]">{msg}{msg === EXPIRED && <> · <a href="/admin-login" className="underline">ไปหน้าเข้าสู่ระบบ</a></>}</p>}
@@ -59,7 +59,7 @@ export function BoostsClient({ list, codes }: { list: Boost[]; codes: BoostCode[
       {!pending.length && <p className="m-0 text-[#9a8a85]">ไม่มีสลิปรอตรวจ</p>}
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {pending.map((b) => (
-          <div key={b.id} className="rounded-2xl border p-3 flex gap-3" style={{ borderColor: LINE, background: "#1c1414" }}>
+          <div key={b.id} className="rounded-2xl border p-3 flex gap-3" style={{ borderColor: LINE, background: "#ffffff" }}>
             <a href={`/api/admin/boosts?slip=${b.id}`} target="_blank" rel="noreferrer" className="shrink-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={`/api/admin/boosts?slip=${b.id}`} alt="สลิป" className="w-24 h-32 object-cover rounded-lg bg-[#130e0e]" />

@@ -8,8 +8,8 @@ import { csvCell } from "@/lib/csv";
 const GOLD = "#f0c75a";
 const LINE = "rgba(240,200,90,.38)";
 const LABEL: Record<IncomeSystem, string> = { parttime: "Part-Time", partner: "Partner สปา · โรงแรม", collab: "Collab · MB x Bars", market: "ร้านค้า Marketplace", customer: "ลูกค้า" };
-const COLOR: Record<IncomeSystem, string> = { parttime: "#e8c472", partner: "#7fd6a3", collab: "#d9ccff", market: "#f6a5c0", customer: "#8ec5ff" };
-const ST: Record<IncomeStatus, [string, string]> = { in: ["เข้าแล้ว", "#4ade80"], pending: ["รอตรวจ", "#eed58a"], rejected: ["ไม่ผ่าน", "#fca5a5"], refunded: ["คืนเงินแล้ว", "#9a8a85"] };
+const COLOR: Record<IncomeSystem, string> = { parttime: "#e8c472", partner: "#2f7a46", collab: "#5b3fb0", market: "#c0577e", customer: "#2563a8" };
+const ST: Record<IncomeStatus, [string, string]> = { in: ["เข้าแล้ว", "#2f7a46"], pending: ["รอตรวจ", "#eed58a"], rejected: ["ไม่ผ่าน", "#b42335"], refunded: ["คืนเงินแล้ว", "#8a7b75"] };
 const SYSTEMS: IncomeSystem[] = ["parttime", "partner", "collab", "market", "customer"];
 const baht = (n: number) => "฿" + n.toLocaleString("th-TH");
 const dt = (iso: string) => new Date(iso).toLocaleString("th-TH", { day: "numeric", month: "short", year: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Bangkok" });
@@ -40,7 +40,7 @@ export function IncomeBoard({ rows }: { rows: IncomeRow[] }) {
     const blob = new Blob(["﻿" + [head.map((v) => csvCell(v)).join(","), ...body].join("\r\n")], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `ยอดเงินเข้า-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
   };
-  const chip = (on: boolean, color = GOLD) => ({ borderColor: on ? color : LINE, background: on ? color : "transparent", color: on ? "#1a1206" : "#d3c7bc" });
+  const chip = (on: boolean, color = GOLD) => ({ borderColor: on ? color : LINE, background: on ? color : "transparent", color: on ? "#1a1206" : "#5c4f48" });
   return (
     <div className="flex flex-col gap-4 text-[13.5px]">
       <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="ช่วงเวลา">
@@ -49,11 +49,11 @@ export function IncomeBoard({ rows }: { rows: IncomeRow[] }) {
 
       {/* สรุปยอดเข้าแล้วตามระบบ (กดเพื่อกรอง) */}
       <div data-income-summary className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2">
-        <button type="button" onClick={() => setSys("all")} className="rounded-2xl border px-3.5 py-3 text-left" style={{ borderColor: sys === "all" ? GOLD : LINE, background: sys === "all" ? "rgba(240,200,90,.12)" : "#1c1414" }}>
+        <button type="button" onClick={() => setSys("all")} className="rounded-2xl border px-3.5 py-3 text-left" style={{ borderColor: sys === "all" ? GOLD : LINE, background: sys === "all" ? "rgba(240,200,90,.12)" : "#ffffff" }}>
           <div className="text-[11.5px] text-[#cdbfb3]">เงินเข้าแล้ว · ทุกระบบ</div><div className="font-lux font-bold text-xl text-[#ffd76a]">{baht(sumIn())}</div><div className="text-[11.5px] text-[#9a8a85]">รอตรวจ {pending.length} รายการ · {baht(pending.reduce((a, r) => a + r.amount, 0))}</div>
         </button>
         {SYSTEMS.map((s) => (
-          <button key={s} type="button" data-income-system={s} onClick={() => setSys(s)} className="rounded-2xl border px-3.5 py-3 text-left" style={{ borderColor: sys === s ? COLOR[s] : LINE, background: sys === s ? "rgba(255,255,255,.05)" : "#1c1414" }}>
+          <button key={s} type="button" data-income-system={s} onClick={() => setSys(s)} className="rounded-2xl border px-3.5 py-3 text-left" style={{ borderColor: sys === s ? COLOR[s] : LINE, background: sys === s ? "rgba(255,255,255,.05)" : "#ffffff" }}>
             <div className="text-[11.5px]" style={{ color: COLOR[s] }}>{LABEL[s]}</div><div className="font-lux font-bold text-xl">{baht(sumIn(s))}</div>
             <div className="text-[11.5px] text-[#9a8a85]">{s === "collab" ? "ยังไม่เปิดระบบ" : `${inRange.filter((r) => r.system === s && r.status === "in").length} รายการ`}</div>
           </button>

@@ -58,10 +58,10 @@ export function PayrollClient({ day, today, rows, sample, reqs, salesReqs = [], 
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
         {[["งานที่จบวันนี้", `${tot.jobs} งาน`], ["ยอดลูกค้าจ่ายวันนี้", baht(tot.gross)], ["ส่วนของ Part-Time วันนี้", baht(tot.pt)], ["รออนุมัติเข้ากระเป๋า (ทุกวัน)", baht(tot.waiting)]].map(([k, v]) => (
-          <div key={k} className="rounded-2xl border p-3" style={{ borderColor: LINE, background: "#1c1414" }}><div className="text-[12px] text-[#cdbfb3]">{k}</div><b className="text-[18px] tabular-nums">{v}</b></div>
+          <div key={k} className="rounded-2xl border p-3" style={{ borderColor: LINE, background: "#ffffff" }}><div className="text-[12px] text-[#cdbfb3]">{k}</div><b className="text-[18px] tabular-nums">{v}</b></div>
         ))}
       </div>
-      {msg && <p role="status" className="m-0" style={{ color: msg.ok ? "#4ade80" : "#fca5a5" }}>{msg.text}{msg.text === EXPIRED && <> · <a href="/admin-login" className="underline text-[#ffd76a]">ไปหน้าเข้าสู่ระบบ</a></>}</p>}
+      {msg && <p role="status" className="m-0" style={{ color: msg.ok ? "#2f7a46" : "#b42335" }}>{msg.text}{msg.text === EXPIRED && <> · <a href="/admin-login" className="underline text-[#ffd76a]">ไปหน้าเข้าสู่ระบบ</a></>}</p>}
       {confirmUi}
 
       {/* รายการรายคน */}
@@ -101,7 +101,7 @@ export function PayrollClient({ day, today, rows, sample, reqs, salesReqs = [], 
                         <span className="tabular-nums">{j.code}</span><span className="truncate">{j.customer}</span><span>{hm(j.completed_at)}</span>
                         <span className="text-right">{j.hours}</span><span className="text-right tabular-nums">{baht(j.price)}</span><span className="text-right tabular-nums">{j.tip ? baht(j.tip) : "-"}</span>
                         <span className="text-right">{j.pct != null ? `${j.pct}%` : "-"}</span><b className="text-right tabular-nums">{baht(j.pt)}</b>
-                        <span className="text-right" style={{ color: j.matured ? "#4ade80" : "#f0c75a" }}>{j.matured ? "เข้ากระเป๋าแล้ว" : "รออนุมัติ"}</span>
+                        <span className="text-right" style={{ color: j.matured ? "#2f7a46" : "#f0c75a" }}>{j.matured ? "เข้ากระเป๋าแล้ว" : "รออนุมัติ"}</span>
                       </div>
                     ))}
                   </div>

@@ -7,7 +7,7 @@ import { KYC_LABEL, KycPanel } from "./kyc-panel";
 
 const file = (p: string) => `/api/admin/applicants/file?path=${encodeURIComponent(p)}`;
 const GOLD = "#f0c75a";
-const TABS: [KycStatus, string, string][] = [["submitted", "รอตรวจเอกสาร", "#eed58a"], ["rejected", "ตีกลับ · รอแก้", "#fca5a5"], ["approved", "อนุมัติแล้ว", "#4ade80"]];
+const TABS: [KycStatus, string, string][] = [["submitted", "รอตรวจเอกสาร", "#eed58a"], ["rejected", "ตีกลับ · รอแก้", "#b42335"], ["approved", "อนุมัติแล้ว", "#2f7a46"]];
 const thTime = (iso?: string | null) => (iso ? new Date(iso).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", dateStyle: "short", timeStyle: "short" }) : "—");
 
 export function KycQueue({ initial, canLink = true }: { initial: Applicant[]; canLink?: boolean }) {
@@ -27,7 +27,7 @@ export function KycQueue({ initial, canLink = true }: { initial: Applicant[]; ca
         </div>
         <div className="grid grid-cols-3 gap-3">
           {TABS.map(([k, label, fg]) => (
-            <button key={k} onClick={() => setTab(k)} aria-pressed={tab === k} style={{ borderColor: tab === k ? GOLD : "rgba(240,200,90,.3)", background: tab === k ? "rgba(240,200,90,.12)" : "#241717" }}
+            <button key={k} onClick={() => setTab(k)} aria-pressed={tab === k} style={{ borderColor: tab === k ? GOLD : "rgba(240,200,90,.3)", background: tab === k ? "rgba(240,200,90,.12)" : "#ffffff" }}
               className="rounded-2xl border-[1.5px] px-3.5 py-3 text-left flex flex-col gap-1">
               <span className="text-xs text-[#cdbfb3]">{label}</span>
               <span className="font-lux font-bold text-2xl" style={{ color: fg }}>{rows.filter((r) => r.kyc_status === k).length}</span>

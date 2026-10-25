@@ -11,20 +11,20 @@ const GOLD = "#f0c75a";
 type Tab = "all" | "ok" | "bad" | "none";
 const TABS: [Tab, string, string][] = [
   ["all", "สลิปทั้งหมด", "#ffd76a"],
-  ["ok", "ตรงยอด · รอยืนยัน", "#4ade80"],
-  ["bad", "มีปัญหา (ยอด/บัญชี/ซ้ำ/ปลอม)", "#fca5a5"],
-  ["none", "ไม่ได้ตรวจ / ขัดข้อง", "#cdbfb3"],
+  ["ok", "ตรงยอด · รอยืนยัน", "#2f7a46"],
+  ["bad", "มีปัญหา (ยอด/บัญชี/ซ้ำ/ปลอม)", "#b42335"],
+  ["none", "ไม่ได้ตรวจ / ขัดข้อง", "#6b5d58"],
 ];
 // [label, bg, fg]
 const VERDICT: Record<SlipVerdict | "none", [string, string, string]> = {
   ok: ["✓ ตรงยอด · ของจริง", "rgba(74,222,128,.15)", "#bbf7d0"],
   check: ["ยอดตรง · ต้องเทียบบัญชี/วันที่เอง", "rgba(251,146,60,.18)", "#fed7aa"],
   amt: ["ยอดไม่ตรง", "rgba(251,146,60,.18)", "#fed7aa"],
-  acct: ["โอนเข้าบัญชีอื่น", "rgba(239,68,68,.2)", "#fecaca"],
-  dup: ["สลิปซ้ำ", "rgba(239,68,68,.2)", "#fecaca"],
-  fake: ["ไม่พบรายการ / ปลอม", "rgba(239,68,68,.2)", "#fecaca"],
+  acct: ["โอนเข้าบัญชีอื่น", "rgba(239,68,68,.2)", "#b42335"],
+  dup: ["สลิปซ้ำ", "rgba(239,68,68,.2)", "#b42335"],
+  fake: ["ไม่พบรายการ / ปลอม", "rgba(239,68,68,.2)", "#b42335"],
   error: ["ตรวจไม่สำเร็จ", "#21191a", "#eed58a"],
-  none: ["ไม่ได้ตรวจ", "#21191a", "#cdbfb3"],
+  none: ["ไม่ได้ตรวจ", "#21191a", "#6b5d58"],
 };
 const WARN: Partial<Record<SlipVerdict | "none", string>> = {
   check: "ยอดตรงแต่ระบบยืนยันบัญชีผู้รับไม่ได้ หรือสลิปเก่าเกิน 48 ชม. · เช็กว่าเงินเข้าบัญชีร้านจริงก่อนยืนยัน",
@@ -38,7 +38,7 @@ const WARN: Partial<Record<SlipVerdict | "none", string>> = {
 const verdictOf = (r: Applicant): SlipVerdict | "none" => r.slip_check?.verdict ?? "none";
 const tabOf = (r: Applicant): Tab => { const v = verdictOf(r); return v === "ok" ? "ok" : v === "none" || v === "error" ? "none" : "bad"; };
 const statusOf = (r: Applicant): [string, string] =>
-  r.status === "verified" ? ["✓ ยืนยันแล้ว", "#4ade80"] : r.status === "rejected" ? ["ปฏิเสธแล้ว", "#fca5a5"] : r.status === "refunded" ? ["คืนเงินแล้ว", "#cdbfb3"]
+  r.status === "verified" ? ["✓ ยืนยันแล้ว", "#2f7a46"] : r.status === "rejected" ? ["ปฏิเสธแล้ว", "#b42335"] : r.status === "refunded" ? ["คืนเงินแล้ว", "#6b5d58"]
     : verdictOf(r) === "ok" ? ["รอแอดมินกดยืนยัน", "#eed58a"] : ["ต้องตรวจเอง", "#fed7aa"];
 const fmt = (n: number | null | undefined) => (n == null ? "—" : "฿" + n.toLocaleString("en-US", { maximumFractionDigits: 2 }));
 const thTime = (iso: string | null | undefined, timeOnly = false) => (iso ? new Date(iso).toLocaleString("th-TH", { timeZone: "Asia/Bangkok", ...(timeOnly ? { hour: "2-digit", minute: "2-digit" } : { dateStyle: "medium", timeStyle: "short" }) }) : "—");
@@ -83,13 +83,13 @@ export function SlipQueue({ initial, live }: { initial: Applicant[]; live: boole
   const v = sel ? verdictOf(sel) : "none";
   const warn = sel ? (v === "amt" ? `ยอดโอน ${fmt(sel.slip_check?.amount)} ไม่ตรงกับยอดที่ต้องชำระ ${fmt(sel.amount)} · แจ้งผู้สมัครโอนส่วนที่ขาด` : WARN[v]) : undefined;
   const checks: [string, string, string][] = sel ? [
-    ["ยอดโอน", fmt(sel.slip_check?.amount), v === "ok" ? "#bbf7d0" : v === "amt" ? "#fed7aa" : "#f6efe4"],
-    ["ยอดที่ต้องชำระ", fmt(sel.amount), "#f6efe4"],
-    ["ชื่อผู้โอน", sel.slip_check?.sender ?? "—", "#f6efe4"],
-    ["บัญชีผู้รับ", sel.slip_check?.receiver ?? "—", v === "acct" ? "#fecaca" : "#f6efe4"],
-    ["เวลาโอน", thTime(sel.slip_check?.date_time), "#f6efe4"],
-    ["เลขอ้างอิง (Trans Ref)", sel.slip_check?.trans_ref ?? "—", v === "dup" ? "#fecaca" : "#f6efe4"],
-    ["โทร", sel.tel, "#f6efe4"],
+    ["ยอดโอน", fmt(sel.slip_check?.amount), v === "ok" ? "#bbf7d0" : v === "amt" ? "#fed7aa" : "#2a1d1a"],
+    ["ยอดที่ต้องชำระ", fmt(sel.amount), "#2a1d1a"],
+    ["ชื่อผู้โอน", sel.slip_check?.sender ?? "—", "#2a1d1a"],
+    ["บัญชีผู้รับ", sel.slip_check?.receiver ?? "—", v === "acct" ? "#b42335" : "#2a1d1a"],
+    ["เวลาโอน", thTime(sel.slip_check?.date_time), "#2a1d1a"],
+    ["เลขอ้างอิง (Trans Ref)", sel.slip_check?.trans_ref ?? "—", v === "dup" ? "#b42335" : "#2a1d1a"],
+    ["โทร", sel.tel, "#2a1d1a"],
   ] : [];
 
   return (
@@ -109,7 +109,7 @@ export function SlipQueue({ initial, live }: { initial: Applicant[]; live: boole
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {TABS.map(([k, label, fg]) => (
             <button key={k} onClick={() => setTab(k)} aria-pressed={tab === k} className="px-3.5 py-3 rounded-2xl border-[1.5px] text-left flex flex-col gap-1"
-              style={{ borderColor: tab === k ? GOLD : "rgba(240,200,90,.3)", background: tab === k ? "rgba(240,200,90,.12)" : "#241717" }}>
+              style={{ borderColor: tab === k ? GOLD : "rgba(240,200,90,.3)", background: tab === k ? "rgba(240,200,90,.12)" : "#ffffff" }}>
               <span className="text-xs text-[#cdbfb3]">{label}</span>
               <span className="font-lux font-bold text-2xl" style={{ color: fg }}>{count(k)}</span>
             </button>
@@ -155,7 +155,7 @@ export function SlipQueue({ initial, live }: { initial: Applicant[]; live: boole
             {sel.status === "pending_slip" ? (
               <div className="mt-auto flex flex-col gap-2">
                 <label className="text-[12px] text-[#cdbfb3]" htmlFor="slip-why">เหตุผลถ้าปฏิเสธ (ผู้สมัครเห็น)</label>
-                <div className="flex flex-wrap gap-1">{["ยอดไม่ตรง", "สลิปไม่ชัด", "ไม่พบรายการโอน", "โอนเข้าบัญชีอื่น", "สลิปซ้ำ"].map((p) => <button key={p} type="button" onClick={() => setReason(p)} className="h-7 px-2.5 rounded-full border text-[11.5px]" style={{ borderColor: reason === p ? GOLD : "rgba(240,200,90,.3)", color: reason === p ? GOLD : "#cdbfb3" }}>{p}</button>)}</div>
+                <div className="flex flex-wrap gap-1">{["ยอดไม่ตรง", "สลิปไม่ชัด", "ไม่พบรายการโอน", "โอนเข้าบัญชีอื่น", "สลิปซ้ำ"].map((p) => <button key={p} type="button" onClick={() => setReason(p)} className="h-7 px-2.5 rounded-full border text-[11.5px]" style={{ borderColor: reason === p ? GOLD : "rgba(240,200,90,.3)", color: reason === p ? GOLD : "#6b5d58" }}>{p}</button>)}</div>
                 <input id="slip-why" value={reason} onChange={(e) => setReason(e.target.value)} maxLength={300} placeholder="เช่น ยอดโอนขาด ฿500" className="h-9 rounded-lg border border-[rgba(240,200,90,.38)] bg-[#130e0e] px-2.5 text-[12.5px] text-[#f6efe4] outline-none focus:border-[#f0c75a]" />
                 <div className="grid grid-cols-2 gap-2">
                   <button disabled={busy || !reason.trim()} onClick={() => setStatus(sel, "rejected")} className="h-11 rounded-full border border-[rgba(201,40,61,.6)] bg-[rgba(176,24,44,.15)] text-[#fecaca] font-semibold disabled:opacity-50">ปฏิเสธ · แจ้งส่งใหม่</button>

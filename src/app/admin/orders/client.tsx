@@ -14,17 +14,17 @@ const GOLD = "#f0c75a";
 const LINE = "rgba(240,200,90,.38)";
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US");
 const ST: Record<string, [string, string]> = {
-  requested: ["รอ Part-Time ตอบ", "#eed58a"], accepted: ["ยืนยันแล้ว", "#4ade80"], checked_in: ["ระหว่างนัด", "#4ade80"], completed: ["จบงาน", "#cdbfb3"],
-  cancel_requested: ["ขอยกเลิก · รอตัดสิน", "#fca5a5"], disputed: ["ข้อพิพาท · รอตัดสิน", "#fca5a5"], declined: ["ปฏิเสธ", "#9a8a85"], expired: ["หมดเวลา", "#9a8a85"], cancelled: ["ยกเลิก", "#9a8a85"], refunded: ["คืนเงินแล้ว", "#9a8a85"],
+  requested: ["รอ Part-Time ตอบ", "#eed58a"], accepted: ["ยืนยันแล้ว", "#2f7a46"], checked_in: ["ระหว่างนัด", "#2f7a46"], completed: ["จบงาน", "#6b5d58"],
+  cancel_requested: ["ขอยกเลิก · รอตัดสิน", "#b42335"], disputed: ["ข้อพิพาท · รอตัดสิน", "#b42335"], declined: ["ปฏิเสธ", "#8a7b75"], expired: ["หมดเวลา", "#8a7b75"], cancelled: ["ยกเลิก", "#8a7b75"], refunded: ["คืนเงินแล้ว", "#8a7b75"],
 };
 /** ป้ายสถานะ — completed ที่มาจากยกเลิกคืน 0% / ผิดนัด ต้องไม่ขึ้นว่า "จบงาน" เฉย ๆ */
 function stOf(b: B): [string, string] {
   const r = b.resolution ?? {};
-  if (b.status === "disputed" && r.noshow) return ["แจ้งผิดนัด · รอตัดสิน", "#fca5a5"];
-  if (r.decided === "noshow:customer_no_show") return ["ผิดนัด · ลูกค้าไม่มา", "#cdbfb3"];
-  if (r.decided === "noshow:provider_no_show") return ["ผิดนัด · Part-Time ไม่มา", "#9a8a85"];
-  if (r.decided === "refund" && r.cancelled) return Number(r.refund_pct ?? 0) === 0 ? ["ยกเลิก · ไม่คืนเงินตามกติกา", "#cdbfb3"] : Number(r.refund_pct) < 100 ? [`ยกเลิก · คืน ${String(r.refund_pct)}%`, "#cdbfb3"] : ["ยกเลิก · คืนเต็ม", "#9a8a85"];
-  return ST[b.status] ?? [b.status, "#cdbfb3"];
+  if (b.status === "disputed" && r.noshow) return ["แจ้งผิดนัด · รอตัดสิน", "#b42335"];
+  if (r.decided === "noshow:customer_no_show") return ["ผิดนัด · ลูกค้าไม่มา", "#6b5d58"];
+  if (r.decided === "noshow:provider_no_show") return ["ผิดนัด · Part-Time ไม่มา", "#8a7b75"];
+  if (r.decided === "refund" && r.cancelled) return Number(r.refund_pct ?? 0) === 0 ? ["ยกเลิก · ไม่คืนเงินตามกติกา", "#6b5d58"] : Number(r.refund_pct) < 100 ? [`ยกเลิก · คืน ${String(r.refund_pct)}%`, "#6b5d58"] : ["ยกเลิก · คืนเต็ม", "#8a7b75"];
+  return ST[b.status] ?? [b.status, "#6b5d58"];
 }
 const F: [string, string][] = [["todo", "รอตัดสิน"], ["noshow", "ผิดนัด"], ["live", "กำลังดำเนินการ"], ["completed", "จบงาน"], ["closed", "ยกเลิก/คืนเงิน"], ["all", "ทั้งหมด"]];
 const match = (b: B, f: string) => f === "all" ? true : f === "todo" ? ["cancel_requested", "disputed"].includes(b.status) : f === "live" ? ["requested", "accepted", "checked_in"].includes(b.status) : f === "completed" ? b.status === "completed" : ["declined", "expired", "cancelled", "refunded"].includes(b.status);
@@ -71,7 +71,7 @@ export default function AdminOrdersClient({ canResolve, initialTab }: { canResol
       {confirmUi}
       <div><div className="text-[11px] tracking-[2.5px] font-semibold" style={{ color: GOLD }}>BOOKINGS</div><h1 className="mt-0.5 font-lux font-bold text-2xl">การจอง · เงินพักไว้</h1></div>
       <div className="flex flex-wrap gap-1.5">
-        {F.map(([k, l]) => { const n = k === "noshow" ? (rows ?? []).filter((b) => b.status === "disputed" && b.resolution?.noshow).length : (rows ?? []).filter((b) => match(b, k)).length; const on = f === k; return <button key={k} onClick={() => setF(k)} aria-pressed={on} className="h-10 px-3.5 rounded-full border text-[12.5px] font-semibold" style={{ borderColor: on ? GOLD : LINE, background: on ? GOLD : "transparent", color: on ? "#1a1206" : "#d3c7bc" }}>{l} {n}</button>; })}
+        {F.map(([k, l]) => { const n = k === "noshow" ? (rows ?? []).filter((b) => b.status === "disputed" && b.resolution?.noshow).length : (rows ?? []).filter((b) => match(b, k)).length; const on = f === k; return <button key={k} onClick={() => setF(k)} aria-pressed={on} className="h-10 px-3.5 rounded-full border text-[12.5px] font-semibold" style={{ borderColor: on ? GOLD : LINE, background: on ? GOLD : "transparent", color: on ? "#1a1206" : "#5c4f48" }}>{l} {n}</button>; })}
       </div>
       {f === "noshow" ? <NoShowClaims onToast={(m) => { setMsg(m); load(); }} canDecide={canResolve} /> : (
         <div className="flex flex-col lg:flex-row gap-4 items-start">
@@ -109,7 +109,7 @@ export default function AdminOrdersClient({ canResolve, initialTab }: { canResol
                   {!canResolve && <p className="m-0 text-[12px] text-[#eed58a]">ดูได้อย่างเดียว · การตัดสินที่ย้ายเงินต้องใช้สิทธิ์ฝ่ายการเงิน</p>}
                   <fieldset disabled={!canResolve} className="flex flex-col gap-2 disabled:opacity-50">
                     <label className="flex items-center gap-2">คืนลูกค้า<input type="number" min={0} max={100} value={pct} onChange={(e) => setPct(Math.max(0, Math.min(100, Number(e.target.value) || 0)))} className="w-20 h-10 rounded-lg bg-[#130e0e] border px-2" style={{ borderColor: LINE }} />% = {baht(Math.round(cur.total_satang * pct / 100))}</label>
-                    <div className="flex gap-1">{[100, 50, 0].map((v) => <button key={v} type="button" onClick={() => setPct(v)} className="h-10 px-3 rounded-full border text-[12px]" style={{ borderColor: pct === v ? GOLD : LINE, color: pct === v ? GOLD : "#d3c7bc" }}>{v}%</button>)}</div>
+                    <div className="flex gap-1">{[100, 50, 0].map((v) => <button key={v} type="button" onClick={() => setPct(v)} className="h-10 px-3 rounded-full border text-[12px]" style={{ borderColor: pct === v ? GOLD : LINE, color: pct === v ? GOLD : "#5c4f48" }}>{v}%</button>)}</div>
                     <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="เหตุผล/บันทึก (บังคับ · ลูกค้าเห็น)" className="h-10 rounded-lg bg-[#130e0e] border px-2.5" style={{ borderColor: LINE }} />
                     <span className="text-[11.5px] text-[#9a8a85]">ส่วนที่ไม่คืนแบ่งให้ Part-Time ตามขั้นส่วนแบ่ง · ส่วนที่เหลือเป็นรายได้บริษัท · กดแล้วจะแสดงตัวเลขให้ยืนยันอีกครั้ง</span>
                     <div className="grid grid-cols-2 gap-1.5">

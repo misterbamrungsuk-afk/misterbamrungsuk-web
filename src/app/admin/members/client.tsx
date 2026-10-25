@@ -38,7 +38,7 @@ export function MembersClient({ rows }: { rows: Row[] }) {
     setMsg(j?.ok ? { ok: true, text: action === "erase" ? "ลบข้อมูลส่วนบุคคลแล้ว" : action === "suspend" ? "ระงับบัญชีแล้ว · ออกจากระบบทุกเครื่อง" : "คืนสิทธิ์แล้ว" } : { ok: false, text: j?.error || "ทำรายการไม่สำเร็จ" });
     if (j?.ok) { setReason(""); router.refresh(); }
   };
-  const status = (r: Row) => (r.deleted_at ? ["ลบข้อมูลแล้ว", "#9a8a85"] : r.suspended_at ? ["ระงับ", "#fca5a5"] : r.delete_requested_at ? ["ขอลบบัญชี", "#c4b5fd"] : ["ปกติ", "#cdbfb3"]);
+  const status = (r: Row) => (r.deleted_at ? ["ลบข้อมูลแล้ว", "#8a7b75"] : r.suspended_at ? ["ระงับ", "#b42335"] : r.delete_requested_at ? ["ขอลบบัญชี", "#5b3fb0"] : ["ปกติ", "#6b5d58"]);
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px] items-start text-[13px]">
       <section className="flex flex-col gap-2 min-w-0">
@@ -85,7 +85,7 @@ export function MembersClient({ rows }: { rows: Row[] }) {
                 {m.delete_requested_at && <button type="button" disabled={busy} onClick={() => act("erase")} className="h-10 rounded-xl border border-[#c4b5fd] text-[#c4b5fd] font-semibold disabled:opacity-40">ลบข้อมูลส่วนบุคคล (PDPA)</button>}
               </>
             )}
-            {msg && <p role="status" className="m-0" style={{ color: msg.ok ? "#4ade80" : "#fca5a5" }}>{msg.text}{msg.text === EXPIRED && <> · <a href="/admin-login" className="underline text-[#ffd76a]">ไปหน้าเข้าสู่ระบบ</a></>}</p>}
+            {msg && <p role="status" className="m-0" style={{ color: msg.ok ? "#2f7a46" : "#b42335" }}>{msg.text}{msg.text === EXPIRED && <> · <a href="/admin-login" className="underline text-[#ffd76a]">ไปหน้าเข้าสู่ระบบ</a></>}</p>}
           </>
         )}
       </aside>

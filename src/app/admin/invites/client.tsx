@@ -45,8 +45,8 @@ export function InvitesAdmin({ initial, recent }: { initial: Invite[]; recent: {
           <div role="radiogroup" aria-label="ประเภทลิงก์" className="grid grid-cols-2 gap-2 mb-3 max-w-[520px]">
             {([[false, "เชิญปกติ", "สมัครฟรี · ได้ระดับ TOP"], [true, "Secret", "สมัครฟรี · ระดับ Secret · ราคาแอดมินกำหนด"]] as const).map(([v, t, d]) => (
               <button key={t} type="button" role="radio" aria-checked={f.secret === v} data-invite-kind={v ? "secret" : "normal"} onClick={() => setF({ ...f, secret: v })} className="rounded-xl border px-3 py-2 text-left"
-                style={{ borderColor: f.secret === v ? (v ? "#b9a6ff" : GOLD) : "rgba(243,234,217,0.10)", background: f.secret === v ? (v ? "rgba(10,8,12,.9)" : "rgba(232,196,114,0.14)") : "transparent", boxShadow: f.secret === v && v ? "0 0 14px rgba(185,166,255,.35)" : "none" }}>
-                <b className="block text-[14px]" style={{ color: v ? "#d9ccff" : GOLD }}>{t}</b><span className="text-[12px] text-ink-300">{d}</span>
+                style={{ borderColor: f.secret === v ? (v ? "#6b4fc4" : GOLD) : "rgba(243,234,217,0.10)", background: f.secret === v ? (v ? "rgba(10,8,12,.9)" : "rgba(232,196,114,0.14)") : "transparent", boxShadow: f.secret === v && v ? "0 0 14px rgba(185,166,255,.35)" : "none" }}>
+                <b className="block text-[14px]" style={{ color: v ? "#5b3fb0" : GOLD }}>{t}</b><span className="text-[12px] text-ink-300">{d}</span>
               </button>
             ))}
           </div>
@@ -61,7 +61,7 @@ export function InvitesAdmin({ initial, recent }: { initial: Invite[]; recent: {
             <label className="flex flex-col gap-1"><span className="text-xs text-ink-300">วันหมดอายุ</span><input type="date" className={inp} value={f.expires} onChange={(e) => setF({ ...f, expires: e.target.value })} style={{ colorScheme: "dark" }} /></label>
             <button type="button" onClick={create} disabled={busy || !f.name.trim()} className="btn-crimson h-10 px-5 rounded-xl font-semibold disabled:opacity-50">{busy ? "กำลังสร้าง…" : "สร้างลิงก์"}</button>
           </div>
-          {msg && <p role="status" className="mt-3 text-sm break-all" style={{ color: msg.ok ? "#7fd6a3" : "#ff8a9a" }}>{msg.t}</p>}
+          {msg && <p role="status" className="mt-3 text-sm break-all" style={{ color: msg.ok ? "#2f7a46" : "#ff8a9a" }}>{msg.t}</p>}
         </Card>
 
         <Card>
@@ -74,11 +74,11 @@ export function InvitesAdmin({ initial, recent }: { initial: Invite[]; recent: {
                   const st = stateOf(i);
                   return (
                     <tr key={i.code} className="border-t border-ink-600" style={{ opacity: i.enabled ? 1 : 0.6 }}>
-                      <td className="py-2.5 pr-3">{i.kind === "secret" && <span className="mr-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold" style={{ background: "#0b0910", color: "#d9ccff", boxShadow: "0 0 8px rgba(185,166,255,.45)" }}>SECRET</span>}{i.name}</td>
+                      <td className="py-2.5 pr-3">{i.kind === "secret" && <span className="mr-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold" style={{ background: "#0b0910", color: "#5b3fb0", boxShadow: "0 0 8px rgba(185,166,255,.45)" }}>SECRET</span>}{i.name}</td>
                       <td className="py-2.5 pr-3"><span className="flex items-center gap-2"><code className="text-[12.5px] text-gold-300 break-all">{origin ? url(i.code).replace(/^https?:\/\//, "") : `/join/i/${i.code}`}</code><button type="button" onClick={() => copy(i.code)} className="shrink-0 h-8 px-2.5 rounded-lg border border-ink-600 text-[12px]">{copied === i.code ? "คัดลอกแล้ว" : "คัดลอก"}</button></span></td>
                       <td className="py-2.5 pr-3 tabular-nums">{i.used} / {i.limit ?? "ไม่จำกัด"}</td>
                       <td className="py-2.5 pr-3">{thDate(i.expires)}</td>
-                      <td className="py-2.5 pr-3" style={{ color: st === "ใช้งานได้" ? "#7fd6a3" : st === "ปิดอยู่" ? undefined : "#ff8a9a" }}>{st}</td>
+                      <td className="py-2.5 pr-3" style={{ color: st === "ใช้งานได้" ? "#2f7a46" : st === "ปิดอยู่" ? undefined : "#ff8a9a" }}>{st}</td>
                       <td className="py-2.5"><button type="button" role="switch" aria-checked={i.enabled} aria-label={`เปิด/ปิด ${i.name}`} onClick={() => toggle(i)} className="w-11 h-[26px] rounded-full relative" style={{ background: i.enabled ? GOLD : "rgba(243,234,217,0.18)" }}><span className="absolute top-[3px] w-5 h-5 rounded-full bg-white transition-all" style={{ left: i.enabled ? 21 : 3 }} /></button></td>
                     </tr>
                   );

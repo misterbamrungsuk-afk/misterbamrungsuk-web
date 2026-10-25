@@ -118,7 +118,7 @@ export function CoversAdmin({ initial, defaults, configured }: { initial: State;
             <h1 className="mt-0.5 font-lux font-bold text-[24px]">รูปหน้าปก</h1>
             <div className="text-[12.5px] text-[#cdbfb3] mt-0.5">สไลด์หน้าแรก · โปสเตอร์ Part-Time · ปกพาร์ทเนอร์ · ปกและแบนเนอร์ Marketplace · บันทึกแล้วขึ้นเว็บทันที</div>
           </div>
-          <span className="text-[12px] shrink-0" style={{ color: saved ? "#4ade80" : "#eed58a" }}>{saved ? "✓ บันทึกแล้ว · ตรงกับหน้าเว็บ" : busy ? "กำลังบันทึก…" : "มีการแก้ไขที่ยังไม่บันทึก"}</span>
+          <span className="text-[12px] shrink-0" style={{ color: saved ? "#2f7a46" : "#eed58a" }}>{saved ? "✓ บันทึกแล้ว · ตรงกับหน้าเว็บ" : busy ? "กำลังบันทึก…" : "มีการแก้ไขที่ยังไม่บันทึก"}</span>
         </div>
 
         {!configured && (

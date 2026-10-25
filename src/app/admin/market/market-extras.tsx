@@ -192,7 +192,7 @@ function Banners({ d, reload, setMsg }: Sub) {
             {b.image
               // eslint-disable-next-line @next/next/no-img-element
               ? <img src={imageUrl(b.image)} alt="" className="w-24 h-14 rounded-lg object-cover" />
-              : <div className="w-24 h-14 rounded-lg bg-[linear-gradient(135deg,#2a1014,#0e0a0a)]" />}
+              : <div className="w-24 h-14 rounded-lg bg-[linear-gradient(135deg,#fff7e6,#f6ecd2)]" />}
             <div className="flex-1 min-w-0"><p className="font-semibold truncate">{b.title}</p><p className="text-xs text-ink-300 truncate">{b.subtitle} · {b.link || "ไม่มีลิงก์"} · ลำดับ {b.sort}</p></div>
             <Pill tone={b.active ? "green" : "muted"}>{b.active ? "แสดง" : "ซ่อน"}</Pill>
             <button onClick={() => setF({ ...b, sort: String(b.sort) })} className="chip h-8 px-3 text-xs">แก้ไข</button>

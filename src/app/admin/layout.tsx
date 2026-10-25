@@ -1,8 +1,12 @@
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { Noto_Serif_Thai } from "next/font/google";
 import { ADMIN_COOKIE, canAccess, homeFor, verifySession } from "@/lib/admin-auth";
 import { AdminNav, DeniedBanner } from "./admin-nav";
+
+// หัวข้อหลังบ้านธีมสว่าง (canvas "Admin Light Theme") ใช้ฟอนต์มีเชิง — โหลดเฉพาะหน้าแอดมิน
+const serif = Noto_Serif_Thai({ subsets: ["thai", "latin"], weight: ["600", "700"], variable: "--font-noto-serif" });
 
 export const metadata = { title: "แอดมิน — Mister Bamrungsuk" };
 export const dynamic = "force-dynamic";
@@ -17,9 +21,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!path || !canAccess(session.role, path)) redirect(`${homeFor(session.role)}?denied=1`);
 
   return (
-    <div className="min-h-dvh lg:flex overflow-x-clip bg-[#0e0a0a] text-[#f6efe4]">
+    <div className={`admin-light ${serif.variable} min-h-dvh lg:flex overflow-x-clip`}>
       <AdminNav email={session.email} role={session.role} />
-      <main className="flex-1 min-w-0 bg-[#0e0a0a] font-lux-body px-4 lg:px-6 py-5 lg:py-[22px] pb-16 [&_.grid>*]:min-w-0">
+      <main className="flex-1 min-w-0 px-4 lg:px-7 py-5 lg:py-7 pb-16 [&_.grid>*]:min-w-0">
         <Suspense><DeniedBanner /></Suspense>
         {children}
       </main>

@@ -39,7 +39,7 @@ export function SalesAdmin({ isCeo, cfg, purchases, reps, payouts }: { isCeo: bo
   const sec = "rounded-2xl border p-4 flex flex-col gap-3";
   return (
     <div className="flex flex-col gap-4 text-[13.5px]">
-      {msg && <p role="status" className="m-0" style={{ color: msg.ok ? "#4ade80" : "#fca5a5" }}>{msg.text}</p>}
+      {msg && <p role="status" className="m-0" style={{ color: msg.ok ? "#2f7a46" : "#b42335" }}>{msg.text}</p>}
       {ask && (
         <div role="alertdialog" aria-label="ยืนยันรายการ" className="sticky top-2 z-20 rounded-2xl border p-3 flex flex-wrap items-center gap-2" style={{ borderColor: "#e8c472", background: "#211a18" }}>
           <span className="flex-1 min-w-[200px]">{ask.text}</span>
@@ -53,7 +53,7 @@ export function SalesAdmin({ isCeo, cfg, purchases, reps, payouts }: { isCeo: bo
         {!pending.length && <span className="text-[#9a8a85]">ไม่มีรายการรอตรวจ</span>}
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {pending.map((p) => (
-            <div key={p.id} className="rounded-xl border p-3 flex gap-3" style={{ borderColor: LINE, background: "#1c1414" }}>
+            <div key={p.id} className="rounded-xl border p-3 flex gap-3" style={{ borderColor: LINE, background: "#ffffff" }}>
               <a href={`/api/admin/sales?slip=${p.id}`} target="_blank" rel="noreferrer" className="shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={`/api/admin/sales?slip=${p.id}`} alt="สลิป" className="w-24 h-32 object-cover rounded-lg bg-[#130e0e]" />
@@ -80,7 +80,7 @@ export function SalesAdmin({ isCeo, cfg, purchases, reps, payouts }: { isCeo: bo
         {payouts.map((w) => (
           <div key={w.id} className="flex flex-wrap items-center gap-2 border-t pt-2" style={{ borderColor: LINE }}>
             <span className="flex-1 min-w-[200px]"><b>{repName(w.rep_id)}</b> · {baht(w.amount_satang)}<span className="block text-[12px] text-[#9a8a85]">{w.bank ? `${w.bank.bank} · ${w.bank.account} · ${w.bank.name}` : "ไม่มีบัญชี"} · {dt(w.created_at)}</span></span>
-            <span className="text-[12.5px]" style={{ color: w.status === "paid" ? "#4ade80" : w.status === "failed" ? "#fca5a5" : "#f0c75a" }}>{w.status === "requested" ? "รอ CEO อนุมัติ" : w.status === "approved" ? "CEO อนุมัติแล้ว · รอโอน" : w.status === "paid" ? "โอนแล้ว" : "ไม่สำเร็จ"}</span>
+            <span className="text-[12.5px]" style={{ color: w.status === "paid" ? "#2f7a46" : w.status === "failed" ? "#b42335" : "#f0c75a" }}>{w.status === "requested" ? "รอ CEO อนุมัติ" : w.status === "approved" ? "CEO อนุมัติแล้ว · รอโอน" : w.status === "paid" ? "โอนแล้ว" : "ไม่สำเร็จ"}</span>
             {w.status === "approved" && <>
               <button type="button" disabled={!!busy} onClick={() => confirmThen({ action: "payout_paid", id: w.id }, "บันทึกโอนแล้ว", `ยืนยันว่าโอน ${baht(w.amount_satang)} ให้ ${repName(w.rep_id)} แล้ว?`)} className="h-9 px-3 rounded-lg font-semibold text-[#1b130b] bg-[#e8c472]">✓ โอนแล้ว</button>
               <input value={note[w.id] ?? ""} onChange={(e) => setNote({ ...note, [w.id]: e.target.value })} placeholder="สาเหตุโอนไม่สำเร็จ" className={`${inp} w-44`} style={{ borderColor: LINE }} />
@@ -101,7 +101,7 @@ export function SalesAdmin({ isCeo, cfg, purchases, reps, payouts }: { isCeo: bo
           <button type="button" disabled={!!busy || !nr.name.trim() || !nr.bank.trim() || nr.account.replace(/\D/g, "").length < 10 || !nr.acctName.trim()} title="ต้องกรอกชื่อ + บัญชีรับค่าคอมให้ครบ" onClick={async () => { const j = await call({ action: "rep_create", name: nr.name, phone: nr.phone, bank: { bank: nr.bank, account: nr.account, name: nr.acctName } }, "สร้าง Recruit แล้ว · ส่งลิงก์ด้านล่างให้เขา"); if (j?.ok) setNr({ name: "", phone: "", bank: "", account: "", acctName: "" }); }} className="h-10 px-4 rounded-xl font-semibold text-white bg-crimson-500 disabled:opacity-40">สร้าง Recruit</button>
         </div>
         <span className="text-[12px] text-[#9a8a85]">Recruit ภายนอกต้องมีบัญชีรับค่าคอม (ธนาคาร · เลขบัญชี · ชื่อบัญชี) — ไม่มีบัญชีจะขอรับค่าคอมไม่ได้</span>
-        {link && <div className="rounded-xl p-3 text-[12.5px] break-all" style={{ background: "#130e0e" }}>ลิงก์เข้าแดชบอร์ด (อายุ 90 วัน): <span className="select-all text-[#f0c75a]">{link}</span></div>}
+        {link && <div className="rounded-xl p-3 text-[12.5px] break-all" style={{ background: "#fffdf9" }}>ลิงก์เข้าแดชบอร์ด (อายุ 90 วัน): <span className="select-all text-[#f0c75a]">{link}</span></div>}
         <div className="rounded-xl border overflow-x-auto" style={{ borderColor: LINE }}>
           <div className="min-w-[720px]">
             <div className="grid grid-cols-[100px_minmax(0,1fr)_90px_80px_90px_110px_280px] gap-2 px-3 py-2 bg-[#130e0e] text-[#9a8a85] text-xs"><span>โค้ด</span><span>ชื่อ</span><span>ประเภท</span><span>เปิดเมม</span><span>ชวนหมอ</span><span>ค่าตอบแทนรวม</span><span /></div>
@@ -128,7 +128,7 @@ export function SalesAdmin({ isCeo, cfg, purchases, reps, payouts }: { isCeo: bo
             <span className="w-full text-[12px] text-[#9a8a85]">ระบบสุ่มรหัสผ่านให้ · ออกใหม่เมื่อไหร่ รหัสเดิมใช้ไม่ได้ทันที</span>
           </div>
         )}
-        {issued && <div data-issued-login className="rounded-xl p-3 text-[13.5px] flex flex-col gap-1" style={{ background: "#130e0e", border: "1px solid #4ade80" }}>
+        {issued && <div data-issued-login className="rounded-xl p-3 text-[13.5px] flex flex-col gap-1" style={{ background: "#fffdf9", border: "1px solid #4ade80" }}>
           <b>ส่งให้ {issued.name} (แสดงครั้งเดียว · ปิดหน้านี้แล้วดูอีกไม่ได้)</b>
           <span>เข้าที่: <span className="select-all text-[#f0c75a]">{typeof window !== "undefined" ? window.location.origin : ""}/sales</span></span>
           <span>ID: <span className="select-all text-[#f0c75a]">{issued.username}</span> · รหัสผ่าน: <span className="select-all text-[#f0c75a] font-mono">{issued.password}</span></span>
@@ -175,7 +175,7 @@ export function SalesAdmin({ isCeo, cfg, purchases, reps, payouts }: { isCeo: bo
         {purchases.filter((p) => p.status !== "pending").slice(0, 30).map((p) => (
           <div key={p.id} className="flex flex-wrap justify-between gap-2 border-t pt-1.5" style={{ borderColor: LINE }}>
             <span className="break-all">{p.customer_email} · {p.tier === "black" ? "Black" : "Gold"}{p.ref_code ? ` · โค้ด ${p.ref_code}` : ""}</span>
-            <span style={{ color: p.status === "credited" ? "#4ade80" : "#fca5a5" }}>{p.status === "credited" ? `เข้ากระเป๋า ${baht(p.credit_satang)}` : `ไม่ผ่าน · ${p.reason ?? ""}`} · {dt(p.credited_at ?? p.created_at)}</span>
+            <span style={{ color: p.status === "credited" ? "#2f7a46" : "#b42335" }}>{p.status === "credited" ? `เข้ากระเป๋า ${baht(p.credit_satang)}` : `ไม่ผ่าน · ${p.reason ?? ""}`} · {dt(p.credited_at ?? p.created_at)}</span>
           </div>
         ))}
       </section>

@@ -101,7 +101,7 @@ const H = { 'content-type': 'application/json', origin: B };
   const g = await fetch(B + `/sales/go?t=${st}`, { redirect: 'manual' });
   const SC = (g.headers.get('set-cookie') || '').split(';')[0]; ok('sales link sets cookie', SC.startsWith('mb_sales='));
   t = (await (await fetch(B + '/sales/me', { headers: { cookie: SC } })).text()).replace(/<!-- -->/g, '');
-  ok('/sales/me shows masked bank + logout', t.includes('••••••7776') && !t.includes('9998887776') && t.includes('ออกจากระบบ Sale Man'));
+  ok('/sales/me shows masked bank + logout', t.includes('••••••7776') && !t.includes('9998887776') && t.includes('ออกจากระบบ Recruit'));
   r = await fetch(B + '/api/sales/logout', { method: 'POST', headers: { cookie: SC, origin: B }, redirect: 'manual' });
   ok('logout clears mb_sales', /mb_sales=;/.test(r.headers.get('set-cookie') || '') && /max-age=0/i.test(r.headers.get('set-cookie') || ''), r.headers.get('set-cookie'));
 

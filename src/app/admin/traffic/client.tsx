@@ -15,7 +15,7 @@ const dshort = (d: string) => new Date(d + "T00:00:00Z").toLocaleDateString("th-
 const PAGE: Record<string, string> = { "/": "หน้าแรก", "/join": "รับสมัคร (หนุ่มหล่อ)", "/join/tom": "รับสมัคร (ทอมหล่อ)", "/join/pay": "หน้าจ่ายค่าสมัคร", "/map": "แผนที่", "/sales": "Recruit", "/join/me": "เข้าสู่ระบบ Part-Time", "/soon": "เร็ว ๆ นี้", "/partner": "พาร์ทเนอร์", "/market": "ร้านค้า" };
 const pageName = (p: string) => PAGE[p] ?? (p.startsWith("/p/") ? "โปรไฟล์ Part-Time" : p.startsWith("/join/i/") ? "ลิงก์เชิญ" : p.startsWith("/join/profile/") ? "โปรไฟล์ของ Part-Time (หลังบ้าน PT)" : p.startsWith("/join/s/") ? "ลิงก์ชวนของ Recruit" : p);
 const DEV: Record<string, string> = { mobile: "มือถือ", desktop: "คอมพิวเตอร์", tablet: "แท็บเล็ต" };
-const PALETTE = ["#f0c75a", "#7fd6a3", "#8ec5ff", "#f6a5c0", "#d9ccff", "#ffb07a", "#9a8a85"];
+const PALETTE = ["#f0c75a", "#2f7a46", "#2563a8", "#c0577e", "#5b3fb0", "#ffb07a", "#8a7b75"];
 
 function Bars({ rows, fmt = n, color = GOLD, label = (k: string) => k }: { rows: [string, number][]; fmt?: (x: number) => string; color?: string; label?: (k: string) => string }) {
   const max = Math.max(1, ...rows.map((r) => r[1]));
@@ -60,7 +60,7 @@ export function TrafficBoard({ s, days, ready }: { s: TrafficSummary; days: numb
     <div className="flex flex-col gap-4 text-[13.5px]">
       <div className="flex flex-wrap items-center gap-2">
         {([1, 7, 30, 90] as const).map((d) => (
-          <Link key={d} href={`/admin/traffic?d=${d}`} data-range={d} className="h-9 px-4 rounded-full border text-[12.5px] font-semibold grid place-items-center" style={d === days ? { background: GOLD, borderColor: GOLD, color: "#1a1206" } : { borderColor: LINE, color: "#d3c7bc" }}>{d === 1 ? "24 ชม." : `${d} วัน`}</Link>
+          <Link key={d} href={`/admin/traffic?d=${d}`} data-range={d} className="h-9 px-4 rounded-full border text-[12.5px] font-semibold grid place-items-center" style={d === days ? { background: GOLD, borderColor: GOLD, color: "#1a1206" } : { borderColor: LINE, color: "#5c4f48" }}>{d === 1 ? "24 ชม." : `${d} วัน`}</Link>
         ))}
         <span className="ml-auto text-[12px] text-[#9a8a85]">ข้อมูลสดจากเว็บ · โหลดหน้าใหม่เพื่ออัปเดต</span>
       </div>
@@ -71,7 +71,7 @@ export function TrafficBoard({ s, days, ready }: { s: TrafficSummary; days: numb
         {kpi.map(([k, v, sub], i) => (
           <div key={k} className={`${CARD} px-4 py-3.5`} style={{ borderColor: LINE, background: i === 0 ? "linear-gradient(150deg, rgba(240,200,90,.16), #1c1414 70%)" : undefined }}>
             <div className="text-[12px] text-[#cdbfb3]">{k}</div>
-            <div className="font-lux font-bold text-[26px] leading-tight" style={{ color: i === 0 ? "#ffd76a" : "#f6efe4" }}>{v}</div>
+            <div className="font-lux font-bold text-[26px] leading-tight" style={{ color: i === 0 ? "#ffd76a" : "#2a1d1a" }}>{v}</div>
             <div className="text-[11.5px] text-[#9a8a85]">{sub}</div>
           </div>
         ))}
@@ -113,31 +113,31 @@ export function TrafficBoard({ s, days, ready }: { s: TrafficSummary; days: numb
         <div className={`${CARD} p-4 flex flex-col gap-3`} style={{ borderColor: LINE }}>
           <b className="text-[15px]">มาจากไหน</b>
           <Bars rows={s.sources} />
-          {!!s.campaigns.length && <><b className="text-[13.5px] mt-1 text-[#cdbfb3]">แคมเปญ (utm_campaign)</b><Bars rows={s.campaigns} color="#7fd6a3" /></>}
+          {!!s.campaigns.length && <><b className="text-[13.5px] mt-1 text-[#cdbfb3]">แคมเปญ (utm_campaign)</b><Bars rows={s.campaigns} color="#2f7a46" /></>}
         </div>
         <div className={`${CARD} p-4 flex flex-col gap-3`} style={{ borderColor: LINE }}>
           <b className="text-[15px]">อุปกรณ์</b>
           <div className="flex h-3 rounded-full overflow-hidden">{s.devices.map(([k, v], i) => <div key={k} style={{ width: `${(v / devTotal) * 100}%`, background: PALETTE[i] }} title={`${DEV[k] ?? k} ${v}`} />)}</div>
           <div className="flex flex-wrap gap-3 text-[12.5px]">{s.devices.map(([k, v], i) => <span key={k} className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full" style={{ background: PALETTE[i] }} />{DEV[k] ?? k} {Math.round((v / devTotal) * 100)}%</span>)}</div>
           <b className="text-[15px] mt-2">จังหวัด / เมือง</b>
-          <Bars rows={s.cities} color="#8ec5ff" />
+          <Bars rows={s.cities} color="#2563a8" />
         </div>
         <div className={`${CARD} p-4 flex flex-col gap-3`} style={{ borderColor: LINE }}>
           <b className="text-[15px]">ช่วงเวลาที่คนเข้า (เวลาไทย)</b>
           <div data-hours className="grid grid-cols-12 gap-1">
-            {s.hours.map((v, h) => <div key={h} className="aspect-square rounded-md grid place-items-center text-[10px]" title={`${h}:00 · ${v} ครั้ง`} style={{ background: v ? `rgba(240,200,90,${0.12 + (v / maxHour) * 0.88})` : "rgba(255,255,255,.04)", color: v / maxHour > 0.55 ? "#1a1206" : "#9a8a85" }}>{h}</div>)}
+            {s.hours.map((v, h) => <div key={h} className="aspect-square rounded-md grid place-items-center text-[10px]" title={`${h}:00 · ${v} ครั้ง`} style={{ background: v ? `rgba(240,200,90,${0.12 + (v / maxHour) * 0.88})` : "rgba(255,255,255,.04)", color: v / maxHour > 0.55 ? "#1a1206" : "#8a7b75" }}>{h}</div>)}
           </div>
           <b className="text-[15px] mt-2">หน้าแรกที่คนเข้ามา (Landing)</b>
-          <Bars rows={s.landing} label={pageName} color="#f6a5c0" />
+          <Bars rows={s.landing} label={pageName} color="#c0577e" />
         </div>
       </div>
 
       <div className={`${CARD} p-4 flex flex-col gap-3`} style={{ borderColor: LINE }}>
         <div role="tablist" className="flex flex-wrap gap-1.5">
           {([["pages", "หน้าที่ดู"], ["who", `ผู้ใช้ที่ระบุตัวได้ (${s.who.length})`], ["recent", "การเข้าชมล่าสุด"]] as const).map(([k, l]) => (
-            <button key={k} role="tab" aria-selected={tab === k} data-traffic-tab={k} onClick={() => setTab(k)} className="h-9 px-4 rounded-full border text-[12.5px] font-semibold" style={tab === k ? { background: GOLD, borderColor: GOLD, color: "#1a1206" } : { borderColor: LINE, color: "#d3c7bc" }}>{l}</button>
+            <button key={k} role="tab" aria-selected={tab === k} data-traffic-tab={k} onClick={() => setTab(k)} className="h-9 px-4 rounded-full border text-[12.5px] font-semibold" style={tab === k ? { background: GOLD, borderColor: GOLD, color: "#1a1206" } : { borderColor: LINE, color: "#5c4f48" }}>{l}</button>
           ))}
-          {tab === "who" && <button type="button" data-export-audience disabled={!audience.length} onClick={exportAudience} className="ml-auto h-9 px-4 rounded-full border text-[12.5px] font-semibold disabled:opacity-40" style={{ borderColor: "#7fd6a3", color: "#7fd6a3" }}>ส่งออกรายชื่อทำโฆษณา ({audience.length})</button>}
+          {tab === "who" && <button type="button" data-export-audience disabled={!audience.length} onClick={exportAudience} className="ml-auto h-9 px-4 rounded-full border text-[12.5px] font-semibold disabled:opacity-40" style={{ borderColor: "#2f7a46", color: "#2f7a46" }}>ส่งออกรายชื่อทำโฆษณา ({audience.length})</button>}
         </div>
 
         {tab === "pages" && (

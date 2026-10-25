@@ -28,7 +28,7 @@ ${r0.bank} ${r0.bank_account} · ${r0.bank_account_name}
     if (d.ok) router.refresh();
   };
   return (
-    <section className="rounded-2xl border p-3.5 flex flex-col gap-2.5" style={{ borderColor: "#f0a35a", background: "rgba(240,163,90,.06)" }}>
+    <section className="rounded-2xl border p-3.5 flex flex-col gap-2.5" style={{ borderColor: "#c2610f", background: "rgba(240,163,90,.06)" }}>
       <b className="text-[15px]">เปลี่ยนบัญชีรับเงิน · รอตรวจ ({rows.length})</b>
       <p className="m-0 text-[12.5px] text-[#cdbfb3]">ยังรับงานได้ตามปกติ แต่ถอนเงินไม่ได้จนกว่าจะตรวจ · ชื่อบัญชีต้องตรงกับชื่อในบัตรประชาชน</p>
       {msg && <p className="m-0 text-[13px] text-[#f0c75a]" role="status">{msg}{msg === EXPIRED && <> · <a href="/admin-login" className="underline">ไปหน้าเข้าสู่ระบบ</a></>}</p>}

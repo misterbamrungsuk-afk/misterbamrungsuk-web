@@ -37,7 +37,7 @@ export function EarningsAdmin({ initial }: { initial: EarningsSettings }) {
     <>
       <PageHead title="ราคาและส่วนแบ่ง (หน้าสมัครอบรม)" sub="PRICING · REVENUE SHARE · มีผลกับหน้า “รายได้และส่วนแบ่ง” และราคาบนการ์ดโปรไฟล์"
         right={<button onClick={save} disabled={busy || !dirty} className="btn-crimson h-11 px-5 rounded-xl font-semibold">{busy ? "กำลังบันทึก…" : dirty ? "บันทึก" : "✓ บันทึกแล้ว"}</button>} />
-      {msg && <p role="status" className="mb-3 text-sm" style={{ color: msg.ok ? "#7fd6a3" : "#ff8a9a" }}>{msg.t}</p>}
+      {msg && <p role="status" className="mb-3 text-sm" style={{ color: msg.ok ? "#2f7a46" : "#ff8a9a" }}>{msg.t}</p>}
       <div className="flex flex-col xl:flex-row gap-4 items-start">
         <div className="flex-1 min-w-0 flex flex-col gap-4 w-full">
           <Card>
@@ -98,7 +98,7 @@ export function EarningsAdmin({ initial }: { initial: EarningsSettings }) {
           </Card>
         </div>
 
-        <aside className="w-full xl:w-[320px] shrink-0 p-4 rounded-[18px] bg-[#2c1a1f] flex flex-col gap-2.5 xl:sticky xl:top-6">
+        <aside className="w-full xl:w-[320px] shrink-0 p-4 rounded-[18px] bg-[#f6ecd2] flex flex-col gap-2.5 xl:sticky xl:top-6">
           <div className="font-semibold">ตัวอย่างที่ผู้สมัครเห็น</div>
           <div className="text-[13px] text-ink-200">สายนวด · TOP · {ex} นัด/เดือน</div>
           <div className="font-semibold text-[30px] text-[#e8c472] tabular-nums">{baht(ex * s.price3h.massage.top * pct / 100)}</div>

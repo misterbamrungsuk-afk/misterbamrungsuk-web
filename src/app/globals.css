@@ -451,3 +451,54 @@ html { scroll-behavior: smooth; }
 }
 .secret-glow { animation: secretGlow 2.6s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .secret-glow { animation: none; } }
+
+/* ── หลังบ้านแอดมิน ธีมสว่าง (canvas "Admin Light Theme" · 25 ต.ค. 2569) ──
+   สลับสเกล ink (ดำ→ครีม/ขาว) + ทอง/แดงให้อ่านได้บนพื้นสว่าง · แทนสี hex เข้มที่เขียนตรงในหน้าแอดมิน */
+.admin-light {
+  --color-ink-950: #fbf8f3;
+  --color-ink-900: #f6f0e7;
+  --color-ink-850: #fffdf9;
+  --color-ink-800: #ffffff;
+  --color-ink-700: #f3ece2;
+  --color-ink-600: #e7ddcf;
+  --color-ink-500: #cfc2b1;
+  --color-ink-400: #a39587;
+  --color-ink-300: #7d6f66;
+  --color-ink-200: #5c4f48;
+  --color-ink-100: #2a1d1a;
+  --color-gold-200: #8a6516;
+  --color-gold-300: #a8781f;
+  --color-gold-400: #b8891f;
+  --color-gold-500: #c9a24a;
+  --color-gold-600: #a8862c;
+  --color-crimson-100: #fde8eb;
+  --color-crimson-200: #b42335;
+  --color-crimson-300: #c9283d;
+  --al-bg: #f6f0e7; --al-panel: #efe6da; --al-card: #ffffff; --al-line: #ebe2d5;
+  --al-text: #2a1d1a; --al-text2: #5c4f48; --al-muted: #8a7b75; --al-gold: #a8781f; --al-gold-bd: #d4b25c;
+  color: var(--al-text);
+  background: var(--al-bg);
+  color-scheme: light;
+}
+.admin-light .text-\[\#f6efe4\], .admin-light .text-\[\#f3ead9\] { color: var(--al-text); }
+.admin-light .text-\[\#d3c7bc\], .admin-light .text-\[\#d9c9b4\] { color: var(--al-text2); }
+.admin-light .text-\[\#cdbfb3\] { color: #6b5d58; }
+.admin-light .text-\[\#9a8a85\], .admin-light .text-\[\#b5a596\], .admin-light .text-\[\#8a7b75\] { color: var(--al-muted); }
+.admin-light .text-\[\#ffd76a\], .admin-light .text-\[\#f0c75a\], .admin-light .text-\[\#eed58a\], .admin-light .text-\[\#e8c472\] { color: var(--al-gold); }
+.admin-light .text-\[\#fecaca\], .admin-light .text-\[\#fca5a5\], .admin-light .text-\[\#ff8a9a\] { color: #b42335; }
+.admin-light .text-\[\#4ade80\], .admin-light .text-\[\#7fd6a3\] { color: #2f7a46; }
+.admin-light .text-\[\#c4b5fd\], .admin-light .text-\[\#e9e1ff\] { color: #6b4fc4; }
+.admin-light .text-\[\#ffb59c\], .admin-light .text-\[\#f0a35a\] { color: #c2610f; }
+.admin-light .bg-\[\#130e0e\], .admin-light .bg-\[\#0e0a0a\], .admin-light .bg-\[\#171211\] { background-color: var(--al-card); }
+.admin-light .bg-\[\#241717\], .admin-light .bg-\[\#1c1414\], .admin-light .bg-\[\#211a18\], .admin-light .bg-\[\#251d1b\] { background-color: var(--al-card); }
+.admin-light .border-\[\#f0c75a\], .admin-light .border-\[\#ffd76a\] { border-color: var(--al-gold-bd); }
+.admin-light [class*="border-[rgba(240,200,90"], .admin-light [class*="border-[rgba(245,210,110"] { border-color: var(--al-line); }
+.admin-light .chip { background: #fff; border-color: var(--al-line); color: var(--al-text2); }
+.admin-light .chip-gold { background: #f6ecd2; border-color: var(--al-gold-bd); color: var(--al-gold); }
+.admin-light .btn-ghost { color: var(--al-text); border-color: var(--al-line); }
+.admin-light input, .admin-light select, .admin-light textarea { color-scheme: light; }
+.admin-light .input-dark { background: #fff; border-color: var(--al-line); color: var(--al-text); }
+.admin-light .font-lux, .admin-light h1.font-lux { font-family: var(--font-noto-serif), var(--font-cormorant), var(--font-kanit), serif; }
+/* สลับโหมดในเมนูแอดมิน: ปุ่มที่เลือกเป็นสีเข้ม (ตาม canvas) แทนแดง */
+.admin-light [aria-label="สลับโหมดผู้ใช้"] { background: #fff; border-color: var(--al-line); }
+.admin-light [aria-label="สลับโหมดผู้ใช้"] [aria-selected="true"] { background: var(--al-text); color: #fff; }

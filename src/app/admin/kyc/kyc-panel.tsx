@@ -10,10 +10,10 @@ import { FlashMsg, useConfirm, useFlash } from "../confirm";
 const file = (p: string) => `/api/admin/applicants/file?path=${encodeURIComponent(p)}`;
 
 export const KYC_LABEL: Record<KycStatus, [string, string]> = {
-  none: ["ยังไม่ส่งเอกสาร", "#9a8a85"],
+  none: ["ยังไม่ส่งเอกสาร", "#8a7b75"],
   submitted: ["รอตรวจเอกสาร", "#eed58a"],
-  approved: ["✓ อนุมัติแล้ว", "#4ade80"],
-  rejected: ["ตีกลับ · รอผู้สมัครแก้", "#fca5a5"],
+  approved: ["✓ อนุมัติแล้ว", "#2f7a46"],
+  rejected: ["ตีกลับ · รอผู้สมัครแก้", "#b42335"],
 };
 
 /** เหตุผลสำเร็จรูป — แตะเพื่อเติมลงช่อง แก้ต่อได้ */
@@ -116,7 +116,7 @@ export function KycPanel({ row, onSaved, canDecide = true, canLink = true }: { r
                   <div className="flex flex-wrap gap-1 pl-6">
                     {(PRESETS[i.key] ?? []).map((p) => (
                       <button key={p} type="button" onClick={() => setFail((f) => ({ ...f, [i.key]: p }))} className="h-7 px-2.5 rounded-full border text-[11.5px]"
-                        style={{ borderColor: fail[i.key] === p ? "#f0c75a" : "rgba(240,200,90,.3)", color: fail[i.key] === p ? "#f0c75a" : "#cdbfb3" }}>{p}</button>
+                        style={{ borderColor: fail[i.key] === p ? "#f0c75a" : "rgba(240,200,90,.3)", color: fail[i.key] === p ? "#f0c75a" : "#6b5d58" }}>{p}</button>
                     ))}
                   </div>
                   <input value={fail[i.key]} onChange={(e) => setFail((f) => ({ ...f, [i.key]: e.target.value }))} placeholder="เหตุผล / สิ่งที่ต้องแก้" maxLength={300}

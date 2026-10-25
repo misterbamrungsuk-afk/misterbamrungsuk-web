@@ -10,7 +10,7 @@ type W = { id: string; parttime_mb: string; amount_satang: number; fee_satang: n
 const GOLD = "#f0c75a";
 const LINE = "rgba(240,200,90,.38)";
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("en-US", { maximumFractionDigits: 2 });
-const ST: Record<string, [string, string]> = { requested: ["รอ CEO อนุมัติ", "#9a8a85"], approved: ["CEO อนุมัติแล้ว · รอโอน", "#eed58a"], batched: ["อยู่ในรอบโอน", "#eed58a"], paid: ["โอนแล้ว", "#4ade80"], failed: ["โอนไม่สำเร็จ", "#fca5a5"] };
+const ST: Record<string, [string, string]> = { requested: ["รอ CEO อนุมัติ", "#8a7b75"], approved: ["CEO อนุมัติแล้ว · รอโอน", "#eed58a"], batched: ["อยู่ในรอบโอน", "#eed58a"], paid: ["โอนแล้ว", "#2f7a46"], failed: ["โอนไม่สำเร็จ", "#b42335"] };
 
 export default function AdminPayoutsPage() {
   const [rows, setRows] = useState<W[] | null>(null);
@@ -52,9 +52,9 @@ export default function AdminPayoutsPage() {
       {confirmUi}
       <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ค้นหารหัส MB · ชื่อ · เลขบัญชี" aria-label="ค้นหาคำขอถอน" className="h-10 w-72 max-w-full rounded-full border bg-[#130e0e] px-4 text-[13px] text-[#f6efe4] outline-none focus:border-[#f0c75a]" style={{ borderColor: LINE }} />
       {batches.map((bid) => (
-        <div key={bid} className="rounded-2xl border px-4 py-3 flex flex-wrap gap-3 justify-between items-center" style={{ borderColor: LINE, background: "#241717" }}>
+        <div key={bid} className="rounded-2xl border px-4 py-3 flex flex-wrap gap-3 justify-between items-center" style={{ borderColor: LINE, background: "#ffffff" }}>
           <span>รอบโอน <b className="text-[#ffd76a]">{bid}</b> · {(rows ?? []).filter((w) => w.batch_id === bid && w.status === "batched").length} รายการ · {baht((rows ?? []).filter((w) => w.batch_id === bid && w.status === "batched").reduce((t, w) => t + w.net_satang, 0))}</span>
-          <a href={`/api/admin/withdrawals?csv=${bid}`} className="h-9 px-4 rounded-full border grid place-items-center text-[13px]" style={{ borderColor: LINE, color: "#d3c7bc" }}>ดาวน์โหลดไฟล์โอนกลุ่ม (CSV)</a>
+          <a href={`/api/admin/withdrawals?csv=${bid}`} className="h-9 px-4 rounded-full border grid place-items-center text-[13px]" style={{ borderColor: LINE, color: "#5c4f48" }}>ดาวน์โหลดไฟล์โอนกลุ่ม (CSV)</a>
         </div>
       ))}
       <div className="rounded-2xl border overflow-x-auto text-[13px]" style={{ borderColor: LINE }}>

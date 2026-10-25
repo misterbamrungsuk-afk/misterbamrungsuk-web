@@ -7,7 +7,7 @@ import { PushButton } from "@/components/push-button";
 
 const KIND: Record<string, [string, string]> = {
   sos: ["SOS", "#ef4444"], recon_alert: ["ยอดเงินไม่ตรง", "#f59e0b"], spa_full: ["สปาห้องเต็ม", "#e8c472"], customer_delete: ["ขอลบบัญชี", "#a78bfa"],
-  topup_pending: ["เติมเงินรอตรวจ", "#60a5fa"], tax_invoice: ["ขอใบกำกับภาษี", "#93c5fd"], report: ["รายงานผู้ใช้", "#f472b6"], withdraw_req: ["คำขอถอน", "#34d399"], dispute: ["แจ้งปัญหา", "#fb923c"], cancel_req: ["ขอยกเลิก", "#fb923c"], chat_violation: ["แชทฝ่าฝืน", "#f472b6"],
+  topup_pending: ["เติมเงินรอตรวจ", "#60a5fa"], tax_invoice: ["ขอใบกำกับภาษี", "#2563a8"], report: ["รายงานผู้ใช้", "#f472b6"], withdraw_req: ["คำขอถอน", "#34d399"], dispute: ["แจ้งปัญหา", "#fb923c"], cancel_req: ["ขอยกเลิก", "#fb923c"], chat_violation: ["แชทฝ่าฝืน", "#f472b6"],
 };
 const linkify = (s: string) => s.split(/(https:\/\/maps\.google\.com\/\?q=[0-9.,-]+)/).map((p, i) => (p.startsWith("https://maps.google.com") ? <a key={i} href={p} target="_blank" rel="noreferrer" className="text-[#e8c472] underline">แผนที่</a> : p));
 
@@ -34,7 +34,7 @@ export function AlertsClient({ initial }: { initial: Notice[] }) {
       </div>
       {!list.length && <p className="rounded-2xl border border-ink-600 p-6 text-center text-ink-300">{filter === "open" ? "ไม่มีเรื่องค้าง ✓" : "ยังไม่มีแจ้งเตือน"}</p>}
       {list.map((n) => {
-        const [label, color] = KIND[n.kind] ?? [n.kind, "#cdbfb3"];
+        const [label, color] = KIND[n.kind] ?? [n.kind, "#6b5d58"];
         return (
           <div key={n.id} className="rounded-2xl border p-4 flex gap-3 items-start" style={{ borderColor: n.read_at ? "rgba(240,200,90,.2)" : color, background: n.read_at ? "transparent" : "rgba(255,255,255,.03)" }}>
             <span className="shrink-0 rounded-full px-2.5 h-6 grid place-items-center text-[11px] font-semibold text-black" style={{ background: color }}>{label}</span>
