@@ -232,11 +232,11 @@ const row = async (id) => (await S.patchApp(id, { line_joined: false })).row || 
     await home.goto(BASE + '/p/' + A3.pid, { waitUntil: 'networkidle' });
     ok('public profile page opens', (await home.locator('body').innerText()).includes(A3.nick));
     await home.close();
-    // ผู้สมัครที่ยังไม่ผ่าน KYC เปิดแสดงไม่ได้
+    // ผู้สมัครที่เอกสาร KYC ยังไม่ผ่าน: เปิดรับงานได้ (26 ต.ค. 2569) แต่แจ้งว่าถอนเงินไม่ได้
     await page.getByLabel('ค้นหาผู้สมัคร').fill(A4.mb);
     await page.locator('button', { hasText: A4.mb }).first().click();
     const sw4 = page.locator('aside').first().getByRole('switch', { name: 'แสดงบนหน้าแรก' });
-    ok('listing switch disabled before KYC approved + says why', (await sw4.isDisabled()) && /เปิดแสดงได้เมื่อผ่าน KYC/.test(await page.locator('aside').first().innerText()));
+    ok('listing allowed before KYC approved + warns no withdraw', !(await sw4.isDisabled()) && /ถอนเงินไม่ได้จนกว่าเอกสารผ่าน/.test(await page.locator('aside').first().innerText()));
     await step('listing');
 
     // ── 12. อุทธรณ์ใบเตือน: รับ 1 · ไม่รับ 1 (ต้องมีเหตุผล) ──

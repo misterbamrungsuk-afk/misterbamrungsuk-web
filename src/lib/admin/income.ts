@@ -17,6 +17,7 @@ export interface IncomeRow {
   /** ผู้โอนตามระบบ (ชื่อ · รหัส) */ who: string;
   /** ชื่อผู้โอนบนสลิป (Slip2Go) */ sender: string | null;
   amount: number; status: IncomeStatus; href: string;
+  /** รูปสลิป (เปิดดูได้จากหน้ายอดเงินเข้า) */ slip?: string | null;
 }
 export const SYSTEM_LABEL: Record<IncomeSystem, string> = { parttime: "Part-Time", partner: "Partner สปา · โรงแรม", collab: "Collab · MB x Bars", market: "ร้านค้า Marketplace", customer: "ลูกค้า" };
 
@@ -32,7 +33,8 @@ export async function listIncome(): Promise<IncomeRow[]> {
     if (!a.amount) continue; // สมัครฟรี (ลิงก์เชิญ/ทอมหล่อ) ไม่มีเงินเข้า
     const x = extraOf(a);
     rows.push({ id: `app:${a.id}`, at: a.created_at, system: "parttime", kind: `ค่าสมัคร สาย ${a.package}`, who: `${a.first_name} ${a.last_name} · ${a.mb_code}`, sender: senderOf(x.slip_check), amount: a.amount,
-      status: a.status === "verified" ? "in" : a.status === "rejected" ? "rejected" : a.status === "refunded" ? "refunded" : "pending", href: "/admin/applicants" });
+      status: a.status === "verified" ? "in" : a.status === "rejected" ? "rejected" : a.status === "refunded" ? "refunded" : "pending", href: `/admin/applicants?q=${encodeURIComponent(a.mb_code)}`,
+      slip: a.docs.slip ? `/api/admin/applicants/file?path=${encodeURIComponent(a.docs.slip)}` : null });
   }
   for (const b of boosts) {
     if (b.paid_via !== "slip") continue;
@@ -51,7 +53,7 @@ export async function listIncome(): Promise<IncomeRow[]> {
   }
   for (const t of topups) {
     rows.push({ id: `topup:${t.id}`, at: t.created_at, system: "customer", kind: "เติมเงินกระเป๋า", who: t.customer_email ?? t.customer_id.slice(0, 10), sender: senderOf(t.slip_check), amount: Math.round(t.amount_satang / 100),
-      status: t.status === "credited" ? "in" : t.status === "rejected" ? "rejected" : "pending", href: "/admin/wallet" });
+      status: t.status === "credited" ? "in" : t.status === "rejected" ? "rejected" : "pending", href: "/admin/wallet", slip: t.slip_path ? `/api/wallet/slip?id=${t.id}` : null });
   }
   for (const m of members) {
     rows.push({ id: `member:${m.id}`, at: m.created_at, system: "customer", kind: `เปิดเมม ${m.tier === "black" ? "Black" : "Gold"}`, who: m.customer_email ?? m.customer_id.slice(0, 10), sender: senderOf(m.slip_check), amount: Math.round(m.pay_satang / 100),

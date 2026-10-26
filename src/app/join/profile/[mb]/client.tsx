@@ -10,7 +10,7 @@ import Link from "next/link";
 import { PtNav } from "./_ptnav";
 import { useRouter } from "next/navigation";
 import type { ProfileCard } from "@/lib/join/store";
-import { CERT_MSG, GATE_MSG, GATE_SHORT, MASSAGE_SKILL, isMassage } from "@/lib/join/pt-ui";
+import { CERT_MSG, GATE_MSG, GATE_SHORT, KYC_PAY_MSG, MASSAGE_SKILL, isMassage } from "@/lib/join/pt-ui";
 import type { Tier } from "@/lib/join/earnings-shared";
 import { EstimateCard, PromoCard, SaveLinkCard } from "./hub-cards";
 
@@ -166,6 +166,7 @@ export function ProfileHub({ d }: { d: HubData }) {
               <div><div className="text-[13px] text-[#d9c9b4] font-light">ยอดใช้ได้</div><div className="font-semibold text-[32px] leading-[1.15]">{baht(d.wallet.available)}</div><div className="text-[13px] text-[#d9c9b4] mt-0.5 font-light">รอปล่อยเงิน {baht(d.wallet.pending)} · รายได้เดือนนี้ {baht(d.wallet.month)}{d.wallet.bond != null && <> · เงินประกันงาน {baht(d.wallet.bond)}</>}</div></div>
               {/* ยังไม่อนุมัติ/ยังไม่เปิดโปรไฟล์ → ยังไม่ใช่ Part-Time ที่ทำงานจริง: ซ่อนถอน/โปรโมท/ชวนเปิดเมม (API ก็ตอบ 409) */}
               {!d.active && <p className="m-0 rounded-xl text-[13px] text-[#f6c38e] font-light leading-[1.5]" style={{ padding: "8px 12px", background: "rgba(240,163,90,.1)" }}>ถอนเงิน · โปรโมทโปรไฟล์ · ชวนเปิดเมม {GATE_SHORT}<span className="block text-[12px] text-[#d9c9b4]">{GATE_MSG}</span></p>}
+              {d.active && !d.kycApproved && <Link data-kyc-pay-warn href={`/join/kyc/${d.mb}${q}`} className="rounded-xl text-[13px] text-[#f6c38e] font-light leading-[1.5] hover:text-[#f6c38e]" style={{ padding: "8px 12px", background: "rgba(240,163,90,.1)" }}>⚠ {KYC_PAY_MSG}<span className="block text-[12px] text-[#e8c472]">ส่งเอกสารให้ครบ ›</span></Link>}
               {d.active && <div className="grid grid-cols-2 gap-2">
                 <Link href={`/join/profile/${d.mb}/withdraw${q}`} className="min-h-11 rounded-xl text-[14px] font-semibold grid place-items-center text-[#f3ead9] hover:text-[#f3ead9]" style={{ background: "rgba(243,234,217,0.1)" }}>ถอนเงิน</Link>
                 <button type="button" onClick={() => setPromoOpen(!promoOpen)} aria-expanded={promoOpen} className="min-h-11 rounded-xl bg-[#e8c472] text-[#1b130b] text-[14px] font-semibold">{promoOpen ? "ปิด" : "โปรโมทโปรไฟล์"}</button>

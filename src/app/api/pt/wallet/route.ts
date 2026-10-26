@@ -28,7 +28,7 @@ export async function POST(req: Request) {
   const b = (await req.json().catch(() => ({}))) as { mb?: string; t?: string; amount?: number };
   const a = await currentParttime(String(b.mb ?? ""), b.t);
   if (!a) return NextResponse.json({ ok: false }, { status: 403 });
-  if (extraOf(a).kyc_status !== "approved") return NextResponse.json({ ok: false, error: "ถอนได้หลังทีมงานอนุมัติเอกสารยืนยันตัวตน" }, { status: 409 });
+  if (extraOf(a).kyc_status !== "approved") return NextResponse.json({ ok: false, error: "เอกสารยืนยันตัวตนยังไม่ครบ · เบิก/ถอนเงินได้หลังทีมงานตรวจเอกสารผ่าน" }, { status: 409 });
   // ยังไม่เปิดโปรไฟล์ให้ลูกค้าเห็น = ยังไม่ใช่ Part-Time ที่ทำงานจริง → ถอนไม่ได้
   if (!isPtActive(extraOf(a))) return NextResponse.json({ ok: false, error: GATE_MSG }, { status: 409 });
   if (extraOf(a).bank_review) return NextResponse.json({ ok: false, error: "บัญชีรับเงินใหม่รอทีมงานตรวจ · ถอนได้หลังตรวจเสร็จ (ปกติภายใน 1 วันทำการ)" }, { status: 409 });

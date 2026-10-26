@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { IncomeRow, IncomeStatus, IncomeSystem } from "@/lib/admin/income";
 import { csvCell } from "@/lib/csv";
 
@@ -24,6 +24,7 @@ const since = (r: Range) => {
 };
 
 export function IncomeBoard({ rows }: { rows: IncomeRow[] }) {
+  const router = useRouter();
   const [sys, setSys] = useState<IncomeSystem | "all">("all");
   const [st, setSt] = useState<IncomeStatus | "all">("all");
   const [range, setRange] = useState<Range>("month");
@@ -68,10 +69,10 @@ export function IncomeBoard({ rows }: { rows: IncomeRow[] }) {
 
       <div className="rounded-2xl border overflow-x-auto" style={{ borderColor: LINE }}>
         <div className="min-w-[860px]">
-          <div className="grid grid-cols-[120px_150px_minmax(0,1.2fr)_minmax(0,1.2fr)_minmax(0,1fr)_100px_90px] gap-2 px-3.5 py-2.5 bg-[#130e0e] text-[#9a8a85] text-xs"><span>เวลา</span><span>ระบบ</span><span>รายการ</span><span>ผู้โอน (ในระบบ)</span><span>ชื่อบนสลิป</span><span className="text-right">ยอด</span><span>สถานะ</span></div>
+          <div className="grid grid-cols-[120px_150px_minmax(0,1.2fr)_minmax(0,1.2fr)_minmax(0,1fr)_100px_90px_80px] gap-2 px-3.5 py-2.5 bg-[#130e0e] text-[#9a8a85] text-xs"><span>เวลา</span><span>ระบบ</span><span>รายการ</span><span>ผู้โอน (ในระบบ)</span><span>ชื่อบนสลิป</span><span className="text-right">ยอด</span><span>สถานะ</span><span>สลิป</span></div>
           {!shown.length && <p className="m-0 p-5 text-center text-[#9a8a85]">ไม่มีรายการในช่วงนี้</p>}
           {shown.map((r) => (
-            <Link key={r.id} href={r.href} data-income-row={r.system} className="grid grid-cols-[120px_150px_minmax(0,1.2fr)_minmax(0,1.2fr)_minmax(0,1fr)_100px_90px] gap-2 px-3.5 py-2.5 border-t items-center text-inherit hover:bg-[rgba(240,200,90,.05)]" style={{ borderColor: LINE }}>
+            <div key={r.id} role="link" tabIndex={0} onClick={() => router.push(r.href)} onKeyDown={(e) => { if (e.key === "Enter") router.push(r.href); }} data-income-row={r.system} title="กดเพื่อไปที่รายการนี้" className="grid grid-cols-[120px_150px_minmax(0,1.2fr)_minmax(0,1.2fr)_minmax(0,1fr)_100px_90px_80px] gap-2 px-3.5 py-2.5 border-t items-center text-inherit hover:bg-[rgba(240,200,90,.05)] cursor-pointer" style={{ borderColor: LINE }}>
               <span className="text-[12.5px] text-[#cdbfb3]">{dt(r.at)}</span>
               <span className="font-semibold" style={{ color: COLOR[r.system] }}>{LABEL[r.system]}</span>
               <span className="truncate">{r.kind}</span>
@@ -79,11 +80,12 @@ export function IncomeBoard({ rows }: { rows: IncomeRow[] }) {
               <span className="truncate text-[#cdbfb3]">{r.sender ?? "—"}</span>
               <span className="text-right font-semibold tabular-nums">{baht(r.amount)}</span>
               <span style={{ color: ST[r.status][1] }}>{ST[r.status][0]}</span>
-            </Link>
+              <span>{r.slip ? <a data-income-slip href={r.slip} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center h-7 px-2.5 rounded-full text-[12px] font-semibold" style={{ background: "#f6ecd2", color: "#8a6516" }}>ดูสลิป</a> : <span className="text-[#9a8a85]">—</span>}</span>
+            </div>
           ))}
         </div>
       </div>
-      <p className="m-0 text-[12px] text-[#9a8a85]">นับเฉพาะเงินที่โอนเข้าบริษัทจริง (QR + สลิป) · ชื่อบนสลิปมาจาก Slip2Go · กดแถวเพื่อไปหน้าจัดการของระบบนั้น</p>
+      <p className="m-0 text-[12px] text-[#9a8a85]">นับเฉพาะเงินที่โอนเข้าบริษัทจริง (QR + สลิป) · ชื่อบนสลิปมาจาก Slip2Go · กดแถวเพื่อไปที่รายการนั้น (ค่าสมัคร → ผู้สมัครคนนั้น) · กด “ดูสลิป” เพื่อเปิดรูปสลิป</p>
     </div>
   );
 }

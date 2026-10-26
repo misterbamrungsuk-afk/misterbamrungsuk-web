@@ -72,8 +72,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const cur = await getById(id);
     if (!cur) return NextResponse.json({ ok: false }, { status: 404 });
     const x = extraOf(cur);
-    if (body.listed && (cur.status !== "verified" || x.kyc_status !== "approved" || !(x.photos?.length || cur.docs.photo)))
-      return NextResponse.json({ ok: false, error: "แสดงได้เมื่อชำระแล้ว ผ่าน KYC และมีรูปโปรไฟล์" }, { status: 400 });
+    // เอกสาร KYC ไม่ครบก็เปิดได้ (26 ต.ค. 2569) — Part-Time ถอนเงินไม่ได้จนกว่าเอกสารผ่าน
+    if (body.listed && (cur.status !== "verified" || !(x.photos?.length || cur.docs.photo)))
+      return NextResponse.json({ ok: false, error: "แสดงได้เมื่อชำระแล้ว (หรือสมัครฟรี) และมีรูปโปรไฟล์" }, { status: 400 });
     if (body.listed && x.inactive) return NextResponse.json({ ok: false, error: "Part-Time คนนี้เป็น Non Active · ตั้งเป็น Active ก่อน" }, { status: 400 });
     // Secret ยังไม่มีราคา (แอดมินต้องตั้งเอง) → ยังเปิดแสดงไม่ได้
     if (body.listed && x.tier === "secret" && !x.secret_price)

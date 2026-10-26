@@ -35,7 +35,7 @@ export default async function WithdrawPage({ params, searchParams }: { params: P
             <div className={box} style={{ padding: "8px 12px", background: "rgba(243,234,217,0.07)" }}><div className="text-[12px] text-[#b5a596] font-light">ถอนแล้วเดือนนี้</div><div className="text-[15px] font-semibold tabular-nums">{baht(paidMonth / 100)}</div></div>
           </div>
         </div>
-        <WithdrawForm avail={Math.floor(w.available / 100)} acct={acct} bankHref={`/join/bank/${c.mb}${c.q}`} mb={c.mb} t={c.t} rules={{ min: m.minWithdraw, feePct: m.feePct, whtPct: m.whtPct }} kycOk={extraOf(c.row).kyc_status === "approved"} gate={extraOf(c.row).kyc_status === "approved" && !isPtActive(extraOf(c.row)) ? GATE_MSG : ""} />
+        <WithdrawForm avail={Math.floor(w.available / 100)} acct={acct} bankHref={`/join/bank/${c.mb}${c.q}`} mb={c.mb} t={c.t} rules={{ min: m.minWithdraw, feePct: m.feePct, whtPct: m.whtPct }} kycOk={extraOf(c.row).kyc_status === "approved"} gate={!isPtActive(extraOf(c.row)) ? GATE_MSG : ""} />
         <div>
           <div className="font-medium text-[16px]" style={{ margin: "4px 0 2px" }}>ประวัติการถอน</div>
           {!ws.length ? <div className="text-[14px] font-light text-[#b5a596]" style={{ padding: "11px 0" }}>ยังไม่มีรายการ</div> : ws.map((x) => (

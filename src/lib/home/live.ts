@@ -22,7 +22,7 @@ export const publicId = (mb: string) => "r" + createHash("sha256").update(`mb-pu
 
 export function isLive(a: Applicant) {
   const x = extraOf(a);
-  return a.status === "verified" && x.kyc_status === "approved" && !!x.listed && !x.inactive && !x.work?.paused && !x.delete_requested_at && !!((x.photos?.length ?? 0) || a.docs.photo);
+  return a.status === "verified" && !!x.listed && !x.inactive && !x.work?.paused && !x.delete_requested_at && !!((x.photos?.length ?? 0) || a.docs.photo);
 }
 
 /** รูปที่เปิดสาธารณะได้ (เรียงตามรูปโปรไฟล์ · รูปแรก = รูปหลัก) */

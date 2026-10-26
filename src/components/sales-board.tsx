@@ -45,10 +45,16 @@ export function SalesBoard({ who, mb, t, summary, link, tiers, boostMult, recrui
           <b className="text-[16px]">ชวนหมอ (Part-Time) สมัคร</b>
           <div className="flex items-center gap-2 rounded-xl bg-[#171211]" style={{ padding: "8px 10px" }}><span className="text-[12.5px] text-[#b5a596] shrink-0">เลขแนะนำของคุณ</span><b data-recruit-code className="text-[20px] tracking-[.12em] select-all" style={{ color: GOLD }}>{recruit.code}</b>
             <button type="button" onClick={() => copy(recruit.code, "rcode")} className="ml-auto h-10 px-3 rounded-lg text-[13px] font-semibold" style={{ background: "rgba(232,196,114,.18)", color: GOLD }}>{copied === "rcode" ? "คัดลอกแล้ว" : "คัดลอกเลข"}</button></div>
-          <div className="flex items-center gap-2 rounded-xl bg-[#171211] text-[13px]" style={{ padding: "8px 10px" }}><span className="flex-1 min-w-0 truncate select-all text-[#d9c9b4]">{recruit.link}</span>
-            <button type="button" onClick={() => copy(recruit.link, "rlink")} className="h-10 px-3 rounded-lg text-[13px] font-semibold text-[#1b130b] bg-[#e8c472]">{copied === "rlink" ? "คัดลอกแล้ว" : "คัดลอกลิงก์"}</button></div>
+          {/* ลิงก์ชวน 2 แบบ (26 ต.ค. 2569): เสียเงิน = หนุ่มหล่อ (ชำระค่าสมัคร) · ฟรี = ทอมหล่อ (หักค่าสมัครจากงาน) */}
+          {([["rlink", "ลิงก์สมัครแบบเสียเงิน", "หนุ่มหล่อ · ชำระค่าสมัคร · ได้ค่าแนะนำเมื่อผู้สมัครชำระ", recruit.link], ["rfree", "ลิงก์สมัครฟรี", "ทอมหล่อ · ไม่ต้องจ่ายตอนสมัคร · ได้ค่าแนะนำเมื่อผู้สมัครได้งานแรก", `${recruit.link}?g=tom`]] as const).map(([k, t, sub, url]) => (
+            <div key={k} data-recruit-link={k} className="flex flex-col gap-1.5 rounded-xl bg-[#171211]" style={{ padding: "10px 12px" }}>
+              <span className="flex items-baseline justify-between gap-2"><b className="text-[14px]" style={{ color: k === "rfree" ? "#7fd6a3" : GOLD }}>{t}</b><span className="text-[11.5px] text-[#b5a596] text-right">{sub}</span></span>
+              <div className="flex items-center gap-2 text-[13px]"><span className="flex-1 min-w-0 truncate select-all text-[#d9c9b4]">{url}</span>
+                <button type="button" onClick={() => copy(url, k)} className="h-10 px-3 rounded-lg text-[13px] font-semibold text-[#1b130b] shrink-0" style={{ background: k === "rfree" ? "#7fd6a3" : "#e8c472" }}>{copied === k ? "คัดลอกแล้ว" : "คัดลอกลิงก์"}</button></div>
+            </div>
+          ))}
           <div className="rounded-xl bg-[#171211] flex items-baseline justify-between gap-2" style={{ padding: "10px 12px" }} data-recruit-fee><span className="text-[13px] text-[#d9c9b4]">ค่าแนะนำ ทุกแผน (ชาย · ทอม)</span><b className="text-[20px]" style={{ color: GOLD }}>{bahtN(500)} / คน</b></div>
-          <span className="text-[12.5px] text-[#b5a596] leading-[1.6]">หมอเปิดลิงก์นี้แล้วสมัครภายใน 30 วัน หรือกรอกเลขแนะนำของคุณตอนสมัคร · สมัครแบบจ่ายเงิน: ได้เมื่อหมอชำระค่าสมัคร · สมัครฟรี (เชิญ/ทอมหล่อ): ได้เมื่อหมอได้งานแรก</span>
+          <span className="text-[12.5px] text-[#b5a596] leading-[1.6]">ผู้สมัครเปิดลิงก์แล้วสมัครภายใน 30 วัน หรือกรอกเลขแนะนำของคุณตอนสมัคร · สมัครแบบจ่ายเงิน: ได้เมื่อหมอชำระค่าสมัคร · สมัครฟรี (เชิญ/ทอมหล่อ): ได้เมื่อหมอได้งานแรก</span>
           {(() => { const c = summary.recruits?.filter((r) => r.credited).length ?? 0; const got = Math.floor(c / 5); return (
             <div data-recruit-bonus className="rounded-xl flex flex-col gap-1.5" style={{ padding: "10px 12px", background: "rgba(232,196,114,.1)", border: "1px solid rgba(232,196,114,.35)" }}>
               <div className="flex items-baseline justify-between gap-2"><span className="text-[13.5px] font-semibold">โบนัสครบทุก 5 คน</span><b className="text-[16px]" style={{ color: GOLD }}>+{bahtN(1000)}</b></div>

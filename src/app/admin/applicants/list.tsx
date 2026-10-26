@@ -59,18 +59,19 @@ const inGrp = (g: Grp) => (r: Applicant) => g === "all" || (g === "tom") === (r.
 /** ค้นหาจาก ชื่อ ชื่อเล่น รหัส MB เบอร์ อีเมล LINE */
 const hit = (r: Applicant, t: string) => !t || [r.first_name, r.last_name, `${r.first_name} ${r.last_name}`, r.nickname, r.mb_code, r.tel, r.tel?.replace(/\D/g, ""), r.email, r.line_id].some((x) => !!x && x.toLowerCase().includes(t));
 
-export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { initial: Applicant[]; cohorts: { key: string; name: string }[]; initialPkg: Pkg; note: string; role: AdminRole }) {
+export function ApplicantList({ initial, cohorts, initialPkg, note, role, initialQ = "" }: { initial: Applicant[]; cohorts: { key: string; name: string }[]; initialPkg: Pkg; note: string; role: AdminRole; initialQ?: string }) {
   const router = useRouter();
   const [rows, setRows] = useState(initial);
   const [pkg, setPkg] = useState<Pkg>(initialPkg);
   // แยกหมวด หนุ่มหล่อ / ทอมหล่อ (บอสสั่ง 22 ต.ค. 2569) — ตัวเลข การ์ดยอด และรายการทั้งหมดนับตามหมวดที่เลือก
   const [grp, setGrp] = useState<Grp>("all");
   const [ch, setCh] = useState<Ch | "all">("all");
-  const [filter, setFilter] = useState<Filter>(() => initial.some(isTodo) ? "todo" : "all");
+  // ?q= (เช่น กดจากหน้ายอดเงินเข้า) → เปิดที่ "ทั้งหมด" ให้เจอคนนั้นแน่นอน
+  const [filter, setFilter] = useState<Filter>(() => initialQ ? "all" : initial.some(isTodo) ? "todo" : "all");
   const [showDocs, setShowDocs] = useState(false);
   const { msg, flash, fromRes } = useFlash();
   const [confirmUi, ask] = useConfirm();
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(initialQ);
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState("");
   // ตัดสิน KYC ได้เฉพาะบทบาทที่เข้า /admin/kyc ได้ (API ก็ปฏิเสธ) — ไม่แสดงปุ่มที่กดแล้วโดนปฏิเสธ
@@ -230,7 +231,10 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
                     <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full border-2 border-white" style={{ background: off ? "#cfc2b1" : "#2f7a46" }} title={off ? "Non Active" : "Active"} />
                   </span>
                   <span className="min-w-0 flex-1 flex flex-col gap-1">
-                    <b className="text-[17px] leading-snug truncate" style={{ color: off ? MUTED : INK }}>{r.first_name} {r.last_name}</b>
+                    <span className="flex items-start justify-between gap-2">
+                      <b className="text-[17px] leading-snug min-w-0 truncate" style={{ color: off ? MUTED : INK }}>{r.first_name} {r.last_name}{r.nickname && <span data-nick className="font-semibold" style={{ color: "#8a6516" }}> ({r.nickname})</span>}</b>
+                      <span data-listed={r.listed ? "1" : "0"} className="shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-full text-[11.5px] font-semibold whitespace-nowrap" style={r.listed && !off ? { background: "#e4f3e8", color: "#2f7a46" } : { background: "#f1ebe3", color: "#8a7b75" }}>{r.listed && !off ? "● เปิดรับงาน" : "ยังไม่ขึ้นหน้าแรก"}</span>
+                    </span>
                     <span className="text-[13px]" style={{ color: MUTED }}>{r.mb_code} · สมัคร {thDate(r.created_at)}{off && <span data-nonactive className="ml-1 font-semibold" style={{ color: "#c2610f" }}>· Non Active</span>}</span>
                     <span className="flex flex-wrap gap-1.5 items-center mt-0.5"><ChPill r={r} />{r.group === "tom" && r.trans && <Tag t="info">Trans</Tag>}{r.sales_ref && <span data-sales-ref className="text-[12px]" style={{ color: MUTED }}>Recruit {r.sales_ref.code}</span>}{r.disclose === "no" && <span data-face-blur className="text-[12px]" style={{ color: MUTED }}>· เบลอหน้า</span>}</span>
                   </span>
@@ -262,7 +266,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
             </div>
             <div className="flex flex-col gap-1.5">
               <div data-drawer-ch><ChPill r={sel} /></div>
-              <div className="font-lux font-bold text-[24px] leading-tight">{sel.first_name} {sel.last_name}</div>
+              <div className="font-lux font-bold text-[24px] leading-tight">{sel.first_name} {sel.last_name}{sel.nickname && <span className="text-[18px]" style={{ color: "#8a6516" }}> ({sel.nickname})</span>}</div>
               <div className="text-[13.5px]" style={{ color: MUTED }}>{sel.mb_code} · สาย {sel.package} · {sel.group === "tom" ? (sel.trans ? "ทอม (Trans)" : "ทอมหล่อ") : "หนุ่มหล่อ"}{sel.inv_no ? ` · ${sel.inv_no}` : ""}{sel.ri_no ? ` · ${sel.ri_no}` : ""}</div>
             </div>
 
@@ -391,6 +395,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
             <div className="flex justify-between items-center gap-2"><span style={{ color: "#6b5d58" }}>แสดงบนหน้าแรก (เปิดรับงาน)</span>
               <button type="button" role="switch" aria-label="แสดงบนหน้าแรก" aria-checked={!!sel.listed} onClick={() => setListed(sel.id, !sel.listed)} className="w-11 h-[26px] rounded-full relative shrink-0" style={{ background: sel.listed ? GOLD : "#d9cfc4" }}><span className="absolute top-[3px] w-5 h-5 rounded-full bg-white shadow transition-all" style={{ left: sel.listed ? 21 : 3 }} /></button>
             </div>
+            {sel.kyc_status !== "approved" && <p data-kyc-pay-note className="m-0 -mt-2 text-[12px]" style={{ color: "#c2610f" }}>เอกสารยังไม่ผ่าน · เปิดรับงานได้ แต่ Part-Time เบิก/ถอนเงินไม่ได้จนกว่าเอกสารผ่าน</p>}
             <button onClick={() => setLine(sel.id, !sel.line_joined)} role="switch" aria-checked={!!sel.line_joined} className="flex justify-between items-center h-11 px-3 rounded-xl border bg-white" style={{ borderColor: LINE_BD }}>
               เข้ากลุ่ม LINE แล้ว
               <span className="w-[42px] h-6 rounded-full relative" style={{ background: sel.line_joined ? "#06c755" : "#d9cfc4" }}><span className="absolute top-[3px] w-[18px] h-[18px] rounded-full bg-white transition-all" style={{ left: sel.line_joined ? 21 : 3 }} /></span>
@@ -415,6 +420,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role }: { in
               <Row k="สกิลพิเศษ" v={sel.card.skills.map((s) => SKILL_TH[s] ?? s).join(" · ") || "-"} />
             </>}
             <Row k="ตรวจประวัติ" v={CRIMINAL[sel.criminal_check ?? "pending"][0]} />
+            <a data-view-profile href={`/api/admin/applicants/${sel.id}/preview`} target="_blank" rel="noopener noreferrer" title="เปิดหน้าเดียวกับที่ผู้สมัครเห็น · ระวังอย่ากดแก้ข้อมูลแทนผู้สมัคร" className="h-[46px] rounded-full font-semibold grid place-items-center" style={{ background: INK, color: "#fff" }}>ดูหน้าโปรไฟล์ของผู้สมัคร ↗</a>
             <button onClick={() => copyLine(sel)} className="h-[46px] rounded-full bg-[#06c755] text-white font-semibold">คัดลอกลิงก์กลุ่ม LINE</button>
             <button onClick={() => setShowDocs((v) => !v)} aria-expanded={showDocs} className="h-11 rounded-full border bg-white" style={{ borderColor: LINE_BD, color: "#5c4f48" }}>{showDocs ? "ซ่อนสลิปและเอกสาร" : "ดูสลิปและเอกสาร"}</button>
 
