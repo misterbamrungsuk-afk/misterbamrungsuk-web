@@ -232,7 +232,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role, initia
                   </span>
                   <span className="min-w-0 flex-1 flex flex-col gap-1">
                     <span className="flex items-start justify-between gap-2">
-                      <b className="text-[17px] leading-snug min-w-0 truncate" style={{ color: off ? MUTED : INK }}>{r.first_name} {r.last_name}{r.nickname && <span data-nick className="font-semibold" style={{ color: "#8a6516" }}> ({r.nickname})</span>}</b>
+                      <b className="text-[17px] leading-snug min-w-0 line-clamp-2" style={{ color: off ? MUTED : INK }}>{r.first_name} {r.last_name}{r.nickname && <span data-nick className="font-semibold" style={{ color: "#8a6516" }}> ({r.nickname})</span>}</b>
                       <span data-listed={r.listed ? "1" : "0"} className="shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-full text-[11.5px] font-semibold whitespace-nowrap" style={r.listed && !off ? { background: "#e4f3e8", color: "#2f7a46" } : { background: "#f1ebe3", color: "#8a7b75" }}>{r.listed && !off ? "● เปิดรับงาน" : "ยังไม่ขึ้นหน้าแรก"}</span>
                     </span>
                     <span className="text-[13px]" style={{ color: MUTED }}>{r.mb_code} · สมัคร {thDate(r.created_at)}{off && <span data-nonactive className="ml-1 font-semibold" style={{ color: "#c2610f" }}>· Non Active</span>}</span>
