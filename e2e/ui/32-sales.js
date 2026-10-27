@@ -1,4 +1,4 @@
-// Sale Man ภายนอก กดหน้าจอจริง: แอดมินสร้างบัญชี + บัญชีธนาคาร (API) → ลิงก์ /sales/go → แดชบอร์ด /sales/me (โค้ด · คัดลอกลิงก์ · บัญชีปิดเลข)
+// Sale Man ภายนอก กดหน้าจอจริง: แอดมินสร้างบัญชี + บัญชีธนาคาร (API) → ลิงก์ /recruit/go → แดชบอร์ด /sales/me (โค้ด · คัดลอกลิงก์ · บัญชีปิดเลข)
 // → ลูกค้าเปิดเมม Gold ผ่านลิงก์ /ref (กดจริง) + สลิป (API) → แอดมินอนุมัติ → ค่าคอมขึ้น → ขอรับค่าคอม → ออกจากระบบ
 // node e2e/ui/32-sales.js <iphone|pixel>  (รันผ่าน run.js · โหมดสาธิตเท่านั้น)
 const fs = require('fs');
@@ -17,18 +17,18 @@ const IMG = fs.readFileSync(IMGS[0]);
     const ACC = '987-6-54321-0';
     // ── แอดมินสร้าง Sale Man ──
     let r = (await api('/api/admin/sales', { method: 'POST', cookie: ADM, body: { action: 'rep_create', name, phone: '0891234567', bank: { bank: 'กสิกรไทย', account: ACC, name } } })).json;
-    ok('admin creates rep with bank → link', r?.ok && /\/sales\/go\?t=/.test(r.link || ''), r?.error);
+    ok('admin creates rep with bank → link', r?.ok && /\/recruit\/go\?t=/.test(r.link || ''), r?.error);
     const code = r?.rep?.code, link = r?.link?.replace(/^https?:\/\/[^/]+/, '');
     // ── หน้าขาย + ลิงก์ผิด ──
-    await go('/sales', 'landing');
+    await go('/recruit', 'landing');
     const lt = await page.locator('main').innerText();
     ok('landing: commission per tier shown', /รับ ฿/.test(lt) && /Gold|โกลด์/i.test(lt), lt.slice(0, 160));
     ok('landing: no "แพ็กเกจ"', !/แพ็กเกจ/.test(lt));
-    await go('/sales/go?t=bad.token', 'bad-link');
-    ok('bad link → expired message', /\/sales\?expired=1/.test(page.url()) && /หมดอายุ/.test(await page.locator('main').innerText()), page.url());
+    await go('/recruit/go?t=bad.token', 'bad-link');
+    ok('bad link → expired message', /\/recruit\?expired=1/.test(page.url()) && /หมดอายุ/.test(await page.locator('main').innerText()), page.url());
     // ── เข้าแดชบอร์ด ──
     await go(link, 'dashboard');
-    ok('link → /sales/me', /\/sales\/me$/.test(page.url()), page.url());
+    ok('link → /sales/me', /\/recruit\/me$/.test(page.url()), page.url());
     const d0 = await page.locator('main').innerText();
     ok('dashboard: greeting + code', d0.includes(name) && d0.includes(code), d0.slice(0, 160));
     ok('dashboard: referral link /ref/CODE', d0.includes('/ref/' + code));
@@ -87,11 +87,11 @@ const IMG = fs.readFileSync(IMGS[0]);
 
     // ── ออกจากระบบ ──
     await page.getByRole('button', { name: 'ออกจากระบบ Sale Man' }).click();
-    await page.waitForURL(/\/sales\?out=1/, { timeout: 45000 }).catch(() => {}); await page.waitForLoadState('networkidle');
+    await page.waitForURL(/\/recruit\?out=1/, { timeout: 45000 }).catch(() => {}); await page.waitForLoadState('networkidle');
     await step('logged-out');
-    ok('logout → /sales?out=1 message', /ออกจากระบบ Sale Man แล้ว/.test(await page.locator('main').innerText()), page.url());
-    await go('/sales/me', 'after-logout');
-    ok('/sales/me after logout → expired', /\/sales\?expired=1/.test(page.url()), page.url());
+    ok('logout → /sales?out=1 message', /ออกจากระบบ Recruit แล้ว/.test(await page.locator('main').innerText()), page.url());
+    await go('/recruit/me', 'after-logout');
+    ok('/recruit/me after logout → expired', /\/recruit\?expired=1/.test(page.url()), page.url());
   } catch (e) { ok('sales flow threw', false, e.message.split('\n')[0]); await step('error').catch(() => {}); }
   await t.done();
 })().catch((e) => { console.log('ERR ' + e.message); process.exit(1); });

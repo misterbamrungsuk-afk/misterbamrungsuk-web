@@ -47,6 +47,13 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },
+  // หน้า Recruit ย้ายจาก /sales → /recruit (27 ต.ค. 2569) · ลิงก์เก่ายังเข้าได้ (ตัวพิมพ์ใหญ่ /Recruit แก้ใน middleware — redirects ที่นี่ไม่แยกตัวพิมพ์ จะวนซ้ำ)
+  async redirects() {
+    return [
+      { source: "/sales", destination: "/recruit", permanent: true },
+      { source: "/sales/:path*", destination: "/recruit/:path*", permanent: true },
+    ];
+  },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },

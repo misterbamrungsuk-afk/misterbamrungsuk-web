@@ -42,7 +42,7 @@ const JSONH = { 'content-type': 'application/json' };
   r = await req('/api/join/profile', { method: 'POST', body: form({ mb, step: 'post', text: 'ว่างดินเนอร์', time: '18:00–22:00', zone: 'อโศก' }) }); ok('unapproved "วันนี้ว่าง" post → 409', r.status === 409, String(r.status));
   r = await req('/api/join/profile', { method: 'POST', body: form({ mb, step: 'listing', title: 'เพื่อนกินเที่ยว', rules: 'สุภาพ' }) }); ok('unapproved listing → 409', r.status === 409, String(r.status));
   r = await req('/api/pt/posts', { method: 'POST', headers: JSONH, body: JSON.stringify({ mb, post_id: 'x', message: '' }) }); ok('unapproved post interest → 409', r.status === 409, String(r.status));
-  const msg409 = await J(r); ok('409 has Thai message', /อนุมัติ/.test(msg409.error || ''), msg409.error);
+  const msg409 = await J(r); ok('409 has Thai message', /เปิดใช้หลังทีมงาน/.test(msg409.error || ''), msg409.error);
   r = await req('/api/join/profile', { method: 'POST', body: form({ mb, step: 'post', close: 'true' }) }); ok('closing post still allowed', r.status === 200);
 
   // ── เวลาทำงาน: เลิก ≤ เริ่ม ไม่รับ · 24:00 ได้ ──

@@ -77,7 +77,7 @@ const monthTH = () => new Date(Date.now() + 7 * 3600_000).toISOString().slice(0,
   ok('16 jobs completed', done === 16, String(done));
   await fetch(B + '/api/admin/payroll', { method: 'POST', headers: ADM, body: JSON.stringify({ all: true }) });
   ok('only one ฿500 for many jobs', (await bal()) === 50000, String(await bal()));
-  let h = strip(await (await fetch(B + '/sales/me', { headers: { cookie: sc } })).text());
+  let h = strip(await (await fetch(B + '/recruit/me', { headers: { cookie: sc } })).text());
   ok('dashboard: this-month jobs + reached ฿1,000', h.includes('เดือนนี้ 16 งาน') && h.includes('ถึงโบนัส ฿1,000'));
 
   // คำนวณโบนัส (เดือนนี้ในการทดสอบ) → รอ CEO
@@ -89,7 +89,7 @@ const monthTH = () => new Date(Date.now() + 7 * 3600_000).toISOString().slice(0,
   ok('not paid before CEO approves', (await bal()) === 50000);
   h = strip(await (await fetch(B + '/admin/payroll', { headers: ADM })).text());
   ok('CEO page shows bonus queue', h.includes('data-recruit-bonus-queue') && h.includes('ขยัน') && h.includes('ทำ 16 งาน'));
-  h = strip(await (await fetch(B + '/sales/me', { headers: { cookie: sc } })).text());
+  h = strip(await (await fetch(B + '/recruit/me', { headers: { cookie: sc } })).text());
   ok('recruit sees bonus pending CEO', h.includes('data-recruit-bonus-history') && h.includes('รอ CEO อนุมัติ'));
   const bid = `${id}:${monthTH()}`;
   r = await BON({ action: 'reject', id: bid });

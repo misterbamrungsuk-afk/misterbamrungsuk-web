@@ -13,7 +13,7 @@ export function SalesLogin() {
     setBusy(true); setErr("");
     const r = await fetch("/api/sales/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: u, password: p }) }).catch(() => null);
     const j = await r?.json().catch(() => null);
-    if (j?.ok) { window.location.href = "/sales/me"; return; }
+    if (j?.ok) { window.location.href = "/recruit/me"; return; }
     setBusy(false); setErr(j?.error || "เข้าสู่ระบบไม่สำเร็จ");
   };
   const inp = "w-full h-12 rounded-xl px-3 bg-[#171211] text-[16px] text-[#f3ead9] outline-none border border-[rgba(243,234,217,.12)] focus:border-[#e8c472]";

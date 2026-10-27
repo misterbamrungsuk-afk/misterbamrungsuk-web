@@ -7,6 +7,7 @@ import { getPurchase, patchRep, findRep, listPayouts } from "@/lib/member/store"
 import { getMemberSettings, saveMemberSettings, validateMember, TIER_IDS, type MemberSettings } from "@/lib/member/tiers";
 import { readFile } from "@/lib/join/store";
 import { issueSalesLogin } from "@/lib/member/recruit";
+import { ApplyError, approveRecruitApp, rejectRecruitApp } from "@/lib/member/recruit-apply";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,11 +37,14 @@ export async function POST(req: Request) {
     if (act === "rep_create") {
       // ต้องมีบัญชีรับค่าคอม (ธนาคาร + เลขบัญชี + ชื่อบัญชี) — ไม่งั้น Recruit ขอรับค่าคอมไม่ได้
       const r = await createExternalRep({ name: String(b.name ?? ""), phone: String(b.phone ?? ""), bank: b.bank }, s.email);
-      return NextResponse.json({ ok: true, rep: r, link: `${new URL(req.url).origin}/sales/go?t=${encodeURIComponent(signSalesLink(r.id))}` });
+      return NextResponse.json({ ok: true, rep: r, link: `${new URL(req.url).origin}/recruit/go?t=${encodeURIComponent(signSalesLink(r.id))}` });
     }
+    // ใบสมัคร Recruit (หน้า /recruit/apply): อนุมัติ = สร้าง Recruit + ID/รหัสผ่าน (แสดงครั้งเดียว) · ไม่อนุมัติต้องมีเหตุผล
+    if (act === "app_approve") { const r = await approveRecruitApp(id, s.email, String(b.username ?? "") || undefined); return NextResponse.json({ ok: true, app: r.app, code: r.code, login: r.login, link: `${new URL(req.url).origin}/recruit` }); }
+    if (act === "app_reject") return NextResponse.json({ ok: true, app: await rejectRecruitApp(id, s.email, String(b.reason ?? "")) });
     if (act === "rep_update") return NextResponse.json({ ok: true, rep: await updateExternalRep(id, { name: b.name, phone: b.phone, bank: b.bank }) });
     if (act === "rep_toggle") { const r = await findRep({ id }); if (!r) throw new MemberError("ไม่พบ Recruit"); return NextResponse.json({ ok: true, rep: await patchRep(id, { active: !r.active }) }); }
-    if (act === "rep_link") { const r = await findRep({ id }); if (!r || r.kind !== "external") throw new MemberError("ไม่พบ Recruit"); return NextResponse.json({ ok: true, link: `${new URL(req.url).origin}/sales/go?t=${encodeURIComponent(signSalesLink(r.id))}` }); }
+    if (act === "rep_link") { const r = await findRep({ id }); if (!r || r.kind !== "external") throw new MemberError("ไม่พบ Recruit"); return NextResponse.json({ ok: true, link: `${new URL(req.url).origin}/recruit/go?t=${encodeURIComponent(signSalesLink(r.id))}` }); }
     // ID / รหัสผ่านเข้าแดชบอร์ด (ทีมงานออกให้) — รหัสผ่านแสดงครั้งเดียว
     if (act === "rep_login") {
       const r = await findRep({ id });
@@ -72,7 +76,7 @@ export async function POST(req: Request) {
     }
     return NextResponse.json({ ok: false, error: "action" }, { status: 400 });
   } catch (e) {
-    if (e instanceof MemberError) return NextResponse.json({ ok: false, error: e.message }, { status: 409 });
+    if (e instanceof MemberError || e instanceof ApplyError) return NextResponse.json({ ok: false, error: e.message }, { status: 409 });
     console.error("admin sales", e);
     return NextResponse.json({ ok: false, error: "ระบบขัดข้อง" }, { status: 500 });
   }

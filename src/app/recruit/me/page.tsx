@@ -15,7 +15,7 @@ export const metadata = { title: "แดชบอร์ด Recruit — Mister Ba
 export default async function SalesMe() {
   const id = readSalesLink((await cookies()).get(SALES_COOKIE)?.value);
   const rep = id ? await findRep({ id }) : null;
-  if (!rep || rep.kind !== "external" || !rep.active) redirect("/sales?expired=1");
+  if (!rep || rep.kind !== "external" || !rep.active) redirect("/recruit?expired=1");
   const [sum, cfg] = await Promise.all([repSummary(rep), getMemberSettings()]);
   const h = await headers();
   const origin = `${h.get("x-forwarded-proto") ?? "https"}://${h.get("host") ?? "misterbamrungsuk.com"}`;

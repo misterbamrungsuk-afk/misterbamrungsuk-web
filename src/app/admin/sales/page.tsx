@@ -7,6 +7,7 @@ import { SalesAdmin } from "./client";
 import { extraOf, listApplicants } from "@/lib/join/store";
 import { loginUsernames } from "@/lib/member/recruit";
 import { listMonthlyBonuses } from "@/lib/member/recruit-bonus";
+import { listRecruitApps } from "@/lib/member/recruit-apply";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "เมมเบอร์ · Recruit — แอดมิน" };
@@ -17,6 +18,7 @@ export default async function SalesAdminPage() {
   const [purchases, reps, payouts, cfg, apps, logins] = await Promise.all([listPurchases().catch(() => []), listReps().catch(() => []), listPayouts().catch(() => []), getMemberSettings(), listApplicants().catch(() => []), loginUsernames().catch(() => ({} as Record<string, string>))]);
   // หมอที่ Recruit แต่ละคนชวน (ผูกตอนสมัครผ่าน /join/s/<โค้ด>)
   const mb = await listMonthlyBonuses().catch(() => []);
+  const rapps = (await listRecruitApps().catch(() => [])).slice(0, 60);
   const recruits = apps.map((a) => ({ a, x: extraOf(a) })).filter(({ x }) => x.sales_ref);
   const repStats = reps.map((r) => {
     const mine = purchases.filter((p) => p.ref_code === r.code);
@@ -27,7 +29,7 @@ export default async function SalesAdminPage() {
   return (
     <>
       <PageHead title="เมมเบอร์ · Recruit" sub={`เมมเบอร์ ${members.length} รายการ · ยอดเปิดเมม ฿${(members.reduce((t, p) => t + p.pay_satang, 0) / 100).toLocaleString("th-TH")} · ค่าการตลาด (โบนัส+คอม) ฿${(members.reduce((t, p) => t + p.bonus_satang + p.commission_satang, 0) / 100).toLocaleString("th-TH")} · ${cfg.enabled ? "เปิดขายอยู่" : "ปิดขาย"}`} />
-      <SalesAdmin isCeo={s?.role === "ceo"} cfg={cfg} purchases={purchases} reps={repStats} payouts={payouts} />
+      <SalesAdmin isCeo={s?.role === "ceo"} cfg={cfg} purchases={purchases} reps={repStats} payouts={payouts} apps={rapps} />
     </>
   );
 }

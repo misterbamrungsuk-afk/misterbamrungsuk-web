@@ -13,6 +13,13 @@ const mfaFreeApi = (p: string) => ["/api/admin/security", "/api/admin/login", "/
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // /Recruit (พิมพ์ตัวใหญ่) → /recruit · เทียบตัวพิมพ์ตรง ๆ (redirects ใน next.config ไม่แยกตัวพิมพ์ จะวนซ้ำ)
+  if (pathname === "/Recruit" || pathname.startsWith("/Recruit/")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/recruit" + pathname.slice("/Recruit".length);
+    return NextResponse.redirect(url, 308);
+  }
+
   // กัน CSRF: คำสั่งที่เปลี่ยนข้อมูล (POST/PUT/PATCH/DELETE) ต้องมาจากหน้าเว็บของเราเอง
   // เบราว์เซอร์ส่ง Origin / Sec-Fetch-Site มาเสมอ — มาจากเว็บอื่น = ปฏิเสธ · ไม่มี header (เซิร์ฟเวอร์เรียก/cron) = ผ่านไปตรวจสิทธิ์ตามปกติ
   if (pathname.startsWith("/api") && !["GET", "HEAD", "OPTIONS"].includes(request.method)) {
@@ -121,7 +128,7 @@ export async function middleware(request: NextRequest) {
     pathname === "/page/terms" || pathname === "/privacy" || pathname.startsWith("/privacy/") || pathname === "/soon" ||
     pathname === "/search" ||
     // โปรเปิดเมมเบอร์ดูได้ก่อนล็อกอิน · Recruit (หน้าขาย/แดชบอร์ดผ่านลิงก์) · ลิงก์แนะนำ /ref/CODE
-    pathname === "/membership" || pathname === "/sales" || pathname.startsWith("/sales/") || pathname.startsWith("/ref/") ||
+    pathname === "/membership" || pathname === "/sales" || pathname.startsWith("/sales/") || pathname === "/recruit" || pathname.startsWith("/recruit/") || pathname === "/Recruit" || pathname.startsWith("/ref/") ||
     // หน้ารับสมัคร Part-Time (sale funnel) เปิดสาธารณะ
     pathname === "/join" ||
     pathname.startsWith("/join/") ||

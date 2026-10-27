@@ -12,7 +12,7 @@ const n = (x: number) => x.toLocaleString("th-TH");
 const dur = (ms: number) => { const s = Math.round(ms / 1000); if (s < 60) return `${s} วิ`; const m = Math.floor(s / 60), r = s % 60; return m < 60 ? `${m} นาที${r ? ` ${r} วิ` : ""}` : `${Math.floor(m / 60)} ชม. ${m % 60} นาที`; };
 const dt = (iso: string) => new Date(iso).toLocaleString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Bangkok" });
 const dshort = (d: string) => new Date(d + "T00:00:00Z").toLocaleDateString("th-TH", { day: "numeric", month: "short", timeZone: "UTC" });
-const PAGE: Record<string, string> = { "/": "หน้าแรก", "/join": "รับสมัคร (หนุ่มหล่อ)", "/join/tom": "รับสมัคร (ทอมหล่อ)", "/join/pay": "หน้าจ่ายค่าสมัคร", "/map": "แผนที่", "/sales": "Recruit", "/join/me": "เข้าสู่ระบบ Part-Time", "/soon": "เร็ว ๆ นี้", "/partner": "พาร์ทเนอร์", "/market": "ร้านค้า" };
+const PAGE: Record<string, string> = { "/": "หน้าแรก", "/join": "รับสมัคร (หนุ่มหล่อ)", "/join/tom": "รับสมัคร (ทอมหล่อ)", "/join/pay": "หน้าจ่ายค่าสมัคร", "/map": "แผนที่", "/recruit": "Recruit", "/recruit/apply": "สมัคร Recruit", "/join/me": "เข้าสู่ระบบ Part-Time", "/soon": "เร็ว ๆ นี้", "/partner": "พาร์ทเนอร์", "/market": "ร้านค้า" };
 const pageName = (p: string) => PAGE[p] ?? (p.startsWith("/p/") ? "โปรไฟล์ Part-Time" : p.startsWith("/join/i/") ? "ลิงก์เชิญ" : p.startsWith("/join/profile/") ? "โปรไฟล์ของ Part-Time (หลังบ้าน PT)" : p.startsWith("/join/s/") ? "ลิงก์ชวนของ Recruit" : p);
 const DEV: Record<string, string> = { mobile: "มือถือ", desktop: "คอมพิวเตอร์", tablet: "แท็บเล็ต" };
 const PALETTE = ["#f0c75a", "#2f7a46", "#2563a8", "#c0577e", "#5b3fb0", "#ffb07a", "#8a7b75"];

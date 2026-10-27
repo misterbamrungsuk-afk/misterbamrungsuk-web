@@ -65,7 +65,7 @@ async function idOf(mb) {
   const r1 = await register(sm, { package: 'B' });
   ok('doctor 1 registers via Sale Man link', !!r1.mb_code, JSON.stringify(r1));
   const id1 = await idOf(r1.mb_code);
-  let me = await (await fetch(B + '/sales/me', { headers: { cookie: salesA } })).text();
+  let me = await (await fetch(B + '/recruit/me', { headers: { cookie: salesA } })).text();
   ok('Sale Man dashboard lists doctor (pending)', me.includes(r1.mb_code) && me.includes('data-recruit') && me.includes('ได้เมื่อผู้สมัครได้งานแรก'));
   const row1 = (await J(await fetch(B + '/api/admin/applicants/' + id1, { method: 'PATCH', headers: ADM, body: JSON.stringify({ status: 'verified' }) }))).row;
   ok('slip approved → not paid yet (paid on first job)', !row1?.recruit_at && row1?.sales_ref?.code === a.code, `${row1?.recruit_satang} ${row1?.recruit_at}`);
@@ -86,14 +86,14 @@ async function idOf(mb) {
   ok('no link → no Sale Man', !row3?.sales_ref && !row3?.recruit_satang);
 
   // หลังบ้าน Sale Man: เห็นเฉพาะของตัวเอง · ยอดขอรับได้ = 2,500
-  me = await (await fetch(B + '/sales/me', { headers: { cookie: salesA } })).text();
+  me = await (await fetch(B + '/recruit/me', { headers: { cookie: salesA } })).text();
   ok('A sees own 2 doctors + amounts', me.includes(r1.mb_code) && me.includes(r2.mb_code) && !me.includes(r3.mb_code) && me.includes('ได้เมื่อผู้สมัครได้งานแรก') && me.includes('/join/s/' + a.code));
-  const meB = (await (await fetch(B + '/sales/me', { headers: { cookie: salesB } })).text()).replace(/<!-- -->/g, '');
+  const meB = (await (await fetch(B + '/recruit/me', { headers: { cookie: salesB } })).text()).replace(/<!-- -->/g, '');
   ok('B does not see A\'s doctors', !meB.includes(r1.mb_code) && !meB.includes(r2.mb_code) && meB.includes('สวัสดี เซลล์ บี'));
   const w = await J(await fetch(B + '/api/sales/me', { headers: { cookie: salesA } }));
   const avail = w.summary?.available ?? w.available;
   ok('A wallet available = ฿0 until first job', avail === 0, JSON.stringify(w).slice(0, 200));
-  const dash = (await (await fetch(B + '/sales/me', { headers: { cookie: salesA } })).text()).replace(/<!-- -->/g, '');
+  const dash = (await (await fetch(B + '/recruit/me', { headers: { cookie: salesA } })).text()).replace(/<!-- -->/g, '');
   ok('dashboard: summary (2) + wallet + monthly bonus rules', dash.includes('data-sales-summary') && dash.includes('2 คน') && dash.includes('data-sales-wallet') && dash.includes('data-recruit-bonus') && dash.includes('ครบ 15 งาน'));
   const av = await fetch(B + '/api/avatar', { method: 'POST', headers: { cookie: salesA, origin: B }, body: form({ as: 'sales' }, { file: new File([img], 'me.jpg', { type: 'image/jpeg' }) }) });
   const avg = await J(await fetch(B + '/api/avatar?as=sales', { headers: { cookie: salesA } }));
@@ -103,7 +103,7 @@ async function idOf(mb) {
   ok('admin sales: recruit counts + ID + rate inputs', h.includes('data-recruit-count') && h.includes('ID: ' + uname) && h.includes('data-recruit-rate') && h.includes('฿500 / คน ทุกแผน'));
   h = (await (await fetch(B + '/admin/applicants', { headers: ADM })).text());
   ok('admin applicants: Sale badge (or sales_ref data)', h.includes('data-sales-ref') || h.replace(/\\"/g, '"').includes('"sales_ref":{"rep_id"'));
-  h = await (await fetch(B + '/sales')).text();
+  h = await (await fetch(B + '/recruit')).text();
   ok('/sales has ID/password login', h.includes('data-sales-login'));
 
   // ปิดโค้ด → ล็อกอินไม่ได้ · ลิงก์ไม่ผูก

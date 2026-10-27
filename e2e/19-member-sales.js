@@ -49,9 +49,9 @@ const pend = async (email) => { const t = await (await fetch(B + '/admin/sales',
   bst = await J(await fetch(B + `/api/pt/boost?mb=${mb}&t=${encodeURIComponent(T)}`)); ok('credit used first (4,000 − 800)', bst.boostCredit === 320000, String(bst.boostCredit));
   // Sale Man ภายนอก
   r = await J(await fetch(B + '/api/admin/sales', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'rep_create', name: 'คุณเซลส์', phone: '0899999999', bank: { bank: 'กสิกรไทย', account: '123-4-56789-0', name: 'คุณเซลส์' } }) }));
-  ok('admin creates external rep + link', r.ok && /\/sales\/go\?t=/.test(r.link), r.error);
+  ok('admin creates external rep + link', r.ok && /\/recruit\/go\?t=/.test(r.link), r.error);
   const xcode = r.rep?.code; const tok = decodeURIComponent(r.link.split('t=')[1]);
-  const go = await fetch(B + '/sales/go?t=' + encodeURIComponent(tok), { redirect: 'manual' }); const sc = (go.headers.get('set-cookie') || '').split(';')[0];
+  const go = await fetch(B + '/recruit/go?t=' + encodeURIComponent(tok), { redirect: 'manual' }); const sc = (go.headers.get('set-cookie') || '').split(';')[0];
   ok('sales link sets cookie', sc.startsWith('mb_sales='));
   ok('sales/me needs link', (await fetch(B + '/api/sales/me')).status === 401);
   const m2 = `memb${Date.now() % 1e6}@test.local`;

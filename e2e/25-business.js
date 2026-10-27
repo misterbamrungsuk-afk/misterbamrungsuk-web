@@ -98,10 +98,10 @@ const H = { 'content-type': 'application/json', origin: B };
   j = await J(await post('/api/admin/sales', ADM, { action: 'rep_update', id: rep.id, phone: '0890000009', bank: { bank: 'ไทยพาณิชย์', account: '9998887776', name: 'เซลส์ ทดสอบ' } }));
   ok('admin edits rep phone/bank', j.ok && j.rep.phone === '0890000009' && j.rep.bank.bank === 'ไทยพาณิชย์', j.error);
   const st = (await J(await post('/api/admin/sales', ADM, { action: 'rep_link', id: rep.id }))).link.split('t=')[1];
-  const g = await fetch(B + `/sales/go?t=${st}`, { redirect: 'manual' });
+  const g = await fetch(B + `/recruit/go?t=${st}`, { redirect: 'manual' });
   const SC = (g.headers.get('set-cookie') || '').split(';')[0]; ok('sales link sets cookie', SC.startsWith('mb_sales='));
-  t = (await (await fetch(B + '/sales/me', { headers: { cookie: SC } })).text()).replace(/<!-- -->/g, '');
-  ok('/sales/me shows masked bank + logout', t.includes('••••••7776') && !t.includes('9998887776') && t.includes('ออกจากระบบ Recruit'));
+  t = (await (await fetch(B + '/recruit/me', { headers: { cookie: SC } })).text()).replace(/<!-- -->/g, '');
+  ok('/recruit/me shows masked bank + logout', t.includes('••••••7776') && !t.includes('9998887776') && t.includes('ออกจากระบบ Recruit'));
   r = await fetch(B + '/api/sales/logout', { method: 'POST', headers: { cookie: SC, origin: B }, redirect: 'manual' });
   ok('logout clears mb_sales', /mb_sales=;/.test(r.headers.get('set-cookie') || '') && /max-age=0/i.test(r.headers.get('set-cookie') || ''), r.headers.get('set-cookie'));
 

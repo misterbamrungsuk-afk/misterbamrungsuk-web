@@ -1,5 +1,7 @@
 "use client";
 
+import type { RecruitApp } from "@/lib/member/recruit-apply";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { MemberPurchase, SalesPayout, SalesRep } from "@/lib/member/store";
@@ -11,7 +13,7 @@ const dt = (iso: string | null) => (iso ? new Date(iso).toLocaleString("th-TH", 
 const inp = "h-10 rounded-xl border bg-[#130e0e] px-3 text-[#f6efe4] text-[13.5px] min-w-0";
 type Rep = SalesRep & { count: number; earned: number; recruits: number; recruitsPaid: number; username: string | null };
 
-export function SalesAdmin({ isCeo, cfg, purchases, reps, payouts }: { isCeo: boolean; cfg: MemberSettings; purchases: MemberPurchase[]; reps: Rep[]; payouts: SalesPayout[] }) {
+export function SalesAdmin({ isCeo, cfg, purchases, reps, payouts, apps = [] }: { isCeo: boolean; cfg: MemberSettings; purchases: MemberPurchase[]; reps: Rep[]; payouts: SalesPayout[]; apps?: RecruitApp[] }) {
   const router = useRouter();
   const [busy, setBusy] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -86,6 +88,20 @@ export function SalesAdmin({ isCeo, cfg, purchases, reps, payouts }: { isCeo: bo
               <input value={note[w.id] ?? ""} onChange={(e) => setNote({ ...note, [w.id]: e.target.value })} placeholder="สาเหตุโอนไม่สำเร็จ" className={`${inp} w-44`} style={{ borderColor: LINE }} />
               <button type="button" disabled={!!busy || !(note[w.id] ?? "").trim()} onClick={() => confirmThen({ action: "payout_failed", id: w.id, note: note[w.id] }, "คืนยอดให้ Recruit แล้ว", `บันทึกโอนไม่สำเร็จ และคืนยอด ${baht(w.amount_satang)} ให้ ${repName(w.rep_id)}?`)} className="h-9 px-3 rounded-lg border text-[#fecaca] disabled:opacity-40" style={{ borderColor: "rgba(201,40,61,.6)" }}>ไม่สำเร็จ</button>
             </>}
+          </div>
+        ))}
+      </section>
+
+      {/* ใบสมัคร Recruit จากหน้า /recruit/apply — อนุมัติ = สร้าง Recruit + ออก ID/รหัสผ่าน (แสดงครั้งเดียว ส่งให้ผู้สมัครทาง LINE/โทร) */}
+      <section data-recruit-apps className={sec} style={{ borderColor: LINE }}>
+        <b className="text-[16px]">ใบสมัคร Recruit · รอตรวจ ({apps.filter((x) => x.status === "pending").length})</b>
+        {!apps.some((x) => x.status === "pending") && <span className="text-[#9a8a85]">ไม่มีใบสมัครรอตรวจ · ลิงก์สมัคร: /recruit/apply</span>}
+        {apps.filter((x) => x.status === "pending").map((x) => (
+          <div key={x.id} data-recruit-app className="flex flex-wrap items-center gap-2 border-t pt-2" style={{ borderColor: LINE }}>
+            <span className="flex-1 min-w-[240px]"><b>{x.name}</b> · {x.phone} · {x.email}{x.line_id ? ` · LINE ${x.line_id}` : ""}<span className="block text-[12.5px] text-[#9a8a85]">{x.bank.bank} ••{x.bank.account.slice(-4)} · {x.bank.name}{x.channel ? ` · หาคนจาก: ${x.channel}` : ""} · {new Date(x.created_at).toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}</span></span>
+            <button type="button" disabled={!!busy} onClick={async () => { const j = await call({ action: "app_approve", id: x.id }, `อนุมัติ ${x.name} แล้ว · ส่ง ID/รหัสผ่านให้ผู้สมัคร`); if (j?.ok && j.login) setIssued({ name: `${x.name} (${j.code})`, username: j.login.username, password: j.login.password }); }} className="h-10 px-4 rounded-full text-[13px] font-semibold text-white" style={{ background: "#2f7a46" }}>อนุมัติ · ออก ID</button>
+            <input value={note[x.id] ?? ""} onChange={(e) => setNote({ ...note, [x.id]: e.target.value })} placeholder="เหตุผลถ้าไม่อนุมัติ" className={`${inp} w-44`} style={{ borderColor: LINE }} />
+            <button type="button" disabled={!!busy || !(note[x.id] ?? "").trim()} onClick={() => call({ action: "app_reject", id: x.id, reason: note[x.id] }, `ไม่อนุมัติ ${x.name}`)} className="h-10 px-4 rounded-full border text-[13px] disabled:opacity-40" style={{ borderColor: "#f3c2c9", color: "#b42335" }}>ไม่อนุมัติ</button>
           </div>
         ))}
       </section>

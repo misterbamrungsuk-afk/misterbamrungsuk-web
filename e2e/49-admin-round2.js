@@ -26,7 +26,7 @@ const un = (h) => h.replace(/<!-- -->/g, '').replace(/\\"/g, '"');
   const li = await S({ action: 'rep_login', id: rep.id, username: uname });
   const lr = await fetch(B + '/api/sales/login', { method: 'POST', headers: ORIGIN, body: JSON.stringify({ username: uname, password: li.login.password }) });
   const sc = (lr.headers.get('set-cookie') || '').split(';')[0];
-  let h = un(await (await fetch(B + '/sales/me', { headers: { cookie: sc } })).text());
+  let h = un(await (await fetch(B + '/recruit/me', { headers: { cookie: sc } })).text());
   ok('recruit: paid + free links', h.includes('data-recruit-link="rlink"') && h.includes('data-recruit-link="rfree"') && h.includes(`/join/s/${rep.code}?g=tom`) && h.includes('ลิงก์สมัครฟรี') && h.includes('ลิงก์สมัครแบบเสียเงิน'));
   let r = await fetch(B + `/join/s/${rep.code}?g=tom`, { redirect: 'manual' });
   ok('free link → /join/tom + recruit cookie', /\/join\/tom$/.test(r.headers.get('location') || '') && (r.headers.get('set-cookie') || '').includes('mb_sm=' + rep.code));
