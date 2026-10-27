@@ -6,8 +6,9 @@ import { useRouter } from "next/navigation";
 // แดชบอร์ด Recruit (ใช้ทั้ง Part-Time และ Recruit ภายนอก) — โค้ด/ลิงก์ · อัตราค่าคอม · คนที่ชวน · ค่าคอม
 type Ref = { id: string; who: string; tier: "gold" | "black"; status: string; commission: number; mode: "cash" | "boost" | null; at: string };
 type Payout = { id: string; amount_satang: number; status: string; created_at: string; note: string | null };
-type Recruit = { id: string; mb: string; who: string; pack: string; status: string; commission: number; credited: boolean; at: string; jobs?: number; free?: boolean; wait?: string };
-type Summary = { rep: { code: string; kind: string; name: string; active: boolean }; referrals: Ref[]; recruits?: Recruit[]; earned: number; available: number; boostCredit: number; withdrawing: number; payouts: Payout[] };
+type Recruit = { id: string; mb: string; who: string; pack: string; status: string; commission: number; credited: boolean; at: string; jobs?: number; free?: boolean; wait?: string; monthJobs?: number };
+type MBonus = { id: string; nick: string; mb: string; month: string; jobs: number; amount_satang: number; status: "pending" | "approved" | "rejected"; note?: string };
+type Summary = { rep: { code: string; kind: string; name: string; active: boolean }; referrals: Ref[]; recruits?: Recruit[]; mbonus?: MBonus[]; earned: number; available: number; boostCredit: number; withdrawing: number; payouts: Payout[] };
 const GOLD = "#e8c472";
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("th-TH");
 const bahtN = (n: number) => "฿" + n.toLocaleString("th-TH");
@@ -42,11 +43,11 @@ export function SalesBoard({ who, mb, t, summary, link, tiers, boostMult, recrui
       {/* ชวน Part-Time (หมอ) — ลิงก์สมัคร + ค่าตอบแทนต่อคน + รายชื่อที่ชวน (เห็นเฉพาะของตัวเอง) */}
       {recruit && (
         <section data-recruit className={card} style={{ padding: 16, border: "1px solid rgba(232,196,114,.35)" }}>
-          <b className="text-[16px]">ชวนหมอ (Part-Time) สมัคร</b>
+          <b className="text-[16px]">แนะนำ Part-time สมัคร · รับ ฿500 / คน</b>
           <div className="flex items-center gap-2 rounded-xl bg-[#171211]" style={{ padding: "8px 10px" }}><span className="text-[12.5px] text-[#b5a596] shrink-0">เลขแนะนำของคุณ</span><b data-recruit-code className="text-[20px] tracking-[.12em] select-all" style={{ color: GOLD }}>{recruit.code}</b>
             <button type="button" onClick={() => copy(recruit.code, "rcode")} className="ml-auto h-10 px-3 rounded-lg text-[13px] font-semibold" style={{ background: "rgba(232,196,114,.18)", color: GOLD }}>{copied === "rcode" ? "คัดลอกแล้ว" : "คัดลอกเลข"}</button></div>
           {/* ลิงก์ชวน 2 แบบ (26 ต.ค. 2569): เสียเงิน = หนุ่มหล่อ (ชำระค่าสมัคร) · ฟรี = ทอมหล่อ (หักค่าสมัครจากงาน) */}
-          {([["rlink", "ลิงก์สมัครแบบเสียเงิน", "หนุ่มหล่อ · ชำระค่าสมัคร · ได้ค่าแนะนำเมื่อผู้สมัครชำระ", recruit.link], ["rfree", "ลิงก์สมัครฟรี", "ทอมหล่อ · ไม่ต้องจ่ายตอนสมัคร · ได้ค่าแนะนำเมื่อผู้สมัครได้งานแรก", `${recruit.link}?g=tom`]] as const).map(([k, t, sub, url]) => (
+          {([["rlink", "ลิงก์สมัครแบบเสียเงิน", "หนุ่มหล่อ · ชำระค่าสมัคร · ได้ค่าแนะนำเมื่อผู้สมัครได้งานแรก", recruit.link], ["rfree", "ลิงก์สมัครฟรี", "ทอมหล่อ · ไม่ต้องจ่ายตอนสมัคร · ได้ค่าแนะนำเมื่อผู้สมัครได้งานแรก", `${recruit.link}?g=tom`]] as const).map(([k, t, sub, url]) => (
             <div key={k} data-recruit-link={k} className="flex flex-col gap-1.5 rounded-xl bg-[#171211]" style={{ padding: "10px 12px" }}>
               <span className="flex items-baseline justify-between gap-2"><b className="text-[14px]" style={{ color: k === "rfree" ? "#7fd6a3" : GOLD }}>{t}</b><span className="text-[11.5px] text-[#b5a596] text-right">{sub}</span></span>
               <div className="flex items-center gap-2 text-[13px]"><span className="flex-1 min-w-0 truncate select-all text-[#d9c9b4]">{url}</span>
@@ -54,19 +55,21 @@ export function SalesBoard({ who, mb, t, summary, link, tiers, boostMult, recrui
             </div>
           ))}
           <div className="rounded-xl bg-[#171211] flex items-baseline justify-between gap-2" style={{ padding: "10px 12px" }} data-recruit-fee><span className="text-[13px] text-[#d9c9b4]">ค่าแนะนำ ทุกแผน (ชาย · ทอม)</span><b className="text-[20px]" style={{ color: GOLD }}>{bahtN(500)} / คน</b></div>
-          <span className="text-[12.5px] text-[#b5a596] leading-[1.6]">ผู้สมัครเปิดลิงก์แล้วสมัครภายใน 30 วัน หรือกรอกเลขแนะนำของคุณตอนสมัคร · สมัครแบบจ่ายเงิน: ได้เมื่อหมอชำระค่าสมัคร · สมัครฟรี (เชิญ/ทอมหล่อ): ได้เมื่อหมอได้งานแรก</span>
-          {(() => { const c = summary.recruits?.filter((r) => r.credited).length ?? 0; const got = Math.floor(c / 5); return (
-            <div data-recruit-bonus className="rounded-xl flex flex-col gap-1.5" style={{ padding: "10px 12px", background: "rgba(232,196,114,.1)", border: "1px solid rgba(232,196,114,.35)" }}>
-              <div className="flex items-baseline justify-between gap-2"><span className="text-[13.5px] font-semibold">โบนัสครบทุก 5 คน</span><b className="text-[16px]" style={{ color: GOLD }}>+{bahtN(1000)}</b></div>
-              <div className="h-2 rounded-full overflow-hidden" style={{ background: "rgba(243,234,217,.08)" }}><div className="h-full rounded-full" style={{ width: `${((c % 5) / 5) * 100}%`, background: GOLD }} /></div>
-              <span className="text-[12px] text-[#b5a596]">ได้ค่าแนะนำแล้ว {c} คน · รอบนี้ {c % 5}/5{got ? ` · ได้โบนัสแล้ว ${got} ครั้ง (${bahtN(got * 1000)})` : ""}</span>
-            </div>); })()}
-          <b className="text-[14.5px] mt-1">หมอที่คุณชวน ({summary.recruits?.length ?? 0})</b>
-          {!summary.recruits?.length && <span className="text-[13.5px] text-[#b5a596]">ยังไม่มี · ส่งลิงก์ด้านบนให้หมอที่สนใจ</span>}
+          <span className="text-[12.5px] text-[#b5a596] leading-[1.6]">ผู้สมัครเปิดลิงก์แล้วสมัครภายใน 30 วัน หรือกรอกเลขแนะนำของคุณตอนสมัคร · เงินเข้า Wallet เมื่อผู้สมัครได้งานแรก (ทุกแผน)</span>
+          <div data-recruit-bonus className="rounded-xl flex flex-col gap-1.5" style={{ padding: "10px 12px", background: "rgba(232,196,114,.1)", border: "1px solid rgba(232,196,114,.35)" }}>
+            <span className="text-[13.5px] font-semibold">โบนัสตามผลงานรายเดือน (ต่อผู้สมัคร 1 คน)</span>
+            <div className="grid grid-cols-2 gap-2 text-center">
+              {([["ครบ 15 งาน / เดือน", 1000], ["ครบ 20 งาน / เดือน", 2000]] as const).map(([k, v]) => <div key={k} className="rounded-lg bg-[#171211]" style={{ padding: "6px 4px" }}><div className="text-[11.5px] text-[#b5a596]">{k}</div><b className="text-[16px]" style={{ color: GOLD }}>+{bahtN(v)}</b></div>)}
+            </div>
+            <span className="text-[11.5px] text-[#b5a596]">นับงานที่จบในเดือนนั้น · พิจารณาจำนวนงาน ความนิยม คุณภาพการให้บริการ · CEO อนุมัติต้นเดือนถัดไป</span>
+            {!!summary.mbonus?.length && <div data-recruit-bonus-history className="flex flex-col gap-1 pt-1 border-t border-[rgba(243,234,217,.07)]">{summary.mbonus.map((b) => <div key={b.id} className="flex justify-between gap-2 text-[12.5px]"><span className="min-w-0 truncate">{b.nick} · {b.jobs} งาน · {b.month}</span><span className="shrink-0" style={{ color: b.status === "approved" ? "#7fd6a3" : b.status === "rejected" ? "#ff8a9a" : GOLD }}>{bahtN(b.amount_satang / 100)} · {b.status === "approved" ? "ได้รับแล้ว" : b.status === "rejected" ? "ไม่อนุมัติ" : "รอ CEO อนุมัติ"}</span></div>)}</div>}
+          </div>
+          <b className="text-[14.5px] mt-1">ผู้สมัครที่คุณแนะนำ ({summary.recruits?.length ?? 0})</b>
+          {!summary.recruits?.length && <span className="text-[13.5px] text-[#b5a596]">ยังไม่มี · ส่งลิงก์ด้านบนให้คนที่สนใจ</span>}
           {summary.recruits?.map((r) => (
             <div key={r.id} data-recruit-row className="flex items-center gap-2 text-[13.5px] border-t border-[rgba(243,234,217,.07)] pt-2">
-              <span className="flex-1 min-w-0"><b className="font-medium">{r.who}</b> <span className="text-[#e8c472]">{r.mb}</span><span className="block text-[12px] text-[#b5a596]">{r.pack} · {dt(r.at)}</span><span data-recruit-status className="inline-block mt-0.5 text-[11.5px] font-semibold rounded-full px-2 py-0.5" style={{ background: r.jobs ? "rgba(127,214,163,.15)" : "rgba(243,234,217,.07)", color: r.jobs ? "#7fd6a3" : "#d9c9b4" }}>{r.status}</span></span>
-              <span className="text-right"><b style={{ color: r.credited ? "#7fd6a3" : GOLD }}>{baht(r.commission)}</b><span className="block text-[11.5px] text-[#b5a596]">{r.wait ?? (r.credited ? "ได้รับแล้ว" : "รอหมอชำระ")}</span></span>
+              <span className="flex-1 min-w-0"><b className="font-medium">{r.who}</b> <span className="text-[#e8c472]">{r.mb}</span><span className="block text-[12px] text-[#b5a596]">{r.pack} · {dt(r.at)}{r.monthJobs != null && r.jobs ? ` · เดือนนี้ ${r.monthJobs} งาน${r.monthJobs >= 20 ? " · ถึงโบนัส ฿2,000" : r.monthJobs >= 15 ? " · ถึงโบนัส ฿1,000" : ` · อีก ${15 - r.monthJobs} งานถึงโบนัส`}` : ""}</span><span data-recruit-status className="inline-block mt-0.5 text-[11.5px] font-semibold rounded-full px-2 py-0.5" style={{ background: r.jobs ? "rgba(127,214,163,.15)" : "rgba(243,234,217,.07)", color: r.jobs ? "#7fd6a3" : "#d9c9b4" }}>{r.status}</span></span>
+              <span className="text-right"><b style={{ color: r.credited ? "#7fd6a3" : GOLD }}>{baht(r.commission)}</b><span className="block text-[11.5px] text-[#b5a596]">{r.wait ?? (r.credited ? "ได้รับแล้ว" : "รอผู้สมัครได้งานแรก")}</span></span>
             </div>
           ))}
         </section>

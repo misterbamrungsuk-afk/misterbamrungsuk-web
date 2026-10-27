@@ -8,6 +8,7 @@ import { PayrollClient, type WReq } from "./client";
 import { listPayouts, listReps } from "@/lib/member/store";
 import { listPayoutRequests } from "@/lib/payouts";
 import { withdrawInfo } from "@/lib/admin/withdraw-info";
+import { listMonthlyBonuses, prevMonthTH } from "@/lib/member/recruit-bonus";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "CEO · อนุมัติ — แอดมิน" };
@@ -28,10 +29,12 @@ export default async function PayrollPage({ searchParams }: { searchParams: Prom
   const info = await withdrawInfo(wds, allW);
   const reqs: WReq[] = wds.map((w) => ({ id: w.id, mb: w.parttime_mb, name: info[w.id]?.name ?? "", newBank: !!info[w.id]?.newBank, firstTime: !!info[w.id]?.firstTime, nick: rows.find((r) => r.parttime_id === w.parttime_id)?.nick ?? (info[w.id]?.nick || w.parttime_mb), amount: w.amount_satang, fee: w.fee_satang, wht: w.wht_satang, net: w.net_satang, bank: `${w.bank.bank} · ${w.bank.account} · ${w.bank.name}`, at: w.created_at }));
   const salesReqs = sp.map((p) => { const r = reps.find((x) => x.id === p.rep_id); return { id: p.id, name: r?.name ?? "Recruit", code: r?.code ?? "", amount: p.amount_satang, bank: p.bank ? `${p.bank.bank} · ${p.bank.account} · ${p.bank.name}` : "-", at: p.created_at }; });
+  const mb = await listMonthlyBonuses().catch(() => []);
+  const bonusReqs = mb.filter((b) => b.status === "pending").map((b) => ({ id: b.id, rep: reps.find((r) => r.id === b.rep_id)?.name ?? "Recruit", code: reps.find((r) => r.id === b.rep_id)?.code ?? "", pt: `${b.nick} (${b.mb})`, month: b.month, jobs: b.jobs, amount: b.amount_satang }));
   return (
     <>
       <PageHead title="CEO · อนุมัติรายได้และถอนเงิน" sub={`ตรวจงานวันที่ ${new Date(`${day}T12:00:00+07:00`).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", dateStyle: "long" })} · ${money.releaseMode === "auto" ? `ตอนนี้ปล่อยรายได้อัตโนมัติหลัง ${money.releaseHours} ชม. (เปลี่ยนได้ที่ "กระเป๋าเงิน")` : "รายได้เข้ากระเป๋าเมื่อ CEO อนุมัติ"} · ${s?.role === "ceo" ? "คุณคือ CEO" : "ดูอย่างเดียว — อนุมัติได้เฉพาะ CEO"}`} />
-      <PayrollClient day={day} today={todayBkk()} rows={rows} sample={sample} reqs={reqs} salesReqs={salesReqs} ownerReqs={ownerReqs} isCeo={s?.role === "ceo"} />
+      <PayrollClient day={day} today={todayBkk()} rows={rows} sample={sample} reqs={reqs} salesReqs={salesReqs} ownerReqs={ownerReqs} bonusReqs={bonusReqs} lastMonth={prevMonthTH()} isCeo={s?.role === "ceo"} />
     </>
   );
 }

@@ -49,7 +49,7 @@ const strip = (h) => h.replace(/<!-- -->/g, '');
   let row = (await J(await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ kyc_status: 'approved' }) }))).row;
   ok('linked to recruit · not paid at signup', row?.sales_ref?.code === rep.code && !row?.recruit_at, JSON.stringify(row?.sales_ref) + ' ' + row?.recruit_at);
   let me = strip(await (await fetch(B + '/sales/me', { headers: { cookie: salesC } })).text());
-  ok('recruit sees doctor: no job yet, paid on first job', me.includes(mb) && me.includes('ได้เมื่อหมอได้งานแรก') && me.includes('data-recruit-code') && me.includes('฿500 / คน'));
+  ok('recruit sees doctor: no job yet, paid on first job', me.includes(mb) && me.includes('ได้เมื่อผู้สมัครได้งานแรก') && me.includes('data-recruit-code') && me.includes('฿500 / คน'));
   let r = await fetch(B + '/api/join/photos', { method: 'POST', body: form({ mb, t: T }, { file: new File([img], 'p.jpg', { type: 'image/jpeg' }) }) });
   r = await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ listed: true }) });
   ok('invite PT listed', r.status === 200, String(r.status));
@@ -94,6 +94,11 @@ const strip = (h) => h.replace(/<!-- -->/g, '');
   ok('fee paid ฿1,000 · recruit still ฿500', row?.fee_paid_satang === 100000 && row?.recruit_satang === 50000, `${row?.fee_paid_satang} ${row?.recruit_satang}`);
   sw = await J(await fetch(B + '/api/sales/me', { headers: { cookie: salesC } }));
   ok('recruit wallet unchanged', (sw.summary?.available ?? sw.available) === 50000);
+  // Recruit ขอเบิกค่าแนะนำ (ขั้นต่ำ ฿100 · รอ CEO อนุมัติ)
+  const pr = await J(await fetch(B + '/api/sales/me', { method: 'POST', headers: { cookie: salesC, 'content-type': 'application/json' }, body: JSON.stringify({ amount: 500 }) }));
+  ok('recruit requests payout ฿500', pr.ok, JSON.stringify(pr));
+  me = strip(await (await fetch(B + '/sales/me', { headers: { cookie: salesC } })).text());
+  ok('recruit dashboard: payout pending CEO', me.includes('รอ CEO อนุมัติ') && me.includes('กำลังโอน ฿500'));
 
   // ── หน้า + สายปกติไม่ถูกหัก + ledger ──
   let h = strip(await (await fetch(B + `/join/profile/${mb}/earnings?t=${encodeURIComponent(T)}`)).text());

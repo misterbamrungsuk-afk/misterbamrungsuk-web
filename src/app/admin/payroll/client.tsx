@@ -12,9 +12,10 @@ const hm = (iso: string | null) => (iso ? new Date(iso).toLocaleString("th-TH", 
 export type WReq = { id: string; mb: string; nick: string; name?: string; newBank?: boolean; firstTime?: boolean; amount: number; fee: number; wht: number; net: number; bank: string; at: string };
 
 export type SReq = { id: string; name: string; code: string; amount: number; bank: string; at: string };
+export type BReq = { id: string; rep: string; code: string; pt: string; month: string; jobs: number; amount: number };
 export type OReq = { id: string; type: "partner" | "vendor" | "customer"; name: string; amount: number; bank: string; at: string; newBank?: boolean };
 
-export function PayrollClient({ day, today, rows, sample, reqs, salesReqs = [], ownerReqs = [], isCeo }: { day: string; today: string; rows: PayRow[]; sample: boolean; reqs: WReq[]; salesReqs?: SReq[]; ownerReqs?: OReq[]; isCeo: boolean }) {
+export function PayrollClient({ day, today, rows, sample, reqs, salesReqs = [], ownerReqs = [], bonusReqs = [], lastMonth = "", isCeo }: { day: string; today: string; rows: PayRow[]; sample: boolean; reqs: WReq[]; salesReqs?: SReq[]; ownerReqs?: OReq[]; bonusReqs?: BReq[]; lastMonth?: string; isCeo: boolean }) {
   const [note, setNote] = useState<Record<string, string>>({});
   const router = useRouter();
   const [open, setOpen] = useState<string | null>(sample ? rows[0]?.parttime_id ?? null : null);
@@ -139,6 +140,20 @@ export function PayrollClient({ day, today, rows, sample, reqs, salesReqs = [], 
             </div>
           ))}
         </div>
+      </div>
+      <h2 className="m-0 mt-4 text-[17px] font-semibold flex flex-wrap items-center gap-2">โบนัส Recruit รายเดือน <span className="text-[13px] font-normal text-[#9a8a85]">(ผู้สมัครที่ Recruit แนะนำ ทำครบ 15 งาน = ฿1,000 · 20 งาน = ฿2,000 · พิจารณาคุณภาพก่อนอนุมัติ)</span>
+        <button type="button" data-recruit-bonus-compute disabled={!!busy} onClick={() => approve({ action: "compute", month: lastMonth }, "rb-compute", `คำนวณโบนัสเดือน ${lastMonth} แล้ว`, "/api/admin/recruit-bonus")} className="ml-auto h-9 px-3.5 rounded-full border text-[12.5px]" style={{ borderColor: LINE }}>คำนวณเดือน {lastMonth}</button></h2>
+      <div data-recruit-bonus-queue className="rounded-2xl border" style={{ borderColor: LINE }}>
+        {!bonusReqs.length && <p className="m-0 p-5 text-center text-[#9a8a85]">ไม่มีโบนัสรออนุมัติ · ระบบคำนวณเดือนที่แล้วให้อัตโนมัติทุกวัน</p>}
+        {bonusReqs.map((w) => (
+          <div key={w.id} data-recruit-bonus-row className="flex flex-wrap items-center gap-2 px-3.5 py-3 border-t first:border-t-0" style={{ borderColor: LINE }}>
+            <span className="flex-1 min-w-[220px]"><b className="font-medium">{w.rep}</b> <span className="text-[#9a8a85]">({w.code})</span><span className="block text-[12.5px] text-[#9a8a85]">{w.pt} · ทำ {w.jobs} งาน · เดือน {w.month}</span></span>
+            <b className="tabular-nums text-[#f0c75a]">{baht(w.amount)}</b>
+            <button type="button" disabled={!isCeo || !!busy} onClick={() => approve({ action: "approve", id: w.id }, w.id, `อนุมัติโบนัส ${w.rep} ${baht(w.amount)} · เข้ากระเป๋าแล้ว`, "/api/admin/recruit-bonus", { title: `อนุมัติโบนัส ${baht(w.amount)}?`, body: `${w.rep} · ${w.pt} ทำ ${w.jobs} งาน เดือน ${w.month}\nเงินเข้ากระเป๋า Recruit ทันที` })} className="h-10 px-4 rounded-full text-[13px] font-semibold text-white disabled:opacity-40" style={{ background: "#2f7a46" }}>อนุมัติ</button>
+            <input value={note[w.id] ?? ""} onChange={(e) => setNote({ ...note, [w.id]: e.target.value })} placeholder="เหตุผลถ้าไม่อนุมัติ" disabled={!isCeo} className="h-10 w-44 rounded-xl border bg-[#130e0e] px-2 text-[12.5px]" style={{ borderColor: LINE }} />
+            <button type="button" disabled={!isCeo || !!busy || !(note[w.id] ?? "").trim()} onClick={() => approve({ action: "reject", id: w.id, note: note[w.id] }, w.id, `ไม่อนุมัติโบนัส ${w.rep}`, "/api/admin/recruit-bonus", { title: "ไม่อนุมัติโบนัสนี้?", body: note[w.id] ?? "", danger: true })} className="h-10 px-4 rounded-full border text-[13px] disabled:opacity-40" style={{ borderColor: "#f3c2c9", color: "#b42335" }}>ไม่อนุมัติ</button>
+          </div>
+        ))}
       </div>
       <h2 className="m-0 mt-4 text-[17px] font-semibold">ค่าคอม Recruit ภายนอก <span className="text-[13px] font-normal text-[#9a8a85]">(อนุมัติแล้วไปหน้า "เมมเบอร์ · Recruit" ให้แอดมินโอน)</span></h2>
       <div className="rounded-2xl border" style={{ borderColor: LINE }}>

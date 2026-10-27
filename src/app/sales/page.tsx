@@ -21,8 +21,8 @@ export default async function SalesLanding({ searchParams }: { searchParams: Pro
         {sp.expired && <p className="m-0 rounded-xl text-[14px] text-[#ff8a9a]" style={{ padding: 12, background: "rgba(201,40,61,.12)" }}>กรุณาเข้าสู่ระบบด้วย ID และรหัสผ่านที่ทีมงานให้</p>}
         <section className="rounded-[22px] flex flex-col gap-2" style={{ padding: "20px 18px", background: "radial-gradient(80% 120% at 90% 0%, rgba(232,196,114,.22), rgba(0,0,0,0) 60%), linear-gradient(140deg, #3a0a14, #1c0d10 60%)", border: "1px solid rgba(232,196,114,.45)" }}>
           <span className="text-[12px] tracking-[.24em] font-semibold text-[#e8c472]">SALE MAN</span>
-          <h1 className="m-0 text-[28px] md:text-[38px] leading-[1.3] font-bold">ชวนหมอสมัคร · ชวนลูกค้าเปิดเมม<br /><span className="text-[#e8c472]">รับค่าตอบแทนทุกคน</span></h1>
-          <p className="m-0 text-[15px] text-[#d9c9b4]">ได้ลิงก์ของตัวเอง หมอสมัคร/ลูกค้าเปิดเมมผ่านลิงก์คุณ ค่าตอบแทนเข้ากระเป๋าอัตโนมัติ · ดูผลงานได้ในหลังบ้านของตัวเอง</p>
+          <h1 className="m-0 text-[28px] md:text-[38px] leading-[1.3] font-bold">แนะนำ Part-time · ชวนลูกค้าเปิดเมม<br /><span className="text-[#e8c472]">รับค่าตอบแทนทุกคน</span></h1>
+          <p className="m-0 text-[15px] text-[#d9c9b4]">ได้ลิงก์ของตัวเอง ผู้สมัคร Part-time/ลูกค้าเปิดเมมผ่านลิงก์คุณ ค่าตอบแทนเข้ากระเป๋าอัตโนมัติ · ดูผลงานได้ในหลังบ้านของตัวเอง</p>
         </section>
         <SalesLogin />
         <section className="grid gap-3 md:grid-cols-2">
@@ -39,7 +39,7 @@ export default async function SalesLanding({ searchParams }: { searchParams: Pro
           <ol className="m-0 pl-5 text-[14.5px] leading-[1.8] text-[#d9c9b4]">
             <li>Part-Time: เปิดโปรไฟล์ของคุณ → "ชวนลูกค้าเปิดเมม รับค่าคอม" ได้โค้ดทันที</li>
             <li>คนทั่วไป: ติดต่อทีมงานทาง LINE <span className="text-[#f3ead9] select-all">{LINE_OA_ID}</span> ทีมงานสร้างบัญชีและออก ID / รหัสผ่านให้</li>
-            <li>ส่งลิงก์ชวนหมอ → หมอสมัครและชำระค่าสมัคร → ค่าตอบแทนเข้ากระเป๋า</li>
+            <li>ส่งลิงก์แนะนำ Part-time → ผู้สมัครได้งานแรก → ฿500 เข้ากระเป๋า · ผู้สมัครทำครบ 15 งาน/เดือน รับโบนัส ฿1,000 · ครบ 20 งาน ฿2,000</li>
             <li>ส่งลิงก์ให้ลูกค้า → ลูกค้าเปิดเมม → ค่าคอมเข้ากระเป๋า</li>
             <li>ขอรับค่าคอม → CEO อนุมัติ → ทีมงานโอนเข้าบัญชี</li>
           </ol>

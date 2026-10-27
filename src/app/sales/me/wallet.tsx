@@ -37,7 +37,7 @@ export function SalesWallet({ d }: { d: WalletData }) {
       <section data-sales-summary className="rounded-[18px] bg-[#211a18] flex flex-col gap-2.5" style={{ padding: 16, border: "1px solid rgba(232,196,114,.3)" }}>
         <b className="text-[16px]">สรุปผลงาน</b>
         <div className="grid grid-cols-3 gap-2 text-center">
-          {([["ชวนหมอ", `${d.recruits} คน`, d.recruits ? `ชำระแล้ว ${d.recruitsPaid}` : "ยังไม่มี"], ["ลูกค้าเปิดเมม", `${d.members} คน`, ""], ["รายได้ทั้งหมด", baht(d.earned), ""]] as const).map(([k, v, s]) => (
+          {([["แนะนำ Part-time", `${d.recruits} คน`, d.recruits ? `ได้งานแล้ว ${d.recruitsPaid}` : "ยังไม่มี"], ["ลูกค้าเปิดเมม", `${d.members} คน`, ""], ["รายได้ทั้งหมด", baht(d.earned), ""]] as const).map(([k, v, s]) => (
             <div key={k} className={tile} style={{ padding: "10px 6px" }}><span className="text-[12px] text-[#b5a596]">{k}</span><b className="text-[17px] tabular-nums">{v}</b>{s && <span className="text-[11.5px] text-[#b5a596]">{s}</span>}</div>
           ))}
         </div>

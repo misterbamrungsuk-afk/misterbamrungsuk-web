@@ -131,8 +131,10 @@ async function matureOne(b: Booking, actor: string): Promise<Booking> {
   ] as Leg[]).filter((l) => l.amount !== 0) } : null);
   if (r && cut > 0 && pt) {
     await st.saveProfile(pt.id, { fee_paid_satang: paid + cut, ...(rec ? { recruit_satang: cut, recruit_at: now() } : {}) }).catch((e) => console.error("fee_paid", e));
-    if (rec) { await rec.notify(cut).catch(() => {}); await (await import("@/lib/member/recruit")).creditRecruitBonus(rec.repId, actor).catch((e) => console.error("recruit bonus", e)); }
+    if (rec) await rec.notify(cut).catch(() => {});
   }
+  // สมัครแบบจ่ายเงิน: งานแรก → ค่าแนะนำ Recruit ฿500 จาก platform.marketing (ไม่ซ้ำ · idem recruit:<id>)
+  if (r && pt?.amount && x?.sales_ref && !x.recruit_at) await (await import("@/lib/member/recruit")).creditRecruit(pt.id, actor).catch((e) => console.error("recruit credit", e));
   return r ?? b;
 }
 

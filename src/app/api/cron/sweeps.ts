@@ -62,6 +62,9 @@ const market = () => run(async () => (await import("@/lib/market/store")).sweepO
 /** Part-Time ครบ 30 วันแรกแต่งานไม่ถึง 5 เคส → โค้ดโปรโมทฟรี 3 วัน */
 const freeBoost = () => run(async () => (await import("@/lib/join/free-boost")).lowJobsBoostCodes());
 
+/** โบนัส Recruit รายเดือน (เดือนที่แล้ว) → คิวรอ CEO อนุมัติ · ไม่สร้างซ้ำ */
+const recruitBonus = () => run(async () => (await import("@/lib/member/recruit-bonus")).computeMonthlyBonuses());
+
 /** ทุกส่วน (cron รายวัน) */
 export async function sweepAll(): Promise<SweepSummary> {
   // ทีละส่วนตามลำดับ (การจองก่อน) — กันส่วนต่าง ๆ แย่งแก้แถวเดียวกันพร้อมกัน
@@ -73,6 +76,7 @@ export async function sweepAll(): Promise<SweepSummary> {
   out.changes = await changes();
   out.market = await market();
   out.freeBoost = await freeBoost();
+  out.recruitBonus = await recruitBonus();
   return out;
 }
 

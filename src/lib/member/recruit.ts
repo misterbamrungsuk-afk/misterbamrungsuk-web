@@ -7,11 +7,13 @@ import { extraOf, getById, listApplicants, saveProfile, type Applicant } from "@
 import { hashPw, verifyPw } from "@/lib/join/pt-password";
 import { tierLabel } from "@/lib/join/config";
 import { findRep, type SalesRep } from "./store";
+import { monthJobsOf } from "./recruit-bonus";
 
 // Recruit ชวน Part-Time (หมอ) — บอสสั่ง 24 ต.ค. 2569 (ปรับรอบ 2: ค่าแนะนำ ฿500 ต่อคนทุกแผน)
 // ลิงก์ /join/s/<โค้ด> (คุกกี้ mb_sm 30 วัน) หรือกรอกเลขแนะนำตอนสมัคร → ผูก docs.extra.sales_ref
-// · สมัครแบบจ่ายเงิน: ชำระแล้ว (verified) → ฿500 จาก platform.marketing เข้ากระเป๋า Recruit ครั้งเดียว
-// · สมัครฟรี (เชิญ/ทอมหล่อ): ได้ ฿500 เมื่อหมอได้งานแรกและระบบหักค่าสมัครงานแรกแล้ว (bookings/day.ts matureOne)
+// ทุกแผนได้ ฿500 เมื่อผู้สมัครได้งานแรก (โปสเตอร์ Recruiter Program 27 ต.ค. 2569 · bookings/day.ts matureOne):
+// · สมัครแบบจ่ายเงิน → จ่ายจาก platform.marketing (creditRecruit) · สมัครฟรี → ใช้ ฿500 ที่หักค่าสมัครงานแรก (firstJobRecruit)
+// · โบนัสรายเดือนต่อผู้สมัคร 1 คน (15 งาน ฿1,000 / 20 งาน ฿2,000) อยู่ใน recruit-bonus.ts (CEO อนุมัติ)
 export const RECRUIT_COOKIE = "mb_sm";
 const baht = (s: number) => "฿" + (s / 100).toLocaleString("th-TH");
 const ownerOf = (r: SalesRep): { type: OwnerType; id: string } => (r.kind === "parttime" ? { type: "parttime", id: r.parttime_id! } : { type: "sales", id: r.id });
@@ -26,28 +28,8 @@ export async function recruitRep(code: string | null | undefined): Promise<Sales
 
 /** ค่าแนะนำต่อคน (สตางค์) — ทุกแผนเท่ากัน */
 export const RECRUIT_FEE_SATANG = 50_000;
-/** โบนัสแยก: ได้ค่าแนะนำครบทุก ๆ 5 คน → +฿1,000 (นับเฉพาะคนที่จ่ายค่าแนะนำแล้ว · ได้ซ้ำทุกรอบ 5/10/15…) */
-export const RECRUIT_BONUS = { every: 5, satang: 100_000 } as const;
-export const recruitBonusCount = (credited: number) => Math.floor(credited / RECRUIT_BONUS.every);
-
-/** จ่ายโบนัสรอบที่ถึงแล้วแต่ยังไม่จ่าย (idem recruit-bonus:<rep>:<รอบ> · เรียกซ้ำได้ ไม่จ่ายซ้ำ) */
-export async function creditRecruitBonus(repId: string, actor: string): Promise<void> {
-  const rep = await findRep({ id: repId }).catch(() => null);
-  if (!rep) return;
-  const n = (await listApplicants().catch(() => [] as Applicant[])).filter((a) => { const x = extraOf(a); return x.sales_ref?.rep_id === repId && !!x.recruit_at; }).length;
-  const due = recruitBonusCount(n);
-  const o = ownerOf(rep);
-  for (let k = 1; k <= due; k++) {
-    await post("commission", { type: "recruit_bonus", id: rep.id }, `recruit-bonus:${rep.id}:${k}`, `โบนัส Recruit ครบ ${k * RECRUIT_BONUS.every} คน`, actor, [
-      { owner_type: "platform", owner_id: PLATFORM, bucket: "marketing", amount: -RECRUIT_BONUS.satang },
-      { owner_type: o.type, owner_id: o.id, bucket: "available", amount: RECRUIT_BONUS.satang },
-    ]);
-  }
-  if (due && n % RECRUIT_BONUS.every === 0 && o.type === "parttime") await notify({ user_type: "parttime", user_id: o.id, kind: "commission", title: `ได้โบนัส Recruit ${baht(RECRUIT_BONUS.satang)}`, body: `ครบ ${n} คน`, url: "" }).catch(() => {});
-}
 export async function recruitRate(_a?: Pick<Applicant, "amount" | "package">): Promise<number> { return RECRUIT_FEE_SATANG; }
-
-/** สมัครแบบจ่ายเงิน ชำระแล้ว → จ่ายค่าแนะนำให้ Recruit ที่ชวน (ครั้งเดียวต่อผู้สมัคร · idem recruit:<id>) · สมัครฟรีไปจ่ายตอนงานแรก */
+/** สมัครแบบจ่ายเงิน ได้งานแรกแล้ว → จ่ายค่าแนะนำให้ Recruit ที่ชวน (ครั้งเดียวต่อผู้สมัคร · idem recruit:<id>) · เรียกจาก matureOne */
 export async function creditRecruit(applicantId: string, actor: string): Promise<number> {
   const a = await getById(applicantId);
   if (!a || a.status !== "verified" || !a.amount) return 0;
@@ -65,7 +47,6 @@ export async function creditRecruit(applicantId: string, actor: string): Promise
     if (o.type === "parttime") await notify({ user_type: "parttime", user_id: o.id, kind: "commission", title: `ได้ค่าแนะนำ ${baht(amt)}`, body: a.mb_code, url: "" }).catch(() => {});
   }
   await saveProfile(a.id, { recruit_satang: amt, recruit_at: new Date().toISOString() });
-  await creditRecruitBonus(rep.id, actor).catch((e) => console.error("recruit bonus", e));
   return amt;
 }
 
@@ -98,7 +79,7 @@ export async function recruitsOf(rep: SalesRep) {
       status: a.status === "rejected" ? "ไม่ผ่าน" : a.status === "refunded" ? "คืนเงินแล้ว" : !paid ? "รอตรวจสลิป" : x.inactive ? "Non Active" : !x.listed ? "รอเปิดรับงาน" : jobs ? `ได้งานแล้ว ${jobs} งาน` : "ยังไม่ได้งาน",
       jobs, free,
       commission: x.recruit_at ? x.recruit_satang ?? 0 : RECRUIT_FEE_SATANG, credited: !!x.recruit_at, at: x.recruit_at ?? a.created_at,
-      wait: x.recruit_at ? "ได้รับแล้ว" : free ? "ได้เมื่อหมอได้งานแรก" : "ได้เมื่อหมอชำระค่าสมัคร",
+      wait: x.recruit_at ? "ได้รับแล้ว" : "ได้เมื่อผู้สมัครได้งานแรก", monthJobs: paid ? await monthJobsOf(a.id) : 0,
     });
   }
   return out;

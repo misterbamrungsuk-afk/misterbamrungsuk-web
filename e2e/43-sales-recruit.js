@@ -66,12 +66,12 @@ async function idOf(mb) {
   ok('doctor 1 registers via Sale Man link', !!r1.mb_code, JSON.stringify(r1));
   const id1 = await idOf(r1.mb_code);
   let me = await (await fetch(B + '/sales/me', { headers: { cookie: salesA } })).text();
-  ok('Sale Man dashboard lists doctor (pending)', me.includes(r1.mb_code) && me.includes('data-recruit') && me.includes('ได้เมื่อหมอชำระค่าสมัคร'));
+  ok('Sale Man dashboard lists doctor (pending)', me.includes(r1.mb_code) && me.includes('data-recruit') && me.includes('ได้เมื่อผู้สมัครได้งานแรก'));
   const row1 = (await J(await fetch(B + '/api/admin/applicants/' + id1, { method: 'PATCH', headers: ADM, body: JSON.stringify({ status: 'verified' }) }))).row;
-  ok('slip approved → recruit paid ฿500', row1?.recruit_satang === 50000 && !!row1?.recruit_at, `${row1?.recruit_satang} ${row1?.recruit_at}`);
+  ok('slip approved → not paid yet (paid on first job)', !row1?.recruit_at && row1?.sales_ref?.code === a.code, `${row1?.recruit_satang} ${row1?.recruit_at}`);
   await fetch(B + '/api/admin/applicants/' + id1, { method: 'PATCH', headers: ADM, body: JSON.stringify({ status: 'verified' }) });
   const again = (await J(await fetch(B + '/api/admin/applicants/' + id1, { method: 'PATCH', headers: ADM, body: JSON.stringify({ line_joined: false }) }))).row;
-  ok('re-approve does not pay twice', again?.recruit_satang === 50000);
+  ok('re-approve still not paid', !again?.recruit_at);
 
   // หมอ 2: ลิงก์เชิญ (ฟรี) ผ่านลิงก์ Recruit → ผูกไว้ · ยังไม่จ่าย (ได้ตอนงานแรก)
   const exp = new Date(Date.now() + 7 * 86400e3).toISOString().slice(0, 10);
@@ -87,19 +87,14 @@ async function idOf(mb) {
 
   // หลังบ้าน Sale Man: เห็นเฉพาะของตัวเอง · ยอดขอรับได้ = 2,500
   me = await (await fetch(B + '/sales/me', { headers: { cookie: salesA } })).text();
-  ok('A sees own 2 doctors + amounts', me.includes(r1.mb_code) && me.includes(r2.mb_code) && !me.includes(r3.mb_code) && me.includes('ได้รับแล้ว') && me.includes('ได้เมื่อหมอได้งานแรก') && me.includes('/join/s/' + a.code));
+  ok('A sees own 2 doctors + amounts', me.includes(r1.mb_code) && me.includes(r2.mb_code) && !me.includes(r3.mb_code) && me.includes('ได้เมื่อผู้สมัครได้งานแรก') && me.includes('/join/s/' + a.code));
   const meB = (await (await fetch(B + '/sales/me', { headers: { cookie: salesB } })).text()).replace(/<!-- -->/g, '');
   ok('B does not see A\'s doctors', !meB.includes(r1.mb_code) && !meB.includes(r2.mb_code) && meB.includes('สวัสดี เซลล์ บี'));
   const w = await J(await fetch(B + '/api/sales/me', { headers: { cookie: salesA } }));
   const avail = w.summary?.available ?? w.available;
-  ok('A wallet available = ฿500', avail === 50000, JSON.stringify(w).slice(0, 200));
+  ok('A wallet available = ฿0 until first job', avail === 0, JSON.stringify(w).slice(0, 200));
   const dash = (await (await fetch(B + '/sales/me', { headers: { cookie: salesA } })).text()).replace(/<!-- -->/g, '');
-  ok('dashboard: summary (2 doctors) + wallet + withdraw-all + history', dash.includes('data-sales-summary') && dash.includes('2 คน') && dash.includes('data-sales-wallet') && dash.includes('เบิกทั้งหมด ฿500') && dash.includes('data-sales-history') && dash.includes('ค่าแนะนำ Recruit'));
-  const pr = await J(await fetch(B + '/api/sales/me', { method: 'POST', headers: { cookie: salesA, ...JSONH }, body: JSON.stringify({ amount: 500 }) }));
-  ok('A requests payout of recruit earnings', pr.ok, JSON.stringify(pr));
-
-  const dash2 = (await (await fetch(B + '/sales/me', { headers: { cookie: salesA } })).text()).replace(/<!-- -->/g, '');
-  ok('after withdraw: shows pending request, available ฿0', dash2.includes('รอ CEO อนุมัติ') && dash2.includes('กำลังโอน ฿500'));
+  ok('dashboard: summary (2) + wallet + monthly bonus rules', dash.includes('data-sales-summary') && dash.includes('2 คน') && dash.includes('data-sales-wallet') && dash.includes('data-recruit-bonus') && dash.includes('ครบ 15 งาน'));
   const av = await fetch(B + '/api/avatar', { method: 'POST', headers: { cookie: salesA, origin: B }, body: form({ as: 'sales' }, { file: new File([img], 'me.jpg', { type: 'image/jpeg' }) }) });
   const avg = await J(await fetch(B + '/api/avatar?as=sales', { headers: { cookie: salesA } }));
   ok('Sale Man uploads own profile photo', av.status === 200 && !!avg.avatar, `${av.status} ${JSON.stringify(avg)}`);

@@ -11,7 +11,8 @@ import {
   addPoints, demo, dropPayout, findRep, patchRep, getPurchase, insertPayout, insertPurchase, insertRep, listPayouts, listPurchases, now, patchPayout, patchPurchase, transRefTaken,
   type MemberPurchase, type SalesPayout, type SalesRep,
 } from "./store";
-import { RECRUIT_BONUS, recruitBonusCount, recruitsOf } from "./recruit";
+import { recruitsOf } from "./recruit";
+import { listMonthlyBonuses } from "./recruit-bonus";
 
 // เปิดเมม Gold/Black (จ่าย QR+สลิป → เครดิตเข้ากระเป๋า + โบนัสค่าการตลาด) · ค่าคอม Recruit · แต้ม
 // เงินทุกก้อนผ่าน ledger บัญชีคู่: เปิดเมม = bank −จ่าย · marketing −โบนัส · customer.available +เครดิต (ใน transaction เดียวกับการเปลี่ยนสถานะ)
@@ -188,12 +189,14 @@ export const maskAccount = (acct: string | null | undefined) => { const d = Stri
 export async function repSummary(rep: SalesRep) {
   const o = ownerOf(rep);
   const [rows, bal, payouts, recruits] = await Promise.all([listPurchases({ referrer_id: o.id }), balances(o.type, o.id).catch(() => ({} as Record<string, number>)), rep.kind === "external" ? listPayouts({ rep_id: rep.id }) : Promise.resolve([] as SalesPayout[]), recruitsOf(rep)]);
+  const mbonus = await listMonthlyBonuses({ rep_id: rep.id }).catch(() => []);
   const mine = rows.filter((r) => r.referrer_type === (rep.kind === "parttime" ? "parttime" : "sales"));
   const mask = (e: string | null) => { const [u, d] = String(e ?? "ลูกค้า").split("@"); return d ? `${u.slice(0, 2)}***@${d}` : u; };
   return {
     rep: { code: rep.code, kind: rep.kind, name: rep.name, active: rep.active },
     referrals: mine.map((r) => ({ id: r.id, who: mask(r.customer_email), tier: r.tier, status: r.status, commission: r.commission_satang, mode: r.commission_mode, at: r.credited_at ?? r.created_at })),
-    earned: mine.filter((r) => r.status === "credited").reduce((t, r) => t + r.commission_satang, 0) + recruits.filter((r) => r.credited).reduce((t, r) => t + r.commission, 0) + recruitBonusCount(recruits.filter((r) => r.credited).length) * RECRUIT_BONUS.satang,
+    earned: mine.filter((r) => r.status === "credited").reduce((t, r) => t + r.commission_satang, 0) + recruits.filter((r) => r.credited).reduce((t, r) => t + r.commission, 0) + mbonus.filter((b) => b.status === "approved").reduce((t, b) => t + b.amount_satang, 0),
+    mbonus,
     recruits,
     available: bal.available ?? 0, boostCredit: bal.boost_credit ?? 0, withdrawing: bal.withdrawing ?? 0,
     paidOut: payouts.filter((p) => p.status === "paid").reduce((t, p) => t + p.amount_satang, 0),
