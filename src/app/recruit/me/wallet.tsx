@@ -16,7 +16,7 @@ const baht = (s: number) => "฿" + (s / 100).toLocaleString("th-TH", { maximumF
 const dt = (iso: string) => new Date(iso).toLocaleString("th-TH", { day: "numeric", month: "short", year: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Bangkok" });
 const PST: Record<string, [string, string]> = { requested: ["รอ CEO อนุมัติ", GOLD], approved: ["อนุมัติแล้ว · รอโอน", GOLD], paid: ["โอนแล้ว", "#7fd6a3"], failed: ["ไม่สำเร็จ · คืนยอดแล้ว", "#ff8a9a"] };
 
-export function SalesWallet({ d }: { d: WalletData }) {
+export function SalesWallet({ d, hideMember = false }: { d: WalletData; hideMember?: boolean }) {
   const router = useRouter();
   const [amt, setAmt] = useState("");
   const [busy, setBusy] = useState(false);
@@ -36,8 +36,8 @@ export function SalesWallet({ d }: { d: WalletData }) {
     <>
       <section data-sales-summary className="rounded-[18px] bg-[#211a18] flex flex-col gap-2.5" style={{ padding: 16, border: "1px solid rgba(232,196,114,.3)" }}>
         <b className="text-[16px]">สรุปผลงาน</b>
-        <div className="grid grid-cols-3 gap-2 text-center">
-          {([["แนะนำ Part-time", `${d.recruits} คน`, d.recruits ? `ได้งานแล้ว ${d.recruitsPaid}` : "ยังไม่มี"], ["ลูกค้าเปิดเมม", `${d.members} คน`, ""], ["รายได้ทั้งหมด", baht(d.earned), ""]] as const).map(([k, v, s]) => (
+        <div className={`grid ${hideMember ? "grid-cols-2" : "grid-cols-3"} gap-2 text-center`}>
+          {([["แนะนำ Part-time", `${d.recruits} คน`, d.recruits ? `ได้งานแล้ว ${d.recruitsPaid}` : "ยังไม่มี"], ...(hideMember ? [] : [["ลูกค้าเปิดเมม", `${d.members} คน`, ""] as const]), ["รายได้ทั้งหมด", baht(d.earned), ""]] as const).map(([k, v, s]) => (
             <div key={k} className={tile} style={{ padding: "10px 6px" }}><span className="text-[12px] text-[#b5a596]">{k}</span><b className="text-[17px] tabular-nums">{v}</b>{s && <span className="text-[11.5px] text-[#b5a596]">{s}</span>}</div>
           ))}
         </div>

@@ -42,7 +42,7 @@ export default async function SalesMe({ searchParams }: { searchParams: Promise<
           members: sum.referrals.filter((r) => r.status === "credited").length,
           earned: sum.earned, available: sum.available, withdrawing: sum.withdrawing, paidOut: sum.paidOut,
           payouts: sum.payouts, history: sum.history, hasBank: !!rep.bank?.account,
-        }} />
+        }} hideMember />
         {/* บัญชีรับค่าคอมที่ทีมงานบันทึกไว้ (ปิดบังเลข) — แก้ได้ผ่านทีมงานเท่านั้น */}
         <section className="rounded-2xl bg-[#211a18] flex flex-col gap-1" style={{ padding: 14, border: "1px solid rgba(232,196,114,.25)" }}>
           <b className="text-[15px]">บัญชีรับค่าคอม</b>
@@ -51,7 +51,7 @@ export default async function SalesMe({ searchParams }: { searchParams: Promise<
             : <span className="text-[14px] text-[#ff8a9a]">ยังไม่มีบัญชีรับเงิน · ติดต่อทีมงานเพื่อเพิ่มบัญชีก่อนขอรับค่าคอม</span>}
           <span className="text-[12px] text-[#b5a596]">ต้องการเปลี่ยนบัญชี ติดต่อทีมงานทาง LINE</span>
         </section>
-        <SalesBoard who="external" summary={sum} link={`${origin}/ref/${rep.code}`} tiers={{ gold: cfg.tiers.gold, black: cfg.tiers.black }} boostMult={cfg.boostMult} recruit={{ link: `${origin}/join/s/${rep.code}`, code: rep.code }} hideMoney />
+        <SalesBoard who="external" summary={sum} link={`${origin}/ref/${rep.code}`} tiers={{ gold: cfg.tiers.gold, black: cfg.tiers.black }} boostMult={cfg.boostMult} recruit={{ link: `${origin}/join/s/${rep.code}`, code: rep.code }} hideMoney hideMember />
         <form action="/api/sales/logout" method="post" className="mt-2">
           <button type="submit" className="w-full h-12 rounded-full text-[14px] font-semibold text-[#e8c472]" style={{ border: "1px solid rgba(232,196,114,.45)" }}>ออกจากระบบ Recruit</button>
         </form>

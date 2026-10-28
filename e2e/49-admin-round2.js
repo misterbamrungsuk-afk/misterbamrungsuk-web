@@ -27,7 +27,7 @@ const un = (h) => h.replace(/<!-- -->/g, '').replace(/\\"/g, '"');
   const lr = await fetch(B + '/api/sales/login', { method: 'POST', headers: ORIGIN, body: JSON.stringify({ username: uname, password: li.login.password }) });
   const sc = (lr.headers.get('set-cookie') || '').split(';')[0];
   let h = un(await (await fetch(B + '/recruit/me', { headers: { cookie: sc } })).text());
-  ok('recruit: paid + free links', h.includes('data-recruit-link="rlink"') && h.includes('data-recruit-link="rfree"') && h.includes(`/join/s/${rep.code}?g=tom`) && h.includes('ลิงก์สมัครฟรี') && h.includes('ลิงก์สมัครแบบเสียเงิน'));
+  ok('recruit: one free link, no paid link, no member section', h.includes('data-recruit-link="rfree"') && !h.includes('data-recruit-link="rlink"') && h.includes(`/join/s/${rep.code}`) && h.includes('ลิงก์สมัครฟรี') && !h.includes('ลิงก์สมัครแบบเสียเงิน') && !h.includes('ลูกค้าเปิดเมม') && !h.includes('คนที่คุณชวน'));
   let r = await fetch(B + `/join/s/${rep.code}?g=tom`, { redirect: 'manual' });
   ok('free link → /join/tom + recruit cookie', /\/join\/tom$/.test(r.headers.get('location') || '') && (r.headers.get('set-cookie') || '').includes('mb_sm=' + rep.code));
 
