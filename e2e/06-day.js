@@ -9,6 +9,7 @@ const KEY = (/^ADMIN_SESSION_SECRET=(.*)$/m.exec(ENV)?.[1] || '').trim().replace
 let fails = 0;
 const ok = (n, c, x = '') => { if (!c) fails++; console.log((c ? 'PASS ' : 'FAIL ') + n + (x ? ' · ' + x : '')); };
 const ADM = { cookie: 'mord_admin=' + adm, 'content-type': 'application/json' };
+const { ceoCookie } = require('./_ceo'); // อนุมัติเงิน = ห้อง CEO (/ceo · รหัสแยก)
 const sess = (sub, email) => { const b = Buffer.from(JSON.stringify({ sub, email, exp: Date.now() + 3600e3 })).toString('base64url'); return 'hamoo_session=' + b + '.' + crypto.createHmac('sha256', KEY).update(b).digest('base64url'); };
 const C1 = { cookie: sess('demo:buyer@test.local', 'buyer@test.local'), 'content-type': 'application/json' };
 const body = Buffer.from(JSON.stringify({ mb, iat: Date.now(), exp: Date.now() + 3600_000 })).toString('base64url');
@@ -17,6 +18,7 @@ const J = (r) => r.json();
 const PT = (id, action) => fetch(B + `/api/pt/bookings/${id}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mb, t: T, action }) });
 const ptw = () => fetch(B + `/api/pt/wallet?mb=${mb}&t=${encodeURIComponent(T)}`).then(J);
 (async () => {
+  ADM.cookie += '; ' + (await ceoCookie());
   const h = await (await fetch(B + '/')).text();
   const pid = (/\/p\/(r[0-9a-f]{10})/.exec(h) || [])[1];
   const soon = new Date(Date.now() + 65 * 60_000).toISOString();
@@ -44,8 +46,9 @@ const ptw = () => fetch(B + `/api/pt/wallet?mb=${mb}&t=${encodeURIComponent(T)}`
   ok('default release mode = manual', a.money.releaseMode === 'manual');
   await fetch(B + `/api/pt/bookings?mb=${mb}&t=${encodeURIComponent(T)}`);
   p = await ptw(); ok('manual mode: still pending (no auto release)', p.pending > 0 && p.available === 0);
-  let t = await (await fetch(B + '/admin/payroll', { headers: ADM })).text(); ok('payroll lists pt waiting', t.includes(mb) && t.includes('รออนุมัติ') && !t.includes('ข้อมูลตัวอย่าง 1 คน'));
-  ok('payroll needs admin', (await fetch(B + '/api/admin/payroll', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ all: true }) })).status === 401);
+  let t = await (await fetch(B + '/ceo', { headers: ADM })).text(); ok('payroll lists pt waiting', t.includes(mb) && t.includes('รออนุมัติ') && !t.includes('ข้อมูลตัวอย่าง 1 คน'));
+  ok('payroll needs CEO room', (await fetch(B + '/api/admin/payroll', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ all: true }) })).status === 403);
+  ok('admin CEO account alone cannot approve (needs /ceo)', (await fetch(B + '/api/admin/payroll', { method: 'POST', headers: { cookie: 'mord_admin=' + adm, 'content-type': 'application/json' }, body: JSON.stringify({ all: true }) })).status === 403);
   j = await J(await fetch(B + '/api/admin/payroll', { method: 'POST', headers: ADM, body: JSON.stringify({ all: true }) })); ok('approve earnings', j.ok && j.count >= 1 && j.amount > 0, JSON.stringify(j));
   j = await J(await fetch(B + '/api/admin/payroll', { method: 'POST', headers: ADM, body: JSON.stringify({ all: true }) })); ok('approve twice = nothing', j.ok && j.count === 0);
   p = await ptw(); ok('matured → available', p.available > 0 && p.pending === 0, `${p.available}`);
@@ -63,7 +66,7 @@ const ptw = () => fetch(B + `/api/pt/wallet?mb=${mb}&t=${encodeURIComponent(T)}`
   r = await fetch(B + '/api/admin/withdrawals', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'paid', id: wid0 }) }); ok('paid before CEO approve refused', r.status === 409);
   r = await fetch(B + '/api/admin/withdrawals', { method: 'POST', headers: SUP, body: JSON.stringify({ action: 'approve', id: wid0 }) }); ok('super admin cannot approve withdrawal', r.status === 403);
   r = await fetch(B + '/api/admin/payroll', { method: 'POST', headers: SUP, body: JSON.stringify({ all: true }) }); ok('super admin cannot approve earnings', r.status === 403);
-  let tc = await (await fetch(B + '/admin/payroll', { headers: ADM })).text(); ok('CEO page lists withdrawal request', tc.includes('2 · อนุมัติคำขอถอนเงิน') && tc.includes(mb));
+  let tc = await (await fetch(B + '/ceo', { headers: ADM })).text(); ok('CEO page lists withdrawal request', tc.includes('2 · อนุมัติคำขอถอนเงิน') && tc.includes(mb));
   j = await J(await fetch(B + '/api/admin/withdrawals', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'approve', id: wid0 }) })); ok('CEO approves withdrawal', j.ok && j.row.status === 'approved', j.error);
   j = await J(await fetch(B + '/api/admin/withdrawals', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'batch' }) })); ok('batch', j.ok && j.rows.length === 1, j.batch);
   r = await fetch(B + `/api/admin/withdrawals?csv=${j.batch}`, { headers: ADM }); let csv = await r.text(); ok('bulk csv', csv.includes(mb) && csv.includes('กสิกรไทย'));

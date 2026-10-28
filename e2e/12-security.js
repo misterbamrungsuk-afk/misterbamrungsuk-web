@@ -9,11 +9,13 @@ let fails = 0;
 const ok = (n, c, x = '') => { if (!c) fails++; console.log((c ? 'PASS ' : 'FAIL ') + n + (x ? ' · ' + x : '')); };
 const J = (r) => r.json();
 const ADM = { cookie: 'mord_admin=' + adm, 'content-type': 'application/json' };
+const { ceoCookie } = require('./_ceo'); // อนุมัติเงิน = ห้อง CEO (/ceo · รหัสแยก)
 const sign = (p) => { const b = Buffer.from(JSON.stringify(p)).toString('base64url'); return b + '.' + crypto.createHmac('sha256', KEY).update(b).digest('base64url'); };
 const C1 = { cookie: 'hamoo_session=' + sign({ sub: 'demo:sec@test.local', email: 'sec@test.local', exp: Date.now() + 3600e3 }), 'content-type': 'application/json' };
 const T = (() => { const b = Buffer.from(JSON.stringify({ mb, iat: Date.now(), exp: Date.now() + 3600e3 })).toString('base64url'); return b + '.' + crypto.createHmac('sha256', KEY).update('resume:' + b).digest('base64url'); })();
 const img = fs.readFileSync(WEB + '/public/brand/home/p-n04.jpg');
 (async () => {
+  ADM.cookie += '; ' + (await ceoCookie());
   // route เดโมเดิมถูกลบ
   for (const p of ['/api/notify/booking', '/api/interest', '/api/review', '/api/kyc', '/api/escrow/x', '/api/chat/x/messages', '/api/jobs/x/arrive', '/api/provider/strikes']) {
     const r = await fetch(B + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });

@@ -42,7 +42,7 @@ export function ptOnlyOpen(p: string) {
     p === "/map" || under("/p") ||
     p === "/" || p === "/work-with-us" || under("/join") || under("/privacy") || p === "/page/terms" || under("/policy") ||
     p === "/gate" || p === "/soon" || p === "/offline" || p === "/login" ||
-    under("/admin") || p === "/admin-login" || under("/sales") || under("/recruit") || under("/Recruit") || // Recruit: หน้าแนะนำ + ล็อกอิน + แดชบอร์ดของตัวเอง
+    under("/admin") || p === "/admin-login" || under("/ceo") || under("/sales") || under("/recruit") || under("/Recruit") || // Recruit: หน้าแนะนำ + ล็อกอิน + แดชบอร์ดของตัวเอง
     p.startsWith("/api") || p.startsWith("/_next") || p.startsWith("/pwa-icon") || p.startsWith("/brand") ||
     // ไฟล์ (มีนามสกุล) เช่น favicon / manifest / sw.js / icon.png / robots.txt
     /\/[^/]+\.[a-z0-9]+$/i.test(p) || p === "/manifest.webmanifest"

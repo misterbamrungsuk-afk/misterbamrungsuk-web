@@ -16,7 +16,7 @@ export default async function AdminHome() {
   const [o, checks0, ice] = [await overview(), systemChecks(), await iceServers().catch(() => ({ turn: false }))];
   const checks = checks0.map((c) => (c.key === "turn" && c.ok ? { ...c, ok: ice.turn, need: ice.turn ? "ทดสอบขอคีย์ชั่วคราวจาก Cloudflare สำเร็จ" : "ตั้งคีย์แล้วแต่ Cloudflare ปฏิเสธ · ตรวจค่าที่ใส่" } : c));
   const role = (await verifySession((await cookies()).get(ADMIN_COOKIE)?.value))?.role;
-  const ceoHref = role === "ceo" ? "/admin/payroll" : "/admin/ceo-view"; // ห้อง CEO: CEO กดได้ · แอดมินอื่นดูอย่างเดียว
+  const ceoHref = role === "ceo" ? "/ceo" : "/admin/ceo-view"; // ห้อง CEO ลิงก์แยก (รหัส CEO) · แอดมินอื่นดูอย่างเดียว
   const q = o.queues, m = o.money, b = o.bookings, f = o.recon?.figures;
   const all: [string, number, string, string?][] = [
     ["ตัดสินยกเลิก / ข้อพิพาท", b.decide, "/admin/orders", "red"],

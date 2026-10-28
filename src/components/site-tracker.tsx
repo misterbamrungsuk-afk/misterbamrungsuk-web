@@ -26,7 +26,7 @@ export function SiteTracker() {
     cur.current = null;
   };
   useEffect(() => {
-    if (!path || path.startsWith("/admin")) return;
+    if (!path || path.startsWith("/admin") || path === "/ceo") return;
     flush();
     const c = readConsent();
     const a = !!c?.analytics;

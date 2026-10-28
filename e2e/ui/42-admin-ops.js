@@ -26,7 +26,7 @@ const ROLE_TABS = {
   cs: ['/admin', '/admin/audit', '/admin/orders', '/admin/chats', '/admin/reports', '/admin/appeals', '/admin/members', '/admin/security'],
   kyc: ['/admin', '/admin/audit', '/admin/reports', '/admin/members', '/admin/kyc', '/admin/security'],
 };
-const DENY = { super: ['/admin/payroll'], finance: ['/admin/kyc', '/admin/chats', '/admin/covers', '/admin/payroll'], cs: ['/admin/wallet', '/admin/kyc', '/admin/payroll'], kyc: ['/admin/wallet', '/admin/orders', '/admin/applicants'] };
+const DENY = { super: [], finance: ['/admin/kyc', '/admin/chats', '/admin/covers'], cs: ['/admin/wallet', '/admin/kyc', '/admin/payroll'], kyc: ['/admin/wallet', '/admin/orders', '/admin/applicants'] };
 const HOME = { finance: '/admin', cs: '/admin/orders', kyc: '/admin/kyc' };
 
 (async () => {

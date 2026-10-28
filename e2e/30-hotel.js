@@ -11,6 +11,7 @@ let fails = 0;
 const ok = (n, c, x = '') => { if (!c) fails++; console.log((c ? 'PASS ' : 'FAIL ') + n + (x ? ' · ' + x : '')); };
 const J = (r) => r.json();
 const ADM = { cookie: 'mord_admin=' + adm, 'content-type': 'application/json' };
+const { ceoCookie } = require('./_ceo'); // อนุมัติเงิน = ห้อง CEO (/ceo · รหัสแยก)
 const sign = (p) => { const b = Buffer.from(JSON.stringify(p)).toString('base64url'); return b + '.' + crypto.createHmac('sha256', KEY).update(b).digest('base64url'); };
 const img = fs.readFileSync(WEB + '/public/brand/home/p-n04.jpg');
 const H = { 'content-type': 'application/json', origin: B };
@@ -29,6 +30,7 @@ async function topup(c, baht) {
 const bal = async (c) => (await J(await fetch(B + '/api/wallet', { headers: c.h }))).available;
 
 (async () => {
+  ADM.cookie += '; ' + (await ceoCookie());
   // ── สมัครโรงแรม → ชำระแผน → อนุมัติ → QC ผ่าน ──
   const email = `hotel${run}@test.local`;
   const apply = { business_name: 'โรงแรมทดสอบห้องพัก', type: 'โรงแรม', province: 'กรุงเทพมหานคร', contact_name: 'คุณเจ้าของ', tel: '0822223333', email, line_id: '', links: '', package: '3m', message: '', consent: true };
@@ -108,7 +110,7 @@ const bal = async (c) => (await J(await fetch(B + '/api/wallet', { headers: c.h 
   j = await J(await fetch(B + '/api/hotels/bookings', { headers: C.h }));
   ok('after check-out → still confirmed (waits for CEO)', j.rows.find((x) => x.id === A.id)?.status === 'confirmed');
   ok('partner wallet unchanged before CEO', (await J(await fetch(B + '/api/partner/wallet', { headers: PC }))).available === pw0);
-  { const h = (await (await fetch(B + '/admin/payroll', { headers: ADM })).text()).replace(/<!-- -->/g, ''); ok('CEO room lists stay awaiting approval', h.includes(`data-stay-row="${A.code}"`)); }
+  { const h = (await (await fetch(B + '/ceo', { headers: ADM })).text()).replace(/<!-- -->/g, ''); ok('CEO room lists stay awaiting approval', h.includes(`data-stay-row="${A.code}"`)); }
   ok('super cannot settle stay', (await post('/api/admin/payroll', { cookie: 'mord_admin=' + sup, 'content-type': 'application/json' }, { action: 'stay_settle', id: A.id })).status === 403);
   { const sj = await J(await post('/api/admin/payroll', ADM, { action: 'stay_settle', id: A.id })); ok('CEO settles stay', sj.ok && sj.amount === 510000, JSON.stringify(sj)); }
   ok('settle twice refused', (await post('/api/admin/payroll', ADM, { action: 'stay_settle', id: A.id })).status === 400);

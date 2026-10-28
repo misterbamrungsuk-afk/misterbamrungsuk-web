@@ -14,6 +14,7 @@ const pend = (n, c, x = '') => console.log((c ? 'PASS ' : 'PEND ') + n + (x ? ' 
 const J = (r) => r.json();
 const IP = `10.36.${crypto.randomInt(255)}.${crypto.randomInt(255)}`;
 const ADM = { cookie: 'mord_admin=' + adm, 'content-type': 'application/json' };
+const { ceoCookie } = require('./_ceo'); // อนุมัติเงิน = ห้อง CEO (/ceo · รหัสแยก)
 const sign = (p) => { const b = Buffer.from(JSON.stringify(p)).toString('base64url'); return b + '.' + crypto.createHmac('sha256', KEY).update(b).digest('base64url'); };
 const phone = (ph) => { const b = Buffer.from(JSON.stringify({ phone: ph, exp: Date.now() + 3600e3, v: true })).toString('base64url'); return b + '.' + crypto.createHmac('sha256', KEY).update('phone:' + b).digest('base64url'); };
 const img = fs.readFileSync(WEB + '/public/brand/home/p-n04.jpg');
@@ -52,6 +53,7 @@ async function partnerOf(email, type, PCx = {}) {
 }
 
 (async () => {
+  ADM.cookie += '; ' + (await ceoCookie());
   // ══ 1) โรงแรม ══
   const { p, PC, active } = await partnerOf(`inbox-hotel${run}@test.local`, 'โรงแรม');
   ok('hotel partner active (QC passed, 20%)', !!p && active);

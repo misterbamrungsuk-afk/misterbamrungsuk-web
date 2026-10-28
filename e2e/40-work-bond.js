@@ -14,6 +14,7 @@ let fails = 0;
 const ok = (n, c, x = '') => { if (!c) fails++; console.log((c ? 'PASS ' : 'FAIL ') + n + (x ? ' · ' + x : '')); };
 const J = (r) => r.json();
 const ADM = { cookie: 'mord_admin=' + adm, 'content-type': 'application/json' };
+const { ceoCookie } = require('./_ceo'); // อนุมัติเงิน = ห้อง CEO (/ceo · รหัสแยก)
 const JSONH = { 'content-type': 'application/json' };
 const sess = (sub, email) => { const b = Buffer.from(JSON.stringify({ sub, email, exp: Date.now() + 3600e3 })).toString('base64url'); return 'hamoo_session=' + b + '.' + crypto.createHmac('sha256', KEY).update(b).digest('base64url'); };
 const C1 = { cookie: sess('demo:buyer@test.local', 'buyer@test.local'), 'content-type': 'application/json' };
@@ -25,6 +26,7 @@ const DAY = 86400e3;
 const strip = (h) => h.replace(/<!-- -->/g, '');
 
 (async () => {
+  ADM.cookie += '; ' + (await ceoCookie());
   // Recruit ภายนอก + ID/รหัสผ่าน
   const rep = (await J(await fetch(B + '/api/admin/sales', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'rep_create', name: 'รีครูท ค่าสมัคร', phone: '0833333333', bank: { bank: 'กสิกร', account: '1234567899', name: 'รีครูท' } }) }))).rep;
   const uname = 'rcf' + String(Date.now()).slice(-6);

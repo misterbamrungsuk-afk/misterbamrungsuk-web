@@ -9,6 +9,7 @@ let fails = 0;
 const ok = (n, c, x = '') => { if (!c) fails++; console.log((c ? 'PASS ' : 'FAIL ') + n + (x ? ' · ' + x : '')); };
 const J = (r) => r.json();
 const ADM = { cookie: 'mord_admin=' + adm, 'content-type': 'application/json' };
+const { ceoCookie } = require('./_ceo'); // อนุมัติเงิน = ห้อง CEO (/ceo · รหัสแยก)
 const SUP = { cookie: 'mord_admin=' + sup, 'content-type': 'application/json' };
 const sign = (p) => { const b = Buffer.from(JSON.stringify(p)).toString('base64url'); return b + '.' + crypto.createHmac('sha256', KEY).update(b).digest('base64url'); };
 const phone = (ph) => { const b = Buffer.from(JSON.stringify({ phone: ph, exp: Date.now() + 3600e3, v: true })).toString('base64url'); return b + '.' + crypto.createHmac('sha256', KEY).update('phone:' + b).digest('base64url'); };
@@ -16,6 +17,7 @@ const img = fs.readFileSync(WEB + '/public/brand/home/p-n04.jpg');
 const BANK = { bank: 'กสิกรไทย', account: '123-4-56789-0', name: 'บจก. ทดสอบ' };
 const post = (u, h, b) => fetch(B + u, { method: 'POST', headers: h, body: JSON.stringify(b) });
 (async () => {
+  ADM.cookie += '; ' + (await ceoCookie());
   // ── พาร์ทเนอร์ ──
   const list = await J(await fetch(B + '/api/admin/partners', { headers: ADM }));
   const p = (list.rows || list.partners || list).find?.((x) => x.email.startsWith('spa-owner'));
@@ -30,7 +32,7 @@ const post = (u, h, b) => fetch(B + u, { method: 'POST', headers: h, body: JSON.
   j = await J(await post('/api/partner/wallet', PC, { amount: 1000, bank: BANK })); ok('partner requests ฿1,000', j.ok && j.request.status === 'requested', j.error); const pr = j.request?.id;
   j = await J(await post('/api/partner/wallet', PC, { amount: 500, bank: BANK })); ok('one open request at a time', !j.ok);
   w = await J(await fetch(B + '/api/partner/wallet', { headers: PC })); ok('moved to withdrawing', w.available === 200000 && w.withdrawing === 100000, `${w.available} ${w.withdrawing}`);
-  let t = (await (await fetch(B + '/admin/payroll', { headers: ADM })).text()).replace(/<!-- -->/g, ''); ok('CEO page lists partner request', t.includes('สปาทดสอบพอร์ทัล') && t.includes('ถอนเงินพาร์ทเนอร์'));
+  let t = (await (await fetch(B + '/ceo', { headers: ADM })).text()).replace(/<!-- -->/g, ''); ok('CEO page lists partner request', t.includes('สปาทดสอบพอร์ทัล') && t.includes('ถอนเงินพาร์ทเนอร์'));
   ok('super cannot approve', (await post('/api/admin/payout-requests', SUP, { action: 'approve', id: pr })).status === 403);
   ok('cannot pay before CEO approves', (await post('/api/admin/payout-requests', ADM, { action: 'paid', id: pr })).status === 409);
   j = await J(await post('/api/admin/payout-requests', ADM, { action: 'approve', id: pr })); ok('CEO approves', j.ok, j.error);
@@ -68,7 +70,7 @@ const post = (u, h, b) => fetch(B + u, { method: 'POST', headers: h, body: JSON.
   ok('logged-in buyer earns points on done', pts >= 10, String(pts));
   await post(`/api/market/admin/orders/${oid}`, ADM, { action: 'regp' }); w = await J(await fetch(B + '/api/market/vendor/wallet', { headers: VC })); ok('regp does not double-credit', w.available === want);
   j = await J(await post('/api/market/vendor/wallet', VC, { amount: want / 100, bank: BANK })); ok('vendor requests full amount', j.ok, j.error); const vr = j.request?.id;
-  t = (await (await fetch(B + '/admin/payroll', { headers: ADM })).text()).replace(/<!-- -->/g, ''); ok('CEO page lists vendor request', t.includes('ร้านทดสอบกระเป๋า') && t.includes('ถอนเงินร้านค้า Marketplace'));
+  t = (await (await fetch(B + '/ceo', { headers: ADM })).text()).replace(/<!-- -->/g, ''); ok('CEO page lists vendor request', t.includes('ร้านทดสอบกระเป๋า') && t.includes('ถอนเงินร้านค้า Marketplace'));
   await post('/api/admin/payout-requests', ADM, { action: 'approve', id: vr });
   j = await J(await post('/api/admin/payout-requests', ADM, { action: 'failed', id: vr, note: 'เลขบัญชีผิด' })); ok('transfer failed → refunded', j.ok);
   w = await J(await fetch(B + '/api/market/vendor/wallet', { headers: VC })); ok('vendor balance restored', w.available === want && w.requests[0].status === 'failed');

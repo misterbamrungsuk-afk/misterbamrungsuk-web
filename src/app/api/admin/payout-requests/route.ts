@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { ceoSession } from "@/lib/ceo-room-auth";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
 import { PayoutError, approvePayout, listPayoutRequests, settlePayout } from "@/lib/payouts";
 import { allBalances } from "@/lib/wallet";
@@ -25,14 +26,18 @@ export async function GET() {
 
 // CEO เท่านั้น: approve / reject · แอดมินการเงิน: paid (โอนแล้ว) / failed (โอนไม่สำเร็จ → คืนยอด)
 export async function POST(req: Request) {
-  const s = await admin();
-  if (!s) return NextResponse.json({ ok: false }, { status: 401 });
   const b = (await req.json().catch(() => ({}))) as { action?: string; id?: string; note?: string };
-  const act = String(b.action ?? ""), id = String(b.id ?? ""), actor = `admin:${s.email}`;
-  if ((act === "approve" || act === "reject") && s.role !== "ceo") return NextResponse.json({ ok: false, error: "เฉพาะ CEO" }, { status: 403 });
+  const act = String(b.action ?? ""), id = String(b.id ?? "");
   try {
-    if (act === "approve") return NextResponse.json({ ok: true, request: await approvePayout(id, s.email) });
-    if (act === "reject") return NextResponse.json({ ok: true, request: await settlePayout(id, actor, "rejected", String(b.note ?? "")) });
+    // อนุมัติ/ไม่อนุมัติ = ห้อง CEO เท่านั้น (คุกกี้ /ceo)
+    if (act === "approve" || act === "reject") {
+      const ceo = await ceoSession();
+      if (!ceo) return NextResponse.json({ ok: false, error: "อนุมัติได้ที่ห้อง CEO (ลิงก์ /ceo) เท่านั้น" }, { status: 403 });
+      return NextResponse.json({ ok: true, request: act === "approve" ? await approvePayout(id, ceo.actor) : await settlePayout(id, ceo.actor, "rejected", String(b.note ?? "")) });
+    }
+    const s = await admin();
+    if (!s) return NextResponse.json({ ok: false }, { status: 401 });
+    const actor = `admin:${s.email}`;
     if (act === "paid") return NextResponse.json({ ok: true, request: await settlePayout(id, actor, "paid") });
     if (act === "failed") return NextResponse.json({ ok: true, request: await settlePayout(id, actor, "failed", String(b.note ?? "")) });
     return NextResponse.json({ ok: false, error: "unknown action" }, { status: 400 });

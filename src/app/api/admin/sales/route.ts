@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { fileHeaders } from "@/lib/file-guard";
 import { cookies } from "next/headers";
+import { ceoSession } from "@/lib/ceo-room-auth";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
 import { MemberError, approveSalesPayout, createExternalRep, deleteExternalRep, creditMembership, rejectMembership, settleSalesPayout, signSalesLink, updateExternalRep } from "@/lib/member";
 import { getPurchase, patchRep, findRep, listPayouts } from "@/lib/member/store";
@@ -23,13 +24,24 @@ export async function GET(req: Request) {
 }
 
 // แอดมิน: approve / reject (สลิปเปิดเมม) · rep_create / rep_toggle / rep_link · payout_paid / payout_failed
-// CEO เท่านั้น: settings (ตัวเลขระดับ) · payout_approve / payout_reject (ค่าคอม Recruit ภายนอก)
+// CEO เท่านั้น: settings (ตัวเลขระดับ) · payout_approve / payout_reject = ห้อง CEO (คุกกี้ /ceo)
 export async function POST(req: Request) {
+  const b = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+  // ค่าคอม Recruit: อนุมัติ/ไม่อนุมัติ = ห้อง CEO เท่านั้น (คุกกี้ /ceo)
+  if (b.action === "payout_approve" || b.action === "payout_reject") {
+    const ceo = await ceoSession();
+    if (!ceo) return NextResponse.json({ ok: false, error: "อนุมัติได้ที่ห้อง CEO (ลิงก์ /ceo) เท่านั้น" }, { status: 403 });
+    try {
+      const id = String(b.id ?? "");
+      return NextResponse.json({ ok: true, row: b.action === "payout_approve" ? await approveSalesPayout(id, ceo.actor) : await settleSalesPayout(id, ceo.actor, false, String(b.note ?? "CEO ไม่อนุมัติ")) });
+    } catch (e) {
+      return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : "ไม่สำเร็จ" }, { status: e instanceof MemberError ? 400 : 500 });
+    }
+  }
   const s = await admin();
   if (!s) return NextResponse.json({ ok: false }, { status: 401 });
-  const b = (await req.json().catch(() => ({}))) as Record<string, unknown>;
   const act = String(b.action ?? ""), id = String(b.id ?? ""), actor = `admin:${s.email}`;
-  const ceoOnly = ["settings", "payout_approve", "payout_reject"];
+  const ceoOnly = ["settings"];
   if (ceoOnly.includes(act) && s.role !== "ceo") return NextResponse.json({ ok: false, error: "เฉพาะ CEO" }, { status: 403 });
   try {
     if (act === "approve") return NextResponse.json({ ok: true, row: await creditMembership(id, actor) });
@@ -53,8 +65,6 @@ export async function POST(req: Request) {
       try { return NextResponse.json({ ok: true, login: await issueSalesLogin(r, String(b.username ?? ""), s.email) }); }
       catch (e) { throw new MemberError(e instanceof Error ? e.message : "ตั้ง ID ไม่สำเร็จ"); }
     }
-    if (act === "payout_approve") return NextResponse.json({ ok: true, row: await approveSalesPayout(id, `ceo:${s.email}`) });
-    if (act === "payout_reject") return NextResponse.json({ ok: true, row: await settleSalesPayout(id, `ceo:${s.email}`, false, String(b.note ?? "CEO ไม่อนุมัติ")) });
     if (act === "payout_paid") return NextResponse.json({ ok: true, row: await settleSalesPayout(id, actor, true) });
     if (act === "payout_failed") {
       if (!String(b.note ?? "").trim()) throw new MemberError("ระบุสาเหตุ");

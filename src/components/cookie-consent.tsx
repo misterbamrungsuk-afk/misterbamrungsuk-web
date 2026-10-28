@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { readConsent, saveConsent } from "@/lib/consent";
 
-// หน้าทีมงาน (/admin*, /admin-login) ไม่ขอความยินยอม — ไม่ใช่หน้าลูกค้า และแบนเนอร์บังปุ่มด้านล่าง
-const isStaff = (p: string | null) => !!p && (p === "/admin" || p.startsWith("/admin/") || p.startsWith("/admin-login"));
+// หน้าทีมงาน (/admin*, /admin-login, /ceo) ไม่ขอความยินยอม — ไม่ใช่หน้าลูกค้า และแบนเนอร์บังปุ่มด้านล่าง
+const isStaff = (p: string | null) => !!p && (p === "/admin" || p.startsWith("/admin/") || p.startsWith("/admin-login") || p === "/ceo");
 
 // แบนเนอร์ขอความยินยอมคุกกี้ (PDPA) — analytics/pixel โหลดได้หลัง hasConsent() เท่านั้น
 export function CookieConsent() {

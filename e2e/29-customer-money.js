@@ -12,6 +12,7 @@ let fails = 0;
 const ok = (n, c, x = '') => { if (!c) fails++; console.log((c ? 'PASS ' : 'FAIL ') + n + (x ? ' · ' + x : '')); };
 const J = (r) => r.json();
 const ADM = { cookie: 'mord_admin=' + adm, 'content-type': 'application/json' };
+const { ceoCookie } = require('./_ceo');
 const SUP = { cookie: 'mord_admin=' + sup, 'content-type': 'application/json' };
 const sign = (p) => { const b = Buffer.from(JSON.stringify(p)).toString('base64url'); return b + '.' + crypto.createHmac('sha256', KEY).update(b).digest('base64url'); };
 const cust = (email) => ({ cookie: 'hamoo_session=' + sign({ sub: 'demo:' + email, email, exp: Date.now() + 3600e3 }), 'content-type': 'application/json' });
@@ -48,6 +49,7 @@ async function bookAccepted(C, starts_at, label) {
 }
 
 (async () => {
+  ADM.cookie += '; ' + (await ceoCookie());
   pid = (/\/p\/(r[0-9a-f]{10})/.exec(await (await fetch(B + '/')).text()) || [])[1];
   ok('found live PT', !!pid);
 
@@ -66,7 +68,7 @@ async function bookAccepted(C, starts_at, label) {
   j = await J(await post('/api/wallet/withdraw', W, { amount: 500, bank: BANK })); ok('one open request at a time', !j.ok, j.error);
   w = await wallet(W); ok('available → withdrawing', w.available === 300000 && w.withdrawing === 200000, `${w.available} ${w.withdrawing}`);
   ok('history shows withdraw request', w.history.some((h) => h.kind === 'payout' && h.bucket === 'available' && h.amount === -200000));
-  let t = (await (await fetch(B + '/admin/payroll', { headers: ADM })).text()).replace(/<!-- -->/g, ''); ok('CEO page lists customer request', t.includes('ถอนเงินลูกค้า') && t.includes(wE));
+  let t = (await (await fetch(B + '/ceo', { headers: ADM })).text()).replace(/<!-- -->/g, ''); ok('CEO page lists customer request', t.includes('ถอนเงินลูกค้า') && t.includes(wE));
   ok('super cannot approve', (await post('/api/admin/payout-requests', SUP, { action: 'approve', id: r1 })).status === 403);
   ok('cannot mark paid before CEO approves', (await post('/api/admin/payout-requests', SUP, { action: 'paid', id: r1 })).status === 409);
   j = await J(await post('/api/admin/payout-requests', ADM, { action: 'approve', id: r1 })); ok('CEO approves', j.ok, j.error);
@@ -195,7 +197,9 @@ async function bookAccepted(C, starts_at, label) {
     ok('PT share computed on extended price', d.booking.pt_pending_satang === share && share > Math.round(price0 * (d.booking.share_pct ?? 0) / 100), `${d.booking.pt_pending_satang} vs ${share}`);
     const pw1 = await ptw(); // ชุดก่อนหน้าอาจตั้งปล่อยเงินอัตโนมัติ → ส่วนแบ่งอาจเข้า available ทันที · นับรวม pending + available
     const tot = (x) => (x.pending ?? 0) + (x.available ?? 0);
-    ok('PT earned share incl. extra hour', tot(pw1) - tot(pw0) === share, `${tot(pw0)}→${tot(pw1)} vs ${share}`);
+    // สมัครฟรี: ปล่อยเงินอัตโนมัติ (ชุด 06) → ระบบหักค่าสมัครงานละ ฿500 ตอนปล่อย (จนครบ ฿10,000) · ยังไม่ปล่อย/จ่ายครบแล้ว = ไม่หัก
+    const got = tot(pw1) - tot(pw0);
+    ok('PT earned share incl. extra hour', got === share || got === share - Math.min(50000, share), `${tot(pw0)}→${tot(pw1)} vs ${share}`);
     j = await J(await post(`/api/bookings/${b4}/extend`, X, {})); ok('cannot extend after completion', !j.ok, j.error);
     ok('ledger sum 0 (after split)', (await ledger()) === 0);
   }

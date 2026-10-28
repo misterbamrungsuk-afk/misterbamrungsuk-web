@@ -9,6 +9,7 @@ let fails = 0;
 const ok = (n, c, x = '') => { if (!c) fails++; console.log((c ? 'PASS ' : 'FAIL ') + n + (x ? ' · ' + x : '')); };
 const J = (r) => r.json();
 const ADM = { cookie: 'mord_admin=' + adm, 'content-type': 'application/json' };
+const { ceoCookie } = require('./_ceo'); // อนุมัติเงิน = ห้อง CEO (/ceo · รหัสแยก)
 const SUP = { cookie: 'mord_admin=' + sup, 'content-type': 'application/json' };
 const sess = (e) => { const b = Buffer.from(JSON.stringify({ sub: 'demo:' + e, email: e, exp: Date.now() + 3600e3 })).toString('base64url'); return 'hamoo_session=' + b + '.' + crypto.createHmac('sha256', KEY).update(b).digest('base64url'); };
 const body = Buffer.from(JSON.stringify({ mb, iat: Date.now(), exp: Date.now() + 3600_000 })).toString('base64url');
@@ -18,6 +19,7 @@ const buy = (email, tier, ref) => { const fd = new FormData(); fd.append('tier',
 const wallet = (email) => fetch(B + '/api/wallet', { headers: { cookie: sess(email) } }).then(J);
 const pend = async (email) => { const t = await (await fetch(B + '/admin/sales', { headers: ADM })).text(); return [...t.matchAll(/slip=([0-9a-f-]{36})/g)].map((m) => m[1]); };
 (async () => {
+  ADM.cookie += '; ' + (await ceoCookie());
   let g = await J(await fetch(B + '/api/membership')); ok('guest sees tiers', g.ok && g.enabled && g.tiers.gold.pay === 50000 && g.tiers.black.credit === 150000);
   ok('membership page public', (await fetch(B + '/membership', { redirect: 'manual' })).status === 200);
   ok('buy needs login', (await fetch(B + '/api/membership', { method: 'POST', body: new FormData() })).status === 401);
@@ -62,7 +64,7 @@ const pend = async (email) => { const t = await (await fetch(B + '/admin/sales',
   me = await J(await fetch(B + '/api/sales/me', { headers: { cookie: sc } })); const pid = me.payouts[0]?.id; ok('moved to withdrawing', me.available === 0 && me.withdrawing === 500000);
   r = await fetch(B + '/api/admin/sales', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'payout_paid', id: pid }) }); ok('paid before CEO approve refused', r.status === 409);
   r = await fetch(B + '/api/admin/sales', { method: 'POST', headers: SUP, body: JSON.stringify({ action: 'payout_approve', id: pid }) }); ok('super cannot approve payout', r.status === 403);
-  t = await (await fetch(B + '/admin/payroll', { headers: ADM })).text(); ok('CEO page lists sales payout', t.includes('คุณเซลส์'));
+  t = await (await fetch(B + '/ceo', { headers: ADM })).text(); ok('CEO page lists sales payout', t.includes('คุณเซลส์'));
   r = await J(await fetch(B + '/api/admin/sales', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'payout_approve', id: pid }) })); ok('CEO approves payout', r.ok, r.error);
   r = await J(await fetch(B + '/api/admin/sales', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'payout_paid', id: pid }) })); ok('admin marks paid', r.ok, r.error);
   me = await J(await fetch(B + '/api/sales/me', { headers: { cookie: sc } })); ok('withdrawing cleared', me.withdrawing === 0);

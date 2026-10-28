@@ -1,6 +1,7 @@
 import { csvCell } from "@/lib/csv";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { ceoSession } from "@/lib/ceo-room-auth";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
 import { BookingError } from "@/lib/bookings";
 import { withdrawInfo } from "@/lib/admin/withdraw-info";
@@ -38,16 +39,18 @@ export async function GET(req: Request) {
 // แอดมิน: { action: "batch" } · { action: "paid", id } · { action: "failed", id, note }
 // CEO เท่านั้น: { action: "approve", id } · { action: "reject", id, note } (อนุมัติคำขอถอนชั้นที่ 2 ก่อนส่งให้แอดมินโอน)
 export async function POST(req: Request) {
-  const s = await admin();
-  if (!s) return NextResponse.json({ ok: false }, { status: 401 });
   const b = (await req.json().catch(() => ({}))) as { action?: string; id?: string; note?: string };
-  const actor = `admin:${s.email}`;
   try {
+    // อนุมัติ/ไม่อนุมัติ = ห้อง CEO เท่านั้น (คุกกี้ /ceo · ไม่ใช้บัญชีแอดมิน)
     if (b.action === "approve" || b.action === "reject") {
-      if (s.role !== "ceo") return NextResponse.json({ ok: false, error: "เฉพาะ CEO อนุมัติได้" }, { status: 403 });
+      const ceo = await ceoSession();
+      if (!ceo) return NextResponse.json({ ok: false, error: "อนุมัติได้ที่ห้อง CEO (ลิงก์ /ceo) เท่านั้น" }, { status: 403 });
       const id = String(b.id ?? "");
-      return NextResponse.json({ ok: true, row: b.action === "approve" ? await approveWithdrawal(id, `ceo:${s.email}`) : await rejectWithdrawal(id, `ceo:${s.email}`, String(b.note ?? "").slice(0, 200)) });
+      return NextResponse.json({ ok: true, row: b.action === "approve" ? await approveWithdrawal(id, ceo.actor) : await rejectWithdrawal(id, ceo.actor, String(b.note ?? "").slice(0, 200)) });
     }
+    const s = await admin();
+    if (!s) return NextResponse.json({ ok: false }, { status: 401 });
+    const actor = `admin:${s.email}`;
     if (b.action === "batch") return NextResponse.json({ ok: true, ...(await makeBatch(actor)) });
     if (b.action === "paid") return NextResponse.json({ ok: true, row: await markPaid(String(b.id ?? ""), actor) });
     if (b.action === "failed") {

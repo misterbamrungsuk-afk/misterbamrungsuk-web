@@ -120,6 +120,7 @@ export async function middleware(request: NextRequest) {
   const isPublic =
     pathname === "/login" ||
     pathname === "/admin-login" ||
+    pathname === "/ceo" || // ห้อง CEO ลิงก์แยก — ป้องกันด้วยรหัส CEO เอง (ceo-room-auth)
     pathname === "/gate" ||
     pathname === "/welcome" ||
     pathname === "/onboarding" ||

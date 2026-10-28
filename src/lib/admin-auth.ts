@@ -23,7 +23,7 @@ export const PATH_ROLES: { prefix: string; roles: AdminRole[] }[] = [
   { prefix: "/admin/income", roles: ["super", "finance"] },
   { prefix: "/admin/traffic", roles: ["super", "finance", "cs"] },
   { prefix: "/admin/collab", roles: ["super", "finance"] },
-  { prefix: "/admin/payroll", roles: [] }, // ห้อง CEO — CEO เท่านั้น (canAccess ให้ ceo ผ่านเสมอ)
+  { prefix: "/admin/payroll", roles: ["super", "finance"] }, // ลิงก์เดิมในแจ้งเตือน → CEO ไป /ceo · แอดมินไป /admin/ceo-view
   { prefix: "/admin/ceo-view", roles: ["super", "finance"] }, // ห้อง CEO แบบดูอย่างเดียว
   { prefix: "/admin/boosts", roles: ["super", "finance"] },
   { prefix: "/admin/sales", roles: ["super", "finance"] },

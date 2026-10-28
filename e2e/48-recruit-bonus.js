@@ -14,6 +14,7 @@ let fails = 0;
 const ok = (n, c, x = '') => { if (!c) fails++; console.log((c ? 'PASS ' : 'FAIL ') + n + (x ? ' · ' + x : '')); };
 const J = (r) => r.json();
 const ADM = { cookie: 'mord_admin=' + adm, 'content-type': 'application/json' };
+const { ceoCookie } = require('./_ceo'); // อนุมัติเงิน = ห้อง CEO (/ceo · รหัสแยก)
 const JSONH = { 'content-type': 'application/json' };
 const ORIGIN = { 'content-type': 'application/json', origin: B };
 const img = fs.readFileSync(WEB + '/public/brand/home/p-n04.jpg');
@@ -25,6 +26,7 @@ const strip = (h) => h.replace(/<!-- -->/g, '');
 const monthTH = () => new Date(Date.now() + 7 * 3600_000).toISOString().slice(0, 7);
 
 (async () => {
+  ADM.cookie += '; ' + (await ceoCookie());
   // Recruit + ID
   const S = (body) => fetch(B + '/api/admin/sales', { method: 'POST', headers: ADM, body: JSON.stringify(body) }).then(J);
   const rep = (await S({ action: 'rep_create', name: 'โบนัส เดือน', phone: '0866666666', bank: { bank: 'กสิกร', account: '1234567822', name: 'โบนัส' } })).rep;
@@ -90,7 +92,7 @@ const monthTH = () => new Date(Date.now() + 7 * 3600_000).toISOString().slice(0,
   r = await BON({ action: 'compute', month: monthTH() });
   ok('compute again creates none', r.ok && r.created === 0);
   ok('not paid before CEO approves', (await bal()) === 50000);
-  h = strip(await (await fetch(B + '/admin/payroll', { headers: ADM })).text());
+  h = strip(await (await fetch(B + '/ceo', { headers: ADM })).text());
   ok('CEO page shows bonus queue', h.includes('data-recruit-bonus-queue') && h.includes('ขยัน') && h.includes('ทำ 16 งาน'));
   h = strip(await meAll(sc));
   ok('recruit sees bonus pending CEO', h.includes('data-recruit-bonus-history') && h.includes('รอ CEO อนุมัติ'));
