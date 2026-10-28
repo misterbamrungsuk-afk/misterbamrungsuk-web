@@ -2,6 +2,7 @@ import "server-only";
 import { PLATFORM, WalletError, balances, move, type Leg, type MoveTable, type MoveTx } from "@/lib/wallet";
 import { db, getPartner, isDemo, type Partner } from "@/lib/partner/store";
 import { getListing } from "@/lib/partner/portal";
+import { getMoney } from "@/lib/wallet/settings";
 import { isPublicPartner, venueKind } from "@/lib/partner/kind";
 import {
   CONFIRM_HOURS, HOLDING, MAX_AHEAD_DAYS, MAX_NIGHTS, MAX_ROOMS_PER_BOOKING, addDays, bahtTxt, bkkToday, cancelRule, checkinAt, checkoutAt,
@@ -346,6 +347,8 @@ async function casRefund(id: string, from: number | null, to: number | null): Pr
 /** กวาดสถานะตามเวลา (เรียกตอนอ่านรายการ): รอยืนยันเกินเวลา → คืนเงิน · ยืนยันแล้วและเลยเวลาเช็กเอาต์ → แบ่งเงินเข้าโรงแรม · ค้าง "กำลังชำระ" → void */
 export async function sweep(): Promise<number> {
   const nowMs = Date.now();
+  // ค่าห้องเข้ากระเป๋าโรงแรม: โหมด manual (ค่าเริ่มต้น) = รอ CEO อนุมัติที่ห้อง CEO (ceoSettleStay) · auto = ตัดเองหลังเช็กเอาต์ (บอส 28 ต.ค. 2569)
+  const autoSettle = (await getMoney().catch(() => null))?.releaseMode === "auto";
   let rows: StayBooking[];
   if (isDemo) rows = demo.bookings.filter((b) => b.status === "pending" || b.status === "confirmed" || b.status === "paying");
   else {
@@ -369,18 +372,41 @@ export async function sweep(): Promise<number> {
           const p = await getPartner(r.partner_id).catch(() => null);
           if (p) await tellPartner(p, "stay_expired", `การจอง ${r.code} หมดเวลายืนยัน`, `ไม่ได้ยืนยันภายใน ${CONFIRM_HOURS} ชม. · คืนเงินลูกค้าเต็มจำนวนแล้ว · ห้องกลับมาว่าง`);
         }
-      } else if (b.status === "confirmed" && nowMs >= checkoutAt(b.check_out)) {
-        const r = await settle(b, ["confirmed"], "completed", { completed_at: now() }, "auto:stay", "เช็กเอาต์แล้ว");
-        if (r) {
-          n++;
-          await tellCustomer(r, "stay_completed", `ขอบคุณที่เข้าพัก ${r.partner_name}`, `การจอง ${r.code} เสร็จสมบูรณ์`);
-          const p = await getPartner(r.partner_id).catch(() => null);
-          if (p) await tellPartner(p, "stay_settled", `ค่าห้อง ${r.code} เข้ากระเป๋าแล้ว`, `${bahtTxt(r.partner_net_satang ?? 0)} (หักแพลตฟอร์ม ${r.platform_pct}%)`);
-        }
+      } else if (autoSettle && b.status === "confirmed" && nowMs >= checkoutAt(b.check_out)) {
+        if (await settleDone(b, "auto:stay", "เช็กเอาต์แล้ว")) n++;
       }
     } catch (e) { console.error("stay sweep row", b.code, e); }
   }
   return n;
+}
+
+/** ตัดค่าห้องเข้ากระเป๋าโรงแรม + แจ้งลูกค้า/โรงแรม (idem stay:settle:<id> กันจ่ายซ้ำ) */
+async function settleDone(b: StayBooking, actor: string, why: string): Promise<StayBooking | null> {
+  const r = await settle(b, ["confirmed"], "completed", { completed_at: now() }, actor, why);
+  if (!r) return null;
+  await tellCustomer(r, "stay_completed", `ขอบคุณที่เข้าพัก ${r.partner_name}`, `การจอง ${r.code} เสร็จสมบูรณ์`);
+  const p = await getPartner(r.partner_id).catch(() => null);
+  if (p) await tellPartner(p, "stay_settled", `ค่าห้อง ${r.code} เข้ากระเป๋าแล้ว`, `${bahtTxt(r.partner_net_satang ?? 0)} (หักแพลตฟอร์ม ${r.platform_pct}%)`);
+  return r;
+}
+
+/** ค่าห้องที่เช็กเอาต์แล้ว รอ CEO อนุมัติเข้ากระเป๋าโรงแรม */
+export async function listStaysAwaitingCeo(): Promise<(StayBooking & { net_satang: number })[]> {
+  const nowMs = Date.now();
+  const rows = await listStays({ limit: 2000 });
+  return rows.filter((b) => b.status === "confirmed" && nowMs >= checkoutAt(b.check_out)).map((b) => ({ ...b, net_satang: staySplit(b.total_satang, b.platform_pct).net }));
+}
+
+/** CEO อนุมัติค่าห้องเข้ากระเป๋าโรงแรม — ต้องยืนยันแล้วและเลยเวลาเช็กเอาต์ */
+export async function ceoSettleStay(id: string, actor: string): Promise<StayBooking> {
+  const b = await getStay(id);
+  if (!b) throw new StayError("ไม่พบการจองนี้");
+  if (b.status === "completed") throw new StayError("ค่าห้องนี้เข้ากระเป๋าโรงแรมแล้ว");
+  if (b.status !== "confirmed") throw new StayError("การจองนี้ไม่ได้อยู่ในสถานะรออนุมัติ");
+  if (Date.now() < checkoutAt(b.check_out)) throw new StayError("ยังไม่ถึงเวลาเช็กเอาต์");
+  const r = await settleDone(b, actor, "CEO อนุมัติ");
+  if (!r) throw new StayError("รายการนี้ถูกดำเนินการไปแล้ว");
+  return r;
 }
 
 /** ยอดเงินพักของห้องพัก (หลังบ้าน) — ต้องเท่ากับยอดรวมรายการที่รอยืนยัน/ยืนยันแล้ว */

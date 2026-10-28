@@ -86,8 +86,9 @@ async function partnerOf(email, type, PCx = {}) {
   j = await J(await book({ check_in: bkk(20), check_out: bkk(21) })); const E = j.row;
   await post('/api/admin/stays', ADM, { action: 'demo_shift', id: E.id, minutes: 13 * 60 });
   await fetch(B + `/api/hotels/bookings/${E.id}`, { headers: C.h });
-  // A เลยเช็กเอาต์ → completed
+  // A เลยเช็กเอาต์ → CEO อนุมัติ → completed
   await post('/api/admin/stays', ADM, { action: 'demo_shift', id: A.id, days: 6 });
+  await post('/api/admin/payroll', ADM, { action: 'stay_settle', id: A.id });
   j = await J(await fetch(B + `/api/hotels/bookings/${A.id}`, { headers: C.h }));
   ok('A completed: partner 1,600 / platform 400', j.booking?.status === 'completed' && j.booking.partner_net_satang === 160000 && j.booking.platform_fee_satang === 40000, j.booking?.status);
   box = await inbox('/api/partner/notifications', PC);

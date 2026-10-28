@@ -96,7 +96,7 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR
     ok('finance settings API → 403', r.ok === false && /CEO/.test(r.error || ''), JSON.stringify(r));
 
     // ── 2. CEO อนุมัติรายได้ / ถอน ──
-    await go('/admin/payroll', 'payroll-finance');
+    await go('/admin/ceo-view', 'payroll-finance');
     const prow = page.locator('div.border-t', { hasText: P.mb }).first();
     ok('finance: approve buttons disabled', await prow.getByRole('button', { name: /^อนุมัติ ฿/ }).isDisabled().catch(() => false));
     await as(ctx, 'ceo');

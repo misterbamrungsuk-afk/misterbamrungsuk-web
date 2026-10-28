@@ -96,7 +96,7 @@ export function RoomsClient({ initial }: { initial: RoomDraft[] }) {
       {rows.length < 20 && <button type="button" onClick={() => setRows((rs) => [...rs, blank()])} className="btn-ghost min-h-12 rounded-full">+ เพิ่มประเภทห้อง</button>}
       {msg && <p role={msg.ok ? "status" : "alert"} className={`text-sm ${msg.ok ? "text-emerald-300" : "text-crimson-300"}`}>{msg.text}</p>}
       <button type="button" disabled={busy || up !== null} onClick={save} className="btn-crimson min-h-12 rounded-full font-semibold">{busy ? "กำลังบันทึก…" : "บันทึกห้องพัก"}</button>
-      <p className="text-xs text-[#9a8a85]">ห้องที่นำออกจะปิดขาย แต่การจองเดิมยังอยู่ · เงินค่าห้องเข้ากระเป๋าร้านหลังวันเช็กเอาต์ (หัก % แพลตฟอร์มตามสัญญา)</p>
+      <p className="text-xs text-[#9a8a85]">ห้องที่นำออกจะปิดขาย แต่การจองเดิมยังอยู่ · เงินค่าห้องเข้ากระเป๋าร้านหลังวันเช็กเอาต์และทีมงานอนุมัติ (หัก % แพลตฟอร์มตามสัญญา)</p>
     </div>
   );
 }

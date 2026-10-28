@@ -21,12 +21,12 @@ function totp(secret, at = Date.now()) {
 
 // แท็บที่แต่ละบทบาทต้องเห็น (ตรงกับ PATH_ROLES ใน src/lib/admin-auth.ts)
 const ROLE_TABS = {
-  super: ['/admin', '/admin/audit', '/admin/errors', '/admin/orders', '/admin/chats', '/admin/reports', '/admin/appeals', '/admin/members', '/admin/applicants', '/admin/slips', '/admin/wallet', '/admin/stays', '/admin/kyc', '/admin/cohorts', '/admin/earnings', '/admin/invites', '/admin/payroll', '/admin/payouts', '/admin/boosts', '/admin/sales', '/admin/partners', '/admin/market', '/admin/promos', '/admin/covers', '/admin/security'],
-  finance: ['/admin', '/admin/audit', '/admin/orders', '/admin/applicants', '/admin/slips', '/admin/wallet', '/admin/stays', '/admin/cohorts', '/admin/earnings', '/admin/invites', '/admin/payroll', '/admin/payouts', '/admin/boosts', '/admin/sales', '/admin/partners', '/admin/market', '/admin/promos', '/admin/security'],
+  super: ['/admin', '/admin/audit', '/admin/errors', '/admin/orders', '/admin/chats', '/admin/reports', '/admin/appeals', '/admin/members', '/admin/applicants', '/admin/slips', '/admin/wallet', '/admin/stays', '/admin/kyc', '/admin/cohorts', '/admin/earnings', '/admin/invites', '/admin/ceo-view', '/admin/payouts', '/admin/boosts', '/admin/sales', '/admin/partners', '/admin/market', '/admin/promos', '/admin/covers', '/admin/security'],
+  finance: ['/admin', '/admin/audit', '/admin/orders', '/admin/applicants', '/admin/slips', '/admin/wallet', '/admin/stays', '/admin/cohorts', '/admin/earnings', '/admin/invites', '/admin/ceo-view', '/admin/payouts', '/admin/boosts', '/admin/sales', '/admin/partners', '/admin/market', '/admin/promos', '/admin/security'],
   cs: ['/admin', '/admin/audit', '/admin/orders', '/admin/chats', '/admin/reports', '/admin/appeals', '/admin/members', '/admin/security'],
   kyc: ['/admin', '/admin/audit', '/admin/reports', '/admin/members', '/admin/kyc', '/admin/security'],
 };
-const DENY = { super: [], finance: ['/admin/kyc', '/admin/chats', '/admin/covers'], cs: ['/admin/wallet', '/admin/kyc', '/admin/payroll'], kyc: ['/admin/wallet', '/admin/orders', '/admin/applicants'] };
+const DENY = { super: ['/admin/payroll'], finance: ['/admin/kyc', '/admin/chats', '/admin/covers', '/admin/payroll'], cs: ['/admin/wallet', '/admin/kyc', '/admin/payroll'], kyc: ['/admin/wallet', '/admin/orders', '/admin/applicants'] };
 const HOME = { finance: '/admin', cs: '/admin/orders', kyc: '/admin/kyc' };
 
 (async () => {

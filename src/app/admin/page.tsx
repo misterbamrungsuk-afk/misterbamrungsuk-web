@@ -16,6 +16,7 @@ export default async function AdminHome() {
   const [o, checks0, ice] = [await overview(), systemChecks(), await iceServers().catch(() => ({ turn: false }))];
   const checks = checks0.map((c) => (c.key === "turn" && c.ok ? { ...c, ok: ice.turn, need: ice.turn ? "ทดสอบขอคีย์ชั่วคราวจาก Cloudflare สำเร็จ" : "ตั้งคีย์แล้วแต่ Cloudflare ปฏิเสธ · ตรวจค่าที่ใส่" } : c));
   const role = (await verifySession((await cookies()).get(ADMIN_COOKIE)?.value))?.role;
+  const ceoHref = role === "ceo" ? "/admin/payroll" : "/admin/ceo-view"; // ห้อง CEO: CEO กดได้ · แอดมินอื่นดูอย่างเดียว
   const q = o.queues, m = o.money, b = o.bookings, f = o.recon?.figures;
   const all: [string, number, string, string?][] = [
     ["ตัดสินยกเลิก / ข้อพิพาท", b.decide, "/admin/orders", "red"],
@@ -23,8 +24,8 @@ export default async function AdminHome() {
     ["รายงานผู้ใช้รอตรวจ", q.reports, "/admin/reports", "red"],
     ["แชทฝ่าฝืนคำห้าม (ยังไม่อ่าน)", q.chatViolations, "/admin/chats?f=flag"],
     ["เติมเงินรอตรวจสลิป", q.topups, "/admin/wallet"],
-    ["คำขอถอน Part-Time รอ CEO อนุมัติ", q.withdrawRequested - q.ownerRequested, "/admin/payroll"],
-    ["คำขอถอนพาร์ทเนอร์ / ร้านค้า รอ CEO", q.ownerRequested, "/admin/payroll"],
+    ["คำขอถอน Part-Time รอ CEO อนุมัติ", q.withdrawRequested - q.ownerRequested, ceoHref],
+    ["คำขอถอนพาร์ทเนอร์ / ร้านค้า รอ CEO", q.ownerRequested, ceoHref],
     ["CEO อนุมัติแล้ว · รอโอน", q.withdrawApproved, "/admin/payouts"],
     ["รอบโอนรอยืนยัน", q.withdrawBatched, "/admin/payouts"],
     ["สลิปเปิดเมมรอตรวจ", q.memberSlips, "/admin/sales"],

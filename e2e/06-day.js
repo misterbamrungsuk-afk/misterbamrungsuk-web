@@ -63,7 +63,7 @@ const ptw = () => fetch(B + `/api/pt/wallet?mb=${mb}&t=${encodeURIComponent(T)}`
   r = await fetch(B + '/api/admin/withdrawals', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'paid', id: wid0 }) }); ok('paid before CEO approve refused', r.status === 409);
   r = await fetch(B + '/api/admin/withdrawals', { method: 'POST', headers: SUP, body: JSON.stringify({ action: 'approve', id: wid0 }) }); ok('super admin cannot approve withdrawal', r.status === 403);
   r = await fetch(B + '/api/admin/payroll', { method: 'POST', headers: SUP, body: JSON.stringify({ all: true }) }); ok('super admin cannot approve earnings', r.status === 403);
-  let tc = await (await fetch(B + '/admin/payroll', { headers: ADM })).text(); ok('CEO page lists withdrawal request', tc.includes('ชั้นที่ 2') && tc.includes(mb));
+  let tc = await (await fetch(B + '/admin/payroll', { headers: ADM })).text(); ok('CEO page lists withdrawal request', tc.includes('2 · อนุมัติคำขอถอนเงิน') && tc.includes(mb));
   j = await J(await fetch(B + '/api/admin/withdrawals', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'approve', id: wid0 }) })); ok('CEO approves withdrawal', j.ok && j.row.status === 'approved', j.error);
   j = await J(await fetch(B + '/api/admin/withdrawals', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'batch' }) })); ok('batch', j.ok && j.rows.length === 1, j.batch);
   r = await fetch(B + `/api/admin/withdrawals?csv=${j.batch}`, { headers: ADM }); let csv = await r.text(); ok('bulk csv', csv.includes(mb) && csv.includes('กสิกรไทย'));

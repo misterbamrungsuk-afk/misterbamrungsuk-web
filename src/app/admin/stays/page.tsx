@@ -16,7 +16,7 @@ export default async function StaysAdminPage() {
   const [rows, recon] = await Promise.all([listStays({ limit: 1000 }).catch(() => []), stayRecon().catch(() => null)]);
   return (
     <>
-      <PageHead title="จองห้องพักโรงแรม" sub="ลูกค้าจ่ายจากกระเป๋า → เงินพัก (hotel_escrow) → หลังเช็กเอาต์แบ่งเข้ากระเป๋าโรงแรม (หัก % แพลตฟอร์ม)" />
+      <PageHead title="จองห้องพักโรงแรม" sub="ลูกค้าจ่ายจากกระเป๋า → เงินพัก (hotel_escrow) → หลังเช็กเอาต์ CEO อนุมัติที่ห้อง CEO แล้วแบ่งเข้ากระเป๋าโรงแรม (หัก % แพลตฟอร์ม)" />
       <StaysAdmin initial={rows} recon={recon} />
     </>
   );

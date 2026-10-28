@@ -3,7 +3,7 @@
 // โหมดเดโม (ไม่มี SUPABASE_URL) · ใช้อีเมลใหม่ทุกรอบ
 const WEB = require('path').join(__dirname, '..');
 const fs = require('fs'), crypto = require('crypto');
-const { adm } = require('./_tok');
+const { adm, sup } = require('./_tok');
 const B = 'http://localhost:3210';
 const ENV = fs.readFileSync(WEB + '/.env.local', 'utf8');
 const KEY = (/^ADMIN_SESSION_SECRET=(.*)$/m.exec(ENV)?.[1] || '').trim().replace(/^["']|["']$/g, '') || 'hamoo-demo-secret';
@@ -99,9 +99,20 @@ const bal = async (c) => (await J(await fetch(B + '/api/wallet', { headers: c.h 
   ok('hotel declines → refunded', j.ok && j.row.status === 'declined' && j.row.refund_satang === 150000, j.error);
   ok('decline refund in wallet', (await bal(C)) === before + 150000);
 
-  // เลยเช็กเอาต์ → completed · โรงแรมได้ 85%
+  // เลยเช็กเอาต์ → รอ CEO อนุมัติ (ห้อง CEO · 28 ต.ค. 2569) → completed · โรงแรมได้ 85%
+  // โหมด manual (ค่าเริ่มต้นจริง · ชุด 06 สลับเป็น auto ไว้) → ค่าห้องรอ CEO
+  const money0 = (await J(await fetch(B + '/api/admin/wallet', { headers: ADM }))).money;
+  await post('/api/admin/wallet', ADM, { action: 'settings', money: { ...money0, releaseMode: 'manual' }, note: 'ทดสอบห้อง CEO' });
   const pw0 = (await J(await fetch(B + '/api/partner/wallet', { headers: PC }))).available;
   await post('/api/admin/stays', ADM, { action: 'demo_shift', id: A.id, days: 6 });
+  j = await J(await fetch(B + '/api/hotels/bookings', { headers: C.h }));
+  ok('after check-out → still confirmed (waits for CEO)', j.rows.find((x) => x.id === A.id)?.status === 'confirmed');
+  ok('partner wallet unchanged before CEO', (await J(await fetch(B + '/api/partner/wallet', { headers: PC }))).available === pw0);
+  { const h = (await (await fetch(B + '/admin/payroll', { headers: ADM })).text()).replace(/<!-- -->/g, ''); ok('CEO room lists stay awaiting approval', h.includes(`data-stay-row="${A.code}"`)); }
+  ok('super cannot settle stay', (await post('/api/admin/payroll', { cookie: 'mord_admin=' + sup, 'content-type': 'application/json' }, { action: 'stay_settle', id: A.id })).status === 403);
+  { const sj = await J(await post('/api/admin/payroll', ADM, { action: 'stay_settle', id: A.id })); ok('CEO settles stay', sj.ok && sj.amount === 510000, JSON.stringify(sj)); }
+  ok('settle twice refused', (await post('/api/admin/payroll', ADM, { action: 'stay_settle', id: A.id })).status === 400);
+  await post('/api/admin/wallet', ADM, { action: 'settings', money: money0, note: 'คืนค่า' });
   j = await J(await fetch(B + '/api/hotels/bookings', { headers: C.h }));
   const a2 = j.rows.find((x) => x.id === A.id); ok('after check-out → completed', a2?.status === 'completed' && a2.partner_net_satang === 510000 && a2.platform_fee_satang === 90000, a2 && a2.status);
   const pw1 = (await J(await fetch(B + '/api/partner/wallet', { headers: PC }))).available;

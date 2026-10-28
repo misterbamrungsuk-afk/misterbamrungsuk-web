@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 // โบนัส Recruit รายเดือน: { action: "compute", month? } คำนวณ (ไม่ซ้ำ) · { action: "approve" | "reject", id, note? } เฉพาะ CEO
 export async function POST(req: Request) {
   const s = await verifySession((await cookies()).get(ADMIN_COOKIE)?.value);
-  if (!s || !canAccess(s.role, "/admin/payroll")) return NextResponse.json({ ok: false, error: "ไม่มีสิทธิ์" }, { status: 401 });
+  if (!s || !canAccess(s.role, "/admin/ceo-view")) return NextResponse.json({ ok: false, error: "ไม่มีสิทธิ์" }, { status: 401 });
   const b = (await req.json().catch(() => ({}))) as { action?: string; id?: string; note?: string; month?: string };
   try {
     if (b.action === "compute") return NextResponse.json({ ok: true, created: await computeMonthlyBonuses(b.month || undefined) });
