@@ -85,10 +85,10 @@ const seats = async (g) => J(await fetch(B + '/api/join/seats' + (g ? '?g=' + g 
   await fetch(B + '/api/admin/applicants/' + idm, { method: 'PATCH', headers: ADM, body: JSON.stringify({ status: 'verified' }) });
   const mh2 = await (await fetch(B + `/join/profile/${man.mb_code}?t=${encodeURIComponent(tok(man.mb_code))}`)).text();
   ok('man after slip approved sees หนุ่มหล่อ LINE group', mh2.includes('data-line-group="man"') && mh2.includes('MBM01') && !mh2.includes('MBT01'));
-  // Secret → กลุ่ม Secret MBMS (28 ต.ค. 2569) · หลังบ้านมีหน้า /admin/line-groups
+  // กลุ่ม LINE ตามช่องทางที่สมัคร (28 ต.ค. 2569): แอดมินเปลี่ยนเป็น Secret ทีหลัง ≠ ย้ายกลุ่ม · หลังบ้านมีหน้า /admin/line-groups
   await fetch(B + '/api/admin/applicants/' + idm, { method: 'PATCH', headers: ADM, body: JSON.stringify({ tier: 'secret' }) });
   const mh3 = await (await fetch(B + `/join/profile/${man.mb_code}?t=${encodeURIComponent(tok(man.mb_code))}`)).text();
-  ok('secret man sees Secret MBMS group', mh3.includes('data-line-group="secret_man"') && mh3.includes('line.me/ti/g/HWVAy7kW9g'));
+  ok('promoted to Secret later stays in MBM01 (group by signup channel)', mh3.includes('data-line-group="man"') && !mh3.includes('HWVAy7kW9g'));
   await fetch(B + '/api/admin/applicants/' + idm, { method: 'PATCH', headers: ADM, body: JSON.stringify({ tier: 'silver' }) });
   const lg = (await (await fetch(B + '/admin/line-groups', { headers: ADM })).text()).replace(/<!-- -->/g, '');
   ok('admin LINE groups page: 11 groups + join buttons', (lg.match(/data-line-group-row="/g) || []).length === 11 && lg.includes('data-line-join="mgmt"') && lg.includes('หาเด็กผู้ชาย') && lg.includes('ลิงก์ซ้ำกับกลุ่มอื่น'));

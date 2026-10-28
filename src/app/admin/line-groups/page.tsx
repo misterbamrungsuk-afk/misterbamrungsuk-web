@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "กลุ่ม LINE · แอดมิน Mister Bamrungsuk" };
 
 const SECTIONS: [LineGroup["kind"], string, string][] = [
-  ["pt", "กลุ่ม Part-Time", "ระบบส่งปุ่มให้ Part-Time อัตโนมัติหลังชำระ/อนุมัติ · Secret → กลุ่ม Secret · TOP/Silver → MBM01 / MBT01"],
+  ["pt", "กลุ่ม Part-Time", "ระบบส่งปุ่มให้ Part-Time อัตโนมัติตามช่องทางที่สมัครมา · ลิงก์เชิญ Secret → กลุ่ม Secret · ทางอื่น → MBM01 / MBT01"],
   ["team", "ทีมงาน · บริษัท", "กลุ่มภายใน"],
   ["other", "กลุ่มอื่น ๆ", ""],
 ];

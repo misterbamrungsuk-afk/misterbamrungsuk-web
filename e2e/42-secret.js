@@ -45,6 +45,8 @@ const publicId = (mb) => 'r' + crypto.createHash('sha256').update(`mb-public:${m
   const P = (body) => fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify(body) }).then(J);
   let row = (await P({ line_joined: false })).row;
   ok('Secret: free · verified · tier secret · track B', row?.package === 'B' && row?.amount === 0 && row?.status === 'verified' && row?.tier === 'secret' && row?.invite === sec.code, `${row?.amount} ${row?.status} ${row?.tier}`);
+  { const ph = await (await fetch(B + `/join/profile/${mb}?t=${encodeURIComponent(T)}`)).text();
+    ok('Secret signup → Secret MBMS LINE group', row?.via === 'secret' && ph.includes('data-line-group="secret_man"') && ph.includes('line.me/ti/g/HWVAy7kW9g'), String(row?.via)); }
 
   // ใบสมัคร (รูป) → KYC อนุมัติ → ขึ้นหน้าแรกอัตโนมัติ
   const pf = await J(await fetch(B + '/api/join/profile', { method: 'POST', body: form({ mb, t: T, step: '1', disclose: 'yes', first_name: 'ลับ', last_name: 'สุด', nickname: 'ซีเคร็ต', birthdate: '1995-05-05', line_id: 'x', address: 'อโศก', areas: 'กรุงเทพฯ › วัฒนา' }, { photo: new File([img], 'a.jpg', { type: 'image/jpeg' }), other_doc: new File([img], 'b.jpg', { type: 'image/jpeg' }) }) }));

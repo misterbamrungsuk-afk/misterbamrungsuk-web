@@ -149,7 +149,7 @@ export async function POST(req: Request) {
     // เลขใบแจ้งหนี้ INV (ยังไม่รัน SQL 0010 → ใช้เลขตามรหัส MB)
     // สายเชิญไม่มียอด → ไม่ออกเอกสาร · ถือว่าชำระแล้ว (verified) + ระดับ TOP
     const inv_no = free ? null : (await nextDocNo("INV").catch(() => null)) ?? `INV-${codeNo(row.mb_code)}`;
-    await saveProfile(row.id, { pw_hash: hashPw(password), pw_at: new Date().toISOString(), inv_no, ...(invite ? { tier: secret ? "secret" : "top" } : {}), ...(group ? { group } : {}), ...(salesRep ? { sales_ref: { rep_id: salesRep.id, code: salesRep.code } } : {}) });
+    await saveProfile(row.id, { pw_hash: hashPw(password), pw_at: new Date().toISOString(), inv_no, via: secret ? "secret" : invite ? "invite" : salesRep ? "recruit" : "direct", ...(invite ? { tier: secret ? "secret" : "top" } : {}), ...(group ? { group } : {}), ...(salesRep ? { sales_ref: { rep_id: salesRep.id, code: salesRep.code } } : {}) });
     if (free) await updateApplicant(row.id, { status: "verified" });
     if (invite) await consumeInvite(invite).catch((e) => console.error("consume invite failed", e));
     // sync ชีตแบบไม่ให้ล้มทั้งคำขอ — ถ้าไม่สำเร็จ แอดมินกด sync ซ้ำได้
