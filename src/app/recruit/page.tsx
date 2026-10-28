@@ -24,19 +24,9 @@ export default async function SalesLanding({ searchParams }: { searchParams: Pro
           <h1 className="m-0 text-[28px] md:text-[38px] leading-[1.3] font-bold">แนะนำ Part-time · ชวนลูกค้าเปิดเมม<br /><span className="text-[#e8c472]">รับค่าตอบแทนทุกคน</span></h1>
           <p className="m-0 text-[15px] text-[#d9c9b4]">ได้ลิงก์ของตัวเอง ผู้สมัคร Part-time/ลูกค้าเปิดเมมผ่านลิงก์คุณ ค่าตอบแทนเข้ากระเป๋าอัตโนมัติ · ดูผลงานได้ในหลังบ้านของตัวเอง</p>
         </section>
-        <section data-recruit-offer className="grid gap-3 md:grid-cols-[1.2fr_1fr]">
-          <div className="rounded-[18px] flex flex-col gap-1.5" style={{ padding: 16, background: "linear-gradient(160deg, #4d1f2a, #2b1218)", border: "1.5px solid #e8c472" }}>
-            <div className="text-[14px] text-[#d9c9b4]">แนะนำ Part-time เข้าแพลตฟอร์ม</div>
-            <div className="text-[34px] font-bold text-[#e8c472] leading-tight">รับ ฿500 / คน</div>
-            <div className="text-[13.5px] text-[#d9c9b4]">เงินเข้า Wallet เมื่อ Part-time รับงานครั้งแรก</div>
-          </div>
-          <div className="rounded-[18px] flex flex-col gap-1.5 bg-[#211a18]" style={{ padding: 16 }}>
-            <div className="text-[14px] text-[#d9c9b4]">โบนัสตามผลงานรายเดือน (ต่อคน)</div>
-            <div className="text-[15px]">ครบ 15 งาน/เดือน <b className="text-[#e8c472]">฿1,000</b></div>
-            <div className="text-[15px]">ครบ 20 งาน/เดือน <b className="text-[#e8c472]">฿2,000</b></div>
-            <div className="text-[12px] text-[#b5a596]">พิจารณาจำนวนงาน ความนิยม คุณภาพการให้บริการ</div>
-          </div>
-        </section>
+        {/* โปสเตอร์ Recruiter Program (บอสส่งมา 28 ต.ค. 2569) — แทนกล่องค่าตอบแทน/โบนัส */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img data-recruit-offer data-recruit-poster src="/brand/recruit-poster.webp" alt="Recruiter Program — แนะนำ Part-time รับ 500 บาทต่อคน เมื่อ Part-time รับงานครั้งแรก · โบนัสรายเดือน รับงานครบ 15 งาน 1,000 บาท · ครบ 20 งาน 2,000 บาท" width={1054} height={1492} className="w-full max-w-[560px] mx-auto h-auto rounded-[22px]" style={{ boxShadow: "0 14px 32px rgba(0,0,0,.45)" }} />
         <Link href="/recruit/apply" data-recruit-apply-cta className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[17px] grid place-items-center hover:text-[#1b130b]">สมัครเป็น Recruit</Link>
         <SalesLogin />
         <section className="grid gap-3 md:grid-cols-2">
