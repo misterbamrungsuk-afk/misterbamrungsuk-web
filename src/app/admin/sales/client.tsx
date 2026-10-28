@@ -119,11 +119,11 @@ export function SalesAdmin({ isCeo, cfg, purchases, reps, payouts, apps = [] }: 
         <span className="text-[12px] text-[#9a8a85]">Recruit ภายนอกต้องมีบัญชีรับค่าคอม (ธนาคาร · เลขบัญชี · ชื่อบัญชี) — ไม่มีบัญชีจะขอรับค่าคอมไม่ได้</span>
         {link && <div className="rounded-xl p-3 text-[12.5px] break-all" style={{ background: "#fffdf9" }}>ลิงก์เข้าแดชบอร์ด (อายุ 90 วัน): <span className="select-all text-[#f0c75a]">{link}</span></div>}
         <div className="rounded-xl border overflow-x-auto" style={{ borderColor: LINE }}>
-          <div className="min-w-[720px]">
-            <div className="grid grid-cols-[100px_minmax(0,1fr)_90px_80px_90px_110px_280px] gap-2 px-3 py-2 bg-[#130e0e] text-[#9a8a85] text-xs"><span>โค้ด</span><span>ชื่อ</span><span>ประเภท</span><span>เปิดเมม</span><span>ชวนหมอ</span><span>ค่าตอบแทนรวม</span><span /></div>
+          <div className="min-w-[780px]">
+            <div className="grid grid-cols-[100px_minmax(0,1fr)_90px_80px_90px_110px_330px] gap-2 px-3 py-2 bg-[#130e0e] text-[#9a8a85] text-xs"><span>โค้ด</span><span>ชื่อ</span><span>ประเภท</span><span>เปิดเมม</span><span>ชวนหมอ</span><span>ค่าตอบแทนรวม</span><span /></div>
             {!reps.length && <p className="m-0 p-4 text-center text-[#9a8a85]">ยังไม่มี Recruit · Part-Time ได้โค้ดอัตโนมัติเมื่อเปิดหน้า &quot;ชวนเปิดเมม&quot;</p>}
             {reps.map((r) => (
-              <div key={r.id} className="grid grid-cols-[100px_minmax(0,1fr)_90px_80px_90px_110px_280px] gap-2 px-3 py-2 border-t items-center" style={{ borderColor: LINE, opacity: r.active ? 1 : 0.5 }}>
+              <div key={r.id} className="grid grid-cols-[100px_minmax(0,1fr)_90px_80px_90px_110px_330px] gap-2 px-3 py-2 border-t items-center" style={{ borderColor: LINE, opacity: r.active ? 1 : 0.5 }}>
                 <b className="text-[#ffd76a] tracking-wider">{r.code}</b><span className="truncate">{r.name || "-"}{r.phone ? ` · ${r.phone}` : ""}{r.kind === "external" ? (r.bank?.account ? ` · ${r.bank.bank} ••${r.bank.account.slice(-4)}` : " · ⚠ ไม่มีบัญชี") : ""}</span><span>{r.kind === "parttime" ? "Part-Time" : "ภายนอก"}{r.username && <span className="block text-[11.5px] text-[#9a8a85]">ID: {r.username}</span>}</span><span>{r.count} คน</span><span data-recruit-count>{r.recruits} คน{r.recruits ? <span className="block text-[11.5px] text-[#9a8a85]">ชำระแล้ว {r.recruitsPaid}</span> : null}</span><span>{baht(r.earned)}</span>
                 <span className="flex gap-1.5">
                   <a data-rep-view href={r.kind === "external" ? `/recruit/me?rep=${r.id}` : `/api/admin/applicants/${r.parttime_id}/preview`} target="_blank" rel="noopener noreferrer" className="h-8 px-2.5 rounded-lg text-[12px] font-semibold grid place-items-center" style={{ background: "#f6ecd2", color: "#8a6516" }}>ดูโปรไฟล์ ↗</a>
@@ -131,6 +131,7 @@ export function SalesAdmin({ isCeo, cfg, purchases, reps, payouts, apps = [] }: 
                   {r.kind === "external" && <button type="button" disabled={!!busy} onClick={() => call({ action: "rep_link", id: r.id }, "สร้างลิงก์ใหม่แล้ว")} className="h-8 px-2.5 rounded-lg border text-[12px]" style={{ borderColor: LINE }}>ลิงก์เข้า</button>}
                   {r.kind === "external" && <button type="button" disabled={!!busy} onClick={() => setEdit({ id: r.id, name: r.name, phone: r.phone ?? "", bank: r.bank?.bank ?? "", account: r.bank?.account ?? "", acctName: r.bank?.name ?? "" })} className="h-8 px-2.5 rounded-lg border text-[12px]" style={{ borderColor: LINE }}>แก้ไข</button>}
                   <button type="button" disabled={!!busy} onClick={() => call({ action: "rep_toggle", id: r.id }, r.active ? "ปิดโค้ดแล้ว" : "เปิดโค้ดแล้ว")} className="h-8 px-2.5 rounded-lg border text-[12px]" style={{ borderColor: LINE }}>{r.active ? "ปิดโค้ด" : "เปิดโค้ด"}</button>
+                  {r.kind === "external" && <button type="button" data-rep-delete disabled={!!busy} onClick={() => { if (window.confirm(`ลบบัญชี Recruit ${r.name} (${r.code})?\nลบแล้วกู้คืนไม่ได้ · ลบได้เฉพาะบัญชีที่ยังไม่มีผู้สมัคร/เงิน`)) call({ action: "rep_delete", id: r.id }, `ลบบัญชี ${r.name} แล้ว`); }} className="h-8 px-2.5 rounded-lg border text-[12px] text-[#b42335]" style={{ borderColor: "#f3c2c9" }}>ลบ</button>}
                 </span>
               </div>
             ))}

@@ -73,6 +73,14 @@ export async function approveRecruitApp(id: string, by: string, username?: strin
   return { app: done, code: rep.code, login };
 }
 
+/** แอดมินลบบัญชี Recruit → ใบสมัครของคนนั้นเป็น "ไม่อนุมัติ" (สมัครใหม่ด้วยเบอร์/อีเมลเดิมได้) */
+export async function markRepDeleted(repId: string, by: string) {
+  const list = await load();
+  if (!list.some((a) => a.rep_id === repId)) return;
+  const at = new Date().toISOString();
+  await save(list.map((a) => (a.rep_id === repId ? { ...a, status: "rejected" as const, decided_at: at, decided_by: by, reason: "ลบบัญชีโดยแอดมิน" } : a)));
+}
+
 export async function rejectRecruitApp(id: string, by: string, reason: string): Promise<RecruitApp> {
   if (!reason.trim()) throw new ApplyError("ใส่เหตุผลที่ไม่อนุมัติ");
   const a = (await load()).find((x) => x.id === id);

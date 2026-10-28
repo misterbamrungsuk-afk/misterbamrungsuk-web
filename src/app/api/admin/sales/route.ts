@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { fileHeaders } from "@/lib/file-guard";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
-import { MemberError, approveSalesPayout, createExternalRep, creditMembership, rejectMembership, settleSalesPayout, signSalesLink, updateExternalRep } from "@/lib/member";
+import { MemberError, approveSalesPayout, createExternalRep, deleteExternalRep, creditMembership, rejectMembership, settleSalesPayout, signSalesLink, updateExternalRep } from "@/lib/member";
 import { getPurchase, patchRep, findRep, listPayouts } from "@/lib/member/store";
 import { getMemberSettings, saveMemberSettings, validateMember, TIER_IDS, type MemberSettings } from "@/lib/member/tiers";
 import { readFile } from "@/lib/join/store";
@@ -44,6 +44,7 @@ export async function POST(req: Request) {
     if (act === "app_reject") return NextResponse.json({ ok: true, app: await rejectRecruitApp(id, s.email, String(b.reason ?? "")) });
     if (act === "rep_update") return NextResponse.json({ ok: true, rep: await updateExternalRep(id, { name: b.name, phone: b.phone, bank: b.bank }) });
     if (act === "rep_toggle") { const r = await findRep({ id }); if (!r) throw new MemberError("ไม่พบ Recruit"); return NextResponse.json({ ok: true, rep: await patchRep(id, { active: !r.active }) }); }
+    if (act === "rep_delete") { await deleteExternalRep(id, s.email); return NextResponse.json({ ok: true }); }
     if (act === "rep_link") { const r = await findRep({ id }); if (!r || r.kind !== "external") throw new MemberError("ไม่พบ Recruit"); return NextResponse.json({ ok: true, link: `${new URL(req.url).origin}/recruit/go?t=${encodeURIComponent(signSalesLink(r.id))}` }); }
     // ID / รหัสผ่านเข้าแดชบอร์ด (ทีมงานออกให้) — รหัสผ่านแสดงครั้งเดียว
     if (act === "rep_login") {

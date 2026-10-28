@@ -56,6 +56,27 @@ const un = (h) => h.replace(/<!-- -->/g, '').replace(/\\"/g, '"');
   const appId = (h.match(new RegExp(`"id":"([0-9a-f-]{36})","name":"สมใจ แนะนำเก่ง"`)) || [])[1];
   ok('auto-approved app cannot be approved again', !!appId && !(await S({ action: 'app_approve', id: appId })).ok);
 
+  // ── แอดมินลบบัญชี Recruit (28 ต.ค. 2569) ──
+  const t2 = String(Date.now() + 7).slice(-6);
+  const b2 = { ...body, name: 'ลบ ทิ้งได้', phone: '09' + t2 + '34', email: `del${t2}@test.local`, consent: true };
+  r = await fetch(B + '/api/recruit/apply', { method: 'POST', headers: { ...ORIGIN, 'x-forwarded-for': '10.51.' + t2.slice(-2) + '.1' }, body: JSON.stringify(b2) });
+  const sc2 = (r.headers.get('set-cookie') || '').split(';')[0], code2 = (await J(r)).code;
+  await PW({ password: 'delete-me-123' }, sc2);
+  h = un(await (await fetch(B + '/admin/sales', { headers: ADM })).text());
+  const delId = (h.match(new RegExp(`"code":"${code2}".{0,400}?"id":"([0-9a-f-]{36})"`)) || h.match(new RegExp(`"id":"([0-9a-f-]{36})","code":"${code2}"`)) || [])[1];
+  ok('admin sales has delete button', h.includes('data-rep-delete') && !!delId);
+  ok('delete needs admin', (await fetch(B + '/api/admin/sales', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'rep_delete', id: delId }) })).status === 401);
+  j = await S({ action: 'rep_delete', id: delId });
+  ok('admin deletes recruit', j.ok, JSON.stringify(j));
+  ok('deleted: gone from admin list', !un(await (await fetch(B + '/admin/sales', { headers: ADM })).text()).includes(`"id":"${delId}"`));
+  r = await fetch(B + '/recruit/me', { headers: { cookie: sc2 }, redirect: 'manual' });
+  ok('deleted: dashboard closed', r.status !== 200);
+  r = await fetch(B + '/api/sales/login', { method: 'POST', headers: ORIGIN, body: JSON.stringify({ username: b2.email, password: 'delete-me-123' }) });
+  ok('deleted: cannot log in', r.status === 401);
+  ok('delete twice → not found', !(await S({ action: 'rep_delete', id: delId })).ok);
+  r = await fetch(B + '/api/recruit/apply', { method: 'POST', headers: { ...ORIGIN, 'x-forwarded-for': '10.52.' + t2.slice(-2) + '.1' }, body: JSON.stringify(b2) });
+  ok('same email can apply again after delete', r.status === 200);
+
   // ── โปสเตอร์ · แอดมินดูหน้า Recruit · กระเป๋าเงินทุกคน (28 ต.ค. 2569) ──
   h = un(await (await fetch(B + '/recruit/apply')).text());
   ok('apply page shows poster', h.includes('data-recruit-poster') && (await fetch(B + '/brand/recruit-poster.webp')).status === 200);

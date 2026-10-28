@@ -142,6 +142,7 @@ export async function setSalesPassword(repId: string, password: string, current?
   if (row.pw_set !== false && !verifyPw(String(current ?? ""), row.pw_hash)) throw new Error("รหัสผ่านเดิมไม่ถูกต้อง");
   await saveLogins(list.map((l) => (l.rep_id === repId ? { ...l, pw_hash: hashPw(password), pw_set: true, updated_at: new Date().toISOString(), by: `self:${repId}` } : l)));
 }
+export async function removeSalesLogin(repId: string) { const list = await loadLogins(); if (list.some((l) => l.rep_id === repId)) await saveLogins(list.filter((l) => l.rep_id !== repId)); }
 export async function loginUsernames(): Promise<Record<string, string>> {
   return Object.fromEntries((await loadLogins()).map((l) => [l.rep_id, l.username]));
 }

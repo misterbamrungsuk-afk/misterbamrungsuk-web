@@ -89,6 +89,12 @@ export async function patchRep(id: string, patch: Partial<SalesRep>): Promise<Sa
   return (data as SalesRep) ?? null;
 }
 
+export async function deleteRep(id: string): Promise<void> {
+  if (isDemo) { const i = demo.reps.findIndex((x) => x.id === id); if (i >= 0) demo.reps.splice(i, 1); return; }
+  const { error } = await db().from("sales_reps").delete().eq("id", id);
+  if (error) throw error;
+}
+
 // ── คำขอรับค่าคอม (Recruit ภายนอก) ──
 export async function insertPayout(row: Omit<SalesPayout, "id" | "created_at" | "paid_at" | "approved_by" | "approved_at">): Promise<SalesPayout> {
   const full: SalesPayout = { ...row, id: crypto.randomUUID(), created_at: now(), paid_at: null, approved_by: null, approved_at: null };

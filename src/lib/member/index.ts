@@ -182,6 +182,20 @@ export async function updateExternalRep(id: string, input: { name?: unknown; pho
   if (!out) throw new MemberError("ไม่พบ Recruit");
   return out;
 }
+/** แอดมินลบบัญชี Recruit ภายนอก (28 ต.ค. 2569) — ลบได้เฉพาะบัญชีที่ยังไม่มีเงิน/ประวัติ (ไม่มีรายการกระเป๋า คำขอเบิก คนที่แนะนำ หรือลูกค้าเปิดเมม)
+ *  มีประวัติแล้ว → ใช้ "ปิดโค้ด" แทน เพื่อไม่ให้บัญชีเงินขาดตอน · ลบ = ลบ Recruit + ID/รหัสผ่าน · เข้าแดชบอร์ดไม่ได้ทันที */
+export async function deleteExternalRep(id: string, by: string): Promise<void> {
+  const r = await findRep({ id });
+  if (!r || r.kind !== "external") throw new MemberError("ไม่พบ Recruit");
+  const [ledger, payouts, recruits, buys] = await Promise.all([history("sales", r.id, 1).catch(() => [{}]), listPayouts({ rep_id: r.id }), recruitsOf(r), listPurchases({ referrer_id: r.id })]);
+  if (ledger.length || payouts.length || recruits.length || buys.length) throw new MemberError("บัญชีนี้มีผู้สมัคร/ลูกค้า/เงินแล้ว ลบไม่ได้ · ใช้ \"ปิดโค้ด\" แทน");
+  const { deleteRep } = await import("./store");
+  const { removeSalesLogin } = await import("./recruit");
+  const { markRepDeleted } = await import("./recruit-apply");
+  await removeSalesLogin(r.id);
+  await markRepDeleted(r.id, by).catch(() => {});
+  await deleteRep(r.id);
+}
 /** เลขบัญชีแบบปิดบัง เช่น xxx-x-x4978-9 → "••••••9789" */
 export const maskAccount = (acct: string | null | undefined) => { const d = String(acct ?? "").replace(/\D/g, ""); return d ? `••••••${d.slice(-4)}` : ""; };
 
