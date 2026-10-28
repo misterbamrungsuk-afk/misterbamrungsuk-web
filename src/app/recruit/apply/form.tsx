@@ -5,7 +5,8 @@ import Link from "next/link";
 import { Turnstile } from "@/components/turnstile";
 
 // กรอบขาว (บอสขอ 28 ต.ค. 2569 · หน้ามืดไป) — การ์ดขาว ช่องกรอกครีมอ่อน ตัวหนังสือเข้ม
-const inCls = "[color-scheme:light] w-full min-h-12 rounded-xl bg-[#f8f3ec] text-[#2a1d1a] px-[14px] text-[15px] placeholder:text-[#8a7b75] outline-none border border-[#e7ddcf] focus:border-[#c9a24a]";
+// ตัวที่กรอกแล้ว เข้ม+ใหญ่ (บอสขอ 28 ต.ค.) · autofill ของเบราว์เซอร์ไม่ให้เป็นพื้นฟ้า/ตัวจาง
+const inCls = "[color-scheme:light] w-full min-h-12 rounded-xl bg-[#f8f3ec] text-[#1a1210] [-webkit-text-fill-color:#1a1210] font-medium px-[14px] text-[17px] placeholder:font-normal placeholder:text-[#8a7b75] placeholder:[-webkit-text-fill-color:#8a7b75] outline-none border border-[#e7ddcf] focus:border-[#c9a24a] autofill:shadow-[inset_0_0_0_100px_#f8f3ec]";
 const card = "rounded-[18px] bg-white text-[#2a1d1a] flex flex-col gap-2.5 shadow-[0_8px_24px_rgba(0,0,0,.25)]";
 const BANKS = ["กสิกรไทย (KBank)", "ไทยพาณิชย์ (SCB)", "กรุงเทพ (BBL)", "กรุงไทย (KTB)", "กรุงศรีอยุธยา (BAY)", "ทหารไทยธนชาต (ttb)", "ออมสิน (GSB)", "อื่น ๆ"];
 
