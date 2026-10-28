@@ -5,6 +5,7 @@ import { notify } from "@/lib/bookings";
 import { completedBetween } from "@/lib/bookings/day";
 import { extraOf, listApplicants } from "@/lib/join/store";
 import { findRep, type SalesRep } from "./store";
+import { bonusOf, getPrograms } from "./recruit-programs";
 
 // โบนัส Recruit ตามผลงานรายเดือน (โปสเตอร์ Recruiter Program · 27 ต.ค. 2569)
 // นับต่อ Part-Time 1 คนที่ Recruit แนะนำ: งานจบ (completed) ในเดือนนั้น ครบ 15 งาน = ฿1,000 · ครบ 20 งาน = ฿2,000 (แทน ไม่บวกกัน)
@@ -49,11 +50,14 @@ export async function computeMonthlyBonuses(month = prevMonthTH()): Promise<numb
   const have = new Set(list.map((b) => b.id));
   const apps = (await listApplicants()).filter((a) => a.status === "verified" && extraOf(a).sales_ref);
   const fresh: MonthlyBonus[] = [];
+  // ขั้นโบนัสตามที่ CEO กำหนด (/admin/recruit-programs) · ปิดโปรแกรม Part-time = ไม่มีโบนัส
+  const prog = (await getPrograms()).parttime;
+  const tiers = prog.enabled ? prog.bonus : [];
   for (const a of apps) {
     const id = `${a.id}:${month}`;
     if (have.has(id)) continue;
     const jobs = await completedBetween(a.id, from, to).catch(() => 0);
-    const amount = bonusFor(jobs);
+    const amount = bonusOf(tiers, jobs);
     if (!amount) continue;
     fresh.push({ id, rep_id: extraOf(a).sales_ref!.rep_id, parttime_id: a.id, mb: a.mb_code, nick: a.nickname || a.first_name, month, jobs, amount_satang: amount, status: "pending", created_at: new Date().toISOString() });
   }

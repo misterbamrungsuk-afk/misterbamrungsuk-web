@@ -124,15 +124,19 @@ async function matureOne(b: Booking, actor: string): Promise<Booking> {
   const paid = x?.fee_paid_satang ?? 0;
   // สมัครฟรีทุกแบบ (ไม่มียอดค่าสมัคร) หักค่าสมัครจากงาน · คนที่เคยจ่ายค่าสมัครไม่ถูกหัก
   const cut = jobFeeCut(!!pt && !pt.amount, amt, paid);
-  const rec = cut > 0 && pt ? await (await import("@/lib/member/recruit")).firstJobRecruit(pt) : null;
+  const recMod = cut > 0 && pt ? await import("@/lib/member/recruit") : null;
+  const rec = recMod && pt ? await recMod.firstJobRecruit(pt) : null;
+  // ค่าแนะนำตามที่ CEO กำหนด (ค่าเริ่มต้น ฿500): ใช้เงินที่หักก่อน ส่วนที่ขาดจ่ายจาก platform.marketing · ส่วนที่เหลือเป็นรายได้แพลตฟอร์ม
+  const rate = rec && recMod ? await recMod.recruitRate(pt!) : 0, fromCut = Math.min(cut, rate);
   const r = await moveBooking(b.id, ["completed"], { matured_at: now() }, amt > 0 ? { kind: "mature", ref: { type: "booking", id: b.id }, idem: `mature:${b.id}`, note: `ปล่อยรายได้ ${b.code}${cut ? ` · หักค่าสมัคร ฿${cut / 100} (สะสม ฿${((paid + cut) / 100).toLocaleString("th-TH")}/฿10,000)${rec ? ` · ค่าแนะนำ Recruit ${rec.code}` : ""}` : ""}`, actor, legs: ([
     { owner_type: "parttime", owner_id: b.parttime_id, bucket: "pending", amount: -amt },
     { owner_type: "parttime", owner_id: b.parttime_id, bucket: "available", amount: amt - cut },
-    rec ? { owner_type: rec.owner.type, owner_id: rec.owner.id, bucket: "available", amount: cut } : { owner_type: "platform", owner_id: PLATFORM, bucket: "revenue", amount: cut },
+    ...(rec ? [{ owner_type: rec.owner.type, owner_id: rec.owner.id, bucket: "available", amount: rate }, { owner_type: "platform", owner_id: PLATFORM, bucket: "marketing", amount: -(rate - fromCut) }] : []),
+    { owner_type: "platform", owner_id: PLATFORM, bucket: "revenue", amount: cut - fromCut },
   ] as Leg[]).filter((l) => l.amount !== 0) } : null);
   if (r && cut > 0 && pt) {
-    await st.saveProfile(pt.id, { fee_paid_satang: paid + cut, ...(rec ? { recruit_satang: cut, recruit_at: now() } : {}) }).catch((e) => console.error("fee_paid", e));
-    if (rec) await rec.notify(cut).catch(() => {});
+    await st.saveProfile(pt.id, { fee_paid_satang: paid + cut, ...(rec ? { recruit_satang: rate, recruit_at: now() } : {}) }).catch((e) => console.error("fee_paid", e));
+    if (rec && rate > 0) await rec.notify(rate).catch(() => {});
   }
   // สมัครแบบจ่ายเงิน: งานแรก → ค่าแนะนำ Recruit ฿500 จาก platform.marketing (ไม่ซ้ำ · idem recruit:<id>)
   if (r && pt?.amount && x?.sales_ref && !x.recruit_at) await (await import("@/lib/member/recruit")).creditRecruit(pt.id, actor).catch((e) => console.error("recruit credit", e));

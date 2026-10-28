@@ -26,9 +26,12 @@ export async function recruitRep(code: string | null | undefined): Promise<Sales
   return r?.active ? r : null;
 }
 
-/** ค่าแนะนำต่อคน (สตางค์) — ทุกแผนเท่ากัน */
+/** ค่าแนะนำต่อคน (สตางค์) — ทุกแผนเท่ากัน · ค่าเริ่มต้น ฿500 · CEO กำหนดได้ที่ /admin/recruit-programs (ปิดโปรแกรม = 0) */
 export const RECRUIT_FEE_SATANG = 50_000;
-export async function recruitRate(_a?: Pick<Applicant, "amount" | "package">): Promise<number> { return RECRUIT_FEE_SATANG; }
+export async function recruitRate(_a?: Pick<Applicant, "amount" | "package">): Promise<number> {
+  const p = (await (await import("./recruit-programs")).getPrograms()).parttime;
+  return p.enabled ? p.amount_satang : 0;
+}
 /** สมัครแบบจ่ายเงิน ได้งานแรกแล้ว → จ่ายค่าแนะนำให้ Recruit ที่ชวน (ครั้งเดียวต่อผู้สมัคร · idem recruit:<id>) · เรียกจาก matureOne */
 export async function creditRecruit(applicantId: string, actor: string): Promise<number> {
   const a = await getById(applicantId);
@@ -68,6 +71,7 @@ export async function recruitsOf(rep: SalesRep) {
   const rows = (await listApplicants().catch(() => [] as Applicant[])).filter((a) => extraOf(a).sales_ref?.rep_id === rep.id);
   const { listForParttime } = await import("@/lib/bookings");
   const out = [];
+  const rate = await recruitRate();
   for (const a of rows) {
     const x = extraOf(a);
     const paid = a.status === "verified";
@@ -78,7 +82,7 @@ export async function recruitsOf(rep: SalesRep) {
       pack: `สาย ${a.package}${x.group === "tom" ? " · ทอมหล่อ" : ""}${x.tier && x.tier !== "silver" ? ` · ${tierLabel(x.tier)}` : ""}${free ? " · สมัครฟรี" : ""}`,
       status: a.status === "rejected" ? "ไม่ผ่าน" : a.status === "refunded" ? "คืนเงินแล้ว" : !paid ? "รอตรวจสลิป" : x.inactive ? "Non Active" : !x.listed ? "รอเปิดรับงาน" : jobs ? `ได้งานแล้ว ${jobs} งาน` : "ยังไม่ได้งาน",
       jobs, free,
-      commission: x.recruit_at ? x.recruit_satang ?? 0 : RECRUIT_FEE_SATANG, credited: !!x.recruit_at, at: x.recruit_at ?? a.created_at,
+      commission: x.recruit_at ? x.recruit_satang ?? 0 : rate, credited: !!x.recruit_at, at: x.recruit_at ?? a.created_at,
       wait: x.recruit_at ? "ได้รับแล้ว" : "ได้เมื่อผู้สมัครได้งานแรก", monthJobs: paid ? await monthJobsOf(a.id) : 0,
     });
   }

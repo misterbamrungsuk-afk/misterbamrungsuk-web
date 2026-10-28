@@ -4,6 +4,9 @@ const WEB = require('path').join(__dirname, '..');
 const fs = require('fs'), crypto = require('crypto');
 const { adm } = require('./_tok');
 const B = 'http://localhost:3210';
+
+// /recruit/me แยกแท็บแล้ว (28 ต.ค. 2569) — รวมหน้ากระเป๋าเงิน + แท็บหา Part-time ไว้ตรวจทีเดียว
+const meAll = async (c, q = '') => (await (await fetch(B + '/recruit/me' + q, { headers: { cookie: c } })).text()) + (await (await fetch(B + '/recruit/me?tab=parttime', { headers: { cookie: c } })).text());
 const ENV = fs.readFileSync(WEB + '/.env.local', 'utf8');
 const KEY = (/^ADMIN_SESSION_SECRET=(.*)$/m.exec(ENV)?.[1] || '').trim().replace(/^["']|["']$/g, '') || 'hamoo-demo-secret';
 let fails = 0;
@@ -26,7 +29,7 @@ const un = (h) => h.replace(/<!-- -->/g, '').replace(/\\"/g, '"');
   const li = await S({ action: 'rep_login', id: rep.id, username: uname });
   const lr = await fetch(B + '/api/sales/login', { method: 'POST', headers: ORIGIN, body: JSON.stringify({ username: uname, password: li.login.password }) });
   const sc = (lr.headers.get('set-cookie') || '').split(';')[0];
-  let h = un(await (await fetch(B + '/recruit/me', { headers: { cookie: sc } })).text());
+  let h = un(await meAll(sc));
   ok('recruit: one free link, no paid link, no member section', h.includes('data-recruit-link="rfree"') && !h.includes('data-recruit-link="rlink"') && h.includes(`/join/s/${rep.code}`) && h.includes('ลิงก์สมัครฟรี') && !h.includes('ลิงก์สมัครแบบเสียเงิน') && !h.includes('ลูกค้าเปิดเมม') && !h.includes('คนที่คุณชวน'));
   let r = await fetch(B + `/join/s/${rep.code}?g=tom`, { redirect: 'manual' });
   ok('free link → /join/tom + recruit cookie', /\/join\/tom$/.test(r.headers.get('location') || '') && (r.headers.get('set-cookie') || '').includes('mb_sm=' + rep.code));

@@ -5,6 +5,9 @@ const WEB = require('path').join(__dirname, '..');
 const fs = require('fs'), crypto = require('crypto');
 const { adm } = require('./_tok');
 const B = 'http://localhost:3210';
+
+// /recruit/me แยกแท็บแล้ว (28 ต.ค. 2569) — รวมหน้ากระเป๋าเงิน + แท็บหา Part-time ไว้ตรวจทีเดียว
+const meAll = async (c, q = '') => (await (await fetch(B + '/recruit/me' + q, { headers: { cookie: c } })).text()) + (await (await fetch(B + '/recruit/me?tab=parttime', { headers: { cookie: c } })).text());
 const ENV = fs.readFileSync(WEB + '/.env.local', 'utf8');
 const KEY = (/^ADMIN_SESSION_SECRET=(.*)$/m.exec(ENV)?.[1] || '').trim().replace(/^["']|["']$/g, '') || 'hamoo-demo-secret';
 let fails = 0;
@@ -48,7 +51,7 @@ const strip = (h) => h.replace(/<!-- -->/g, '');
   const id = [...list.slice(Math.max(0, at - 6000), at).matchAll(/"id":"([0-9a-f-]{36})"/g)].pop()?.[1];
   let row = (await J(await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ kyc_status: 'approved' }) }))).row;
   ok('linked to recruit · not paid at signup', row?.sales_ref?.code === rep.code && !row?.recruit_at, JSON.stringify(row?.sales_ref) + ' ' + row?.recruit_at);
-  let me = strip(await (await fetch(B + '/recruit/me', { headers: { cookie: salesC } })).text());
+  let me = strip(await meAll(salesC));
   ok('recruit sees doctor: no job yet, paid on first job', me.includes(mb) && me.includes('ได้เมื่อผู้สมัครได้งานแรก') && me.includes('data-recruit-code') && me.includes('฿500 / คน'));
   let r = await fetch(B + '/api/join/photos', { method: 'POST', body: form({ mb, t: T }, { file: new File([img], 'p.jpg', { type: 'image/jpeg' }) }) });
   r = await fetch(B + '/api/admin/applicants/' + id, { method: 'PATCH', headers: ADM, body: JSON.stringify({ listed: true }) });
@@ -84,7 +87,7 @@ const strip = (h) => h.replace(/<!-- -->/g, '');
   ok('fee paid ฿500 · recruit credited ฿500', row?.fee_paid_satang === 50000 && row?.recruit_satang === 50000 && !!row?.recruit_at, `${row?.fee_paid_satang} ${row?.recruit_satang}`);
   let sw = await J(await fetch(B + '/api/sales/me', { headers: { cookie: salesC } }));
   ok('recruit wallet +฿500 (from first job)', (sw.summary?.available ?? sw.available) === 50000, JSON.stringify(sw).slice(0, 160));
-  me = strip(await (await fetch(B + '/recruit/me', { headers: { cookie: salesC } })).text());
+  me = strip(await meAll(salesC));
   ok('recruit dashboard: doctor got job', me.includes('ได้งานแล้ว 1 งาน') && me.includes('ได้รับแล้ว'));
 
   // ── งานที่ 2: หักอีก ฿500 เข้าบริษัท · Recruit ไม่ได้เพิ่ม ──
@@ -97,7 +100,7 @@ const strip = (h) => h.replace(/<!-- -->/g, '');
   // Recruit ขอเบิกค่าแนะนำ (ขั้นต่ำ ฿100 · รอ CEO อนุมัติ)
   const pr = await J(await fetch(B + '/api/sales/me', { method: 'POST', headers: { cookie: salesC, 'content-type': 'application/json' }, body: JSON.stringify({ amount: 500 }) }));
   ok('recruit requests payout ฿500', pr.ok, JSON.stringify(pr));
-  me = strip(await (await fetch(B + '/recruit/me', { headers: { cookie: salesC } })).text());
+  me = strip(await meAll(salesC));
   ok('recruit dashboard: payout pending CEO', me.includes('รอ CEO อนุมัติ') && me.includes('กำลังโอน ฿500'));
 
   // ── หน้า + สายปกติไม่ถูกหัก + ledger ──

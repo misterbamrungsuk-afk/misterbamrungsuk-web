@@ -1,6 +1,9 @@
 // หน้า Recruit ย้าย /sales → /recruit (ลิงก์เก่า + /Recruit เด้งมาที่ใหม่) · สมัครเป็น Recruit เอง /recruit/apply → แอดมินอนุมัติ = ID/รหัสผ่าน (27 ต.ค. 2569)
 const { adm } = require('./_tok');
 const B = 'http://localhost:3210';
+
+// /recruit/me แยกแท็บแล้ว (28 ต.ค. 2569) — รวมหน้ากระเป๋าเงิน + แท็บหา Part-time ไว้ตรวจทีเดียว
+const meAll = async (c, q = '') => (await (await fetch(B + '/recruit/me' + q, { headers: { cookie: c } })).text()) + (await (await fetch(B + '/recruit/me?tab=parttime', { headers: { cookie: c } })).text());
 let fails = 0;
 const ok = (n, c, x = '') => { if (!c) fails++; console.log((c ? 'PASS ' : 'FAIL ') + n + (x ? ' · ' + x : '')); };
 const J = (r) => r.json();
@@ -33,21 +36,21 @@ const un = (h) => h.replace(/<!-- -->/g, '').replace(/\\"/g, '"');
   ok('apply → recruit at once + logged in', r.status === 200 && j.ok && /^[A-Z0-9]{4,12}$/.test(j.code || '') && j.username === `rc${tag}` && sc.startsWith('mb_sales='), JSON.stringify(j).slice(0, 160));
   r = await A({ ...body, consent: true });
   ok('same email/phone again refused', r.status === 400);
-  h = un(await (await fetch(B + '/recruit/me?welcome=1', { headers: { cookie: sc } })).text());
+  h = un(await meAll(sc, '?welcome=1'));
   ok('dashboard: own code + welcome + set-password card', h.includes(j.code) && h.includes('data-recruit-link="rfree"') && h.includes('data-recruit-welcome') && h.includes('data-recruit-password="unset"') && h.includes(`rc${tag}@test.local`));
   const PW = (b, c = sc) => fetch(B + '/api/sales/password', { method: 'POST', headers: { ...ORIGIN, cookie: c }, body: JSON.stringify(b) });
-  r = await fetch(B + '/api/sales/login', { method: 'POST', headers: ORIGIN, body: JSON.stringify({ username: `rc${tag}@test.local`, password: '' }) });
+  r = await fetch(B + '/api/sales/login', { method: 'POST', headers: { ...ORIGIN, 'x-forwarded-for': '10.59.' + tag.slice(-2) + '.9' }, body: JSON.stringify({ username: `rc${tag}@test.local`, password: '' }) });
   ok('no password yet → cannot log in', r.status === 401);
   ok('set password needs login', (await PW({ password: 'newpass-123' }, '')).status === 401);
   ok('short password refused', (await PW({ password: 'short' })).status === 400);
   r = await PW({ password: 'first-pass-1' });
   ok('first password set without current', r.status === 200 && (await J(r)).ok);
-  h = un(await (await fetch(B + '/recruit/me', { headers: { cookie: sc } })).text());
+  h = un(await meAll(sc));
   ok('card now shows password set', h.includes('data-recruit-password="set"') && !h.includes('data-recruit-welcome'));
   ok('change needs current password', (await PW({ password: 'second-pass-2', current: 'wrong-one' })).status === 400);
   ok('change with current password', (await PW({ password: 'second-pass-2', current: 'first-pass-1' })).status === 200);
   for (const [u, pw, want, name] of [[`RC${tag}@test.local`, 'second-pass-2', 200, 'login with email'], [`rc${tag}`, 'second-pass-2', 200, 'login with ID'], [`rc${tag}`, 'first-pass-1', 401, 'old password refused']]) {
-    r = await fetch(B + '/api/sales/login', { method: 'POST', headers: ORIGIN, body: JSON.stringify({ username: u, password: pw }) });
+    r = await fetch(B + '/api/sales/login', { method: 'POST', headers: { ...ORIGIN, 'x-forwarded-for': '10.59.' + tag.slice(-2) + '.9' }, body: JSON.stringify({ username: u, password: pw }) });
     ok(name, r.status === want, String(r.status));
   }
   h = un(await (await fetch(B + '/admin/sales', { headers: ADM })).text());
@@ -71,7 +74,7 @@ const un = (h) => h.replace(/<!-- -->/g, '').replace(/\\"/g, '"');
   ok('deleted: gone from admin list', !un(await (await fetch(B + '/admin/sales', { headers: ADM })).text()).includes(`"id":"${delId}"`));
   r = await fetch(B + '/recruit/me', { headers: { cookie: sc2 }, redirect: 'manual' });
   ok('deleted: dashboard closed', r.status !== 200);
-  r = await fetch(B + '/api/sales/login', { method: 'POST', headers: ORIGIN, body: JSON.stringify({ username: b2.email, password: 'delete-me-123' }) });
+  r = await fetch(B + '/api/sales/login', { method: 'POST', headers: { ...ORIGIN, 'x-forwarded-for': '10.59.' + tag.slice(-2) + '.9' }, body: JSON.stringify({ username: b2.email, password: 'delete-me-123' }) });
   ok('deleted: cannot log in', r.status === 401);
   ok('delete twice → not found', !(await S({ action: 'rep_delete', id: delId })).ok);
   r = await fetch(B + '/api/recruit/apply', { method: 'POST', headers: { ...ORIGIN, 'x-forwarded-for': '10.52.' + t2.slice(-2) + '.1' }, body: JSON.stringify(b2) });
@@ -82,7 +85,7 @@ const un = (h) => h.replace(/<!-- -->/g, '').replace(/\\"/g, '"');
   ok('apply page shows poster', h.includes('data-recruit-poster') && (await fetch(B + '/brand/recruit-poster.webp')).status === 200);
   const repId = (un(await (await fetch(B + '/admin/sales', { headers: ADM })).text()).match(/\/recruit\/me\?rep=([0-9a-f-]{36})/) || [])[1];
   ok('admin sales: view-profile link per recruit', !!repId);
-  h = un(await (await fetch(B + `/recruit/me?rep=${repId}`, { headers: { cookie: 'mord_admin=' + adm } })).text());
+  h = un(await (await fetch(B + `/recruit/me?rep=${repId}&tab=parttime`, { headers: { cookie: 'mord_admin=' + adm } })).text());
   ok('admin views recruit dashboard (read-only)', h.includes('data-admin-view') && h.includes('data-recruit-link="rfree"'));
   r = await fetch(B + `/recruit/me?rep=${repId}`, { redirect: 'manual' });
   ok('?rep= without admin → not shown', r.status !== 200 || !(await r.text()).includes('data-admin-view'));

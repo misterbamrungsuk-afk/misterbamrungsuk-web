@@ -4,6 +4,7 @@ import { Forbidden } from "../../../_kyc/ui";
 import { PtHead, PtNav, PtPage, loadPt, ptHref } from "../_pt";
 import { repForParttime, repSummary } from "@/lib/member";
 import { getMemberSettings } from "@/lib/member/tiers";
+import { getPrograms } from "@/lib/member/recruit-programs";
 import { SalesBoard } from "@/components/sales-board";
 import { GATE_MSG, GATE_SHORT, isPtActive } from "@/lib/join/pt-ui";
 
@@ -23,7 +24,7 @@ export default async function PtSalesPage({ params, searchParams }: { params: Pr
       <PtNav c={c} active="earnings" />
     </PtPage>
   );
-  const [rep, cfg] = await Promise.all([repForParttime(c.row), getMemberSettings()]);
+  const [rep, cfg, prog] = await Promise.all([repForParttime(c.row), getMemberSettings(), getPrograms().then((x) => x.parttime)]);
   const sum = await repSummary(rep);
   const h = await headers();
   const origin = `${h.get("x-forwarded-proto") ?? "https"}://${h.get("host") ?? "misterbamrungsuk.com"}`;
@@ -31,7 +32,7 @@ export default async function PtSalesPage({ params, searchParams }: { params: Pr
     <PtPage>
       <PtHead back={ptHref(c)} title="ชวนเปิดเมม · ค่าคอม" />
       <main className="flex flex-col gap-3.5 max-w-[640px]" style={{ padding: "16px 16px 24px", lineHeight: 1.6 }}>
-        <SalesBoard who="parttime" mb={c.mb} t={c.t} summary={sum} link={`${origin}/ref/${rep.code}`} tiers={{ gold: cfg.tiers.gold, black: cfg.tiers.black }} boostMult={cfg.boostMult} recruit={{ link: `${origin}/join/s/${rep.code}`, code: rep.code }} />
+        <SalesBoard who="parttime" mb={c.mb} t={c.t} summary={sum} link={`${origin}/ref/${rep.code}`} tiers={{ gold: cfg.tiers.gold, black: cfg.tiers.black }} boostMult={cfg.boostMult} recruit={{ link: `${origin}/join/s/${rep.code}`, code: rep.code }} program={{ amount: prog.enabled ? prog.amount_satang : 0, bonus: prog.enabled ? prog.bonus : [], note: prog.note }} />
       </main>
       <PtNav c={c} active="earnings" />
     </PtPage>

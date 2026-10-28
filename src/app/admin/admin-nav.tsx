@@ -26,6 +26,7 @@ export const ADMIN_TABS: AdminTab[] = [
   { group: "ระบบ Part-Time", href: "/admin/invites", label: "ลิงก์เชิญ · Secret" },
   { group: "ระบบ Part-Time", href: "/admin/boosts", label: "โปรโมทโปรไฟล์" },
   { group: "ระบบ Part-Time", href: "/admin/sales", label: "Recruit · เมมเบอร์" },
+  { group: "ระบบ Part-Time", href: "/admin/recruit-programs", label: "โปรแกรม Recruit · กำหนดราคา" },
   { group: "ระบบ Part-Time", href: "/admin/orders", label: "ตรวจงาน" },
   { group: "ระบบ Part-Time", href: "/admin/chats", label: "แชท · คำห้ามส่ง" },
   { group: "ระบบ Part-Time", href: "/admin/appeals", label: "อุทธรณ์ใบเตือน" },
@@ -54,7 +55,7 @@ const ICONS: Record<string, string> = {
 };
 export const NAV_SYSTEMS: NavSystem[] = [
   { key: "pt", title: "ระบบ Part-Time", full: "ระบบ Part-Time", sub: "ผู้สมัคร · การเงิน · SOS", icon: "people", tint: "#f6e3b4", sections: [
-    { label: "ผู้สมัคร · อบรม", hrefs: ["/admin/applicants", "/admin/slips", "/admin/kyc", "/admin/cohorts", "/admin/earnings", "/admin/invites", "/admin/boosts", "/admin/sales"] },
+    { label: "ผู้สมัคร · อบรม", hrefs: ["/admin/applicants", "/admin/slips", "/admin/kyc", "/admin/cohorts", "/admin/earnings", "/admin/invites", "/admin/boosts", "/admin/sales", "/admin/recruit-programs"] },
     { label: "งาน · ดูแล", hrefs: ["/admin/orders", "/admin/chats", "/admin/appeals", "/admin/reports"] },
     { label: "การเงิน", hrefs: ["/admin", "/admin/income", "/admin/wallets", "/admin/payroll", "/admin/payouts"] },
     { label: "ความปลอดภัย", hrefs: ["/admin/audit"] },
