@@ -30,7 +30,7 @@ export default async function SalesMe({ searchParams }: { searchParams: Promise<
   return (
     <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9" }}>
       <BrandBar />
-      <main className="mx-auto w-full max-w-[640px] flex flex-col gap-3.5" style={{ padding: "12px 16px 32px", lineHeight: 1.6 }}>
+      <main className="rc-light mx-auto w-full max-w-[640px] flex flex-col gap-3.5" style={{ padding: "12px 16px 32px", lineHeight: 1.6 }}>
         {adminView && <p data-admin-view className="m-0 rounded-xl text-[13.5px] text-[#1b130b] font-semibold text-center" style={{ padding: "10px 12px", background: "#e8c472" }}>แอดมินกำลังดูหน้าของ {rep.name} ({rep.code}) · ดูอย่างเดียว{!rep.active ? " · ปิดใช้งานอยู่" : ""}</p>}
         {!adminView && <div className="flex flex-col items-center gap-1"><AvatarEditor as="sales" letter={rep.name} size={104} /></div>}
         <h1 className="m-0 text-[22px] font-semibold text-center">สวัสดี {rep.name} · Recruit</h1>

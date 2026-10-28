@@ -24,7 +24,7 @@ export default async function SalesLanding({ searchParams }: { searchParams: Pro
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img data-recruit-offer data-recruit-poster src="/brand/recruit-poster.webp" alt="Recruiter Program — แนะนำ Part-time รับ 500 บาทต่อคน เมื่อ Part-time รับงานครั้งแรก · โบนัสรายเดือน รับงานครบ 15 งาน 1,000 บาท · ครบ 20 งาน 2,000 บาท" width={1054} height={1492} className="w-full max-w-[560px] mx-auto h-auto rounded-[22px]" style={{ boxShadow: "0 14px 32px rgba(0,0,0,.45)" }} />
         <Link href="/recruit/apply" data-recruit-apply-cta className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[17px] grid place-items-center hover:text-[#1b130b]">สมัครเป็น Recruit</Link>
-        <SalesLogin />
+        <div className="rc-light"><SalesLogin /></div>
       </main>
       <SiteFooter />
     </div>
