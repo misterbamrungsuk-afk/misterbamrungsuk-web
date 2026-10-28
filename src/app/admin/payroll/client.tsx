@@ -23,7 +23,9 @@ export function PayrollClient({ day, today, rows, sample, reqs, salesReqs = [], 
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [confirmUi, ask] = useConfirm();
-  const tot = rows.reduce((t, r) => ({ jobs: t.jobs + r.todayJobs, gross: t.gross + r.todayGross, pt: t.pt + r.todayPt, waiting: t.waiting + r.waiting, waitingN: t.waitingN + (r.waiting > 0 ? 1 : 0) }), { jobs: 0, gross: 0, pt: 0, waiting: 0, waitingN: 0 });
+  const tot = rows.reduce((t, r) => ({ jobs: t.jobs + r.todayJobs, gross: t.gross + r.todayGross, pt: t.pt + r.todayPt, waiting: t.waiting + r.waiting, waitingN: t.waitingN + (r.waiting > 0 ? 1 : 0), net: t.net + r.waitingNet, fee: t.fee + r.waitingFee, rec: t.rec + r.waitingRecruit }), { jobs: 0, gross: 0, pt: 0, waiting: 0, waitingN: 0, net: 0, fee: 0, rec: 0 });
+  // หักค่าสมัคร (สมัครฟรี · งานละ ฿500 จนครบ ฿10,000) และค่าแนะนำ Recruit (งานแรก · จ่ายจากที่หัก) — แสดงก่อนกดอนุมัติ
+  const cutTxt = (fee: number, rec: number, code?: string) => [fee ? `หักค่าสมัคร ${baht(fee)}` : "", rec ? `ค่าแนะนำ Recruit${code ? ` ${code}` : ""} ${baht(rec)}` : ""].filter(Boolean).join(" · ");
 
   // ทุกปุ่มในหน้านี้ย้ายเงิน (เข้ากระเป๋า / อนุมัติถอน / คืนยอด) → ยืนยันในหน้าก่อนทุกครั้ง
   const approve = async (body: Record<string, unknown>, key: string, label: string, url = "/api/admin/payroll", sure?: { title: string; body: string; danger?: boolean }) => {
@@ -52,15 +54,16 @@ export function PayrollClient({ day, today, rows, sample, reqs, salesReqs = [], 
           <input type="date" value={day} max={today} onChange={(e) => e.target.value && router.push(`${base}?d=${e.target.value}`)} className="h-10 rounded-xl border bg-[#130e0e] px-3 text-[#f6efe4]" style={{ borderColor: LINE, colorScheme: "dark" }} />
         </label>
         {day !== today && <button type="button" onClick={() => router.push(base)} className="h-10 px-4 rounded-xl border text-[#f0c75a]" style={{ borderColor: LINE }}>วันนี้</button>}
-        {isCeo ? <button type="button" data-ceo-approve disabled={!isCeo || sample || !tot.waiting || !!busy} onClick={() => approve({ all: true }, "all", "ทุกคน", undefined, { title: "อนุมัติรายได้เข้ากระเป๋าทุกคน?", body: `${tot.waitingN} คน · รวม ${baht(tot.waiting)}
-อนุมัติแล้ว Part-Time ถอนได้ทันที` })}
+        {isCeo ? <button type="button" data-ceo-approve disabled={!isCeo || sample || !tot.waiting || !!busy} onClick={() => approve({ all: true }, "all", "ทุกคน", undefined, { title: "อนุมัติรายได้เข้ากระเป๋าทุกคน?", body: `${tot.waitingN} คน · ส่วน Part-Time ${baht(tot.waiting)}${tot.fee || tot.rec ? `
+${cutTxt(tot.fee, tot.rec)}` : ""}
+เข้ากระเป๋า Part-Time สุทธิ ${baht(tot.net)} · ถอนได้ทันที` })}
           className="ml-auto h-11 px-5 rounded-xl bg-crimson-500 text-white font-semibold disabled:opacity-40">
-          {busy === "all" ? "กำลังอนุมัติ…" : `อนุมัติทั้งหมด ${tot.waitingN} คน · ${baht(tot.waiting)}`}
+          {busy === "all" ? "กำลังอนุมัติ…" : `อนุมัติทั้งหมด ${tot.waitingN} คน · ${baht(tot.net)}`}
         </button> : <span data-wait-ceo className="h-10 px-3 rounded-xl grid place-items-center text-[12.5px] font-semibold text-[#8a6516] bg-[#f6ecd2]">รอ CEO อนุมัติ</span>}
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-        {[["งานที่จบวันนี้", `${tot.jobs} งาน`], ["ยอดลูกค้าจ่ายวันนี้", baht(tot.gross)], ["ส่วนของ Part-Time วันนี้", baht(tot.pt)], ["รออนุมัติเข้ากระเป๋า (ทุกวัน)", baht(tot.waiting)]].map(([k, v]) => (
-          <div key={k} className="rounded-2xl border p-3" style={{ borderColor: LINE, background: "#ffffff" }}><div className="text-[12px] text-[#cdbfb3]">{k}</div><b className="text-[18px] tabular-nums">{v}</b></div>
+        {[["งานที่จบวันนี้", `${tot.jobs} งาน`, ""], ["ยอดลูกค้าจ่ายวันนี้", baht(tot.gross), ""], ["ส่วนของ Part-Time วันนี้", baht(tot.pt), ""], ["รออนุมัติเข้ากระเป๋า สุทธิ (ทุกวัน)", baht(tot.net), tot.fee || tot.rec ? `ส่วน PT ${baht(tot.waiting)} · ${cutTxt(tot.fee, tot.rec)}` : ""]].map(([k, v, sub]) => (
+          <div key={k} data-pay-total={sub ? "cut" : undefined} className="rounded-2xl border p-3" style={{ borderColor: LINE, background: "#ffffff" }}><div className="text-[12px] text-[#cdbfb3]">{k}</div><b className="text-[18px] tabular-nums">{v}</b>{sub && <div className="text-[11.5px] text-[#9a8a85]">{sub}</div>}</div>
         ))}
       </div>
       {msg && <p role="status" className="m-0" style={{ color: msg.ok ? "#2f7a46" : "#b42335" }}>{msg.text}{msg.text === EXPIRED && <> · <a href="/admin-login" className="underline text-[#ffd76a]">ไปหน้าเข้าสู่ระบบ</a></>}</p>}
@@ -68,7 +71,7 @@ export function PayrollClient({ day, today, rows, sample, reqs, salesReqs = [], 
 
       {/* รายการรายคน */}
       <div className="rounded-2xl border overflow-x-auto" style={{ borderColor: LINE }}>
-        <div className="min-w-[860px]">
+        <div className="min-w-[1140px]">
           <div className="grid grid-cols-[minmax(0,1.4fr)_80px_110px_110px_120px_110px_110px_170px] gap-2 px-3.5 py-2.5 bg-[#130e0e] text-[#9a8a85] text-xs">
             <span>Part-Time</span><span className="text-right">งานวันนี้</span><span className="text-right">ส่วน PT วันนี้</span><span className="text-right">นัดที่เหลือวันนี้</span><span className="text-right">รออนุมัติ</span><span className="text-right">ถอนได้</span><span className="text-right">กำลังถอน</span><span />
           </div>
@@ -83,31 +86,37 @@ export function PayrollClient({ day, today, rows, sample, reqs, salesReqs = [], 
                 <span className="text-right tabular-nums">{r.todayJobs}</span>
                 <span className="text-right tabular-nums">{baht(r.todayPt)}</span>
                 <span className="text-right tabular-nums">{r.todayUpcoming}</span>
-                <span className="text-right tabular-nums" style={{ color: r.waiting ? "#f0c75a" : undefined }}>{baht(r.waiting)}<span className="block text-[11.5px] text-[#9a8a85]">{r.waitingJobs} งาน</span></span>
+                <span className="text-right tabular-nums" style={{ color: r.waiting ? "#f0c75a" : undefined }}>{baht(r.waitingNet)}<span className="block text-[11.5px] text-[#9a8a85]">{r.waitingJobs} งาน{r.waitingFee ? ` · หัก ${baht(r.waitingFee)}` : ""}</span></span>
                 <span className="text-right tabular-nums text-[#4ade80]">{baht(r.available)}</span>
                 <span className="text-right tabular-nums">{baht(r.withdrawing)}</span>
-                {isCeo ? <button type="button" data-ceo-approve disabled={!isCeo || r.sample || !r.waiting || !!busy} onClick={() => approve({ parttime_id: r.parttime_id }, r.parttime_id, r.nick, undefined, { title: `อนุมัติรายได้ ${r.nick}?`, body: `${r.mb} · ${r.waitingJobs} งาน · ${baht(r.waiting)} เข้ากระเป๋า` })}
+                {isCeo ? <button type="button" data-ceo-approve disabled={!isCeo || r.sample || !r.waiting || !!busy} onClick={() => approve({ parttime_id: r.parttime_id }, r.parttime_id, r.nick, undefined, { title: `อนุมัติรายได้ ${r.nick}?`, body: `${r.mb} · ${r.waitingJobs} งาน · ส่วน PT ${baht(r.waiting)}${r.waitingFee || r.waitingRecruit ? `
+${cutTxt(r.waitingFee, r.waitingRecruit, r.recruitCode)}` : ""}
+เข้ากระเป๋าสุทธิ ${baht(r.waitingNet)}` })}
                   className="h-10 px-3 rounded-xl font-semibold text-[#1b130b] bg-[#e8c472] disabled:opacity-35">
-                  {busy === r.parttime_id ? "กำลังอนุมัติ…" : r.waiting ? `อนุมัติ ${baht(r.waiting)}` : "ไม่มียอดรอ"}
+                  {busy === r.parttime_id ? "กำลังอนุมัติ…" : r.waiting ? `อนุมัติ ${baht(r.waitingNet)}` : "ไม่มียอดรอ"}
                 </button> : <span data-wait-ceo className="h-10 px-3 rounded-xl grid place-items-center text-[12.5px] font-semibold text-[#8a6516] bg-[#f6ecd2]">รอ CEO อนุมัติ</span>}
               </div>
               {open === r.parttime_id && (
                 <div className="px-3.5 pb-4">
                   <div className="rounded-xl border overflow-hidden" style={{ borderColor: LINE }}>
-                    <div className="grid grid-cols-[110px_minmax(0,1fr)_120px_60px_100px_90px_70px_110px_110px] gap-2 px-3 py-2 bg-[#130e0e] text-[#9a8a85] text-xs">
-                      <span>รหัสนัด</span><span>ลูกค้า</span><span>จบงาน</span><span className="text-right">ชม.</span><span className="text-right">ค่านัด</span><span className="text-right">ทิป</span><span className="text-right">ส่วนแบ่ง</span><span className="text-right">เข้า PT</span><span className="text-right">สถานะ</span>
+                    <div className="grid grid-cols-[100px_minmax(0,1fr)_110px_44px_90px_70px_60px_90px_100px_120px_100px_100px] gap-2 px-3 py-2 bg-[#130e0e] text-[#9a8a85] text-xs">
+                      <span>รหัสนัด</span><span>ลูกค้า</span><span>จบงาน</span><span className="text-right">ชม.</span><span className="text-right">ค่านัด</span><span className="text-right">ทิป</span><span className="text-right">ส่วนแบ่ง</span><span className="text-right">ส่วน PT</span><span className="text-right">หักค่าสมัคร</span><span className="text-right">ค่าแนะนำ Recruit</span><span className="text-right">เข้ากระเป๋า</span><span className="text-right">สถานะ</span>
                     </div>
                     {!r.jobs.length && <p className="m-0 p-4 text-center text-[#9a8a85]">ไม่มีงานที่จบในวันนี้หรือรออนุมัติ</p>}
                     {r.jobs.map((j) => (
-                      <div key={j.id} className="grid grid-cols-[110px_minmax(0,1fr)_120px_60px_100px_90px_70px_110px_110px] gap-2 px-3 py-2.5 border-t items-center" style={{ borderColor: LINE }}>
+                      <div key={j.id} className="grid grid-cols-[100px_minmax(0,1fr)_110px_44px_90px_70px_60px_90px_100px_120px_100px_100px] gap-2 px-3 py-2.5 border-t items-center" style={{ borderColor: LINE }}>
                         <span className="tabular-nums">{j.code}</span><span className="truncate">{j.customer}</span><span>{hm(j.completed_at)}</span>
                         <span className="text-right">{j.hours}</span><span className="text-right tabular-nums">{baht(j.price)}</span><span className="text-right tabular-nums">{j.tip ? baht(j.tip) : "-"}</span>
-                        <span className="text-right">{j.pct != null ? `${j.pct}%` : "-"}</span><b className="text-right tabular-nums">{baht(j.pt)}</b>
+                        <span className="text-right">{j.pct != null ? `${j.pct}%` : "-"}</span><span className="text-right tabular-nums">{baht(j.pt)}</span>
+                        <span data-job-fee className="text-right tabular-nums" style={{ color: j.fee ? "#b42335" : undefined }}>{j.matured ? "—" : j.fee ? `−${baht(j.fee)}` : "-"}</span>
+                        <span data-job-recruit className="text-right tabular-nums text-[12.5px]">{j.recruit ? <>{baht(j.recruit)}<span className="block text-[11px] text-[#9a8a85]">{j.recruitCode ?? ""}{j.recruit > (j.fee ?? 0) ? " · ส่วนเกินบริษัทจ่าย" : " · จากค่าสมัคร"}</span></> : "-"}</span>
+                        <b className="text-right tabular-nums">{j.matured ? "—" : baht(j.net ?? j.pt)}</b>
                         <span className="text-right" style={{ color: j.matured ? "#2f7a46" : "#f0c75a" }}>{j.matured ? "เข้ากระเป๋าแล้ว" : "รออนุมัติ"}</span>
                       </div>
                     ))}
                   </div>
-                  <p className="m-0 mt-2 text-[12px] text-[#9a8a85]">เข้า PT = ค่านัด × ส่วนแบ่ง + ทิปตามสัดส่วนที่ตั้งไว้ · อนุมัติแล้ว Part-Time ถอนเงินหรือใช้ยอดในกระเป๋าได้ทันที</p>
+                  <p data-fee-progress className="m-0 mt-2 text-[12.5px]" style={{ color: r.feeApplies ? "#8a6516" : "#9a8a85" }}>{r.feeApplies ? `สมัครฟรี · หักค่าสมัครงานละ ${baht(50000)} · สะสมแล้ว ${baht(r.feePaid)} / ${baht(r.feeCap)}${r.waitingFee ? ` → หลังอนุมัติ ${baht(Math.min(r.feeCap, r.feePaid + r.waitingFee))}` : ""}${r.feePaid >= r.feeCap ? " · ครบแล้ว ไม่หักอีก" : ""}` : "จ่ายค่าสมัครแล้ว · ไม่หักจากงาน"}{r.recruitCode ? ` · แนะนำโดย Recruit ${r.recruitCode}${r.waitingRecruit ? " (ได้ค่าแนะนำเมื่ออนุมัติงานแรก)" : ""}` : ""}</p>
+                  <p className="m-0 mt-1 text-[12px] text-[#9a8a85]">ส่วน PT = ค่านัด × ส่วนแบ่ง + ทิปตามสัดส่วน · เข้ากระเป๋า = ส่วน PT − ค่าสมัครที่หัก · ค่าแนะนำ Recruit จ่ายจากค่าสมัครที่หัก (ไม่หัก PT เพิ่ม) · อนุมัติแล้วถอนได้ทันที</p>
                 </div>
               )}
             </div>

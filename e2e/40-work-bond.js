@@ -75,11 +75,17 @@ const strip = (h) => h.replace(/<!-- -->/g, '');
     await PT('accept'); await PT('checkin');
     await fetch(B + '/api/admin/bookings', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'demo_shift', id: j.id, minutes: 240 + n * 300 }) });
     const c = await J(await fetch(B + `/api/bookings/${j.id}/complete`, { method: 'POST', headers: CU, body: JSON.stringify({ rating: 5 }) }));
+    if (n === 1) preview = (await (await fetch(B + '/ceo', { headers: ADM })).text()).replace(/<!-- -->/g, '');
     await fetch(B + '/api/admin/payroll', { method: 'POST', headers: ADM, body: JSON.stringify({ all: true }) });
     await fetch(B + `/api/pt/bookings?mb=${mb}&t=${encodeURIComponent(T)}`);
     return { ok: c.ok, id: j.id };
   };
+  let preview = '';
+  // โหมดแอดมินอนุมัติ (ค่าเริ่มต้นจริง · ชุด 06 สลับเป็น auto ไว้) → ห้อง CEO เห็นยอดหักก่อนกด
+  const money0 = (await J(await fetch(B + '/api/admin/wallet', { headers: ADM }))).money;
+  await fetch(B + '/api/admin/wallet', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'settings', money: { ...money0, releaseMode: 'manual' }, note: 'ทดสอบห้อง CEO' }) });
   const j1 = await job(1);
+  ok('CEO room shows ฿500 fee + Recruit fee before approving', preview.includes('data-pay-total="cut"') && preview.includes('หักค่าสมัคร ฿500') && preview.includes('ค่าแนะนำ Recruit ฿500'), preview ? 'no cut text' : 'no page');
   ok('job 1 completed', j1.ok, j1.err);
   const w = await J(await fetch(B + `/api/pt/wallet?mb=${mb}&t=${encodeURIComponent(T)}`));
   const hist = w.history.find((h) => h.kind === 'mature' && h.bucket === 'available');
@@ -116,5 +122,6 @@ const strip = (h) => h.replace(/<!-- -->/g, '');
   const a = await J(await fetch(B + '/api/admin/wallet', { headers: ADM }));
   ok('ledger balanced', a.sum === 0, String(a.sum));
 
+  await fetch(B + '/api/admin/wallet', { method: 'POST', headers: ADM, body: JSON.stringify({ action: 'settings', money: money0, note: 'คืนค่า' }) });
   console.log(fails ? fails + ' FAILED' : 'ALL PASS');
 })().catch((e) => console.log('ERR', e));
