@@ -86,7 +86,8 @@ export async function recruitsOf(rep: SalesRep) {
 }
 
 // ── ID / รหัสผ่าน Recruit ภายนอก (ทีมงานออกให้) · เก็บแฮชใน Storage _config/sales-logins.json ──
-type Login = { rep_id: string; username: string; pw_hash: string; updated_at: string; by: string };
+// pw_set false = สมัครเองแล้วเข้าระบบอัตโนมัติ ยังไม่ได้ตั้งรหัสผ่าน (ตั้งเองในแดชบอร์ด) · email = เข้าระบบด้วยอีเมลได้
+type Login = { rep_id: string; username: string; pw_hash: string; updated_at: string; by: string; email?: string; pw_set?: boolean };
 const PATH = "_config/sales-logins.json";
 const isDemo = !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY;
 const g = globalThis as unknown as { __mbSalesLogins?: Login[] };
@@ -112,9 +113,34 @@ export async function issueSalesLogin(rep: SalesRep, username: string, by: strin
   const list = await loadLogins();
   if (list.some((l) => l.username === u && l.rep_id !== rep.id)) throw new Error("ID นี้ถูกใช้แล้ว");
   const password = newPassword();
-  const row: Login = { rep_id: rep.id, username: u, pw_hash: hashPw(password), updated_at: new Date().toISOString(), by };
+  const row: Login = { rep_id: rep.id, username: u, pw_hash: hashPw(password), updated_at: new Date().toISOString(), by, email: list.find((l) => l.rep_id === rep.id)?.email, pw_set: true };
   await saveLogins([row, ...list.filter((l) => l.rep_id !== rep.id)]);
   return { username: u, password };
+}
+/** สมัคร Recruit เอง (28 ต.ค. 2569): ออก ID อัตโนมัติ · รหัสผ่านสุ่มที่ไม่มีใครรู้ (pw_set false) จนกว่าเจ้าตัวจะตั้งเองในแดชบอร์ด */
+export async function issueAutoLogin(rep: SalesRep, username: string, email: string, by: string): Promise<string> {
+  const u = cleanUsername(username), em = cleanUsername(email);
+  if (!usernameOk(u)) throw new Error("bad username");
+  const list = await loadLogins();
+  if (list.some((l) => l.username === u && l.rep_id !== rep.id)) throw new Error("ID นี้ถูกใช้แล้ว");
+  if (em && list.some((l) => l.email === em && l.rep_id !== rep.id)) throw new Error("อีเมลนี้ถูกใช้แล้ว");
+  const row: Login = { rep_id: rep.id, username: u, pw_hash: hashPw(newPassword() + newPassword()), updated_at: new Date().toISOString(), by, email: em || undefined, pw_set: false };
+  await saveLogins([row, ...list.filter((l) => l.rep_id !== rep.id)]);
+  return u;
+}
+export async function loginOf(repId: string): Promise<{ username: string; email?: string; pwSet: boolean } | null> {
+  const l = (await loadLogins()).find((x) => x.rep_id === repId);
+  return l ? { username: l.username, email: l.email, pwSet: l.pw_set !== false } : null;
+}
+export async function emailTaken(email: string) { const em = cleanUsername(email); return (await loadLogins()).some((l) => l.email === em); }
+/** Recruit ตั้ง/เปลี่ยนรหัสผ่านเอง · ตั้งครั้งแรก (pw_set false) ไม่ต้องใส่รหัสเดิม */
+export async function setSalesPassword(repId: string, password: string, current?: string): Promise<void> {
+  if (password.length < 8 || password.length > 72) throw new Error("รหัสผ่านอย่างน้อย 8 ตัว");
+  const list = await loadLogins();
+  const row = list.find((l) => l.rep_id === repId);
+  if (!row) throw new Error("ยังไม่มี ID · ติดต่อทีมงาน");
+  if (row.pw_set !== false && !verifyPw(String(current ?? ""), row.pw_hash)) throw new Error("รหัสผ่านเดิมไม่ถูกต้อง");
+  await saveLogins(list.map((l) => (l.rep_id === repId ? { ...l, pw_hash: hashPw(password), pw_set: true, updated_at: new Date().toISOString(), by: `self:${repId}` } : l)));
 }
 export async function loginUsernames(): Promise<Record<string, string>> {
   return Object.fromEntries((await loadLogins()).map((l) => [l.rep_id, l.username]));
@@ -122,7 +148,7 @@ export async function loginUsernames(): Promise<Record<string, string>> {
 /** ตรวจ ID/รหัสผ่าน → rep id (ไม่บอกว่าผิดตรงไหน) */
 export async function checkSalesLogin(username: unknown, password: unknown): Promise<string | null> {
   const u = cleanUsername(username);
-  const row = (await loadLogins()).find((l) => l.username === u);
+  const row = (await loadLogins()).find((l) => l.username === u || (!!l.email && l.email === u));
   const ok = verifyPw(String(password ?? ""), row?.pw_hash);
   return ok && row ? row.rep_id : null;
 }

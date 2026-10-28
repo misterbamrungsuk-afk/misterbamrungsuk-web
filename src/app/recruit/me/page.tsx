@@ -7,13 +7,15 @@ import { findRep } from "@/lib/member/store";
 import { getMemberSettings } from "@/lib/member/tiers";
 import { AvatarEditor } from "@/components/avatar-editor";
 import { SalesWallet } from "./wallet";
+import { SalesPassword } from "./password";
+import { loginOf } from "@/lib/member/recruit";
 import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "แดชบอร์ด Recruit — Mister Bamrungsuk", robots: { index: false } };
 
 // แดชบอร์ด Recruit ภายนอก (เข้าผ่านลิงก์ที่ทีมงานส่งให้ /sales/go?t=)
-export default async function SalesMe({ searchParams }: { searchParams: Promise<{ rep?: string }> }) {
+export default async function SalesMe({ searchParams }: { searchParams: Promise<{ rep?: string; welcome?: string }> }) {
   // แอดมินเปิดดูหน้าของ Recruit คนใดก็ได้ (?rep=<id> · 28 ต.ค. 2569) — ดูอย่างเดียว ไม่ใช้คุกกี้ของ Recruit
   const jar = await cookies();
   const asRep = (await searchParams).rep;
@@ -21,7 +23,8 @@ export default async function SalesMe({ searchParams }: { searchParams: Promise<
   const id = adminView ? asRep! : readSalesLink(jar.get(SALES_COOKIE)?.value);
   const rep = id ? await findRep({ id }) : null;
   if (!rep || rep.kind !== "external" || (!rep.active && !adminView)) redirect("/recruit?expired=1");
-  const [sum, cfg] = await Promise.all([repSummary(rep), getMemberSettings()]);
+  const [sum, cfg, login] = await Promise.all([repSummary(rep), getMemberSettings(), loginOf(rep.id).catch(() => null)]);
+  const welcome = (await searchParams).welcome === "1";
   const h = await headers();
   const origin = `${h.get("x-forwarded-proto") ?? "https"}://${h.get("host") ?? "misterbamrungsuk.com"}`;
   return (
@@ -32,6 +35,8 @@ export default async function SalesMe({ searchParams }: { searchParams: Promise<
         {!adminView && <div className="flex flex-col items-center gap-1"><AvatarEditor as="sales" letter={rep.name} size={104} /></div>}
         <h1 className="m-0 text-[22px] font-semibold text-center">สวัสดี {rep.name} · Recruit</h1>
         <p className="m-0 -mt-2 text-center text-[13px] text-[#b5a596]">โค้ด {rep.code} · แตะรูปเพื่อเปลี่ยนรูปโปรไฟล์</p>
+        {!adminView && welcome && <p data-recruit-welcome className="m-0 rounded-xl text-[14px] text-[#1b130b] font-semibold text-center" style={{ padding: "10px 12px", background: "#e8c472" }}>สมัครสำเร็จ · คุณเป็น Recruit แล้ว 🎉 ตั้งรหัสผ่านด้านล่างไว้ใช้เข้าครั้งหน้า</p>}
+        {!adminView && login && <SalesPassword pwSet={login.pwSet} login={login.email || login.username} />}
         <SalesWallet d={{
           recruits: sum.recruits.length, recruitsPaid: sum.recruits.filter((r) => r.credited).length,
           members: sum.referrals.filter((r) => r.status === "credited").length,

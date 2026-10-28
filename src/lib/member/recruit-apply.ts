@@ -2,7 +2,7 @@ import "server-only";
 import { randomUUID } from "crypto";
 import { createClient } from "@supabase/supabase-js";
 import { createExternalRep } from "./index";
-import { cleanUsername, issueSalesLogin, usernameOk } from "./recruit";
+import { cleanUsername, emailTaken, issueAutoLogin, issueSalesLogin, usernameOk } from "./recruit";
 
 // ใบสมัคร Recruit จากหน้า /recruit/apply (27 ต.ค. 2569) — คนทั่วไปสมัครเอง → แอดมินอนุมัติ = สร้าง Recruit + ออก ID/รหัสผ่าน (แสดงครั้งเดียว)
 // เก็บใน Storage _config/recruit-applications.json (แบบเดียวกับ sales-logins)
@@ -30,7 +30,9 @@ async function save(list: RecruitApp[]) {
 export class ApplyError extends Error {}
 const str = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
 
-export async function submitRecruitApp(b: Record<string, unknown>, ip: string): Promise<RecruitApp> {
+/** สมัครแล้วเป็น Recruit ทันที (บอสสั่ง 28 ต.ค. 2569): สร้าง Recruit + ID อัตโนมัติ → เข้าแดชบอร์ดเลย ตั้งรหัสผ่านเองทีหลัง
+ *  แอดมินยังเห็นใบสมัครใน /admin/sales (อนุมัติอัตโนมัติ) และปิดใช้งาน Recruit ได้ */
+export async function submitRecruitApp(b: Record<string, unknown>, ip: string): Promise<{ app: RecruitApp; repId: string; code: string; username: string }> {
   const name = str(b.name, 80), phone = str(b.phone, 20).replace(/[^\d]/g, ""), email = str(b.email, 120).toLowerCase(), line_id = str(b.line_id, 60), channel = str(b.channel, 300);
   const bank = { bank: str(b.bank, 60), account: str(b.account, 20).replace(/[^\d]/g, ""), name: str(b.account_name, 80) };
   if (name.length < 3) throw new ApplyError("กรอกชื่อ-นามสกุล");
@@ -40,9 +42,17 @@ export async function submitRecruitApp(b: Record<string, unknown>, ip: string): 
   if (b.consent !== true) throw new ApplyError("ติ๊กยอมรับเงื่อนไขและการเก็บข้อมูลก่อนส่ง");
   const list = await load();
   if (list.some((a) => a.status === "pending" && (a.phone === phone || a.email === email))) throw new ApplyError("มีใบสมัครของเบอร์/อีเมลนี้รอตรวจอยู่แล้ว · ทีมงานจะติดต่อกลับ");
-  const app: RecruitApp = { id: randomUUID(), name, phone, email, line_id, channel, bank, status: "pending", created_at: new Date().toISOString(), ip };
-  await save([app, ...list].slice(0, 2000));
-  return app;
+  if (list.some((a) => a.status === "approved" && (a.phone === phone || a.email === email)) || (await emailTaken(email))) throw new ApplyError("เบอร์/อีเมลนี้เป็น Recruit อยู่แล้ว · เข้าสู่ระบบที่หน้า Recruit");
+  const rep = await createExternalRep({ name, phone, bank }, "self-apply");
+  let u = cleanUsername(email.split("@")[0]).replace(/[^a-z0-9._-]/g, "");
+  if (!usernameOk(u)) u = `rc${phone.slice(-6)}`;
+  let username = "";
+  for (let i = 0; i < 6 && !username; i++) username = await issueAutoLogin(rep, i ? `${u}${i + 1}` : u, email, "self-apply").catch(() => "");
+  if (!username) username = await issueAutoLogin(rep, `rc${rep.code.toLowerCase()}`, email, "self-apply");
+  const now = new Date().toISOString();
+  const app: RecruitApp = { id: randomUUID(), name, phone, email, line_id, channel, bank, status: "approved", created_at: now, ip, decided_at: now, decided_by: "auto", rep_id: rep.id, username };
+  await save([app, ...(await load())].slice(0, 2000));
+  return { app, repId: rep.id, code: rep.code, username };
 }
 
 export const listRecruitApps = async (status?: RecruitApp["status"]) => (await load()).filter((a) => !status || a.status === status);

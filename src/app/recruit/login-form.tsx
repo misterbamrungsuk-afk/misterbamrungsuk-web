@@ -20,11 +20,11 @@ export function SalesLogin() {
   return (
     <form onSubmit={submit} data-sales-login className="rounded-[18px] bg-[#211a18] flex flex-col gap-2.5" style={{ padding: 16, border: "1px solid rgba(232,196,114,.45)" }}>
       <b className="text-[17px]">Recruit เข้าสู่ระบบ</b>
-      <label className="flex flex-col gap-1 text-[13px] text-[#d9c9b4]">ID<input value={u} onChange={(e) => setU(e.target.value)} autoComplete="username" autoCapitalize="none" className={inp} /></label>
+      <label className="flex flex-col gap-1 text-[13px] text-[#d9c9b4]">อีเมล หรือ ID<input value={u} onChange={(e) => setU(e.target.value)} autoComplete="username" autoCapitalize="none" className={inp} /></label>
       <label className="flex flex-col gap-1 text-[13px] text-[#d9c9b4]">รหัสผ่าน<input type="password" value={p} onChange={(e) => setP(e.target.value)} autoComplete="current-password" className={inp} /></label>
       {err && <p role="alert" className="m-0 text-[13.5px] text-[#ff8a9a]">{err}</p>}
       <button type="submit" disabled={busy || !u.trim() || !p} className="h-12 rounded-xl font-semibold text-[#1b130b] bg-[#e8c472] disabled:opacity-40">{busy ? "กำลังเข้าสู่ระบบ…" : "เข้าสู่ระบบ"}</button>
-      <span className="text-[12.5px] text-[#b5a596]">ยังไม่มี ID · ลืมรหัสผ่าน → ติดต่อทีมงานให้ออกให้ใหม่</span>
+      <span className="text-[12.5px] text-[#b5a596]">ยังไม่ได้ตั้งรหัสผ่าน · ลืมรหัสผ่าน → ติดต่อทีมงานทาง LINE</span>
     </form>
   );
 }
