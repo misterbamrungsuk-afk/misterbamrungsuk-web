@@ -15,7 +15,7 @@ const un = (h) => h.replace(/<!-- -->/g, '').replace(/\\"/g, '"');
     ok(`${from} → ${to}`, [301, 308].includes(r.status) && new URL(r.headers.get('location') || '', B).pathname === to, `${r.status} ${r.headers.get('location')}`);
   }
   let h = un(await (await fetch(B + '/recruit')).text());
-  ok('/recruit landing: offer + apply CTA + login', h.includes('RECRUITER PROGRAM') && h.includes('data-recruit-offer') && h.includes('href="/recruit/apply"') && h.includes('data-sales-login') && h.includes('฿2,000'));
+  ok('/recruit landing: offer + apply CTA + login', h.includes('RECRUITER PROGRAM') && h.includes('data-recruit-offer') && h.includes('href="/recruit/apply"') && h.includes('data-sales-login') && !h.includes('ลูกค้าเปิดเมม Gold'));
   h = un(await (await fetch(B + '/recruit/apply')).text());
   ok('/recruit/apply form renders', h.includes('data-recruit-apply') && h.includes('บัญชีรับค่าตอบแทน') && h.includes('ส่งใบสมัคร Recruit'));
 

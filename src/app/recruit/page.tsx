@@ -1,18 +1,14 @@
 import Link from "next/link";
-import { getMemberSettings } from "@/lib/member/tiers";
 import { BrandBar } from "@/components/brand-bar";
 import { SiteFooter } from "@/components/site-footer";
-import { LINE_OA_ID } from "@/lib/join/config";
 import { SalesLogin } from "./login-form";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Recruit · ชวนเปิดเมม รับค่าคอม — Mister Bamrungsuk" };
-const baht = (n: number) => "฿" + n.toLocaleString("th-TH");
 
 // หน้าขาย Recruit (/recruit · เดิม /sales) — อธิบายค่าตอบแทน + สมัครเอง /recruit/apply (ทีมงานอนุมัติแล้วออก ID) + เข้าแดชบอร์ด) · Part-Time ใช้หน้าในโปรไฟล์ของตัวเอง
 export default async function SalesLanding({ searchParams }: { searchParams: Promise<{ expired?: string; out?: string }> }) {
   const sp = await searchParams;
-  const cfg = await getMemberSettings();
   return (
     <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9" }}>
       <BrandBar />
@@ -29,29 +25,6 @@ export default async function SalesLanding({ searchParams }: { searchParams: Pro
         <img data-recruit-offer data-recruit-poster src="/brand/recruit-poster.webp" alt="Recruiter Program — แนะนำ Part-time รับ 500 บาทต่อคน เมื่อ Part-time รับงานครั้งแรก · โบนัสรายเดือน รับงานครบ 15 งาน 1,000 บาท · ครบ 20 งาน 2,000 บาท" width={1054} height={1492} className="w-full max-w-[560px] mx-auto h-auto rounded-[22px]" style={{ boxShadow: "0 14px 32px rgba(0,0,0,.45)" }} />
         <Link href="/recruit/apply" data-recruit-apply-cta className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[17px] grid place-items-center hover:text-[#1b130b]">สมัครเป็น Recruit</Link>
         <SalesLogin />
-        <section className="grid gap-3 md:grid-cols-2">
-          {(["gold", "black"] as const).map((k) => (
-            <div key={k} className="rounded-[18px]" style={{ padding: 16, background: k === "black" ? "linear-gradient(160deg, #241f1c, #120f0e)" : "linear-gradient(160deg, #4d1f2a, #2b1218)", border: "1.5px solid #e8c472" }}>
-              <div className="text-[14px] text-[#d9c9b4]">ลูกค้าเปิดเมม {cfg.tiers[k].name} {baht(cfg.tiers[k].pay)}</div>
-              <div className="text-[34px] font-bold text-[#e8c472] leading-tight">รับ {baht(cfg.tiers[k].commission)}</div>
-              <div className="text-[13.5px] text-[#d9c9b4]">Part-Time เลือกเป็นวงเงินโปรโมทตัวเอง ×{cfg.boostMult} = {baht(cfg.tiers[k].commission * cfg.boostMult)}</div>
-            </div>
-          ))}
-        </section>
-        <section className="rounded-[18px] bg-[#211a18] flex flex-col gap-2" style={{ padding: 16 }}>
-          <b className="text-[17px]">ขั้นตอน</b>
-          <ol className="m-0 pl-5 text-[14.5px] leading-[1.8] text-[#d9c9b4]">
-            <li>Part-Time: เปิดโปรไฟล์ของคุณ → "ชวนลูกค้าเปิดเมม รับค่าคอม" ได้โค้ดทันที</li>
-            <li>คนทั่วไป: กด "สมัครเป็น Recruit" กรอกข้อมูล → ทีมงานอนุมัติแล้วส่ง ID/รหัสผ่านให้ (สอบถาม LINE <span className="text-[#f3ead9] select-all">{LINE_OA_ID}</span>)</li>
-            <li>ส่งลิงก์แนะนำ Part-time → ผู้สมัครได้งานแรก → ฿500 เข้ากระเป๋า · ผู้สมัครทำครบ 15 งาน/เดือน รับโบนัส ฿1,000 · ครบ 20 งาน ฿2,000</li>
-            <li>ส่งลิงก์ให้ลูกค้า → ลูกค้าเปิดเมม → ค่าคอมเข้ากระเป๋า</li>
-            <li>ขอรับค่าคอม → CEO อนุมัติ → ทีมงานโอนเข้าบัญชี</li>
-          </ol>
-          <div className="flex flex-wrap gap-2 mt-1">
-            <Link href="/join/me" className="h-11 px-4 rounded-full grid place-items-center font-semibold bg-[#e8c472] text-[#1b130b] hover:text-[#1b130b]">ฉันเป็น Part-Time</Link>
-            <Link href="/recruit/me" className="h-11 px-4 rounded-full grid place-items-center font-semibold text-[#e8c472] hover:text-[#e8c472]" style={{ border: "1px solid #e8c472" }}>เข้าแดชบอร์ด Recruit</Link>
-          </div>
-        </section>
       </main>
       <SiteFooter />
     </div>
