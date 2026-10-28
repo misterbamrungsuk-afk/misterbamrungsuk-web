@@ -98,6 +98,21 @@ async function idOf(mb) {
   ok('A wallet available = ฿0 until first job', avail === 0, JSON.stringify(w).slice(0, 200));
   const dash = (await meAll(salesA)).replace(/<!-- -->/g, '');
   ok('dashboard: summary (2) + wallet + monthly bonus rules', dash.includes('data-sales-summary') && dash.includes('2 คน') && dash.includes('data-sales-wallet') && dash.includes('data-recruit-bonus') && dash.includes('ครบ 15 งาน'));
+  // กดดูโปรไฟล์เด็กได้ (28 ต.ค. 2569): ยังไม่ขึ้นหน้าเว็บ = ไม่มีลิงก์ · เปิดแสดงแล้ว = ลิงก์ /p/<id>
+  ok('not listed yet → no profile link', dash.includes('data-recruit-noprofile') && !dash.includes('data-recruit-profile'));
+  { // รูปหน้าตรงจากขั้นที่ 1 ของใบสมัคร (คนขึ้นหน้าแรกต้องมีรูป)
+    const ENV = fs.readFileSync(require('path').join(__dirname, '..', '.env.local'), 'utf8');
+    const KEY = (/^ADMIN_SESSION_SECRET=(.*)$/m.exec(ENV)?.[1] || '').trim().replace(/^["']|["']$/g, '') || 'hamoo-demo-secret';
+    const mb = r1.mb_code, bt = Buffer.from(JSON.stringify({ mb, iat: Date.now(), exp: Date.now() + 3600_000 })).toString('base64url');
+    const t = bt + '.' + crypto.createHmac('sha256', KEY).update('resume:' + bt).digest('base64url');
+    await fetch(B + '/api/join/profile', { method: 'POST', body: form({ mb, t, step: '1', disclose: 'yes', first_name: 'หมอ', last_name: 'ชวน', nickname: 'หมอ', birthdate: '1998-03-03', line_id: 'x', address: 'อโศก', areas: 'กรุงเทพฯ › วัฒนา' }, { photo: new File([img], 'a.jpg', { type: 'image/jpeg' }), other_doc: new File([img], 'b.jpg', { type: 'image/jpeg' }) }) });
+  }
+  await fetch(B + '/api/admin/applicants/' + id1, { method: 'PATCH', headers: ADM, body: JSON.stringify({ listed: true }) });
+  const dash2 = (await meAll(salesA)).replace(/<!-- -->/g, '');
+  const pl = /data-recruit-profile[^>]*href="(\/p\/r[0-9a-f]{10})"|href="(\/p\/r[0-9a-f]{10})"[^>]*data-recruit-profile/.exec(dash2);
+  const purl = pl?.[1] || pl?.[2];
+  ok('listed → "ดูโปรไฟล์" link to public profile', !!purl, String(purl));
+  if (purl) ok('profile link opens', (await fetch(B + purl)).status === 200);
   const av = await fetch(B + '/api/avatar', { method: 'POST', headers: { cookie: salesA, origin: B }, body: form({ as: 'sales' }, { file: new File([img], 'me.jpg', { type: 'image/jpeg' }) }) });
   const avg = await J(await fetch(B + '/api/avatar?as=sales', { headers: { cookie: salesA } }));
   ok('Sale Man uploads own profile photo', av.status === 200 && !!avg.avatar, `${av.status} ${JSON.stringify(avg)}`);

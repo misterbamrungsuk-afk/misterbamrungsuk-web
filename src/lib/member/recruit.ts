@@ -72,6 +72,9 @@ export async function recruitsOf(rep: SalesRep) {
   const { listForParttime } = await import("@/lib/bookings");
   const out = [];
   const rate = await recruitRate();
+  // โปรไฟล์หน้าเว็บ (/p/<id>) ของคนที่ขึ้นหน้าแรกแล้ว — Recruit กดดูได้ (บอส 28 ต.ค. 2569) · ยังไม่ขึ้น = ไม่มีลิงก์
+  const { getLivePeople, publicId } = await import("@/lib/home/live");
+  const live = new Set(rows.length ? (await getLivePeople().catch(() => [])).map((p) => p.id) : []);
   for (const a of rows) {
     const x = extraOf(a);
     const paid = a.status === "verified";
@@ -81,7 +84,7 @@ export async function recruitsOf(rep: SalesRep) {
       id: a.id, mb: a.mb_code, who: `${a.nickname || a.first_name}${a.last_name ? ` ${a.last_name.trim()[0] ?? ""}.` : ""}`,
       pack: `สาย ${a.package}${x.group === "tom" ? " · ทอมหล่อ" : ""}${x.tier && x.tier !== "silver" ? ` · ${tierLabel(x.tier)}` : ""}${free ? " · สมัครฟรี" : ""}`,
       status: a.status === "rejected" ? "ไม่ผ่าน" : a.status === "refunded" ? "คืนเงินแล้ว" : !paid ? "รอตรวจสลิป" : x.inactive ? "Non Active" : !x.listed ? "รอเปิดรับงาน" : jobs ? `ได้งานแล้ว ${jobs} งาน` : "ยังไม่ได้งาน",
-      jobs, free,
+      jobs, free, profile: live.has(publicId(a.mb_code)) ? `/p/${publicId(a.mb_code)}` : null,
       commission: x.recruit_at ? x.recruit_satang ?? 0 : rate, credited: !!x.recruit_at, at: x.recruit_at ?? a.created_at,
       wait: x.recruit_at ? "ได้รับแล้ว" : "ได้เมื่อผู้สมัครได้งานแรก", monthJobs: paid ? await monthJobsOf(a.id) : 0,
     });
