@@ -20,7 +20,7 @@ export type HubData = {
   /** หมวดทอมหล่อ (ป้าย) */
   tom: boolean;
   /** ปุ่มเข้ากลุ่ม LINE ตามหมวด — ขึ้นเมื่อชำระค่าสมัครแล้ว (null = ยังไม่ชำระ) */
-  lineGroup: { url: string; label: string } | null;
+  lineGroup: { key: string; url: string; label: string } | null;
   mb: string; t: string; nickname: string; fullName: string; statusLine: string; track: string; trackShort: string;
   main: string; mainPath: string; pos: string; photos: string[]; age: number | null; area: string; price: number; tier: PtTier; basic: boolean; verified: boolean;
   fixes: number;
@@ -145,7 +145,7 @@ export function ProfileHub({ d }: { d: HubData }) {
               </div>
             </div>
 
-            {d.lineGroup && <a href={d.lineGroup.url} target="_blank" rel="noopener" data-line-group={d.tom ? "tom" : "man"} className="min-h-[52px] rounded-[14px] bg-[#06c755] text-white text-[15px] font-semibold flex items-center justify-center gap-[10px] hover:text-white">
+            {d.lineGroup && <a href={d.lineGroup.url} target="_blank" rel="noopener" data-line-group={d.lineGroup.key} className="min-h-[52px] rounded-[14px] bg-[#06c755] text-white text-[15px] font-semibold flex items-center justify-center gap-[10px] hover:text-white">
               <Ico size={22} d="M12 4C7 4 3 7.2 3 11c0 3.4 3 6.2 7.2 6.9L10 21l3.6-3.1C18 17.4 21 14.5 21 11c0-3.8-4-7-9-7z" />{d.lineGroup.label}
             </a>}
             <div className="grid grid-cols-2 gap-[10px]">
@@ -369,9 +369,9 @@ function PosPhoto({ d }: { d: HubData }) {
   );
 }
 
-/** ป้ายระดับ: TOP = ทอง · Secret = ดำเรืองแสง · สมัครฟรี = BASIC · Silver (จ่ายค่าสมัคร) ไม่มีป้าย */
-function TierBadge({ tier, basic }: { tier: PtTier; basic: boolean }) {
-  if (tier === "silver") return basic ? <span data-tier="basic" style={{ display: "inline-flex", alignItems: "center", height: 18, padding: "0 7px", borderRadius: 4, background: "#3a3230", color: "#e6d6c4", fontWeight: 700, fontSize: 9.5, letterSpacing: ".2em", boxShadow: "inset 0 0 0 1px rgba(243,234,217,.35)" }}>BASIC</span> : null;
+/** ป้ายระดับ: TOP = ทอง · Secret = ดำเรืองแสง · Silver ไม่มีป้าย (เลิกใช้ป้าย BASIC 28 ต.ค. 2569) */
+function TierBadge({ tier }: { tier: PtTier; basic?: boolean }) {
+  if (tier === "silver") return null;
   if (tier === "secret") return <span data-tier="secret" className="inline-flex items-center h-[18px] px-[7px] rounded text-[9.5px] font-bold tracking-[.2em] text-[#e9e1ff]" style={{ background: "#0b0910", boxShadow: "inset 0 0 0 1px rgba(185,166,255,.7), 0 0 10px rgba(185,166,255,.55)" }}>SECRET</span>;
   return <span className="inline-flex items-center h-[18px] px-[7px] rounded text-[9.5px] font-bold tracking-[.2em] text-[#1b130b]" style={{ background: tier === "top" ? "linear-gradient(135deg, #fff1c9 0%, #e8c472 45%, #a8781f 100%)" : "linear-gradient(135deg, #f3ead9 0%, #b5a596 100%)", boxShadow: "inset 0 0 0 1px rgba(255,241,201,.5), 0 2px 6px rgba(0,0,0,.35)" }}>{tier === "top" ? "TOP" : "SILVER"}</span>;
 }

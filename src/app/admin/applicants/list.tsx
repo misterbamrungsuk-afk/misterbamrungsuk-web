@@ -2,7 +2,7 @@
 
 import { Fragment, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { PACKAGES, QUOTA, feeBreakdown, lineAddUrl, type PackageKey } from "@/lib/join/config";
+import { LINE_GROUP_LIST, PACKAGES, QUOTA, feeBreakdown, ptLineGroupKey, type PackageKey } from "@/lib/join/config";
 import type { Applicant as ApplicantBase, ApplicantStatus, CriminalCheck, Extra } from "@/lib/join/store";
 
 /** แถวที่หน้า page ส่งมา = คอลัมน์ + docs.extra (extraOf) */
@@ -55,6 +55,9 @@ const ChPill = ({ r }: { r: Applicant }) => { const k = chOf(r), t = CH[k]; retu
 type Grp = "all" | "man" | "tom";
 const GRP_TABS: [Grp, string][] = [["all", "ทั้งหมด"], ["man", "หนุ่มหล่อ"], ["tom", "ทอมหล่อ"]];
 const inGrp = (g: Grp) => (r: Applicant) => g === "all" || (g === "tom") === (r.group === "tom");
+
+/** กลุ่ม LINE ที่ผู้สมัครคนนี้ต้องเข้า (Secret / หนุ่มหล่อ / ทอมหล่อ) */
+const lineGroupOf = (r: Applicant) => LINE_GROUP_LIST.find((g) => g.key === ptLineGroupKey(r))!;
 
 /** ค้นหาจาก ชื่อ ชื่อเล่น รหัส MB เบอร์ อีเมล LINE */
 const hit = (r: Applicant, t: string) => !t || [r.first_name, r.last_name, `${r.first_name} ${r.last_name}`, r.nickname, r.mb_code, r.tel, r.tel?.replace(/\D/g, ""), r.email, r.line_id].some((x) => !!x && x.toLowerCase().includes(t));
@@ -135,7 +138,8 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role, initia
   const assign = async (id: string, cohort: string | null) => { const d = await patch(id, { cohort }); say(d, `จัดเข้า${cohort ? cohortName(cohort) : " (ไม่ระบุกลุ่ม)"}`); };
   const setLine = async (id: string, v: boolean) => { const d = await patch(id, { line_joined: v }); say(d, v ? "บันทึก: เข้ากลุ่ม LINE แล้ว" : "บันทึก: ยังไม่เข้ากลุ่ม"); router.refresh(); };
   const copyLine = async (r: Applicant) => {
-    const text = `สวัสดีค่ะคุณ${r.nickname} (${r.mb_code}) ลิงก์เข้ากลุ่ม LINE Mister Bamrungsuk: ${lineAddUrl()}`;
+    const g = lineGroupOf(r);
+    const text = `สวัสดีค่ะคุณ${r.nickname} (${r.mb_code}) ลิงก์เข้ากลุ่ม LINE ${g.label}: ${g.url}`;
     try { await navigator.clipboard.writeText(text); flash("คัดลอกข้อความลิงก์กลุ่ม LINE แล้ว", { ok: true }); } catch { flash(text, { keep: true }); }
   };
   const exportCsv = () => {
@@ -421,7 +425,13 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role, initia
             </>}
             <Row k="ตรวจประวัติ" v={CRIMINAL[sel.criminal_check ?? "pending"][0]} />
             <a data-view-profile href={`/api/admin/applicants/${sel.id}/preview`} target="_blank" rel="noopener noreferrer" title="เปิดหน้าเดียวกับที่ผู้สมัครเห็น · ระวังอย่ากดแก้ข้อมูลแทนผู้สมัคร" className="h-[46px] rounded-full font-semibold grid place-items-center" style={{ background: INK, color: "#fff" }}>ดูหน้าโปรไฟล์ของผู้สมัคร ↗</a>
-            <button onClick={() => copyLine(sel)} className="h-[46px] rounded-full bg-[#06c755] text-white font-semibold">คัดลอกลิงก์กลุ่ม LINE</button>
+            <div data-applicant-line-group={lineGroupOf(sel).key} className="flex flex-col gap-1.5">
+              <span className="text-xs" style={{ color: "#6b5d58" }}>กลุ่ม LINE ของคนนี้ · <b style={{ color: INK }}>{lineGroupOf(sel).label}</b></span>
+              <div className="grid grid-cols-2 gap-2">
+                <a href={lineGroupOf(sel).url} target="_blank" rel="noopener noreferrer" className="h-[46px] rounded-full border font-semibold grid place-items-center text-[13.5px]" style={{ borderColor: "#06c755", color: "#048a3a" }}>เปิดกลุ่ม</a>
+                <button onClick={() => copyLine(sel)} className="h-[46px] rounded-full bg-[#06c755] text-white font-semibold text-[13.5px]">คัดลอกลิงก์ส่งให้</button>
+              </div>
+            </div>
             <button onClick={() => setShowDocs((v) => !v)} aria-expanded={showDocs} className="h-11 rounded-full border bg-white" style={{ borderColor: LINE_BD, color: "#5c4f48" }}>{showDocs ? "ซ่อนสลิปและเอกสาร" : "ดูสลิปและเอกสาร"}</button>
 
             {showDocs && (

@@ -27,6 +27,7 @@ export const PATH_ROLES: { prefix: string; roles: AdminRole[] }[] = [
   { prefix: "/admin/boosts", roles: ["super", "finance"] },
   { prefix: "/admin/sales", roles: ["super", "finance"] },
   { prefix: "/admin/recruit-programs", roles: ["super", "finance"] },
+  { prefix: "/admin/line-groups", roles: ["super", "finance", "cs", "kyc"] }, // ลิงก์กลุ่ม LINE ทีมงาน — ทุกบทบาท
   { prefix: "/admin/applicants", roles: ["super", "finance"] },
   { prefix: "/admin/slips", roles: ["super", "finance"] },
   { prefix: "/admin/wallets", roles: ["super", "finance"] },

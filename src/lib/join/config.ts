@@ -117,13 +117,34 @@ export const BANK = {
 /** LINE Official Account (ใหม่ 21 ต.ค. 2569 · lin.ee/rnqFY2n → @350oyqnc) */
 export const LINE_OA_ID = "@350oyqnc";
 export const lineAddUrl = () => "https://lin.ee/rnqFY2n";
-/** กลุ่ม LINE Part-Time แยกหมวด (บอสให้ 22 ต.ค. 2569) — ปุ่มขึ้นเมื่อจ่ายค่าสมัครแล้ว (ดู ptLineGroup) */
-export const LINE_GROUPS = { man: "https://line.me/ti/g/t2xMQBRyuN", tom: "https://line.me/ti/g/XAyQXejkUc" } as const;
-/** ลิงก์กลุ่ม LINE ของผู้สมัคร: ชำระแล้ว = ทีมงานอนุมัติสลิป / สมัครฟรี (verified) หรือ Slip2Go ยืนยันยอดตรง · ยังไม่ชำระ = null */
-export function ptLineGroup(row: { status: string }, x: { group?: "tom" | null; slip_check?: { verdict?: string } | null }): { url: string; label: string } | null {
+/** กลุ่ม LINE ทั้งหมด (บอสให้ 28 ต.ค. 2569 · Canva "Update MB" หน้า 5) — หน้า /admin/line-groups แสดงเป็นปุ่มเข้ากลุ่ม
+ *  pt = กลุ่มของ Part-Time (ปุ่มในโปรไฟล์/หน้าสมัครเสร็จ ตามหมวด + ระดับ) · team = ทีมงานภายใน · other = กลุ่มอื่น */
+export type LineGroup = { key: string; label: string; url: string; kind: "pt" | "team" | "other"; note?: string };
+export const LINE_GROUP_LIST: LineGroup[] = [
+  { key: "secret_man", label: "Secret MBMS (หนุ่มหล่อ)", url: "https://line.me/ti/g/HWVAy7kW9g", kind: "pt", note: "Part-Time ระดับ Secret · หนุ่มหล่อ" },
+  { key: "secret_tom", label: "Secret MBTS (ทอมหล่อ)", url: "https://line.me/ti/g/yt9XSYW_xA", kind: "pt", note: "Part-Time ระดับ Secret · ทอมหล่อ" },
+  { key: "man", label: "กลุ่ม หนุ่มหล่อ MBM01", url: "https://line.me/ti/g/Fmv_gqJQmF", kind: "pt", note: "Part-Time หนุ่มหล่อ (TOP · Silver)" },
+  // ลิงก์ในสไลด์เหมือน MBM01 ทุกตัวอักษร — รอบอสยืนยันลิงก์ทอมหล่อ
+  { key: "tom", label: "กลุ่ม ทอมหล่อ MBT01", url: "https://line.me/ti/g/Fmv_gqJQmF", kind: "pt", note: "Part-Time ทอมหล่อ (TOP · Silver)" },
+  { key: "tom_premium", label: "The tom พรีเมี่ยม", url: "https://line.me/ti/g/PK4djenHv2", kind: "other" },
+  { key: "find_boys", label: "หาเด็กผู้ชาย", url: "https://line.me/ti/g/zA8kNb8was", kind: "other" },
+  { key: "mkt", label: "MKT & Consult", url: "https://line.me/ti/g/fm4uNS54tx", kind: "team" },
+  { key: "dev", label: "Programmer", url: "https://line.me/ti/g/BHqCnYDjSr", kind: "team" },
+  { key: "mgmt", label: "Management team", url: "https://line.me/ti/g/hSK6tSGwhc", kind: "team" },
+  { key: "company", label: "บริษัท มิสเตอร์บำรุงสุข บาย มาดามกอ จำกัด", url: "https://line.me/ti/g/2xZpcMd5kw", kind: "team" },
+  { key: "admin", label: "Admin MR.Bamrungsuk", url: "https://line.me/ti/p/2qGPpbXqQA", kind: "team", note: "บัญชีแอดมิน (แชทส่วนตัว)" },
+];
+const lineGroup = (k: string) => LINE_GROUP_LIST.find((g) => g.key === k)!;
+/** ลิงก์กลุ่ม LINE ของผู้สมัคร: ชำระแล้ว = ทีมงานอนุมัติสลิป / สมัครฟรี (verified) หรือ Slip2Go ยืนยันยอดตรง · ยังไม่ชำระ = null
+ *  Secret → กลุ่ม Secret MBMS/MBTS · อื่น ๆ → MBM01/MBT01 (ตามหมวดหนุ่มหล่อ/ทอมหล่อ) */
+export function ptLineGroupKey(x: { group?: "tom" | null; tier?: string | null }): string {
+  return `${x.tier === "secret" ? "secret_" : ""}${x.group === "tom" ? "tom" : "man"}`;
+}
+export function ptLineGroup(row: { status: string }, x: { group?: "tom" | null; tier?: string | null; slip_check?: { verdict?: string } | null }): { key: string; url: string; label: string } | null {
   const paid = row.status === "verified" || x.slip_check?.verdict === "ok";
   if (!paid) return null;
-  return x.group === "tom" ? { url: LINE_GROUPS.tom, label: "เข้ากลุ่ม LINE ทอมหล่อ" } : { url: LINE_GROUPS.man, label: "เข้ากลุ่ม LINE หนุ่มหล่อ" };
+  const g = lineGroup(ptLineGroupKey(x));
+  return { key: g.key, url: g.url, label: `เข้ากลุ่ม LINE ${g.label}` };
 }
 
 export const HERO_IMAGE =

@@ -49,7 +49,7 @@ export default async function DonePage({ params, searchParams }: { params: Promi
             <CopyButton code={row.mb_code} />
           </div>
           <div className="flex flex-col gap-4">
-            <a href={lg?.url ?? lineAddUrl()} data-line-group={lg ? (x.group === "tom" ? "tom" : "man") : undefined} target="_blank" rel="noopener" className="min-h-[52px] rounded-[14px] bg-[#06c755] text-white text-[15px] flex items-center justify-center gap-[10px] hover:text-white">
+            <a href={lg?.url ?? lineAddUrl()} data-line-group={lg?.key} target="_blank" rel="noopener" className="min-h-[52px] rounded-[14px] bg-[#06c755] text-white text-[15px] flex items-center justify-center gap-[10px] hover:text-white">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 4C7 4 3 7.2 3 11c0 3.4 3 6.2 7.2 6.9L10 21l3.6-3.1C18 17.4 21 14.5 21 11c0-3.8-4-7-9-7z" /></svg>{lg?.label ?? "ติดต่อทีมงานทาง LINE"}
             </a>
             <div className="flex flex-col gap-3 rounded-2xl bg-[#211a18] border border-[rgba(243,234,217,0.07)]" style={{ padding: 16 }}>
