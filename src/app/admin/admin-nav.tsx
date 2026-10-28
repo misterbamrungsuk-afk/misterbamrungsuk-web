@@ -15,6 +15,7 @@ export const ADMIN_TABS: AdminTab[] = [
   { group: "ภาพรวม · การเงิน", href: "/admin/traffic", label: "สถิติผู้เข้าชมเว็บ" },
   { group: "ภาพรวม · การเงิน", href: "/admin/income", label: "ยอดเงินเข้า · ใครโอน จากระบบไหน" },
   { group: "ภาพรวม · การเงิน", href: "/admin/payroll", label: "CEO · อนุมัติรายได้ / ถอน" },
+  { group: "ภาพรวม · การเงิน", href: "/admin/wallets", label: "กระเป๋าเงินทุกคน" },
   { group: "ภาพรวม · การเงิน", href: "/admin/payouts", label: "โอนเงินออก · Part-Time / พาร์ทเนอร์ / ร้านค้า" },
   { group: "ภาพรวม · การเงิน", href: "/admin/audit", label: "SOS · แจ้งเตือนระบบ" },
   { group: "ระบบ Part-Time", href: "/admin/applicants", label: "ผู้สมัคร · Active / Non Active" },
@@ -55,7 +56,7 @@ export const NAV_SYSTEMS: NavSystem[] = [
   { key: "pt", title: "ระบบ Part-Time", full: "ระบบ Part-Time", sub: "ผู้สมัคร · การเงิน · SOS", icon: "people", tint: "#f6e3b4", sections: [
     { label: "ผู้สมัคร · อบรม", hrefs: ["/admin/applicants", "/admin/slips", "/admin/kyc", "/admin/cohorts", "/admin/earnings", "/admin/invites", "/admin/boosts", "/admin/sales"] },
     { label: "งาน · ดูแล", hrefs: ["/admin/orders", "/admin/chats", "/admin/appeals", "/admin/reports"] },
-    { label: "การเงิน", hrefs: ["/admin", "/admin/income", "/admin/payroll", "/admin/payouts"] },
+    { label: "การเงิน", hrefs: ["/admin", "/admin/income", "/admin/wallets", "/admin/payroll", "/admin/payouts"] },
     { label: "ความปลอดภัย", hrefs: ["/admin/audit"] },
   ] },
   { key: "partner", title: "ระบบ Partner", full: "ระบบ Partner สปา · โรงแรม", sub: "สปา · โรงแรม", icon: "hotel", tint: "#dfe9f5", sections: [{ label: "", hrefs: ["/admin/partners", "/admin/stays"] }] },

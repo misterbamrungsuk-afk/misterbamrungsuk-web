@@ -57,5 +57,23 @@ const un = (h) => h.replace(/<!-- -->/g, '').replace(/\\"/g, '"');
   h = un(await (await fetch(B + '/admin/sales', { headers: ADM })).text());
   ok('approved app leaves pending queue', !h.includes('data-recruit-app=""') && h.includes('สมใจ แนะนำเก่ง'));
 
+  // ── โปสเตอร์ · แอดมินดูหน้า Recruit · กระเป๋าเงินทุกคน (28 ต.ค. 2569) ──
+  h = un(await (await fetch(B + '/recruit/apply')).text());
+  ok('apply page shows poster', h.includes('data-recruit-poster') && (await fetch(B + '/brand/recruit-poster.webp')).status === 200);
+  const repId = (un(await (await fetch(B + '/admin/sales', { headers: ADM })).text()).match(/\/recruit\/me\?rep=([0-9a-f-]{36})/) || [])[1];
+  ok('admin sales: view-profile link per recruit', !!repId);
+  h = un(await (await fetch(B + `/recruit/me?rep=${repId}`, { headers: { cookie: 'mord_admin=' + adm } })).text());
+  ok('admin views recruit dashboard (read-only)', h.includes('data-admin-view') && h.includes('data-recruit-link="rlink"'));
+  r = await fetch(B + `/recruit/me?rep=${repId}`, { redirect: 'manual' });
+  ok('?rep= without admin → not shown', r.status !== 200 || !(await r.text()).includes('data-admin-view'));
+  h = un(await (await fetch(B + '/admin/wallets', { headers: ADM })).text());
+  ok('wallets page lists owners', h.includes('data-wallets') && h.includes('กระเป๋าเงินทุกคน') && h.includes('"type":"parttime"'));
+  const pt = (h.match(/"key":"parttime:([0-9a-f-]{36})"/) || [])[1];
+  const wj = pt ? await J(await fetch(B + `/api/admin/wallets?type=parttime&id=${pt}`, { headers: ADM })) : {};
+  ok('wallet history API (admin)', wj.ok && Array.isArray(wj.history) && wj.history.length > 0, JSON.stringify(wj).slice(0, 120));
+  ok('wallet history needs admin', (await fetch(B + `/api/admin/wallets?type=parttime&id=${pt}`)).status === 401);
+  h = un(await (await fetch(B + '/admin', { headers: ADM })).text());
+  ok('nav has wallets page', h.includes('href="/admin/wallets"'));
+
   console.log(fails ? fails + ' FAILED' : 'ALL PASS');
 })().catch((e) => console.log('ERR', e));

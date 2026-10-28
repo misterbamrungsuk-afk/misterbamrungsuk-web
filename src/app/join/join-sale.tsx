@@ -6,7 +6,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { CONTROLLER } from "@/lib/join/legal";
-import { FEE_INCLUDES, LOOKING_FOR, PACKAGES, PERKS, type PackageKey } from "@/lib/join/config";
+import { FEE_INCLUDES, LOOKING_FOR, PACKAGES, PERKS, type PackageKey, SIGNUP_FREE } from "@/lib/join/config";
 
 const fmtB = (n: number) => `${n.toLocaleString("en-US")} บาท`;
 const TR: Record<PackageKey, { name2: string; fee: string; lines: [string, string][]; bg: string; kc: string; sh: string }> = {
@@ -54,7 +54,7 @@ export function JoinSalePage({ seats, showEarnings = true, invite, group = null,
         <section data-secret-hero={secret ? "1" : undefined} className={`join-hero md:min-h-[340px] md:flex md:flex-col md:justify-end md:py-14 md:px-12${secret ? " secret-glow" : ""}`} style={{ padding: "40px 22px 34px", borderRadius: 18, ...(secret ? { border: "1.5px solid rgba(185,166,255,.75)", filter: "saturate(.6)" } : {}) }}>
           <div className="text-[11px] font-semibold tracking-[2px] text-[#e8c472]">{invite ? <><span className="tracking-normal text-[13px]" style={secret ? { color: "#d9ccff", textShadow: "0 0 12px rgba(185,166,255,.8)" } : undefined}>{secret ? "✦ คำเชิญพิเศษสำหรับ Secret เท่านั้น" : "✦ คำเชิญพิเศษ"}</span> · PART TIME</> : "PART TIME"}</div>
           <h1 className="font-semibold text-[30px] md:text-[48px] leading-[1.32] text-[#f3ead9] md:max-w-[640px]" style={{ margin: "10px 0 6px" }}>{tom ? "ทอมหล่อ · เพื่อนกินเที่ยว Mister Bamrungsuk" : "เพื่อนกินเที่ยว Mister Bamrungsuk"}</h1>
-          <p className="m-0 text-[15px] md:text-[18px] text-[#e6d6c4]">งานพาร์ทไทม์ เลือกวันเวลาเอง{!invite && tom ? " · ทอมหล่อสมัครฟรี" : ""}{invite ? (secret ? " · Secret: สมัครฟรี · ราคาทีมงานกำหนดรายคน" : " · คำเชิญพิเศษ: สมัครฟรี ได้ระดับ TOP") : ""}</p>
+          <p className="m-0 text-[15px] md:text-[18px] text-[#e6d6c4]">งานพาร์ทไทม์ เลือกวันเวลาเอง{!invite && (tom || SIGNUP_FREE) ? " · สมัครฟรี" : ""}{invite ? (secret ? " · Secret: สมัครฟรี · ราคาทีมงานกำหนดรายคน" : " · คำเชิญพิเศษ: สมัครฟรี ได้ระดับ TOP") : ""}</p>
         </section>
 
         {/* หนุ่มหล่อ / ทอมหล่อ — สมัครแยกหมวด · ที่นั่งอบรมแยกโควตา */}
@@ -92,8 +92,8 @@ export function JoinSalePage({ seats, showEarnings = true, invite, group = null,
                       {T.lines.map(([kk, v]) => <span key={kk} className="flex justify-between gap-[10px] text-[#fff7e8]"><span className="whitespace-nowrap shrink-0" style={{ color: T.kc }}>{kk}</span><span className="font-semibold text-right min-w-0">{v}</span></span>)}
                     </span>
                     <span className="flex flex-col gap-1 rounded-xl" style={{ padding: "12px 14px", background: "rgba(0,0,0,.32)" }}>
-                      <span className="flex justify-between gap-[10px] text-[#fff7e8]"><span className="text-[#e8c472] font-semibold">ค่าสมัคร (รวมอบรม)</span><span className="font-bold text-[17px] text-[#fff1c9]" data-fee={k}>{invite || tom ? "ฟรี" : T.fee}</span></span>
-                      <span className="text-[13px] leading-[1.6] text-[#fff7e8] font-light">{FEE_INCLUDES(k).slice(1, 3).join(" · ")}<br />{!invite && tom ? "ทอมหล่อ: สมัครฟรี · หักค่าสมัครจากงาน งานละ ฿500 จนครบ ฿10,000" : invite ? "✦ คำเชิญพิเศษ: ไม่ต้องชำระตอนสมัคร · ได้ระดับ TOP · หักค่าสมัครจากงาน งานละ ฿500 จนครบ ฿10,000" : "ไม่คืนเงินทุกกรณี"}</span>
+                      <span className="flex justify-between gap-[10px] text-[#fff7e8]"><span className="text-[#e8c472] font-semibold">ค่าสมัคร (รวมอบรม)</span><span className="font-bold text-[17px] text-[#fff1c9]" data-fee={k}>{SIGNUP_FREE || invite || tom ? "ฟรี" : T.fee}</span></span>
+                      <span className="text-[13px] leading-[1.6] text-[#fff7e8] font-light">{FEE_INCLUDES(k).slice(1, 3).join(" · ")}<br />{!invite && tom ? "ทอมหล่อ: สมัครฟรี · หักค่าสมัครจากงาน งานละ ฿500 จนครบ ฿10,000" : invite ? "✦ คำเชิญพิเศษ: ไม่ต้องชำระตอนสมัคร · ได้ระดับ TOP · หักค่าสมัครจากงาน งานละ ฿500 จนครบ ฿10,000" : SIGNUP_FREE ? "สมัครฟรี · หักค่าสมัครจากงาน งานละ ฿500 จนครบ ฿10,000" : "ไม่คืนเงินทุกกรณี"}</span>
                     </span>
                   </button>
                 );
@@ -109,8 +109,8 @@ export function JoinSalePage({ seats, showEarnings = true, invite, group = null,
             {showEarnings && !invite && <Link href="/join/earnings" className="min-h-12 rounded-[14px] text-[#e8c472] font-semibold grid place-items-center text-center hover:text-[#e8c472]" style={{ background: "rgba(232,196,114,0.16)" }}>ดูรายได้และส่วนแบ่ง · คำนวณรายได้ต่อเดือน</Link>}
             {seats.closed
               ? <span aria-disabled="true" className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center" style={{ marginTop: 6, opacity: 0.45 }}>ปิดรับสมัครแล้ว</span>
-              : <Link href={invite ? `/join/pay?pkg=B&invite=${invite}${g}` : tom ? "/join/pay?pkg=B&g=tom" : `/join/pay?pkg=${pick}${g}`} className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center hover:text-[#1b130b]" style={{ marginTop: 6 }}>{invite || tom ? "เริ่มสร้างโปรไฟล์" : "ชำระเงินและรับรหัสสมัคร"}</Link>}
-            {!invite && tom && <p className="m-0 text-[13px] text-center text-[#b5a596] font-light" data-tom-free>สมัครฟรี · หักค่าสมัครจากงาน งานละ ฿500 จนครบ ฿10,000</p>}
+              : <Link href={invite ? `/join/pay?pkg=B&invite=${invite}${g}` : tom ? "/join/pay?pkg=B&g=tom" : `/join/pay?pkg=${pick}${g}`} className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center hover:text-[#1b130b]" style={{ marginTop: 6 }}>{SIGNUP_FREE || invite || tom ? "เริ่มสร้างโปรไฟล์" : "ชำระเงินและรับรหัสสมัคร"}</Link>}
+            {!invite && (tom || SIGNUP_FREE) && <p className="m-0 text-[13px] text-center text-[#b5a596] font-light" data-tom-free>สมัครฟรี · หักค่าสมัครจากงาน งานละ ฿500 จนครบ ฿10,000</p>}
             {invite && <p className="m-0 text-[13px] text-center text-[#b5a596] font-light">ลิงก์ส่วนตัว กรุณาอย่าเผยแพร่</p>}
             <Link href="/join/me" data-pt-login className="min-h-12 rounded-2xl border-[1.5px] border-[#e8c472] text-[#e8c472] font-semibold text-[16px] grid place-items-center text-center px-4 hover:text-[#e8c472] hover:bg-[rgba(232,196,114,0.08)]">สมัครแล้ว? เข้าสู่ระบบ Part-Time</Link>
           </div>

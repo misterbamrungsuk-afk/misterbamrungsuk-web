@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { FileTypeError } from "@/lib/file-guard";
 import { limited as dbLimited } from "@/lib/rate-limit";
-import { CLOSE_AT, PACKAGES, type PackageKey } from "@/lib/join/config";
+import { CLOSE_AT, PACKAGES, type PackageKey, SIGNUP_FREE } from "@/lib/join/config";
 import { codeNo, createApplicant, getByEmail, nextDocNo, saveProfile, updateApplicant, type DocKind } from "@/lib/join/store";
 import { consumeInvite, findInvite } from "@/lib/join/invites";
 import { appendToSheet } from "@/lib/join/sheets";
@@ -84,7 +84,7 @@ export async function POST(req: Request) {
   const inviteCode = s("invite", 12).toUpperCase();
   const files: Partial<Record<DocKind, File>> = {};
   // สมัครฟรี (ไม่ต้องแนบสลิป): ลิงก์เชิญพิเศษ หรือหมวดทอมหล่อ
-  const freeSignup = !!inviteCode || group === "tom";
+  const freeSignup = SIGNUP_FREE || !!inviteCode || group === "tom";
   for (const k of freeSignup ? [] : REQUIRED_DOCS) {
     const f = form.get(k);
     if (f instanceof File && f.size > 0) {
@@ -103,7 +103,7 @@ export async function POST(req: Request) {
     if (state !== "ok") return bad(state === "full" ? "ลิงก์เชิญนี้มีผู้ใช้ครบจำนวนแล้ว" : state === "expired" ? "ลิงก์เชิญนี้หมดอายุแล้ว" : "ลิงก์เชิญนี้ใช้ไม่ได้ กรุณาติดต่อแอดมิน", 410);
     invite = inviteCode;
   }
-  const free = !!invite || group === "tom";
+  const free = SIGNUP_FREE || !!invite || group === "tom";
   const amount = free ? 0 : PACKAGES[pkg].price;
 
   // เบอร์ที่ส่งมาต้องตรงกับเบอร์ที่ยืนยัน OTP แล้ว (cookie ลงลายเซ็นจาก /api/otp/verify)

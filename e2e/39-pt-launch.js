@@ -46,11 +46,11 @@ async function register(pkg, extra = {}) {
 (async () => {
   // ── หน้าสาธารณะ: ราคาใหม่ · ไม่มีการันตี ──
   let h = await (await fetch(B + '/join')).text();
-  ok('/join shows 9,500 and 15,900', h.includes('9,500 บาท') && h.includes('15,900 บาท'));
+  ok('/join: free signup (28 ต.ค. 2569)', h.includes('ฟรี') && h.includes('เริ่มสร้างโปรไฟล์') && !h.includes('ชำระเงินและรับรหัสสมัคร'));
   ok('/join has no guarantee wording', NO_GUARANTEE(h), (/.{20}(การันตี|เงินประกัน).{20}/.exec(h) || [])[0]);
-  ok('/join says non-refundable', h.includes('ไม่คืนเงิน'));
+  ok('/join explains job-fee deduction', h.includes('หักค่าสมัครจากงาน') && h.includes('฿10,000'));
   h = await (await fetch(B + '/join/terms')).text();
-  ok('/join/terms: new fee + non-refundable, no guarantee', h.includes('9,500') && h.includes('15,900') && h.includes('ไม่คืนเงินทุกกรณี') && NO_GUARANTEE(h));
+  ok('/join/terms: free signup + job fee, non-refundable, no guarantee', h.includes('สมัครฟรีทุกสาย') && h.includes('10,000 บาท') && h.includes('ไม่คืนเงินทุกกรณี') && NO_GUARANTEE(h));
   h = await (await fetch(B + '/join/privacy')).text();
   ok('/join/privacy = new notice (company · sensitive data · no draft)', h.includes('บริษัท มิสเตอร์บำรุงสุข บาย มาดามกอ จำกัด') && h.includes('ประวัติอาชญากรรม') && !h.includes('ร่าง') && !h.includes('ํา'));
   h = await (await fetch(B + '/privacy')).text();
@@ -63,34 +63,18 @@ async function register(pkg, extra = {}) {
   let x = await register('A', { consent_criminal: undefined });
   ok('register without sensitive-data consent → 400', x.r.status === 400 && (x.j.fields || []).includes('consent_criminal'), x.r.status + ' ' + JSON.stringify(x.j.fields));
 
-  // ── ค่าสมัคร + INV ──
+  // ── สมัครฟรีทุกสาย (28 ต.ค. 2569): ไม่มียอด · ไม่มี INV/RI · ชำระแล้วทันที ──
   const A = await register('A');
   ok('register A', A.r.status === 200 && !!A.j.mb_code, JSON.stringify(A.j));
   const Bp = await register('B');
   ok('register B', Bp.r.status === 200 && !!Bp.j.mb_code, JSON.stringify(Bp.j));
   const a = await rowOf(A.j.mb_code), b = await rowOf(Bp.j.mb_code);
-  ok('A pays 9,500', a.row?.amount === 9500, String(a.row?.amount));
-  ok('B pays 15,900', b.row?.amount === 15900, String(b.row?.amount));
+  ok('A + B free: amount 0, verified at once', a.row?.amount === 0 && b.row?.amount === 0 && a.row?.status === 'verified' && b.row?.status === 'verified', `${a.row?.amount}/${a.row?.status} ${b.row?.amount}/${b.row?.status}`);
   ok('criminal/health consent recorded', a.row?.consent_criminal === true && /consent-1\.0/.test(a.row?.consent_version || ''), `${a.row?.consent_criminal} ${a.row?.consent_version}`);
-  ok('INV number at signup', /^INV-\d{4}-\d{4}$/.test(a.row?.inv_no || '') && /^INV-\d{4}-\d{4}$/.test(b.row?.inv_no || ''), `${a.row?.inv_no} ${b.row?.inv_no}`);
-  ok('INV numbers run in sequence', +b.row.inv_no.slice(-4) === +a.row.inv_no.slice(-4) + 1, `${a.row.inv_no} → ${b.row.inv_no}`);
-  ok('no RI before approval', !a.row?.ri_no);
-  h = await (await A.d.req('/join/receipt/' + A.j.mb_code)).text();
-  ok('receipt page before approval = invoice (INV)', h.includes('data-doc-title="invoice"') && h.includes(a.row.inv_no) && h.includes('ใบแจ้งหนี้') && h.includes('9,500.00'));
-  ok('invoice has no guarantee wording', NO_GUARANTEE(h));
-
-  // ── อนุมัติ → RI (ครั้งเดียว) ──
-  let r = await patch(a.id, { status: 'verified' });
-  const ri = r.row?.ri_no;
-  ok('approve → RI number', /^RI-\d{4}-\d{4}$/.test(ri || ''), JSON.stringify(r.row?.ri_no));
-  r = await patch(a.id, { status: 'verified' });
-  ok('approve again → same RI', r.row?.ri_no === ri, `${ri} vs ${r.row?.ri_no}`);
-  r = await patch(b.id, { status: 'verified' });
-  ok('next approval → next RI', +String(r.row?.ri_no).slice(-4) === +ri.slice(-4) + 1, `${ri} → ${r.row?.ri_no}`);
-  h = await (await A.d.req('/join/receipt/' + A.j.mb_code)).text();
-  ok('receipt after approval = RI + references INV', h.includes('data-doc-title="receipt"') && h.includes(ri) && h.includes(a.row.inv_no) && h.includes('ใบเสร็จรับเงิน'));
+  ok('free signup: no INV/RI', !a.row?.inv_no && !a.row?.ri_no);
   h = await (await A.d.req('/join/profile/' + A.j.mb_code)).text();
-  ok('profile: paid wording, no guarantee', h.includes('ชำระค่าสมัครแล้ว') && NO_GUARANTEE(h));
+  ok('profile: no guarantee wording', NO_GUARANTEE(h));
+  let r;
 
   // ── สายเชิญจ่ายเต็ม ──
   const exp = new Date(Date.now() + 7 * 86400e3).toISOString().slice(0, 10);

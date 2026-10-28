@@ -117,12 +117,13 @@ async function split(live: Booking, actor: string, tip: number, beforeMove?: () 
 async function matureOne(b: Booking, actor: string): Promise<Booking> {
   const amt = await ptAmount(b);
   // สมัครฟรี (เชิญ/ทอมหล่อ): หักค่าสมัครงานละ ฿500 จนครบ ฿10,000 (work-bond.ts) · งานแรกของคนที่ Recruit แนะนำ → ค่าแนะนำเข้ากระเป๋า Recruit
-  const { jobFeeCut, bondApplies } = await import("@/lib/join/work-bond");
+  const { jobFeeCut } = await import("@/lib/join/work-bond");
   const st = await import("@/lib/join/store");
   const pt = amt > 0 ? await st.getById(b.parttime_id).catch(() => null) : null;
   const x = pt ? st.extraOf(pt) : null;
   const paid = x?.fee_paid_satang ?? 0;
-  const cut = jobFeeCut(!!x && bondApplies(x), amt, paid);
+  // สมัครฟรีทุกแบบ (ไม่มียอดค่าสมัคร) หักค่าสมัครจากงาน · คนที่เคยจ่ายค่าสมัครไม่ถูกหัก
+  const cut = jobFeeCut(!!pt && !pt.amount, amt, paid);
   const rec = cut > 0 && pt ? await (await import("@/lib/member/recruit")).firstJobRecruit(pt) : null;
   const r = await moveBooking(b.id, ["completed"], { matured_at: now() }, amt > 0 ? { kind: "mature", ref: { type: "booking", id: b.id }, idem: `mature:${b.id}`, note: `ปล่อยรายได้ ${b.code}${cut ? ` · หักค่าสมัคร ฿${cut / 100} (สะสม ฿${((paid + cut) / 100).toLocaleString("th-TH")}/฿10,000)${rec ? ` · ค่าแนะนำ Recruit ${rec.code}` : ""}` : ""}`, actor, legs: ([
     { owner_type: "parttime", owner_id: b.parttime_id, bucket: "pending", amount: -amt },

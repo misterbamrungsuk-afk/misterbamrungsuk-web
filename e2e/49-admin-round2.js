@@ -74,10 +74,11 @@ const un = (h) => h.replace(/<!-- -->/g, '').replace(/\\"/g, '"');
 
   // ── ยอดเงินเข้า: กดแถว → ผู้สมัครคนนั้น · ดูสลิป ──
   h = un(await (await fetch(B + '/admin/income', { headers: ADM })).text());
-  ok('income row → applicant (?q=MB)', h.includes(`"href":"/admin/applicants?q=${mb}"`));
-  ok('income row has slip link', h.includes('data-income-slip') && h.includes('/api/admin/applicants/file?path='));
-  const slipUrl = (h.match(/"slip":"(\/api\/admin\/applicants\/file\?path=[^"]+)"/) || [])[1];
-  r = slipUrl ? await fetch(B + slipUrl.replace(/\\u0026/g, '&'), { headers: ADM }) : null;
+  // สมัครฟรีแล้ว (28 ต.ค. 2569) ไม่มีค่าสมัครเข้า → ทดสอบกับเติมเงินลูกค้า (แถวค่าสมัครเก่ายังลิงก์ /admin/applicants?q=MB ตามโค้ด income.ts)
+  ok('income row → its page', h.includes('"href":"/admin/wallet"'));
+  ok('income row has slip link', h.includes('data-income-slip') && h.includes('/api/wallet/slip?id='));
+  const slipUrl = (h.match(/"slip":"(\/api\/wallet\/slip\?id=[^"]+)"/) || [])[1];
+  r = slipUrl ? await fetch(B + slipUrl, { headers: ADM }) : null;
   ok('slip image opens for admin', !!r && r.status === 200 && /^image\//.test(r.headers.get('content-type') || ''), r ? String(r.status) : 'no url');
 
   console.log(fails ? fails + ' FAILED' : 'ALL PASS');

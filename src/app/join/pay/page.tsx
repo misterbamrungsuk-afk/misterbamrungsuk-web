@@ -8,7 +8,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import QRCode from "qrcode";
 import { BankTransfer } from "@/components/bank-transfer";
-import { BANK, FEE_INCLUDES, FEE_NOTE, PACKAGES, type PackageKey } from "@/lib/join/config";
+import { BANK, FEE_INCLUDES, FEE_NOTE, PACKAGES, SIGNUP_FREE, type PackageKey } from "@/lib/join/config";
 import { dataUrlToFile, resizeImage } from "@/lib/join/form";
 import { promptPayPayload } from "@/lib/join/promptpay";
 import { Turnstile } from "@/components/turnstile";
@@ -73,7 +73,7 @@ function PayInner() {
     return () => clearTimeout(t);
   }, [ref, refInfo?.code]);
   // สมัครฟรี (ไม่มี QR/สลิป): ลิงก์เชิญพิเศษ หรือหมวดทอมหล่อ
-  const free = !!invite || tom;
+  const free = SIGNUP_FREE || !!invite || tom;
   // กำลังตรวจรหัสเชิญ → ยังไม่แสดง QR (กันสายเชิญฟรีเห็น QR แวบหนึ่ง)
   const [invChecking, setInvChecking] = useState(true);
 
@@ -188,7 +188,7 @@ function PayInner() {
           <Link href={invite ? `/join/i/${invite}` : tom ? "/join/tom" : "/join"} aria-label="ย้อนกลับ" className="shrink-0 w-11 h-11 rounded-full bg-[#251d1b] text-[#f3ead9] grid place-items-center hover:text-[#f3ead9]">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
           </Link>
-          <div className="min-w-0"><div className="text-[13px] text-[#e8c472] font-light">{invite ? (secretInv ? "✦ คำเชิญพิเศษ · Secret" : "✦ คำเชิญพิเศษ") : tom ? "ทอมหล่อ · ก่อนกรอกใบสมัคร" : "ก่อนกรอกใบสมัคร"}</div><div className="font-semibold text-[20px] leading-[1.35]">{invite ? "สมัครด้วยคำเชิญ" : tom ? "สมัครทอมหล่อ" : "ชำระค่าสมัคร"}</div></div>
+          <div className="min-w-0"><div className="text-[13px] text-[#e8c472] font-light">{invite ? (secretInv ? "✦ คำเชิญพิเศษ · Secret" : "✦ คำเชิญพิเศษ") : tom ? "ทอมหล่อ · ก่อนกรอกใบสมัคร" : "ก่อนกรอกใบสมัคร"}</div><div className="font-semibold text-[20px] leading-[1.35]">{invite ? "สมัครด้วยคำเชิญ" : tom ? "สมัครทอมหล่อ" : free ? "สมัคร Part-Time" : "ชำระค่าสมัคร"}</div></div>
         </div>
 
         {inviteErr && <p role="alert" className="m-0 mx-5 mt-2 rounded-xl text-[13.5px] text-[#ff8a9a]" style={{ padding: "10px 14px", background: "rgba(255,138,154,0.1)" }}>{inviteErr} · ยอดด้านล่างเป็นราคาสมัครปกติ</p>}
@@ -230,7 +230,7 @@ function PayInner() {
               <div style={{ height: 1, background: "rgba(243,234,217,0.07)", margin: "4px 0" }} />
               {items.map(([n, v]) => <div key={n} className="flex justify-between items-baseline gap-4 min-w-0"><span className="min-w-0">{n}</span><span className="whitespace-nowrap shrink-0 font-semibold text-[18px] text-[#e8c472]">{free ? "ฟรี" : baht(v)}</span></div>)}
               {items.length > 1 && <div className="flex justify-between items-baseline gap-4 min-w-0 pt-2 border-t border-[rgba(243,234,217,0.07)]"><span className="min-w-0 font-semibold">รวมที่ต้องโอน</span><span className="whitespace-nowrap shrink-0 font-bold text-[20px] text-[#e8c472]" data-total="1">{baht(amount)}</span></div>}
-              <div className="text-[13px] font-light">{!invite && tom ? "ทอมหล่อ: ไม่ต้องชำระค่าสมัครตอนนี้ · เมื่อเริ่มรับงาน ระบบหักค่าสมัครจากรายได้งานละ ฿500 จนครบ ฿10,000 แล้วเลิกหัก" : invite ? `✦ คำเชิญพิเศษ: ไม่ต้องชำระค่าสมัครตอนนี้ · ได้ระดับ ${invTier} ทันที · เมื่อเริ่มรับงาน ระบบหักค่าสมัครจากรายได้งานละ ฿500 จนครบ ฿10,000 แล้วเลิกหัก` : FEE_NOTE}</div>
+              <div className="text-[13px] font-light">{!invite && free ? "สมัครฟรี · เมื่อเริ่มรับงาน ระบบหักค่าสมัครจากรายได้งานละ ฿500 จนครบ ฿10,000 แล้วเลิกหัก" : invite ? `✦ คำเชิญพิเศษ: ไม่ต้องชำระค่าสมัครตอนนี้ · ได้ระดับ ${invTier} ทันที · เมื่อเริ่มรับงาน ระบบหักค่าสมัครจากรายได้งานละ ฿500 จนครบ ฿10,000 แล้วเลิกหัก` : FEE_NOTE}</div>
             </div>
             <div className="flex flex-col gap-2 bg-[#2c1a1f]" style={box}>
               <div className="font-semibold text-[17px]">ค่าสมัครรวม</div>
@@ -283,8 +283,8 @@ function PayInner() {
         <div role="dialog" aria-modal="true" aria-labelledby="paidT" className="fixed inset-0 z-50 flex justify-center items-center overflow-y-auto" style={{ background: "rgba(10,7,6,0.78)", padding: 20 }}>
           <div className="w-full max-w-[400px] rounded-[20px] bg-[#1b2322] flex flex-col items-center gap-[14px] text-center my-auto" style={{ padding: "28px 20px 20px" }}>
             <div className="w-[72px] h-[72px] rounded-full bg-[#e8c472] text-[#1b130b] grid place-items-center"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg></div>
-            <div id="paidT" className="font-semibold text-[22px] leading-[1.35] text-[#e8c472]">{invite ? `สมัครเรียบร้อย · ระดับ ${invTier}` : tom ? "สมัครเรียบร้อย · ทอมหล่อ" : "ได้รับข้อมูลแล้ว · รอทีมงานตรวจ"}</div>
-            <p className="m-0 text-[15px] leading-[1.7]">{free ? "ไม่มีค่าใช้จ่าย" : "ได้รับสลิปแล้ว ทีมงานตรวจภายใน 2 ชม. (09:00–22:00)"}<br />ระหว่างนี้ไปกรอกรายละเอียดในโปรไฟล์ได้เลย</p>
+            <div id="paidT" className="font-semibold text-[22px] leading-[1.35] text-[#e8c472]">{invite ? `สมัครเรียบร้อย · ระดับ ${invTier}` : tom ? "สมัครเรียบร้อย · ทอมหล่อ" : free ? "สมัครเรียบร้อย" : "ได้รับข้อมูลแล้ว · รอทีมงานตรวจ"}</div>
+            <p className="m-0 text-[15px] leading-[1.7]">{free ? "ไม่มีค่าใช้จ่ายตอนสมัคร" : "ได้รับสลิปแล้ว ทีมงานตรวจภายใน 2 ชม. (09:00–22:00)"}<br />ระหว่างนี้ไปกรอกรายละเอียดในโปรไฟล์ได้เลย</p>
             <Link href={`/join/profile/${done}`} className={cta + " hover:text-[#1b130b]"}>ไปที่โปรไฟล์ของฉัน</Link>
             <p className="m-0 text-[13.5px] leading-[1.6] text-[#e8c472]">ครั้งต่อไปเข้าที่ &quot;Part-Time เข้าสู่ระบบ&quot; ด้วยอีเมลและรหัสผ่านนี้</p>
             <div className="w-full rounded-2xl" style={{ padding: 14, background: "rgba(243,234,217,0.05)" }}><SaveLink mb={done} link={link} email={who.email.trim().toLowerCase()} /></div>

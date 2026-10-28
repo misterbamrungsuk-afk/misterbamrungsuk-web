@@ -105,7 +105,7 @@ const strip = (h) => h.replace(/<!-- -->/g, '');
   ok('earnings page: fee progress ฿1,000 / ฿10,000', h.includes('data-fee-card') && h.includes('฿1,000') && h.includes('฿10,000') && !h.includes('data-bond-card'));
   const T0 = tok('MBM-2610001');
   h = await (await fetch(B + `/join/profile/MBM-2610001/earnings?t=${encodeURIComponent(T0)}`)).text();
-  ok('paid-signup PT: no fee card', !h.includes('data-fee-card'));
+  ok('free signup (men) also shows fee card', h.includes('data-fee-card'));
   h = await (await fetch(B + '/join/terms')).text();
   ok('terms: fee ฿500/job up to ฿10,000', h.includes('10,000 บาท') && h.includes('งานละ 500 บาท'));
   const a = await J(await fetch(B + '/api/admin/wallet', { headers: ADM }));

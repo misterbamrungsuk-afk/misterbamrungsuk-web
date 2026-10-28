@@ -15,6 +15,9 @@ export default function RecruitApplyPage() {
           <h1 className="m-0 text-[26px] md:text-[32px] leading-[1.3] font-bold">สมัครเป็น Recruit</h1>
           <p className="m-0 text-[15px] text-[#d9c9b4]">แนะนำ Part-time รับ <b className="text-[#e8c472]">฿500 / คน</b> เมื่อผู้สมัครได้งานแรก · โบนัสรายเดือน ผู้สมัครทำครบ 15 งาน รับ ฿1,000 · ครบ 20 งาน รับ ฿2,000</p>
         </section>
+        {/* โปสเตอร์ Recruiter Program (บอสส่งมา 28 ต.ค. 2569) */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img data-recruit-poster src="/brand/recruit-poster.webp" alt="Recruiter Program — แนะนำ Part-time รับ 500 บาทต่อคน เมื่อ Part-time รับงานครั้งแรก · โบนัสรายเดือน รับงานครบ 15 งาน 1,000 บาท · ครบ 20 งาน 2,000 บาท" width={1054} height={1492} className="w-full h-auto rounded-[22px]" style={{ boxShadow: "0 14px 32px rgba(0,0,0,.45)" }} />
         <RecruitApplyForm />
       </main>
       <SiteFooter />

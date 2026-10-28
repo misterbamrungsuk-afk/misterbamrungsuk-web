@@ -9,6 +9,9 @@ export const BRAND = { name: "Mister Bamrungsuk", short: "MB", domain: "www.mist
 // ⚠️ ยอดชำระตอนสมัคร = "ค่าสมัคร" ยอดเดียว (รวมค่าอบรมแล้ว) · ไม่คืนเงินทุกกรณี (บอสกำหนด 20 ต.ค. 2569)
 //    เจ้าของเปลี่ยนตัวเลขได้ที่นี่ที่เดียว · สายคำเชิญจ่ายเต็มเท่ากัน (ลิงก์เชิญเป็นแค่ช่องทางเข้า)
 const fmtN = (n: number) => n.toLocaleString("en-US");
+/** สมัคร Part-Time ฟรีทุกคน (บอสสั่ง 28 ต.ค. 2569) — ไม่ต้องโอนตอนสมัคร · หักค่าสมัครจากงาน ฿500/งาน จนครบ ฿10,000 (work-bond.ts JOB_FEE) · false = กลับไปเก็บค่าสมัครตาม PACKAGES */
+export const SIGNUP_FREE = true;
+
 export const PACKAGES = {
   A: {
     name: "เพื่อนกินเที่ยว – ตามความสามารถพิเศษ",

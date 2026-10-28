@@ -7,15 +7,20 @@ import { findRep } from "@/lib/member/store";
 import { getMemberSettings } from "@/lib/member/tiers";
 import { AvatarEditor } from "@/components/avatar-editor";
 import { SalesWallet } from "./wallet";
+import { ADMIN_COOKIE, canAccess, verifySession } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "แดชบอร์ด Recruit — Mister Bamrungsuk", robots: { index: false } };
 
 // แดชบอร์ด Recruit ภายนอก (เข้าผ่านลิงก์ที่ทีมงานส่งให้ /sales/go?t=)
-export default async function SalesMe() {
-  const id = readSalesLink((await cookies()).get(SALES_COOKIE)?.value);
+export default async function SalesMe({ searchParams }: { searchParams: Promise<{ rep?: string }> }) {
+  // แอดมินเปิดดูหน้าของ Recruit คนใดก็ได้ (?rep=<id> · 28 ต.ค. 2569) — ดูอย่างเดียว ไม่ใช้คุกกี้ของ Recruit
+  const jar = await cookies();
+  const asRep = (await searchParams).rep;
+  const adminView = !!asRep && !!(await verifySession(jar.get(ADMIN_COOKIE)?.value).then((s) => s && canAccess(s.role, "/admin/sales")));
+  const id = adminView ? asRep! : readSalesLink(jar.get(SALES_COOKIE)?.value);
   const rep = id ? await findRep({ id }) : null;
-  if (!rep || rep.kind !== "external" || !rep.active) redirect("/recruit?expired=1");
+  if (!rep || rep.kind !== "external" || (!rep.active && !adminView)) redirect("/recruit?expired=1");
   const [sum, cfg] = await Promise.all([repSummary(rep), getMemberSettings()]);
   const h = await headers();
   const origin = `${h.get("x-forwarded-proto") ?? "https"}://${h.get("host") ?? "misterbamrungsuk.com"}`;
@@ -23,7 +28,8 @@ export default async function SalesMe() {
     <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9" }}>
       <BrandBar />
       <main className="mx-auto w-full max-w-[640px] flex flex-col gap-3.5" style={{ padding: "12px 16px 32px", lineHeight: 1.6 }}>
-        <div className="flex flex-col items-center gap-1"><AvatarEditor as="sales" letter={rep.name} size={104} /></div>
+        {adminView && <p data-admin-view className="m-0 rounded-xl text-[13.5px] text-[#1b130b] font-semibold text-center" style={{ padding: "10px 12px", background: "#e8c472" }}>แอดมินกำลังดูหน้าของ {rep.name} ({rep.code}) · ดูอย่างเดียว{!rep.active ? " · ปิดใช้งานอยู่" : ""}</p>}
+        {!adminView && <div className="flex flex-col items-center gap-1"><AvatarEditor as="sales" letter={rep.name} size={104} /></div>}
         <h1 className="m-0 text-[22px] font-semibold text-center">สวัสดี {rep.name} · Recruit</h1>
         <p className="m-0 -mt-2 text-center text-[13px] text-[#b5a596]">โค้ด {rep.code} · แตะรูปเพื่อเปลี่ยนรูปโปรไฟล์</p>
         <SalesWallet d={{
