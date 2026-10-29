@@ -8,7 +8,8 @@ import { PEOPLE } from "@/lib/home/people";
 import { getMemberSettings } from "@/lib/member/tiers";
 import { PT_ONLY } from "@/lib/site-gate";
 
-import { getSite } from "@/i18n/server";
+import { getLang, getSite } from "@/i18n/server";
+import { autoTranslate } from "@/lib/i18n/auto-translate";
 
 export async function generateMetadata() { return { title: (await getSite()).home.metaTitle }; }
 
@@ -37,6 +38,10 @@ export default async function HomePage() {
     const real = live.filter((p) => isTom(p) === tom), samples = PEOPLE.filter((p) => isTom(p) === tom);
     return [...real, ...samples.slice(0, Math.max(0, samples.length - real.length))];
   };
-  const people = [...fill(false), ...fill(true)];
+  const people0 = [...fill(false), ...fill(true)];
+  // EN / 中文: ชื่อเล่นที่ Part-Time จริงพิมพ์เอง → แปลงเป็นอักษรโรมันอัตโนมัติ (ตัวอย่างมีชื่อโรมันอยู่แล้ว)
+  const lang = await getLang();
+  const tr = lang === "th" ? null : await autoTranslate(lang, people0.filter((p) => p.real).map((p) => ({ kind: "name" as const, text: p.nick })));
+  const people = tr ? people0.map((p) => (p.real ? { ...p, nick: tr("name", p.nick) } : p)) : people0;
   return <HomeFeed showEarnings={show} people={people} me={me ? { name: prof?.name || me.email.split("@")[0] } : null} unread={unread} memberTier={prof?.member_tier ?? null} promo={{ gold: mcfg.tiers.gold, black: mcfg.tiers.black }} recruit={PT_ONLY} />;
 }

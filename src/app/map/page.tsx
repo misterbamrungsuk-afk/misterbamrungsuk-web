@@ -10,14 +10,17 @@ import { PT_ONLY } from "@/lib/site-gate";
 import { PreviewBanner } from "@/components/preview-banner";
 
 export const dynamic = "force-dynamic";
-import { getSite } from "@/i18n/server";
+import { getLang, getSite } from "@/i18n/server";
+import { autoTranslate } from "@/lib/i18n/auto-translate";
 
 export async function generateMetadata() { return { title: (await getSite()).map.metaTitle }; }
 
 // บอร์ด C-Map — หมุดเพื่อน (รูปโปรไฟล์ · ตำแหน่งตามย่านที่แจ้ง ไม่ใช่ตำแหน่งจริง) + หมุดสปาพาร์ทเนอร์ · Part-Time จริงถ้ามี ไม่งั้นตัวอย่าง
 export default async function MapPage() {
   const [all, blocked] = await Promise.all([getLivePeople().catch(() => []), myBlocked()]);
-  const live = all.filter((p) => !blocked.has(p.id));
+  const lang = await getLang();
+  const tr = lang === "th" ? null : await autoTranslate(lang, all.map((p) => ({ kind: "name" as const, text: p.nick })));
+  const live = all.filter((p) => !blocked.has(p.id)).map((p) => (tr ? { ...p, nick: tr("name", p.nick) } : p));
   const people: MapPerson[] = (live.length ? live : PEOPLE).map((p) => {
     const [lat, lng] = p.geo ? jitterSmall(p.geo, p.id) : jitter(coordsOf(p.prov, p.area), p.id);
     return { id: p.id, nick: p.nick, age: p.age, img: p.img, pos: p.pos, rating: p.rating, top: p.top, acts: p.acts, area: p.prov ? `${p.area} · ${p.prov}` : p.area, price: priceOf(p), ...(p.priceTBD ? { priceTBD: true } : {}), free: p.free, lat, lng, real: !!p.real };

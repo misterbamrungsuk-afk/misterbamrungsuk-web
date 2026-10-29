@@ -13,6 +13,7 @@ const title = (h) => /<title>([^<]*)/.exec(h)?.[1] ?? '';
   ok('default = Thai', htmlLang(h) === 'th' && title(h).includes('เลือกเพื่อนของคุณ') && h.includes('data-lang-switch="th"'));
   h = await get('/', 'en');
   ok('home EN: lang + title + labels', htmlLang(h) === 'en' && title(h).includes('Choose your companion') && h.includes('Dining &amp; outings') && h.includes('Gentlemen') && h.includes('data-lang-switch="en"'));
+  ok('home EN: offers banner not labelled "Ad/Ads" (ad blockers hide it)', h.includes('aria-label="Featured offers"') && !/aria-label="Ads?[ "]/.test(h));
   ok('home EN: no Thai heading/tabs', !h.includes('>เลือกเพื่อนของคุณ<') && !h.includes('>หนุ่มหล่อ<') && !h.includes('>เพื่อนในระบบ<'));
   h = await get('/', 'zh');
   ok('home 中文: lang zh-Hans + title + labels', htmlLang(h) === 'zh-Hans' && title(h).includes('选择您的社交伙伴') && h.includes('美食出游') && h.includes('帅气男士'));

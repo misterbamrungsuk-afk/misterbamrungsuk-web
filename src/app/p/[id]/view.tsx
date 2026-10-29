@@ -57,7 +57,8 @@ export function ProfileView({ p, reviews = [], vers = [], free = null, preview =
     if (d?.ok) setLiked(!!d.interested); else setLikeMsg(d?.error || T.likeErr);
   };
   const price = { 3: priceOf(p), 5: Math.round(priceOf(p) * 1.5) };
-  const where = placeT(p.prov ? `${p.area} · ${p.prov}` : `${p.area} · กรุงเทพฯ`, lang);
+  // ย่านที่ Part-Time ตั้งเอง ("แถว…") ไม่ต่อท้ายกรุงเทพฯ (อาจอยู่ต่างจังหวัด)
+  const where = placeT(p.prov ? `${p.area} · ${p.prov}` : p.area.startsWith("แถว") ? p.area : `${p.area} · กรุงเทพฯ`, lang);
   const round = "w-11 h-11 rounded-full grid place-items-center";
   const glass = { background: "rgba(8,6,6,.6)", border: "1px solid rgba(246,239,228,.2)" };
 
@@ -112,7 +113,7 @@ export function ProfileView({ p, reviews = [], vers = [], free = null, preview =
 
           {free && (
             <div className="rounded-2xl flex flex-col gap-2" style={{ padding: 14, border: "1px solid rgba(232,196,114,.55)", background: "rgba(232,196,114,0.08)" }}>
-              <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#7fd6a3] shrink-0" aria-hidden="true" /><b className="font-semibold text-[15px] text-[#e8c472]">{T.freeToday}</b><span className="text-[12.5px] font-light text-[#d9c9b4] truncate">{free.time} · {free.zone}</span></div>
+              <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#7fd6a3] shrink-0" aria-hidden="true" /><b className="font-semibold text-[15px] text-[#e8c472]">{T.freeToday}</b><span className="text-[12.5px] font-light text-[#d9c9b4] truncate">{free.time} · {placeT(free.zone, lang)}</span></div>
               {free.text && <p className="m-0 text-[13.5px] leading-[1.6]">{free.text}</p>}
               <div className="flex items-center gap-2.5 flex-wrap">
                 <button type="button" onClick={toggleLike} disabled={likeBusy} aria-pressed={liked} className="h-10 rounded-full text-[14px] font-semibold disabled:opacity-50" style={liked ? { padding: "0 18px", border: "1.5px solid #e8c472", color: "#e8c472", background: "transparent" } : { padding: "0 18px", background: "#e8c472", color: "#1b130b", border: "1.5px solid #e8c472" }}>{liked ? T.liked : T.like}</button>

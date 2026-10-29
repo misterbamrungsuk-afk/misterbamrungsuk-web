@@ -105,7 +105,7 @@ export type SiteDict = typeof th;
 
 const en: SiteDict = {
   intl: "en-SG",
-  common: { home: "Home", map: "Map", login: "Log in", register: "Sign up", myAccount: "My account", myBookings: "My bookings", notifications: "Notifications", close: "Close", later: "Maybe later", details: "View details", ad: "Ad", advertise: "Advertise with us ›", per3h: "/ 3 hrs", back: "Back", lang: "Language", soon: "Preview · Launching soon", years: (n) => `${n} yrs`, cm: (n) => `${n} cm`, people: (n) => `${n} people` },
+  common: { home: "Home", map: "Map", login: "Log in", register: "Sign up", myAccount: "My account", myBookings: "My bookings", notifications: "Notifications", close: "Close", later: "Maybe later", details: "View details", ad: "Promo", advertise: "Partner with us ›", per3h: "/ 3 hrs", back: "Back", lang: "Language", soon: "Preview · Launching soon", years: (n) => `${n} yrs`, cm: (n) => `${n} cm`, people: (n) => `${n} people` },
   acts: { eat: "Dining & outings", massage: "Relaxing massage", cafe: "Cafés", photo: "Photography", movie: "Movies", gym: "Fitness", chill: "Chill & lounge" },
   home: {
     metaTitle: "Mister Bamrungsuk — Choose your companion",
@@ -123,7 +123,7 @@ const en: SiteDict = {
     featured: "★ Featured",
     tomSoon: "Handsome Toms · coming soon", tomSoonSub: "Now recruiting our first group", tomApply: "Apply as a Tom ›",
     empty: "No matches yet. Try selecting fewer activities.",
-    adsLbl: "Ads", adN: (i, n, name) => `Ad ${i}/${n} · ${name}`, adDot: (i) => `Show ad ${i}`, unread: (n) => `${n} unread`,
+    adsLbl: "Featured offers", adN: (i, n, name) => `Offer ${i}/${n} · ${name}`, adDot: (i) => `Show offer ${i}`, unread: (n) => `${n} unread`,
     slides: [
       { kind: "Partner spa · Silom", name: "Bamrungsuk Spa", offer: "Members save 20%" },
       { kind: "Partner hotel · Sathorn", name: "The Sathorn Retreat", offer: "Member room rates" },
@@ -201,7 +201,7 @@ const en: SiteDict = {
 
 const zh: SiteDict = {
   intl: "zh-SG",
-  common: { home: "首页", map: "地图", login: "登录", register: "立即注册", myAccount: "我的账户", myBookings: "我的预约", notifications: "通知", close: "关闭", later: "稍后再说", details: "查看详情", ad: "广告", advertise: "广告合作 ›", per3h: "/ 3小时", back: "返回", lang: "语言", soon: "预览 · 即将上线", years: (n) => `${n}岁`, cm: (n) => `${n}厘米`, people: (n) => `${n}人` },
+  common: { home: "首页", map: "地图", login: "登录", register: "立即注册", myAccount: "我的账户", myBookings: "我的预约", notifications: "通知", close: "关闭", later: "稍后再说", details: "查看详情", ad: "推广", advertise: "商务合作 ›", per3h: "/ 3小时", back: "返回", lang: "语言", soon: "预览 · 即将上线", years: (n) => `${n}岁`, cm: (n) => `${n}厘米`, people: (n) => `${n}人` },
   acts: { eat: "美食出游", massage: "放松按摩", cafe: "咖啡馆", photo: "摄影", movie: "看电影", gym: "健身", chill: "休闲小坐" },
   home: {
     metaTitle: "Mister Bamrungsuk — 选择您的社交伙伴",
@@ -219,7 +219,7 @@ const zh: SiteDict = {
     featured: "★ 推荐",
     tomSoon: "帅气Tom · 即将推出", tomSoonSub: "首批招募进行中", tomApply: "报名成为Tom ›",
     empty: "暂无符合条件的伙伴，请尝试减少所选活动。",
-    adsLbl: "广告", adN: (i, n, name) => `广告 ${i}/${n} · ${name}`, adDot: (i) => `查看第${i}则广告`, unread: (n) => `${n}条未读`,
+    adsLbl: "精选优惠", adN: (i, n, name) => `优惠 ${i}/${n} · ${name}`, adDot: (i) => `查看第${i}个优惠`, unread: (n) => `${n}条未读`,
     slides: [
       { kind: "合作水疗 · 是隆", name: "Bamrungsuk 水疗", offer: "会员享8折" },
       { kind: "合作酒店 · 沙吞", name: "The Sathorn Retreat", offer: "会员专享房价" },
