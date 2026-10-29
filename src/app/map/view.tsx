@@ -9,18 +9,24 @@ import Link from "next/link";
 import type { LayerGroup, Map as LMap } from "leaflet";
 import type { Act } from "@/lib/home/people";
 import { sized } from "@/lib/thumb-url";
+import { LangSwitch, useI18n } from "@/i18n/provider";
+import { placeT, sampleNick } from "@/i18n/site";
 
 export type MapPerson = { id: string; nick: string; age: number; img: string; pos?: string; rating: string; top: boolean; acts: Act[]; area: string; price: number; priceTBD?: boolean; free: number; lat: number; lng: number; real: boolean };
 export type MapVenue = { id: string; name: string; area: string; lat: number; lng: number; sample?: boolean };
 
-const ACTS: [Act, string][] = [["eat", "กิน & เที่ยว"], ["massage", "นวดผ่อนคลาย"], ["cafe", "คาเฟ่"], ["photo", "ถ่ายรูป"], ["movie", "ดูหนัง"], ["gym", "ออกกำลัง"], ["chill", "นั่งชิล"]];
-const LABEL = Object.fromEntries(ACTS) as Record<Act, string>;
+const ACT_IDS: Act[] = ["eat", "massage", "cafe", "photo", "movie", "gym", "chill"];
 const baht = (n: number) => "฿" + n.toLocaleString("en-US");
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 const SPA = "M12 21c-5 0-8-3-8-7 3 0 6 1 8 4 2-3 5-4 8-4 0 4-3 7-8 7zM12 18c-2-3-2-7 0-11 2 4 2 8 0 11z";
 type Sel = { kind: "p"; id: string } | { kind: "v"; id: string } | null;
 
-export function MapView({ people, venues, sample }: { people: MapPerson[]; venues: MapVenue[]; sample: boolean }) {
+export function MapView({ people: people0, venues: venues0, sample }: { people: MapPerson[]; venues: MapVenue[]; sample: boolean }) {
+  // 3 ภาษา (src/i18n/site.ts): ชื่อย่าน/กิจกรรม/ชื่อตัวอย่างแปลตามภาษา · ค้นหาได้ทั้งชื่อไทยและชื่อที่แปลแล้ว
+  const { s: S, lang } = useI18n();
+  const M = S.map, C = S.common, LABEL = S.acts as Record<Act, string>;
+  const people = useMemo(() => people0.map((p) => ({ ...p, nick: sampleNick(p, lang), area0: p.area, area: placeT(p.area, lang) })), [people0, lang]);
+  const venues = useMemo(() => venues0.map((v) => ({ ...v, area0: v.area, area: placeT(v.area, lang) })), [venues0, lang]);
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<LMap | null>(null);
   const layer = useRef<LayerGroup | null>(null);
@@ -30,8 +36,9 @@ export function MapView({ people, venues, sample }: { people: MapPerson[]; venue
   const [sel, setSel] = useState<Sel>(null);
   const [me, setMe] = useState<[number, number] | null>(null);
 
-  const ps = useMemo(() => show === "v" ? [] : people.filter((p) => acts.every((a) => p.acts.includes(a)) && (!q.trim() || p.area.includes(q.trim()) || p.nick.includes(q.trim()))), [people, acts, q, show]);
-  const vs = useMemo(() => show === "p" ? [] : venues.filter((v) => !q.trim() || v.area.includes(q.trim()) || v.name.includes(q.trim())), [venues, q, show]);
+  const hit = (...xs: string[]) => { const t = q.trim().toLowerCase(); return !t || xs.some((x) => x.toLowerCase().includes(t)); };
+  const ps = useMemo(() => show === "v" ? [] : people.filter((p) => acts.every((a) => p.acts.includes(a)) && hit(p.area, p.area0, p.nick)), [people, acts, q, show]); // eslint-disable-line react-hooks/exhaustive-deps
+  const vs = useMemo(() => show === "p" ? [] : venues.filter((v) => hit(v.area, v.area0, v.name)), [venues, q, show]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // สร้างแผนที่ครั้งเดียว
   useEffect(() => {
@@ -104,32 +111,33 @@ export function MapView({ people, venues, sample }: { people: MapPerson[]; venue
         .mbme{width:18px;height:18px;border-radius:50%;background:#4ea1ff;border:3px solid #fff;box-shadow:0 0 0 8px rgba(78,161,255,.25)}
         .leaflet-container{background:#171211;font-family:inherit}
       `}</style>
-      <div ref={el} className="absolute inset-0" aria-label="แผนที่เพื่อนและสถานที่พาร์ทเนอร์" />
+      <div ref={el} className="absolute inset-0" aria-label={M.aria} />
 
       {/* บน: ย้อนกลับ · ค้นหา · กิจกรรม · ชั้นข้อมูล */}
       <div className="absolute inset-x-0 top-0 z-[500] flex flex-col gap-2 pointer-events-none" style={{ padding: "calc(12px + env(safe-area-inset-top)) 12px 0" }}>
         <div className="flex gap-2 pointer-events-auto max-w-[640px] w-full mx-auto">
-          <Link href="/" aria-label="ย้อนกลับ" className="w-11 h-11 shrink-0 rounded-full grid place-items-center text-[#f3ead9] hover:text-[#f3ead9]" style={glass}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg></Link>
+          <Link href="/" aria-label={C.back} className="w-11 h-11 shrink-0 rounded-full grid place-items-center text-[#f3ead9] hover:text-[#f3ead9]" style={glass}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg></Link>
           <label className="flex-1 min-w-0 h-11 rounded-full flex items-center gap-2 px-4" style={glass}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b5a596" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ค้นหาย่าน เช่น อโศก, ทองหล่อ" aria-label="ค้นหาย่าน" className="flex-1 min-w-0 bg-transparent outline-none text-[14px] text-[#f3ead9] placeholder:text-[#b5a596]" />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={M.search} aria-label={M.searchLbl} className="flex-1 min-w-0 bg-transparent outline-none text-[14px] text-[#f3ead9] placeholder:text-[#b5a596]" />
           </label>
+          <LangSwitch className="shrink-0 backdrop-blur-[10px]" />
         </div>
         <div className="flex gap-2 overflow-x-auto no-scrollbar pointer-events-auto max-w-[640px] w-full mx-auto">
-          {ACTS.map(([id, label]) => { const on = acts.includes(id); return <button key={id} type="button" aria-pressed={on} onClick={() => setActs((a) => (on ? a.filter((x) => x !== id) : [...a, id]))} className="shrink-0 h-9 px-3.5 rounded-full text-[13px] font-medium" style={chip(on)}>{label}</button>; })}
+          {ACT_IDS.map((id) => { const label = LABEL[id]; const on = acts.includes(id); return <button key={id} type="button" aria-pressed={on} onClick={() => setActs((a) => (on ? a.filter((x) => x !== id) : [...a, id]))} className="shrink-0 h-9 px-3.5 rounded-full text-[13px] font-medium" style={chip(on)}>{label}</button>; })}
         </div>
         <div className="flex justify-between items-center gap-2 pointer-events-auto max-w-[640px] w-full mx-auto">
           <div className="flex rounded-full p-1" style={glass}>
-            {([["all", "ทั้งหมด"], ["p", "เพื่อน"], ["v", "พาร์ทเนอร์"]] as const).map(([k, l]) => <button key={k} type="button" aria-pressed={show === k} onClick={() => setShow(k)} className="h-8 px-3 rounded-full text-[12.5px] font-semibold" style={{ background: show === k ? "#e8c472" : "transparent", color: show === k ? "#1b130b" : "#f3ead9" }}>{l}</button>)}
+            {([["all", M.layers.all], ["p", M.layers.p], ["v", M.layers.v]] as const).map(([k, l]) => <button key={k} type="button" aria-pressed={show === k} onClick={() => setShow(k)} className="h-8 px-3 rounded-full text-[12.5px] font-semibold" style={{ background: show === k ? "#e8c472" : "transparent", color: show === k ? "#1b130b" : "#f3ead9" }}>{l}</button>)}
           </div>
-          <span className="rounded-full text-[12px] font-light px-3 py-1.5" style={glass}><b className="text-[#e8c472] font-semibold">{ps.length}</b> เพื่อน · <b className="text-[#e8c472] font-semibold">{vs.length}</b> พาร์ทเนอร์</span>
+          {(() => { const [a, b, c, d] = M.count(ps.length, vs.length); return <span className="rounded-full text-[12px] font-light px-3 py-1.5" style={glass}><b className="text-[#e8c472] font-semibold">{a}</b>{b}<b className="text-[#e8c472] font-semibold">{c}</b>{d}</span>; })()}
         </div>
       </div>
 
       {/* ขวา: ตำแหน่งของฉัน · ดูทั้งหมด */}
       <div className="absolute right-3 z-[500] flex flex-col gap-2" style={{ bottom: sel ? 300 : 190 }}>
-        <button type="button" onClick={locate} aria-label="ไปที่ตำแหน่งของฉัน" className="w-11 h-11 rounded-full grid place-items-center text-[#e8c472]" style={glass}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /><circle cx="12" cy="12" r="8" /></svg></button>
-        <button type="button" onClick={fitAll} aria-label="ดูหมุดทั้งหมด" className="w-11 h-11 rounded-full grid place-items-center text-[#e8c472]" style={glass}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg></button>
+        <button type="button" onClick={locate} aria-label={M.locate} className="w-11 h-11 rounded-full grid place-items-center text-[#e8c472]" style={glass}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /><circle cx="12" cy="12" r="8" /></svg></button>
+        <button type="button" onClick={fitAll} aria-label={M.fit} className="w-11 h-11 rounded-full grid place-items-center text-[#e8c472]" style={glass}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg></button>
       </div>
 
       {/* ล่าง: แผ่นรายละเอียด หรือ การ์ดเลื่อน */}
@@ -140,33 +148,33 @@ export function MapView({ people, venues, sample }: { people: MapPerson[]; venue
               <img src={sized(sp.img, 240)} alt={sp.nick} className="w-[84px] h-[104px] rounded-2xl object-cover shrink-0" style={sp.pos ? { objectPosition: sp.pos } : undefined} />
               <div className="min-w-0 flex-1 flex flex-col gap-1">
                 <div className="flex justify-between items-center gap-2"><b className="text-[18px] font-semibold">{sp.nick}{sp.age ? `, ${sp.age}` : ""}</b><span className="text-[13px] text-[#e8c472]">★ {sp.rating}</span></div>
-                <div className="text-[12.5px] font-light text-[#d9c9b4]">{sp.area}{me ? ` · ห่างประมาณ ${kmText(km({ lat: me[0], lng: me[1] }, sp))}` : ""}</div>
+                <div className="text-[12.5px] font-light text-[#d9c9b4]">{sp.area}{me ? M.away(kmText(km({ lat: me[0], lng: me[1] }, sp))) : ""}</div>
                 <div className="flex flex-wrap gap-1">{sp.acts.slice(0, 3).map((a) => <span key={a} className="text-[11.5px] font-light rounded-full px-2 py-0.5" style={{ border: "1px solid rgba(243,234,217,0.12)" }}>{LABEL[a]}</span>)}</div>
-                <div className="font-semibold text-[#e8c472]">{sp.priceTBD ? "฿xx,xxx" : baht(sp.price)} <span className="text-[11px] font-light text-[#b5a596]">/ 3 ชม.</span></div>
+                <div className="font-semibold text-[#e8c472]">{sp.priceTBD ? "฿xx,xxx" : baht(sp.price)} <span className="text-[11px] font-light text-[#b5a596]">{C.per3h}</span></div>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <button type="button" onClick={() => setSel(null)} className="h-11 rounded-xl text-[14px] font-semibold" style={{ background: "rgba(243,234,217,0.1)" }}>ปิด</button>
-              <Link href={`/p/${sp.id}`} className="h-11 rounded-xl bg-[#e8c472] text-[#1b130b] text-[14px] font-semibold grid place-items-center hover:text-[#1b130b]">ดูโปรไฟล์</Link>
+              <button type="button" onClick={() => setSel(null)} className="h-11 rounded-xl text-[14px] font-semibold" style={{ background: "rgba(243,234,217,0.1)" }}>{C.close}</button>
+              <Link href={`/p/${sp.id}`} className="h-11 rounded-xl bg-[#e8c472] text-[#1b130b] text-[14px] font-semibold grid place-items-center hover:text-[#1b130b]">{M.profile}</Link>
             </div>
           </div>
         ) : sv ? (
           <div className="mx-3 max-w-[560px] md:mx-auto rounded-[22px] p-4 flex flex-col gap-3" style={{ ...glass, background: "rgba(33,26,24,.96)" }}>
-            <div><div className="text-[12px] font-light text-[#e8c472]">สถานที่พาร์ทเนอร์ · สปา{sv.sample ? " (ตัวอย่าง)" : ""}</div><b className="text-[18px] font-semibold">{sv.name}</b><div className="text-[12.5px] font-light text-[#d9c9b4]">{sv.area} · นัดเพื่อนมาที่นี่ได้ (เปิดให้จองเร็ว ๆ นี้)</div></div>
-            <button type="button" onClick={() => setSel(null)} className="h-11 rounded-xl text-[14px] font-semibold" style={{ background: "rgba(243,234,217,0.1)" }}>ปิด</button>
+            <div><div className="text-[12px] font-light text-[#e8c472]">{M.venue(!!sv.sample)}</div><b className="text-[18px] font-semibold">{sv.name}</b><div className="text-[12.5px] font-light text-[#d9c9b4]">{sv.area} · {M.venueNote}</div></div>
+            <button type="button" onClick={() => setSel(null)} className="h-11 rounded-xl text-[14px] font-semibold" style={{ background: "rgba(243,234,217,0.1)" }}>{C.close}</button>
           </div>
         ) : (
           <div className="flex gap-2.5 overflow-x-auto no-scrollbar px-3 md:justify-center">
-            {ps.length === 0 && vs.length === 0 && <div className="mx-auto rounded-2xl px-4 py-3 text-[13px] font-light" style={glass}>ไม่พบในย่านนี้ ลองค้นหาย่านอื่นหรือเอาตัวกรองออก</div>}
+            {ps.length === 0 && vs.length === 0 && <div className="mx-auto rounded-2xl px-4 py-3 text-[13px] font-light" style={glass}>{M.none}</div>}
             {ps.map((p) => (
               <button key={p.id} type="button" onClick={() => focus(p.lat, p.lng, { kind: "p", id: p.id })} className="shrink-0 w-[220px] rounded-2xl flex gap-2.5 p-2 text-left text-[#f3ead9]" style={{ ...glass, background: "rgba(33,26,24,.94)" }}>
                 <img src={sized(p.img, 240)} alt="" className="w-[64px] h-[80px] rounded-xl object-cover shrink-0" style={p.pos ? { objectPosition: p.pos } : undefined} />
-                <span className="min-w-0 flex flex-col gap-0.5"><b className="font-semibold text-[14px] truncate">{p.nick}{p.age ? `, ${p.age}` : ""}</b><span className="text-[11.5px] font-light text-[#d9c9b4] truncate">★ {p.rating} · {me ? `~${kmText(km({ lat: me[0], lng: me[1] }, p))}` : p.area}</span><span className="text-[13px] font-semibold text-[#e8c472] mt-auto">{p.priceTBD ? "฿xx,xxx" : baht(p.price)}<span className="text-[11.5px] font-light text-[#b5a596]"> / 3 ชม.</span></span></span>
+                <span className="min-w-0 flex flex-col gap-0.5"><b className="font-semibold text-[14px] truncate">{p.nick}{p.age ? `, ${p.age}` : ""}</b><span className="text-[11.5px] font-light text-[#d9c9b4] truncate">★ {p.rating} · {me ? `~${kmText(km({ lat: me[0], lng: me[1] }, p))}` : p.area}</span><span className="text-[13px] font-semibold text-[#e8c472] mt-auto">{p.priceTBD ? "฿xx,xxx" : baht(p.price)}<span className="text-[11.5px] font-light text-[#b5a596]"> {C.per3h}</span></span></span>
               </button>
             ))}
           </div>
         )}
-        {sample && !sel && <p className="m-0 mt-2 text-center text-[11px] font-light text-[#b5a596]">ข้อมูลตัวอย่าง · ตำแหน่งบนแผนที่เป็นย่านโดยประมาณ ไม่ใช่ตำแหน่งจริง</p>}
+        {sample && !sel && <p className="m-0 mt-2 text-center text-[11px] font-light text-[#b5a596]">{M.sample}</p>}
       </div>
     </div>
   );

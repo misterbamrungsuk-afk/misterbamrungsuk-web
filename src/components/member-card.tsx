@@ -1,4 +1,6 @@
+"use client";
 /* eslint-disable @next/next/no-img-element */
+import { useI18n } from "@/i18n/provider";
 // บัตรสมาชิกดิจิทัล — Gold = แดงเลือดหมู-ทอง · Black = ดำ-ทอง · ใช้ในหน้าเมมเบอร์ / บัญชี / ป๊อปอัปหน้าแรก (ตัวอย่าง)
 export type CardTier = "gold" | "black";
 export const TIER_LOOK: Record<CardTier, { bg: string; ring: string; label: string; text: string }> = {
@@ -8,7 +10,8 @@ export const TIER_LOOK: Record<CardTier, { bg: string; ring: string; label: stri
 
 export function MemberCard({ tier, name, no, since, points, sample = false, className = "" }: { tier: CardTier; name: string; no?: string | null; since?: string | null; points?: number; sample?: boolean; className?: string }) {
   const L = TIER_LOOK[tier];
-  const year = since ? new Date(since).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", month: "short", year: "2-digit" }) : "—";
+  const { lang, s: S } = useI18n();
+  const year = since ? new Date(since).toLocaleDateString(S.intl, { timeZone: "Asia/Bangkok", month: "short", year: "2-digit" }) : "—";
   return (
     <div className={`@container relative w-full max-w-[380px] aspect-[1.586] rounded-[18px] overflow-hidden text-left ${className}`}
       style={{ background: L.bg, boxShadow: `0 0 0 1.5px ${L.ring}, 0 14px 40px rgba(0,0,0,.45)`, color: L.text }}>
@@ -27,7 +30,7 @@ export function MemberCard({ tier, name, no, since, points, sample = false, clas
           </span>
           <span className="text-right">
             <span className="block text-[2.8cqw] tracking-[.22em] font-semibold whitespace-nowrap">{L.label}</span>
-            {sample && <span className="inline-block mt-[1cqw] rounded-full px-[2cqw] text-[2.8cqw] font-semibold text-[#1b130b]" style={{ background: L.ring }}>ตัวอย่าง</span>}
+            {sample && <span className="inline-block mt-[1cqw] rounded-full px-[2cqw] text-[2.8cqw] font-semibold text-[#1b130b]" style={{ background: L.ring }}>{lang === "th" ? "ตัวอย่าง" : lang === "zh" ? "示例" : "Sample"}</span>}
           </span>
         </div>
         {/* ชิปทอง */}
@@ -38,7 +41,7 @@ export function MemberCard({ tier, name, no, since, points, sample = false, clas
             <span className="block text-[3.2cqw] tracking-[.14em] tabular-nums opacity-90">{no || "MBM •••• ••••"}</span>
           </span>
           <span className="text-right shrink-0 text-[2.9cqw] leading-[1.5] opacity-95">
-            <span className="block">ตั้งแต่ {year}</span>
+            <span className="block">{lang === "th" ? "ตั้งแต่" : lang === "zh" ? "自" : "Since"} {year}</span>
             {typeof points === "number" && <span className="block font-semibold text-[3.4cqw]">{points.toLocaleString("th-TH")} แต้ม</span>}
           </span>
         </div>

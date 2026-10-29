@@ -10,7 +10,9 @@ import { PT_ONLY } from "@/lib/site-gate";
 import { PreviewBanner } from "@/components/preview-banner";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "แผนที่ — Mister Bamrungsuk" };
+import { getSite } from "@/i18n/server";
+
+export async function generateMetadata() { return { title: (await getSite()).map.metaTitle }; }
 
 // บอร์ด C-Map — หมุดเพื่อน (รูปโปรไฟล์ · ตำแหน่งตามย่านที่แจ้ง ไม่ใช่ตำแหน่งจริง) + หมุดสปาพาร์ทเนอร์ · Part-Time จริงถ้ามี ไม่งั้นตัวอย่าง
 export default async function MapPage() {

@@ -8,7 +8,9 @@ import { PEOPLE } from "@/lib/home/people";
 import { getMemberSettings } from "@/lib/member/tiers";
 import { PT_ONLY } from "@/lib/site-gate";
 
-export const metadata = { title: "Mister Bamrungsuk — เลือกเพื่อนของคุณ" };
+import { getSite } from "@/i18n/server";
+
+export async function generateMetadata() { return { title: (await getSite()).home.metaTitle }; }
 
 // หน้าแรกลูกค้า (บอร์ด C-Home): ค้นหาเพื่อน + ทางแยก ร่วมงานกับเรา / สินค้า / โปรไฟล์ Part-Time + เมนูลูกค้า
 // หน้าตัวอย่างสำหรับผู้สนใจร่วมทีมแยกไปที่ /join/showcase

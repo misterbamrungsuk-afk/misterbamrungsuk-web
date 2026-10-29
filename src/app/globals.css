@@ -535,3 +535,8 @@ html { scroll-behavior: smooth; }
 .rc-light :is(section, [data-sales-login]) [style*="background:rgba(232,196,114,.18)"] { background: #f6ecd2 !important; }
 .rc-light :is(section:not(.grid), section.grid > div, [data-sales-login]) { font-weight: 400; }
 .rc-light :is(section, [data-sales-login]) :is(.text-\[\#b5a596\], .text-\[\#d9c9b4\], label) { font-weight: 500; }
+
+/* จีนตัวย่อ (หน้าลูกค้า 3 ภาษา · 29 ต.ค. 2569): ฟอนต์ Noto Sans SC · บรรทัดห่างขึ้น */
+/* ตัวละตินยังเป็น IBM Plex · ตัวจีนตกไปที่ Noto Sans SC (Plex ไม่มีตัวจีน) */
+html:lang(zh) { --font-sans: var(--font-plex), var(--font-sc), "PingFang SC", "Microsoft YaHei", system-ui, sans-serif; --font-display: var(--font-kanit), var(--font-sc), "PingFang SC", "Microsoft YaHei", sans-serif; }
+html:lang(zh) p { line-height: 1.75; }

@@ -34,22 +34,22 @@ const icons = {
 type Tab = { href: string; key: keyof typeof icons; label: string; center?: boolean; badge?: number; match?: RegExp };
 
 export function TabBar({ unread = 0 }: { unread?: number }) {
-  const { t, lang } = useI18n();
+  const { t, lang, s } = useI18n();
   const path = usePathname();
   const th = lang === "th";
   // เมนูล่างเปลี่ยนตามโหมด: ลูกค้า / Part-Time
   // โหมด Part-Time เดิมเลิกใช้ (Part-Time ใช้หน้า /join/profile/[mb]) → เมนูลูกค้าเสมอ
   const tabs: Tab[] = [
         // บอร์ด C-Home: หน้าแรก · แผนที่ · เรียกด่วน (ปุ่มทองกลาง) · แชท · บัญชี
-        { href: "/", key: "home", label: "หน้าแรก", match: /^\/$|^\/home$/ },
-        { href: "/map", key: "map", label: "แผนที่" },
-        { href: "/quick", key: "quick", label: "เรียกด่วน", center: true },
-        { href: "/chat", key: "chat", label: "แชท", badge: unread },
-        { href: "/profile", key: "profile", label: "บัญชี" },
+        { href: "/", key: "home", label: s.tab.home, match: /^\/$|^\/home$/ },
+        { href: "/map", key: "map", label: s.tab.map },
+        { href: "/quick", key: "quick", label: s.tab.quick, center: true },
+        { href: "/chat", key: "chat", label: s.tab.chat, badge: unread },
+        { href: "/profile", key: "profile", label: s.tab.profile },
       ];
 
   return (
-    <nav aria-label="เมนูหลัก" className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[640px] z-40 font-light md:rounded-t-2xl" style={{ background: "#251d1b", borderTop: "1px solid rgba(243,234,217,0.07)", color: "#b5a596", paddingBottom: "max(14px, env(safe-area-inset-bottom))" }}>
+    <nav aria-label={s.tab.aria} className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[640px] z-40 font-light md:rounded-t-2xl" style={{ background: "#251d1b", borderTop: "1px solid rgba(243,234,217,0.07)", color: "#b5a596", paddingBottom: "max(14px, env(safe-area-inset-bottom))" }}>
       <div className="grid grid-cols-5 h-[66px] items-center text-center">
         {tabs.map((tab) => {
           const active = tab.match ? tab.match.test(path) : path === tab.href || path.startsWith(tab.href + "/");

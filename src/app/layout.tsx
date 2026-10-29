@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo_Black, Cormorant_Garamond, IBM_Plex_Sans_Thai, Kanit, Noto_Sans_Thai } from "next/font/google";
+import { Archivo_Black, Cormorant_Garamond, IBM_Plex_Sans_Thai, Kanit, Noto_Sans_SC, Noto_Sans_Thai } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/i18n/provider";
+import { getLang, htmlLang } from "@/i18n/server";
 import { PwaRegister } from "@/components/pwa-register";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { CookieConsent } from "@/components/cookie-consent";
@@ -15,6 +16,8 @@ const plex = IBM_Plex_Sans_Thai({ subsets: ["thai", "latin"], weight: ["400", "5
 const kanit = Kanit({ subsets: ["thai", "latin"], weight: ["500", "600", "700", "800"], variable: "--font-kanit" });
 const noto = Noto_Sans_Thai({ subsets: ["thai", "latin"], weight: ["100", "300", "400", "600", "700"], variable: "--font-noto" });
 const archivo = Archivo_Black({ subsets: ["latin"], weight: "400", variable: "--font-archivo" });
+// จีนตัวย่อ (สิงคโปร์) — โหลดตาม unicode-range เฉพาะตัวอักษรที่ใช้ ไม่ preload (ไฟล์ใหญ่)
+const notoSC = Noto_Sans_SC({ weight: ["400", "500", "700"], preload: false, display: "swap", variable: "--font-sc" });
 const cormorant = Cormorant_Garamond({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-cormorant" });
 
 export const metadata: Metadata = {
@@ -38,13 +41,14 @@ export const viewport: Viewport = {
   themeColor: "#0e0a0a",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const lang = await getLang();
   return (
-    <html lang="th" className={`${plex.variable} ${kanit.variable} ${cormorant.variable} ${noto.variable} ${archivo.variable}`}>
+    <html lang={htmlLang(lang)} className={`${plex.variable} ${kanit.variable} ${cormorant.variable} ${noto.variable} ${archivo.variable} ${notoSC.variable}`}>
       {/* จับ error ตั้งแต่ก่อน React hydrate (เช่น #418) ไว้ในคิว → ErrorReporter ส่งต่อ */}
       <head><script dangerouslySetInnerHTML={{ __html: EARLY_ERROR_SCRIPT }} /></head>
       <body>
-        <I18nProvider>{children}</I18nProvider>
+        <I18nProvider initial={lang}>{children}</I18nProvider>
         <PwaRegister />
         <ScrollReveal />
         <CookieConsent />
