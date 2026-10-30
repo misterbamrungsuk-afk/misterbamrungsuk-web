@@ -69,9 +69,9 @@ export function TrafficBoard({ s, days, ready }: { s: TrafficSummary; days: numb
 
       <div data-traffic-kpi className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2.5">
         {kpi.map(([k, v, sub], i) => (
-          <div key={k} className={`${CARD} px-4 py-3.5`} style={{ borderColor: LINE, background: i === 0 ? "linear-gradient(150deg, rgba(240,200,90,.16), #1c1414 70%)" : undefined }}>
+          <div key={k} className={`${CARD} px-4 py-3.5`} style={{ borderColor: i === 0 ? "#d4b25c" : LINE, background: i === 0 ? "#fbf3df" : undefined }}>
             <div className="text-[12px] text-[#cdbfb3]">{k}</div>
-            <div className="font-lux font-bold text-[26px] leading-tight" style={{ color: i === 0 ? "#ffd76a" : "#2a1d1a" }}>{v}</div>
+            <div className="font-lux font-bold text-[26px] leading-tight" style={{ color: i === 0 ? "#8a6516" : "#2a1d1a" }}>{v}</div>
             <div className="text-[11.5px] text-[#9a8a85]">{sub}</div>
           </div>
         ))}
@@ -79,14 +79,14 @@ export function TrafficBoard({ s, days, ready }: { s: TrafficSummary; days: numb
 
       {/* ข้อแนะนำสำหรับยิงโฆษณา (สรุปจากข้อมูลจริงในช่วงนี้) */}
       {s.views > 0 && (
-        <div data-ad-insights className={`${CARD} px-4 py-3.5 flex flex-col gap-1.5`} style={{ borderColor: "rgba(127,214,163,.45)", background: "linear-gradient(150deg, rgba(127,214,163,.10), #1c1414 70%)" }}>
+        <div data-ad-insights className={`${CARD} px-4 py-3.5 flex flex-col gap-1.5`} style={{ borderColor: "rgba(47,122,70,.35)", background: "#eef6f0" }}>
           <b className="text-[14.5px] text-[#7fd6a3]">ข้อแนะนำสำหรับยิงโฆษณา</b>
-          <ul className="m-0 pl-5 flex flex-col gap-1 text-[13px] text-[#e7ddd4]">
+          <ul className="m-0 pl-5 flex flex-col gap-1 text-[13.5px] text-[#2a1d1a] leading-[1.7]">
             <li>คนเข้าเว็บมากที่สุดช่วง <b>{String(peak).padStart(2, "0")}:00–{String((peak + 1) % 24).padStart(2, "0")}:00 น.</b> · ตั้งเวลาโฆษณาให้ครอบช่วงนี้</li>
             {bestSrc && <li>ช่องทางที่พาคนมามากที่สุด: <b>{bestSrc}</b> ({n(s.sources[0][1])} รอบ)</li>}
             <li>เข้าจากมือถือ <b>{mobilePct}%</b> · {mobilePct >= 60 ? "ทำภาพ/วิดีโอโฆษณาแนวตั้ง (9:16) เป็นหลัก" : "ใช้ทั้งภาพแนวตั้งและแนวนอน"}</li>
             {longest && <li>หน้าที่คนอยู่นานที่สุด: <b>{pageName(longest.path)}</b> (เฉลี่ย {dur(longest.avgMs)}) · ใช้เป็นหน้าปลายทางของโฆษณาได้</li>}
-            <li>ติด <code className="text-[#f0c75a]">?utm_source=facebook&amp;utm_campaign=ชื่อแคมเปญ</code> ท้ายลิงก์โฆษณา เพื่อดูผลแยกแคมเปญในหน้านี้</li>
+            <li>ติด <code className="text-[#8a6516] bg-white rounded px-1">?utm_source=facebook&amp;utm_campaign=ชื่อแคมเปญ</code> ท้ายลิงก์โฆษณา เพื่อดูผลแยกแคมเปญในหน้านี้</li>
           </ul>
         </div>
       )}
