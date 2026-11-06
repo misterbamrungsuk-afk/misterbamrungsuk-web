@@ -81,7 +81,8 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+  // หลังบ้านการเงิน /finance ใช้ session + กฎสิทธิ์เดียวกับ /admin
+  if (pathname === "/admin" || pathname.startsWith("/admin/") || pathname === "/finance" || pathname.startsWith("/finance/")) {
     const admin = await verifySession(request.cookies.get(ADMIN_COOKIE)?.value);
     if (!admin) {
       const url = request.nextUrl.clone();

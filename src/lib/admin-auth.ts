@@ -50,6 +50,7 @@ export const PATH_ROLES: { prefix: string; roles: AdminRole[] }[] = [
   { prefix: "/admin/errors", roles: ["super"] },
   { prefix: "/admin/audit", roles: ["super", "finance", "cs", "kyc"] },
   { prefix: "/admin/appeals", roles: ["super", "cs"] },
+  { prefix: "/finance", roles: ["super", "finance"] }, // หลังบ้านวางแผนการเงิน (path แยก) — กรอกต้นทุน/เคส/%/ค่าใช้จ่าย
   { prefix: "/admin", roles: ["super", "finance", "cs", "kyc"] }, // หน้าภาพรวม (ต้องอยู่ท้ายสุด)
 ];
 

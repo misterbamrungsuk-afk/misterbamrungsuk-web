@@ -11,7 +11,7 @@ export default async function AdminLoginPage({ searchParams }: { searchParams: P
   const demo = usingDemoAccounts() && adminLoginEnabled();
   const demoRoles = Object.keys(DEMO_ADMIN_EMAILS) as AdminRole[];
   // ป้องกัน open redirect: รับเฉพาะ path ภายใน /admin
-  const next = sp.next?.startsWith("/admin") && !sp.next.startsWith("//") ? sp.next : "";
+  const next = (sp.next?.startsWith("/admin") || sp.next === "/finance" || sp.next?.startsWith("/finance/")) && !sp.next.startsWith("//") ? sp.next : "";
 
   return (
     <main className="min-h-dvh grid lg:grid-cols-[520px_1fr] bg-[#0e0a0a] text-[#f6efe4] font-lux-body">
