@@ -18,14 +18,22 @@ export interface FinancePlan {
   expenses: FinExpense[];        // ค่าใช้จ่ายรายเดือน
   pending: FinItem[];            // รายการที่ต้องตั้งงบเพิ่ม (0 = ยังไม่ใส่งบ)
   target: { profit: number; days: number; serviceId: string };
+  monthCount?: number;           // จำนวนเดือนของแผน (ค่าเริ่มต้น 18)
+  cashTargets?: Record<string, number>; // For Cash รายเดือน
   history: { at: string; by: string; note: string }[];
 }
 
-export const MONTHS = Array.from({ length: 18 }, (_, i) => `M${i + 1}`);
+export const MAX_MONTHS = 60;
+/** รายชื่อเดือนของแผน M1..Mn (n = plan.monthCount, ค่าเริ่มต้น 18) */
+export const monthList = (n = 18) => Array.from({ length: Math.min(MAX_MONTHS, Math.max(1, Math.round(n))) }, (_, i) => `M${i + 1}`);
+export const MONTHS = monthList(18);
+export const monthsOf = (p: FinancePlan) => monthList(p.monthCount ?? 18);
+/** For Cash ของเดือน (ตั้งรายเดือนได้ ไม่ตั้ง = เป้ากำไรหลัก) */
+export const cashTargetOf = (p: FinancePlan, m: string) => p.cashTargets?.[m] ?? p.target.profit;
 /** M1 = ต.ค. 2569 (Oct 2026) แล้วนับต่อไปทีละเดือน */
 export const MONTH_START = { year: 2026, month: 9 }; // month 0-based
 export function monthLabel(m: string, lang: "th" | "en" = "th") {
-  const i = MONTHS.indexOf(m);
+  const i = Number(/^M(\d+)$/.exec(m)?.[1] ?? 0) - 1;
   if (i < 0) return m;
   const d = new Date(Date.UTC(MONTH_START.year, MONTH_START.month + i, 1));
   return d.toLocaleDateString(lang === "th" ? "th-TH" : "en-US", { month: "short", year: "2-digit", timeZone: "UTC" });
@@ -166,7 +174,12 @@ export function cleanPlan(raw: unknown): Omit<FinancePlan, "history"> {
   if (ids.size !== services.length) throw new Error("รหัสบริการซ้ำ");
   const mIn = (b.months ?? {}) as Record<string, Record<string, unknown>>;
   const months: FinancePlan["months"] = {};
-  for (const m of MONTHS) {
+  const monthCount = Math.round(num(b.monthCount ?? 18, 1, MAX_MONTHS, "จำนวนเดือน"));
+  const ml = monthList(monthCount);
+  const cIn = (b.cashTargets ?? {}) as Record<string, unknown>;
+  const cashTargets: Record<string, number> = {};
+  for (const m of ml) if (cIn[m] != null && cIn[m] !== "") cashTargets[m] = num(cIn[m], -1e10, 1e10, `For Cash ${m}`);
+  for (const m of ml) {
     if (!mIn[m]) continue;
     const row: Record<string, number> = {};
     for (const s of services) { const n = num(mIn[m][s.id] ?? 0, 0, 100_000, `จำนวนรอบ ${m}`); if (n) row[s.id] = Math.round(n); }
@@ -186,6 +199,8 @@ export function cleanPlan(raw: unknown): Omit<FinancePlan, "history"> {
       return { id: id(x.id), name: txt(x.name, "ค่าใช้จ่าย"), kind, value: kind === "fixed" ? num(x.value, 0, 1e10, "ค่าใช้จ่าย") : num(x.value, 0, 1, "เปอร์เซ็นต์"), ...(x.noncash ? { noncash: true } : {}) };
     }),
     pending: list(b.pending, 20, (x) => ({ id: id(x.id), name: txt(x.name, "รายการ"), amount: num(x.amount, 0, 1e10, "งบ") })),
+    monthCount,
+    cashTargets,
     target: { profit: num(t.profit, 0, 1e10, "เป้ากำไร"), days: Math.round(num(t.days, 1, 31, "วันทำงาน")), serviceId: ids.has(String(t.serviceId)) ? String(t.serviceId) : services[0].id },
   };
 }
