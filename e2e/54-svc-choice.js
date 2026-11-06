@@ -10,7 +10,7 @@ const pressed = (h, k) => new RegExp(`data-svc="${k}"[^>]*aria-pressed="true"|ar
 
 (async () => {
   let h = await get('/');
-  ok('home shows both service buttons (TH)', h.includes('data-svc="eat"') && h.includes('data-svc="massage"') && h.includes('เพื่อนกินเพื่อนเที่ยว') && h.includes('>หมอนวด<'));
+  ok('home shows both service buttons (TH)', h.includes('data-svc="eat"') && h.includes('data-svc="massage"') && h.includes('เพื่อนกินเพื่อนเที่ยว') && h.includes('>หมอนวดน้ำมันชาย<'));
   ok('nothing pre-selected → all cards', !pressed(h, 'eat') && !pressed(h, 'massage') && cards(h).length > 0, cards(h).length + ' cards');
   const all = cards(h).length;
 
@@ -28,7 +28,7 @@ const pressed = (h, k) => new RegExp(`data-svc="${k}"[^>]*aria-pressed="true"|ar
   ok('bad ?svc ignored', !pressed(h, 'eat') && !pressed(h, 'massage') && cards(h).length === all);
 
   h = await get('/?svc=massage', 'en');
-  ok('EN labels', h.includes('Dining &amp; outing companions') && h.includes('Massage therapists') && pressed(h, 'massage'));
+  ok('EN labels', h.includes('Dining &amp; outing companions') && h.includes('Male oil massage') && pressed(h, 'massage'));
   h = await get('/', 'zh');
   ok('中文 labels', h.includes('美食出游伙伴') && h.includes('放松按摩（持证）'));
 

@@ -26,7 +26,7 @@ const th = {
     tomSoon: "ทอมหล่อ เร็ว ๆ นี้", tomSoonSub: "กำลังเปิดรับสมัครทอมหล่อรุ่นแรก", tomApply: "สมัครเป็นทอมหล่อ ›",
     empty: "ยังไม่เจอเพื่อนที่ตรงใจ ลองเลือกกิจกรรมให้น้อยลงดูนะคะ",
     // เลือกบริการบนสุด (บอส 6 พ.ย. 2569: เปิดมาแล้วเลือก เพื่อนกินเพื่อนเที่ยว / หมอนวด ให้ชัด)
-    svcTitle: "เลือกบริการ", svcAria: "เลือกประเภทบริการ", svcEat: "เพื่อนกินเพื่อนเที่ยว", svcEatSub: "ทานข้าว คาเฟ่ ดูหนัง เที่ยวด้วยกัน", svcMassage: "หมอนวด", svcMassageSub: "นวดน้ำมันผ่อนคลาย โดยผู้มีใบรับรอง", svcFrom: (v: string) => `เริ่ม ${v} / 3 ชม.`, svcAll: "ดูทั้งหมด", svcMassageTom: "ยังไม่มีทอมสายนวด", svcSeeMan: "ดูหนุ่มหล่อสายนวด ›",
+    svcTitle: "เลือกบริการ", svcAria: "เลือกประเภทบริการ", svcEat: "เพื่อนกินเพื่อนเที่ยว", svcEatSub: "ทานข้าว คาเฟ่ ดูหนัง เที่ยวด้วยกัน", svcMassage: "หมอนวดน้ำมันชาย", svcMassageSub: "นวดผ่อนคลาย โดยผู้มีใบรับรอง", svcFrom: (v: string) => `เริ่ม ${v} / 3 ชม.`, svcAll: "ดูทั้งหมด", svcMassageTom: "ยังไม่มีทอมสายนวด", svcSeeMan: "ดูหนุ่มหล่อสายนวด ›",
     adsLbl: "โฆษณา", adN: (i: number, n: number, name: string) => `โฆษณา ${i}/${n} · ${name}`, adDot: (i: number) => `ดูโฆษณาที่ ${i}`, unread: (n: number) => `ยังไม่อ่าน ${n}`,
     slides: [
       { kind: "สปาพาร์ทเนอร์ · สีลม", name: "บำรุงสุข สปา", offer: "สมาชิกลด 20%" },
@@ -125,7 +125,7 @@ const en: SiteDict = {
     featured: "★ Featured",
     tomSoon: "Handsome Toms · coming soon", tomSoonSub: "Now recruiting our first group", tomApply: "Apply as a Tom ›",
     empty: "No matches yet. Try selecting fewer activities.",
-    svcTitle: "Choose a service", svcAria: "Choose a service type", svcEat: "Dining & outing companions", svcEatSub: "Meals, cafés, movies and outings together", svcMassage: "Massage therapists", svcMassageSub: "Relaxing oil massage by certified therapists", svcFrom: (v) => `From ${v} / 3 hrs`, svcAll: "Show all", svcMassageTom: "No Tom massage therapists yet", svcSeeMan: "See gentlemen who offer massage ›",
+    svcTitle: "Choose a service", svcAria: "Choose a service type", svcEat: "Dining & outing companions", svcEatSub: "Meals, cafés, movies and outings together", svcMassage: "Male oil massage", svcMassageSub: "Relaxing oil massage by certified therapists", svcFrom: (v) => `From ${v} / 3 hrs`, svcAll: "Show all", svcMassageTom: "No Tom massage therapists yet", svcSeeMan: "See gentlemen who offer massage ›",
     adsLbl: "Featured offers", adN: (i, n, name) => `Offer ${i}/${n} · ${name}`, adDot: (i) => `Show offer ${i}`, unread: (n) => `${n} unread`,
     slides: [
       { kind: "Partner spa · Silom", name: "Bamrungsuk Spa", offer: "Members save 20%" },
