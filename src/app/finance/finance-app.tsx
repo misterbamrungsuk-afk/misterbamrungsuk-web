@@ -1,30 +1,62 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import {
-  KIND_LABEL, MONTHS, fixedTotal, fmt, fmt2, fmtPct, monthSummary, perRound, svcLabel, targetFor, targetMix,
+  MONTHS, fixedTotal, fmt, fmt2, fmtPct, monthLabel, monthSummary, perRound, targetFor, targetMix,
   type ExpenseKind, type FinExpense, type FinItem, type FinService, type FinancePlan,
 } from "@/lib/finance/plan";
 
-// หลังบ้านการเงิน — ดีไซน์ตามสไลด์ Canva "Update MB" หน้า 8 · 9 · 10 (โทนม่วงอ่อน)
+// หลังบ้านการเงิน — ดีไซน์ตามสไลด์ Canva "Update MB" หน้า 8 · 9 · 10 (โทนม่วงอ่อน) · 2 ภาษา ไทย/EN
 type View = "overview" | "costs" | "target";
-const NAV: { view: View; href: string; label: string; sub: string }[] = [
-  { view: "overview", href: "/finance", label: "ภาพรวม", sub: "รายได้ · ค่าใช้จ่าย · เคสรายเดือน" },
-  { view: "costs", href: "/finance/costs", label: "รายละเอียดต้นทุน", sub: "ต้นทุนต่อรอบ · ค่าใช้จ่ายประจำ · %" },
-  { view: "target", href: "/finance/target", label: "เป้ากำไร", sub: "ต้องขายกี่รอบ · จุดคุ้มทุน" },
-];
-const TITLE: Record<View, [string, string]> = {
-  overview: ["ภาพรวมการเงินและรายได้บริการ", "ทุนเริ่มต้น • รายได้แต่ละบริการ • ค่าใช้จ่าย • กำไรต่อเดือน"],
-  costs: ["รายละเอียดต้นทุน", "รู้ว่าเงินจ่ายให้ใคร และเกิดจากอะไร • ตัวอย่างประมาณการต่อเดือน"],
-  target: ["วางเป้ากำไรของคุณ", "เลือกบริการ แล้วดูว่าต้องขายกี่รอบต่อเดือน"],
+type Lang = "th" | "en";
+
+// ─── ภาษา ───
+const LangCtx = createContext<Lang>("th");
+/** t("ไทย", "English") */
+function useT() {
+  const lang = useContext(LangCtx);
+  return { lang, t: (th: string, en: string) => (lang === "en" ? en : th) };
+}
+// ชื่อค่าเริ่มต้น (ข้อมูลที่ยังไม่ได้แก้) แปลเป็นอังกฤษให้ — ชื่อที่ฝ่ายการเงินพิมพ์เองแสดงตามที่พิมพ์
+const NAME_EN: Record<string, string> = {
+  "เพื่อนเที่ยว": "Companion", "เพื่อนเที่ยว + นวด": "Companion + massage", "เพื่อนกินเที่ยว": "Companion", "เพื่อนกินเที่ยว + นวด": "Companion + massage",
+  "พัฒนาแอป": "App development", "Audition 3 จังหวัด": "Auditions (3 provinces)", "กฎหมาย (สมมติ)": "Legal (estimate)",
+  "เงินเดือนและที่ปรึกษา": "Salaries & advisors", "การตลาด": "Marketing", "ตัดจำหน่ายแอป (ไม่ใช่เงินสด)": "App amortisation (non-cash)",
+  "ค่าแนะนำรีครูท": "Recruit referral fees", "โบนัสรีครูท": "Recruit bonuses", "ส่วนลดและคืนเงิน": "Discounts & refunds", "ค่าใช้จ่ายอื่น": "Other expenses",
+  "บริการใหม่": "New service", "ค่าใช้จ่ายใหม่": "New expense", "รายการใหม่": "New item",
 };
+function useName() {
+  const { lang } = useT();
+  return (n: string) => (lang === "en" ? NAME_EN[n] ?? n : n);
+}
+function useSvcLabel() {
+  const dn = useName();
+  return (s: FinService) => (s.level ? `${dn(s.name)} · ${s.level}` : dn(s.name));
+}
+
+const NAV: { view: View; href: string; label: [string, string]; sub: [string, string] }[] = [
+  { view: "overview", href: "/finance", label: ["ภาพรวม", "Overview"], sub: ["รายได้ · ค่าใช้จ่าย · เคสรายเดือน", "Revenue · expenses · monthly cases"] },
+  { view: "costs", href: "/finance/costs", label: ["รายละเอียดต้นทุน", "Cost details"], sub: ["ต้นทุนต่อรอบ · ค่าใช้จ่ายประจำ · %", "Per-booking cost · fixed costs · %"] },
+  { view: "target", href: "/finance/target", label: ["เป้ากำไร", "Profit target"], sub: ["ต้องขายกี่รอบ · จุดคุ้มทุน", "Bookings needed · break-even"] },
+];
+const TITLE: Record<View, [string, string, string, string]> = {
+  overview: ["ภาพรวมการเงินและรายได้บริการ", "ทุนเริ่มต้น • รายได้แต่ละบริการ • ค่าใช้จ่าย • กำไรต่อเดือน", "Financial overview & service revenue", "Starting capital • revenue by service • expenses • monthly profit"],
+  costs: ["รายละเอียดต้นทุน", "รู้ว่าเงินจ่ายให้ใคร และเกิดจากอะไร • ตัวอย่างประมาณการต่อเดือน", "Cost details", "Where the money goes and why • monthly estimate"],
+  target: ["วางเป้ากำไรของคุณ", "เลือกบริการ แล้วดูว่าต้องขายกี่รอบต่อเดือน", "Set your profit target", "Pick a service and see how many bookings you need each month"],
+};
+const KIND: Record<ExpenseKind, [string, string]> = { fixed: ["บาท/เดือน", "THB / month"], pctRevenue: ["% ของรายได้บริษัท", "% of company revenue"], pctGross: ["% ของยอดลูกค้าจ่าย", "% of customer spend"] };
 const uid = () => Math.random().toString(36).slice(2, 10);
 
 export function FinanceApp({ view, initial, who }: { view: View; initial: FinancePlan; who: string }) {
+  const [lang, setLang] = useState<Lang>("th");
+  useEffect(() => { try { if (localStorage.getItem("fin-lang") === "en") setLang("en"); } catch { /* ไม่มี storage */ } }, []);
+  const pickLang = (l: Lang) => { setLang(l); try { localStorage.setItem("fin-lang", l); } catch { /* ไม่มี storage */ } };
+  const t = (th: string, en: string) => (lang === "en" ? en : th);
+
   const [plan, setPlan] = useState<FinancePlan>(initial);
   const [saved, setSaved] = useState<FinancePlan>(initial);
-  const [month, setMonth] = useState(() => MONTHS.find((m) => initial.months[m]) ?? "M4");
+  const [month, setMonth] = useState(() => MONTHS.find((m) => initial.months[m]) ?? "M1");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const dirty = useMemo(() => JSON.stringify({ ...plan, history: [] }) !== JSON.stringify({ ...saved, history: [] }), [plan, saved]);
@@ -38,79 +70,88 @@ export function FinanceApp({ view, initial, who }: { view: View; initial: Financ
 
   const save = async () => {
     setBusy(true); setMsg(null);
-    const r = await fetch("/api/finance", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plan, note: `แก้ไขหน้า${NAV.find((n) => n.view === view)?.label}` }) }).catch(() => null);
+    const r = await fetch("/api/finance", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plan, note: `แก้ไขหน้า${NAV.find((n) => n.view === view)?.label[0]}` }) }).catch(() => null);
     const d = (await r?.json().catch(() => null)) as { ok?: boolean; plan?: FinancePlan; error?: string } | null;
     setBusy(false);
-    if (d?.ok && d.plan) { setPlan(d.plan); setSaved(d.plan); setMsg({ ok: true, text: "บันทึกแล้ว" }); }
-    else setMsg({ ok: false, text: d?.error ?? "บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง" });
+    if (d?.ok && d.plan) { setPlan(d.plan); setSaved(d.plan); setMsg({ ok: true, text: t("บันทึกแล้ว", "Saved") }); }
+    else setMsg({ ok: false, text: d?.error ?? t("บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง", "Could not save — please try again") });
   };
-  const leave = (e: React.MouseEvent) => { if (dirty && !window.confirm("ยังไม่ได้บันทึก — ออกจากหน้านี้เลยไหม?")) e.preventDefault(); };
+  const leave = (e: React.MouseEvent) => { if (dirty && !window.confirm(t("ยังไม่ได้บันทึก — ออกจากหน้านี้เลยไหม?", "You have unsaved changes — leave this page?"))) e.preventDefault(); };
   const last = saved.history[0];
+  const T = TITLE[view];
 
   return (
-    <div className="lg:flex">
-      <style>{CSS}</style>
-      {/* เมนูซ้าย */}
-      <nav aria-label="เมนูการเงิน" className="fin-side lg:w-[248px] shrink-0 lg:sticky lg:top-0 lg:h-dvh flex lg:flex-col gap-1 p-3 lg:p-5 overflow-x-auto no-scrollbar">
-        <div className="hidden lg:flex items-center gap-3 pb-5">
-          <span className="fin-logo">MB</span>
-          <div className="leading-tight"><div className="text-[11px] tracking-[.12em] text-[var(--fm)]">MISTER</div><div className="text-[13px] font-bold tracking-[.06em]">BAMRUNGSUK</div></div>
-        </div>
-        {NAV.map((n) => (
-          <Link key={n.view} href={n.href} onClick={leave} aria-current={n.view === view ? "page" : undefined} className={`fin-nav ${n.view === view ? "on" : ""}`}>
-            <span className="block font-semibold text-[14.5px] whitespace-nowrap">{n.label}</span>
-            <span className="hidden lg:block text-[12px] text-[var(--fm)]">{n.sub}</span>
-          </Link>
-        ))}
-        <div className="hidden lg:block mt-auto pt-4 border-t border-[var(--fl)] text-[12px] text-[var(--fm)] leading-relaxed">
-          <Link href="/admin" onClick={leave} className="font-semibold text-[var(--fp)]">← กลับหลังบ้าน</Link>
-          <p className="m-0 mt-2 break-all">{who}</p>
-          {last && <p className="m-0 mt-1">บันทึกล่าสุด {new Date(last.at).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })} · {last.by}</p>}
-        </div>
-      </nav>
-
-      <main className="flex-1 min-w-0 px-4 lg:px-8 py-4 lg:py-7 pb-28">
-        <header className="flex flex-wrap items-start gap-3 mb-5">
-          <div className="flex-1 min-w-[240px]">
-            <div className="text-[11.5px] font-semibold tracking-[.12em] text-[var(--fm)]">MISTER BAMRUNGSUK · หลังบ้านการเงิน</div>
-            <h1 className="m-0 text-[24px] lg:text-[28px] font-bold leading-[1.35]">{TITLE[view][0]}</h1>
-            <p className="m-0 text-[14px] text-[var(--fm)]">{TITLE[view][1]}</p>
+    <LangCtx.Provider value={lang}>
+      <div className="lg:flex" lang={lang}>
+        <style>{CSS}</style>
+        {/* เมนูซ้าย */}
+        <nav aria-label={t("เมนูการเงิน", "Finance menu")} className="fin-side lg:w-[248px] shrink-0 lg:sticky lg:top-0 lg:h-dvh flex lg:flex-col gap-1 p-3 lg:p-5 overflow-x-auto no-scrollbar">
+          <div className="hidden lg:flex items-center gap-3 pb-5">
+            <span className="fin-logo">MB</span>
+            <div className="leading-tight"><div className="text-[11px] tracking-[.12em] text-[var(--fm)]">MISTER</div><div className="text-[13px] font-bold tracking-[.06em]">BAMRUNGSUK</div></div>
           </div>
-          <span className="fin-chip mt-1">แผนจำลอง · ไม่กระทบเงินจริง</span>
-        </header>
-        {view === "overview" && <Overview plan={plan} up={up} month={month} setMonth={setMonth} />}
-        {view === "costs" && <Costs plan={plan} up={up} month={month} setMonth={setMonth} />}
-        {view === "target" && <Target plan={plan} up={up} month={month} setMonth={setMonth} />}
-      </main>
+          {NAV.map((n) => (
+            <Link key={n.view} href={n.href} onClick={leave} aria-current={n.view === view ? "page" : undefined} className={`fin-nav ${n.view === view ? "on" : ""}`}>
+              <span className="block font-semibold text-[14.5px] whitespace-nowrap">{t(...n.label)}</span>
+              <span className="hidden lg:block text-[12px] text-[var(--fm)]">{t(...n.sub)}</span>
+            </Link>
+          ))}
+          <div className="hidden lg:block mt-auto pt-4 border-t border-[var(--fl)] text-[12px] text-[var(--fm)] leading-relaxed">
+            <Link href="/admin" onClick={leave} className="font-semibold text-[var(--fp)]">{t("← กลับหลังบ้าน", "← Back to admin")}</Link>
+            <p className="m-0 mt-2 break-all">{who}</p>
+            {last && <p className="m-0 mt-1">{t("บันทึกล่าสุด", "Last saved")} {new Date(last.at).toLocaleString(lang === "th" ? "th-TH" : "en-GB", { dateStyle: "medium", timeStyle: "short" })} · {last.by}</p>}
+          </div>
+        </nav>
 
-      {/* แถบบันทึก */}
-      <div className="fin-savebar">
-        <span className={`text-[13.5px] ${msg ? (msg.ok ? "text-[var(--fg)]" : "text-[var(--fr)]") : "text-[var(--fm)]"}`}>
-          {msg?.text ?? (dirty ? "มีการแก้ไขที่ยังไม่บันทึก" : "ตัวเลขทั้งหมดบันทึกแล้ว")}
-        </span>
-        <span className="flex-1" />
-        {dirty && <button type="button" className="fin-btn ghost" onClick={() => { setPlan(saved); setMsg(null); }}>ยกเลิกที่แก้</button>}
-        <button type="button" className="fin-btn" disabled={!dirty || busy} onClick={save}>{busy ? "กำลังบันทึก…" : "บันทึก"}</button>
+        <main className="flex-1 min-w-0 px-4 lg:px-8 py-4 lg:py-7 pb-28">
+          <header className="flex flex-wrap items-start gap-3 mb-5">
+            <div className="flex-1 min-w-[240px]">
+              <div className="text-[11.5px] font-semibold tracking-[.12em] text-[var(--fm)]">MISTER BAMRUNGSUK · {t("หลังบ้านการเงิน", "FINANCE BACK OFFICE")}</div>
+              <h1 className="m-0 text-[24px] lg:text-[28px] font-bold leading-[1.35]">{lang === "en" ? T[2] : T[0]}</h1>
+              <p className="m-0 text-[14px] text-[var(--fm)]">{lang === "en" ? T[3] : T[1]}</p>
+            </div>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <div className="fin-seg sm" role="group" aria-label="Language">
+                <button type="button" aria-pressed={lang === "th"} className={lang === "th" ? "on" : ""} onClick={() => pickLang("th")}>ไทย</button>
+                <button type="button" aria-pressed={lang === "en"} className={lang === "en" ? "on" : ""} onClick={() => pickLang("en")}>EN</button>
+              </div>
+              <span className="fin-chip">{t("แผนจำลอง · ไม่กระทบเงินจริง", "Plan only · no real money moved")}</span>
+            </div>
+          </header>
+          {view === "overview" && <Overview plan={plan} up={up} month={month} setMonth={setMonth} />}
+          {view === "costs" && <Costs plan={plan} up={up} month={month} setMonth={setMonth} />}
+          {view === "target" && <Target plan={plan} up={up} month={month} setMonth={setMonth} />}
+        </main>
+
+        {/* แถบบันทึก */}
+        <div className="fin-savebar">
+          <span className={`text-[13.5px] ${msg ? (msg.ok ? "text-[var(--fg)]" : "text-[var(--fr)]") : "text-[var(--fm)]"}`}>
+            {msg?.text ?? (dirty ? t("มีการแก้ไขที่ยังไม่บันทึก", "You have unsaved changes") : t("ตัวเลขทั้งหมดบันทึกแล้ว", "All figures saved"))}
+          </span>
+          <span className="flex-1" />
+          {dirty && <button type="button" className="fin-btn ghost" onClick={() => { setPlan(saved); setMsg(null); }}>{t("ยกเลิกที่แก้", "Discard")}</button>}
+          <button type="button" className="fin-btn" disabled={!dirty || busy} onClick={save}>{busy ? t("กำลังบันทึก…", "Saving…") : t("บันทึก", "Save")}</button>
+        </div>
       </div>
-    </div>
+    </LangCtx.Provider>
   );
 }
 
 type P = { plan: FinancePlan; up: (p: Partial<FinancePlan>) => void; month: string; setMonth: (m: string) => void };
 
 // ─── ช่องกรอก ───
-function Num({ value, onChange, pct, w = "w-[120px]", label, step, blankZero }: { value: number; onChange: (n: number) => void; pct?: boolean; w?: string; label: string; step?: number; blankZero?: boolean }) {
+function Num({ value, onChange, pct, w = "w-[120px]", label, blankZero }: { value: number; onChange: (n: number) => void; pct?: boolean; w?: string; label: string; blankZero?: boolean }) {
   const shown = pct ? Math.round(value * 10000) / 100 : value;
   const [txt, setTxt] = useState(String(shown));
   const [focus, setFocus] = useState(false);
   useEffect(() => { if (!focus) setTxt(String(shown)); }, [shown, focus]);
   return (
     <span className={`fin-in ${w}`}>
-      <input aria-label={label} inputMode="decimal" value={focus ? txt : pct ? String(shown) : blankZero && !value ? "" : fmt2(value)} placeholder={blankZero ? "–" : undefined} step={step}
+      <input aria-label={label} inputMode="decimal" value={focus ? txt : pct ? String(shown) : blankZero && !value ? "" : fmt2(value)} placeholder={blankZero ? "–" : undefined}
         onFocus={() => { setFocus(true); setTxt(String(shown)); }} onBlur={() => setFocus(false)}
         onChange={(e) => {
-          const t = e.target.value.replace(/[^0-9.]/g, ""); setTxt(t);
-          const n = Number(t); if (Number.isFinite(n)) onChange(pct ? n / 100 : n);
+          const v = e.target.value.replace(/[^0-9.]/g, ""); setTxt(v);
+          const n = Number(v); if (Number.isFinite(n)) onChange(pct ? n / 100 : n);
         }} />
       {pct && <span className="text-[var(--fm)]">%</span>}
     </span>
@@ -119,12 +160,13 @@ function Num({ value, onChange, pct, w = "w-[120px]", label, step, blankZero }: 
 function Txt({ value, onChange, label, w = "flex-1" }: { value: string; onChange: (s: string) => void; label: string; w?: string }) {
   return <span className={`fin-in ${w} min-w-0`}><input aria-label={label} value={value} maxLength={60} onChange={(e) => onChange(e.target.value)} /></span>;
 }
-const Del = ({ onClick, label }: { onClick: () => void; label: string }) => (
-  <button type="button" onClick={onClick} aria-label={label} title="ลบ" className="fin-x">×</button>
-);
+function Del({ onClick, label }: { onClick: () => void; label: string }) {
+  const { t } = useT();
+  return <button type="button" onClick={onClick} aria-label={label} title={t("ลบ", "Delete")} className="fin-x">×</button>;
+}
 const Card = ({ n, title, tone = "violet", children, right }: { n?: number; title: string; tone?: "violet" | "blue" | "orange" | "green"; children: React.ReactNode; right?: React.ReactNode }) => (
   <section className={`fin-card t-${tone}`}>
-    <div className="flex items-center gap-2 mb-3">
+    <div className="flex items-center gap-2 mb-3 flex-wrap">
       {n && <span className="fin-num">{n}</span>}
       <h2 className="m-0 text-[17px] font-bold flex-1">{title}</h2>
       {right}
@@ -132,116 +174,153 @@ const Card = ({ n, title, tone = "violet", children, right }: { n?: number; titl
     {children}
   </section>
 );
-const Kpi = ({ label, value, unit = "บาท", tone, sub }: { label: string; value: string; unit?: string; tone: string; sub?: string }) => (
-  <div className={`fin-kpi t-${tone}`}>
-    <div className="text-[13.5px] font-semibold text-[var(--ft2)]">{label}</div>
-    <div className="fin-kv">{value}</div>
-    <div className="text-[12.5px] text-[var(--fm)]">{unit}{sub && <span className="ml-2 fin-pill">{sub}</span>}</div>
-  </div>
-);
+function Kpi({ label, value, tone, sub }: { label: string; value: string; tone: string; sub?: string }) {
+  const { t } = useT();
+  return (
+    <div className={`fin-kpi t-${tone}`}>
+      <div className="text-[13.5px] font-semibold text-[var(--ft2)]">{label}</div>
+      <div className="fin-kv">{value}</div>
+      <div className="text-[12.5px] text-[var(--fm)]">{t("บาท", "THB")}{sub && <span className="ml-2 fin-pill">{sub}</span>}</div>
+    </div>
+  );
+}
 function MonthPick({ month, setMonth, plan }: { month: string; setMonth: (m: string) => void; plan: FinancePlan }) {
+  const { t, lang } = useT();
   return (
     <label className="fin-in w-auto gap-2">
-      <span className="text-[12.5px] text-[var(--fm)] whitespace-nowrap">เดือนที่ดู</span>
+      <span className="text-[12.5px] text-[var(--fm)] whitespace-nowrap">{t("เดือนที่ดู", "Month")}</span>
       <select value={month} onChange={(e) => setMonth(e.target.value)} className="font-semibold">
-        {MONTHS.map((m) => <option key={m} value={m}>{m}{plan.months[m] ? " ●" : ""}</option>)}
+        {MONTHS.map((m) => <option key={m} value={m}>{m} · {monthLabel(m, lang)}{plan.months[m] ? " ●" : ""}</option>)}
       </select>
     </label>
   );
 }
 function Shares({ plan, up }: { plan: FinancePlan; up: P["up"] }) {
+  const { t } = useT();
   return (
     <div className="flex flex-wrap gap-x-5 gap-y-2 items-center text-[13.5px]">
-      <label className="flex items-center gap-2">ส่วนแบ่งบริษัท <Num label="ส่วนแบ่งบริษัท" pct w="w-[88px]" value={plan.companyShare} onChange={(v) => up({ companyShare: Math.min(1, v) })} /></label>
-      <label className="flex items-center gap-2">ค่าธรรมเนียมจากผู้ให้บริการ <Num label="ค่าธรรมเนียมจากผู้ให้บริการ" pct w="w-[80px]" value={plan.providerFee} onChange={(v) => up({ providerFee: v })} /></label>
-      <label className="flex items-center gap-2">ค่ารับชำระ <Num label="ค่ารับชำระ" pct w="w-[80px]" value={plan.pgFee} onChange={(v) => up({ pgFee: v })} /></label>
+      <label className="flex items-center gap-2">{t("ส่วนแบ่งบริษัท", "Company share")} <Num label={t("ส่วนแบ่งบริษัท", "Company share")} pct w="w-[88px]" value={plan.companyShare} onChange={(v) => up({ companyShare: Math.min(1, v) })} /></label>
+      <label className="flex items-center gap-2">{t("ค่าธรรมเนียมจากผู้ให้บริการ", "Provider fee")} <Num label={t("ค่าธรรมเนียมจากผู้ให้บริการ", "Provider fee")} pct w="w-[80px]" value={plan.providerFee} onChange={(v) => up({ providerFee: v })} /></label>
+      <label className="flex items-center gap-2">{t("ค่าภาษี ภ.ง.ด.", "Withholding tax (PND)")} <Num label={t("ค่าภาษี ภ.ง.ด.", "Withholding tax (PND)")} pct w="w-[80px]" value={plan.pgFee} onChange={(v) => up({ pgFee: v })} /></label>
     </div>
+  );
+}
+const Row = ({ l, r }: { l: React.ReactNode; r: React.ReactNode }) => (
+  <div className="flex items-center justify-between gap-3 py-1.5 border-b border-[var(--fl)] text-[14px]"><span className="min-w-0">{l}</span><span className="tabular-nums shrink-0 text-right">{r}</span></div>
+);
+function Items({ items, onChange, addLabel, zeroChip }: { items: FinItem[]; onChange: (v: FinItem[]) => void; addLabel: string; zeroChip?: boolean }) {
+  const { t, lang } = useT();
+  const dn = useName();
+  return (
+    <>
+      {items.map((it, i) => (
+        <div key={it.id} className="flex items-center gap-2 py-1.5 border-b border-[var(--fl)]">
+          {/* ภาษาอังกฤษ: แสดงชื่อแปลของค่าเริ่มต้น แก้ชื่อได้ในโหมดไทย */}
+          {lang === "en" && NAME_EN[it.name]
+            ? <span className="flex-1 min-w-0 text-[14px] px-1">{dn(it.name)}</span>
+            : <Txt label={t("ชื่อรายการ", "Item name")} value={it.name} onChange={(name) => onChange(items.map((x, k) => (k === i ? { ...x, name } : x)))} />}
+          {zeroChip && !it.amount && <span className="fin-pill warn hidden sm:inline">{t("ยังไม่ใส่งบ", "No budget yet")}</span>}
+          <Num label={`${t("จำนวนเงิน", "Amount")} ${dn(it.name)}`} w="w-[104px]" value={it.amount} onChange={(amount) => onChange(items.map((x, k) => (k === i ? { ...x, amount } : x)))} />
+          <Del label={`${t("ลบ", "Delete")} ${dn(it.name)}`} onClick={() => onChange(items.filter((_, k) => k !== i))} />
+        </div>
+      ))}
+      <button type="button" className="fin-add" onClick={() => onChange([...items, { id: uid(), name: t("รายการใหม่", "New item"), amount: 0 }])}>{addLabel}</button>
+    </>
   );
 }
 
 // ─── หน้า 8: ภาพรวม ───
 function Overview({ plan, up, month, setMonth }: P) {
+  const { t, lang } = useT();
+  const dn = useName();
+  const svcLabel = useSvcLabel();
   const m = monthSummary(plan, month);
-  const startupSum = plan.startup.reduce((t, i) => t + i.amount, 0);
+  const startupSum = plan.startup.reduce((s, i) => s + i.amount, 0);
   const setRounds = (mo: string, sid: string, n: number) => up({ months: { ...plan.months, [mo]: { ...(plan.months[mo] ?? {}), [sid]: Math.max(0, Math.round(n)) } } });
   const setSvc = (i: number, patch: Partial<FinService>) => up({ services: plan.services.map((s, k) => (k === i ? { ...s, ...patch } : s)) });
   const prev = MONTHS[MONTHS.indexOf(month) - 1];
+  const ml = `${month} · ${monthLabel(month, lang)}`;
+  const lineName = (l: (typeof m.lines)[number]) => (l.id === "_pg" ? t(`ค่าภาษี ภ.ง.ด. ${fmtPct(plan.pgFee)} ของยอดลูกค้า`, `Withholding tax (PND) ${fmtPct(plan.pgFee)} of customer spend`) : dn(l.name));
   return (
     <div className="flex flex-col gap-4">
       <div className="fin-bar">
         <MonthPick month={month} setMonth={setMonth} plan={plan} />
-        <span className="text-[13.5px]">จำนวนบริการ <b className="tabular-nums">{fmt(m.totalRounds)}</b> รอบ</span>
-        {prev && plan.months[prev] && <button type="button" className="fin-btn ghost sm" onClick={() => up({ months: { ...plan.months, [month]: { ...plan.months[prev] } } })}>คัดลอกเคสจาก {prev}</button>}
+        <span className="text-[13.5px]">{t("จำนวนบริการ", "Bookings")} <b className="tabular-nums">{fmt(m.totalRounds)}</b> {t("รอบ", "")}</span>
+        {prev && plan.months[prev] && <button type="button" className="fin-btn ghost sm" onClick={() => up({ months: { ...plan.months, [month]: { ...plan.months[prev] } } })}>{t("คัดลอกเคสจาก", "Copy cases from")} {prev} · {monthLabel(prev, lang)}</button>}
       </div>
       <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-3">
-        <Kpi tone="violet" label="ทุนเริ่มต้น" value={fmt(plan.capital)} />
-        <Kpi tone="violet" label="รายได้บริษัท / เดือน" value={fmt(m.revenue, 2)} />
-        <Kpi tone="orange" label="ค่าใช้จ่าย / เดือน" value={fmt(m.expenses, 2)} />
-        <Kpi tone={m.profit >= 0 ? "green" : "red"} label="กำไรก่อนภาษี / เดือน" value={fmt(m.profit, 2)} sub={m.revenue ? `${fmtPct(m.margin)} ของรายได้บริษัท` : undefined} />
+        <Kpi tone="violet" label={t("ทุนเริ่มต้น", "Starting capital")} value={fmt(plan.capital)} />
+        <Kpi tone="violet" label={t("รายได้บริษัท / เดือน", "Company revenue / month")} value={fmt(m.revenue, 2)} />
+        <Kpi tone="orange" label={t("ค่าใช้จ่าย / เดือน", "Expenses / month")} value={fmt(m.expenses, 2)} />
+        <Kpi tone={m.profit >= 0 ? "green" : "red"} label={t("กำไรก่อนภาษี / เดือน", "Profit before tax / month")} value={fmt(m.profit, 2)} sub={m.revenue ? t(`${fmtPct(m.margin)} ของรายได้บริษัท`, `${fmtPct(m.margin)} of company revenue`) : undefined} />
       </div>
 
       <div className="grid xl:grid-cols-[1.1fr_1.45fr_1fr] gap-4 items-start">
-        <Card n={1} title="เงินทุนใช้กับอะไร?">
-          <Row l="ทุนตั้งต้น" r={<Num label="ทุนตั้งต้น" value={plan.capital} onChange={(v) => up({ capital: v })} />} />
-          <Items items={plan.startup} onChange={(startup) => up({ startup })} addLabel="+ เพิ่มรายการเงินทุน" />
-          <div className="fin-total"><span>งบเริ่มต้นรวม</span><b>{fmt(startupSum)}</b></div>
+        <Card n={1} title={t("เงินทุนใช้กับอะไร?", "What is the capital used for?")}>
+          <Row l={t("ทุนตั้งต้น", "Starting capital")} r={<Num label={t("ทุนตั้งต้น", "Starting capital")} value={plan.capital} onChange={(v) => up({ capital: v })} />} />
+          <Items items={plan.startup} onChange={(startup) => up({ startup })} addLabel={t("+ เพิ่มรายการเงินทุน", "+ Add capital item")} />
+          <div className="fin-total"><span>{t("งบเริ่มต้นรวม", "Total start-up budget")}</span><b>{fmt(startupSum)}</b></div>
           <div className="fin-hero t-blue mt-3">
-            <div className="text-[14px] font-semibold">เหลือสำหรับดำเนินงาน</div>
-            <div className="text-[28px] font-bold text-[var(--fb)] tabular-nums">{fmt(plan.capital - startupSum)} <span className="text-[15px]">บาท</span></div>
+            <div className="text-[14px] font-semibold">{t("เหลือสำหรับดำเนินงาน", "Left for operations")}</div>
+            <div className="text-[28px] font-bold text-[var(--fb)] tabular-nums">{fmt(plan.capital - startupSum)} <span className="text-[15px]">{t("บาท", "THB")}</span></div>
           </div>
-          <p className="fin-note">ยอดหลังหักงบเริ่มต้น ไม่ใช่เงินปลายเดือน</p>
+          <p className="fin-note">{t("ยอดหลังหักงบเริ่มต้น ไม่ใช่เงินปลายเดือน", "After start-up costs — not the month-end balance")}</p>
         </Card>
 
-        <Card n={2} title="รายได้มาจากไหน?" tone="blue">
+        <Card n={2} title={t("รายได้มาจากไหน?", "Where does revenue come from?")} tone="blue">
           <div className="overflow-x-auto -mx-1 px-1">
             <table className="fin-t">
-              <thead><tr><th>บริการ</th><th className="r">ราคา (บาท)</th><th className="r">รอบ ({month})</th><th className="r">ยอดลูกค้าจ่าย</th></tr></thead>
+              <thead><tr><th>{t("บริการ", "Service")}</th><th className="r">{t("ราคา (บาท)", "Price (THB)")}</th><th className="r">{t("รอบ", "Bookings")} ({month})</th><th className="r">{t("ยอดลูกค้าจ่าย", "Customer spend")}</th></tr></thead>
               <tbody>
                 {m.rows.map(({ s, gross, rounds }, i) => (
                   <tr key={s.id}>
-                    <td className="whitespace-nowrap">{s.name} {s.level && <span className={`fin-lv ${/top/i.test(s.level) ? "top" : ""}`}>{s.level}</span>}</td>
-                    <td className="r"><Num label={`ราคา ${svcLabel(s)}`} w="w-[96px]" value={s.price} onChange={(price) => setSvc(i, { price })} /></td>
-                    <td className="r"><Num label={`รอบ ${svcLabel(s)}`} w="w-[76px]" value={rounds} onChange={(n) => setRounds(month, s.id, n)} /></td>
+                    <td className="whitespace-nowrap">{dn(s.name)} {s.level && <span className={`fin-lv ${/top/i.test(s.level) ? "top" : ""}`}>{s.level}</span>}</td>
+                    <td className="r"><Num label={`${t("ราคา", "Price")} ${svcLabel(s)}`} w="w-[86px]" value={s.price} onChange={(price) => setSvc(i, { price })} /></td>
+                    <td className="r"><Num label={`${t("รอบ", "Bookings")} ${svcLabel(s)}`} w="w-[62px]" value={rounds} onChange={(n) => setRounds(month, s.id, n)} /></td>
                     <td className="r tabular-nums">{fmt(gross)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <Link href="/finance/costs#services" className="fin-add inline-block">+ เพิ่ม/แก้ชื่อบริการ</Link>
-          <div className="fin-total t-blue"><span>ยอดลูกค้าจ่ายรวม</span><b>{fmt(m.gross)} บาท</b></div>
-          <Row l={`ส่วนแบ่งบริษัท ${fmtPct(plan.companyShare)}`} r={fmt(m.company, 2)} />
-          <Row l={`ค่าธรรมเนียมผู้ให้บริการ ${fmtPct(plan.providerFee)}`} r={`+${fmt(m.fee, 2)}`} />
-          <div className="fin-total t-violet"><span>รายได้บริษัท</span><b>{fmt(m.revenue, 2)} บาท</b></div>
+          <Link href="/finance/costs#services" className="fin-add inline-block">{t("+ เพิ่ม/แก้ชื่อบริการ", "+ Add / rename services")}</Link>
+          <div className="fin-total t-blue"><span>{t("ยอดลูกค้าจ่ายรวม", "Total customer spend")}</span><b>{fmt(m.gross)} {t("บาท", "THB")}</b></div>
+          <Row l={`${t("ส่วนแบ่งบริษัท", "Company share")} ${fmtPct(plan.companyShare)}`} r={fmt(m.company, 2)} />
+          <Row l={`${t("ค่าธรรมเนียมผู้ให้บริการ", "Provider fee")} ${fmtPct(plan.providerFee)}`} r={`+${fmt(m.fee, 2)}`} />
+          <div className="fin-total t-violet"><span>{t("รายได้บริษัท", "Company revenue")}</span><b>{fmt(m.revenue, 2)} {t("บาท", "THB")}</b></div>
           <div className="mt-3"><Shares plan={plan} up={up} /></div>
         </Card>
 
-        <Card n={3} title="ค่าใช้จ่ายรายเดือน" tone="orange" right={<Link href="/finance/costs" className="text-[12.5px] font-semibold text-[var(--fp)]">แก้ไข →</Link>}>
-          <div className="flex justify-between text-[12.5px] font-semibold text-[var(--fm)] pb-1"><span>รายการ</span><span>จำนวนเงิน (บาท)</span></div>
-          {m.lines.map((l) => <Row key={l.id} l={<>{l.name}{l.kind === "pctRevenue" && ` (${fmtPct(l.value)} ของรายได้)`}{l.noncash && <span className="fin-pill ml-1">ไม่ใช่เงินสด</span>}</>} r={fmt(l.amount, 2)} />)}
-          <div className="fin-total t-orange"><span>รวม</span><b>{fmt(m.expenses, 2)} บาท</b></div>
-          {plan.pending.every((i) => !i.amount) && <p className="fin-warn">ยังไม่รวมรีครูท โบนัส ภาษี และรายการรอตั้งงบ</p>}
+        <Card n={3} title={t("ค่าใช้จ่ายรายเดือน", "Monthly expenses")} tone="orange" right={<Link href="/finance/costs" className="text-[12.5px] font-semibold text-[var(--fp)]">{t("แก้ไข →", "Edit →")}</Link>}>
+          <div className="flex justify-between text-[12.5px] font-semibold text-[var(--fm)] pb-1"><span>{t("รายการ", "Item")}</span><span>{t("จำนวนเงิน (บาท)", "Amount (THB)")}</span></div>
+          {m.lines.map((l) => <Row key={l.id} l={<>{lineName(l)}{l.kind === "pctRevenue" && ` (${fmtPct(l.value)} ${t("ของรายได้", "of revenue")})`}{l.noncash && <span className="fin-pill ml-1">{t("ไม่ใช่เงินสด", "non-cash")}</span>}</>} r={fmt(l.amount, 2)} />)}
+          <div className="fin-total t-orange"><span>{t("รวม", "Total")}</span><b>{fmt(m.expenses, 2)} {t("บาท", "THB")}</b></div>
+          {plan.pending.every((i) => !i.amount) && <p className="fin-warn">{t("ยังไม่รวมรีครูท โบนัส ภาษี และรายการรอตั้งงบ", "Excludes recruit fees, bonuses, tax and items still to be budgeted")}</p>}
         </Card>
       </div>
 
       <section className="fin-card t-green">
         <div className="flex flex-wrap items-center gap-3">
-          <h2 className="m-0 text-[18px] font-bold min-w-[140px]">สรุปเดือน {month} เหลือเท่าไร?</h2>
-          <div className="fin-eq t-violet"><span>รายได้บริษัท</span><b>{fmt(m.revenue, 2)}</b></div>
+          <h2 className="m-0 text-[18px] font-bold min-w-[140px]">{t(`สรุป ${ml} เหลือเท่าไร?`, `${ml}: what is left?`)}</h2>
+          <div className="fin-eq t-violet"><span>{t("รายได้บริษัท", "Company revenue")}</span><b>{fmt(m.revenue, 2)}</b></div>
           <span className="text-[24px] font-bold text-[var(--fm)]">−</span>
-          <div className="fin-eq t-orange"><span>ค่าใช้จ่ายรวม</span><b>{fmt(m.expenses, 2)}</b></div>
+          <div className="fin-eq t-orange"><span>{t("ค่าใช้จ่ายรวม", "Total expenses")}</span><b>{fmt(m.expenses, 2)}</b></div>
           <span className="text-[24px] font-bold text-[var(--fm)]">=</span>
-          <div className={`fin-eq ${m.profit >= 0 ? "t-green" : "t-red"}`}><span>กำไรก่อนภาษี</span><b>{fmt(m.profit, 2)} บาท</b></div>
+          <div className={`fin-eq ${m.profit >= 0 ? "t-green" : "t-red"}`}><span>{t("กำไรก่อนภาษี", "Profit before tax")}</span><b>{fmt(m.profit, 2)} {t("บาท", "THB")}</b></div>
         </div>
-        <p className="m-0 mt-3 text-[13.5px] text-center">เงินสดจากการดำเนินงานโดยประมาณ <b className="tabular-nums">{fmt(m.cash, 2)} บาท</b> • ก่อนเงินลงทุนและการเปลี่ยนแปลง Wallet</p>
+        <p className="m-0 mt-3 text-[13.5px] text-center">{t("เงินสดจากการดำเนินงานโดยประมาณ", "Estimated operating cash flow")} <b className="tabular-nums">{fmt(m.cash, 2)} {t("บาท", "THB")}</b> • {t("ก่อนเงินลงทุนและการเปลี่ยนแปลง Wallet", "before investment and Wallet movements")}</p>
       </section>
 
-      <Card title="กรอกเคสรายเดือน (M1–M18)" tone="blue">
-        <p className="fin-note -mt-1 mb-2">จำนวนรอบที่ขายได้/คาดว่าจะขายต่อเดือน แยกตามบริการ — แตะชื่อเดือนเพื่อดูสรุปด้านบน</p>
+      <Card title={t(`กรอกเคสรายเดือน (M1 ${monthLabel("M1", lang)} – M18 ${monthLabel("M18", lang)})`, `Monthly cases (M1 ${monthLabel("M1", lang)} – M18 ${monthLabel("M18", lang)})`)} tone="blue">
+        <p className="fin-note -mt-1 mb-2">{t("จำนวนรอบที่ขายได้/คาดว่าจะขายต่อเดือน แยกตามบริการ — แตะชื่อเดือนเพื่อดูสรุปด้านบน", "Bookings sold / expected per month by service — tap a month to see its summary above")}</p>
         <div className="overflow-x-auto">
           <table className="fin-t grid18">
             <thead>
-              <tr><th className="sticky left-0 bg-[var(--fc)] z-[1]">บริการ</th>{MONTHS.map((mo) => <th key={mo} className="r"><button type="button" onClick={() => setMonth(mo)} className={`fin-mo ${mo === month ? "on" : ""}`}>{mo}</button></th>)}</tr>
+              <tr><th className="sticky left-0 bg-[var(--fc)] z-[1]">{t("บริการ", "Service")}</th>{MONTHS.map((mo) => (
+                <th key={mo} className="r">
+                  <button type="button" onClick={() => setMonth(mo)} className={`fin-mo ${mo === month ? "on" : ""}`}>{mo}<span className="block text-[10.5px] font-medium opacity-80">{monthLabel(mo, lang)}</span></button>
+                </th>
+              ))}</tr>
             </thead>
             <tbody>
               {plan.services.map((s) => (
@@ -251,227 +330,226 @@ function Overview({ plan, up, month, setMonth }: P) {
                 </tr>
               ))}
               <tr className="font-semibold">
-                <td className="sticky left-0 bg-[var(--fc)] z-[1]">กำไร/เดือน</td>
+                <td className="sticky left-0 bg-[var(--fc)] z-[1]">{t("กำไร/เดือน", "Profit / month")}</td>
                 {MONTHS.map((mo) => { const p = plan.months[mo] ? monthSummary(plan, mo).profit : null; return <td key={mo} className={`r text-[12.5px] tabular-nums ${p == null ? "text-[var(--fm)]" : p >= 0 ? "text-[var(--fg)]" : "text-[var(--fr)]"}`}>{p == null ? "—" : fmt(p / 1000, 0) + "K"}</td>; })}
               </tr>
             </tbody>
           </table>
         </div>
       </Card>
-      <p className="fin-note">สมมติฐาน: บริษัท {fmtPct(plan.companyShare)} ทุกรอบ • ค่าธรรมเนียม {fmtPct(plan.providerFee)} ของส่วนแบ่งผู้ให้บริการ • ค่ารับชำระ {fmtPct(plan.pgFee)} ของยอดลูกค้า • ไม่รวมภาษีเงินได้นิติบุคคล</p>
+      <p className="fin-note">{t(
+        `สมมติฐาน: บริษัท ${fmtPct(plan.companyShare)} ทุกรอบ • ค่าธรรมเนียม ${fmtPct(plan.providerFee)} ของส่วนแบ่งผู้ให้บริการ • ค่าภาษี ภ.ง.ด. ${fmtPct(plan.pgFee)} ของยอดลูกค้า • ไม่รวมภาษีเงินได้นิติบุคคล`,
+        `Assumptions: company keeps ${fmtPct(plan.companyShare)} of every booking • ${fmtPct(plan.providerFee)} fee on the provider share • ${fmtPct(plan.pgFee)} PND withholding tax on customer spend • excludes corporate income tax`)}</p>
     </div>
-  );
-}
-
-const Row = ({ l, r }: { l: React.ReactNode; r: React.ReactNode }) => (
-  <div className="flex items-center justify-between gap-3 py-1.5 border-b border-[var(--fl)] text-[14px]"><span className="min-w-0">{l}</span><span className="tabular-nums shrink-0 text-right">{r}</span></div>
-);
-function Items({ items, onChange, addLabel, zeroChip }: { items: FinItem[]; onChange: (v: FinItem[]) => void; addLabel: string; zeroChip?: boolean }) {
-  return (
-    <>
-      {items.map((it, i) => (
-        <div key={it.id} className="flex items-center gap-2 py-1.5 border-b border-[var(--fl)]">
-          <Txt label="ชื่อรายการ" value={it.name} onChange={(name) => onChange(items.map((x, k) => (k === i ? { ...x, name } : x)))} />
-          {zeroChip && !it.amount && <span className="fin-pill warn hidden sm:inline">ยังไม่ใส่งบ</span>}
-          <Num label={`จำนวนเงิน ${it.name}`} w="w-[104px]" value={it.amount} onChange={(amount) => onChange(items.map((x, k) => (k === i ? { ...x, amount } : x)))} />
-          <Del label={`ลบ ${it.name}`} onClick={() => onChange(items.filter((_, k) => k !== i))} />
-        </div>
-      ))}
-      <button type="button" className="fin-add" onClick={() => onChange([...items, { id: uid(), name: "รายการใหม่", amount: 0 }])}>{addLabel}</button>
-    </>
   );
 }
 
 // ─── หน้า 9: รายละเอียดต้นทุน ───
 function Costs({ plan, up, month, setMonth }: P) {
+  const { t, lang } = useT();
+  const dn = useName();
+  const svcLabel = useSvcLabel();
   const m = monthSummary(plan, month);
   const [sid, setSid] = useState(plan.services[0]?.id);
   const svc = plan.services.find((s) => s.id === sid) ?? plan.services[0];
   const r = perRound(plan, svc?.price ?? 0);
-  const fixed = fixedTotal(plan, true) - plan.pending.reduce((t, i) => t + i.amount, 0);
+  const fixed = fixedTotal(plan, true) - plan.pending.reduce((s, i) => s + i.amount, 0);
   const setExp = (i: number, patch: Partial<FinExpense>) => up({ expenses: plan.expenses.map((e, k) => (k === i ? { ...e, ...patch } : e)) });
+  const baht = t("บาท", "THB");
   return (
     <div className="flex flex-col gap-4">
       <div className="fin-bar">
         <MonthPick month={month} setMonth={setMonth} plan={plan} />
-        <span className="text-[13.5px]">{fmt(m.totalRounds)} รอบ · ยอดลูกค้าจ่าย <b className="tabular-nums text-[var(--fb)]">{fmt(m.gross)} บาท</b></span>
+        <span className="text-[13.5px]">{fmt(m.totalRounds)} {t("รอบ", "bookings")} · {t("ยอดลูกค้าจ่าย", "customer spend")} <b className="tabular-nums text-[var(--fb)]">{fmt(m.gross)} {baht}</b></span>
         <span className="flex-1" />
         <Shares plan={plan} up={up} />
       </div>
       <div className="grid sm:grid-cols-3 gap-3">
-        <Kpi tone="blue" label="จ่ายผู้ให้บริการ" value={fmt(m.provider, 2)} sub={`ส่วนแบ่ง ${fmtPct(1 - plan.companyShare)}`} />
-        <Kpi tone="orange" label="ต้นทุนผันแปรบริษัท" value={fmt(m.variable, 2)} sub="ค่ารับชำระ + ค่าใช้จ่ายแบบ %" />
-        <Kpi tone="orange" label="ค่าใช้จ่ายประจำ (เงินสด)" value={fmt(fixed)} sub="ต่อเดือน" />
+        <Kpi tone="blue" label={t("จ่ายผู้ให้บริการ", "Paid to providers")} value={fmt(m.provider, 2)} sub={`${t("ส่วนแบ่ง", "share")} ${fmtPct(1 - plan.companyShare)}`} />
+        <Kpi tone="orange" label={t("ต้นทุนผันแปรบริษัท", "Company variable cost")} value={fmt(m.variable, 2)} sub={t("ค่าภาษี ภ.ง.ด. + ค่าใช้จ่ายแบบ %", "PND tax + % costs")} />
+        <Kpi tone="orange" label={t("ค่าใช้จ่ายประจำ (เงินสด)", "Fixed costs (cash)")} value={fmt(fixed)} sub={t("ต่อเดือน", "per month")} />
       </div>
 
       <div className="grid xl:grid-cols-[1fr_1.15fr] gap-4 items-start">
-        <Card title="ต้นทุนต่อบริการ 1 รอบ">
-          <select value={svc?.id} onChange={(e) => setSid(e.target.value)} className="fin-sel mb-2" aria-label="เลือกบริการ">
-            {plan.services.map((s) => <option key={s.id} value={s.id}>{svcLabel(s)} • {fmt(s.price)} บาท</option>)}
+        <Card title={t("ต้นทุนต่อบริการ 1 รอบ", "Cost per booking")}>
+          <select value={svc?.id} onChange={(e) => setSid(e.target.value)} className="fin-sel mb-2" aria-label={t("เลือกบริการ", "Choose service")}>
+            {plan.services.map((s) => <option key={s.id} value={s.id}>{svcLabel(s)} • {fmt(s.price)} {baht}</option>)}
           </select>
-          <Row l={<><i className="dot" style={{ background: "#2563eb" }} />ราคาที่ลูกค้าจ่าย</>} r={fmt(r.price, 2)} />
-          <Row l={<><i className="dot" style={{ background: "#64748b" }} />ส่วนแบ่งผู้ให้บริการ {fmtPct(1 - plan.companyShare)}</>} r={fmt(r.provider, 2)} />
-          <Row l={<><i className="dot" style={{ background: "#0d9488" }} />ส่วนแบ่งบริษัท {fmtPct(plan.companyShare)}</>} r={fmt(r.company, 2)} />
-          <Row l={<><i className="dot" style={{ background: "#7c3aed" }} />ค่าธรรมเนียมจากผู้ให้บริการ {fmtPct(plan.providerFee)}</>} r={<span className="text-[var(--fp)]">+{fmt(r.fee, 2)}</span>} />
-          <Row l={<><i className="dot" style={{ background: "#ea580c" }} />ค่ารับชำระ {fmtPct(plan.pgFee)} ของยอดลูกค้า</>} r={<span className="text-[var(--fo)]">−{fmt(r.pg, 2)}</span>} />
-          {r.pctCost > 0 && <Row l={<><i className="dot" style={{ background: "#ea580c" }} />ค่าใช้จ่ายแบบ % (เช่น การตลาด)</>} r={<span className="text-[var(--fo)]">−{fmt(r.pctCost, 2)}</span>} />}
-          <div className="fin-total t-green"><span>เหลือก่อนค่าใช้จ่ายประจำ</span><b>{fmt(r.net, 2)} บาท</b></div>
-          <p className="fin-note">ผู้ให้บริการรับสุทธิ {fmt(r.providerNet, 2)} บาท/รอบ (หลังหักค่าธรรมเนียม)</p>
+          <Row l={<><i className="dot" style={{ background: "#2563eb" }} />{t("ราคาที่ลูกค้าจ่าย", "Customer price")}</>} r={fmt(r.price, 2)} />
+          <Row l={<><i className="dot" style={{ background: "#64748b" }} />{t("ส่วนแบ่งผู้ให้บริการ", "Provider share")} {fmtPct(1 - plan.companyShare)}</>} r={fmt(r.provider, 2)} />
+          <Row l={<><i className="dot" style={{ background: "#0d9488" }} />{t("ส่วนแบ่งบริษัท", "Company share")} {fmtPct(plan.companyShare)}</>} r={fmt(r.company, 2)} />
+          <Row l={<><i className="dot" style={{ background: "#7c3aed" }} />{t("ค่าธรรมเนียมจากผู้ให้บริการ", "Fee from provider")} {fmtPct(plan.providerFee)}</>} r={<span className="text-[var(--fp)]">+{fmt(r.fee, 2)}</span>} />
+          <Row l={<><i className="dot" style={{ background: "#ea580c" }} />{t(`ค่าภาษี ภ.ง.ด. ${fmtPct(plan.pgFee)} ของยอดลูกค้า`, `Withholding tax (PND) ${fmtPct(plan.pgFee)} of customer price`)}</>} r={<span className="text-[var(--fo)]">−{fmt(r.pg, 2)}</span>} />
+          {r.pctCost > 0 && <Row l={<><i className="dot" style={{ background: "#ea580c" }} />{t("ค่าใช้จ่ายแบบ % (เช่น การตลาด)", "% based costs (e.g. marketing)")}</>} r={<span className="text-[var(--fo)]">−{fmt(r.pctCost, 2)}</span>} />}
+          <div className="fin-total t-green"><span>{t("เหลือก่อนค่าใช้จ่ายประจำ", "Left before fixed costs")}</span><b>{fmt(r.net, 2)} {baht}</b></div>
+          <p className="fin-note">{t(`ผู้ให้บริการรับสุทธิ ${fmt(r.providerNet, 2)} บาท/รอบ (หลังหักค่าธรรมเนียม)`, `Provider nets ${fmt(r.providerNet, 2)} THB per booking (after fee)`)}</p>
         </Card>
 
-        <Card title="ค่าใช้จ่ายประจำ / เดือน" tone="orange">
-          <div className="flex text-[12.5px] font-semibold text-[var(--fm)] pb-1 gap-2"><span className="flex-1">รายการ</span><span className="w-[150px]">คิดแบบ</span><span className="w-[120px] text-right">งบประมาณ</span><span className="w-7" /></div>
+        <Card title={t("ค่าใช้จ่ายประจำ / เดือน", "Fixed costs / month")} tone="orange">
+          <div className="flex text-[12.5px] font-semibold text-[var(--fm)] pb-1 gap-2"><span className="flex-1">{t("รายการ", "Item")}</span><span className="w-[150px]">{t("คิดแบบ", "Basis")}</span><span className="w-[120px] text-right">{t("งบประมาณ", "Budget")}</span><span className="w-7" /></div>
           {plan.expenses.map((e, i) => (
-            <div key={e.id} className="py-1.5 border-b border-[var(--fl)]"><div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
-              <Txt label="ชื่อค่าใช้จ่าย" value={e.name} onChange={(name) => setExp(i, { name })} />
-              <select aria-label={`คิดแบบ ${e.name}`} className="fin-sel w-[150px]" value={e.kind} onChange={(ev) => { const kind = ev.target.value as ExpenseKind; setExp(i, { kind, value: kind === "fixed" ? 0 : 0.1 }); }}>
-                {(Object.keys(KIND_LABEL) as ExpenseKind[]).map((k) => <option key={k} value={k}>{KIND_LABEL[k]}</option>)}
-              </select>
-              <Num label={`งบ ${e.name}`} pct={e.kind !== "fixed"} value={e.value} onChange={(value) => setExp(i, { value })} />
-              <Del label={`ลบ ${e.name}`} onClick={() => up({ expenses: plan.expenses.filter((_, k) => k !== i) })} />
+            <div key={e.id} className="py-1.5 border-b border-[var(--fl)]">
+              <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+                {lang === "en" && NAME_EN[e.name]
+                  ? <span className="flex-1 min-w-0 text-[14px] px-1">{dn(e.name)}</span>
+                  : <Txt label={t("ชื่อค่าใช้จ่าย", "Expense name")} value={e.name} onChange={(name) => setExp(i, { name })} />}
+                <select aria-label={`${t("คิดแบบ", "Basis")} ${dn(e.name)}`} className="fin-sel w-[150px]" value={e.kind} onChange={(ev) => { const kind = ev.target.value as ExpenseKind; setExp(i, { kind, value: kind === "fixed" ? 0 : 0.1 }); }}>
+                  {(Object.keys(KIND) as ExpenseKind[]).map((k) => <option key={k} value={k}>{t(...KIND[k])}</option>)}
+                </select>
+                <Num label={`${t("งบ", "Budget")} ${dn(e.name)}`} pct={e.kind !== "fixed"} value={e.value} onChange={(value) => setExp(i, { value })} />
+                <Del label={`${t("ลบ", "Delete")} ${dn(e.name)}`} onClick={() => up({ expenses: plan.expenses.filter((_, k) => k !== i) })} />
               </div>
               {e.kind === "fixed" && (
                 <label className="mt-1 flex items-center gap-1.5 text-[12px] text-[var(--fm)] pl-1">
-                  <input type="checkbox" checked={!!e.noncash} onChange={(ev) => setExp(i, { noncash: ev.target.checked || undefined })} /> ไม่ใช่เงินสด (ตัดจำหน่าย — นับในกำไร แต่ไม่นับในเป้ารอบขาย)
+                  <input type="checkbox" checked={!!e.noncash} onChange={(ev) => setExp(i, { noncash: ev.target.checked || undefined })} /> {t("ไม่ใช่เงินสด (ตัดจำหน่าย — นับในกำไร แต่ไม่นับในเป้ารอบขาย)", "Non-cash (amortisation — counted in profit, not in the bookings target)")}
                 </label>
               )}
             </div>
           ))}
-          <button type="button" className="fin-add" onClick={() => up({ expenses: [...plan.expenses, { id: uid(), name: "ค่าใช้จ่ายใหม่", kind: "fixed", value: 0 }] })}>+ เพิ่มค่าใช้จ่าย</button>
-          <div className="fin-total t-orange"><span>รวม (บาท/เดือน)</span><b>{fmt(plan.expenses.filter((e) => e.kind === "fixed").reduce((t, e) => t + e.value, 0))} บาท</b></div>
-          <p className="fin-note">เป็นเงินสด {fmt(fixed)} บาท/เดือน (ใช้ในหน้าเป้ากำไร) · ค่าใช้จ่ายแบบ % คิดตามยอดของเดือนที่ดู</p>
+          <button type="button" className="fin-add" onClick={() => up({ expenses: [...plan.expenses, { id: uid(), name: t("ค่าใช้จ่ายใหม่", "New expense"), kind: "fixed", value: 0 }] })}>{t("+ เพิ่มค่าใช้จ่าย", "+ Add expense")}</button>
+          <div className="fin-total t-orange"><span>{t("รวม (บาท/เดือน)", "Total (THB / month)")}</span><b>{fmt(plan.expenses.filter((e) => e.kind === "fixed").reduce((s, e) => s + e.value, 0))} {baht}</b></div>
+          <p className="fin-note">{t(`เป็นเงินสด ${fmt(fixed)} บาท/เดือน (ใช้ในหน้าเป้ากำไร) · ค่าใช้จ่ายแบบ % คิดตามยอดของเดือนที่ดู`, `Cash portion ${fmt(fixed)} THB / month (used on the profit-target page) · % costs follow the selected month`)}</p>
         </Card>
       </div>
 
       <div id="services" className="scroll-mt-20">
-        <Card title="บริการและราคา (ค่าบริการ 3 ชั่วโมง)" tone="blue">
+        <Card title={t("บริการและราคา (ค่าบริการ 3 ชั่วโมง)", "Services & prices (3-hour booking)")} tone="blue">
           <div className="overflow-x-auto">
             <table className="fin-t">
-              <thead><tr><th>ชื่อบริการ</th><th>ระดับ</th><th className="r">ราคา (บาท)</th><th className="r">บริษัทเหลือ/รอบ</th><th className="r">ผู้ให้บริการรับสุทธิ</th><th /></tr></thead>
+              <thead><tr><th>{t("ชื่อบริการ", "Service name")}</th><th>{t("ระดับ", "Level")}</th><th className="r">{t("ราคา (บาท)", "Price (THB)")}</th><th className="r">{t("บริษัทเหลือ/รอบ", "Company net / booking")}</th><th className="r">{t("ผู้ให้บริการรับสุทธิ", "Provider net")}</th><th /></tr></thead>
               <tbody>
                 {plan.services.map((s, i) => {
                   const pr = perRound(plan, s.price);
                   const setSvc = (patch: Partial<FinService>) => up({ services: plan.services.map((x, k) => (k === i ? { ...x, ...patch } : x)) });
                   return (
                     <tr key={s.id}>
-                      <td><Txt label="ชื่อบริการ" w="w-full min-w-[160px]" value={s.name} onChange={(name) => setSvc({ name })} /></td>
-                      <td><Txt label="ระดับ" w="w-[100px]" value={s.level} onChange={(level) => setSvc({ level })} /></td>
-                      <td className="r"><Num label={`ราคา ${svcLabel(s)}`} w="w-[110px]" value={s.price} onChange={(price) => setSvc({ price })} /></td>
+                      <td>{lang === "en" && NAME_EN[s.name]
+                        ? <span className="text-[14px] whitespace-nowrap">{dn(s.name)}</span>
+                        : <Txt label={t("ชื่อบริการ", "Service name")} w="w-full min-w-[160px]" value={s.name} onChange={(name) => setSvc({ name })} />}</td>
+                      <td><Txt label={t("ระดับ", "Level")} w="w-[100px]" value={s.level} onChange={(level) => setSvc({ level })} /></td>
+                      <td className="r"><Num label={`${t("ราคา", "Price")} ${svcLabel(s)}`} w="w-[110px]" value={s.price} onChange={(price) => setSvc({ price })} /></td>
                       <td className="r tabular-nums text-[var(--fg)] font-semibold">{fmt(pr.net, 2)}</td>
                       <td className="r tabular-nums">{fmt(pr.providerNet, 2)}</td>
-                      <td>{plan.services.length > 1 && <Del label={`ลบ ${svcLabel(s)}`} onClick={() => up({ services: plan.services.filter((x) => x.id !== s.id) })} />}</td>
+                      <td>{plan.services.length > 1 && <Del label={`${t("ลบ", "Delete")} ${svcLabel(s)}`} onClick={() => up({ services: plan.services.filter((x) => x.id !== s.id) })} />}</td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
           </div>
-          <button type="button" className="fin-add" onClick={() => up({ services: [...plan.services, { id: uid(), name: "บริการใหม่", level: "", price: 0 }] })}>+ เพิ่มบริการ</button>
+          <button type="button" className="fin-add" onClick={() => up({ services: [...plan.services, { id: uid(), name: t("บริการใหม่", "New service"), level: "", price: 0 }] })}>{t("+ เพิ่มบริการ", "+ Add service")}</button>
+          {lang === "en" && <p className="fin-note">Default names are shown translated; switch to ไทย to rename them.</p>}
         </Card>
       </div>
 
       <div className="grid xl:grid-cols-2 gap-4 items-start">
-        <Card title="รายการที่ต้องตั้งงบเพิ่ม (ต่อเดือน)">
-          <Items items={plan.pending} onChange={(pending) => up({ pending })} addLabel="+ เพิ่มรายการ" zeroChip />
-          {plan.pending.some((i) => !i.amount) && <p className="fin-warn">รายการที่ยังเป็น 0 ยังไม่ถูกหักในกำไร</p>}
+        <Card title={t("รายการที่ต้องตั้งงบเพิ่ม (ต่อเดือน)", "Items still to budget (per month)")}>
+          <Items items={plan.pending} onChange={(pending) => up({ pending })} addLabel={t("+ เพิ่มรายการ", "+ Add item")} zeroChip />
+          {plan.pending.some((i) => !i.amount) && <p className="fin-warn">{t("รายการที่ยังเป็น 0 ยังไม่ถูกหักในกำไร", "Items left at 0 are not deducted from profit")}</p>}
         </Card>
-        <Card title="เงินลงทุนและรายการแยกติดตาม" tone="blue">
-          <Row l="ทุนตั้งต้น" r={<Num label="ทุนตั้งต้น" value={plan.capital} onChange={(v) => up({ capital: v })} />} />
-          <Items items={plan.startup} onChange={(startup) => up({ startup })} addLabel="+ เพิ่มรายการเงินลงทุน" />
-          <div className="fin-total t-blue"><span>เหลือสำหรับดำเนินงาน</span><b>{fmt(plan.capital - plan.startup.reduce((t, i) => t + i.amount, 0))} บาท</b></div>
+        <Card title={t("เงินลงทุนและรายการแยกติดตาม", "Investment & tracked items")} tone="blue">
+          <Row l={t("ทุนตั้งต้น", "Starting capital")} r={<Num label={t("ทุนตั้งต้น", "Starting capital")} value={plan.capital} onChange={(v) => up({ capital: v })} />} />
+          <Items items={plan.startup} onChange={(startup) => up({ startup })} addLabel={t("+ เพิ่มรายการเงินลงทุน", "+ Add investment item")} />
+          <div className="fin-total t-blue"><span>{t("เหลือสำหรับดำเนินงาน", "Left for operations")}</span><b>{fmt(plan.capital - plan.startup.reduce((s, i) => s + i.amount, 0))} {baht}</b></div>
         </Card>
       </div>
-      <p className="fin-note">ส่วนแบ่งคำนวณจากรายได้ผู้ให้บริการ • เงินประกันที่คืนได้แยกจากรายได้ • ตัวเลขจำลอง ยังไม่รวมภาษี</p>
+      <p className="fin-note">{t("ส่วนแบ่งคำนวณจากรายได้ผู้ให้บริการ • เงินประกันที่คืนได้แยกจากรายได้ • ตัวเลขจำลอง ยังไม่รวมภาษี", "Shares are calculated on provider revenue • refundable deposits are kept out of revenue • plan figures, before tax")}</p>
     </div>
   );
 }
 
 // ─── หน้า 10: เป้ากำไร ───
 function Target({ plan, up, month, setMonth }: P) {
+  const { t, lang } = useT();
+  const svcLabel = useSvcLabel();
   const [multi, setMulti] = useState(false);
   const [how, setHow] = useState(false);
   const svc = plan.services.find((s) => s.id === plan.target.serviceId) ?? plan.services[0];
   const setT = (patch: Partial<FinancePlan["target"]>) => up({ target: { ...plan.target, ...patch } });
   const single = targetFor(plan, svc.price);
   const mix = targetMix(plan, month);
-  const t = multi ? mix : single;
+  const tg = multi ? mix : single;
+  const baht = t("บาท", "THB"), rd = t("รอบ", "bookings");
+  const pr = perRound(plan, svc.price);
   return (
     <div className="flex flex-col gap-4">
       <div className="fin-seg" role="tablist">
-        <button type="button" role="tab" aria-selected={!multi} className={!multi ? "on" : ""} onClick={() => setMulti(false)}>ประเภทเดียว</button>
-        <button type="button" role="tab" aria-selected={multi} className={multi ? "on" : ""} onClick={() => setMulti(true)}>หลายประเภท</button>
+        <button type="button" role="tab" aria-selected={!multi} className={!multi ? "on" : ""} onClick={() => setMulti(false)}>{t("ประเภทเดียว", "Single service")}</button>
+        <button type="button" role="tab" aria-selected={multi} className={multi ? "on" : ""} onClick={() => setMulti(true)}>{t("หลายประเภท", "Service mix")}</button>
       </div>
       <div className="grid xl:grid-cols-[1fr_1.2fr] gap-4 items-start">
-        <Card n={1} title="เลือกบริการและเป้าหมาย">
+        <Card n={1} title={t("เลือกบริการและเป้าหมาย", "Choose service & target")}>
           {multi ? (
-            <div className="flex items-center gap-2 py-1.5 border-b border-[var(--fl)] text-[14px]"><span className="w-[120px]">สัดส่วนจาก</span><MonthPick month={month} setMonth={setMonth} plan={plan} /></div>
+            <div className="flex items-center gap-2 py-1.5 border-b border-[var(--fl)] text-[14px]"><span className="w-[120px]">{t("สัดส่วนจาก", "Mix from")}</span><MonthPick month={month} setMonth={setMonth} plan={plan} /></div>
           ) : (
             <div className="flex items-center gap-2 py-1.5 border-b border-[var(--fl)] text-[14px]">
-              <span className="w-[120px] shrink-0">บริการ</span>
-              <select className="fin-sel flex-1 min-w-0" value={svc.id} onChange={(e) => setT({ serviceId: e.target.value })} aria-label="ประเภทบริการ">
-                {plan.services.map((s) => <option key={s.id} value={s.id}>{svcLabel(s)} • {fmt(s.price)} บาท</option>)}
+              <span className="w-[120px] shrink-0">{t("บริการ", "Service")}</span>
+              <select className="fin-sel flex-1 min-w-0" value={svc.id} onChange={(e) => setT({ serviceId: e.target.value })} aria-label={t("ประเภทบริการ", "Service type")}>
+                {plan.services.map((s) => <option key={s.id} value={s.id}>{svcLabel(s)} • {fmt(s.price)} {baht}</option>)}
               </select>
             </div>
           )}
-          <div className="flex items-center gap-2 py-1.5 border-b border-[var(--fl)] text-[14px]"><span className="w-[120px] shrink-0">เป้ากำไรต่อเดือน</span><Num label="เป้ากำไรต่อเดือน" w="flex-1" value={plan.target.profit} onChange={(profit) => setT({ profit })} /><span className="text-[var(--fm)]">บาท</span></div>
-          <div className="flex items-center gap-2 py-1.5 border-b border-[var(--fl)] text-[14px]"><span className="w-[120px] shrink-0">วันทำงาน/เดือน</span><Num label="วันทำงานต่อเดือน" w="w-[90px]" value={plan.target.days} onChange={(days) => setT({ days: Math.min(31, Math.max(1, Math.round(days))) })} /><span className="text-[var(--fm)]">วัน</span></div>
-          <div className="flex items-center gap-2 py-1.5 text-[14px]"><span className="w-[120px] shrink-0">ค่าใช้จ่ายประจำ</span><b className="tabular-nums">{fmt(single.fixed)}</b><span className="text-[var(--fm)]">บาท/เดือน</span><span className="flex-1" /><Link href="/finance/costs" className="text-[12.5px] font-semibold text-[var(--fp)] underline">แก้ไขสมมติฐาน</Link></div>
-          <p className="fin-note">ค่าใช้จ่ายประจำเงินสด + รายการตั้งงบเพิ่ม (ไม่รวมค่าตัดจำหน่าย)</p>
+          <div className="flex items-center gap-2 py-1.5 border-b border-[var(--fl)] text-[14px]"><span className="w-[120px] shrink-0">{t("เป้ากำไรต่อเดือน", "Monthly profit target")}</span><Num label={t("เป้ากำไรต่อเดือน", "Monthly profit target")} w="flex-1" value={plan.target.profit} onChange={(profit) => setT({ profit })} /><span className="text-[var(--fm)]">{baht}</span></div>
+          <div className="flex items-center gap-2 py-1.5 border-b border-[var(--fl)] text-[14px]"><span className="w-[120px] shrink-0">{t("วันทำงาน/เดือน", "Working days / month")}</span><Num label={t("วันทำงานต่อเดือน", "Working days per month")} w="w-[90px]" value={plan.target.days} onChange={(days) => setT({ days: Math.min(31, Math.max(1, Math.round(days))) })} /><span className="text-[var(--fm)]">{t("วัน", "days")}</span></div>
+          <div className="flex items-center gap-2 py-1.5 text-[14px] flex-wrap"><span className="w-[120px] shrink-0">{t("ค่าใช้จ่ายประจำ", "Fixed costs")}</span><b className="tabular-nums">{fmt(single.fixed)}</b><span className="text-[var(--fm)]">{t("บาท/เดือน", "THB / month")}</span><span className="flex-1" /><Link href="/finance/costs" className="text-[12.5px] font-semibold text-[var(--fp)] underline">{t("แก้ไขสมมติฐาน", "Edit assumptions")}</Link></div>
+          <p className="fin-note">{t("ค่าใช้จ่ายประจำเงินสด + รายการตั้งงบเพิ่ม (ไม่รวมค่าตัดจำหน่าย)", "Cash fixed costs + extra budget items (excludes amortisation)")}</p>
         </Card>
 
-        <Card n={2} title="จำนวนรอบที่ต้องขาย">
-          {t && t.rounds != null ? (
+        <Card n={2} title={t("จำนวนรอบที่ต้องขาย", "Bookings you need to sell")}>
+          {tg && tg.rounds != null ? (
             <>
               <div className="flex items-end justify-center gap-3 flex-wrap">
-                <span className="text-[64px] lg:text-[80px] font-extrabold leading-none text-[var(--fp)] tabular-nums">{fmt(t.rounds)}</span>
-                <span className="fin-pill big mb-3">รอบ / เดือน</span>
+                <span className="text-[64px] lg:text-[80px] font-extrabold leading-none text-[var(--fp)] tabular-nums">{fmt(tg.rounds)}</span>
+                <span className="fin-pill big mb-3">{t("รอบ / เดือน", "bookings / month")}</span>
               </div>
-              <p className="m-0 text-center text-[14px]">เพื่อเหลือกำไรอย่างน้อย {fmt(plan.target.profit)} บาท</p>
+              <p className="m-0 text-center text-[14px]">{t(`เพื่อเหลือกำไรอย่างน้อย ${fmt(plan.target.profit)} บาท`, `to keep at least ${fmt(plan.target.profit)} THB profit`)}</p>
               <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-[var(--fl)] text-center">
-                <div><div className="text-[12.5px] text-[var(--fm)]">เฉลี่ยต่อวัน</div><div className="text-[22px] font-bold tabular-nums">{fmt(t.perDay ?? 0)} รอบ</div><div className="text-[11.5px] text-[var(--fm)]">({plan.target.days} วัน, ปัดขึ้น)</div></div>
-                <div><div className="text-[12.5px] text-[var(--fm)]">คุ้มทุนที่</div><div className="text-[22px] font-bold tabular-nums">{fmt(t.breakeven ?? 0)} รอบ</div></div>
-                <div><div className="text-[12.5px] text-[var(--fm)]">กำไรตามแผน</div><div className="text-[22px] font-bold tabular-nums text-[var(--fg)]">{fmt(t.profit ?? 0)} บาท</div></div>
+                <div><div className="text-[12.5px] text-[var(--fm)]">{t("เฉลี่ยต่อวัน", "Per day")}</div><div className="text-[22px] font-bold tabular-nums">{fmt(tg.perDay ?? 0)} {rd}</div><div className="text-[11.5px] text-[var(--fm)]">({plan.target.days} {t("วัน, ปัดขึ้น", "days, rounded up")})</div></div>
+                <div><div className="text-[12.5px] text-[var(--fm)]">{t("คุ้มทุนที่", "Break-even at")}</div><div className="text-[22px] font-bold tabular-nums">{fmt(tg.breakeven ?? 0)} {rd}</div></div>
+                <div><div className="text-[12.5px] text-[var(--fm)]">{t("กำไรตามแผน", "Planned profit")}</div><div className="text-[22px] font-bold tabular-nums text-[var(--fg)]">{fmt(tg.profit ?? 0)} {baht}</div></div>
               </div>
-              <div className="fin-total t-green mt-3"><span>เงินเหลือต่อรอบ{multi ? " (เฉลี่ย)" : ""}</span><b>{fmt(t.net, 2)} บาท</b></div>
+              <div className="fin-total t-green mt-3"><span>{t("เงินเหลือต่อรอบ", "Net per booking")}{multi ? t(" (เฉลี่ย)", " (average)") : ""}</span><b>{fmt(tg.net, 2)} {baht}</b></div>
               {multi && mix && (
-                <div className="mt-3">{mix.split.filter((x) => x.w > 0).map((x) => <Row key={x.s.id} l={`${svcLabel(x.s)} (${fmtPct(x.w)})`} r={`${fmt(x.rounds)} รอบ`} />)}</div>
+                <div className="mt-3">{mix.split.filter((x) => x.w > 0).map((x) => <Row key={x.s.id} l={`${svcLabel(x.s)} (${fmtPct(x.w)})`} r={`${fmt(x.rounds)} ${rd}`} />)}</div>
               )}
-              <button type="button" className="fin-add w-full text-center" onClick={() => setHow(!how)} aria-expanded={how}>{how ? "ซ่อนวิธีคำนวณ ▲" : "ดูวิธีคำนวณและค่าธรรมเนียม ▼"}</button>
+              <button type="button" className="fin-add w-full text-center" onClick={() => setHow(!how)} aria-expanded={how}>{how ? t("ซ่อนวิธีคำนวณ ▲", "Hide calculation ▲") : t("ดูวิธีคำนวณและค่าธรรมเนียม ▼", "Show calculation & fees ▼")}</button>
               {how && (
                 <div className="text-[13px] leading-relaxed bg-[var(--fsoft)] rounded-xl p-3">
-                  {!multi && <p className="m-0">ต่อรอบ: {fmt(svc.price)} × {fmtPct(plan.companyShare)} + ค่าธรรมเนียม {fmt(perRound(plan, svc.price).fee, 2)} − ค่ารับชำระ {fmt(perRound(plan, svc.price).pg, 2)}{perRound(plan, svc.price).pctCost ? ` − ค่าใช้จ่ายแบบ % ${fmt(perRound(plan, svc.price).pctCost, 2)}` : ""} = <b>{fmt(t.net, 2)}</b></p>}
-                  <p className="m-0">รอบที่ต้องขาย = (เป้ากำไร {fmt(plan.target.profit)} + ค่าใช้จ่ายประจำ {fmt(t.fixed)}) ÷ {fmt(t.net, 2)} = <b>{fmt(t.rounds)}</b> (ปัดขึ้น)</p>
-                  <p className="m-0">คุ้มทุน = {fmt(t.fixed)} ÷ {fmt(t.net, 2)} = <b>{fmt(t.breakeven ?? 0)}</b> รอบ</p>
+                  {!multi && <p className="m-0">{t("ต่อรอบ", "Per booking")}: {fmt(svc.price)} × {fmtPct(plan.companyShare)} + {t("ค่าธรรมเนียม", "fee")} {fmt(pr.fee, 2)} − {t("ค่าภาษี ภ.ง.ด.", "PND tax")} {fmt(pr.pg, 2)}{pr.pctCost ? ` − ${t("ค่าใช้จ่ายแบบ %", "% costs")} ${fmt(pr.pctCost, 2)}` : ""} = <b>{fmt(tg.net, 2)}</b></p>}
+                  <p className="m-0">{t("รอบที่ต้องขาย", "Bookings needed")} = ({t("เป้ากำไร", "profit target")} {fmt(plan.target.profit)} + {t("ค่าใช้จ่ายประจำ", "fixed costs")} {fmt(tg.fixed)}) ÷ {fmt(tg.net, 2)} = <b>{fmt(tg.rounds)}</b> ({t("ปัดขึ้น", "rounded up")})</p>
+                  <p className="m-0">{t("คุ้มทุน", "Break-even")} = {fmt(tg.fixed)} ÷ {fmt(tg.net, 2)} = <b>{fmt(tg.breakeven ?? 0)}</b> {rd}</p>
                 </div>
               )}
             </>
           ) : (
-            <p className="fin-warn">{multi ? `ยังไม่มีเคสในเดือน ${month} — กรอกเคสที่หน้าภาพรวมก่อน` : "บริการนี้ไม่เหลือเงินต่อรอบ (ราคาหรือ % ทำให้ขาดทุน)"}</p>
+            <p className="fin-warn">{multi
+              ? t(`ยังไม่มีเคสในเดือน ${month} (${monthLabel(month, lang)}) — กรอกเคสที่หน้าภาพรวมก่อน`, `No cases in ${month} (${monthLabel(month, lang)}) yet — enter them on the Overview page first`)
+              : t("บริการนี้ไม่เหลือเงินต่อรอบ (ราคาหรือ % ทำให้ขาดทุน)", "This service leaves nothing per booking (price or % settings make a loss)")}</p>
           )}
         </Card>
       </div>
 
-      <Card title="เปรียบเทียบกับบริการอื่น" right={<span className="text-[12.5px] text-[var(--fm)]">ขายประเภทเดียว • เป้ากำไร {fmt(plan.target.profit)} บาทเท่ากัน</span>}>
+      <Card title={t("เปรียบเทียบกับบริการอื่น", "Compare services")} right={<span className="text-[12.5px] text-[var(--fm)]">{t(`ขายประเภทเดียว • เป้ากำไร ${fmt(plan.target.profit)} บาทเท่ากัน`, `Selling one service only • same ${fmt(plan.target.profit)} THB target`)}</span>}>
         <div className="overflow-x-auto">
           <table className="fin-t">
-            <thead><tr><th>บริการ</th><th className="r">ราคา</th><th className="r">เหลือต่อรอบ</th><th className="r">คุ้มทุน</th><th className="r">รอบที่ต้องขาย/เดือน</th></tr></thead>
+            <thead><tr><th>{t("บริการ", "Service")}</th><th className="r">{t("ราคา", "Price")}</th><th className="r">{t("เหลือต่อรอบ", "Net / booking")}</th><th className="r">{t("คุ้มทุน", "Break-even")}</th><th className="r">{t("รอบที่ต้องขาย/เดือน", "Bookings needed / month")}</th></tr></thead>
             <tbody>
               {plan.services.map((s) => {
                 const x = targetFor(plan, s.price), on = !multi && s.id === svc.id;
                 return (
                   <tr key={s.id} className={on ? "sel" : ""} onClick={() => { setMulti(false); setT({ serviceId: s.id }); }} style={{ cursor: "pointer" }}>
                     <td className="font-semibold">{svcLabel(s)}</td>
-                    <td className="r tabular-nums">{fmt(s.price)} บาท</td>
+                    <td className="r tabular-nums">{fmt(s.price)} {baht}</td>
                     <td className="r tabular-nums">{fmt(x.net, 2)}</td>
-                    <td className="r tabular-nums">{x.breakeven == null ? "—" : `${fmt(x.breakeven)} รอบ`}</td>
-                    <td className="r tabular-nums font-bold text-[16px]">{x.rounds == null ? "—" : `${fmt(x.rounds)} รอบ`}{on && " ✓"}</td>
+                    <td className="r tabular-nums">{x.breakeven == null ? "—" : `${fmt(x.breakeven)} ${rd}`}</td>
+                    <td className="r tabular-nums font-bold text-[16px]">{x.rounds == null ? "—" : `${fmt(x.rounds)} ${rd}`}{on && " ✓"}</td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
         </div>
-        <p className="fin-note">สมมติส่วนแบ่งบริษัท {fmtPct(plan.companyShare)} • กำไรก่อนภาษี ยังไม่รวมรายการที่ยังไม่ใส่งบ</p>
+        <p className="fin-note">{t(`สมมติส่วนแบ่งบริษัท ${fmtPct(plan.companyShare)} • กำไรก่อนภาษี ยังไม่รวมรายการที่ยังไม่ใส่งบ`, `Assumes ${fmtPct(plan.companyShare)} company share • profit before tax, excluding unbudgeted items`)}</p>
       </Card>
     </div>
   );
@@ -521,11 +599,12 @@ const CSS = `
 .fin-t .r{text-align:right}
 .fin-t tr.sel td{background:#f1ebff}
 .fin-t.grid18 td{padding:3px 3px}
-.fin-mo{font-weight:600;padding:2px 8px;border-radius:8px}.fin-mo.on{background:var(--fp);color:#fff}
+.fin-mo{font-weight:600;padding:2px 8px;border-radius:8px;line-height:1.3;white-space:nowrap}.fin-mo.on{background:var(--fp);color:#fff}
 .fin-lv{display:inline-block;font-size:11.5px;font-weight:600;padding:0 8px;border-radius:999px;background:#e8eefc;color:#3b5bb5;margin-left:4px}.fin-lv.top{background:#fff1c7;color:#9a6a00}
 .dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px;vertical-align:middle}
 .fin-seg{display:inline-flex;background:#ece6fa;border-radius:14px;padding:4px;align-self:flex-start}
 .fin-seg button{padding:8px 22px;border-radius:11px;font-weight:600;font-size:14.5px;color:var(--ft2)}
+.fin-seg.sm{padding:3px;border-radius:12px}.fin-seg.sm button{padding:4px 14px;font-size:13px}
 .fin-seg button.on{background:var(--fp);color:#fff;box-shadow:0 4px 12px rgba(109,63,209,.3)}
 .fin-savebar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;align-items:center;gap:10px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(255,255,255,.96);border-top:1px solid var(--fl);backdrop-filter:blur(6px)}
 @media (min-width:1024px){.fin-savebar{left:248px;padding-left:32px;padding-right:32px}}

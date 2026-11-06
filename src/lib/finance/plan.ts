@@ -11,7 +11,7 @@ export interface FinancePlan {
   startup: FinItem[];            // เงินทุนใช้กับอะไร (ครั้งเดียว)
   companyShare: number;          // ส่วนแบ่งบริษัท (0.5 = 50%)
   providerFee: number;           // ค่าธรรมเนียมจากส่วนแบ่งผู้ให้บริการ (0.03)
-  pgFee: number;                 // ค่ารับชำระ % ของยอดลูกค้าจ่าย (0.025)
+  pgFee: number;                 // ค่าภาษี ภ.ง.ด. % ของยอดลูกค้าจ่าย (0.025)
   services: FinService[];
   /** จำนวนรอบต่อเดือน: months["M4"][serviceId] */
   months: Record<string, Record<string, number>>;
@@ -22,6 +22,14 @@ export interface FinancePlan {
 }
 
 export const MONTHS = Array.from({ length: 18 }, (_, i) => `M${i + 1}`);
+/** M1 = ต.ค. 2569 (Oct 2026) แล้วนับต่อไปทีละเดือน */
+export const MONTH_START = { year: 2026, month: 9 }; // month 0-based
+export function monthLabel(m: string, lang: "th" | "en" = "th") {
+  const i = MONTHS.indexOf(m);
+  if (i < 0) return m;
+  const d = new Date(Date.UTC(MONTH_START.year, MONTH_START.month + i, 1));
+  return d.toLocaleDateString(lang === "th" ? "th-TH" : "en-US", { month: "short", year: "2-digit", timeZone: "UTC" });
+}
 export const KIND_LABEL: Record<ExpenseKind, string> = { fixed: "บาท/เดือน", pctRevenue: "% ของรายได้บริษัท", pctGross: "% ของยอดลูกค้าจ่าย" };
 
 export const DEFAULT_PLAN: FinancePlan = {
@@ -67,7 +75,7 @@ export function perRound(p: FinancePlan, price: number) {
   const provider = price - company;
   const fee = provider * p.providerFee;
   const pg = price * p.pgFee;
-  const revenue = company + fee; // รายได้บริษัท (ก่อนหักค่ารับชำระ)
+  const revenue = company + fee; // รายได้บริษัท (ก่อนหักค่าภาษี ภ.ง.ด.)
   // ค่าใช้จ่ายที่คิดเป็น % ต่อรอบ
   const pctCost = p.expenses.reduce((t, e) => t + (e.kind === "pctRevenue" ? revenue * e.value : e.kind === "pctGross" ? price * e.value : 0), 0);
   return { price, company: r2(company), provider: r2(provider), fee: r2(fee), pg: r2(pg), pctCost: r2(pctCost), net: r2(revenue - pg - pctCost), providerNet: r2(provider - fee) };
@@ -92,7 +100,7 @@ export function monthSummary(p: FinancePlan, month: string) {
   const pg = gross * p.pgFee;
   const lines = [
     ...p.expenses.map((e) => ({ id: e.id, name: e.name, kind: e.kind, value: e.value, noncash: !!e.noncash, amount: e.kind === "fixed" ? e.value : e.kind === "pctRevenue" ? revenue * e.value : gross * e.value })),
-    { id: "_pg", name: `ค่ารับชำระ ${fmtPct(p.pgFee)} ของยอดลูกค้า`, kind: "pctGross" as ExpenseKind, value: p.pgFee, noncash: false, amount: pg },
+    { id: "_pg", name: `ค่าภาษี ภ.ง.ด. ${fmtPct(p.pgFee)} ของยอดลูกค้า`, kind: "pctGross" as ExpenseKind, value: p.pgFee, noncash: false, amount: pg },
     ...p.pending.filter((i) => i.amount > 0).map((i) => ({ id: i.id, name: i.name, kind: "fixed" as ExpenseKind, value: i.amount, noncash: false, amount: i.amount })),
   ];
   const expenses = lines.reduce((t, l) => t + l.amount, 0);
@@ -170,7 +178,7 @@ export function cleanPlan(raw: unknown): Omit<FinancePlan, "history"> {
     startup: list(b.startup, 30, (x) => ({ id: id(x.id), name: txt(x.name, "รายการเงินทุน"), amount: num(x.amount, 0, 1e10, "จำนวนเงิน") })),
     companyShare: num(b.companyShare, 0, 1, "ส่วนแบ่งบริษัท"),
     providerFee: num(b.providerFee, 0, 0.5, "ค่าธรรมเนียมผู้ให้บริการ"),
-    pgFee: num(b.pgFee, 0, 0.2, "ค่ารับชำระ"),
+    pgFee: num(b.pgFee, 0, 0.2, "ค่าภาษี ภ.ง.ด."),
     services,
     months,
     expenses: list(b.expenses, 40, (x) => {

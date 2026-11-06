@@ -38,7 +38,8 @@ export default async function AdminHome() {
   const todo = role ? all.filter(([, , href]) => canAccess(role, href.split("?")[0])) : [];
   return (
     <>
-      <PageHead title="ภาพรวม" sub={`ข้อมูลจริง ณ ${new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}`} />
+      <PageHead title="ภาพรวม" sub={`ข้อมูลจริง ณ ${new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" })}`}
+        right={role && canAccess(role, "/finance") ? <Link href="/finance" className="inline-flex items-center gap-2 h-11 px-5 rounded-xl font-semibold text-[15px] text-white bg-[#6d3fd1] hover:bg-[#5b32b5] shadow-[0_6px_16px_rgba(109,63,209,.25)]">หลังบ้านการเงิน · วางแผนต้นทุน / เป้ากำไร →</Link> : undefined} />
       {/* ระบบหลัก (บอส/SIRI 24 ต.ค. 2569) — กดเข้าหน้าบริหารย่อยของแต่ละระบบ */}
       <div data-admin-systems className="grid grid-cols-2 xl:grid-cols-5 gap-2.5 mb-5">
         {([["ยอดเงินเข้า", "ใครโอน · จากระบบไหน", "/admin/income", "#ffd76a"], ["ระบบ Part-Time", "ผู้สมัคร · KYC · อบรม · Recruit", "/admin/applicants", "#e8c472"], ["ระบบ Partner", "สปา · โรงแรม · จองห้อง", "/admin/partners", "#2f7a46"], ["ระบบ Collab", "MB x Bars · กำลังเตรียม", "/admin/collab", "#5b3fb0"], ["ระบบร้านค้า", "Marketplace · โค้ดโปร", "/admin/market", "#c0577e"]] as const)
