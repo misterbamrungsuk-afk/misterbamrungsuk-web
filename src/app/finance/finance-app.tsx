@@ -510,8 +510,8 @@ function ProfitChart({ plan, up, month, setMonth }: P) {
         <span className="text-[12.5px] font-semibold">{vals.length ? t(`For Cash ${hit}/${vals.length} เดือน`, `For Cash ${hit}/${vals.length} months`) : t("ยังไม่มีเคส — กรอกในตารางด้านล่าง", "No cases yet — fill in the table below")}</span>
       </div>
       <div className="flex flex-wrap gap-3 text-[11.5px] text-[var(--fm)] mb-2">
-        <span><i className="dot" style={{ background: "#c9c4d3" }} />For Cash</span>
         <span><i className="dot" style={{ background: "var(--fg)" }} />{t("ถึง For Cash", "Reached For Cash")}</span>
+        <span><i className="dot" style={{ background: "#c9c4d3" }} />For Cash</span>
         <span><i className="dot" style={{ background: "#e0a100" }} />{t("มีกำไร ยังไม่ถึง", "Profit, below For Cash")}</span>
         <span><i className="dot" style={{ background: "var(--fr)" }} />{t("ขาดทุน", "Loss")}</span>
         {custom > 0 && <button type="button" className="underline text-[var(--fp)]" onClick={() => up({ cashTargets: {} })}>{t(`ใช้ For Cash ${k(plan.target.profit)} ทุกเดือน`, `Use ${k(plan.target.profit)} For Cash for every month`)}</button>}
