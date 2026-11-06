@@ -25,6 +25,8 @@ const th = {
     featured: "★ แนะนำ",
     tomSoon: "ทอมหล่อ เร็ว ๆ นี้", tomSoonSub: "กำลังเปิดรับสมัครทอมหล่อรุ่นแรก", tomApply: "สมัครเป็นทอมหล่อ ›",
     empty: "ยังไม่เจอเพื่อนที่ตรงใจ ลองเลือกกิจกรรมให้น้อยลงดูนะคะ",
+    // เลือกบริการบนสุด (บอส 6 พ.ย. 2569: เปิดมาแล้วเลือก เพื่อนกินเพื่อนเที่ยว / หมอนวด ให้ชัด)
+    svcTitle: "เลือกบริการ", svcAria: "เลือกประเภทบริการ", svcEat: "เพื่อนกินเพื่อนเที่ยว", svcEatSub: "ทานข้าว คาเฟ่ ดูหนัง เที่ยวด้วยกัน", svcMassage: "หมอนวด", svcMassageSub: "นวดน้ำมันผ่อนคลาย โดยผู้มีใบรับรอง", svcFrom: (v: string) => `เริ่ม ${v} / 3 ชม.`, svcAll: "ดูทั้งหมด", svcMassageTom: "ยังไม่มีทอมสายนวด", svcSeeMan: "ดูหนุ่มหล่อสายนวด ›",
     adsLbl: "โฆษณา", adN: (i: number, n: number, name: string) => `โฆษณา ${i}/${n} · ${name}`, adDot: (i: number) => `ดูโฆษณาที่ ${i}`, unread: (n: number) => `ยังไม่อ่าน ${n}`,
     slides: [
       { kind: "สปาพาร์ทเนอร์ · สีลม", name: "บำรุงสุข สปา", offer: "สมาชิกลด 20%" },
@@ -123,6 +125,7 @@ const en: SiteDict = {
     featured: "★ Featured",
     tomSoon: "Handsome Toms · coming soon", tomSoonSub: "Now recruiting our first group", tomApply: "Apply as a Tom ›",
     empty: "No matches yet. Try selecting fewer activities.",
+    svcTitle: "Choose a service", svcAria: "Choose a service type", svcEat: "Dining & outing companions", svcEatSub: "Meals, cafés, movies and outings together", svcMassage: "Massage therapists", svcMassageSub: "Relaxing oil massage by certified therapists", svcFrom: (v) => `From ${v} / 3 hrs`, svcAll: "Show all", svcMassageTom: "No Tom massage therapists yet", svcSeeMan: "See gentlemen who offer massage ›",
     adsLbl: "Featured offers", adN: (i, n, name) => `Offer ${i}/${n} · ${name}`, adDot: (i) => `Show offer ${i}`, unread: (n) => `${n} unread`,
     slides: [
       { kind: "Partner spa · Silom", name: "Bamrungsuk Spa", offer: "Members save 20%" },
@@ -219,6 +222,7 @@ const zh: SiteDict = {
     featured: "★ 推荐",
     tomSoon: "帅气Tom · 即将推出", tomSoonSub: "首批招募进行中", tomApply: "报名成为Tom ›",
     empty: "暂无符合条件的伙伴，请尝试减少所选活动。",
+    svcTitle: "选择服务", svcAria: "选择服务类型", svcEat: "美食出游伙伴", svcEatSub: "一起用餐、咖啡、看电影、出游", svcMassage: "放松按摩（持证）", svcMassageSub: "由持证按摩师提供精油放松按摩", svcFrom: (v) => `${v} 起 / 3小时`, svcAll: "查看全部", svcMassageTom: "暂无提供按摩的Tom", svcSeeMan: "查看提供按摩的帅气男士 ›",
     adsLbl: "精选优惠", adN: (i, n, name) => `优惠 ${i}/${n} · ${name}`, adDot: (i) => `查看第${i}个优惠`, unread: (n) => `${n}条未读`,
     slides: [
       { kind: "合作水疗 · 是隆", name: "Bamrungsuk 水疗", offer: "会员享8折" },

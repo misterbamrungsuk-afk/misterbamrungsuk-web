@@ -17,7 +17,10 @@ export async function generateMetadata() { return { title: (await getSite()).hom
 // หน้าตัวอย่างสำหรับผู้สนใจร่วมทีมแยกไปที่ /join/showcase
 export const dynamic = "force-dynamic";
 
-export default async function HomePage() {
+export default async function HomePage({ searchParams }: { searchParams: Promise<{ svc?: string }> }) {
+  // ?svc=eat|massage = ลิงก์ตรงไปบริการนั้น (โฆษณา / LINE OA)
+  const q = (await searchParams).svc;
+  const svc = q === "eat" || q === "massage" ? q : "";
   const me = await currentCustomer().catch(() => null);
   const [{ show }, all, blocked, prof, notices, mcfg] = await Promise.all([
     getEarnings(), getLivePeople().catch(() => []), myBlocked(),
@@ -43,5 +46,5 @@ export default async function HomePage() {
   const lang = await getLang();
   const tr = lang === "th" ? null : await autoTranslate(lang, people0.filter((p) => p.real).map((p) => ({ kind: "name" as const, text: p.nick })));
   const people = tr ? people0.map((p) => (p.real ? { ...p, nick: tr("name", p.nick) } : p)) : people0;
-  return <HomeFeed showEarnings={show} people={people} me={me ? { name: prof?.name || me.email.split("@")[0] } : null} unread={unread} memberTier={prof?.member_tier ?? null} promo={{ gold: mcfg.tiers.gold, black: mcfg.tiers.black }} recruit={PT_ONLY} />;
+  return <HomeFeed showEarnings={show} people={people} me={me ? { name: prof?.name || me.email.split("@")[0] } : null} unread={unread} memberTier={prof?.member_tier ?? null} promo={{ gold: mcfg.tiers.gold, black: mcfg.tiers.black }} recruit={PT_ONLY} svc={svc} />;
 }

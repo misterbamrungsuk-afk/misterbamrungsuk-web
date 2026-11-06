@@ -5,7 +5,7 @@
 // มือถือ = ตามบอร์ด 390 · md+ การ์ด 3 คอลัมน์ · กดการ์ด → โปรไฟล์ตัวอย่าง /p/[id] (บอร์ด C-Profile) → แชทตัวอย่าง (บอร์ด C-ChatRoom)
 import { useEffect, useMemo, useRef, useState } from "react";
 import { readConsent } from "@/lib/consent";
-import { PACKAGES } from "@/lib/join/config";
+import { EARNINGS, PACKAGES } from "@/lib/join/config";
 import Link from "next/link";
 import { PEOPLE, priceOf, type Person } from "@/lib/home/people";
 import { TabBar } from "@/components/shell";
@@ -69,7 +69,7 @@ type Promo = { gold: { pay: number; credit: number }; black: { pay: number; cred
 const PROMO_DEFAULT: Promo = { gold: { pay: 50000, credit: 70000 }, black: { pay: 100000, credit: 150000 } };
 const fb = (n: number) => "฿" + n.toLocaleString("th-TH");
 
-export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", me = null, unread = 0, memberTier = null, promo = PROMO_DEFAULT, recruit = false }: { showEarnings?: boolean; people?: Person[]; mode?: "home" | "sample"; me?: { name: string } | null; unread?: number; memberTier?: "gold" | "black" | null; promo?: Promo; recruit?: boolean }) {
+export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", me = null, unread = 0, memberTier = null, promo = PROMO_DEFAULT, recruit = false, svc = "" }: { svc?: "" | "eat" | "massage"; showEarnings?: boolean; people?: Person[]; mode?: "home" | "sample"; me?: { name: string } | null; unread?: number; memberTier?: "gold" | "black" | null; promo?: Promo; recruit?: boolean }) {
   const sample = mode === "sample";
   // 3 ภาษา (ไทย · EN · 中文) — ข้อความจาก src/i18n/site.ts · ชื่อเล่น/แนะนำตัวของคนจริงแสดงตามที่กรอก
   const { s: S, lang } = useI18n();
@@ -91,7 +91,15 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
   const [grp, setGrp] = useState<"man" | "tom">("man");
   const [ad, setAd] = useState(false);
   const [fOpen, setFOpen] = useState(false);
-  const [f, setF] = useState({ reg: "", prov: "", spot: "", type: "", tier: "", act: "", aMin: "20", aMax: "50" });
+  const [f, setF] = useState({ reg: "", prov: "", spot: "", type: svc as string, tier: "", act: "", aMin: "20", aMax: "50" });
+  const listRef = useRef<HTMLDivElement>(null);
+  // เลือกบริการ (เพื่อนกินเพื่อนเที่ยว / หมอนวด) = ตัวกรอง "ประเภท" เดิม · กดซ้ำ = ดูทั้งหมด · จำใน URL (?svc=) ให้แชร์ลิงก์ได้
+  const pickSvc = (k: "eat" | "massage") => {
+    const next = f.type === k ? "" : k;
+    setF((x) => ({ ...x, type: next }));
+    try { const u = new URL(location.href); if (next) u.searchParams.set("svc", next); else u.searchParams.delete("svc"); history.replaceState(null, "", u); } catch {}
+    if (next) requestAnimationFrame(() => listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  };
 
   // ป๊อปอัปโฆษณาตอนเปิดแอป (บอร์ด BenefitsPopup) — ครั้งเดียวต่อ session
   useEffect(() => {
@@ -210,6 +218,27 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
           <h1 className="m-0 mt-0.5 font-bold text-[26px] md:text-[32px] leading-[1.3] text-[#e8c472]" style={{ textWrap: "balance" }}>{sample ? H.titleSample : H.title}</h1>
         </div>
 
+        {/* เลือกบริการ: เพื่อนกินเพื่อนเที่ยว / หมอนวด (บอส 6 พ.ย. 2569) — เปิดมาแล้วเห็นชัดว่ามีบริการหมอนวด */}
+        {!sample && (
+          <div role="group" aria-label={H.svcAria} className="grid grid-cols-2 gap-2.5 md:gap-4" style={{ margin: "14px 18px 0" }}>
+            {([["eat", H.svcEat, H.svcEatSub, "/brand/home/join-hero.jpg", EARNINGS.price3h.eat.silver], ["massage", H.svcMassage, H.svcMassageSub, "/brand/spa.jpg", EARNINGS.price3h.massage.silver]] as const).map(([k, t, sub, img, from]) => {
+              const on = f.type === k;
+              return (
+                <button key={k} type="button" data-svc={k} aria-pressed={on} aria-label={on ? `${t} · ${H.svcAll}` : undefined} onClick={() => pickSvc(k)} className="relative overflow-hidden rounded-[18px] text-left p-0 active:scale-[.98] transition-transform" style={{ minHeight: 132, border: on ? "2px solid #e8c472" : CARD_BD, boxShadow: on ? "0 0 0 1px rgba(255,241,201,.35), 0 10px 26px rgba(232,196,114,.25)" : undefined }}>
+                  <img src={img} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                  {on && <span aria-hidden="true" title={H.svcAll} className="absolute top-2 right-2 grid place-items-center w-7 h-7 rounded-full text-[13px] font-bold text-[#1b130b]" style={{ background: GOLD }}>✕</span>}
+                  <span className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(20,10,12,.15) 0%, rgba(20,10,12,.92) 72%)" }} />
+                  <span className="relative flex flex-col justify-end h-full gap-0.5 md:gap-1" style={{ padding: "12px 12px 11px", minHeight: 132 }}>
+                    <span className="font-bold text-[16.5px] md:text-[22px] leading-[1.3]" style={{ color: on ? GOLD : "#fff7e8" }}>{t}</span>
+                    <span className="text-[12px] md:text-[14px] leading-[1.4] text-[#e6d8c4] font-light">{sub}</span>
+                    <span className="text-[12.5px] md:text-[14px] font-semibold text-[#e8c472] mt-0.5">{H.svcFrom(fb(from))}{on ? "" : " ›"}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {sample ? (
           /* หน้าตัวอย่าง: ชวนสมัครร่วมทีม */
           <Link href="/join" className="flex items-center gap-3 rounded-2xl text-[#1b130b] hover:text-[#1b130b]" style={{ margin: "14px 18px 0", padding: "12px 14px", background: "#f3ead9" }}>
@@ -276,7 +305,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
           })}
         </div>
 
-        <div className="flex justify-between items-baseline" style={{ padding: "18px 18px 10px" }}>
+        <div ref={listRef} className="flex justify-between items-baseline" style={{ padding: "18px 18px 10px", scrollMarginTop: 12 }}>
           <div className="flex items-center gap-3 min-w-0">
             <div className="font-semibold text-[19px] shrink-0">{H.friends}</div>
             <div role="tablist" aria-label={H.groupTabs} className="grid grid-cols-2 gap-1 rounded-full" style={{ padding: 3, background: "#2c1a1f" }}>
@@ -315,7 +344,12 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
                 <span className="text-[13px] font-light text-[#d9c9b4]">{H.tomSoonSub}</span>
                 <Link href="/join/tom" className="min-h-11 px-5 rounded-full grid place-items-center text-[14px] font-semibold text-[#1b130b] hover:text-[#1b130b]" style={{ background: GOLD }}>{H.tomApply}</Link>
               </div>
-            : <div className="rounded-2xl text-center text-[13px] font-light bg-[#2c1a1f]" style={{ margin: "0 18px", padding: 24 }}>{H.empty}</div>
+            : f.type === "massage" && grp === "tom"
+              ? <div data-svc-empty className="rounded-2xl text-center flex flex-col items-center gap-2 bg-[#2c1a1f]" style={{ margin: "0 18px", padding: 24 }}>
+                  <b className="text-[16px]">{H.svcMassageTom}</b>
+                  <button type="button" onClick={() => setGrp("man")} className="min-h-11 px-5 rounded-full text-[14px] font-semibold text-[#1b130b]" style={{ background: GOLD }}>{H.svcSeeMan}</button>
+                </div>
+              : <div className="rounded-2xl text-center text-[13px] font-light bg-[#2c1a1f]" style={{ margin: "0 18px", padding: 24 }}>{H.empty}</div>
         )}
 
         {/* โฆษณาท้ายหน้า */}
