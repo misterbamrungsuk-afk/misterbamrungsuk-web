@@ -458,6 +458,57 @@ function Costs({ plan, up, month, setMonth }: P) {
   );
 }
 
+// ─── กราฟแท่ง: กำไร (เงินสด) แต่ละเดือนจากเคสที่กรอก เทียบเส้นเป้ากำไร ───
+function ProfitChart({ plan, month, setMonth }: { plan: FinancePlan; month: string; setMonth: (m: string) => void }) {
+  const { t, lang } = useT();
+  const data = MONTHS.map((m) => ({ m, v: plan.months[m] ? monthSummary(plan, m).cash : null }));
+  const vals = data.map((d) => d.v).filter((v): v is number => v != null);
+  const goal = plan.target.profit;
+  const max = Math.max(goal, ...vals, 1), min = Math.min(0, ...vals);
+  const W = 720, H = 150, top = 16, bot = 22, left = 4, right = 4;
+  const ih = H - top - bot, step = (W - left - right) / data.length, bw = step * 0.62;
+  const y = (v: number) => top + ((max - v) / (max - min)) * ih;
+  const hit = vals.filter((v) => v >= goal).length;
+  const k = (v: number) => (Math.abs(v) >= 1e6 ? `${fmt(v / 1e6, 2)}M` : `${fmt(v / 1000, 0)}K`);
+  const tone = (v: number) => (v >= goal ? "var(--fg)" : v >= 0 ? "#e0a100" : "var(--fr)");
+  return (
+    <section className="fin-card t-violet !py-3">
+      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-1">
+        <h2 className="m-0 text-[15.5px] font-bold">{t("กำไรรายเดือนเทียบเป้า", "Monthly profit vs target")}</h2>
+        <span className="text-[12.5px] text-[var(--fm)]">{t("จากเคสที่กรอก · กำไรเงินสดก่อนภาษี", "From entered cases · cash profit before tax")}</span>
+        <span className="flex-1" />
+        <span className="text-[12.5px]">{vals.length ? t(`ถึงเป้า ${hit}/${vals.length} เดือน`, `On target ${hit}/${vals.length} months`) : t("ยังไม่มีเคส — กรอกที่หน้าภาพรวม", "No cases yet — enter them on Overview")}</span>
+      </div>
+      <div className="flex flex-wrap gap-3 text-[11.5px] text-[var(--fm)] mb-1">
+        <span><i className="dot" style={{ background: "var(--fg)" }} />{t("ถึงเป้า", "On target")}</span>
+        <span><i className="dot" style={{ background: "#e0a100" }} />{t("มีกำไร ยังไม่ถึงเป้า", "Profit, below target")}</span>
+        <span><i className="dot" style={{ background: "var(--fr)" }} />{t("ขาดทุน", "Loss")}</span>
+        <span><i className="inline-block w-4 border-t-2 border-dashed border-[var(--fp)] align-middle mr-1.5" />{t(`เป้า ${k(goal)}`, `Target ${k(goal)}`)}</span>
+      </div>
+      <div className="overflow-x-auto">
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-w-[560px] h-auto block" role="img" aria-label={t("กราฟกำไรรายเดือน", "Monthly profit chart")}>
+          <line x1={left} x2={W - right} y1={y(0)} y2={y(0)} stroke="#cfc6e4" />
+          {data.map((d, i) => {
+            const x = left + i * step + (step - bw) / 2, on = d.m === month;
+            return (
+              <g key={d.m} onClick={() => setMonth(d.m)} style={{ cursor: "pointer" }}>
+                <title>{`${d.m} · ${monthLabel(d.m, lang)}: ${d.v == null ? t("ยังไม่กรอก", "no cases") : fmt(d.v) + " " + t("บาท", "THB")}`}</title>
+                <rect x={left + i * step} y={top} width={step} height={ih} fill={on ? "#efe8fd" : "transparent"} rx={6} />
+                {d.v == null
+                  ? <rect x={x} y={y(0) - 3} width={bw} height={3} rx={1.5} fill="#e4def0" />
+                  : <rect x={x} y={Math.min(y(d.v), y(0))} width={bw} height={Math.max(2, Math.abs(y(d.v) - y(0)))} rx={4} fill={tone(d.v)} opacity={on ? 1 : 0.85} />}
+                {d.v != null && <text x={x + bw / 2} y={(d.v >= 0 ? y(d.v) : y(0)) - 4} textAnchor="middle" fontSize="10" fontWeight="700" fill="var(--ft2)">{k(d.v)}</text>}
+                <text x={left + i * step + step / 2} y={H - 6} textAnchor="middle" fontSize="10" fill={on ? "var(--fp)" : "var(--fm)"} fontWeight={on ? 700 : 400}>{monthLabel(d.m, lang)}</text>
+              </g>
+            );
+          })}
+          <line x1={left} x2={W - right} y1={y(goal)} y2={y(goal)} stroke="var(--fp)" strokeWidth="1.5" strokeDasharray="5 4" />
+        </svg>
+      </div>
+    </section>
+  );
+}
+
 // ─── หน้า 10: เป้ากำไร ───
 function Target({ plan, up, month, setMonth }: P) {
   const { t, lang } = useT();
@@ -473,6 +524,7 @@ function Target({ plan, up, month, setMonth }: P) {
   const pr = perRound(plan, svc.price);
   return (
     <div className="flex flex-col gap-4">
+      <ProfitChart plan={plan} month={month} setMonth={setMonth} />
       <div className="fin-seg" role="tablist">
         <button type="button" role="tab" aria-selected={!multi} className={!multi ? "on" : ""} onClick={() => setMulti(false)}>{t("ประเภทเดียว", "Single service")}</button>
         <button type="button" role="tab" aria-selected={multi} className={multi ? "on" : ""} onClick={() => setMulti(true)}>{t("หลายประเภท", "Service mix")}</button>
