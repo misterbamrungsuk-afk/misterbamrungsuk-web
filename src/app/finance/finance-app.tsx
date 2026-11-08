@@ -311,6 +311,7 @@ function Overview({ plan, up, month, setMonth }: P) {
           <div className="fin-total t-blue"><span>{t("ยอดลูกค้าจ่ายรวม", "Total customer spend")}</span><b>{fmt(m.gross)} {t("บาท", "THB")}</b></div>
           <Row l={`${t("ส่วนแบ่งบริษัท", "Company share")} ${fmtPct(plan.companyShare)}`} r={fmt(m.company, 2)} />
           <Row l={`${t("ค่าธรรมเนียมผู้ให้บริการ", "Provider fee")} ${fmtPct(plan.providerFee)}`} r={`+${fmt(m.fee, 2)}`} />
+          {m.entry > 0 && <Row l={t("ค่าแรกเข้า (หักจากเคส)", "Joining fee (deducted per job)")} r={`+${fmt(m.entry, 2)}`} />}
           {m.extra > 0 && <Row l={`${t("รายได้อื่น (ค่าคอมสินค้า)", "Other income (product commission)")} ${fmt2(plan.extraPerRound ?? 0)} × ${fmt(m.totalRounds)}`} r={`+${fmt(m.extra, 2)}`} />}
           <div className="fin-total t-violet"><span>{t("รายได้บริษัท", "Company revenue")}</span><b>{fmt(m.revenue, 2)} {t("บาท", "THB")}</b></div>
           <div className="mt-3"><Shares plan={plan} up={up} /></div>
@@ -482,6 +483,15 @@ function Costs({ plan, up, month, setMonth }: P) {
           <div className="fin-total t-blue"><span>{t("เหลือสำหรับดำเนินงาน", "Left for operations")}</span><b>{fmt(plan.capital - plan.startup.reduce((s, i) => s + i.amount, 0))} {baht}</b></div>
         </Card>
       </div>
+      <Card title={t("ค่าแรกเข้า (หักจากเคสการทำงาน)", "Joining fee (deducted from jobs)")} tone="green">
+        {(() => { const e = plan.entryFee ?? { perJob: 0, cap: 0, people: 0 }; const setE = (x: Partial<typeof e>) => up({ entryFee: { ...e, ...x } }); return (
+          <div className="flex flex-wrap gap-x-6 gap-y-2 items-center text-[13.5px]">
+            <label className="flex items-center gap-2">{t("หักต่อเคส", "Per job")} <Num label={t("หักต่อเคส", "Per job")} w="w-[96px]" value={e.perJob} onChange={(v) => setE({ perJob: v })} /></label>
+            <label className="flex items-center gap-2">{t("จนครบ / คน", "Up to / person")} <Num label={t("เพดานต่อคน", "Cap per person")} w="w-[110px]" value={e.cap} onChange={(v) => setE({ cap: v })} /></label>
+            <label className="flex items-center gap-2">{t("จำนวนคนในระบบ", "People onboarded")} <Num label={t("จำนวนคน", "People")} w="w-[80px]" value={e.people} onChange={(v) => setE({ people: Math.round(v) })} /></label>
+            <span className="text-[var(--fm)]">{t(`รวมเก็บได้สูงสุด ${fmt(e.cap * e.people)} บาท · ทยอยเก็บตามจำนวนเคส`, `Max ${fmt(e.cap * e.people)} THB, collected as jobs come in`)}</span>
+          </div>); })()}
+      </Card>
       <p className="fin-note">{t("ส่วนแบ่งคำนวณจากรายได้ผู้ให้บริการ • เงินประกันที่คืนได้แยกจากรายได้ • ตัวเลขจำลอง ยังไม่รวมภาษี", "Shares are calculated on provider revenue • refundable deposits are kept out of revenue • plan figures, before tax")}</p>
     </div>
   );

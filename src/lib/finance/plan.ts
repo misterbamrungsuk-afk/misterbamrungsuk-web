@@ -19,7 +19,9 @@ export interface FinancePlan {
   pending: FinItem[];            // รายการที่ต้องตั้งงบเพิ่ม (0 = ยังไม่ใส่งบ)
   target: { profit: number; days: number; serviceId: string };
   extraPerRound?: number;        // รายได้อื่นต่อรอบ เช่น ค่าคอมสินค้า Vendor (Excel กิ๊ฟ ฿157.50)
-  startupMonth?: string;         // ลงเงินลงทุน (ทนาย/แอป) เป็นค่าใช้จ่ายใน P&L เดือนนี้ — "" = ไม่ลง
+  startupMonth?: string;
+  /** ค่าแรกเข้าที่หักจากเคสการทำงาน: เคสละ perJob จนครบ cap ต่อคน · people = จำนวนคนที่รับเข้าระบบ (บอส 8 พ.ย. 2569) */
+  entryFee?: { perJob: number; cap: number; people: number };         // ลงเงินลงทุน (ทนาย/แอป) เป็นค่าใช้จ่ายใน P&L เดือนนี้ — "" = ไม่ลง
   monthCount?: number;           // จำนวนเดือนของแผน (ค่าเริ่มต้น 18)
   cashTargets?: Record<string, number>; // For Cash รายเดือน
   history: { at: string; by: string; note: string }[];
@@ -96,6 +98,21 @@ export function perRound(p: FinancePlan, price: number) {
 export const fixedTotal = (p: FinancePlan, cashOnly = false) =>
   p.expenses.filter((e) => e.kind === "fixed" && !(cashOnly && e.noncash)).reduce((t, e) => t + e.value, 0) + p.pending.reduce((t, i) => t + i.amount, 0);
 
+const roundsIn = (p: FinancePlan, m: string) => Object.values(p.months[m] ?? {}).reduce((t, n) => t + n, 0);
+/** ค่าแรกเข้าที่เก็บได้ในเดือนนี้ (หักจากเคส) */
+export function entryFeeOf(p: FinancePlan, month: string) {
+  const e = p.entryFee;
+  if (!e || !e.perJob || !e.cap || !e.people) return 0;
+  const ML = monthsOf(p), i = ML.indexOf(month);
+  if (i < 0) return 0;
+  const pool = e.people * e.cap;
+  let cum = 0;
+  for (let k = 0; k < i; k++) cum += roundsIn(p, ML[k]);
+  const before = Math.min(cum * e.perJob, pool);
+  const after = Math.min((cum + roundsIn(p, month)) * e.perJob, pool);
+  return after - before;
+}
+
 export function monthSummary(p: FinancePlan, month: string) {
   const rounds = p.months[month] ?? {};
   const rows = p.services.map((s) => {
@@ -108,7 +125,8 @@ export function monthSummary(p: FinancePlan, month: string) {
   const provider = gross - company;
   const fee = provider * p.providerFee;
   const extra = totalRounds * (p.extraPerRound ?? 0);
-  const revenue = company + fee + extra;
+  const entry = entryFeeOf(p, month);
+  const revenue = company + fee + extra + entry;
   const pg = gross * p.pgFee;
   const lines = [
     ...p.expenses.map((e) => ({ id: e.id, name: e.name, kind: e.kind, value: e.value, noncash: !!e.noncash, amount: e.kind === "fixed" ? e.value : e.kind === "pctRevenue" ? revenue * e.value : gross * e.value })),
@@ -121,7 +139,7 @@ export function monthSummary(p: FinancePlan, month: string) {
   const noncash = lines.filter((l) => l.noncash).reduce((t, l) => t + l.amount, 0);
   const profit = revenue - expenses;
   return {
-    rows, totalRounds, gross: r2(gross), company: r2(company), provider: r2(provider), fee: r2(fee), extra: r2(extra), revenue: r2(revenue), pg: r2(pg),
+    rows, totalRounds, gross: r2(gross), company: r2(company), provider: r2(provider), fee: r2(fee), extra: r2(extra), entry: r2(entry), revenue: r2(revenue), pg: r2(pg),
     lines: lines.map((l) => ({ ...l, amount: r2(l.amount) })), expenses: r2(expenses), profit: r2(profit), cash: r2(profit + noncash),
     margin: revenue > 0 ? profit / revenue : 0,
     variable: r2(pg + lines.filter((l) => l.kind !== "fixed" && l.id !== "_pg").reduce((t, l) => t + l.amount, 0)),
@@ -208,6 +226,7 @@ export function cleanPlan(raw: unknown): Omit<FinancePlan, "history"> {
     monthCount,
     cashTargets,
     extraPerRound: num(b.extraPerRound ?? 0, 0, 1_000_000, "รายได้อื่นต่อรอบ"),
+    entryFee: (() => { const e = (b.entryFee ?? {}) as Record<string, unknown>; return { perJob: num(e.perJob ?? 0, 0, 1_000_000, "ค่าแรกเข้าต่อเคส"), cap: num(e.cap ?? 0, 0, 10_000_000, "เพดานค่าแรกเข้า"), people: Math.round(num(e.people ?? 0, 0, 100_000, "จำนวนคน")) }; })(),
     startupMonth: ml.includes(String(b.startupMonth ?? "")) ? String(b.startupMonth) : "",
     target: { profit: num(t.profit, 0, 1e10, "เป้ากำไร"), days: Math.round(num(t.days, 1, 31, "วันทำงาน")), serviceId: ids.has(String(t.serviceId)) ? String(t.serviceId) : services[0].id },
   };
@@ -215,20 +234,21 @@ export function cleanPlan(raw: unknown): Omit<FinancePlan, "history"> {
 
 /** ชุดตัวเลข Forecast v4 — Excel ของกิ๊ฟ (ราคา 3,500 · หมอนวด 40% · PG 2.5% · ค่าคอมสินค้า 157.50/รอบ) + SIRI 8 พ.ย. 2569
  *  (ค่าใช้จ่ายรายเดือน 300K/100K/Server 30K · ทนาย 500K + แอป 900K ลง M1 · ตัดจังหวัด · 25 คน × 2 รอบ × 15 วัน = 750 รอบ ธ.ค. → กำไรเริ่ม ธ.ค. 69)
- *  ยังไม่รวมค่าประกันแบรนด์ ฿500/งาน (อยู่ใน Excel) */
+ *  บอส 8 พ.ย.: ทุน 10 ล้าน (ระดม 6 ล้าน) · เป้า 50 คน active 25 × 2 งาน × 15 วัน = 750 เคส/เดือน คงที่ · ค่าแรกเข้าหักจากเคส 500 จนครบ 10,000 */
 export const PRESET_V4: FinancePlan = {
   ...DEFAULT_PLAN,
-  capital: 6_000_000,
+  capital: 10_000_000, // บอส: คำนวณที่ 10 ล้าน (ระดมจริง 6 ล้าน)
   startup: [{ id: "lawyer", name: "ค่าทนาย / จัดตั้ง", amount: 500_000 }, { id: "app", name: "พัฒนาแอป", amount: 900_000 }],
   startupMonth: "M1",
   companyShare: 0.6, providerFee: 0, pgFee: 0.025, extraPerRound: 157.5,
-  months: Object.fromEntries([0, 100, 750, 1050, 1350, 1650, 1800, 1800, 1950, 1950, 2100, 2100, 2250, 2250, 2400, 2400, 2400, 2400].map((n, i) => [`M${i + 1}`, n ? { eat: n } : {}]).filter(([, v]) => Object.keys(v as object).length)),
+  months: Object.fromEntries([0, 100, ...Array(16).fill(750)].map((n, i) => [`M${i + 1}`, n ? { eat: n } : {}]).filter(([, v]) => Object.keys(v as object).length)),
   expenses: [
     { id: "salary", name: "เงินเดือนพนักงาน + ที่ปรึกษา", kind: "fixed", value: 300_000 },
     { id: "marketing", name: "การตลาด", kind: "fixed", value: 100_000 },
     { id: "server", name: "Server / ระบบ (ประมาณการ)", kind: "fixed", value: 30_000 },
   ],
   pending: [],
+  entryFee: { perJob: 500, cap: 10_000, people: 50 },
   monthCount: 18, cashTargets: {},
   target: { profit: 100_000, days: 15, serviceId: "eat" },
   history: [],
