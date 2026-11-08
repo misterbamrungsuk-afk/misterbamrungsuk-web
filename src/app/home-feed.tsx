@@ -221,14 +221,17 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
         {/* เลือกบริการ: เพื่อนกินเพื่อนเที่ยว / หมอนวด (บอส 6 พ.ย. 2569) — เปิดมาแล้วเห็นชัดว่ามีบริการหมอนวด */}
         {!sample && (
           <div role="group" aria-label={H.svcAria} className="grid grid-cols-2 gap-2.5 md:gap-4" style={{ margin: "14px 18px 0" }}>
-            {([["eat", H.svcEat, H.svcEatSub, "/brand/home/join-hero.jpg", EARNINGS.price3h.eat.silver], ["massage", H.svcMassage, H.svcMassageSub, "/brand/spa.jpg", EARNINGS.price3h.massage.silver]] as const).map(([k, t, sub, img, from]) => {
+            {([["eat", H.svcEat, H.svcEatSub, "/brand/home/join-hero.jpg", "/brand/home/join-hero.jpg", "center 22%", EARNINGS.price3h.eat.silver], ["massage", H.svcMassage, H.svcMassageSub, "/brand/spa.jpg", "/brand/home/ad-oil.jpg", "center 42%", EARNINGS.price3h.massage.silver]] as const).map(([k, t, sub, img, imgWide, focus, from]) => {
               const on = f.type === k;
               return (
-                <button key={k} type="button" data-svc={k} aria-pressed={on} aria-label={on ? `${t} · ${H.svcAll}` : undefined} onClick={() => pickSvc(k)} className="relative overflow-hidden rounded-[18px] text-left p-0 active:scale-[.98] transition-transform" style={{ minHeight: 132, border: on ? "2px solid #e8c472" : CARD_BD, boxShadow: on ? "0 0 0 1px rgba(255,241,201,.35), 0 10px 26px rgba(232,196,114,.25)" : undefined }}>
-                  <img src={img} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                <button key={k} type="button" data-svc={k} aria-pressed={on} aria-label={on ? `${t} · ${H.svcAll}` : undefined} onClick={() => pickSvc(k)} className="relative overflow-hidden rounded-[18px] text-left p-0 active:scale-[.98] transition-transform min-h-[132px] md:min-h-[210px]" style={{ border: on ? "2px solid #e8c472" : CARD_BD, boxShadow: on ? "0 0 0 1px rgba(255,241,201,.35), 0 10px 26px rgba(232,196,114,.25)" : undefined }}>
+                  {/* มือถือ: รูปเดิม · คอม: รูปความละเอียดสูง + โฟกัสให้ไม่ตัดหน้า */}
+                  <img src={img} alt="" className="absolute inset-0 w-full h-full object-cover md:hidden" />
+                  <img src={imgWide} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover hidden md:block" style={{ objectPosition: focus, filter: k === "massage" ? "brightness(.62) saturate(1.15) sepia(.15)" : undefined }} />
                   {on && <span aria-hidden="true" title={H.svcAll} className="absolute top-2 right-2 grid place-items-center w-7 h-7 rounded-full text-[13px] font-bold text-[#1b130b]" style={{ background: GOLD }}>✕</span>}
-                  <span className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(20,10,12,.15) 0%, rgba(20,10,12,.92) 72%)" }} />
-                  <span className="relative flex flex-col justify-end h-full gap-0.5 md:gap-1" style={{ padding: "12px 12px 11px", minHeight: 132 }}>
+                  <span className="absolute inset-0 md:hidden" style={{ background: "linear-gradient(180deg, rgba(20,10,12,.15) 0%, rgba(20,10,12,.92) 72%)" }} />
+                  <span className="absolute inset-0 hidden md:block" style={{ background: "linear-gradient(90deg, rgba(20,10,12,.96) 0%, rgba(20,10,12,.82) 34%, rgba(20,10,12,.25) 68%, rgba(20,10,12,.05) 100%)" }} />
+                  <span className="relative flex flex-col justify-end md:justify-center h-full gap-0.5 md:gap-1.5 min-h-[132px] md:min-h-[210px] p-3 md:px-8 md:py-6 md:max-w-[62%]">
                     <span className="font-bold text-[16.5px] md:text-[22px] leading-[1.3]" style={{ color: on ? GOLD : "#fff7e8" }}>{t}</span>
                     <span className="text-[12px] md:text-[14px] leading-[1.4] text-[#e6d8c4] font-light">{sub}</span>
                     <span className="text-[12.5px] md:text-[14px] font-semibold text-[#e8c472] mt-0.5">{H.svcFrom(fb(from))}{on ? "" : " ›"}</span>
