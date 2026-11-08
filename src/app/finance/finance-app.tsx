@@ -105,11 +105,11 @@ export function FinanceApp({ view, initial, who }: { view: View; initial: Financ
         </nav>
 
         <main className="flex-1 min-w-0 px-4 lg:px-8 py-4 lg:py-7 pb-28">
-          <header className="flex flex-wrap items-start gap-3 mb-5">
+          <header className="flex flex-wrap items-start gap-x-3 gap-y-2 mb-4 sm:mb-5">
             <div className="flex-1 min-w-[240px]">
               <div className="text-[11.5px] font-semibold tracking-[.12em] text-[var(--fm)]">MISTER BAMRUNGSUK · {t("หลังบ้านการเงิน", "FINANCE BACK OFFICE")}</div>
               <h1 className="m-0 text-[24px] lg:text-[28px] font-bold leading-[1.35]">{lang === "en" ? T[2] : T[0]}</h1>
-              <p className="m-0 text-[14px] text-[var(--fm)]">{lang === "en" ? T[3] : T[1]}</p>
+              <p className="m-0 text-[14px] text-[var(--fm)] hidden sm:block">{lang === "en" ? T[3] : T[1]}</p>
             </div>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               <div className="fin-seg sm" role="group" aria-label="Language">
@@ -117,7 +117,7 @@ export function FinanceApp({ view, initial, who }: { view: View; initial: Financ
                 <button type="button" aria-pressed={lang === "en"} className={lang === "en" ? "on" : ""} onClick={() => pickLang("en")}>EN</button>
               </div>
               <ExportBtn kind={view} file={`MB-finance-${view}-${month}`} ctx={{ plan, month, lang, dn: (n) => (lang === "en" ? NAME_EN[n] ?? n : n), sl: (s) => { const n = lang === "en" ? NAME_EN[s.name] ?? s.name : s.name; return s.level ? `${n} · ${s.level}` : n; } }} />
-              <span className="fin-chip">{t("แผนจำลอง · ไม่กระทบเงินจริง", "Plan only · no real money moved")}</span>
+              <span className="fin-chip hidden sm:inline-block">{t("แผนจำลอง · ไม่กระทบเงินจริง", "Plan only · no real money moved")}</span>
             </div>
           </header>
           {view === "overview" && <Overview plan={plan} up={up} month={month} setMonth={setMonth} />}
@@ -170,7 +170,7 @@ const Card = ({ n, title, tone = "violet", children, right }: { n?: number; titl
   <section className={`fin-card t-${tone}`}>
     <div className="flex items-center gap-2 mb-3 flex-wrap">
       {n && <span className="fin-num">{n}</span>}
-      <h2 className="m-0 text-[17px] font-bold flex-1">{title}</h2>
+      <h2 className="m-0 text-[16px] sm:text-[17px] font-bold flex-1 min-w-[11rem] leading-snug">{title}</h2>
       {right}
     </div>
     {children}
@@ -182,7 +182,7 @@ function Kpi({ label, value, tone, sub }: { label: string; value: string; tone: 
     <div className={`fin-kpi t-${tone}`}>
       <div className="text-[13.5px] font-semibold text-[var(--ft2)]">{label}</div>
       <div className="fin-kv">{value}</div>
-      <div className="text-[12.5px] text-[var(--fm)]">{t("บาท", "THB")}{sub && <span className="ml-2 fin-pill">{sub}</span>}</div>
+      <div className="text-[12.5px] text-[var(--fm)] flex flex-wrap items-center gap-x-2 gap-y-1">{t("บาท", "THB")}{sub && <span className="fin-pill">{sub}</span>}</div>
     </div>
   );
 }
@@ -221,7 +221,7 @@ function Items({ items, onChange, addLabel, zeroChip }: { items: FinItem[]; onCh
           {lang === "en" && NAME_EN[it.name]
             ? <span className="flex-1 min-w-0 text-[14px] px-1">{dn(it.name)}</span>
             : <Txt label={t("ชื่อรายการ", "Item name")} value={it.name} onChange={(name) => onChange(items.map((x, k) => (k === i ? { ...x, name } : x)))} />}
-          {zeroChip && !it.amount && <span className="fin-pill warn hidden sm:inline">{t("ยังไม่ใส่งบ", "No budget yet")}</span>}
+          {zeroChip && !it.amount && <span className="hidden sm:inline"><span className="fin-pill warn">{t("ยังไม่ใส่งบ", "No budget yet")}</span></span>}
           <Num label={`${t("จำนวนเงิน", "Amount")} ${dn(it.name)}`} w="w-[104px]" value={it.amount} onChange={(amount) => onChange(items.map((x, k) => (k === i ? { ...x, amount } : x)))} />
           <Del label={`${t("ลบ", "Delete")} ${dn(it.name)}`} onClick={() => onChange(items.filter((_, k) => k !== i))} />
         </div>
@@ -251,11 +251,11 @@ function Overview({ plan, up, month, setMonth }: P) {
         <span className="text-[13.5px]">{t("จำนวนบริการ", "Bookings")} <b className="tabular-nums">{fmt(m.totalRounds)}</b> {t("รอบ", "")}</span>
         {prev && plan.months[prev] && <button type="button" className="fin-btn ghost sm" onClick={() => up({ months: { ...plan.months, [month]: { ...plan.months[prev] } } })}>{t("คัดลอกเคสจาก", "Copy cases from")} {prev} · {monthLabel(prev, lang)}</button>}
       </div>
-      <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-2.5 sm:gap-3">
         <Kpi tone="violet" label={t("ทุนเริ่มต้น", "Starting capital")} value={fmt(plan.capital)} />
-        <Kpi tone="violet" label={t("รายได้บริษัท / เดือน", "Company revenue / month")} value={fmt(m.revenue, 2)} />
-        <Kpi tone="orange" label={t("ค่าใช้จ่าย / เดือน", "Expenses / month")} value={fmt(m.expenses, 2)} />
-        <Kpi tone={m.profit >= 0 ? "green" : "red"} label={t("กำไรก่อนภาษี / เดือน", "Profit before tax / month")} value={fmt(m.profit, 2)} sub={m.revenue ? t(`${fmtPct(m.margin)} ของรายได้บริษัท`, `${fmtPct(m.margin)} of company revenue`) : undefined} />
+        <Kpi tone="violet" label={t("รายได้บริษัท / เดือน", "Company revenue / month")} value={fmt(m.revenue)} />
+        <Kpi tone="orange" label={t("ค่าใช้จ่าย / เดือน", "Expenses / month")} value={fmt(m.expenses)} />
+        <Kpi tone={m.profit >= 0 ? "green" : "red"} label={t("กำไรก่อนภาษี / เดือน", "Profit before tax / month")} value={fmt(m.profit)} sub={m.revenue ? t(`${fmtPct(m.margin)} ของรายได้บริษัท`, `${fmtPct(m.margin)} of company revenue`) : undefined} />
       </div>
 
       <div className="grid xl:grid-cols-[1.1fr_1.45fr_1fr] gap-4 items-start">
@@ -271,7 +271,23 @@ function Overview({ plan, up, month, setMonth }: P) {
         </Card>
 
         <Card n={2} title={t("รายได้มาจากไหน?", "Where does revenue come from?")} tone="blue">
-          <div className="overflow-x-auto -mx-1 px-1">
+          <div className="sm:hidden flex flex-col">
+            {m.rows.map(({ s, gross, rounds }, i) => (
+              <div key={s.id} className="fin-tile py-2.5 border-b border-[var(--fl)]">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-semibold text-[14.5px]">{dn(s.name)} {s.level && <span className={`fin-lv ${/top/i.test(s.level) ? "top" : ""}`}>{s.level}</span>}</span>
+                  <b className="tabular-nums text-[15px]">{fmt(gross)}</b>
+                </div>
+                <div className="flex items-center gap-2 mt-1.5 text-[12.5px] text-[var(--fm)]">
+                  <Num label={`${t("ราคา", "Price")} ${svcLabel(s)}`} w="w-[96px]" value={s.price} onChange={(price) => setSvc(i, { price })} />
+                  <span>×</span>
+                  <Num label={`${t("รอบ", "Bookings")} ${svcLabel(s)}`} w="w-[72px]" value={rounds} onChange={(n) => setRounds(month, s.id, n)} />
+                  <span>{t("รอบ", "bookings")}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="hidden sm:block overflow-x-auto -mx-1 px-1">
             <table className="fin-t">
               <thead><tr><th>{t("บริการ", "Service")}</th><th className="r">{t("ราคา (บาท)", "Price (THB)")}</th><th className="r">{t("รอบ", "Bookings")} ({month})</th><th className="r">{t("ยอดลูกค้าจ่าย", "Customer spend")}</th></tr></thead>
               <tbody>
@@ -303,14 +319,14 @@ function Overview({ plan, up, month, setMonth }: P) {
       </div>
 
       <section className="fin-card t-green">
-        <div className="flex flex-wrap items-center gap-3">
-          <h2 className="m-0 text-[18px] font-bold min-w-[140px]">{t(`สรุป ${ml} เหลือเท่าไร?`, `${ml}: what is left?`)}</h2>
+        <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 sm:gap-3">
+          <h2 className="m-0 text-[17px] sm:text-[18px] font-bold min-w-[140px]">{t(`สรุป ${ml} เหลือเท่าไร?`, `${ml}: what is left?`)}</h2>
           
-          <div className="fin-eq t-violet"><span>{t("รายได้บริษัท", "Company revenue")}</span><b>{fmt(m.revenue, 2)}</b></div>
-          <span className="text-[24px] font-bold text-[var(--fm)]">−</span>
-          <div className="fin-eq t-orange"><span>{t("ค่าใช้จ่ายรวม", "Total expenses")}</span><b>{fmt(m.expenses, 2)}</b></div>
-          <span className="text-[24px] font-bold text-[var(--fm)]">=</span>
-          <div className={`fin-eq ${m.profit >= 0 ? "t-green" : "t-red"}`}><span>{t("กำไรก่อนภาษี", "Profit before tax")}</span><b>{fmt(m.profit, 2)} {t("บาท", "THB")}</b></div>
+          <div className="fin-eq t-violet"><span>{t("รายได้บริษัท", "Company revenue")}</span><b>{fmt(m.revenue)}</b></div>
+          <span className="text-[20px] sm:text-[24px] font-bold text-[var(--fm)] text-center leading-none">−</span>
+          <div className="fin-eq t-orange"><span>{t("ค่าใช้จ่ายรวม", "Total expenses")}</span><b>{fmt(m.expenses)}</b></div>
+          <span className="text-[20px] sm:text-[24px] font-bold text-[var(--fm)] text-center leading-none">=</span>
+          <div className={`fin-eq ${m.profit >= 0 ? "t-green" : "t-red"}`}><span>{t("กำไรก่อนภาษี", "Profit before tax")}</span><b>{fmt(m.profit)} {t("บาท", "THB")}</b></div>
         </div>
         <p className="m-0 mt-3 text-[13.5px] text-center">{t("เงินสดจากการดำเนินงานโดยประมาณ", "Estimated operating cash flow")} <b className="tabular-nums">{fmt(m.cash, 2)} {t("บาท", "THB")}</b> • {t("ก่อนเงินลงทุนและการเปลี่ยนแปลง Wallet", "before investment and Wallet movements")}</p>
       </section>
@@ -343,9 +359,9 @@ function Costs({ plan, up, month, setMonth }: P) {
         <span className="flex-1" />
         <Shares plan={plan} up={up} />
       </div>
-      <div className="grid sm:grid-cols-3 gap-3">
-        <Kpi tone="blue" label={t("จ่ายผู้ให้บริการ", "Paid to providers")} value={fmt(m.provider, 2)} sub={`${t("ส่วนแบ่ง", "share")} ${fmtPct(1 - plan.companyShare)}`} />
-        <Kpi tone="orange" label={t("ต้นทุนผันแปรบริษัท", "Company variable cost")} value={fmt(m.variable, 2)} sub={t("ค่าภาษี ภ.ง.ด. + ค่าใช้จ่ายแบบ %", "PND tax + % costs")} />
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3 [&>*:last-child]:col-span-2 sm:[&>*:last-child]:col-span-1">
+        <Kpi tone="blue" label={t("จ่ายผู้ให้บริการ", "Paid to providers")} value={fmt(m.provider)} sub={`${t("ส่วนแบ่ง", "share")} ${fmtPct(1 - plan.companyShare)}`} />
+        <Kpi tone="orange" label={t("ต้นทุนผันแปรบริษัท", "Company variable cost")} value={fmt(m.variable)} sub={t("ค่าภาษี ภ.ง.ด. + ค่าใช้จ่ายแบบ %", "PND tax + % costs")} />
         <Kpi tone="orange" label={t("ค่าใช้จ่ายประจำ (เงินสด)", "Fixed costs (cash)")} value={fmt(fixed)} sub={t("ต่อเดือน", "per month")} />
       </div>
 
@@ -365,14 +381,14 @@ function Costs({ plan, up, month, setMonth }: P) {
         </Card>
 
         <Card title={t("ค่าใช้จ่ายประจำ / เดือน", "Fixed costs / month")} tone="orange">
-          <div className="flex text-[12.5px] font-semibold text-[var(--fm)] pb-1 gap-2"><span className="flex-1">{t("รายการ", "Item")}</span><span className="w-[150px]">{t("คิดแบบ", "Basis")}</span><span className="w-[120px] text-right">{t("งบประมาณ", "Budget")}</span><span className="w-7" /></div>
+          <div className="hidden sm:flex text-[12.5px] font-semibold text-[var(--fm)] pb-1 gap-2"><span className="flex-1">{t("รายการ", "Item")}</span><span className="w-[150px]">{t("คิดแบบ", "Basis")}</span><span className="w-[120px] text-right">{t("งบประมาณ", "Budget")}</span><span className="w-7" /></div>
           {plan.expenses.map((e, i) => (
-            <div key={e.id} className="py-1.5 border-b border-[var(--fl)]">
-              <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+            <div key={e.id} className="fin-tile py-1.5 border-b border-[var(--fl)]">
+              <div className="grid grid-cols-[1fr_auto_auto] sm:flex sm:flex-nowrap items-center gap-2">
                 {lang === "en" && NAME_EN[e.name]
-                  ? <span className="flex-1 min-w-0 text-[14px] px-1">{dn(e.name)}</span>
-                  : <Txt label={t("ชื่อค่าใช้จ่าย", "Expense name")} value={e.name} onChange={(name) => setExp(i, { name })} />}
-                <select aria-label={`${t("คิดแบบ", "Basis")} ${dn(e.name)}`} className="fin-sel w-[150px]" value={e.kind} onChange={(ev) => { const kind = ev.target.value as ExpenseKind; setExp(i, { kind, value: kind === "fixed" ? 0 : 0.1 }); }}>
+                  ? <span className="col-span-3 sm:flex-1 min-w-0 text-[14px] px-1 font-semibold sm:font-normal">{dn(e.name)}</span>
+                  : <Txt label={t("ชื่อค่าใช้จ่าย", "Expense name")} w="col-span-3 sm:col-span-1 sm:flex-1" value={e.name} onChange={(name) => setExp(i, { name })} />}
+                <select aria-label={`${t("คิดแบบ", "Basis")} ${dn(e.name)}`} className="fin-sel w-full sm:w-[150px] min-w-0" value={e.kind} onChange={(ev) => { const kind = ev.target.value as ExpenseKind; setExp(i, { kind, value: kind === "fixed" ? 0 : 0.1 }); }}>
                   {(Object.keys(KIND) as ExpenseKind[]).map((k) => <option key={k} value={k}>{t(...KIND[k])}</option>)}
                 </select>
                 <Num label={`${t("งบ", "Budget")} ${dn(e.name)}`} pct={e.kind !== "fixed"} value={e.value} onChange={(value) => setExp(i, { value })} />
@@ -380,7 +396,7 @@ function Costs({ plan, up, month, setMonth }: P) {
               </div>
               {e.kind === "fixed" && (
                 <label data-noexport={!e.noncash || undefined} className="mt-1 flex items-center gap-1.5 text-[12px] text-[var(--fm)] pl-1">
-                  <input type="checkbox" checked={!!e.noncash} onChange={(ev) => setExp(i, { noncash: ev.target.checked || undefined })} /> {t("ไม่ใช่เงินสด (ตัดจำหน่าย — นับในกำไร แต่ไม่นับในเป้ารอบขาย)", "Non-cash (amortisation — counted in profit, not in the bookings target)")}
+                  <input type="checkbox" checked={!!e.noncash} onChange={(ev) => setExp(i, { noncash: ev.target.checked || undefined })} /> <span className="sm:hidden">{t("ไม่ใช่เงินสด", "Non-cash")}</span><span className="hidden sm:inline">{t("ไม่ใช่เงินสด (ตัดจำหน่าย — นับในกำไร แต่ไม่นับในเป้ารอบขาย)", "Non-cash (amortisation — counted in profit, not in the bookings target)")}</span>
                 </label>
               )}
             </div>
@@ -393,7 +409,30 @@ function Costs({ plan, up, month, setMonth }: P) {
 
       <div id="services" className="scroll-mt-20">
         <Card title={t("บริการและราคา (ค่าบริการ 3 ชั่วโมง)", "Services & prices (3-hour booking)")} tone="blue">
-          <div className="overflow-x-auto">
+          {/* มือถือ: การ์ดรายบริการ */}
+          <div className="sm:hidden flex flex-col">
+            {plan.services.map((s, i) => {
+              const pr = perRound(plan, s.price);
+              const setSvc = (patch: Partial<FinService>) => up({ services: plan.services.map((x, k) => (k === i ? { ...x, ...patch } : x)) });
+              return (
+                <div key={s.id} className="fin-tile py-3 border-b border-[var(--fl)] flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    {lang === "en" && NAME_EN[s.name]
+                      ? <span className="flex-1 min-w-0 font-semibold text-[14.5px]">{dn(s.name)}</span>
+                      : <Txt label={t("ชื่อบริการ", "Service name")} value={s.name} onChange={(name) => setSvc({ name })} />}
+                    <Txt label={t("ระดับ", "Level")} w="w-[86px] flex-none" value={s.level} onChange={(level) => setSvc({ level })} />
+                    {plan.services.length > 1 && <Del label={`${t("ลบ", "Delete")} ${svcLabel(s)}`} onClick={() => up({ services: plan.services.filter((x) => x.id !== s.id) })} />}
+                  </div>
+                  <div className="flex items-center gap-3 text-[12.5px]">
+                    <span className="text-[var(--fm)]">{t("ราคา", "Price")}</span>
+                    <Num label={`${t("ราคา", "Price")} ${svcLabel(s)}`} w="w-[104px]" value={s.price} onChange={(price) => setSvc({ price })} />
+                    <span className="ml-auto text-right leading-tight"><span className="text-[var(--fm)]">{t("บริษัทเหลือ", "Company net")}</span><br /><b className="text-[var(--fg)] text-[15px] tabular-nums">{fmt(pr.net, 2)}</b></span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="hidden sm:block overflow-x-auto">
             <table className="fin-t">
               <thead><tr><th>{t("ชื่อบริการ", "Service name")}</th><th>{t("ระดับ", "Level")}</th><th className="r">{t("ราคา (บาท)", "Price (THB)")}</th><th className="r">{t("บริษัทเหลือ/รอบ", "Company net / booking")}</th><th className="r">{t("ผู้ให้บริการรับสุทธิ", "Provider net")}</th><th /></tr></thead>
               <tbody>
@@ -472,7 +511,7 @@ function CasesGrid({ plan, up, month, setMonth }: P) {
           <tbody>
             {plan.services.map((s) => (
               <tr key={s.id}>
-                <td className="sticky left-0 bg-[var(--fc)] z-[1] whitespace-nowrap text-[13px]">{svcLabel(s)}</td>
+                <td className="sticky left-0 bg-[var(--fc)] z-[1] text-[12px] sm:text-[13px] leading-tight min-w-[100px] max-w-[118px] sm:max-w-none sm:whitespace-nowrap">{svcLabel(s)}</td>
                 {ML.map((mo) => <td key={mo} className="r"><Num label={`${svcLabel(s)} ${mo}`} w="w-[64px]" value={plan.months[mo]?.[s.id] ?? 0} onChange={(v) => setRounds(mo, s.id, v)} blankZero /></td>)}
               </tr>
             ))}
@@ -508,7 +547,7 @@ function ProfitChart({ plan, up, month, setMonth }: P) {
     <section className="fin-card t-violet !py-3">
       <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-1">
         <h2 className="m-0 text-[15.5px] font-bold">{t("กำไรรายเดือนเทียบ For Cash", "Monthly profit vs For Cash")}</h2>
-        <span className="text-[12.5px] text-[var(--fm)]">{t("จากเคสที่กรอก · กำไรเงินสดก่อนภาษี · แก้ For Cash แต่ละเดือนได้ใต้กราฟ", "From entered cases · cash profit before tax · edit For Cash per month below the chart")}</span>
+        <span className="hidden sm:inline text-[12.5px] text-[var(--fm)]">{t("จากเคสที่กรอก · กำไรเงินสดก่อนภาษี · แก้ For Cash แต่ละเดือนได้ใต้กราฟ", "From entered cases · cash profit before tax · edit For Cash per month below the chart")}</span>
         <span className="flex-1" />
         <span className="text-[12.5px] font-semibold">{vals.length ? t(`For Cash ${hit}/${vals.length} เดือน`, `For Cash ${hit}/${vals.length} months`) : t("ยังไม่มีเคส — กรอกในตารางด้านล่าง", "No cases yet — fill in the table below")}</span>
         </div>
@@ -599,9 +638,9 @@ function Target({ plan, up, month, setMonth }: P) {
               </div>
               <p className="m-0 text-center text-[14px]">{t(`เพื่อเหลือกำไรอย่างน้อย ${fmt(plan.target.profit)} บาท`, `to keep at least ${fmt(plan.target.profit)} THB profit`)}</p>
               <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-[var(--fl)] text-center">
-                <div><div className="text-[12.5px] text-[var(--fm)]">{t("เฉลี่ยต่อวัน", "Per day")}</div><div className="text-[22px] font-bold tabular-nums">{fmt(tg.perDay ?? 0)} {rd}</div><div className="text-[11.5px] text-[var(--fm)]">({plan.target.days} {t("วัน, ปัดขึ้น", "days, rounded up")})</div></div>
-                <div><div className="text-[12.5px] text-[var(--fm)]">{t("คุ้มทุนที่", "Break-even at")}</div><div className="text-[22px] font-bold tabular-nums">{fmt(tg.breakeven ?? 0)} {rd}</div></div>
-                <div><div className="text-[12.5px] text-[var(--fm)]">{t("กำไรตามแผน", "Planned profit")}</div><div className="text-[22px] font-bold tabular-nums text-[var(--fg)]">{fmt(tg.profit ?? 0)} {baht}</div></div>
+                <div><div className="text-[12.5px] text-[var(--fm)]">{t("เฉลี่ยต่อวัน", "Per day")}</div><div className="text-[18px] sm:text-[22px] font-bold tabular-nums whitespace-nowrap">{fmt(tg.perDay ?? 0)} {rd}</div><div className="text-[11.5px] text-[var(--fm)]">({plan.target.days} {t("วัน, ปัดขึ้น", "days, rounded up")})</div></div>
+                <div><div className="text-[12.5px] text-[var(--fm)]">{t("คุ้มทุนที่", "Break-even at")}</div><div className="text-[18px] sm:text-[22px] font-bold tabular-nums whitespace-nowrap">{fmt(tg.breakeven ?? 0)} {rd}</div></div>
+                <div><div className="text-[12.5px] text-[var(--fm)]">{t("กำไรตามแผน", "Planned profit")}</div><div className="text-[18px] sm:text-[22px] font-bold tabular-nums text-[var(--fg)] whitespace-nowrap">{fmt(tg.profit ?? 0)} {baht}</div></div>
               </div>
               <div className="fin-total t-green mt-3"><span>{t("เงินเหลือต่อรอบ", "Net per booking")}{multi ? t(" (เฉลี่ย)", " (average)") : ""}</span><b>{fmt(tg.net, 2)} {baht}</b></div>
               {multi && mix && (
@@ -627,17 +666,17 @@ function Target({ plan, up, month, setMonth }: P) {
       <Card title={t("เปรียบเทียบกับบริการอื่น", "Compare services")} right={<span className="text-[12.5px] text-[var(--fm)]">{t(`ขายประเภทเดียว • เป้ากำไร ${fmt(plan.target.profit)} บาทเท่ากัน`, `Selling one service only • same ${fmt(plan.target.profit)} THB target`)}</span>}>
         <div className="overflow-x-auto">
           <table className="fin-t">
-            <thead><tr><th>{t("บริการ", "Service")}</th><th className="r">{t("ราคา", "Price")}</th><th className="r">{t("เหลือต่อรอบ", "Net / booking")}</th><th className="r">{t("คุ้มทุน", "Break-even")}</th><th className="r">{t("รอบที่ต้องขาย/เดือน", "Bookings needed / month")}</th></tr></thead>
+            <thead><tr><th>{t("บริการ", "Service")}</th><th className="r hidden sm:table-cell">{t("ราคา", "Price")}</th><th className="r hidden sm:table-cell">{t("เหลือต่อรอบ", "Net / booking")}</th><th className="r">{t("คุ้มทุน", "Break-even")}</th><th className="r">{t("รอบที่ต้องขาย/เดือน", "Bookings needed / month")}</th></tr></thead>
             <tbody>
               {plan.services.map((s) => {
                 const x = targetFor(plan, s.price), on = !multi && s.id === svc.id;
                 return (
                   <tr key={s.id} className={on ? "sel" : ""} onClick={() => { setMulti(false); setT({ serviceId: s.id }); }} style={{ cursor: "pointer" }}>
                     <td className="font-semibold">{svcLabel(s)}</td>
-                    <td className="r tabular-nums">{fmt(s.price)} {baht}</td>
-                    <td className="r tabular-nums">{fmt(x.net, 2)}</td>
-                    <td className="r tabular-nums">{x.breakeven == null ? "—" : `${fmt(x.breakeven)} ${rd}`}</td>
-                    <td className="r tabular-nums font-bold text-[16px]">{x.rounds == null ? "—" : `${fmt(x.rounds)} ${rd}`}{on && " ✓"}</td>
+                    <td className="r tabular-nums hidden sm:table-cell">{fmt(s.price)} {baht}</td>
+                    <td className="r tabular-nums hidden sm:table-cell">{fmt(x.net, 2)}</td>
+                    <td className="r tabular-nums whitespace-nowrap">{x.breakeven == null ? "—" : `${fmt(x.breakeven)} ${rd}`}</td>
+                    <td className="r tabular-nums font-bold text-[15px] sm:text-[16px] whitespace-nowrap">{x.rounds == null ? "—" : `${fmt(x.rounds)} ${rd}`}{on && " ✓"}</td>
                   </tr>
                 );
               })}
@@ -666,8 +705,9 @@ const CSS = `
 .fin-card.t-blue{border-top:4px solid #93b4f5}.fin-card.t-orange{border-top:4px solid #f8b98a}.fin-card.t-violet{border-top:4px solid #c3adf5}.fin-card.t-green{border-top:4px solid #98d8b0;background:linear-gradient(#f3fbf6,#fff)}
 .fin-num{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;background:var(--fpl);color:var(--fp)}
 .fin-kpi{border-radius:18px;padding:14px 16px;background:#fff;border:1px solid var(--fl)}
-.fin-kv{font-size:clamp(24px,2.4vw,30px);white-space:nowrap;font-weight:800;line-height:1.25;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.fin-kv{font-size:clamp(19px,5.6vw,30px);white-space:nowrap;font-weight:800;line-height:1.25;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .fin-kpi.t-violet .fin-kv{color:var(--fp)}.fin-kpi.t-blue .fin-kv{color:var(--fb)}.fin-kpi.t-orange .fin-kv{color:var(--fo)}.fin-kpi.t-green .fin-kv{color:var(--fg)}.fin-kpi.t-red .fin-kv{color:var(--fr)}
+.fin-kpi.t-red .fin-pill{background:var(--frl);color:var(--fr)}
 .fin-kpi.t-violet{background:linear-gradient(#f8f5ff,#fff)}.fin-kpi.t-blue{background:linear-gradient(#f2f6ff,#fff)}.fin-kpi.t-orange{background:linear-gradient(#fff6ef,#fff)}.fin-kpi.t-green{background:linear-gradient(#effaf3,#fff)}.fin-kpi.t-red{background:linear-gradient(#fff1f2,#fff)}
 .fin-pill{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 9px;border-radius:999px;background:var(--fgl);color:var(--fg)}
 .fin-pill.warn{background:#fff4d6;color:#a16207;border:1px solid #f6d58a}
@@ -708,6 +748,39 @@ const CSS = `
 .fin-exp-menu button{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;font-size:14px;font-weight:600;color:var(--ft);text-align:left}
 .fin-exp-menu button:hover{background:var(--fsoft)}.fin-exp-menu small{margin-left:auto;font-weight:400;color:var(--fm);font-size:11.5px}
 .fin-ratio{display:inline-block;border:2px solid var(--fp);border-radius:3px}.fin-ratio.l{width:22px;height:13px}.fin-ratio.p{width:13px;height:22px;margin:0 4.5px}
+@media (max-width:639px){
+  .fin-root{line-height:1.55}
+  .fin-root main{padding-top:14px}
+  .fin-root .fin-in{border-color:transparent;background:#f3f0fa;box-shadow:none}
+  .fin-root .fin-in:focus-within{background:#fff;border-color:var(--fp);box-shadow:0 0 0 3px #e4d9fc}
+  .fin-root .fin-sel{border-color:transparent;background:#f3f0fa}
+  .fin-root .fin-card [class*="border-b"]{border-bottom-color:transparent}
+  .fin-root .fin-t td,.fin-root .fin-t th{border-bottom-color:transparent}
+  .fin-root .fin-t thead th{background:transparent}
+  .fin-root .fin-note{display:none}
+  .fin-root .fin-x{color:#b9b1cc;width:26px;height:26px}
+  .fin-root .fin-card{box-shadow:0 2px 10px rgba(60,30,120,.04);border-color:#efebf7}
+  .fin-root .fin-card > div:first-child{margin-bottom:10px}
+  .fin-root .fin-num{width:24px;height:24px;font-size:12.5px}
+  .fin-root .fin-pill{font-size:11px}
+  .fin-root .fin-warn{font-size:12.5px;padding:7px 10px}
+  .fin-root .fin-add{font-size:13px}
+  .fin-root .flex-col.gap-4{gap:12px}
+  .fin-root .fin-tile{background:#f8f6fc;border-radius:14px;padding:10px 12px;margin-bottom:8px}
+  .fin-root .fin-tile .fin-in,.fin-root .fin-tile .fin-sel{background:#fff}
+  .fin-root .fin-card{padding:14px 14px;border-radius:18px}
+  .fin-root .fin-kpi{padding:12px 13px;border-radius:16px}
+  .fin-root .fin-kpi > div:first-child{font-size:12.5px}
+  .fin-root .fin-bar{padding:10px 12px;gap:8px 12px}
+  .fin-root .fin-total{padding:9px 12px;font-size:14px}.fin-root .fin-total b{font-size:16px}
+  .fin-root .fin-eq{min-width:0;padding:8px 12px}.fin-root .fin-eq b{font-size:20px}
+  .fin-root .fin-t{font-size:13px}
+  .fin-root .fin-in{height:34px}
+  .fin-root .fin-btn{height:40px;padding:0 16px;font-size:14.5px}
+  .fin-root .fin-btn.sm{height:32px;padding:0 10px;font-size:12.5px}
+  .fin-root .fin-nav{padding:8px 12px}
+  .fin-root .fin-seg button{padding:7px 16px;font-size:14px}
+}
 .fin-savebar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;align-items:center;gap:10px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(255,255,255,.96);border-top:1px solid var(--fl);backdrop-filter:blur(6px)}
 @media (min-width:1024px){.fin-savebar{left:248px;padding-left:32px;padding-right:32px}}
 .fin-btn{height:42px;padding:0 22px;border-radius:12px;font-weight:700;font-size:15px;color:#fff;background:linear-gradient(90deg,#7c4dff,#6d3fd1)}
