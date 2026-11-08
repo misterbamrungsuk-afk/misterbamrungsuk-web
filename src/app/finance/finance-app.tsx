@@ -744,9 +744,9 @@ const CSS = `
 .fin-seg button.on{background:var(--fp);color:#fff;box-shadow:0 4px 12px rgba(109,63,209,.3)}
 .fin-exp{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 10px;border-radius:9px;font-size:12.5px;font-weight:600;color:var(--fp);background:#fff;border:1px solid #d9cbfa;white-space:nowrap}
 .fin-exp:hover{background:var(--fpl)}.fin-exp:disabled{opacity:.6}
-.fin-exp-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:45;display:flex;flex-direction:column;min-width:200px;background:#fff;border:1px solid var(--fl);border-radius:14px;padding:6px;box-shadow:0 12px 30px rgba(60,30,120,.16)}
+.fin-exp-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:45;display:flex;flex-direction:column;min-width:250px;background:#fff;border:1px solid var(--fl);border-radius:14px;padding:6px;box-shadow:0 12px 30px rgba(60,30,120,.16)}
 .fin-exp-menu button{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;font-size:14px;font-weight:600;color:var(--ft);text-align:left}
-.fin-exp-menu button:hover{background:var(--fsoft)}.fin-exp-menu small{margin-left:auto;font-weight:400;color:var(--fm);font-size:11.5px}
+.fin-exp-menu button:hover{background:var(--fsoft)}.fin-exp-h{display:block;padding:8px 10px 2px;font-size:11.5px;font-weight:700;color:var(--fm);letter-spacing:.02em}.fin-exp-menu small{margin-left:auto;font-weight:400;color:var(--fm);font-size:11.5px}
 .fin-ratio{display:inline-block;border:2px solid var(--fp);border-radius:3px}.fin-ratio.l{width:22px;height:13px}.fin-ratio.p{width:13px;height:22px;margin:0 4.5px}
 @media (max-width:639px){
   .fin-root{line-height:1.55}
@@ -766,6 +766,7 @@ const CSS = `
   .fin-root .fin-warn{font-size:12.5px;padding:7px 10px}
   .fin-root .fin-add{font-size:13px}
   .fin-root .flex-col.gap-4{gap:12px}
+  .fin-root .fin-exp-menu{left:0;right:auto}
   .fin-root .fin-tile{background:#f8f6fc;border-radius:14px;padding:10px 12px;margin-bottom:8px}
   .fin-root .fin-tile .fin-in,.fin-root .fin-tile .fin-sel{background:#fff}
   .fin-root .fin-card{padding:14px 14px;border-radius:18px}

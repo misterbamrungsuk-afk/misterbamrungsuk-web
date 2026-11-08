@@ -36,16 +36,40 @@ export function ExportBtn({ kind, ctx, file }: { kind: SlideKind; ctx: Omit<Slid
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, [open]);
-  const go = async (orient: Orient) => {
+  const ALL: SlideKind[] = ["overview", "costs", "target"];
+  const ratioTag = (o: Orient) => (o === "landscape" ? "16x9" : "9x16");
+  const download = (url: string, name: string) => {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    document.body.append(a);
+    a.click();
+    a.remove();
+  };
+  // mode: one = สไลด์หน้านี้ · all = ครบ 3 สไลด์เป็น PNG 3 ไฟล์ · pdf = ครบ 3 สไลด์ใน PDF ไฟล์เดียว
+  const go = async (orient: Orient, mode: "one" | "all" | "pdf" = "one") => {
     setOpen(false); setBusy(true);
     try {
-      const url = await renderSlide(kind, { ...ctx, orient });
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${file}-${orient === "landscape" ? "16x9" : "9x16"}.png`;
-      document.body.append(a);
-      a.click();
-      a.remove();
+      if (mode === "one") {
+        download(await renderSlide(kind, { ...ctx, orient }), `${file}-${ratioTag(orient)}.png`);
+      } else {
+        const urls: string[] = [];
+        for (const k of ALL) urls.push(await renderSlide(k, { ...ctx, orient }));
+        const base = `MB-finance-${ctx.month}`;
+        if (mode === "all") {
+          for (let i = 0; i < urls.length; i++) {
+            download(urls[i], `${base}-${i + 1}-${ALL[i]}-${ratioTag(orient)}.png`);
+            await new Promise((r) => setTimeout(r, 400)); // เว้นจังหวะ ให้เบราว์เซอร์ยอมดาวน์โหลดหลายไฟล์
+          }
+        } else {
+          const { jsPDF } = await import("jspdf");
+          const [W, H] = SLIDE_SIZE[orient];
+          const pdf = new jsPDF({ unit: "px", format: [W, H], orientation: orient === "landscape" ? "landscape" : "portrait", compress: true, hotfixes: ["px_scaling"] });
+          urls.forEach((u, i) => { if (i) pdf.addPage([W, H], orient === "landscape" ? "landscape" : "portrait"); pdf.addImage(u, "PNG", 0, 0, W, H, undefined, "FAST"); });
+          pdf.setProperties({ title: `Mister Bamrungsuk · ${t("แผนการเงิน", "Financial plan")} · ${ctx.month}` });
+          pdf.save(`${base}-3-slides-${ratioTag(orient)}.pdf`);
+        }
+      }
     } catch {
       window.alert(t("ส่งออกสไลด์ไม่สำเร็จ ลองใหม่อีกครั้ง", "Could not export the slide — please try again"));
     } finally { setBusy(false); }
@@ -58,8 +82,14 @@ export function ExportBtn({ kind, ctx, file }: { kind: SlideKind; ctx: Omit<Slid
       </button>
       {open && (
         <span className="fin-exp-menu" role="menu">
-          <button type="button" role="menuitem" onClick={() => go("landscape")}><i className="fin-ratio l" />{t("แนวนอน 16:9", "Landscape 16:9")}<small>1920×1080</small></button>
-          <button type="button" role="menuitem" onClick={() => go("portrait")}><i className="fin-ratio p" />{t("แนวตั้ง 9:16", "Portrait 9:16")}<small>1080×1920</small></button>
+          <span className="fin-exp-h">{t("สไลด์หน้านี้", "This page")}</span>
+          <button type="button" role="menuitem" onClick={() => go("landscape")}><i className="fin-ratio l" />{t("แนวนอน 16:9", "Landscape 16:9")}<small>PNG</small></button>
+          <button type="button" role="menuitem" onClick={() => go("portrait")}><i className="fin-ratio p" />{t("แนวตั้ง 9:16", "Portrait 9:16")}<small>PNG</small></button>
+          <span className="fin-exp-h">{t("ครบ 3 สไลด์ (ภาพรวม · ต้นทุน · เป้ากำไร)", "All 3 slides (overview · costs · target)")}</span>
+          <button type="button" role="menuitem" onClick={() => go("landscape", "pdf")}><i className="fin-ratio l" />{t("PDF แนวนอน 3 หน้า", "PDF landscape, 3 pages")}<small>PDF</small></button>
+          <button type="button" role="menuitem" onClick={() => go("portrait", "pdf")}><i className="fin-ratio p" />{t("PDF แนวตั้ง 3 หน้า", "PDF portrait, 3 pages")}<small>PDF</small></button>
+          <button type="button" role="menuitem" onClick={() => go("landscape", "all")}><i className="fin-ratio l" />{t("รูปแนวนอน 3 รูป", "3 landscape images")}<small>PNG ×3</small></button>
+          <button type="button" role="menuitem" onClick={() => go("portrait", "all")}><i className="fin-ratio p" />{t("รูปแนวตั้ง 3 รูป", "3 portrait images")}<small>PNG ×3</small></button>
         </span>
       )}
     </span>
