@@ -22,7 +22,7 @@ export function gateExempt(p: string) {
     p.startsWith("/api/otp/") || // OTP ใช้ในหน้ารับสมัคร /join/pay (มี Turnstile + rate limit)
     p === "/partner" || p.startsWith("/partner/") || p.startsWith("/api/partner/") ||
     // Marketplace หน้าแรก (สาธารณะ)
-    p === "/" || p === "/work-with-us" || p === "/map" || p.startsWith("/p/") || p.startsWith("/api/public/") || p === "/market" || p.startsWith("/market/") || marketPublic(p) ||
+    p === "/" || p === "/massage" || p === "/work-with-us" || p === "/map" || p.startsWith("/p/") || p.startsWith("/api/public/") || p === "/market" || p.startsWith("/market/") || marketPublic(p) ||
     p === "/products" || p.startsWith("/products/") || p === "/cart" || p.startsWith("/api/market/") || p === "/api/spas" ||
     p.startsWith("/_next") || p === "/favicon.ico" || p === "/manifest.webmanifest" ||
     p === "/sw.js" || p.startsWith("/pwa-icon") || p.startsWith("/brand")
@@ -40,7 +40,7 @@ export function ptOnlyOpen(p: string) {
   return (
     // หน้าตัวอย่าง (mockup): แผนที่ · โปรไฟล์เพื่อน · แชทตัวอย่าง — กดจอง/จ่าย/ล็อกอิน → /soon
     p === "/map" || under("/p") ||
-    p === "/" || p === "/work-with-us" || under("/join") || under("/privacy") || p === "/page/terms" || under("/policy") ||
+    p === "/" || p === "/massage" || p === "/work-with-us" || under("/join") || under("/privacy") || p === "/page/terms" || under("/policy") ||
     p === "/gate" || p === "/soon" || p === "/offline" || p === "/login" ||
     under("/admin") || under("/finance") || p === "/admin-login" || under("/ceo") || under("/sales") || under("/recruit") || under("/Recruit") || // Recruit: หน้าแนะนำ + ล็อกอิน + แดชบอร์ดของตัวเอง
     p.startsWith("/api") || p.startsWith("/_next") || p.startsWith("/pwa-icon") || p.startsWith("/brand") ||

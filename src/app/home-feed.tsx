@@ -69,7 +69,7 @@ type Promo = { gold: { pay: number; credit: number }; black: { pay: number; cred
 const PROMO_DEFAULT: Promo = { gold: { pay: 50000, credit: 70000 }, black: { pay: 100000, credit: 150000 } };
 const fb = (n: number) => "฿" + n.toLocaleString("th-TH");
 
-export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", me = null, unread = 0, memberTier = null, promo = PROMO_DEFAULT, recruit = false, svc = "" }: { svc?: "" | "eat" | "massage"; showEarnings?: boolean; people?: Person[]; mode?: "home" | "sample"; me?: { name: string } | null; unread?: number; memberTier?: "gold" | "black" | null; promo?: Promo; recruit?: boolean }) {
+export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", me = null, unread = 0, memberTier = null, promo = PROMO_DEFAULT, recruit = false, svc = "", variant = "home" }: { variant?: "home" | "massage"; svc?: "" | "eat" | "massage"; showEarnings?: boolean; people?: Person[]; mode?: "home" | "sample"; me?: { name: string } | null; unread?: number; memberTier?: "gold" | "black" | null; promo?: Promo; recruit?: boolean }) {
   const sample = mode === "sample";
   // 3 ภาษา (ไทย · EN · 中文) — ข้อความจาก src/i18n/site.ts · ชื่อเล่น/แนะนำตัวของคนจริงแสดงตามที่กรอก
   const { s: S, lang } = useI18n();
@@ -89,12 +89,14 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
   const [sort, setSort] = useState<Sort>("top");
   // หนุ่มหล่อ / ทอมหล่อ — แยกแท็บ (เปิดมาเจอหนุ่มหล่อก่อน)
   const [grp, setGrp] = useState<"man" | "tom">("man");
+  const MZ = variant === "massage"; // หน้าแยก /massage — หมอนวดน้ำมันชายอย่างเดียว
   const [ad, setAd] = useState(false);
   const [fOpen, setFOpen] = useState(false);
   const [f, setF] = useState({ reg: "", prov: "", spot: "", type: svc as string, tier: "", act: "", aMin: "20", aMax: "50" });
   const listRef = useRef<HTMLDivElement>(null);
   // เลือกบริการ (เพื่อนกินเพื่อนเที่ยว / หมอนวด) = ตัวกรอง "ประเภท" เดิม · กดซ้ำ = ดูทั้งหมด · จำใน URL (?svc=) ให้แชร์ลิงก์ได้
   const pickSvc = (k: "eat" | "massage") => {
+    if (k === "massage") { location.assign("/massage"); return; } // MDG 8 พ.ย.: หมอนวดเป็นหน้าแยก เข้าใจง่ายกว่า
     const next = f.type === k ? "" : k;
     setF((x) => ({ ...x, type: next }));
     try { const u = new URL(location.href); if (next) u.searchParams.set("svc", next); else u.searchParams.delete("svc"); history.replaceState(null, "", u); } catch {}
@@ -123,10 +125,10 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
       && (!spot || p.area.includes(spot) || spot.includes(p.area) || placeT(p.area, lang).toLowerCase().includes(spot.toLowerCase())) && (!f.type || (f.type === "massage") === p.acts.includes("massage"))
       && (!f.tier || (f.tier === "top") === p.top) && (!f.act || p.acts.includes(f.act as Act)) && ageOf(p) >= lo && ageOf(p) <= hi).sort((a, b) => (b.real ? 1 : 0) - (a.real ? 1 : 0) || (b.secret ? 1 : 0) - (a.secret ? 1 : 0) || by[sort](a, b)); // คนจริงขึ้นก่อนตัวอย่างเสมอ · Secret ก่อน TOP (ทุกการเรียง)
   }, [people, grp, acts, sort, f.reg, f.prov, spot, f.type, f.tier, f.act, lo, hi, lang]);
-  const nF = acts.length + [f.reg, f.prov, spot, f.type, f.tier, f.act].filter(Boolean).length + (lo !== 20 || hi !== 50 ? 1 : 0);
+  const nF = acts.length + [f.reg, f.prov, spot, MZ ? "" : f.type, f.tier, f.act].filter(Boolean).length + (lo !== 20 || hi !== 50 ? 1 : 0);
   const provOpts = Object.keys(PROV).filter((k) => !f.reg || PROV[k] === f.reg).sort((a, b) => a.localeCompare(b, "th"));
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF((x) => ({ ...x, [k]: e.target.value }));
-  const clear = () => { setActs([]); setF({ reg: "", prov: "", spot: "", type: "", tier: "", act: "", aMin: "20", aMax: "50" }); };
+  const clear = () => { setActs([]); setF({ reg: "", prov: "", spot: "", type: MZ ? "massage" : "", tier: "", act: "", aMin: "20", aMax: "50" }); };
 
   const card = (p: P, i = 0) => (
     <Link key={p.id} href={sample && !p.real ? `/p/${p.id}?ex=1` : `/p/${p.id}`} data-secret={p.secret ? "1" : undefined} style={{ order: i * 2, ...(p.secret ? SECRET_CARD : { background: p.boost ? "linear-gradient(180deg, #5a2a1c 0%, #3a1a14 100%)" : CARD_BG, border: p.boost ? "2px solid #e8c472" : CARD_BD, boxShadow: p.boost ? "0 0 0 1px rgba(255,241,201,.35), 0 10px 30px rgba(232,196,114,.28)" : undefined }) }} className={`block rounded-[18px] overflow-hidden text-inherit hover:text-inherit${p.secret ? " secret-glow" : ""}`}>
@@ -172,6 +174,24 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
           </Link>
         </div>
 
+        {MZ ? (
+          <section aria-labelledby="mz-title" className="relative overflow-hidden rounded-[22px] md:min-h-[300px]" style={{ margin: "6px 18px 0", border: CARD_BD }}>
+            <img src="/brand/spa.jpg" alt="" className="absolute inset-0 w-full h-full object-cover md:hidden" />
+            <img src="/brand/home/ad-oil.jpg" alt="" className="absolute inset-0 w-full h-full object-cover hidden md:block" style={{ objectPosition: "center 42%", filter: "brightness(.62) saturate(1.15) sepia(.15)" }} />
+            <span className="absolute inset-0 md:hidden" style={{ background: "linear-gradient(180deg, rgba(20,10,12,.35) 0%, rgba(20,10,12,.94) 70%)" }} />
+            <span className="absolute inset-0 hidden md:block" style={{ background: "linear-gradient(90deg, rgba(20,10,12,.96) 0%, rgba(20,10,12,.85) 40%, rgba(20,10,12,.2) 78%, rgba(20,10,12,.05) 100%)" }} />
+            <div className="relative flex flex-col gap-2 md:gap-3 p-5 pt-24 md:p-10 md:max-w-[60%]">
+              <Link href="/" className="self-start text-[13px] text-[#d9c9b4] hover:text-[#f3ead9] -mt-16 md:mt-0 mb-8 md:mb-1">{H.mzBack}</Link>
+              <span className="text-[12px] md:text-[13px] tracking-[.2em] font-semibold text-[#e8c472] uppercase">{H.mzKicker}</span>
+              <h1 id="mz-title" className="m-0 font-bold text-[30px] md:text-[42px] leading-[1.2] text-[#fff7e8]" style={{ textWrap: "balance" }}>{H.svcMassage}</h1>
+              <p className="m-0 text-[14.5px] md:text-[17px] leading-[1.6] text-[#e6d8c4] font-light">{H.mzSub}</p>
+              <div className="flex flex-wrap items-center gap-3 mt-1">
+                <span className="text-[15px] md:text-[17px] font-semibold text-[#e8c472]">{H.svcFrom(fb(EARNINGS.price3h.massage.silver))}</span>
+                <button type="button" onClick={() => listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })} className="min-h-11 px-5 rounded-full text-[14.5px] font-semibold text-[#1b130b]" style={{ background: GOLD }}>{H.mzCta}</button>
+              </div>
+            </div>
+          </section>
+        ) : (<>
         {/* โฆษณาบนสุด — สไลด์ */}
         <div className="flex flex-col gap-2" style={{ margin: "6px 18px 0" }}>
           <div ref={slider} onScroll={onSlide} className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar rounded-[18px]" aria-roledescription="carousel" aria-label={H.adsLbl}>
@@ -272,6 +292,23 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
           </>
         )}
 
+        </>)}
+
+        {/* หน้าหมอนวด: จุดที่ลูกค้ากังวล — ใบรับรอง / ยืนยันตัวตน / จ่ายผ่านระบบ */}
+        {MZ && (
+          <div className="grid grid-cols-3 gap-2 md:gap-4" style={{ margin: "14px 18px 0" }}>
+            {H.mzTrust.map(([a, b], i) => (
+              <div key={a} className="rounded-2xl text-center flex flex-col items-center gap-1 py-3 px-2 md:py-4" style={{ background: CARD_BG, border: CARD_BD }}>
+                <span className="grid place-items-center w-9 h-9 rounded-full text-[#e8c472]" style={{ background: "rgba(232,196,114,0.16)" }}>
+                  <Svg d={["M12 15a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM8.2 13.9 7 22l5-3 5 3-1.2-8.1", "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM9 12l2 2 4-4", "M3 7h18v10H3zM3 11h18M7 15h3"][i]} size={18} />
+                </span>
+                <b className="text-[13px] md:text-[15px] leading-[1.35]">{a}</b>
+                <span className="text-[11.5px] md:text-[13px] font-light text-[#d9c9b4] leading-[1.4]">{b}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* ค้นหา + ตัวกรอง */}
         <div className="flex gap-[10px]" style={{ margin: "14px 18px 0" }}>
           <label className="flex-1 min-w-0 h-12 rounded-[14px] bg-[#3d1922] border border-[rgba(232,196,114,.22)] flex items-center gap-[10px] px-[14px] text-[#b5a596] text-[14px]">
@@ -288,7 +325,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
         </div>
 
         {/* กิจกรรม */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar" style={{ padding: "14px 18px 0" }}>
+        {!MZ && <div className="flex gap-2 overflow-x-auto no-scrollbar" style={{ padding: "14px 18px 0" }}>
           {ACTS.map((a) => {
             const on = acts.includes(a.id);
             return (
@@ -298,7 +335,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
               </button>
             );
           })}
-        </div>
+        </div>}
 
         {/* เรียงลำดับ */}
         <div className="flex gap-2 overflow-x-auto no-scrollbar" style={{ padding: "12px 18px 0" }}>
@@ -310,12 +347,12 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
 
         <div ref={listRef} className="flex justify-between items-baseline" style={{ padding: "18px 18px 10px", scrollMarginTop: 12 }}>
           <div className="flex items-center gap-3 min-w-0">
-            <div className="font-semibold text-[19px] shrink-0">{H.friends}</div>
-            <div role="tablist" aria-label={H.groupTabs} className="grid grid-cols-2 gap-1 rounded-full" style={{ padding: 3, background: "#2c1a1f" }}>
+            <div className="font-semibold text-[19px] shrink-0">{MZ ? H.mzList : H.friends}</div>
+            {!MZ && <div role="tablist" aria-label={H.groupTabs} className="grid grid-cols-2 gap-1 rounded-full" style={{ padding: 3, background: "#2c1a1f" }}>
               {([["man", H.man], ["tom", H.tom]] as const).map(([k, label]) => (
                 <button key={k} type="button" role="tab" aria-selected={grp === k} data-home-group={k} onClick={() => setGrp(k)} className="min-h-9 px-3.5 rounded-full text-[13.5px] font-semibold" style={grp === k ? { background: GOLD, color: "#1b130b" } : { color: GOLD }}>{label}</button>
               ))}
-            </div>
+            </div>}
           </div>
           <div className="text-[13px] font-light" aria-live="polite"><span className="text-[#b5a596]">●</span> {H.found(list.length)}</div>
         </div>
@@ -339,6 +376,14 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
                   </Link>
                 );
               }))}
+          </div>
+        ) : MZ ? (
+          <div data-mz-empty className="rounded-2xl text-center flex flex-col items-center gap-2.5 bg-[#2c1a1f]" style={{ margin: "0 18px", padding: "28px 20px" }}>
+            <span className="grid place-items-center w-12 h-12 rounded-full text-[#e8c472]" style={{ background: "rgba(232,196,114,0.16)" }}><Svg d="M12 3c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11z" size={22} /></span>
+            <b className="text-[16.5px]">{H.mzEmpty}</b>
+            <span className="text-[13.5px] font-light text-[#d9c9b4] max-w-[34rem]">{H.mzEmptySub}</span>
+            <Link href="/?svc=eat" className="min-h-11 px-5 rounded-full grid place-items-center text-[14px] font-semibold text-[#1b130b] hover:text-[#1b130b] mt-1" style={{ background: GOLD }}>{H.mzEmptyCta}</Link>
+            <Link href="/work-with-us" className="text-[13px] text-[#e8c472] hover:text-[#e8c472]">{H.mzJoin}</Link>
           </div>
         ) : (
           grp === "tom" && !people.some((p) => p.group === "tom")

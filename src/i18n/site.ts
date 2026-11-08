@@ -27,6 +27,9 @@ const th = {
     empty: "ยังไม่เจอเพื่อนที่ตรงใจ ลองเลือกกิจกรรมให้น้อยลงดูนะคะ",
     // เลือกบริการบนสุด (บอส 6 พ.ย. 2569: เปิดมาแล้วเลือก เพื่อนกินเพื่อนเที่ยว / หมอนวด ให้ชัด)
     svcTitle: "เลือกบริการ", svcAria: "เลือกประเภทบริการ", svcEat: "เพื่อนกินเพื่อนเที่ยว", svcEatSub: "ทานข้าว คาเฟ่ ดูหนัง เที่ยวด้วยกัน", svcMassage: "หมอนวดน้ำมันชาย", svcMassageSub: "นวดผ่อนคลาย โดยผู้มีใบรับรอง", svcFrom: (v: string) => `เริ่ม ${v} / 3 ชม.`, svcAll: "ดูทั้งหมด", svcMassageTom: "ยังไม่มีทอมสายนวด", svcSeeMan: "ดูหนุ่มหล่อสายนวด ›",
+    mzBack: "‹ หน้าแรก", mzKicker: "บริการนวดถึงที่พัก", mzSub: "นวดน้ำมันผ่อนคลาย โดยผู้มีใบรับรอง มาถึงห้องพักหรือโรงแรมของคุณ", mzCta: "ดูหมอนวด",
+    mzTrust: [["มีใบรับรองการนวด", "ตรวจเอกสารทุกคน"], ["ยืนยันตัวตนแล้ว", "ผ่าน KYC ก่อนรับงาน"], ["จ่ายผ่านระบบ", "มีปุ่ม SOS ตลอดงาน"]] as [string, string][],
+    mzList: "หมอนวดในระบบ", mzEmpty: "กำลังเปิดรับหมอนวดชายที่มีใบรับรอง", mzEmptySub: "หมอนวดชุดแรกจะขึ้นที่หน้านี้เร็ว ๆ นี้ ระหว่างนี้ดูเพื่อนกินเพื่อนเที่ยวได้ก่อน", mzEmptyCta: "ดูเพื่อนกินเพื่อนเที่ยว", mzJoin: "เป็นหมอนวดกับเรา ›",
     adsLbl: "โฆษณา", adN: (i: number, n: number, name: string) => `โฆษณา ${i}/${n} · ${name}`, adDot: (i: number) => `ดูโฆษณาที่ ${i}`, unread: (n: number) => `ยังไม่อ่าน ${n}`,
     slides: [
       { kind: "สปาพาร์ทเนอร์ · สีลม", name: "บำรุงสุข สปา", offer: "สมาชิกลด 20%" },
@@ -126,6 +129,9 @@ const en: SiteDict = {
     tomSoon: "Handsome Toms · coming soon", tomSoonSub: "Now recruiting our first group", tomApply: "Apply as a Tom ›",
     empty: "No matches yet. Try selecting fewer activities.",
     svcTitle: "Choose a service", svcAria: "Choose a service type", svcEat: "Dining & outing companions", svcEatSub: "Meals, cafés, movies and outings together", svcMassage: "Male oil massage", svcMassageSub: "Relaxing oil massage by certified therapists", svcFrom: (v) => `From ${v} / 3 hrs`, svcAll: "Show all", svcMassageTom: "No Tom massage therapists yet", svcSeeMan: "See gentlemen who offer massage ›",
+    mzBack: "‹ Home", mzKicker: "In-room massage", mzSub: "Relaxing oil massage by certified therapists, at your room or hotel", mzCta: "See therapists",
+    mzTrust: [["Certified therapists", "Every certificate checked"], ["ID verified", "KYC before taking bookings"], ["Pay in the app", "SOS button throughout"]],
+    mzList: "Massage therapists", mzEmpty: "We are onboarding certified male therapists", mzEmptySub: "The first therapists will appear here soon. Meanwhile, browse our dining & outing companions.", mzEmptyCta: "See dining & outing companions", mzJoin: "Become a therapist with us ›",
     adsLbl: "Featured offers", adN: (i, n, name) => `Offer ${i}/${n} · ${name}`, adDot: (i) => `Show offer ${i}`, unread: (n) => `${n} unread`,
     slides: [
       { kind: "Partner spa · Silom", name: "Bamrungsuk Spa", offer: "Members save 20%" },
@@ -223,6 +229,9 @@ const zh: SiteDict = {
     tomSoon: "帅气Tom · 即将推出", tomSoonSub: "首批招募进行中", tomApply: "报名成为Tom ›",
     empty: "暂无符合条件的伙伴，请尝试减少所选活动。",
     svcTitle: "选择服务", svcAria: "选择服务类型", svcEat: "美食出游伙伴", svcEatSub: "一起用餐、咖啡、看电影、出游", svcMassage: "放松按摩（持证）", svcMassageSub: "由持证按摩师提供精油放松按摩", svcFrom: (v) => `${v} 起 / 3小时`, svcAll: "查看全部", svcMassageTom: "暂无提供按摩的Tom", svcSeeMan: "查看提供按摩的帅气男士 ›",
+    mzBack: "‹ 首页", mzKicker: "上门按摩服务", mzSub: "持证按摩师提供精油放松按摩，上门到您的住处或酒店", mzCta: "查看按摩师",
+    mzTrust: [["持证按摩", "每位均审核证书"], ["已实名认证", "接单前通过KYC"], ["平台内支付", "全程SOS求助"]],
+    mzList: "平台按摩师", mzEmpty: "正在招募持证男士按摩师", mzEmptySub: "首批按摩师即将上线。您可以先看看美食出游伙伴。", mzEmptyCta: "查看美食出游伙伴", mzJoin: "成为我们的按摩师 ›",
     adsLbl: "精选优惠", adN: (i, n, name) => `优惠 ${i}/${n} · ${name}`, adDot: (i) => `查看第${i}个优惠`, unread: (n) => `${n}条未读`,
     slides: [
       { kind: "合作水疗 · 是隆", name: "Bamrungsuk 水疗", offer: "会员享8折" },
