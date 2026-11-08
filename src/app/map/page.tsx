@@ -1,7 +1,7 @@
 import { PEOPLE, SHOW_SAMPLES, priceOf } from "@/lib/home/people";
 import { myBlocked } from "@/lib/customer/profile";
 import { getLivePeople } from "@/lib/home/live";
-import { coordsOf, jitter, jitterSmall } from "@/lib/home/geo";
+import { coordsOf, jitter, jitterSmall, spreadPins } from "@/lib/home/geo";
 import { listPartners, stripSecret } from "@/lib/partner/store";
 import { PARTNER_SPAS } from "@/lib/booking";
 import { isPublicPartner, isSpaType } from "@/lib/partner/kind";
@@ -21,10 +21,12 @@ export default async function MapPage() {
   const lang = await getLang();
   const tr = lang === "th" ? null : await autoTranslate(lang, all.map((p) => ({ kind: "name" as const, text: p.nick })));
   const live = all.filter((p) => !blocked.has(p.id)).map((p) => (tr ? { ...p, nick: tr("name", p.nick) } : p));
-  const people: MapPerson[] = (live.length ? live : PEOPLE).map((p) => {
+  const src = live.length ? live : PEOPLE;
+  const baseOf = (id: string): [number, number] => { const p = src.find((x) => x.id === id)!; return p.geo ?? coordsOf(p.prov, p.area); };
+  const people: MapPerson[] = spreadPins(src.map((p) => {
     const [lat, lng] = p.geo ? jitterSmall(p.geo, p.id) : jitter(coordsOf(p.prov, p.area), p.id);
     return { id: p.id, nick: p.nick, age: p.age, img: p.img, pos: p.pos, rating: p.rating, top: p.top, acts: p.acts, area: p.prov ? `${p.area} · ${p.prov}` : p.area, price: priceOf(p), ...(p.priceTBD ? { priceTBD: true } : {}), free: p.free, lat, lng, real: !!p.real };
-  });
+  }), (p) => baseOf(p.id));
   let venues: MapVenue[] = [];
   try {
     venues = (await listPartners()).map(stripSecret).filter((v) => isSpaType(v.type) && isPublicPartner(v))
