@@ -4,7 +4,7 @@ import Link from "next/link";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { ExportBtn } from "./export-image";
 import {
-  MAX_MONTHS, cashTargetOf, fixedTotal, monthsOf, fmt, fmt2, fmtPct, monthLabel, monthSummary, perRound, targetFor, targetMix,
+  MAX_MONTHS, PRESET_V4, cashTargetOf, fixedTotal, monthsOf, fmt, fmt2, fmtPct, monthLabel, monthSummary, perRound, targetFor, targetMix,
   type ExpenseKind, type FinExpense, type FinItem, type FinService, type FinancePlan,
 } from "@/lib/finance/plan";
 
@@ -116,6 +116,10 @@ export function FinanceApp({ view, initial, who }: { view: View; initial: Financ
                 <button type="button" aria-pressed={lang === "th"} className={lang === "th" ? "on" : ""} onClick={() => pickLang("th")}>ไทย</button>
                 <button type="button" aria-pressed={lang === "en"} className={lang === "en" ? "on" : ""} onClick={() => pickLang("en")}>EN</button>
               </div>
+              <button type="button" className="fin-exp" title={t("เติมตัวเลข Forecast v4 (Excel กิ๊ฟ + SIRI 8 พ.ย.) — ยังไม่บันทึกจนกว่าจะกดบันทึก", "Fill in Forecast v4 numbers — not saved until you press Save")}
+                onClick={() => { if (window.confirm(t("แทนตัวเลขทั้งหมดด้วยชุด Forecast v4 (Excel กิ๊ฟ + SIRI 8 พ.ย. 2569)?\nยังไม่บันทึกจนกว่าจะกด \"บันทึก\" — กด \"ยกเลิกที่แก้\" เพื่อย้อนกลับได้", "Replace all numbers with the Forecast v4 set?\nNothing is saved until you press Save."))) { setPlan({ ...PRESET_V4, history: plan.history }); setMonth("M3"); setMsg({ ok: true, text: t("ใส่ตัวเลข Forecast v4 แล้ว — ตรวจแล้วกดบันทึก", "Forecast v4 loaded — review, then Save") }); } }}>
+                {t("ใช้ตัวเลข Forecast v4", "Load Forecast v4")}
+              </button>
               <ExportBtn kind={view} file={`MB-finance-${view}-${month}`} ctx={{ plan, month, lang, dn: (n) => (lang === "en" ? NAME_EN[n] ?? n : n), sl: (s) => { const n = lang === "en" ? NAME_EN[s.name] ?? s.name : s.name; return s.level ? `${n} · ${s.level}` : n; } }} />
               <span className="fin-chip hidden sm:inline-block">{t("แผนจำลอง · ไม่กระทบเงินจริง", "Plan only · no real money moved")}</span>
             </div>
@@ -204,6 +208,7 @@ function Shares({ plan, up }: { plan: FinancePlan; up: P["up"] }) {
       <label className="flex items-center gap-2">{t("ส่วนแบ่งบริษัท", "Company share")} <Num label={t("ส่วนแบ่งบริษัท", "Company share")} pct w="w-[88px]" value={plan.companyShare} onChange={(v) => up({ companyShare: Math.min(1, v) })} /></label>
       <label className="flex items-center gap-2">{t("ค่าธรรมเนียมจากผู้ให้บริการ", "Provider fee")} <Num label={t("ค่าธรรมเนียมจากผู้ให้บริการ", "Provider fee")} pct w="w-[80px]" value={plan.providerFee} onChange={(v) => up({ providerFee: v })} /></label>
       <label className="flex items-center gap-2">{t("ค่าภาษี ภ.ง.ด.", "Withholding tax (PND)")} <Num label={t("ค่าภาษี ภ.ง.ด.", "Withholding tax (PND)")} pct w="w-[80px]" value={plan.pgFee} onChange={(v) => up({ pgFee: v })} /></label>
+      <label className="flex items-center gap-2">{t("รายได้อื่นต่อรอบ (ค่าคอมสินค้า)", "Other income per booking (product commission)")} <Num label={t("รายได้อื่นต่อรอบ", "Other income per booking")} w="w-[96px]" value={plan.extraPerRound ?? 0} onChange={(v) => up({ extraPerRound: v })} /></label>
     </div>
   );
 }
@@ -306,6 +311,7 @@ function Overview({ plan, up, month, setMonth }: P) {
           <div className="fin-total t-blue"><span>{t("ยอดลูกค้าจ่ายรวม", "Total customer spend")}</span><b>{fmt(m.gross)} {t("บาท", "THB")}</b></div>
           <Row l={`${t("ส่วนแบ่งบริษัท", "Company share")} ${fmtPct(plan.companyShare)}`} r={fmt(m.company, 2)} />
           <Row l={`${t("ค่าธรรมเนียมผู้ให้บริการ", "Provider fee")} ${fmtPct(plan.providerFee)}`} r={`+${fmt(m.fee, 2)}`} />
+          {m.extra > 0 && <Row l={`${t("รายได้อื่น (ค่าคอมสินค้า)", "Other income (product commission)")} ${fmt2(plan.extraPerRound ?? 0)} × ${fmt(m.totalRounds)}`} r={`+${fmt(m.extra, 2)}`} />}
           <div className="fin-total t-violet"><span>{t("รายได้บริษัท", "Company revenue")}</span><b>{fmt(m.revenue, 2)} {t("บาท", "THB")}</b></div>
           <div className="mt-3"><Shares plan={plan} up={up} /></div>
         </Card>
@@ -374,6 +380,7 @@ function Costs({ plan, up, month, setMonth }: P) {
           <Row l={<><i className="dot" style={{ background: "#64748b" }} />{t("ส่วนแบ่งผู้ให้บริการ", "Provider share")} {fmtPct(1 - plan.companyShare)}</>} r={fmt(r.provider, 2)} />
           <Row l={<><i className="dot" style={{ background: "#0d9488" }} />{t("ส่วนแบ่งบริษัท", "Company share")} {fmtPct(plan.companyShare)}</>} r={fmt(r.company, 2)} />
           <Row l={<><i className="dot" style={{ background: "#7c3aed" }} />{t("ค่าธรรมเนียมจากผู้ให้บริการ", "Fee from provider")} {fmtPct(plan.providerFee)}</>} r={<span className="text-[var(--fp)]">+{fmt(r.fee, 2)}</span>} />
+          {r.extra > 0 && <Row l={<><i className="dot" style={{ background: "#0d9488" }} />{t("รายได้อื่นต่อรอบ (ค่าคอมสินค้า)", "Other income (product commission)")}</>} r={<span className="text-[#0d9488]">+{fmt(r.extra, 2)}</span>} />}
           <Row l={<><i className="dot" style={{ background: "#ea580c" }} />{t(`ค่าภาษี ภ.ง.ด. ${fmtPct(plan.pgFee)} ของยอดลูกค้า`, `Withholding tax (PND) ${fmtPct(plan.pgFee)} of customer price`)}</>} r={<span className="text-[var(--fo)]">−{fmt(r.pg, 2)}</span>} />
           {r.pctCost > 0 && <Row l={<><i className="dot" style={{ background: "#ea580c" }} />{t("ค่าใช้จ่ายแบบ % (เช่น การตลาด)", "% based costs (e.g. marketing)")}</>} r={<span className="text-[var(--fo)]">−{fmt(r.pctCost, 2)}</span>} />}
           <div className="fin-total t-green"><span>{t("เหลือก่อนค่าใช้จ่ายประจำ", "Left before fixed costs")}</span><b>{fmt(r.net, 2)} {baht}</b></div>
@@ -468,6 +475,10 @@ function Costs({ plan, up, month, setMonth }: P) {
         <Card title={t("เงินลงทุนและรายการแยกติดตาม", "Investment & tracked items")} tone="blue">
           <Row l={t("ทุนตั้งต้น", "Starting capital")} r={<Num label={t("ทุนตั้งต้น", "Starting capital")} value={plan.capital} onChange={(v) => up({ capital: v })} />} />
           <Items items={plan.startup} onChange={(startup) => up({ startup })} addLabel={t("+ เพิ่มรายการเงินลงทุน", "+ Add investment item")} />
+          <label className="flex items-center gap-2 mt-2 text-[13px] text-[var(--ft2)]">
+            <input type="checkbox" checked={plan.startupMonth === "M1"} onChange={(e) => up({ startupMonth: e.target.checked ? "M1" : "" })} />
+            {t(`ลงเป็นค่าใช้จ่ายใน P&L เดือน M1 (${monthLabel("M1", lang)}) แบบ Excel ของกิ๊ฟ`, `Expense in the M1 P&L (${monthLabel("M1", lang)}), as in Gib's Excel`)}
+          </label>
           <div className="fin-total t-blue"><span>{t("เหลือสำหรับดำเนินงาน", "Left for operations")}</span><b>{fmt(plan.capital - plan.startup.reduce((s, i) => s + i.amount, 0))} {baht}</b></div>
         </Card>
       </div>

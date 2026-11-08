@@ -18,6 +18,8 @@ export interface FinancePlan {
   expenses: FinExpense[];        // ค่าใช้จ่ายรายเดือน
   pending: FinItem[];            // รายการที่ต้องตั้งงบเพิ่ม (0 = ยังไม่ใส่งบ)
   target: { profit: number; days: number; serviceId: string };
+  extraPerRound?: number;        // รายได้อื่นต่อรอบ เช่น ค่าคอมสินค้า Vendor (Excel กิ๊ฟ ฿157.50)
+  startupMonth?: string;         // ลงเงินลงทุน (ทนาย/แอป) เป็นค่าใช้จ่ายใน P&L เดือนนี้ — "" = ไม่ลง
   monthCount?: number;           // จำนวนเดือนของแผน (ค่าเริ่มต้น 18)
   cashTargets?: Record<string, number>; // For Cash รายเดือน
   history: { at: string; by: string; note: string }[];
@@ -83,10 +85,11 @@ export function perRound(p: FinancePlan, price: number) {
   const provider = price - company;
   const fee = provider * p.providerFee;
   const pg = price * p.pgFee;
-  const revenue = company + fee; // รายได้บริษัท (ก่อนหักค่าภาษี ภ.ง.ด.)
+  const extra = p.extraPerRound ?? 0;
+  const revenue = company + fee + extra; // รายได้บริษัท (ก่อนหักค่าภาษี ภ.ง.ด.)
   // ค่าใช้จ่ายที่คิดเป็น % ต่อรอบ
   const pctCost = p.expenses.reduce((t, e) => t + (e.kind === "pctRevenue" ? revenue * e.value : e.kind === "pctGross" ? price * e.value : 0), 0);
-  return { price, company: r2(company), provider: r2(provider), fee: r2(fee), pg: r2(pg), pctCost: r2(pctCost), net: r2(revenue - pg - pctCost), providerNet: r2(provider - fee) };
+  return { price, company: r2(company), provider: r2(provider), fee: r2(fee), extra: r2(extra), pg: r2(pg), pctCost: r2(pctCost), net: r2(revenue - pg - pctCost), providerNet: r2(provider - fee) };
 }
 
 /** ค่าใช้จ่ายประจำ (บาท/เดือน) — cashOnly = ไม่รวมรายการที่ไม่ใช่เงินสด (ตัดจำหน่าย) */
@@ -104,18 +107,21 @@ export function monthSummary(p: FinancePlan, month: string) {
   const company = gross * p.companyShare;
   const provider = gross - company;
   const fee = provider * p.providerFee;
-  const revenue = company + fee;
+  const extra = totalRounds * (p.extraPerRound ?? 0);
+  const revenue = company + fee + extra;
   const pg = gross * p.pgFee;
   const lines = [
     ...p.expenses.map((e) => ({ id: e.id, name: e.name, kind: e.kind, value: e.value, noncash: !!e.noncash, amount: e.kind === "fixed" ? e.value : e.kind === "pctRevenue" ? revenue * e.value : gross * e.value })),
     { id: "_pg", name: `ค่าภาษี ภ.ง.ด. ${fmtPct(p.pgFee)} ของยอดลูกค้า`, kind: "pctGross" as ExpenseKind, value: p.pgFee, noncash: false, amount: pg },
     ...p.pending.filter((i) => i.amount > 0).map((i) => ({ id: i.id, name: i.name, kind: "fixed" as ExpenseKind, value: i.amount, noncash: false, amount: i.amount })),
+    // เงินลงทุนครั้งเดียว (ทนาย/แอป) ลง P&L เดือนที่เลือก — ตาม Excel ของกิ๊ฟ/SIRI
+    ...(p.startupMonth && p.startupMonth === month ? p.startup.filter((i) => i.amount > 0).map((i) => ({ id: "_one_" + i.id, name: i.name, kind: "fixed" as ExpenseKind, value: i.amount, noncash: false, amount: i.amount })) : []),
   ];
   const expenses = lines.reduce((t, l) => t + l.amount, 0);
   const noncash = lines.filter((l) => l.noncash).reduce((t, l) => t + l.amount, 0);
   const profit = revenue - expenses;
   return {
-    rows, totalRounds, gross: r2(gross), company: r2(company), provider: r2(provider), fee: r2(fee), revenue: r2(revenue), pg: r2(pg),
+    rows, totalRounds, gross: r2(gross), company: r2(company), provider: r2(provider), fee: r2(fee), extra: r2(extra), revenue: r2(revenue), pg: r2(pg),
     lines: lines.map((l) => ({ ...l, amount: r2(l.amount) })), expenses: r2(expenses), profit: r2(profit), cash: r2(profit + noncash),
     margin: revenue > 0 ? profit / revenue : 0,
     variable: r2(pg + lines.filter((l) => l.kind !== "fixed" && l.id !== "_pg").reduce((t, l) => t + l.amount, 0)),
@@ -201,6 +207,29 @@ export function cleanPlan(raw: unknown): Omit<FinancePlan, "history"> {
     pending: list(b.pending, 20, (x) => ({ id: id(x.id), name: txt(x.name, "รายการ"), amount: num(x.amount, 0, 1e10, "งบ") })),
     monthCount,
     cashTargets,
+    extraPerRound: num(b.extraPerRound ?? 0, 0, 1_000_000, "รายได้อื่นต่อรอบ"),
+    startupMonth: ml.includes(String(b.startupMonth ?? "")) ? String(b.startupMonth) : "",
     target: { profit: num(t.profit, 0, 1e10, "เป้ากำไร"), days: Math.round(num(t.days, 1, 31, "วันทำงาน")), serviceId: ids.has(String(t.serviceId)) ? String(t.serviceId) : services[0].id },
   };
 }
+
+/** ชุดตัวเลข Forecast v4 — Excel ของกิ๊ฟ (ราคา 3,500 · หมอนวด 40% · PG 2.5% · ค่าคอมสินค้า 157.50/รอบ) + SIRI 8 พ.ย. 2569
+ *  (ค่าใช้จ่ายรายเดือน 300K/100K/Server 30K · ทนาย 500K + แอป 900K ลง M1 · ตัดจังหวัด · 25 คน × 2 รอบ × 15 วัน = 750 รอบ ธ.ค. → กำไรเริ่ม ธ.ค. 69)
+ *  ยังไม่รวมค่าประกันแบรนด์ ฿500/งาน (อยู่ใน Excel) */
+export const PRESET_V4: FinancePlan = {
+  ...DEFAULT_PLAN,
+  capital: 6_000_000,
+  startup: [{ id: "lawyer", name: "ค่าทนาย / จัดตั้ง", amount: 500_000 }, { id: "app", name: "พัฒนาแอป", amount: 900_000 }],
+  startupMonth: "M1",
+  companyShare: 0.6, providerFee: 0, pgFee: 0.025, extraPerRound: 157.5,
+  months: Object.fromEntries([0, 100, 750, 1050, 1350, 1650, 1800, 1800, 1950, 1950, 2100, 2100, 2250, 2250, 2400, 2400, 2400, 2400].map((n, i) => [`M${i + 1}`, n ? { eat: n } : {}]).filter(([, v]) => Object.keys(v as object).length)),
+  expenses: [
+    { id: "salary", name: "เงินเดือนพนักงาน + ที่ปรึกษา", kind: "fixed", value: 300_000 },
+    { id: "marketing", name: "การตลาด", kind: "fixed", value: 100_000 },
+    { id: "server", name: "Server / ระบบ (ประมาณการ)", kind: "fixed", value: 30_000 },
+  ],
+  pending: [],
+  monthCount: 18, cashTargets: {},
+  target: { profit: 100_000, days: 15, serviceId: "eat" },
+  history: [],
+};
