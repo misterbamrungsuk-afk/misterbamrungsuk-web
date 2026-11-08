@@ -4,6 +4,7 @@ import { getListing } from "@/lib/partner/portal";
 import { fileUrl, serviceId, servicePrice, type Listing, type ServiceItem } from "@/lib/partner/portal-types";
 import { isPublicPartner, venueKind } from "@/lib/partner/kind";
 import { PARTNER_SPAS } from "@/lib/booking";
+import { SHOW_SAMPLES } from "@/lib/home/people";
 import { publicLogo, type Logo } from "@/lib/avatar";
 
 export type PartnerKind = "โรงแรม" | "สปา";
@@ -95,7 +96,8 @@ export type BookableSpa = { id: string; name: string; area: string; label: strin
 /** สปาจริงที่เปิดแสดง + บริการ (ราคา = ราคาแพลตฟอร์ม ?? ราคาฐาน) · ยังไม่มีสปาจริง = ตัวอย่าง (ค่าห้องตามตัวอย่าง) */
 export async function bookableSpas(withLogo = false): Promise<BookableSpa[]> {
   const real = (await publicPartnerRows().catch(() => [])).filter((x) => x.kind === "สปา");
-  if (!real.length) return PARTNER_SPAS.map((s) => ({ id: s.id, name: s.name, area: s.area, label: "สปา", img: null, logo: null, sample: true, services: [{ id: "room", name: "ค่าห้อง", minutes: 0, price: s.price }] }));
+  // ร้านตัวอย่างเฉพาะโหมดเดโม — เว็บจริงไม่แสดง (MDG 8 พ.ย. 2569)
+  if (!real.length) return !SHOW_SAMPLES ? [] : PARTNER_SPAS.map((s) => ({ id: s.id, name: s.name, area: s.area, label: "สปา", img: null, logo: null, sample: true, services: [{ id: "room", name: "ค่าห้อง", minutes: 0, price: s.price }] }));
   return Promise.all(real.map(async ({ p, l }) => ({
     id: p.id, name: p.business_name, area: l?.area || p.province, label: p.type || "สปา",
     img: l?.cover ? fileUrl(l.cover) : l?.gallery?.[0] ? fileUrl(l.gallery[0]) : null,

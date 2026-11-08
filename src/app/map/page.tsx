@@ -1,4 +1,4 @@
-import { PEOPLE, priceOf } from "@/lib/home/people";
+import { PEOPLE, SHOW_SAMPLES, priceOf } from "@/lib/home/people";
 import { myBlocked } from "@/lib/customer/profile";
 import { getLivePeople } from "@/lib/home/live";
 import { coordsOf, jitter, jitterSmall } from "@/lib/home/geo";
@@ -30,6 +30,7 @@ export default async function MapPage() {
     venues = (await listPartners()).map(stripSecret).filter((v) => isSpaType(v.type) && isPublicPartner(v))
       .map((v) => { const [lat, lng] = jitter(coordsOf(v.province), v.id); return { id: v.id, name: v.business_name, area: v.province, lat, lng }; });
   } catch { venues = []; }
-  if (!venues.length) venues = PARTNER_SPAS.map((v) => { const [lat, lng] = jitter(coordsOf(v.area), v.id); return { id: v.id, name: v.name, area: v.area, lat, lng, sample: true }; });
+  // สปาตัวอย่างเฉพาะโหมดเดโม — เว็บจริงแสดงแต่ร้านจริง (MDG 8 พ.ย. 2569)
+  if (!venues.length && SHOW_SAMPLES) venues = PARTNER_SPAS.map((v) => { const [lat, lng] = jitter(coordsOf(v.area), v.id); return { id: v.id, name: v.name, area: v.area, lat, lng, sample: true }; });
   return <>{PT_ONLY && <PreviewBanner offset={160} />}<MapView people={people} venues={venues} sample={!live.length} /></>;
 }
