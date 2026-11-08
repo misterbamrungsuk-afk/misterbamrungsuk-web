@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { ExportBtn } from "./export-image";
 import {
   MAX_MONTHS, cashTargetOf, fixedTotal, monthsOf, fmt, fmt2, fmtPct, monthLabel, monthSummary, perRound, targetFor, targetMix,
   type ExpenseKind, type FinExpense, type FinItem, type FinService, type FinancePlan,
@@ -47,6 +48,14 @@ const TITLE: Record<View, [string, string, string, string]> = {
 };
 const KIND: Record<ExpenseKind, [string, string]> = { fixed: ["บาท/เดือน", "THB / month"], pctRevenue: ["% ของรายได้บริษัท", "% of company revenue"], pctGross: ["% ของยอดลูกค้าจ่าย", "% of customer spend"] };
 const uid = () => Math.random().toString(36).slice(2, 10);
+type Meta = { title: string; sub: string; footer: string; file: string };
+const ExpCtx = createContext<(title: string) => Meta>((title) => ({ title, sub: "", footer: "", file: "MB-finance.png" }));
+/** ปุ่มส่งออกรูปของส่วนที่ครอบอยู่ (data-export) */
+function Exp({ label, target }: { label?: string; target?: string }) {
+  const { lang } = useT();
+  const meta = useContext(ExpCtx);
+  return <ExportBtn lang={lang} meta={meta} label={label} target={target} />;
+}
 
 export function FinanceApp({ view, initial, who }: { view: View; initial: FinancePlan; who: string }) {
   const [lang, setLang] = useState<Lang>("th");
@@ -79,9 +88,21 @@ export function FinanceApp({ view, initial, who }: { view: View; initial: Financ
   const leave = (e: React.MouseEvent) => { if (dirty && !window.confirm(t("ยังไม่ได้บันทึก — ออกจากหน้านี้เลยไหม?", "You have unsaved changes — leave this page?"))) e.preventDefault(); };
   const last = saved.history[0];
   const T = TITLE[view];
+  const pageTitle = lang === "en" ? T[2] : T[0];
+  const meta = (title: string): Meta => {
+    const today = new Date().toLocaleDateString(lang === "th" ? "th-TH" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
+    const safe = (x: string) => x.replace(/[\\/:*?"<>|]+/g, "").replace(/\s+/g, "-").slice(0, 60);
+    return {
+      title,
+      sub: `${title === pageTitle ? "" : pageTitle + " · "}${month} ${monthLabel(month, lang)} · ${t("ข้อมูล ณ", "As of")} ${today}`,
+      footer: t("แผนจำลอง · ตัวเลขก่อนภาษีเงินได้นิติบุคคล", "Plan figures · before corporate income tax"),
+      file: `MB-finance-${safe(title)}-${new Date().toISOString().slice(0, 10)}.png`,
+    };
+  };
 
   return (
     <LangCtx.Provider value={lang}>
+      <ExpCtx.Provider value={meta}>
       <div className="lg:flex" lang={lang}>
         <style>{CSS}</style>
         {/* เมนูซ้าย */}
@@ -115,12 +136,15 @@ export function FinanceApp({ view, initial, who }: { view: View; initial: Financ
                 <button type="button" aria-pressed={lang === "th"} className={lang === "th" ? "on" : ""} onClick={() => pickLang("th")}>ไทย</button>
                 <button type="button" aria-pressed={lang === "en"} className={lang === "en" ? "on" : ""} onClick={() => pickLang("en")}>EN</button>
               </div>
+              <Exp target="#fin-page" label={t("ส่งออกทั้งหน้า", "Export page")} />
               <span className="fin-chip">{t("แผนจำลอง · ไม่กระทบเงินจริง", "Plan only · no real money moved")}</span>
             </div>
           </header>
+          <div id="fin-page" data-export={pageTitle}>
           {view === "overview" && <Overview plan={plan} up={up} month={month} setMonth={setMonth} />}
           {view === "costs" && <Costs plan={plan} up={up} month={month} setMonth={setMonth} />}
           {view === "target" && <Target plan={plan} up={up} month={month} setMonth={setMonth} />}
+          </div>
         </main>
 
         {/* แถบบันทึก */}
@@ -133,6 +157,7 @@ export function FinanceApp({ view, initial, who }: { view: View; initial: Financ
           <button type="button" className="fin-btn" disabled={!dirty || busy} onClick={save}>{busy ? t("กำลังบันทึก…", "Saving…") : t("บันทึก", "Save")}</button>
         </div>
       </div>
+      </ExpCtx.Provider>
     </LangCtx.Provider>
   );
 }
@@ -146,7 +171,7 @@ function Num({ value, onChange, pct, w = "w-[120px]", label, blankZero }: { valu
   const [focus, setFocus] = useState(false);
   useEffect(() => { if (!focus) setTxt(String(shown)); }, [shown, focus]);
   return (
-    <span className={`fin-in ${w}`}>
+    <span className={`fin-in n ${w}`}>
       <input aria-label={label} inputMode="decimal" value={focus ? txt : pct ? String(shown) : blankZero && !value ? "" : fmt2(value)} placeholder={blankZero ? "–" : undefined}
         onFocus={() => { setFocus(true); setTxt(String(shown)); }} onBlur={() => setFocus(false)}
         onChange={(e) => {
@@ -165,11 +190,12 @@ function Del({ onClick, label }: { onClick: () => void; label: string }) {
   return <button type="button" onClick={onClick} aria-label={label} title={t("ลบ", "Delete")} className="fin-x">×</button>;
 }
 const Card = ({ n, title, tone = "violet", children, right }: { n?: number; title: string; tone?: "violet" | "blue" | "orange" | "green"; children: React.ReactNode; right?: React.ReactNode }) => (
-  <section className={`fin-card t-${tone}`}>
+  <section className={`fin-card t-${tone}`} data-export={title}>
     <div className="flex items-center gap-2 mb-3 flex-wrap">
       {n && <span className="fin-num">{n}</span>}
       <h2 className="m-0 text-[17px] font-bold flex-1">{title}</h2>
       {right}
+      <Exp />
     </div>
     {children}
   </section>
@@ -300,9 +326,10 @@ function Overview({ plan, up, month, setMonth }: P) {
         </Card>
       </div>
 
-      <section className="fin-card t-green">
+      <section className="fin-card t-green" data-export={t(`สรุป ${ml}`, `${ml} summary`)}>
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="m-0 text-[18px] font-bold min-w-[140px]">{t(`สรุป ${ml} เหลือเท่าไร?`, `${ml}: what is left?`)}</h2>
+          <span className="flex-1" /><Exp />
           <div className="fin-eq t-violet"><span>{t("รายได้บริษัท", "Company revenue")}</span><b>{fmt(m.revenue, 2)}</b></div>
           <span className="text-[24px] font-bold text-[var(--fm)]">−</span>
           <div className="fin-eq t-orange"><span>{t("ค่าใช้จ่ายรวม", "Total expenses")}</span><b>{fmt(m.expenses, 2)}</b></div>
@@ -376,7 +403,7 @@ function Costs({ plan, up, month, setMonth }: P) {
                 <Del label={`${t("ลบ", "Delete")} ${dn(e.name)}`} onClick={() => up({ expenses: plan.expenses.filter((_, k) => k !== i) })} />
               </div>
               {e.kind === "fixed" && (
-                <label className="mt-1 flex items-center gap-1.5 text-[12px] text-[var(--fm)] pl-1">
+                <label data-noexport={!e.noncash || undefined} className="mt-1 flex items-center gap-1.5 text-[12px] text-[var(--fm)] pl-1">
                   <input type="checkbox" checked={!!e.noncash} onChange={(ev) => setExp(i, { noncash: ev.target.checked || undefined })} /> {t("ไม่ใช่เงินสด (ตัดจำหน่าย — นับในกำไร แต่ไม่นับในเป้ารอบขาย)", "Non-cash (amortisation — counted in profit, not in the bookings target)")}
                 </label>
               )}
@@ -502,19 +529,20 @@ function ProfitChart({ plan, up, month, setMonth }: P) {
   const setGoal = (m: string, v: number) => up({ cashTargets: { ...(plan.cashTargets ?? {}), [m]: v } });
   const custom = Object.keys(plan.cashTargets ?? {}).length;
   return (
-    <section className="fin-card t-violet !py-3">
+    <section className="fin-card t-violet !py-3" data-export={t("กำไรรายเดือนเทียบ For Cash", "Monthly profit vs For Cash")}>
       <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-1">
         <h2 className="m-0 text-[15.5px] font-bold">{t("กำไรรายเดือนเทียบ For Cash", "Monthly profit vs For Cash")}</h2>
         <span className="text-[12.5px] text-[var(--fm)]">{t("จากเคสที่กรอก · กำไรเงินสดก่อนภาษี · แก้ For Cash แต่ละเดือนได้ใต้กราฟ", "From entered cases · cash profit before tax · edit For Cash per month below the chart")}</span>
         <span className="flex-1" />
         <span className="text-[12.5px] font-semibold">{vals.length ? t(`For Cash ${hit}/${vals.length} เดือน`, `For Cash ${hit}/${vals.length} months`) : t("ยังไม่มีเคส — กรอกในตารางด้านล่าง", "No cases yet — fill in the table below")}</span>
+        <Exp />
       </div>
       <div className="flex flex-wrap gap-3 text-[11.5px] text-[var(--fm)] mb-2">
         <span><i className="dot" style={{ background: "var(--fg)" }} />{t("ถึง For Cash", "Reached For Cash")}</span>
         <span><i className="dot" style={{ background: "#c9c4d3" }} />For Cash</span>
         <span><i className="dot" style={{ background: "#e0a100" }} />{t("มีกำไร ยังไม่ถึง", "Profit, below For Cash")}</span>
         <span><i className="dot" style={{ background: "var(--fr)" }} />{t("ขาดทุน", "Loss")}</span>
-        {custom > 0 && <button type="button" className="underline text-[var(--fp)]" onClick={() => up({ cashTargets: {} })}>{t(`ใช้ For Cash ${k(plan.target.profit)} ทุกเดือน`, `Use ${k(plan.target.profit)} For Cash for every month`)}</button>}
+        {custom > 0 && <button type="button" data-noexport className="underline text-[var(--fp)]" onClick={() => up({ cashTargets: {} })}>{t(`ใช้ For Cash ${k(plan.target.profit)} ทุกเดือน`, `Use ${k(plan.target.profit)} For Cash for every month`)}</button>}
       </div>
       <div className="overflow-x-auto">
         <div style={{ width: LAB + W }}>
@@ -699,6 +727,14 @@ const CSS = `
 .fin-seg button{padding:8px 22px;border-radius:11px;font-weight:600;font-size:14.5px;color:var(--ft2)}
 .fin-seg.sm{padding:3px;border-radius:12px}.fin-seg.sm button{padding:4px 14px;font-size:13px}
 .fin-seg button.on{background:var(--fp);color:#fff;box-shadow:0 4px 12px rgba(109,63,209,.3)}
+.fin-exp{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 10px;border-radius:9px;font-size:12.5px;font-weight:600;color:var(--fp);background:#fff;border:1px solid #d9cbfa;white-space:nowrap}
+.fin-exp:hover{background:var(--fpl)}.fin-exp:disabled{opacity:.6}
+.fin-exp-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:45;display:flex;flex-direction:column;min-width:200px;background:#fff;border:1px solid var(--fl);border-radius:14px;padding:6px;box-shadow:0 12px 30px rgba(60,30,120,.16)}
+.fin-exp-menu button{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;font-size:14px;font-weight:600;color:var(--ft);text-align:left}
+.fin-exp-menu button:hover{background:var(--fsoft)}.fin-exp-menu small{margin-left:auto;font-weight:400;color:var(--fm);font-size:11.5px}
+.fin-ratio{display:inline-block;border:2px solid var(--fp);border-radius:3px}.fin-ratio.l{width:22px;height:13px}.fin-ratio.p{width:13px;height:22px;margin:0 4.5px}
+.fin-export .fin-card{box-shadow:0 10px 30px rgba(60,30,120,.08)}
+.fin-export .fin-in{border-color:transparent;background:transparent;box-shadow:none;justify-content:flex-start;padding:0 4px}.fin-export .fin-in.n{justify-content:flex-end}
 .fin-savebar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;align-items:center;gap:10px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(255,255,255,.96);border-top:1px solid var(--fl);backdrop-filter:blur(6px)}
 @media (min-width:1024px){.fin-savebar{left:248px;padding-left:32px;padding-right:32px}}
 .fin-btn{height:42px;padding:0 22px;border-radius:12px;font-weight:700;font-size:15px;color:#fff;background:linear-gradient(90deg,#7c4dff,#6d3fd1)}
