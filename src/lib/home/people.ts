@@ -43,7 +43,9 @@ const SECRET_SAMPLE = new Set(["ton", "golf", "t-june", "t-earth"]);
 /** Secret ไม่โชว์หน้า (บอสขอ 23 ต.ค. 2569): ใช้รูปเงา/หันหลัง (สร้างจาก ChatGPT) แทนรูปจริงทั้งตัวอย่างและคนจริง */
 export const SECRET_SILHOUETTES = { man: ["/brand/home/s-m1.jpg", "/brand/home/s-m2.jpg"], tom: ["/brand/home/s-t1.jpg", "/brand/home/s-t2.jpg"] } as const;
 const SECRET_IMG: Record<string, string> = { ton: SECRET_SILHOUETTES.man[0], golf: SECRET_SILHOUETTES.man[1], "t-june": SECRET_SILHOUETTES.tom[0], "t-earth": SECRET_SILHOUETTES.tom[1] };
-export const PEOPLE: Person[] = (() => [
+// ข้อมูลตัวอย่าง (รูป AI) — MDG 8 พ.ย. 2569: เว็บจริงห้ามแสดงคนตัวอย่าง (กันถูกมองว่าหลอกลวง / พ.ร.บ.คอมฯ) → ใช้เฉพาะโหมดเดโม/ทดสอบ (NEXT_PUBLIC_SHOW_SAMPLES=1)
+export const SHOW_SAMPLES = process.env.NEXT_PUBLIC_SHOW_SAMPLES === "1";
+const SAMPLE_PEOPLE: Person[] = (() => [
   P("ton", "ต้น", 29, "/brand/home/p-ton.jpg", true, "5.0", "วัฒนา", ["eat", "massage", "cafe"], 0, "ชอบพาไปลองร้านใหม่ ๆ คุยสนุก ฟังเก่ง ถ่ายรูปสวย และมีสกิลนวดผ่อนคลาย (มีใบรับรอง)"),
   P("phum", "ภูมิ", 31, "/brand/home/p-phum.jpg", true, "4.9", "ทองหล่อ", ["massage", "gym", "eat"], 20, "สายสุขภาพ ชวนออกกำลังเบา ๆ แล้วไปมื้อดี ๆ ต่อ ใจเย็นและตรงเวลา"),
   P("benz", "เบนซ์", 26, "/brand/home/p-benz.jpg", true, "4.9", "สาทร", ["massage", "photo", "cafe"], 0, "ถ่ายรูปเก่ง รู้มุมคาเฟ่สวยทั่วกรุงเทพฯ คุยได้ทุกเรื่อง"),
@@ -87,5 +89,7 @@ export const PEOPLE: Person[] = (() => [
   P("t-kaew", "แก้ว", 25, "/brand/home/t-20.jpg", false, "4.8", "ปทุมวัน", ["photo", "cafe", "movie"], 0, "ชอบพิพิธภัณฑ์และนิทรรศการ ถ่ายรูปสวย", { group: "tom" }),
 ].map((p) => (BOOSTED.has(p.id) ? { ...p, boost: true } : p)).map((p) => (SECRET_SAMPLE.has(p.id) ? { ...p, secret: true, priceTBD: true, img: SECRET_IMG[p.id] ?? p.img, pos: undefined } : p)))();
 
+/** คนตัวอย่าง — เว็บจริงว่างเสมอ (แสดงเฉพาะคนจริง) */
+export const PEOPLE: Person[] = SHOW_SAMPLES ? SAMPLE_PEOPLE : [];
 export const personById = (id: string) => PEOPLE.find((p) => p.id === id);
 export const priceOf = (p: Person) => p.price ?? (p.top ? 10000 : 6500);
