@@ -48,14 +48,6 @@ const TITLE: Record<View, [string, string, string, string]> = {
 };
 const KIND: Record<ExpenseKind, [string, string]> = { fixed: ["บาท/เดือน", "THB / month"], pctRevenue: ["% ของรายได้บริษัท", "% of company revenue"], pctGross: ["% ของยอดลูกค้าจ่าย", "% of customer spend"] };
 const uid = () => Math.random().toString(36).slice(2, 10);
-type Meta = { title: string; sub: string; footer: string; file: string };
-const ExpCtx = createContext<(title: string) => Meta>((title) => ({ title, sub: "", footer: "", file: "MB-finance.png" }));
-/** ปุ่มส่งออกรูปของส่วนที่ครอบอยู่ (data-export) */
-function Exp({ label, target }: { label?: string; target?: string }) {
-  const { lang } = useT();
-  const meta = useContext(ExpCtx);
-  return <ExportBtn lang={lang} meta={meta} label={label} target={target} />;
-}
 
 export function FinanceApp({ view, initial, who }: { view: View; initial: FinancePlan; who: string }) {
   const [lang, setLang] = useState<Lang>("th");
@@ -88,21 +80,9 @@ export function FinanceApp({ view, initial, who }: { view: View; initial: Financ
   const leave = (e: React.MouseEvent) => { if (dirty && !window.confirm(t("ยังไม่ได้บันทึก — ออกจากหน้านี้เลยไหม?", "You have unsaved changes — leave this page?"))) e.preventDefault(); };
   const last = saved.history[0];
   const T = TITLE[view];
-  const pageTitle = lang === "en" ? T[2] : T[0];
-  const meta = (title: string): Meta => {
-    const today = new Date().toLocaleDateString(lang === "th" ? "th-TH" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
-    const safe = (x: string) => x.replace(/[\\/:*?"<>|]+/g, "").replace(/\s+/g, "-").slice(0, 60);
-    return {
-      title,
-      sub: `${title === pageTitle ? "" : pageTitle + " · "}${month} ${monthLabel(month, lang)} · ${t("ข้อมูล ณ", "As of")} ${today}`,
-      footer: t("แผนจำลอง · ตัวเลขก่อนภาษีเงินได้นิติบุคคล", "Plan figures · before corporate income tax"),
-      file: `MB-finance-${safe(title)}-${new Date().toISOString().slice(0, 10)}.png`,
-    };
-  };
 
   return (
     <LangCtx.Provider value={lang}>
-      <ExpCtx.Provider value={meta}>
       <div className="lg:flex" lang={lang}>
         <style>{CSS}</style>
         {/* เมนูซ้าย */}
@@ -136,15 +116,13 @@ export function FinanceApp({ view, initial, who }: { view: View; initial: Financ
                 <button type="button" aria-pressed={lang === "th"} className={lang === "th" ? "on" : ""} onClick={() => pickLang("th")}>ไทย</button>
                 <button type="button" aria-pressed={lang === "en"} className={lang === "en" ? "on" : ""} onClick={() => pickLang("en")}>EN</button>
               </div>
-              <Exp target="#fin-page" label={t("ส่งออกทั้งหน้า", "Export page")} />
+              <ExportBtn kind={view} file={`MB-finance-${view}-${month}`} ctx={{ plan, month, lang, dn: (n) => (lang === "en" ? NAME_EN[n] ?? n : n), sl: (s) => { const n = lang === "en" ? NAME_EN[s.name] ?? s.name : s.name; return s.level ? `${n} · ${s.level}` : n; } }} />
               <span className="fin-chip">{t("แผนจำลอง · ไม่กระทบเงินจริง", "Plan only · no real money moved")}</span>
             </div>
           </header>
-          <div id="fin-page" data-export={pageTitle}>
           {view === "overview" && <Overview plan={plan} up={up} month={month} setMonth={setMonth} />}
           {view === "costs" && <Costs plan={plan} up={up} month={month} setMonth={setMonth} />}
           {view === "target" && <Target plan={plan} up={up} month={month} setMonth={setMonth} />}
-          </div>
         </main>
 
         {/* แถบบันทึก */}
@@ -157,7 +135,6 @@ export function FinanceApp({ view, initial, who }: { view: View; initial: Financ
           <button type="button" className="fin-btn" disabled={!dirty || busy} onClick={save}>{busy ? t("กำลังบันทึก…", "Saving…") : t("บันทึก", "Save")}</button>
         </div>
       </div>
-      </ExpCtx.Provider>
     </LangCtx.Provider>
   );
 }
@@ -190,12 +167,11 @@ function Del({ onClick, label }: { onClick: () => void; label: string }) {
   return <button type="button" onClick={onClick} aria-label={label} title={t("ลบ", "Delete")} className="fin-x">×</button>;
 }
 const Card = ({ n, title, tone = "violet", children, right }: { n?: number; title: string; tone?: "violet" | "blue" | "orange" | "green"; children: React.ReactNode; right?: React.ReactNode }) => (
-  <section className={`fin-card t-${tone}`} data-export={title}>
+  <section className={`fin-card t-${tone}`}>
     <div className="flex items-center gap-2 mb-3 flex-wrap">
       {n && <span className="fin-num">{n}</span>}
       <h2 className="m-0 text-[17px] font-bold flex-1">{title}</h2>
       {right}
-      <Exp />
     </div>
     {children}
   </section>
@@ -326,10 +302,10 @@ function Overview({ plan, up, month, setMonth }: P) {
         </Card>
       </div>
 
-      <section className="fin-card t-green" data-export={t(`สรุป ${ml}`, `${ml} summary`)}>
+      <section className="fin-card t-green">
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="m-0 text-[18px] font-bold min-w-[140px]">{t(`สรุป ${ml} เหลือเท่าไร?`, `${ml}: what is left?`)}</h2>
-          <span className="flex-1" /><Exp />
+          
           <div className="fin-eq t-violet"><span>{t("รายได้บริษัท", "Company revenue")}</span><b>{fmt(m.revenue, 2)}</b></div>
           <span className="text-[24px] font-bold text-[var(--fm)]">−</span>
           <div className="fin-eq t-orange"><span>{t("ค่าใช้จ่ายรวม", "Total expenses")}</span><b>{fmt(m.expenses, 2)}</b></div>
@@ -529,14 +505,13 @@ function ProfitChart({ plan, up, month, setMonth }: P) {
   const setGoal = (m: string, v: number) => up({ cashTargets: { ...(plan.cashTargets ?? {}), [m]: v } });
   const custom = Object.keys(plan.cashTargets ?? {}).length;
   return (
-    <section className="fin-card t-violet !py-3" data-export={t("กำไรรายเดือนเทียบ For Cash", "Monthly profit vs For Cash")}>
+    <section className="fin-card t-violet !py-3">
       <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-1">
         <h2 className="m-0 text-[15.5px] font-bold">{t("กำไรรายเดือนเทียบ For Cash", "Monthly profit vs For Cash")}</h2>
         <span className="text-[12.5px] text-[var(--fm)]">{t("จากเคสที่กรอก · กำไรเงินสดก่อนภาษี · แก้ For Cash แต่ละเดือนได้ใต้กราฟ", "From entered cases · cash profit before tax · edit For Cash per month below the chart")}</span>
         <span className="flex-1" />
         <span className="text-[12.5px] font-semibold">{vals.length ? t(`For Cash ${hit}/${vals.length} เดือน`, `For Cash ${hit}/${vals.length} months`) : t("ยังไม่มีเคส — กรอกในตารางด้านล่าง", "No cases yet — fill in the table below")}</span>
-        <Exp />
-      </div>
+        </div>
       <div className="flex flex-wrap gap-3 text-[11.5px] text-[var(--fm)] mb-2">
         <span><i className="dot" style={{ background: "var(--fg)" }} />{t("ถึง For Cash", "Reached For Cash")}</span>
         <span><i className="dot" style={{ background: "#c9c4d3" }} />For Cash</span>
@@ -733,8 +708,6 @@ const CSS = `
 .fin-exp-menu button{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;font-size:14px;font-weight:600;color:var(--ft);text-align:left}
 .fin-exp-menu button:hover{background:var(--fsoft)}.fin-exp-menu small{margin-left:auto;font-weight:400;color:var(--fm);font-size:11.5px}
 .fin-ratio{display:inline-block;border:2px solid var(--fp);border-radius:3px}.fin-ratio.l{width:22px;height:13px}.fin-ratio.p{width:13px;height:22px;margin:0 4.5px}
-.fin-export .fin-card{box-shadow:0 10px 30px rgba(60,30,120,.08)}
-.fin-export .fin-in{border-color:transparent;background:transparent;box-shadow:none;justify-content:flex-start;padding:0 4px}.fin-export .fin-in.n{justify-content:flex-end}
 .fin-savebar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;align-items:center;gap:10px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(255,255,255,.96);border-top:1px solid var(--fl);backdrop-filter:blur(6px)}
 @media (min-width:1024px){.fin-savebar{left:248px;padding-left:32px;padding-right:32px}}
 .fin-btn{height:42px;padding:0 22px;border-radius:12px;font-weight:700;font-size:15px;color:#fff;background:linear-gradient(90deg,#7c4dff,#6d3fd1)}
