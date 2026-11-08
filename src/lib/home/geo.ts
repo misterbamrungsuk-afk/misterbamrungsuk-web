@@ -64,7 +64,7 @@ export function nearestArea(lat: number, lng: number): string {
 }
 
 /** กระจายหมุดที่ทับกัน (คนแจ้งย่านเดียวกัน เช่น "กรุงเทพฯ และปริมณฑล" → จุดกลางเดียวกัน) เป็นวงก้นหอยรอบจุดนั้น
- *  ห่างกัน ~1.3 กม. ขึ้นไป ให้เห็นครบทุกคนตอนดูทั้งเมือง · จัดกลุ่มจากพิกัดย่าน (ก่อนสุ่มขยับ) · ลำดับคงที่ตาม id · ยังเป็นตำแหน่งโดยประมาณ */
+ *  ห่างกัน ~2.5 กม. ขึ้นไป ให้เห็นครบทุกคนตอนดูทั้งเมือง · จัดกลุ่มจากพิกัดย่าน (ก่อนสุ่มขยับ) · ลำดับคงที่ตาม id · ยังเป็นตำแหน่งโดยประมาณ */
 export function spreadPins<T extends { id: string; lat: number; lng: number }>(pins: T[], baseOf: (p: T) => [number, number]): T[] {
   const groups = new Map<string, T[]>();
   for (const p of pins) {
@@ -78,7 +78,7 @@ export function spreadPins<T extends { id: string; lat: number; lng: number }>(p
     const cos = Math.cos((cLat * Math.PI) / 180);
     [...g].sort((a, b) => a.id.localeCompare(b.id)).forEach((p, i) => {
       const ang = i * 2.39996; // มุมทองคำ — กระจายไม่ซ้อนแนวเดียว
-      const r = 0.008 * Math.sqrt(i + 1); // ~0.9 กม. × √ลำดับ
+      const r = 0.016 * Math.sqrt(i + 1); // ~1.8 กม. × √ลำดับ (ดูทั้งเมืองแล้วหมุดไม่ชนกัน)
       out.set(p.id, { ...p, lat: cLat + Math.sin(ang) * r, lng: cLng + (Math.cos(ang) * r) / cos });
     });
   }
