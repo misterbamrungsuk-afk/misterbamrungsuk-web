@@ -595,6 +595,7 @@ function Costs({ plan, up, month, setMonth }: P) {
 function CasesGrid({ plan, up, month, setMonth }: P) {
   const { t, lang } = useT();
   const svcLabel = useSvcLabel();
+  const dn = useName();
   const ML = monthsOf(plan);
   const n = ML.length, last = ML[n - 1];
   const setRounds = (mo: string, sid: string, v: number) => up({ months: { ...plan.months, [mo]: { ...(plan.months[mo] ?? {}), [sid]: Math.max(0, Math.round(v)) } } });
@@ -628,7 +629,7 @@ function CasesGrid({ plan, up, month, setMonth }: P) {
           <tbody>
             {plan.services.map((s) => (
               <tr key={s.id}>
-                <td className="sticky left-0 bg-[var(--fc)] z-[1] text-[12px] sm:text-[13px] leading-tight min-w-[120px] max-w-[150px] sm:max-w-none sm:whitespace-nowrap">{svcLabel(s)} <span className="text-[var(--fm)]">{t(`3 ชม. ${fmt(s.price)} บาท`, `3 hrs ${fmt(s.price)} THB`)}</span></td>
+                <td className="sticky left-0 bg-[var(--fc)] z-[1] text-[12px] sm:text-[13px] leading-tight min-w-[120px] max-w-[150px] sm:max-w-none sm:whitespace-nowrap">{dn(s.name)} {s.level && <span className={`fin-lv ${/top/i.test(s.level) ? "top" : ""}`}>{s.level}</span>} <span className="text-[var(--fm)]">{t(`3 ชม. ${fmt(s.price)} บาท`, `3 hrs ${fmt(s.price)} THB`)}</span></td>
                 {ML.map((mo) => <td key={mo} className="r"><Num label={`${svcLabel(s)} ${mo}`} w="w-[64px]" value={plan.months[mo]?.[s.id] ?? 0} onChange={(v) => setRounds(mo, s.id, v)} blankZero /></td>)}
               </tr>
             ))}
