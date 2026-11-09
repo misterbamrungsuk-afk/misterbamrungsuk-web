@@ -449,14 +449,13 @@ function Overview({ plan, up, month, setMonth, save, dirty, busy }: P) {
           const per = plan.casesPerPerson ?? 25;
           const people = Math.ceil(m.totalRounds / per);
           return (
-            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 rounded-xl bg-white/70 border border-[var(--fl)] px-3 py-2 text-[14px] text-center">
+            <div className="fin-rate mt-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-2 rounded-2xl bg-white border border-[var(--fl)] px-4 py-4 text-center">
               <span>{t("เรทพนักงาน ขั้นต่ำ", "Provider rate from")} <b className="tabular-nums">{fmt(minPrice)}</b> / 3 {t("ช.ม.", "hrs")} · {t("ทำงาน", "working")}</span>
-              <Num label={t("เคสต่อคนต่อเดือน", "Cases per person per month")} w="w-[64px]" value={per} onChange={(v) => up({ casesPerPerson: Math.max(1, Math.round(v)) })} />
-              <span>{t("เคส/เดือน", "cases/month")} <span className="text-[var(--fm)]">({t(`${fmt(people)} คน · รวม ${fmt(m.totalRounds)} เคส`, `${fmt(people)} people · ${fmt(m.totalRounds)} cases`)})</span> = {t("ได้รายได้", "revenue")} <b className="tabular-nums text-[var(--fb)]">{fmt(m.gross)}</b> {t("บาท/เดือน", "THB/month")} <span className="text-[var(--fm)]">{t("(ยังไม่หักภาษี และ ค่าใช้จ่าย)", "(before tax and expenses)")}</span></span>
+              <Num label={t("เคสต่อคนต่อเดือน", "Cases per person per month")} w="w-[78px]" value={per} onChange={(v) => up({ casesPerPerson: Math.max(1, Math.round(v)) })} />
+              <span>{t("เคส/เดือน", "cases/month")} <span className="text-[var(--fm)]">({t(`${fmt(people)} คน · รวม ${fmt(m.totalRounds)} เคส`, `${fmt(people)} people · ${fmt(m.totalRounds)} cases`)})</span> = {t("ได้รายได้", "revenue")} <b className="tabular-nums text-[var(--fb)] fin-rate-big">{fmt(m.gross)}</b> {t("บาท/เดือน", "THB/month")} <span className="text-[var(--fm)]">{t("(ยังไม่หักภาษี และ ค่าใช้จ่าย)", "(before tax and expenses)")}</span></span>
             </div>
           );
         })()}
-        <p className="m-0 mt-3 text-[13.5px] text-center">{t("เงินสดจากการดำเนินงานโดยประมาณ", "Estimated operating cash flow")} <b className="tabular-nums">{fmt(m.cash, 2)} {t("บาท", "THB")}</b> • {t("ก่อนเงินลงทุนและการเปลี่ยนแปลง Wallet", "before investment and Wallet movements")}</p>
       </section>
 
       <CasesGrid plan={plan} up={up} month={month} setMonth={setMonth} />
@@ -884,6 +883,8 @@ const CSS = `
 #fin-page.fin-cap [class~="xl:grid-cols-2"]{grid-template-columns:minmax(0,1fr)}#fin-page.fin-cap [class~="xl:grid-cols-4"]{grid-template-columns:repeat(4,minmax(0,1fr))}#fin-page.fin-cap [class~="sm:hidden"]{display:none}#fin-page.fin-cap [class~="hidden"][class~="sm:block"]{display:block}#fin-page.fin-cap [class~="hidden"][class~="sm:inline"]{display:inline}
 .fin-root .overflow-x-auto{overflow-y:hidden;scrollbar-width:thin}#fin-page.fin-cap .overflow-x-auto{overflow:visible}
 .fin-t.r-fit th{white-space:normal}
+.fin-rate{font-size:19px;line-height:1.6}.fin-rate b{font-size:22px}.fin-rate .fin-rate-big{font-size:28px}.fin-rate .fin-in{height:42px}.fin-rate .fin-in input{font-size:20px;font-weight:700}
+@media (max-width:639px){.fin-rate{font-size:16px}.fin-rate b{font-size:18px}.fin-rate .fin-rate-big{font-size:22px}}
 .fin-note{margin:8px 0 0;font-size:12.5px;color:var(--fm)}
 .fin-warn{margin:10px 0 0;font-size:13px;color:#a16207;background:#fff7e0;border:1px solid #f6d58a;border-radius:10px;padding:8px 12px}
 .fin-t{width:100%;border-collapse:collapse;font-size:14px}
