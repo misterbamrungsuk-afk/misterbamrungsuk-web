@@ -5,6 +5,27 @@ import { createRoot } from "react-dom/client";
 import { flushSync } from "react-dom";
 import { SLIDE_SIZE, Slide, type Orient, type SlideCtx, type SlideKind } from "./slides";
 
+/** รูปว่าง? (Safari บางครั้งวาดออกมาโปร่งใสทั้งรูป เพราะฟอนต์/รูปยังโหลดไม่ทัน) */
+function isBlank(c: HTMLCanvasElement) {
+  const cg = c.getContext("2d"); if (!cg || !c.width || !c.height) return true;
+  const d = cg.getImageData(0, 0, c.width, c.height).data;
+  const step = Math.max(4, Math.floor(d.length / 4 / 400)) * 4;
+  for (let i = 3; i < d.length; i += step) if (d[i] > 0) return false;
+  return true;
+}
+/** ถ่ายองค์ประกอบเป็น canvas — อุ่นเครื่อง 1 ครั้ง แล้วถ่ายซ้ำถ้าว่าง (สูงสุด 4 ครั้ง) */
+async function snap(el: HTMLElement, opts: Record<string, unknown>, warm = true): Promise<HTMLCanvasElement | null> {
+  const { toCanvas } = await import("html-to-image");
+  if (warm) await toCanvas(el, opts).catch(() => null);
+  let c: HTMLCanvasElement | null = null;
+  for (let i = 0; i < 4; i++) {
+    c = await toCanvas(el, opts).catch(() => null);
+    if (c && !isBlank(c)) return c;
+    await new Promise((r) => setTimeout(r, 150));
+  }
+  return c;
+}
+
 // ส่งออกสไลด์สรุป (/finance) เป็น PNG — เรนเดอร์คอมโพเนนต์สไลด์นอกจอ แล้ว html-to-image
 async function renderSlide(kind: SlideKind, c: SlideCtx): Promise<string> {
   const [W, H] = SLIDE_SIZE[c.orient];
@@ -15,9 +36,10 @@ async function renderSlide(kind: SlideKind, c: SlideCtx): Promise<string> {
   try {
     flushSync(() => root.render(<Slide kind={kind} c={c} />));
     await document.fonts?.ready;
-    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-    const { toPng } = await import("html-to-image");
-    return await toPng(host.firstElementChild as HTMLElement, { width: W, height: H, pixelRatio: 1, cacheBust: true });
+    await new Promise((r) => setTimeout(r, 80)); // ไม่ใช้ rAF — แท็บที่ซ่อนอยู่ rAF ไม่ทำงาน
+    const cv = await snap(host.firstElementChild as HTMLElement, { width: W, height: H, pixelRatio: 1, cacheBust: true });
+    if (!cv) throw new Error("render failed");
+    return cv.toDataURL("image/png");
   } finally {
     root.unmount();
     host.remove();
@@ -90,7 +112,6 @@ async function capturePage(): Promise<{ url: string; w: number; h: number; cuts:
       .filter((y) => y > 0 && y < h)
       .sort((a, b) => a - b);
     // ถ่ายทีละบล็อกแล้วต่อเป็นรูปเดียว — Safari/Mac วาดรูปสูงๆ ทั้งหน้าครั้งเดียวไม่ครบ (ครึ่งล่างว่าง)
-    const { toCanvas } = await import("html-to-image");
     const ratio = Math.max(1, Math.min(2, Math.sqrt(14e6 / (w * h))));
     const out = document.createElement("canvas");
     out.width = Math.round(w * ratio); out.height = Math.round(h * ratio);
@@ -100,22 +121,8 @@ async function capturePage(): Promise<{ url: string; w: number; h: number; cuts:
     // วัดตำแหน่งทุกบล็อกครั้งเดียวก่อนเริ่มถ่าย (Safari เลื่อนหน้าระหว่างถ่าย → ตำแหน่งเพี้ยน/ทับกัน)
     const pos = outer.map((el) => { const r = el.getBoundingClientRect(); return { el, x: r.left - box0.left, y: r.top - top0, w: el.offsetWidth, h: el.offsetHeight }; });
     const sx = window.scrollX, sy = window.scrollY;
-    // Safari บางครั้งวาดออกมาว่าง (ยังโหลดฟอนต์/รูปไม่ทัน) → ตรวจแล้วถ่ายซ้ำ
-    const blank = (c: HTMLCanvasElement) => {
-      const cg = c.getContext("2d"); if (!cg || !c.width || !c.height) return true;
-      const d = cg.getImageData(0, 0, c.width, c.height).data;
-      const step = Math.max(4, Math.floor(d.length / 4 / 400)) * 4;
-      for (let i = 3; i < d.length; i += step) if (d[i] > 0) return false;
-      return true;
-    };
-    await toCanvas(pos[0].el, opts).catch(() => null); // อุ่นเครื่องครั้งแรก
-    for (const p of pos) {
-      let c: HTMLCanvasElement | null = null;
-      for (let tries = 0; tries < 4; tries++) {
-        c = await toCanvas(p.el, { ...opts, width: p.w, height: p.h }).catch(() => null);
-        if (c && !blank(c)) break;
-        await new Promise((r) => setTimeout(r, 150));
-      }
+    for (const [k, p] of pos.entries()) {
+      const c = await snap(p.el, { ...opts, width: p.w, height: p.h }, k === 0);
       if (c) g.drawImage(c, Math.round(p.x * ratio), Math.round(p.y * ratio), Math.round(p.w * ratio), Math.round(p.h * ratio));
     }
     window.scrollTo(sx, sy);
