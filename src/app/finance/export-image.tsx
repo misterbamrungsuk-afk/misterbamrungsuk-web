@@ -76,8 +76,12 @@ async function capturePage(): Promise<{ url: string; w: number; h: number; cuts:
     }
     const w = node.scrollWidth, h = node.scrollHeight;
     // จุดตัดหน้าที่ปลอดภัย = ช่องว่างระหว่างบล็อก (หัวเรื่อง · แถบเดือน · การ์ดตัวเลข · การ์ด 1 · การ์ด 2 · สรุป · ตารางเคส) — ไม่ตัดกลางการ์ด
-    const top0 = node.getBoundingClientRect().top;
-    const blocks = [...node.querySelectorAll<HTMLElement>("header, .fin-bar, section.fin-card, div:has(> .fin-kpi)")]
+    const box0 = node.getBoundingClientRect();
+    const top0 = box0.top;
+    const els = [...node.querySelectorAll<HTMLElement>("header, .fin-bar, section.fin-card, div:has(> .fin-kpi)")]
+      .filter((el) => el.offsetHeight > 0);
+    const outer = els.filter((el) => !els.some((o) => o !== el && o.contains(el)));
+    const blocks = els
       .map((el) => { const r = el.getBoundingClientRect(); return [r.top - top0, r.bottom - top0] as const; })
       .filter(([a, b]) => b > a);
     const cuts = [...new Set(blocks.map(([, b]) => b))]
@@ -85,11 +89,21 @@ async function capturePage(): Promise<{ url: string; w: number; h: number; cuts:
       .map((y) => { const next = Math.min(h, ...blocks.map(([a]) => a).filter((a) => a >= y)); return Math.round((y + next) / 2); })
       .filter((y) => y > 0 && y < h)
       .sort((a, b) => a - b);
-    const { toPng } = await import("html-to-image");
-    const url = await toPng(node, {
-      width: w, height: h, pixelRatio: Math.max(1, Math.min(2, Math.sqrt(12e6 / (w * h)))), cacheBust: true, backgroundColor: "#f6f4fb",
-      filter: (el) => !(el instanceof Element && el.matches(HIDE)),
-    });
+    // ถ่ายทีละบล็อกแล้วต่อเป็นรูปเดียว — Safari/Mac วาดรูปสูงๆ ทั้งหน้าครั้งเดียวไม่ครบ (ครึ่งล่างว่าง)
+    const { toCanvas } = await import("html-to-image");
+    const ratio = Math.max(1, Math.min(2, Math.sqrt(14e6 / (w * h))));
+    const out = document.createElement("canvas");
+    out.width = Math.round(w * ratio); out.height = Math.round(h * ratio);
+    const g = out.getContext("2d")!;
+    g.fillStyle = "#f6f4fb"; g.fillRect(0, 0, out.width, out.height);
+    const opts = { pixelRatio: ratio, cacheBust: true, filter: (el: HTMLElement) => !(el instanceof Element && el.matches(HIDE)) };
+    for (const [k, el] of outer.entries()) {
+      const r = el.getBoundingClientRect();
+      if (k === 0) await toCanvas(el, opts).catch(() => null); // อุ่นเครื่อง (ฟอนต์) ครั้งแรก — กัน Safari วาดว่าง
+      const c = await toCanvas(el, { ...opts, width: el.offsetWidth, height: el.offsetHeight });
+      g.drawImage(c, Math.round((r.left - box0.left) * ratio), Math.round((r.top - top0) * ratio), Math.round(el.offsetWidth * ratio), Math.round(el.offsetHeight * ratio));
+    }
+    const url = out.toDataURL("image/png");
     return { url, w, h, cuts };
   } finally {
     Object.assign(node.style, prev);
