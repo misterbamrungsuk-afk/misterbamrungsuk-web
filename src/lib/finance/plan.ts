@@ -277,7 +277,7 @@ export function cleanPlan(raw: unknown): Omit<FinancePlan, "history"> {
       const pct = kind === "pctRevenue" || kind === "pctGross";
       return { id: id(x.id), name: txt(x.name, "ค่าใช้จ่าย"), kind, value: pct ? num(x.value, 0, 1, "เปอร์เซ็นต์") : num(x.value, 0, 1e10, "ค่าใช้จ่าย"), ...(x.noncash ? { noncash: true } : {}), ...(kind === "once" ? { month: ml.includes(String(x.month)) ? String(x.month) : "M1" } : {}) };
     }),
-    labels: (() => { const o = (b.labels ?? {}) as Record<string, unknown>; const r: Partial<Record<LabelKey, string>> = {}; for (const k of Object.keys(LABELS) as LabelKey[]) { const v = typeof o[k] === "string" ? (o[k] as string).trim().slice(0, 60) : ""; if (v) r[k] = v; } return r; })(),
+    labels: (() => { const o = (b.labels ?? {}) as Record<string, unknown>; const r: Partial<Record<LabelKey, string>> = {}; for (const k of Object.keys(LABELS) as LabelKey[]) { const v = typeof o[k] === "string" ? (o[k] as string).trim().slice(0, 120) : ""; if (v) r[k] = v; } return r; })(),
     incomes: list(b.incomes ?? [], 40, (x) => ({ id: id(x.id), name: txt(x.name, "รายได้"), kind: (x.kind === "once" ? "once" : "monthly") as IncomeKind, value: num(x.value, 0, 1e10, "รายได้"), month: ml.includes(String(x.month)) ? String(x.month) : "M1" })),
     pending: list(b.pending, 20, (x) => ({ id: id(x.id), name: txt(x.name, "รายการ"), amount: num(x.amount, 0, 1e10, "งบ") })),
     monthCount,

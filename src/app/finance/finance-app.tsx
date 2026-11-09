@@ -175,13 +175,20 @@ function Lbl({ plan, up, k, suffix }: { plan: FinancePlan; up: P["up"]; k: Label
   const { t, lang } = useT();
   const cur = plan.labels?.[k] ?? "";
   const def = LABELS[k][lang === "en" ? 1 : 0];
+  const [edit, setEdit] = useState(false);
+  const pen = <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>;
+  // ปกติแสดงเป็นข้อความ (ยาวแค่ไหนก็ขึ้นบรรทัดใหม่ได้) · แตะแล้วเป็นช่องพิมพ์เต็มความกว้าง
+  if (edit) return (
+    <span className="fin-lbl on">
+      <input autoFocus aria-label={`${t("แก้ชื่อ", "Rename")} ${def}`} value={cur} placeholder={def} maxLength={120}
+        onBlur={() => setEdit(false)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === "Escape") (e.target as HTMLInputElement).blur(); }}
+        onChange={(e) => { const v = e.target.value; const next = { ...(plan.labels ?? {}) }; if (v) next[k] = v; else delete next[k]; up({ labels: next }); }} />
+      {suffix && <span className="fin-lbl-s">{suffix}</span>}
+    </span>
+  );
   return (
-    <span className="fin-lbl" title={t("แตะเพื่อแก้ชื่อ", "Tap to rename")}>
-      <span className="fin-lbl-w" data-v={(cur || def) + " "}>
-        <input aria-label={`${t("แก้ชื่อ", "Rename")} ${def}`} value={cur} placeholder={def} maxLength={60} size={1}
-          onChange={(e) => { const v = e.target.value; const next = { ...(plan.labels ?? {}) }; if (v) next[k] = v; else delete next[k]; up({ labels: next }); }} />
-      </span>
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+    <span className="fin-lbl">
+      <button type="button" className="fin-lbl-t" title={t("แตะเพื่อแก้ชื่อ", "Tap to rename")} onClick={() => setEdit(true)}>{cur || def} {pen}</button>
       {suffix && <span className="fin-lbl-s">{suffix}</span>}
     </span>
   );
@@ -230,7 +237,7 @@ function Shares({ plan, up }: { plan: FinancePlan; up: P["up"] }) {
   );
 }
 const Row = ({ l, r }: { l: React.ReactNode; r: React.ReactNode }) => (
-  <div className="flex items-center justify-between gap-3 py-1.5 border-b border-[var(--fl)] text-[14px]"><span className="min-w-0">{l}</span><span className="tabular-nums shrink-0 text-right">{r}</span></div>
+  <div className="flex items-center justify-between gap-3 py-1.5 border-b border-[var(--fl)] text-[14px]"><span className="min-w-0 flex-1">{l}</span><span className="tabular-nums shrink-0 text-right">{r}</span></div>
 );
 function Items({ items, onChange, addLabel, zeroChip }: { items: FinItem[]; onChange: (v: FinItem[]) => void; addLabel: string; zeroChip?: boolean }) {
   const { t, lang } = useT();
@@ -867,12 +874,11 @@ const CSS = `
 .fin-sum-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding-bottom:6px}.fin-sum-h b{font-size:16.5px}.fin-sum-h b span{font-weight:500}.fin-sum-h > span{font-size:13px;color:var(--fm)}
 .fin-sum-r{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--fl);font-size:14.5px}.fin-sum-r b{font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap}
 .fin-sum-t{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;padding:12px 16px;border-radius:12px;background:#fde9d6;font-weight:800;font-size:16.5px}.fin-sum-t b{color:#e8590c;font-size:19px;font-variant-numeric:tabular-nums}
-.fin-lbl{display:inline-flex;align-items:center;gap:4px;min-width:0;max-width:100%;color:inherit;font-weight:inherit}
-.fin-lbl-w{display:inline-grid;min-width:0;max-width:100%}.fin-lbl-w::after{content:attr(data-v);visibility:hidden;white-space:pre;grid-area:1/1;padding:0 1px;overflow:hidden}
-.fin-lbl input{grid-area:1/1;width:100%;min-width:2em;border:0;border-bottom:1px dashed transparent;background:transparent;font:inherit;color:inherit;padding:0 1px;outline:0}
+.fin-lbl{display:inline-flex;align-items:baseline;flex-wrap:wrap;gap:0 6px;min-width:0;max-width:100%;color:inherit;font-weight:inherit}
+.fin-lbl.on{display:flex;flex:1;align-items:center}
+.fin-lbl-t{all:unset;cursor:text;white-space:normal;overflow-wrap:anywhere;text-align:left;border-bottom:1px dashed transparent}.fin-lbl-t:hover{border-bottom-color:#b9a6ee}.fin-lbl-t svg{display:inline;vertical-align:baseline;color:#b9b1cc;margin-left:2px}.fin-lbl-t:hover svg{color:var(--fp)}.fin-lbl-t:focus-visible{outline:2px solid #e4d9fc;border-radius:4px}
+.fin-lbl input{flex:1;min-width:8em;width:100%;border:0;border-bottom:1px solid #b9a6ee;background:#fff;border-radius:4px;font:inherit;color:inherit;padding:1px 4px;outline:0}
 .fin-lbl input::placeholder{color:inherit;opacity:1}
-.fin-lbl:hover input,.fin-lbl input:focus{border-bottom-color:#b9a6ee}.fin-lbl input:focus{background:#fff;border-radius:4px}
-.fin-lbl svg{color:#b9b1cc;flex-shrink:0}.fin-lbl:hover svg{color:var(--fp)}
 .fin-lbl-s{margin-left:4px;white-space:nowrap}
 /* โหมดส่งออกรูปทั้งหน้า: บังคับเลย์เอาต์จอคอม */
 #fin-page.fin-cap [class~="xl:grid-cols-2"]{grid-template-columns:minmax(0,1fr)}#fin-page.fin-cap [class~="xl:grid-cols-4"]{grid-template-columns:repeat(4,minmax(0,1fr))}#fin-page.fin-cap [class~="sm:hidden"]{display:none}#fin-page.fin-cap [class~="hidden"][class~="sm:block"]{display:block}#fin-page.fin-cap [class~="hidden"][class~="sm:inline"]{display:inline}

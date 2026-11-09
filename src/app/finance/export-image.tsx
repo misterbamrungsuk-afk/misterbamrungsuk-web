@@ -25,7 +25,7 @@ async function renderSlide(kind: SlideKind, c: SlideCtx): Promise<string> {
 }
 
 // แคปหน้าที่กรอกจริงทั้งหน้า (#fin-page) — ตัดปุ่มแก้ไข (ลบ/เพิ่ม/บันทึก/ส่งออก) ออก เหลือแต่ตัวเลขตามที่กรอก
-const HIDE = ".fin-lbl > svg,.fin-x,.fin-add,.fin-add-o,.fin-btn,.fin-exp,.fin-seg,.fin-chip,[data-noexport]";
+const HIDE = ".fin-lbl-t > svg,.fin-x,.fin-add,.fin-add-o,.fin-btn,.fin-exp,.fin-seg,.fin-chip,[data-noexport]";
 /** แบ่งรูปยาวเป็นหน้า A4 แนวตั้ง ตัดเฉพาะช่องว่างระหว่างการ์ด */
 async function paginate(url: string, w: number, h: number, cuts: number[]): Promise<{ url: string; h: number }[]> {
   const pageH = Math.round(w * 1.414);
