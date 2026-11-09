@@ -185,9 +185,9 @@ export function ExportBtn({ kind, ctx, file }: { kind: SlideKind; ctx: Omit<Slid
       {open && (
         <span className="fin-exp-menu" role="menu">
           <span className="fin-exp-h">{t("หน้านี้ตามที่กรอก (ทั้งหน้า)", "This page as entered (full page)")}</span>
-          <button type="button" role="menuitem" onClick={() => goPage("pdf")}><i className="fin-ratio p" />{t("PDF แบ่งหน้า A4 (ข้อ 1 → 2 → สรุป)", "PDF, A4 pages")}<small>PDF</small></button>
+          <button type="button" role="menuitem" onClick={() => goPage("png")}><i className="fin-ratio p" />{t("รูปทั้งหน้า (รูปเดียว)", "Full page, one image")}<small>PNG</small></button>
+          <button type="button" role="menuitem" onClick={() => goPage("pdf")}><i className="fin-ratio p" />{t("PDF แบ่งหน้า A4", "PDF, A4 pages")}<small>PDF</small></button>
           <button type="button" role="menuitem" onClick={() => goPage("pages")}><i className="fin-ratio p" />{t("รูปแบ่งหน้า", "Images per page")}<small>PNG</small></button>
-          <button type="button" role="menuitem" onClick={() => goPage("png")}><i className="fin-ratio p" />{t("รูปยาวรูปเดียว", "One long image")}<small>PNG</small></button>
           <span className="fin-exp-h">{t("สไลด์สรุปหน้านี้", "Summary slide of this page")}</span>
           <button type="button" role="menuitem" onClick={() => go("landscape")}><i className="fin-ratio l" />{t("แนวนอน 16:9", "Landscape 16:9")}<small>PNG</small></button>
           <button type="button" role="menuitem" onClick={() => go("portrait")}><i className="fin-ratio p" />{t("แนวตั้ง 9:16", "Portrait 9:16")}<small>PNG</small></button>
