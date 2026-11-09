@@ -20,6 +20,7 @@ export interface FinancePlan {
   /** จำนวนรอบต่อเดือน: months["M4"][serviceId] */
   months: Record<string, Record<string, number>>;
   expenses: FinExpense[];        // ค่าใช้จ่าย: ครั้งเดียว / รายเดือน / % (รวมเงินลงทุนแล้ว)
+  labels?: Partial<Record<LabelKey, string>>; // ชื่อช่องที่แก้เอง (ส่วนแบ่งบริษัท ฯลฯ)
   incomes?: FinIncome[];         // รายได้อื่น ครั้งเดียว / รายเดือน
   pending: FinItem[];            // รายการที่ต้องตั้งงบเพิ่ม (0 = ยังไม่ใส่งบ)
   target: { profit: number; days: number; serviceId: string };
@@ -27,6 +28,7 @@ export interface FinancePlan {
   startupMonth?: string;
   /** ค่าแรกเข้าที่หักจากเคสการทำงาน: เคสละ perJob จนครบ cap ต่อคน · people = จำนวนคนที่รับเข้าระบบ (บอส 8 พ.ย. 2569) */
   entryFee?: { perJob: number; cap: number; people: number };         // ลงเงินลงทุน (ทนาย/แอป) เป็นค่าใช้จ่ายใน P&L เดือนนี้ — "" = ไม่ลง
+  monthOffset?: number;          // เลื่อนเดือนเริ่ม: M1 = ต.ค. 69 + monthOffset เดือน (ลบเดือนแรกทิ้งได้)
   monthCount?: number;           // จำนวนเดือนของแผน (ค่าเริ่มต้น 18)
   cashTargets?: Record<string, number>; // For Cash รายเดือน
   history: { at: string; by: string; note: string }[];
@@ -41,10 +43,10 @@ export const monthsOf = (p: FinancePlan) => monthList(p.monthCount ?? 18);
 export const cashTargetOf = (p: FinancePlan, m: string) => p.cashTargets?.[m] ?? p.target.profit;
 /** M1 = ต.ค. 2569 (Oct 2026) แล้วนับต่อไปทีละเดือน */
 export const MONTH_START = { year: 2026, month: 9 }; // month 0-based
-export function monthLabel(m: string, lang: "th" | "en" = "th") {
+export function monthLabel(m: string, lang: "th" | "en" = "th", offset = 0) {
   const i = Number(/^M(\d+)$/.exec(m)?.[1] ?? 0) - 1;
   if (i < 0) return m;
-  const d = new Date(Date.UTC(MONTH_START.year, MONTH_START.month + i, 1));
+  const d = new Date(Date.UTC(MONTH_START.year, MONTH_START.month + (offset || 0) + i, 1));
   return d.toLocaleDateString(lang === "th" ? "th-TH" : "en-US", { month: "short", year: "2-digit", timeZone: "UTC" });
 }
 export const KIND_LABEL: Record<ExpenseKind, string> = { once: "ครั้งเดียว", fixed: "บาท/เดือน", pctRevenue: "% ของรายได้บริษัท", pctGross: "% ของยอดลูกค้าจ่าย" };
@@ -127,6 +129,42 @@ export function entryFeeOf(p: FinancePlan, month: string) {
   return after - before;
 }
 
+export const LABELS = {
+  gross: ["ยอดลูกค้าจ่ายรวม", "Total customer spend"],
+  share: ["ส่วนแบ่งบริษัท", "Company share"],
+  fee: ["ค่าธรรมเนียมผู้ให้บริการ", "Provider fee"],
+  entry: ["ค่าแรกเข้า (หักจากเคส)", "Joining fee (deducted per job)"],
+  extra: ["รายได้อื่นต่อรอบ (ค่าคอมสินค้า)", "Other income per booking (product commission)"],
+  pg: ["ค่าภาษี ภ.ง.ด.", "Withholding tax (PND)"],
+  revenue: ["รายได้บริษัท", "Company revenue"],
+} as const;
+export type LabelKey = keyof typeof LABELS;
+/** ชื่อช่อง: ใช้ชื่อที่แก้เองถ้ามี ไม่งั้นค่าเริ่มต้นตามภาษา */
+export const labelOf = (p: Pick<FinancePlan, "labels">, k: LabelKey, lang: "th" | "en" = "th") => p.labels?.[k]?.trim() || LABELS[k][lang === "en" ? 1 : 0];
+
+/** ลบ n เดือนแรกออกจากแผน — ข้อมูลเดือนที่เหลือเลื่อนขึ้น (M3 เดิม → M1) · ค่าใช้จ่าย/รายได้ครั้งเดียวในเดือนที่ลบ ย้ายไปเดือนแรกใหม่ */
+export function dropFirstMonths(p: FinancePlan, n = 1): FinancePlan {
+  const count = p.monthCount ?? 18;
+  n = Math.max(0, Math.min(n, count - 1));
+  if (!n) return p;
+  const idx = (m?: string) => Number(/^M(\d+)$/.exec(m ?? "")?.[1] ?? 1);
+  const shiftKeys = <T,>(o: Record<string, T> | undefined) => {
+    const r: Record<string, T> = {};
+    for (const [k, v] of Object.entries(o ?? {})) { const i = idx(k); if (i > n) r[`M${i - n}`] = v; }
+    return r;
+  };
+  const mv = (m?: string) => `M${Math.max(1, idx(m) - n)}`;
+  return {
+    ...p,
+    months: shiftKeys(p.months),
+    cashTargets: shiftKeys(p.cashTargets),
+    expenses: p.expenses.map((e) => (e.kind === "once" ? { ...e, month: mv(e.month) } : e)),
+    incomes: (p.incomes ?? []).map((x) => ({ ...x, month: mv(x.month) })),
+    monthCount: count - n,
+    monthOffset: (p.monthOffset ?? 0) + n,
+  };
+}
+
 export function monthSummary(p: FinancePlan, month: string) {
   const rounds = p.months[month] ?? {};
   const rows = p.services.map((s) => {
@@ -146,7 +184,7 @@ export function monthSummary(p: FinancePlan, month: string) {
   const pg = gross * p.pgFee;
   const lines = [
     ...p.expenses.filter((e) => e.kind !== "once" || (e.month || "M1") === month).map((e) => ({ id: e.id, name: e.name, kind: e.kind, value: e.value, noncash: !!e.noncash, amount: e.kind === "fixed" || e.kind === "once" ? e.value : e.kind === "pctRevenue" ? revenue * e.value : gross * e.value })),
-    { id: "_pg", name: `ค่าภาษี ภ.ง.ด. ${fmtPct(p.pgFee)} ของยอดลูกค้า`, kind: "pctGross" as ExpenseKind, value: p.pgFee, noncash: false, amount: pg },
+    { id: "_pg", name: `${labelOf(p, "pg")} ${fmtPct(p.pgFee)} ของยอดลูกค้า`, kind: "pctGross" as ExpenseKind, value: p.pgFee, noncash: false, amount: pg },
     ...p.pending.filter((i) => i.amount > 0).map((i) => ({ id: i.id, name: i.name, kind: "fixed" as ExpenseKind, value: i.amount, noncash: false, amount: i.amount })),
   ];
   const expenses = lines.reduce((t, l) => t + l.amount, 0);
@@ -238,9 +276,11 @@ export function cleanPlan(raw: unknown): Omit<FinancePlan, "history"> {
       const pct = kind === "pctRevenue" || kind === "pctGross";
       return { id: id(x.id), name: txt(x.name, "ค่าใช้จ่าย"), kind, value: pct ? num(x.value, 0, 1, "เปอร์เซ็นต์") : num(x.value, 0, 1e10, "ค่าใช้จ่าย"), ...(x.noncash ? { noncash: true } : {}), ...(kind === "once" ? { month: ml.includes(String(x.month)) ? String(x.month) : "M1" } : {}) };
     }),
+    labels: (() => { const o = (b.labels ?? {}) as Record<string, unknown>; const r: Partial<Record<LabelKey, string>> = {}; for (const k of Object.keys(LABELS) as LabelKey[]) { const v = typeof o[k] === "string" ? (o[k] as string).trim().slice(0, 60) : ""; if (v) r[k] = v; } return r; })(),
     incomes: list(b.incomes ?? [], 40, (x) => ({ id: id(x.id), name: txt(x.name, "รายได้"), kind: (x.kind === "once" ? "once" : "monthly") as IncomeKind, value: num(x.value, 0, 1e10, "รายได้"), month: ml.includes(String(x.month)) ? String(x.month) : "M1" })),
     pending: list(b.pending, 20, (x) => ({ id: id(x.id), name: txt(x.name, "รายการ"), amount: num(x.amount, 0, 1e10, "งบ") })),
     monthCount,
+    monthOffset: Math.round(num(b.monthOffset ?? 0, 0, 120, "เลื่อนเดือนเริ่ม")),
     cashTargets,
     extraPerRound: num(b.extraPerRound ?? 0, 0, 1_000_000, "รายได้อื่นต่อรอบ"),
     entryFee: (() => { const e = (b.entryFee ?? {}) as Record<string, unknown>; return { perJob: num(e.perJob ?? 0, 0, 1_000_000, "ค่าแรกเข้าต่อเคส"), cap: num(e.cap ?? 0, 0, 10_000_000, "เพดานค่าแรกเข้า"), people: Math.round(num(e.people ?? 0, 0, 100_000, "จำนวนคน")) }; })(),

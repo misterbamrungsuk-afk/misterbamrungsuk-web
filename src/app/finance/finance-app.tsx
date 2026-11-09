@@ -5,8 +5,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { ExportBtn } from "./export-image";
 import {
   MAX_MONTHS, PRESET_V4, cashTargetOf, fixedTotal, monthsOf, fmt, fmt2, fmtPct, monthLabel, monthSummary, perRound, targetFor, targetMix,
-  type ExpenseKind, type FinExpense, type FinIncome, type IncomeKind, type FinItem, type FinService, type FinancePlan,
-} from "@/lib/finance/plan";
+  type ExpenseKind, type FinExpense, type FinIncome, type IncomeKind, type FinItem, type FinService, type FinancePlan, LABELS, labelOf, type LabelKey, dropFirstMonths } from "@/lib/finance/plan";
 
 // หลังบ้านการเงิน — ดีไซน์ตามสไลด์ Canva "Update MB" หน้า 8 · 9 · 10 (โทนม่วงอ่อน) · 2 ภาษา ไทย/EN
 type View = "overview" | "costs" | "target";
@@ -105,7 +104,7 @@ export function FinanceApp({ view, initial, who }: { view: View; initial: Financ
           </div>
         </nav>
 
-        <main className="flex-1 min-w-0 px-4 lg:px-8 py-4 lg:py-7 pb-28">
+        <main id="fin-page" className="flex-1 min-w-0 px-4 lg:px-8 py-4 lg:py-7 pb-28">
           <header className="flex flex-wrap items-start gap-x-3 gap-y-2 mb-4 sm:mb-5">
             <div className="flex-1 min-w-[240px]">
               <div className="text-[11.5px] font-semibold tracking-[.12em] text-[var(--fm)]">MISTER BAMRUNGSUK · {t("หลังบ้านการเงิน", "FINANCE BACK OFFICE")}</div>
@@ -171,6 +170,22 @@ function Del({ onClick, label }: { onClick: () => void; label: string }) {
   const { t } = useT();
   return <button type="button" onClick={onClick} aria-label={label} title={t("ลบ", "Delete")} className="fin-x">×</button>;
 }
+/** ชื่อช่องที่แก้ไขได้ — แตะแล้วพิมพ์ชื่อใหม่ (ลบให้ว่าง = กลับเป็นชื่อเดิม) */
+function Lbl({ plan, up, k, suffix }: { plan: FinancePlan; up: P["up"]; k: LabelKey; suffix?: string }) {
+  const { t, lang } = useT();
+  const cur = plan.labels?.[k] ?? "";
+  const def = LABELS[k][lang === "en" ? 1 : 0];
+  return (
+    <span className="fin-lbl" title={t("แตะเพื่อแก้ชื่อ", "Tap to rename")}>
+      <span className="fin-lbl-w" data-v={(cur || def) + " "}>
+        <input aria-label={`${t("แก้ชื่อ", "Rename")} ${def}`} value={cur} placeholder={def} maxLength={60} size={1}
+          onChange={(e) => { const v = e.target.value; const next = { ...(plan.labels ?? {}) }; if (v) next[k] = v; else delete next[k]; up({ labels: next }); }} />
+      </span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+      {suffix && <span className="fin-lbl-s">{suffix}</span>}
+    </span>
+  );
+}
 const Card = ({ n, title, sub, tone = "violet", children, right }: { n?: number; title: string; sub?: string; tone?: "violet" | "blue" | "orange" | "green"; children: React.ReactNode; right?: React.ReactNode }) => (
   <section className={`fin-card t-${tone}`}>
     <div className="flex items-center gap-2 mb-3 flex-wrap">
@@ -198,7 +213,7 @@ function MonthPick({ month, setMonth, plan }: { month: string; setMonth: (m: str
     <label className="fin-in w-auto gap-2">
       <span className="text-[12.5px] text-[var(--fm)] whitespace-nowrap">{t("เดือนที่ดู", "Month")}</span>
       <select value={month} onChange={(e) => setMonth(e.target.value)} className="font-semibold">
-        {monthsOf(plan).map((m) => <option key={m} value={m}>{m} · {monthLabel(m, lang)}{plan.months[m] ? " ●" : ""}</option>)}
+        {monthsOf(plan).map((m) => <option key={m} value={m}>{m} · {monthLabel(m, lang, plan.monthOffset)}{plan.months[m] ? " ●" : ""}</option>)}
       </select>
     </label>
   );
@@ -207,10 +222,10 @@ function Shares({ plan, up }: { plan: FinancePlan; up: P["up"] }) {
   const { t } = useT();
   return (
     <div className="flex flex-wrap gap-x-5 gap-y-2 items-center text-[13.5px]">
-      <label className="flex items-center gap-2">{t("ส่วนแบ่งบริษัท", "Company share")} <Num label={t("ส่วนแบ่งบริษัท", "Company share")} pct w="w-[88px]" value={plan.companyShare} onChange={(v) => up({ companyShare: Math.min(1, v) })} /></label>
-      <label className="flex items-center gap-2">{t("ค่าธรรมเนียมจากผู้ให้บริการ", "Provider fee")} <Num label={t("ค่าธรรมเนียมจากผู้ให้บริการ", "Provider fee")} pct w="w-[80px]" value={plan.providerFee} onChange={(v) => up({ providerFee: v })} /></label>
-      <label className="flex items-center gap-2">{t("ค่าภาษี ภ.ง.ด.", "Withholding tax (PND)")} <Num label={t("ค่าภาษี ภ.ง.ด.", "Withholding tax (PND)")} pct w="w-[80px]" value={plan.pgFee} onChange={(v) => up({ pgFee: v })} /></label>
-      <label className="flex items-center gap-2">{t("รายได้อื่นต่อรอบ (ค่าคอมสินค้า)", "Other income per booking (product commission)")} <Num label={t("รายได้อื่นต่อรอบ", "Other income per booking")} w="w-[96px]" value={plan.extraPerRound ?? 0} onChange={(v) => up({ extraPerRound: v })} /></label>
+      <span className="flex items-center gap-2"><Lbl plan={plan} up={up} k="share" /> <Num label={t("ส่วนแบ่งบริษัท", "Company share")} pct w="w-[88px]" value={plan.companyShare} onChange={(v) => up({ companyShare: Math.min(1, v) })} /></span>
+      <span className="flex items-center gap-2"><Lbl plan={plan} up={up} k="fee" /> <Num label={t("ค่าธรรมเนียมจากผู้ให้บริการ", "Provider fee")} pct w="w-[80px]" value={plan.providerFee} onChange={(v) => up({ providerFee: v })} /></span>
+      <span className="flex items-center gap-2"><Lbl plan={plan} up={up} k="pg" /> <Num label={t("ค่าภาษี ภ.ง.ด.", "Withholding tax (PND)")} pct w="w-[80px]" value={plan.pgFee} onChange={(v) => up({ pgFee: v })} /></span>
+      <span className="flex items-center gap-2"><Lbl plan={plan} up={up} k="extra" /> <Num label={t("รายได้อื่นต่อรอบ", "Other income per booking")} w="w-[96px]" value={plan.extraPerRound ?? 0} onChange={(v) => up({ extraPerRound: v })} /></span>
     </div>
   );
 }
@@ -243,7 +258,7 @@ function MonthSel({ plan, value, onChange, label }: { plan: FinancePlan; value: 
   const { lang } = useT();
   return (
     <select aria-label={label} className="fin-sel w-full min-w-0" value={value} onChange={(e) => onChange(e.target.value)}>
-      {monthsOf(plan).map((m) => <option key={m} value={m}>{m} · {monthLabel(m, lang)}</option>)}
+      {monthsOf(plan).map((m) => <option key={m} value={m}>{m} · {monthLabel(m, lang, plan.monthOffset)}</option>)}
     </select>
   );
 }
@@ -321,14 +336,14 @@ function Overview({ plan, up, month, setMonth, save, dirty, busy }: P) {
   const setSvc = (i: number, patch: Partial<FinService>) => up({ services: plan.services.map((s, k) => (k === i ? { ...s, ...patch } : s)) });
   const ML = monthsOf(plan);
   const prev = ML[ML.indexOf(month) - 1];
-  const ml = `${month} · ${monthLabel(month, lang)}`;
-  const lineName = (l: (typeof m.lines)[number]) => (l.id === "_pg" ? t(`ค่าภาษี ภ.ง.ด. ${fmtPct(plan.pgFee)} ของยอดลูกค้า`, `Withholding tax (PND) ${fmtPct(plan.pgFee)} of customer spend`) : dn(l.name));
+  const ml = `${month} · ${monthLabel(month, lang, plan.monthOffset)}`;
+  const lineName = (l: (typeof m.lines)[number]) => (l.id === "_pg" ? `${labelOf(plan, "pg", lang)} ${fmtPct(plan.pgFee)} ${t("ของยอดลูกค้า", "of customer spend")}` : dn(l.name));
   return (
     <div className="flex flex-col gap-4">
       <div className="fin-bar">
         <MonthPick month={month} setMonth={setMonth} plan={plan} />
         <span className="text-[13.5px]">{t("จำนวนบริการ", "Bookings")} <b className="tabular-nums">{fmt(m.totalRounds)}</b> {t("รอบ", "")}</span>
-        {prev && plan.months[prev] && <button type="button" className="fin-btn ghost sm" onClick={() => up({ months: { ...plan.months, [month]: { ...plan.months[prev] } } })}>{t("คัดลอกเคสจาก", "Copy cases from")} {prev} · {monthLabel(prev, lang)}</button>}
+        {prev && plan.months[prev] && <button type="button" className="fin-btn ghost sm" onClick={() => up({ months: { ...plan.months, [month]: { ...plan.months[prev] } } })}>{t("คัดลอกเคสจาก", "Copy cases from")} {prev} · {monthLabel(prev, lang, plan.monthOffset)}</button>}
       </div>
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-2.5 sm:gap-3">
         <Kpi tone="violet" label={t("ทุนเริ่มต้น", "Starting capital")} value={fmt(plan.capital)} />
@@ -371,13 +386,13 @@ function Overview({ plan, up, month, setMonth, save, dirty, busy }: P) {
             </table>
           </div>
           <Link href="/finance/costs#services" className="fin-add inline-block">{t("+ เพิ่ม/แก้ชื่อบริการ", "+ Add / rename services")}</Link>
-          <div className="fin-total t-blue"><span>{t("ยอดลูกค้าจ่ายรวม", "Total customer spend")}</span><b>{fmt(m.gross)} {t("บาท", "THB")}</b></div>
-          <Row l={`${t("ส่วนแบ่งบริษัท", "Company share")} ${fmtPct(plan.companyShare)}`} r={fmt(m.company, 2)} />
-          <Row l={`${t("ค่าธรรมเนียมผู้ให้บริการ", "Provider fee")} ${fmtPct(plan.providerFee)}`} r={`+${fmt(m.fee, 2)}`} />
-          {m.entry > 0 && <Row l={t("ค่าแรกเข้า (หักจากเคส)", "Joining fee (deducted per job)")} r={`+${fmt(m.entry, 2)}`} />}
-          {m.extra > 0 && <Row l={`${t("รายได้อื่น (ค่าคอมสินค้า)", "Other income (product commission)")} ${fmt2(plan.extraPerRound ?? 0)} × ${fmt(m.totalRounds)}`} r={`+${fmt(m.extra, 2)}`} />}
+          <div className="fin-total t-blue"><Lbl plan={plan} up={up} k="gross" /><b>{fmt(m.gross)} {t("บาท", "THB")}</b></div>
+          <Row l={<Lbl plan={plan} up={up} k="share" suffix={fmtPct(plan.companyShare)} />} r={fmt(m.company, 2)} />
+          <Row l={<Lbl plan={plan} up={up} k="fee" suffix={fmtPct(plan.providerFee)} />} r={`+${fmt(m.fee, 2)}`} />
+          {m.entry > 0 && <Row l={<Lbl plan={plan} up={up} k="entry" />} r={`+${fmt(m.entry, 2)}`} />}
+          {m.extra > 0 && <Row l={<Lbl plan={plan} up={up} k="extra" suffix={`${fmt2(plan.extraPerRound ?? 0)} × ${fmt(m.totalRounds)}`} />} r={`+${fmt(m.extra, 2)}`} />}
           {m.incomeLines.filter((x) => x.amount > 0).map((x) => <Row key={x.id} l={<>{x.name} <span className="fin-pill">{t(...INCOME_KIND[x.kind])}</span></>} r={`+${fmt(x.amount, 2)}`} />)}
-          <div className="fin-total t-violet"><span>{t("รายได้บริษัท", "Company revenue")}</span><b>{fmt(m.revenue, 2)} {t("บาท", "THB")}</b></div>
+          <div className="fin-total t-violet"><Lbl plan={plan} up={up} k="revenue" /><b>{fmt(m.revenue, 2)} {t("บาท", "THB")}</b></div>
           <div className="mt-3"><Shares plan={plan} up={up} /></div>
           <div className="mt-4 pt-3 border-t border-[var(--fl)]">
             <div className="text-[14px] font-bold mb-1">{t("รายได้อื่น (กรอกเอง)", "Other income (enter your own)")}</div>
@@ -576,6 +591,8 @@ function CasesGrid({ plan, up, month, setMonth }: P) {
       right={
         <span className="flex items-center gap-2 text-[13px]">
           <span className="text-[var(--fm)]">{t(`${n} เดือน`, `${n} months`)}</span>
+          <button type="button" className="fin-btn ghost sm" disabled={n <= 1} title={t("ลบเดือนแรกทิ้ง เดือนถัดไปจะกลายเป็น M1", "Remove the first month; the next month becomes M1")}
+            onClick={() => { const first = `M1 · ${monthLabel("M1", lang, plan.monthOffset)}`; if (window.confirm(t(`ลบเดือนแรก (${first}) ออกจากแผน?\nเคสของเดือนนี้จะถูกลบ · ค่าใช้จ่าย/รายได้ครั้งเดียวของเดือนนี้จะย้ายไปเดือนถัดไป`, `Remove the first month (${first})?\nIts cases are deleted; one-time items move to the next month.`))) { up(dropFirstMonths(plan, 1)); setMonth(`M${Math.max(1, Number(month.slice(1)) - 1)}`); } }}>{t("✕ ลบเดือนแรก", "✕ Remove first month")}</button>
           <button type="button" className="fin-btn ghost sm" disabled={n <= 1} onClick={() => { if (!lastHasData || window.confirm(t(`${last} มีข้อมูลอยู่ — ลบเดือนนี้ออกจากแผน?`, `${last} has data — remove it from the plan?`))) setCount(n - 1); }}>{t("− ลดเดือน", "− Remove month")}</button>
           <button type="button" className="fin-btn ghost sm" disabled={n >= MAX_MONTHS} onClick={() => setCount(n + 1)}>{t("+ เพิ่มเดือน", "+ Add month")}</button>
         </span>
@@ -586,7 +603,7 @@ function CasesGrid({ plan, up, month, setMonth }: P) {
           <thead>
             <tr><th className="sticky left-0 bg-[var(--fc)] z-[1]">{t("บริการ", "Service")}</th>{ML.map((mo) => (
               <th key={mo} className="r">
-                <button type="button" onClick={() => setMonth(mo)} className={`fin-mo ${mo === month ? "on" : ""}`}>{mo}<span className="block text-[10.5px] font-medium opacity-80">{monthLabel(mo, lang)}</span></button>
+                <button type="button" onClick={() => setMonth(mo)} className={`fin-mo ${mo === month ? "on" : ""}`}>{mo}<span className="block text-[10.5px] font-medium opacity-80">{monthLabel(mo, lang, plan.monthOffset)}</span></button>
               </th>
             ))}</tr>
           </thead>
@@ -661,7 +678,7 @@ function ProfitChart({ plan, up, month, setMonth }: P) {
               const cx = i * COL + COL / 2, on = d.m === month;
               return (
                 <g key={d.m} onClick={() => setMonth(d.m)} style={{ cursor: "pointer" }}>
-                  <title>{`${d.m} · ${monthLabel(d.m, lang)} — For Cash ${fmt(d.g)} · ${t("กำไร", "profit")} ${d.v == null ? t("ยังไม่กรอก", "no cases") : fmt(d.v)}`}</title>
+                  <title>{`${d.m} · ${monthLabel(d.m, lang, plan.monthOffset)} — For Cash ${fmt(d.g)} · ${t("กำไร", "profit")} ${d.v == null ? t("ยังไม่กรอก", "no cases") : fmt(d.v)}`}</title>
                   <rect x={i * COL + 2} y={top - 14} width={COL - 4} height={ih + 14} fill={on ? "#efe8fd" : "transparent"} rx={6} />
                   <rect x={cx - bw - 1} y={Math.min(y(d.g), y(0))} width={bw} height={Math.max(2, Math.abs(y(d.g) - y(0)))} rx={4} fill="#c9c4d3" />
                   {d.v == null
@@ -674,7 +691,7 @@ function ProfitChart({ plan, up, month, setMonth }: P) {
           </svg>
           <div className="grid items-center text-[12px]" style={{ gridTemplateColumns: `${LAB}px repeat(${ML.length}, ${COL}px)` }}>
             <span />
-            {ML.map((m) => <button key={m} type="button" onClick={() => setMonth(m)} className={`text-center py-1 ${m === month ? "font-bold text-[var(--fp)]" : "text-[var(--fm)]"}`}>{monthLabel(m, lang)}</button>)}
+            {ML.map((m) => <button key={m} type="button" onClick={() => setMonth(m)} className={`text-center py-1 ${m === month ? "font-bold text-[var(--fp)]" : "text-[var(--fm)]"}`}>{monthLabel(m, lang, plan.monthOffset)}</button>)}
             <span className="font-semibold text-[var(--ft2)]">For Cash</span>
             {ML.map((m) => <span key={m} className="px-[3px]"><Num label={`For Cash ${m}`} w="w-full !px-1.5 !h-8 text-[12.5px]" value={cashTargetOf(plan, m)} onChange={(v) => setGoal(m, v)} /></span>)}
             <span className="font-semibold text-[var(--ft2)] pt-1">{t("ส่วนต่าง", "Gap")}</span>
@@ -752,7 +769,7 @@ function Target({ plan, up, month, setMonth }: P) {
             </>
           ) : (
             <p className="fin-warn">{multi
-              ? t(`ยังไม่มีเคสในเดือน ${month} (${monthLabel(month, lang)}) — กรอกเคสที่หน้าภาพรวมก่อน`, `No cases in ${month} (${monthLabel(month, lang)}) yet — enter them on the Overview page first`)
+              ? t(`ยังไม่มีเคสในเดือน ${month} (${monthLabel(month, lang, plan.monthOffset)}) — กรอกเคสที่หน้าภาพรวมก่อน`, `No cases in ${month} (${monthLabel(month, lang, plan.monthOffset)}) yet — enter them on the Overview page first`)
               : t("บริการนี้ไม่เหลือเงินต่อรอบ (ราคาหรือ % ทำให้ขาดทุน)", "This service leaves nothing per booking (price or % settings make a loss)")}</p>
           )}
         </Card>
@@ -837,6 +854,15 @@ const CSS = `
 .fin-sum-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding-bottom:6px}.fin-sum-h b{font-size:16.5px}.fin-sum-h b span{font-weight:500}.fin-sum-h > span{font-size:13px;color:var(--fm)}
 .fin-sum-r{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--fl);font-size:14.5px}.fin-sum-r b{font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap}
 .fin-sum-t{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;padding:12px 16px;border-radius:12px;background:#fde9d6;font-weight:800;font-size:16.5px}.fin-sum-t b{color:#e8590c;font-size:19px;font-variant-numeric:tabular-nums}
+.fin-lbl{display:inline-flex;align-items:center;gap:4px;min-width:0;max-width:100%;color:inherit;font-weight:inherit}
+.fin-lbl-w{display:inline-grid;min-width:0;max-width:100%}.fin-lbl-w::after{content:attr(data-v);visibility:hidden;white-space:pre;grid-area:1/1;padding:0 1px;overflow:hidden}
+.fin-lbl input{grid-area:1/1;width:100%;min-width:2em;border:0;border-bottom:1px dashed transparent;background:transparent;font:inherit;color:inherit;padding:0 1px;outline:0}
+.fin-lbl input::placeholder{color:inherit;opacity:1}
+.fin-lbl:hover input,.fin-lbl input:focus{border-bottom-color:#b9a6ee}.fin-lbl input:focus{background:#fff;border-radius:4px}
+.fin-lbl svg{color:#b9b1cc;flex-shrink:0}.fin-lbl:hover svg{color:var(--fp)}
+.fin-lbl-s{margin-left:4px;white-space:nowrap}
+/* โหมดส่งออกรูปทั้งหน้า: บังคับเลย์เอาต์จอคอม */
+#fin-page.fin-cap .xl\:grid-cols-2{grid-template-columns:minmax(0,1fr)}#fin-page.fin-cap .xl\:grid-cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}#fin-page.fin-cap .sm\:hidden{display:none}#fin-page.fin-cap .hidden.sm\:block{display:block}#fin-page.fin-cap .hidden.sm\:inline{display:inline}
 .fin-note{margin:8px 0 0;font-size:12.5px;color:var(--fm)}
 .fin-warn{margin:10px 0 0;font-size:13px;color:#a16207;background:#fff7e0;border:1px solid #f6d58a;border-radius:10px;padding:8px 12px}
 .fin-t{width:100%;border-collapse:collapse;font-size:14px}

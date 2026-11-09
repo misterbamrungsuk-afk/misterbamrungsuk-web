@@ -2,7 +2,7 @@
 
 // สไลด์สรุปสำหรับส่งออกเป็นรูป (/finance) — วาดจากตัวเลขในแผนโดยตรง ไม่ได้แคปหน้าจอฟอร์ม
 // แนวนอน 1920×1080 · แนวตั้ง 1080×1920 · ตัวหนังสือใหญ่ ไม่แน่น
-import { cashTargetOf, fixedTotal, fmt, fmtPct, monthLabel, monthSummary, monthsOf, perRound, targetFor, type FinService, type FinancePlan } from "@/lib/finance/plan";
+import { labelOf, cashTargetOf, fixedTotal, fmt, fmtPct, monthLabel, monthSummary, monthsOf, perRound, targetFor, type FinService, type FinancePlan } from "@/lib/finance/plan";
 
 export type Orient = "landscape" | "portrait";
 export type SlideKind = "overview" | "costs" | "target";
@@ -34,7 +34,7 @@ function Frame({ c, title, children }: { c: SlideCtx; title: string; children: R
           <div style={{ fontSize: L ? 50 : 54, fontWeight: 800, lineHeight: 1.25 }}>{title}</div>
         </div>
         <div style={{ textAlign: "right", fontSize: 21, color: C.mute, lineHeight: 1.5 }}>
-          <div style={{ fontWeight: 700, color: C.violet, fontSize: 24 }}>{c.month} · {monthLabel(c.month, c.lang)}</div>
+          <div style={{ fontWeight: 700, color: C.violet, fontSize: 24 }}>{c.month} · {monthLabel(c.month, c.lang, c.plan.monthOffset)}</div>
           <div>{t("ข้อมูล ณ", "As of")} {today}</div>
         </div>
       </div>
@@ -132,7 +132,7 @@ function OverviewSlide({ c }: { c: SlideCtx }) {
   const rev = m.rows.filter((r) => r.rounds > 0).sort((a, b) => b.gross - a.gross);
   const maxG = Math.max(0, ...rev.map((r) => r.gross));
   const lines = m.lines.filter((l) => l.amount > 0).map((l, i) => ({
-    label: l.id === "_pg" ? t(`ภาษี ภ.ง.ด. ${fmtPct(plan.pgFee)}`, `PND tax ${fmtPct(plan.pgFee)}`) : c.dn(l.name),
+    label: l.id === "_pg" ? `${labelOf(plan, "pg", c.lang)} ${fmtPct(plan.pgFee)}` : c.dn(l.name),
     value: l.amount, color: SERIES[(i + 4) % SERIES.length], note: l.noncash && !/เงินสด|non-cash/i.test(c.dn(l.name)) ? t("ไม่ใช่เงินสด", "non-cash") : undefined,
   }));
   return (
@@ -245,9 +245,9 @@ function CostsSlide({ c }: { c: SlideCtx }) {
       </div>
       <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 20 }}>
         {[
-          t(`ส่วนแบ่งบริษัท ${fmtPct(plan.companyShare)}`, `Company share ${fmtPct(plan.companyShare)}`),
-          t(`ค่าธรรมเนียมจากผู้ให้บริการ ${fmtPct(plan.providerFee)}`, `Provider fee ${fmtPct(plan.providerFee)}`),
-          t(`ภาษี ภ.ง.ด. ${fmtPct(plan.pgFee)} ของยอดลูกค้า`, `PND tax ${fmtPct(plan.pgFee)} of customer spend`),
+          `${labelOf(plan, "share", c.lang)} ${fmtPct(plan.companyShare)}`,
+          `${labelOf(plan, "fee", c.lang)} ${fmtPct(plan.providerFee)}`,
+          `${labelOf(plan, "pg", c.lang)} ${fmtPct(plan.pgFee)} ${t("ของยอดลูกค้า", "of customer spend")}`,
         ].map((x) => <span key={x} style={{ background: "#fff", border: `1px solid #ddd5ee`, borderRadius: 99, padding: "8px 20px", color: C.ink2, fontWeight: 600 }}>{x}</span>)}
       </div>
     </Frame>
@@ -337,7 +337,7 @@ function MonthlyChart({ c }: { c: SlideCtx }) {
               <rect x={cx - bw - 1} y={Math.min(y(d.g), y(0))} width={bw} height={Math.max(2, Math.abs(y(d.g) - y(0)))} rx="4" fill={C.gray} />
               {d.v != null && <rect x={cx + 1} y={Math.min(y(d.v), y(0))} width={bw} height={Math.max(2, Math.abs(y(d.v) - y(0)))} rx="4" fill={tone(d.v, d.g)} />}
               {d.v != null && ML.length <= 24 && <text x={cx + 1 + bw / 2} y={d.v >= 0 ? y(d.v) - 7 : y(0) - 8} textAnchor="middle" fontSize="15" fontWeight="700" fill={d.v >= 0 ? C.ink2 : C.red}>{k(d.v)}</text>}
-              {i % step === 0 && <text x={cx} y={H - 14} textAnchor="middle" fontSize="15" fill={C.mute}>{monthLabel(d.m, c.lang)}</text>}
+              {i % step === 0 && <text x={cx} y={H - 14} textAnchor="middle" fontSize="15" fill={C.mute}>{monthLabel(d.m, c.lang, c.plan.monthOffset)}</text>}
             </g>
           );
         })}
