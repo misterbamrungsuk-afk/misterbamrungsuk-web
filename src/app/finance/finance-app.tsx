@@ -283,17 +283,20 @@ function ExpenseEditor({ plan, up, showNoncash }: { plan: FinancePlan; up: P["up
               : <Txt label={t("ชื่อค่าใช้จ่าย", "Expense name")} value={e.name} onChange={(name) => setExp(i, { name })} />}
             <Del label={`${t("ลบ", "Delete")} ${dn(e.name)}`} onClick={() => up({ expenses: plan.expenses.filter((_, k) => k !== i) })} />
           </div>
-          <div className="fin-xi-h fin-xi-g pr-9" aria-hidden>
-            <span>{t("ประเภทการจ่าย", "Payment type")}</span><span>{t("ช่วงเวลา", "When")}</span><span>{e.kind === "pctRevenue" || e.kind === "pctGross" ? t("สัดส่วน (%)", "Share (%)") : t("จำนวนเงิน (บาท)", "Amount (THB)")}</span>
-          </div>
-          <div className="fin-xi-g items-center pr-9">
-            <select aria-label={`${t("ประเภท", "Type")} ${dn(e.name)}`} className="fin-sel w-full min-w-0" value={e.kind} onChange={(ev) => { const kind = ev.target.value as ExpenseKind; const pct = kind === "pctRevenue" || kind === "pctGross"; const wasPct = e.kind === "pctRevenue" || e.kind === "pctGross"; setExp(i, { kind, value: pct === wasPct ? e.value : pct ? 0.1 : 0, ...(kind === "once" ? { month: e.month || "M1" } : {}) }); }}>
-              {(Object.keys(KIND) as ExpenseKind[]).map((k) => <option key={k} value={k}>{t(...KIND[k])}</option>)}
-            </select>
-            {e.kind === "once"
-              ? <MonthSel plan={plan} value={e.month || "M1"} onChange={(month) => setExp(i, { month })} label={`${t("เดือนที่จ่าย", "Month paid")} ${dn(e.name)}`} />
-              : <span className="text-[14.5px] text-[var(--ft2)] px-1">{e.kind === "fixed" ? t("ทุกเดือน", "Every month") : t("ตามยอดของเดือน", "Follows the month")}</span>}
-            <Num label={`${t("จำนวนเงิน", "Amount")} ${dn(e.name)}`} w="w-full" pct={e.kind === "pctRevenue" || e.kind === "pctGross"} value={e.value} onChange={(value) => setExp(i, { value })} />
+          <div className="fin-xi-g pr-9 mt-2">
+            <div className="fin-xi-f"><span className="fin-xi-c">{t("ประเภทการจ่าย", "Payment type")}</span>
+              <select aria-label={`${t("ประเภท", "Type")} ${dn(e.name)}`} className="fin-sel w-full min-w-0" value={e.kind} onChange={(ev) => { const kind = ev.target.value as ExpenseKind; const pct = kind === "pctRevenue" || kind === "pctGross"; const wasPct = e.kind === "pctRevenue" || e.kind === "pctGross"; setExp(i, { kind, value: pct === wasPct ? e.value : pct ? 0.1 : 0, ...(kind === "once" ? { month: e.month || "M1" } : {}) }); }}>
+                {(Object.keys(KIND) as ExpenseKind[]).map((k) => <option key={k} value={k}>{t(...KIND[k])}</option>)}
+              </select>
+            </div>
+            <div className="fin-xi-f"><span className="fin-xi-c">{t("ช่วงเวลา", "When")}</span>
+              {e.kind === "once"
+                ? <MonthSel plan={plan} value={e.month || "M1"} onChange={(month) => setExp(i, { month })} label={`${t("เดือนที่จ่าย", "Month paid")} ${dn(e.name)}`} />
+                : <span className="fin-xi-txt">{e.kind === "fixed" ? t("ทุกเดือน", "Every month") : t("ตามยอดของเดือน", "Follows the month")}</span>}
+            </div>
+            <div className="fin-xi-f fin-xi-amt"><span className="fin-xi-c">{e.kind === "pctRevenue" || e.kind === "pctGross" ? t("สัดส่วน (%)", "Share (%)") : t("จำนวนเงิน (บาท)", "Amount (THB)")}</span>
+              <Num label={`${t("จำนวนเงิน", "Amount")} ${dn(e.name)}`} w="w-full" pct={e.kind === "pctRevenue" || e.kind === "pctGross"} value={e.value} onChange={(value) => setExp(i, { value })} />
+            </div>
           </div>
           {e.kind === "fixed" && (showNoncash || e.noncash) && (
             <label data-noexport={!e.noncash || undefined} className="mt-1 flex items-center gap-1.5 text-[12px] text-[var(--fm)] pl-1">
@@ -862,23 +865,24 @@ const CSS = `
 .fin-xi.k-fixed{border-left-color:#13a07a;background:#e9f7f1}.fin-xi.k-pct{border-left-color:#8b5cf6;background:#f3effd}
 .fin-xi .fin-in,.fin-xi .fin-sel{background:#fff!important;border:1px solid #d6dbe8!important;height:38px}
 .fin-xi .fin-in input{font-size:15.5px}.fin-xi .fin-in.n input{font-weight:700;font-size:16px}
-.fin-xi > .fin-xi-g > select.fin-sel:first-child{font-weight:700;color:#1d5fd6}.fin-xi.k-fixed > .fin-xi-g > select.fin-sel:first-child{color:#0f7f60}.fin-xi.k-pct > .fin-xi-g > select.fin-sel:first-child{color:var(--fp)}
+.fin-xi .fin-xi-f:first-child select.fin-sel{font-weight:700;color:#1d5fd6}.fin-xi.k-fixed .fin-xi-f:first-child select.fin-sel{color:#0f7f60}.fin-xi.k-pct .fin-xi-f:first-child select.fin-sel{color:var(--fp)}
 .fin-xi-g{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr);gap:8px}
 .fin-xi .fin-sel{padding:0 6px 0 10px}
 .fin-root .fin-in.fin-big{background:#fff;border:1px solid #ddd5ee}
-.fin-xi-h{margin:8px 0 3px;font-size:12.5px;color:var(--fm)}.fin-xi-h span{padding-left:2px}
+.fin-xi-f{display:flex;flex-direction:column;gap:3px;min-width:0}.fin-xi-c{font-size:12.5px;color:var(--fm);padding-left:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fin-xi-txt{display:flex;align-items:center;height:38px;font-size:14.5px;color:var(--ft2);padding:0 4px}
+@media (max-width:639px){.fin-root .fin-xi-g{grid-template-columns:minmax(0,1fr) minmax(0,1fr);row-gap:8px}.fin-root .fin-xi-amt{grid-column:1/-1}.fin-root .fin-xi .pr-9{padding-right:0}}
 .fin-add-o{margin-top:2px;padding:7px 22px;border-radius:12px;border:1.5px solid #8b5cf6;color:var(--fp);font-weight:700;font-size:14.5px;background:#fff}.fin-add-o:hover{background:var(--fpl)}
 .fin-in.fin-big{height:44px;border-radius:12px}.fin-in.fin-big input{font-size:18px;font-weight:600}
 .fin-sum{border:1px solid var(--fl);border-radius:16px;padding:12px 14px 14px;box-shadow:0 2px 10px rgba(60,30,120,.05)}
 .fin-sum-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding-bottom:6px}.fin-sum-h b{font-size:16.5px}.fin-sum-h b span{font-weight:500}.fin-sum-h > span{font-size:13px;color:var(--fm)}
 .fin-sum-r{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--fl);font-size:14.5px}.fin-sum-r b{font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap}
 .fin-sum-t{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;padding:12px 16px;border-radius:12px;background:#fde9d6;font-weight:800;font-size:16.5px}.fin-sum-t b{color:#e8590c;font-size:19px;font-variant-numeric:tabular-nums}
-.fin-lbl{display:inline-flex;align-items:baseline;flex-wrap:wrap;gap:0 6px;min-width:0;max-width:100%;color:inherit;font-weight:inherit}
-.fin-lbl.on{display:flex;flex:1;align-items:center}
-.fin-lbl-t{all:unset;cursor:text;white-space:normal;overflow-wrap:anywhere;text-align:left;border-bottom:1px dashed transparent}.fin-lbl-t:hover{border-bottom-color:#b9a6ee}.fin-lbl-t svg{display:inline;vertical-align:baseline;color:#b9b1cc;margin-left:2px}.fin-lbl-t:hover svg{color:var(--fp)}.fin-lbl-t:focus-visible{outline:2px solid #e4d9fc;border-radius:4px}
+.fin-lbl{display:inline;min-width:0;color:inherit;font-weight:inherit;line-height:inherit}
+.fin-lbl.on{display:flex;flex:1;align-items:center;gap:6px}
+.fin-lbl-t{display:inline;margin:0;padding:0;border:0;background:none;font:inherit;color:inherit;line-height:inherit;text-align:left;cursor:text;white-space:normal;overflow-wrap:anywhere;border-bottom:1px dashed transparent}.fin-lbl-t:hover{border-bottom-color:#b9a6ee}.fin-lbl-t svg{display:inline;vertical-align:-1px;color:#b9b1cc;margin-left:3px}.fin-lbl-t:hover svg{color:var(--fp)}.fin-lbl-t:focus-visible{outline:2px solid #e4d9fc;border-radius:4px}
 .fin-lbl input{flex:1;min-width:8em;width:100%;border:0;border-bottom:1px solid #b9a6ee;background:#fff;border-radius:4px;font:inherit;color:inherit;padding:1px 4px;outline:0}
 .fin-lbl input::placeholder{color:inherit;opacity:1}
-.fin-lbl-s{margin-left:4px;white-space:nowrap}
+.fin-lbl-s{margin-left:6px;white-space:nowrap}
 /* โหมดส่งออกรูปทั้งหน้า: บังคับเลย์เอาต์จอคอม */
 #fin-page.fin-cap [class~="xl:grid-cols-2"]{grid-template-columns:minmax(0,1fr)}#fin-page.fin-cap [class~="xl:grid-cols-4"]{grid-template-columns:repeat(4,minmax(0,1fr))}#fin-page.fin-cap [class~="sm:hidden"]{display:none}#fin-page.fin-cap [class~="hidden"][class~="sm:block"]{display:block}#fin-page.fin-cap [class~="hidden"][class~="sm:inline"]{display:inline}
 .fin-root .overflow-x-auto{overflow-y:hidden;scrollbar-width:thin}#fin-page.fin-cap .overflow-x-auto{overflow:visible}
