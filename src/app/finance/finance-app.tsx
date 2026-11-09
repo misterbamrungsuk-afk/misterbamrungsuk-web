@@ -370,8 +370,8 @@ function Overview({ plan, up, month, setMonth, save, dirty, busy }: P) {
               </div>
             ))}
           </div>
-          <div className="hidden sm:block overflow-x-auto -mx-1 px-1">
-            <table className="fin-t">
+          <div className="hidden sm:block overflow-x-auto">
+            <table className="fin-t r-fit">
               <thead><tr><th>{t("บริการ", "Service")}</th><th className="r">{t("ราคา (บาท)", "Price (THB)")}</th><th className="r">{t("รอบ", "Bookings")} ({month})</th><th className="r">{t("ยอดลูกค้าจ่าย", "Customer spend")}</th></tr></thead>
               <tbody>
                 {m.rows.map(({ s, gross, rounds }, i) => (
@@ -876,6 +876,8 @@ const CSS = `
 .fin-lbl-s{margin-left:4px;white-space:nowrap}
 /* โหมดส่งออกรูปทั้งหน้า: บังคับเลย์เอาต์จอคอม */
 #fin-page.fin-cap [class~="xl:grid-cols-2"]{grid-template-columns:minmax(0,1fr)}#fin-page.fin-cap [class~="xl:grid-cols-4"]{grid-template-columns:repeat(4,minmax(0,1fr))}#fin-page.fin-cap [class~="sm:hidden"]{display:none}#fin-page.fin-cap [class~="hidden"][class~="sm:block"]{display:block}#fin-page.fin-cap [class~="hidden"][class~="sm:inline"]{display:inline}
+.fin-root .overflow-x-auto{overflow-y:hidden;scrollbar-width:thin}#fin-page.fin-cap .overflow-x-auto{overflow:visible}
+.fin-t.r-fit th{white-space:normal}
 .fin-note{margin:8px 0 0;font-size:12.5px;color:var(--fm)}
 .fin-warn{margin:10px 0 0;font-size:13px;color:#a16207;background:#fff7e0;border:1px solid #f6d58a;border-radius:10px;padding:8px 12px}
 .fin-t{width:100%;border-collapse:collapse;font-size:14px}
