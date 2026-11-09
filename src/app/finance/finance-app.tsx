@@ -404,7 +404,7 @@ function Overview({ plan, up, month, setMonth, save, dirty, busy }: P) {
           {m.incomeLines.filter((x) => x.amount > 0).map((x) => <Row key={x.id} l={<>{x.name} <span className="fin-pill">{t(...INCOME_KIND[x.kind])}</span></>} r={`+${fmt(x.amount, 2)}`} />)}
           <div className="fin-total t-violet"><Lbl plan={plan} up={up} k="revenue" /><b>{fmt(m.revenue, 2)} {t("บาท", "THB")}</b></div>
           <div className="mt-3"><Shares plan={plan} up={up} /></div>
-          <div className="mt-4 pt-3 border-t border-[var(--fl)]">
+          <div className="mt-4 pt-3 border-t border-[var(--fl)]" data-noexport={(plan.incomes ?? []).length ? undefined : true}>
             <div className="text-[14px] font-bold mb-1">{t("รายได้อื่น (กรอกเอง)", "Other income (enter your own)")}</div>
             <p className="fin-note -mt-0.5 mb-1">{t("ครั้งเดียว = ได้เดือนที่เลือก · รายเดือน = ได้ทุกเดือนตั้งแต่เดือนที่เลือก (เช่น Subscription · เปิดเมมเบอร์ตามสัญญา · สปอนเซอร์ · โฆษณา)", "One-time = received in the chosen month · Monthly = every month from the chosen month (e.g. subscription, membership, sponsors, ads)")}</p>
             <IncomeEditor plan={plan} up={up} />
@@ -884,7 +884,7 @@ const CSS = `
 .fin-lbl input::placeholder{color:inherit;opacity:1}
 .fin-lbl-s{margin-left:6px;white-space:nowrap}
 /* โหมดส่งออกรูปทั้งหน้า: บังคับเลย์เอาต์จอคอม */
-#fin-page.fin-cap [class~="xl:grid-cols-2"]{grid-template-columns:minmax(0,1fr)}#fin-page.fin-cap [class~="xl:grid-cols-4"]{grid-template-columns:repeat(4,minmax(0,1fr))}#fin-page.fin-cap [class~="sm:hidden"]{display:none}#fin-page.fin-cap [class~="hidden"][class~="sm:block"]{display:block}#fin-page.fin-cap [class~="hidden"][class~="sm:inline"]{display:inline}
+#fin-page.fin-cap [class~="xl:grid-cols-2"]{grid-template-columns:minmax(0,1fr)}#fin-page.fin-cap [class~="xl:grid-cols-4"]{grid-template-columns:repeat(4,minmax(0,1fr))}#fin-page.fin-cap [class~="sm:hidden"]{display:none}#fin-page.fin-cap [class~="hidden"][class~="sm:block"]{display:block}#fin-page.fin-cap [class~="hidden"][class~="sm:inline"]{display:inline}#fin-page.fin-cap :is(.fin-lbl-t svg,.fin-x,.fin-add,.fin-add-o,.fin-btn,.fin-exp,.fin-seg,.fin-chip,.fin-note,[data-noexport]){display:none!important}
 .fin-root .overflow-x-auto{overflow-y:hidden;scrollbar-width:thin}#fin-page.fin-cap .overflow-x-auto{overflow:visible}
 .fin-t.r-fit th{white-space:normal}
 .fin-rate{font-size:19px;line-height:1.6}.fin-rate b{font-size:22px}.fin-rate .fin-rate-big{font-size:28px}.fin-rate .fin-in{height:42px}.fin-rate .fin-in input{font-size:20px;font-weight:700}
