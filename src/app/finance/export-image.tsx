@@ -26,7 +26,30 @@ async function renderSlide(kind: SlideKind, c: SlideCtx): Promise<string> {
 
 // แคปหน้าที่กรอกจริงทั้งหน้า (#fin-page) — ตัดปุ่มแก้ไข (ลบ/เพิ่ม/บันทึก/ส่งออก) ออก เหลือแต่ตัวเลขตามที่กรอก
 const HIDE = ".fin-lbl > svg,.fin-x,.fin-add,.fin-add-o,.fin-btn,.fin-exp,.fin-seg,.fin-chip,[data-noexport]";
-async function capturePage(): Promise<{ url: string; w: number; h: number }> {
+/** แบ่งรูปยาวเป็นหน้า A4 แนวตั้ง ตัดเฉพาะช่องว่างระหว่างการ์ด */
+async function paginate(url: string, w: number, h: number, cuts: number[]): Promise<{ url: string; h: number }[]> {
+  const pageH = Math.round(w * 1.414);
+  const ranges: [number, number][] = [];
+  for (let s = 0; s < h - 1; ) {
+    if (h - s <= pageH) { ranges.push([s, h]); break; }
+    const fit = cuts.filter((c) => c > s + 40 && c <= s + pageH);
+    const e = fit.length ? fit[fit.length - 1] : cuts.find((c) => c > s + 40) ?? h;
+    ranges.push([s, e]); s = e;
+  }
+  const img = new Image();
+  await new Promise((ok, bad) => { img.onload = ok; img.onerror = bad; img.src = url; });
+  const k = img.naturalWidth / w;
+  return ranges.map(([a, b]) => {
+    const cv = document.createElement("canvas");
+    cv.width = Math.round(w * k); cv.height = Math.round((b - a) * k);
+    const g = cv.getContext("2d")!;
+    g.fillStyle = "#f6f4fb"; g.fillRect(0, 0, cv.width, cv.height);
+    g.drawImage(img, 0, Math.round(a * k), cv.width, cv.height, 0, 0, cv.width, cv.height);
+    return { url: cv.toDataURL("image/png"), h: b - a };
+  });
+}
+
+async function capturePage(): Promise<{ url: string; w: number; h: number; cuts: number[] }> {
   const node = document.getElementById("fin-page");
   if (!node) throw new Error("no page");
   (document.activeElement as HTMLElement | null)?.blur?.();
@@ -52,12 +75,22 @@ async function capturePage(): Promise<{ url: string; w: number; h: number }> {
       await frame();
     }
     const w = node.scrollWidth, h = node.scrollHeight;
+    // จุดตัดหน้าที่ปลอดภัย = ช่องว่างระหว่างบล็อก (หัวเรื่อง · แถบเดือน · การ์ดตัวเลข · การ์ด 1 · การ์ด 2 · สรุป · ตารางเคส) — ไม่ตัดกลางการ์ด
+    const top0 = node.getBoundingClientRect().top;
+    const blocks = [...node.querySelectorAll<HTMLElement>("header, .fin-bar, section.fin-card, div:has(> .fin-kpi)")]
+      .map((el) => { const r = el.getBoundingClientRect(); return [r.top - top0, r.bottom - top0] as const; })
+      .filter(([a, b]) => b > a);
+    const cuts = [...new Set(blocks.map(([, b]) => b))]
+      .filter((y) => !blocks.some(([a, b]) => a < y - 1 && b > y + 1))
+      .map((y) => { const next = Math.min(h, ...blocks.map(([a]) => a).filter((a) => a >= y)); return Math.round((y + next) / 2); })
+      .filter((y) => y > 0 && y < h)
+      .sort((a, b) => a - b);
     const { toPng } = await import("html-to-image");
     const url = await toPng(node, {
       width: w, height: h, pixelRatio: Math.max(1, Math.min(2, Math.sqrt(12e6 / (w * h)))), cacheBust: true, backgroundColor: "#f6f4fb",
       filter: (el) => !(el instanceof Element && el.matches(HIDE)),
     });
-    return { url, w, h };
+    return { url, w, h, cuts };
   } finally {
     Object.assign(node.style, prev);
     node.classList.remove("fin-cap");
@@ -88,15 +121,27 @@ export function ExportBtn({ kind, ctx, file }: { kind: SlideKind; ctx: Omit<Slid
     a.remove();
   };
   // mode: one = สไลด์หน้านี้ · all = ครบ 3 สไลด์เป็น PNG 3 ไฟล์ · pdf = ครบ 3 สไลด์ใน PDF ไฟล์เดียว
-  const goPage = async (as: "png" | "pdf") => {
+  const goPage = async (as: "png" | "pages" | "pdf") => {
     setOpen(false); setBusy(true);
     try {
-      const { url, w, h } = await capturePage();
+      const { url, w, h, cuts } = await capturePage();
       if (as === "png") download(url, `${file}-page.png`);
-      else {
+      else if (as === "pages") {
+        const pages = await paginate(url, w, h, cuts);
+        for (let i = 0; i < pages.length; i++) {
+          download(pages[i].url, `${file}-page-${i + 1}.png`);
+          await new Promise((r) => setTimeout(r, 400));
+        }
+      } else {
+        const pages = await paginate(url, w, h, cuts);
         const { jsPDF } = await import("jspdf");
-        const pdf = new jsPDF({ unit: "px", format: [w, h], orientation: w > h ? "landscape" : "portrait", compress: true, hotfixes: ["px_scaling"] });
-        pdf.addImage(url, "PNG", 0, 0, w, h, undefined, "FAST");
+        const pageH = Math.round(w * 1.414);
+        const pdf = new jsPDF({ unit: "px", format: [w, pageH], orientation: "portrait", compress: true, hotfixes: ["px_scaling"] });
+        pages.forEach((pg, i) => {
+          if (i) pdf.addPage([w, pageH], "portrait");
+          pdf.setFillColor("#f6f4fb"); pdf.rect(0, 0, w, pageH, "F");
+          pdf.addImage(pg.url, "PNG", 0, 0, w, Math.min(pg.h, pageH), undefined, "FAST");
+        });
         pdf.setProperties({ title: `Mister Bamrungsuk · ${t("แผนการเงิน", "Financial plan")} · ${ctx.month}` });
         pdf.save(`${file}-page.pdf`);
       }
@@ -140,8 +185,9 @@ export function ExportBtn({ kind, ctx, file }: { kind: SlideKind; ctx: Omit<Slid
       {open && (
         <span className="fin-exp-menu" role="menu">
           <span className="fin-exp-h">{t("หน้านี้ตามที่กรอก (ทั้งหน้า)", "This page as entered (full page)")}</span>
-          <button type="button" role="menuitem" onClick={() => goPage("png")}><i className="fin-ratio p" />{t("รูปทั้งหน้า", "Full-page image")}<small>PNG</small></button>
-          <button type="button" role="menuitem" onClick={() => goPage("pdf")}><i className="fin-ratio p" />{t("PDF ทั้งหน้า", "Full-page PDF")}<small>PDF</small></button>
+          <button type="button" role="menuitem" onClick={() => goPage("pdf")}><i className="fin-ratio p" />{t("PDF แบ่งหน้า A4 (ข้อ 1 → 2 → สรุป)", "PDF, A4 pages")}<small>PDF</small></button>
+          <button type="button" role="menuitem" onClick={() => goPage("pages")}><i className="fin-ratio p" />{t("รูปแบ่งหน้า", "Images per page")}<small>PNG</small></button>
+          <button type="button" role="menuitem" onClick={() => goPage("png")}><i className="fin-ratio p" />{t("รูปยาวรูปเดียว", "One long image")}<small>PNG</small></button>
           <span className="fin-exp-h">{t("สไลด์สรุปหน้านี้", "Summary slide of this page")}</span>
           <button type="button" role="menuitem" onClick={() => go("landscape")}><i className="fin-ratio l" />{t("แนวนอน 16:9", "Landscape 16:9")}<small>PNG</small></button>
           <button type="button" role="menuitem" onClick={() => go("portrait")}><i className="fin-ratio p" />{t("แนวตั้ง 9:16", "Portrait 9:16")}<small>PNG</small></button>

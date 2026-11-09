@@ -875,7 +875,7 @@ const CSS = `
 .fin-lbl svg{color:#b9b1cc;flex-shrink:0}.fin-lbl:hover svg{color:var(--fp)}
 .fin-lbl-s{margin-left:4px;white-space:nowrap}
 /* โหมดส่งออกรูปทั้งหน้า: บังคับเลย์เอาต์จอคอม */
-#fin-page.fin-cap .xl\:grid-cols-2{grid-template-columns:minmax(0,1fr)}#fin-page.fin-cap .xl\:grid-cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}#fin-page.fin-cap .sm\:hidden{display:none}#fin-page.fin-cap .hidden.sm\:block{display:block}#fin-page.fin-cap .hidden.sm\:inline{display:inline}
+#fin-page.fin-cap [class~="xl:grid-cols-2"]{grid-template-columns:minmax(0,1fr)}#fin-page.fin-cap [class~="xl:grid-cols-4"]{grid-template-columns:repeat(4,minmax(0,1fr))}#fin-page.fin-cap [class~="sm:hidden"]{display:none}#fin-page.fin-cap [class~="hidden"][class~="sm:block"]{display:block}#fin-page.fin-cap [class~="hidden"][class~="sm:inline"]{display:inline}
 .fin-note{margin:8px 0 0;font-size:12.5px;color:var(--fm)}
 .fin-warn{margin:10px 0 0;font-size:13px;color:#a16207;background:#fff7e0;border:1px solid #f6d58a;border-radius:10px;padding:8px 12px}
 .fin-t{width:100%;border-collapse:collapse;font-size:14px}
