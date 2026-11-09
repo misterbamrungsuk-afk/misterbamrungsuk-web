@@ -436,6 +436,19 @@ function Overview({ plan, up, month, setMonth, save, dirty, busy }: P) {
           <span className="text-[20px] sm:text-[24px] font-bold text-[var(--fm)] text-center leading-none">=</span>
           <div className={`fin-eq ${m.profit >= 0 ? "t-green" : "t-red"}`}><span>{t("กำไรก่อนภาษี", "Profit before tax")}</span><b>{fmt(m.profit)} {t("บาท", "THB")}</b></div>
         </div>
+        {m.totalRounds > 0 && (() => {
+          const sold = m.rows.filter((r) => r.rounds > 0);
+          const minPrice = Math.min(...sold.map((r) => r.s.price));
+          const per = plan.casesPerPerson ?? 25;
+          const people = Math.ceil(m.totalRounds / per);
+          return (
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 rounded-xl bg-white/70 border border-[var(--fl)] px-3 py-2 text-[14px] text-center">
+              <span>{t("เรทพนักงาน ขั้นต่ำ", "Provider rate from")} <b className="tabular-nums">{fmt(minPrice)}</b> / 3 {t("ช.ม.", "hrs")} · {t("ทำงาน", "working")}</span>
+              <Num label={t("เคสต่อคนต่อเดือน", "Cases per person per month")} w="w-[64px]" value={per} onChange={(v) => up({ casesPerPerson: Math.max(1, Math.round(v)) })} />
+              <span>{t("เคส/เดือน", "cases/month")} <span className="text-[var(--fm)]">({t(`${fmt(people)} คน · รวม ${fmt(m.totalRounds)} เคส`, `${fmt(people)} people · ${fmt(m.totalRounds)} cases`)})</span> = {t("ได้รายได้", "revenue")} <b className="tabular-nums text-[var(--fb)]">{fmt(m.gross)}</b> {t("บาท/เดือน", "THB/month")} <span className="text-[var(--fm)]">{t("(ยังไม่หักภาษี และ ค่าใช้จ่าย)", "(before tax and expenses)")}</span></span>
+            </div>
+          );
+        })()}
         <p className="m-0 mt-3 text-[13.5px] text-center">{t("เงินสดจากการดำเนินงานโดยประมาณ", "Estimated operating cash flow")} <b className="tabular-nums">{fmt(m.cash, 2)} {t("บาท", "THB")}</b> • {t("ก่อนเงินลงทุนและการเปลี่ยนแปลง Wallet", "before investment and Wallet movements")}</p>
       </section>
 

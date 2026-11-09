@@ -28,6 +28,7 @@ export interface FinancePlan {
   startupMonth?: string;
   /** ค่าแรกเข้าที่หักจากเคสการทำงาน: เคสละ perJob จนครบ cap ต่อคน · people = จำนวนคนที่รับเข้าระบบ (บอส 8 พ.ย. 2569) */
   entryFee?: { perJob: number; cap: number; people: number };         // ลงเงินลงทุน (ทนาย/แอป) เป็นค่าใช้จ่ายใน P&L เดือนนี้ — "" = ไม่ลง
+  casesPerPerson?: number;       // เคสต่อคนต่อเดือน (บรรทัดสรุปเรทพนักงาน ค่าเริ่มต้น 25)
   monthOffset?: number;          // เลื่อนเดือนเริ่ม: M1 = ต.ค. 69 + monthOffset เดือน (ลบเดือนแรกทิ้งได้)
   monthCount?: number;           // จำนวนเดือนของแผน (ค่าเริ่มต้น 18)
   cashTargets?: Record<string, number>; // For Cash รายเดือน
@@ -280,6 +281,7 @@ export function cleanPlan(raw: unknown): Omit<FinancePlan, "history"> {
     incomes: list(b.incomes ?? [], 40, (x) => ({ id: id(x.id), name: txt(x.name, "รายได้"), kind: (x.kind === "once" ? "once" : "monthly") as IncomeKind, value: num(x.value, 0, 1e10, "รายได้"), month: ml.includes(String(x.month)) ? String(x.month) : "M1" })),
     pending: list(b.pending, 20, (x) => ({ id: id(x.id), name: txt(x.name, "รายการ"), amount: num(x.amount, 0, 1e10, "งบ") })),
     monthCount,
+    casesPerPerson: Math.round(num(b.casesPerPerson ?? 25, 1, 1000, "เคสต่อคน")),
     monthOffset: Math.round(num(b.monthOffset ?? 0, 0, 120, "เลื่อนเดือนเริ่ม")),
     cashTargets,
     extraPerRound: num(b.extraPerRound ?? 0, 0, 1_000_000, "รายได้อื่นต่อรอบ"),
