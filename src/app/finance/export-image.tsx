@@ -65,7 +65,7 @@ async function capturePage(): Promise<{ url: string; w: number; h: number; cuts:
   const frame = () => new Promise((r) => setTimeout(r, 80));
   node.classList.add("fin-cap");
   node.style.flex = "none"; node.style.maxWidth = "none";
-  node.style.width = "1120px";
+  node.style.width = "920px";
   try {
     await frame();
     for (let i = 0; i < 3; i++) {
