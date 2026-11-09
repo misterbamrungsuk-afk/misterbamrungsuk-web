@@ -97,12 +97,28 @@ async function capturePage(): Promise<{ url: string; w: number; h: number; cuts:
     const g = out.getContext("2d")!;
     g.fillStyle = "#f6f4fb"; g.fillRect(0, 0, out.width, out.height);
     const opts = { pixelRatio: ratio, cacheBust: true, filter: (el: HTMLElement) => !(el instanceof Element && el.matches(HIDE)) };
-    for (const [k, el] of outer.entries()) {
-      const r = el.getBoundingClientRect();
-      if (k === 0) await toCanvas(el, opts).catch(() => null); // อุ่นเครื่อง (ฟอนต์) ครั้งแรก — กัน Safari วาดว่าง
-      const c = await toCanvas(el, { ...opts, width: el.offsetWidth, height: el.offsetHeight });
-      g.drawImage(c, Math.round((r.left - box0.left) * ratio), Math.round((r.top - top0) * ratio), Math.round(el.offsetWidth * ratio), Math.round(el.offsetHeight * ratio));
+    // วัดตำแหน่งทุกบล็อกครั้งเดียวก่อนเริ่มถ่าย (Safari เลื่อนหน้าระหว่างถ่าย → ตำแหน่งเพี้ยน/ทับกัน)
+    const pos = outer.map((el) => { const r = el.getBoundingClientRect(); return { el, x: r.left - box0.left, y: r.top - top0, w: el.offsetWidth, h: el.offsetHeight }; });
+    const sx = window.scrollX, sy = window.scrollY;
+    // Safari บางครั้งวาดออกมาว่าง (ยังโหลดฟอนต์/รูปไม่ทัน) → ตรวจแล้วถ่ายซ้ำ
+    const blank = (c: HTMLCanvasElement) => {
+      const cg = c.getContext("2d"); if (!cg || !c.width || !c.height) return true;
+      const d = cg.getImageData(0, 0, c.width, c.height).data;
+      const step = Math.max(4, Math.floor(d.length / 4 / 400)) * 4;
+      for (let i = 3; i < d.length; i += step) if (d[i] > 0) return false;
+      return true;
+    };
+    await toCanvas(pos[0].el, opts).catch(() => null); // อุ่นเครื่องครั้งแรก
+    for (const p of pos) {
+      let c: HTMLCanvasElement | null = null;
+      for (let tries = 0; tries < 4; tries++) {
+        c = await toCanvas(p.el, { ...opts, width: p.w, height: p.h }).catch(() => null);
+        if (c && !blank(c)) break;
+        await new Promise((r) => setTimeout(r, 150));
+      }
+      if (c) g.drawImage(c, Math.round(p.x * ratio), Math.round(p.y * ratio), Math.round(p.w * ratio), Math.round(p.h * ratio));
     }
+    window.scrollTo(sx, sy);
     const url = out.toDataURL("image/png");
     return { url, w, h, cuts };
   } finally {
