@@ -13,6 +13,14 @@ const mfaFreeApi = (p: string) => ["/api/admin/security", "/api/admin/login", "/
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // โดเมนเดียว: www → misterbamrungsuk.com (คุกกี้ล็อกอินแยกตามโดเมน — ล็อกอินที่ www แล้วเปิดลิงก์ในอีเมล/แจ้งเตือนที่ไม่มี www = ต้องล็อกอินใหม่)
+  // เฉพาะหน้าเว็บ · API (webhook / cron / ล็อกอิน) ไม่พาไป
+  if (request.headers.get("host") === "www.misterbamrungsuk.com" && !pathname.startsWith("/api/")) {
+    const url = request.nextUrl.clone();
+    url.host = "misterbamrungsuk.com"; url.port = ""; url.protocol = "https:";
+    return NextResponse.redirect(url, 308);
+  }
+
   // /Recruit (พิมพ์ตัวใหญ่) → /recruit · เทียบตัวพิมพ์ตรง ๆ (redirects ใน next.config ไม่แยกตัวพิมพ์ จะวนซ้ำ)
   if (pathname === "/Recruit" || pathname.startsWith("/Recruit/")) {
     const url = request.nextUrl.clone();
