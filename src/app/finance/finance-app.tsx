@@ -5,7 +5,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { ExportBtn } from "./export-image";
 import {
   MAX_MONTHS, PRESET_V4, cashTargetOf, fixedTotal, monthsOf, fmt, fmt2, fmtPct, monthLabel, monthSummary, perRound, targetFor, targetMix,
-  type ExpenseKind, type FinExpense, type FinItem, type FinService, type FinancePlan,
+  type ExpenseKind, type FinExpense, type FinIncome, type IncomeKind, type FinItem, type FinService, type FinancePlan,
 } from "@/lib/finance/plan";
 
 // หลังบ้านการเงิน — ดีไซน์ตามสไลด์ Canva "Update MB" หน้า 8 · 9 · 10 (โทนม่วงอ่อน) · 2 ภาษา ไทย/EN
@@ -46,7 +46,8 @@ const TITLE: Record<View, [string, string, string, string]> = {
   costs: ["รายละเอียดต้นทุน", "รู้ว่าเงินจ่ายให้ใคร และเกิดจากอะไร • ตัวอย่างประมาณการต่อเดือน", "Cost details", "Where the money goes and why • monthly estimate"],
   target: ["วางเป้ากำไรของคุณ", "เลือกบริการ แล้วดูว่าต้องขายกี่รอบต่อเดือน", "Set your profit target", "Pick a service and see how many bookings you need each month"],
 };
-const KIND: Record<ExpenseKind, [string, string]> = { fixed: ["บาท/เดือน", "THB / month"], pctRevenue: ["% ของรายได้บริษัท", "% of company revenue"], pctGross: ["% ของยอดลูกค้าจ่าย", "% of customer spend"] };
+const KIND: Record<ExpenseKind, [string, string]> = { once: ["ครั้งเดียว", "One-time"], fixed: ["รายเดือน (บาท)", "Monthly (THB)"], pctRevenue: ["% ของรายได้บริษัท", "% of company revenue"], pctGross: ["% ของยอดลูกค้าจ่าย", "% of customer spend"] };
+const INCOME_KIND: Record<IncomeKind, [string, string]> = { once: ["ครั้งเดียว", "One-time"], monthly: ["รายเดือน", "Monthly"] };
 const uid = () => Math.random().toString(36).slice(2, 10);
 
 export function FinanceApp({ view, initial, who }: { view: View; initial: FinancePlan; who: string }) {
@@ -236,13 +237,82 @@ function Items({ items, onChange, addLabel, zeroChip }: { items: FinItem[]; onCh
   );
 }
 
+// ─── ตัวแก้ค่าใช้จ่าย: ครั้งเดียว (เลือกเดือน) / รายเดือน / % ───
+function MonthSel({ plan, value, onChange, label }: { plan: FinancePlan; value: string; onChange: (m: string) => void; label: string }) {
+  const { lang } = useT();
+  return (
+    <select aria-label={label} className="fin-sel w-full min-w-0" value={value} onChange={(e) => onChange(e.target.value)}>
+      {monthsOf(plan).map((m) => <option key={m} value={m}>{m} · {monthLabel(m, lang)}</option>)}
+    </select>
+  );
+}
+function ExpenseEditor({ plan, up, showNoncash }: { plan: FinancePlan; up: P["up"]; showNoncash?: boolean }) {
+  const { t, lang } = useT();
+  const dn = useName();
+  const setExp = (i: number, patch: Partial<FinExpense>) => up({ expenses: plan.expenses.map((e, k) => (k === i ? { ...e, ...patch } : e)) });
+  return (
+    <>
+      {plan.expenses.map((e, i) => (
+        <div key={e.id} className="fin-tile py-2 border-b border-[var(--fl)]">
+          <div className="flex items-center gap-2">
+            {lang === "en" && NAME_EN[e.name]
+              ? <span className="flex-1 min-w-0 text-[14px] px-1 font-semibold">{dn(e.name)}</span>
+              : <Txt label={t("ชื่อค่าใช้จ่าย", "Expense name")} value={e.name} onChange={(name) => setExp(i, { name })} />}
+            <Del label={`${t("ลบ", "Delete")} ${dn(e.name)}`} onClick={() => up({ expenses: plan.expenses.filter((_, k) => k !== i) })} />
+          </div>
+          <div className="mt-1.5 grid grid-cols-3 gap-2 items-center pr-9">
+            <select aria-label={`${t("ประเภท", "Type")} ${dn(e.name)}`} className="fin-sel w-full min-w-0" value={e.kind} onChange={(ev) => { const kind = ev.target.value as ExpenseKind; const pct = kind === "pctRevenue" || kind === "pctGross"; const wasPct = e.kind === "pctRevenue" || e.kind === "pctGross"; setExp(i, { kind, value: pct === wasPct ? e.value : pct ? 0.1 : 0, ...(kind === "once" ? { month: e.month || "M1" } : {}) }); }}>
+              {(Object.keys(KIND) as ExpenseKind[]).map((k) => <option key={k} value={k}>{t(...KIND[k])}</option>)}
+            </select>
+            {e.kind === "once"
+              ? <MonthSel plan={plan} value={e.month || "M1"} onChange={(month) => setExp(i, { month })} label={`${t("เดือนที่จ่าย", "Month paid")} ${dn(e.name)}`} />
+              : <span className="text-[12.5px] text-[var(--fm)] px-1">{e.kind === "fixed" ? t("ทุกเดือน", "every month") : t("ตามยอดของเดือน", "follows the month")}</span>}
+            <Num label={`${t("จำนวนเงิน", "Amount")} ${dn(e.name)}`} w="w-full" pct={e.kind === "pctRevenue" || e.kind === "pctGross"} value={e.value} onChange={(value) => setExp(i, { value })} />
+          </div>
+          {e.kind === "fixed" && (showNoncash || e.noncash) && (
+            <label data-noexport={!e.noncash || undefined} className="mt-1 flex items-center gap-1.5 text-[12px] text-[var(--fm)] pl-1">
+              <input type="checkbox" checked={!!e.noncash} onChange={(ev) => setExp(i, { noncash: ev.target.checked || undefined })} /> {t("ไม่ใช่เงินสด (ตัดจำหน่าย — นับในกำไร แต่ไม่นับในเป้ารอบขาย)", "Non-cash (amortisation — counted in profit, not in the bookings target)")}
+            </label>
+          )}
+        </div>
+      ))}
+      <button type="button" className="fin-add" onClick={() => up({ expenses: [...plan.expenses, { id: uid(), name: t("ค่าใช้จ่ายใหม่", "New expense"), kind: "fixed", value: 0 }] })}>{t("+ เพิ่มค่าใช้จ่าย", "+ Add expense")}</button>
+    </>
+  );
+}
+function IncomeEditor({ plan, up }: { plan: FinancePlan; up: P["up"] }) {
+  const { t } = useT();
+  const list = plan.incomes ?? [];
+  const setInc = (i: number, patch: Partial<FinIncome>) => up({ incomes: list.map((x, k) => (k === i ? { ...x, ...patch } : x)) });
+  return (
+    <>
+      {list.map((x, i) => (
+        <div key={x.id} className="fin-tile py-2 border-b border-[var(--fl)]">
+          <div className="flex items-center gap-2">
+            <Txt label={t("ชื่อรายได้", "Income name")} value={x.name} onChange={(name) => setInc(i, { name })} />
+            <Del label={`${t("ลบ", "Delete")} ${x.name}`} onClick={() => up({ incomes: list.filter((_, k) => k !== i) })} />
+          </div>
+          <div className="mt-1.5 grid grid-cols-3 gap-2 items-center pr-9">
+            <select aria-label={`${t("ประเภท", "Type")} ${x.name}`} className="fin-sel w-full min-w-0" value={x.kind} onChange={(ev) => setInc(i, { kind: ev.target.value as IncomeKind })}>
+              {(Object.keys(INCOME_KIND) as IncomeKind[]).map((k) => <option key={k} value={k}>{t(...INCOME_KIND[k])}</option>)}
+            </select>
+            <MonthSel plan={plan} value={x.month || "M1"} onChange={(month) => setInc(i, { month })} label={x.kind === "once" ? t("เดือนที่ได้", "Month received") : t("เริ่มเดือน", "Starts")} />
+            <Num label={`${t("จำนวนเงิน", "Amount")} ${x.name}`} w="w-full" value={x.value} onChange={(value) => setInc(i, { value })} />
+          </div>
+        </div>
+      ))}
+      <button type="button" className="fin-add" onClick={() => up({ incomes: [...list, { id: uid(), name: t("รายได้ใหม่", "New income"), kind: "monthly", value: 0, month: "M1" }] })}>{t("+ เพิ่มรายได้อื่น (Subscription · เปิดเมมเบอร์ · สปอนเซอร์ · โฆษณา)", "+ Add income (subscription · membership · sponsor · ads)")}</button>
+    </>
+  );
+}
+
 // ─── หน้า 8: ภาพรวม ───
 function Overview({ plan, up, month, setMonth }: P) {
   const { t, lang } = useT();
   const dn = useName();
   const svcLabel = useSvcLabel();
   const m = monthSummary(plan, month);
-  const startupSum = plan.startup.reduce((s, i) => s + i.amount, 0);
+  const onceSum = plan.expenses.filter((e) => e.kind === "once").reduce((s, e) => s + e.value, 0);
   const setRounds = (mo: string, sid: string, n: number) => up({ months: { ...plan.months, [mo]: { ...(plan.months[mo] ?? {}), [sid]: Math.max(0, Math.round(n)) } } });
   const setSvc = (i: number, patch: Partial<FinService>) => up({ services: plan.services.map((s, k) => (k === i ? { ...s, ...patch } : s)) });
   const ML = monthsOf(plan);
@@ -263,19 +333,8 @@ function Overview({ plan, up, month, setMonth }: P) {
         <Kpi tone={m.profit >= 0 ? "green" : "red"} label={t("กำไรก่อนภาษี / เดือน", "Profit before tax / month")} value={fmt(m.profit)} sub={m.revenue ? t(`${fmtPct(m.margin)} ของรายได้บริษัท`, `${fmtPct(m.margin)} of company revenue`) : undefined} />
       </div>
 
-      <div className="grid xl:grid-cols-[1.1fr_1.45fr_1fr] gap-4 items-start">
-        <Card n={1} title={t("เงินทุนใช้กับอะไร?", "What is the capital used for?")}>
-          <Row l={t("ทุนตั้งต้น", "Starting capital")} r={<Num label={t("ทุนตั้งต้น", "Starting capital")} value={plan.capital} onChange={(v) => up({ capital: v })} />} />
-          <Items items={plan.startup} onChange={(startup) => up({ startup })} addLabel={t("+ เพิ่มรายการเงินทุน", "+ Add capital item")} />
-          <div className="fin-total"><span>{t("งบเริ่มต้นรวม", "Total start-up budget")}</span><b>{fmt(startupSum)}</b></div>
-          <div className="fin-hero t-blue mt-3">
-            <div className="text-[14px] font-semibold">{t("เหลือสำหรับดำเนินงาน", "Left for operations")}</div>
-            <div className="text-[28px] font-bold text-[var(--fb)] tabular-nums">{fmt(plan.capital - startupSum)} <span className="text-[15px]">{t("บาท", "THB")}</span></div>
-          </div>
-          <p className="fin-note">{t("ยอดหลังหักงบเริ่มต้น ไม่ใช่เงินปลายเดือน", "After start-up costs — not the month-end balance")}</p>
-        </Card>
-
-        <Card n={2} title={t("รายได้มาจากไหน?", "Where does revenue come from?")} tone="blue">
+      <div className="grid xl:grid-cols-2 gap-4 items-start">
+        <Card n={1} title={t("รายได้มาจากไหน?", "Where does revenue come from?")} tone="blue">
           <div className="sm:hidden flex flex-col">
             {m.rows.map(({ s, gross, rounds }, i) => (
               <div key={s.id} className="fin-tile py-2.5 border-b border-[var(--fl)]">
@@ -313,14 +372,28 @@ function Overview({ plan, up, month, setMonth }: P) {
           <Row l={`${t("ค่าธรรมเนียมผู้ให้บริการ", "Provider fee")} ${fmtPct(plan.providerFee)}`} r={`+${fmt(m.fee, 2)}`} />
           {m.entry > 0 && <Row l={t("ค่าแรกเข้า (หักจากเคส)", "Joining fee (deducted per job)")} r={`+${fmt(m.entry, 2)}`} />}
           {m.extra > 0 && <Row l={`${t("รายได้อื่น (ค่าคอมสินค้า)", "Other income (product commission)")} ${fmt2(plan.extraPerRound ?? 0)} × ${fmt(m.totalRounds)}`} r={`+${fmt(m.extra, 2)}`} />}
+          {m.incomeLines.filter((x) => x.amount > 0).map((x) => <Row key={x.id} l={<>{x.name} <span className="fin-pill">{t(...INCOME_KIND[x.kind])}</span></>} r={`+${fmt(x.amount, 2)}`} />)}
           <div className="fin-total t-violet"><span>{t("รายได้บริษัท", "Company revenue")}</span><b>{fmt(m.revenue, 2)} {t("บาท", "THB")}</b></div>
           <div className="mt-3"><Shares plan={plan} up={up} /></div>
+          <div className="mt-4 pt-3 border-t border-[var(--fl)]">
+            <div className="text-[14px] font-bold mb-1">{t("รายได้อื่น (กรอกเอง)", "Other income (enter your own)")}</div>
+            <p className="fin-note -mt-0.5 mb-1">{t("ครั้งเดียว = ได้เดือนที่เลือก · รายเดือน = ได้ทุกเดือนตั้งแต่เดือนที่เลือก (เช่น Subscription · เปิดเมมเบอร์ตามสัญญา · สปอนเซอร์ · โฆษณา)", "One-time = received in the chosen month · Monthly = every month from the chosen month (e.g. subscription, membership, sponsors, ads)")}</p>
+            <IncomeEditor plan={plan} up={up} />
+          </div>
         </Card>
 
-        <Card n={3} title={t("ค่าใช้จ่ายรายเดือน", "Monthly expenses")} tone="orange" right={<Link href="/finance/costs" className="text-[12.5px] font-semibold text-[var(--fp)]">{t("แก้ไข →", "Edit →")}</Link>}>
-          <div className="flex justify-between text-[12.5px] font-semibold text-[var(--fm)] pb-1"><span>{t("รายการ", "Item")}</span><span>{t("จำนวนเงิน (บาท)", "Amount (THB)")}</span></div>
-          {m.lines.map((l) => <Row key={l.id} l={<>{lineName(l)}{l.kind === "pctRevenue" && ` (${fmtPct(l.value)} ${t("ของรายได้", "of revenue")})`}{l.noncash && <span className="fin-pill ml-1">{t("ไม่ใช่เงินสด", "non-cash")}</span>}</>} r={fmt(l.amount, 2)} />)}
-          <div className="fin-total t-orange"><span>{t("รวม", "Total")}</span><b>{fmt(m.expenses, 2)} {t("บาท", "THB")}</b></div>
+        <Card n={2} title={t("ค่าใช้จ่าย (ครั้งเดียว / รายเดือน)", "Expenses (one-time / monthly)")} tone="orange">
+          <Row l={t("ทุนเริ่มต้น", "Starting capital")} r={<Num label={t("ทุนเริ่มต้น", "Starting capital")} value={plan.capital} onChange={(v) => up({ capital: v })} />} />
+          <div className="mt-2"><ExpenseEditor plan={plan} up={up} /></div>
+          <div className="mt-4 pt-3 border-t border-[var(--fl)]">
+            <div className="flex justify-between text-[12.5px] font-semibold text-[var(--fm)] pb-1"><span>{t(`เดือนนี้ (${ml})`, `This month (${ml})`)}</span><span>{t("จำนวนเงิน (บาท)", "Amount (THB)")}</span></div>
+            {m.lines.map((l) => <Row key={l.id} l={<>{lineName(l)}{l.kind === "once" && <span className="fin-pill ml-1">{t("ครั้งเดียว", "one-time")}</span>}{l.kind === "pctRevenue" && ` (${fmtPct(l.value)} ${t("ของรายได้", "of revenue")})`}{l.noncash && <span className="fin-pill ml-1">{t("ไม่ใช่เงินสด", "non-cash")}</span>}</>} r={fmt(l.amount, 2)} />)}
+            <div className="fin-total t-orange"><span>{t("รวมเดือนนี้", "Total this month")}</span><b>{fmt(m.expenses, 2)} {t("บาท", "THB")}</b></div>
+          </div>
+          <div className="fin-hero t-blue mt-3">
+            <div className="text-[14px] font-semibold">{t("ทุนเหลือหลังจ่ายครั้งเดียว", "Capital left after one-time costs")}</div>
+            <div className="text-[26px] font-bold text-[var(--fb)] tabular-nums">{fmt(plan.capital - onceSum)} <span className="text-[15px]">{t("บาท", "THB")}</span></div>
+          </div>
           {plan.pending.every((i) => !i.amount) && <p className="fin-warn">{t("ยังไม่รวมรีครูท โบนัส ภาษี และรายการรอตั้งงบ", "Excludes recruit fees, bonuses, tax and items still to be budgeted")}</p>}
         </Card>
       </div>
@@ -356,7 +429,6 @@ function Costs({ plan, up, month, setMonth }: P) {
   const svc = plan.services.find((s) => s.id === sid) ?? plan.services[0];
   const r = perRound(plan, svc?.price ?? 0);
   const fixed = fixedTotal(plan, true) - plan.pending.reduce((s, i) => s + i.amount, 0);
-  const setExp = (i: number, patch: Partial<FinExpense>) => up({ expenses: plan.expenses.map((e, k) => (k === i ? { ...e, ...patch } : e)) });
   const baht = t("บาท", "THB");
   return (
     <div className="flex flex-col gap-4">
@@ -388,30 +460,10 @@ function Costs({ plan, up, month, setMonth }: P) {
           <p className="fin-note">{t(`ผู้ให้บริการรับสุทธิ ${fmt(r.providerNet, 2)} บาท/รอบ (หลังหักค่าธรรมเนียม)`, `Provider nets ${fmt(r.providerNet, 2)} THB per booking (after fee)`)}</p>
         </Card>
 
-        <Card title={t("ค่าใช้จ่ายประจำ / เดือน", "Fixed costs / month")} tone="orange">
-          <div className="hidden sm:flex text-[12.5px] font-semibold text-[var(--fm)] pb-1 gap-2"><span className="flex-1">{t("รายการ", "Item")}</span><span className="w-[150px]">{t("คิดแบบ", "Basis")}</span><span className="w-[120px] text-right">{t("งบประมาณ", "Budget")}</span><span className="w-7" /></div>
-          {plan.expenses.map((e, i) => (
-            <div key={e.id} className="fin-tile py-1.5 border-b border-[var(--fl)]">
-              <div className="grid grid-cols-[1fr_auto_auto] sm:flex sm:flex-nowrap items-center gap-2">
-                {lang === "en" && NAME_EN[e.name]
-                  ? <span className="col-span-3 sm:flex-1 min-w-0 text-[14px] px-1 font-semibold sm:font-normal">{dn(e.name)}</span>
-                  : <Txt label={t("ชื่อค่าใช้จ่าย", "Expense name")} w="col-span-3 sm:col-span-1 sm:flex-1" value={e.name} onChange={(name) => setExp(i, { name })} />}
-                <select aria-label={`${t("คิดแบบ", "Basis")} ${dn(e.name)}`} className="fin-sel w-full sm:w-[150px] min-w-0" value={e.kind} onChange={(ev) => { const kind = ev.target.value as ExpenseKind; setExp(i, { kind, value: kind === "fixed" ? 0 : 0.1 }); }}>
-                  {(Object.keys(KIND) as ExpenseKind[]).map((k) => <option key={k} value={k}>{t(...KIND[k])}</option>)}
-                </select>
-                <Num label={`${t("งบ", "Budget")} ${dn(e.name)}`} pct={e.kind !== "fixed"} value={e.value} onChange={(value) => setExp(i, { value })} />
-                <Del label={`${t("ลบ", "Delete")} ${dn(e.name)}`} onClick={() => up({ expenses: plan.expenses.filter((_, k) => k !== i) })} />
-              </div>
-              {e.kind === "fixed" && (
-                <label data-noexport={!e.noncash || undefined} className="mt-1 flex items-center gap-1.5 text-[12px] text-[var(--fm)] pl-1">
-                  <input type="checkbox" checked={!!e.noncash} onChange={(ev) => setExp(i, { noncash: ev.target.checked || undefined })} /> <span className="sm:hidden">{t("ไม่ใช่เงินสด", "Non-cash")}</span><span className="hidden sm:inline">{t("ไม่ใช่เงินสด (ตัดจำหน่าย — นับในกำไร แต่ไม่นับในเป้ารอบขาย)", "Non-cash (amortisation — counted in profit, not in the bookings target)")}</span>
-                </label>
-              )}
-            </div>
-          ))}
-          <button type="button" className="fin-add" onClick={() => up({ expenses: [...plan.expenses, { id: uid(), name: t("ค่าใช้จ่ายใหม่", "New expense"), kind: "fixed", value: 0 }] })}>{t("+ เพิ่มค่าใช้จ่าย", "+ Add expense")}</button>
-          <div className="fin-total t-orange"><span>{t("รวม (บาท/เดือน)", "Total (THB / month)")}</span><b>{fmt(plan.expenses.filter((e) => e.kind === "fixed").reduce((s, e) => s + e.value, 0))} {baht}</b></div>
-          <p className="fin-note">{t(`เป็นเงินสด ${fmt(fixed)} บาท/เดือน (ใช้ในหน้าเป้ากำไร) · ค่าใช้จ่ายแบบ % คิดตามยอดของเดือนที่ดู`, `Cash portion ${fmt(fixed)} THB / month (used on the profit-target page) · % costs follow the selected month`)}</p>
+        <Card title={t("ค่าใช้จ่าย (ครั้งเดียว / รายเดือน)", "Expenses (one-time / monthly)")} tone="orange">
+          <ExpenseEditor plan={plan} up={up} showNoncash />
+          <div className="fin-total t-orange"><span>{t("รวมรายเดือน (บาท/เดือน)", "Monthly total (THB / month)")}</span><b>{fmt(plan.expenses.filter((e) => e.kind === "fixed").reduce((s, e) => s + e.value, 0))} {baht}</b></div>
+          <p className="fin-note">{t(`ครั้งเดียวรวม ${fmt(plan.expenses.filter((e) => e.kind === "once").reduce((s, e) => s + e.value, 0))} บาท · เงินสดรายเดือน ${fmt(fixed)} บาท (ใช้ในหน้าเป้ากำไร) · ค่าใช้จ่ายแบบ % คิดตามยอดของเดือนที่ดู`, `One-time total ${fmt(plan.expenses.filter((e) => e.kind === "once").reduce((s, e) => s + e.value, 0))} THB · monthly cash ${fmt(fixed)} THB (used on the profit-target page) · % costs follow the selected month`)}</p>
         </Card>
       </div>
 
@@ -473,14 +525,10 @@ function Costs({ plan, up, month, setMonth }: P) {
           <Items items={plan.pending} onChange={(pending) => up({ pending })} addLabel={t("+ เพิ่มรายการ", "+ Add item")} zeroChip />
           {plan.pending.some((i) => !i.amount) && <p className="fin-warn">{t("รายการที่ยังเป็น 0 ยังไม่ถูกหักในกำไร", "Items left at 0 are not deducted from profit")}</p>}
         </Card>
-        <Card title={t("เงินลงทุนและรายการแยกติดตาม", "Investment & tracked items")} tone="blue">
+        <Card title={t("เงินทุน", "Capital")} tone="blue">
           <Row l={t("ทุนตั้งต้น", "Starting capital")} r={<Num label={t("ทุนตั้งต้น", "Starting capital")} value={plan.capital} onChange={(v) => up({ capital: v })} />} />
-          <Items items={plan.startup} onChange={(startup) => up({ startup })} addLabel={t("+ เพิ่มรายการเงินลงทุน", "+ Add investment item")} />
-          <label className="flex items-center gap-2 mt-2 text-[13px] text-[var(--ft2)]">
-            <input type="checkbox" checked={plan.startupMonth === "M1"} onChange={(e) => up({ startupMonth: e.target.checked ? "M1" : "" })} />
-            {t(`ลงเป็นค่าใช้จ่ายใน P&L เดือน M1 (${monthLabel("M1", lang)}) แบบ Excel ของกิ๊ฟ`, `Expense in the M1 P&L (${monthLabel("M1", lang)}), as in Gib's Excel`)}
-          </label>
-          <div className="fin-total t-blue"><span>{t("เหลือสำหรับดำเนินงาน", "Left for operations")}</span><b>{fmt(plan.capital - plan.startup.reduce((s, i) => s + i.amount, 0))} {baht}</b></div>
+          <p className="fin-note">{t("ค่าแอป ทนาย และเงินลงทุนอื่น ใส่เป็นค่าใช้จ่าย \"ครั้งเดียว\" ในการ์ดค่าใช้จ่ายด้านบน", "App, legal and other investments go in the expense card above as \"one-time\"")}</p>
+          <div className="fin-total t-blue"><span>{t("ทุนเหลือหลังจ่ายครั้งเดียว", "Capital left after one-time costs")}</span><b>{fmt(plan.capital - plan.expenses.filter((e) => e.kind === "once").reduce((s, e) => s + e.value, 0))} {baht}</b></div>
         </Card>
       </div>
       <Card title={t("ค่าแรกเข้า (หักจากเคสการทำงาน)", "Joining fee (deducted from jobs)")} tone="green">
@@ -511,7 +559,7 @@ function CasesGrid({ plan, up, month, setMonth }: P) {
   };
   const lastHasData = !!plan.months[last] || plan.cashTargets?.[last] != null;
   return (
-    <Card title={t(`กรอกเคสรายเดือน (M1 ${monthLabel("M1", lang)} – ${last} ${monthLabel(last, lang)})`, `Monthly cases (M1 ${monthLabel("M1", lang)} – ${last} ${monthLabel(last, lang)})`)} tone="blue"
+    <Card title={t("กรอกเคสรายเดือน", "Monthly cases")} tone="blue"
       right={
         <span className="flex items-center gap-2 text-[13px]">
           <span className="text-[var(--fm)]">{t(`${n} เดือน`, `${n} months`)}</span>
@@ -532,14 +580,27 @@ function CasesGrid({ plan, up, month, setMonth }: P) {
           <tbody>
             {plan.services.map((s) => (
               <tr key={s.id}>
-                <td className="sticky left-0 bg-[var(--fc)] z-[1] text-[12px] sm:text-[13px] leading-tight min-w-[100px] max-w-[118px] sm:max-w-none sm:whitespace-nowrap">{svcLabel(s)}</td>
+                <td className="sticky left-0 bg-[var(--fc)] z-[1] text-[12px] sm:text-[13px] leading-tight min-w-[120px] max-w-[150px] sm:max-w-none sm:whitespace-nowrap">{svcLabel(s)} <span className="text-[var(--fm)]">{t(`3 ชม. ${fmt(s.price)} บาท`, `3 hrs ${fmt(s.price)} THB`)}</span></td>
                 {ML.map((mo) => <td key={mo} className="r"><Num label={`${svcLabel(s)} ${mo}`} w="w-[64px]" value={plan.months[mo]?.[s.id] ?? 0} onChange={(v) => setRounds(mo, s.id, v)} blankZero /></td>)}
               </tr>
             ))}
-            <tr className="font-semibold">
-              <td className="sticky left-0 bg-[var(--fc)] z-[1]">{t("กำไร/เดือน", "Profit / month")}</td>
-              {ML.map((mo) => { const p = plan.months[mo] ? monthSummary(plan, mo).profit : null; return <td key={mo} className={`r text-[12.5px] tabular-nums ${p == null ? "text-[var(--fm)]" : p >= 0 ? "text-[var(--fg)]" : "text-[var(--fr)]"}`}>{p == null ? "—" : fmt(p / 1000, 0) + "K"}</td>; })}
-            </tr>
+            {(() => {
+              const S = ML.map((mo) => monthSummary(plan, mo));
+              const k = (v: number) => (Math.abs(v) >= 1e6 ? `${fmt(v / 1e6, 2)}M` : `${fmt(v / 1000, 0)}K`);
+              const showOther = S.some((x) => x.otherIncome > 0);
+              const row = (label: string, vals: number[], cls: (v: number) => string, sign = "", strong = false) => (
+                <tr className={strong ? "font-semibold" : ""}>
+                  <td className="sticky left-0 bg-[var(--fc)] z-[1] text-[12px] sm:text-[13px]">{label}</td>
+                  {vals.map((v, i) => <td key={ML[i]} className={`r text-[12.5px] tabular-nums ${cls(v)}`}>{v ? sign + k(v) : "—"}</td>)}
+                </tr>
+              );
+              return (<>
+                {row(t("ยอดสุทธิ (ราคา × เคส)", "Net sales (price × cases)"), S.map((x) => x.gross), () => "text-[var(--fb)]", "", true)}
+                {showOther && row(t("รายได้อื่น", "Other income"), S.map((x) => x.otherIncome), () => "text-[#0d9488]", "+")}
+                {row(t("ค่าใช้จ่าย (รวมส่วนแบ่งผู้ให้บริการ)", "Costs (incl. provider share)"), S.map((x) => x.costAll), () => "text-[var(--fo)]", "−")}
+                {row(t("กำไร/เดือน", "Profit / month"), S.map((x) => x.profit), (v) => (v >= 0 ? "text-[var(--fg)]" : "text-[var(--fr)]"), "", true)}
+              </>);
+            })()}
           </tbody>
         </table>
       </div>

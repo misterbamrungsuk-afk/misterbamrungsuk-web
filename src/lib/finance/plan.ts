@@ -2,9 +2,13 @@
 // อ้างอิงสไลด์ Canva "Update MB" หน้า 8 (ภาพรวม) · 9 (รายละเอียดต้นทุน) · 10 (วางเป้ากำไร) — 6 พ.ย. 2569
 // เป็น "แผนจำลอง" เท่านั้น ไม่แตะเงินจริง/กระเป๋า/ราคาที่ลูกค้าเห็น
 
-export type ExpenseKind = "fixed" | "pctRevenue" | "pctGross";
+export type ExpenseKind = "once" | "fixed" | "pctRevenue" | "pctGross";
+export type IncomeKind = "once" | "monthly";
 export interface FinService { id: string; name: string; level: string; price: number }
-export interface FinExpense { id: string; name: string; kind: ExpenseKind; value: number; noncash?: boolean }
+/** month: ครั้งเดียว = เดือนที่จ่าย (ค่าเริ่มต้น M1) */
+export interface FinExpense { id: string; name: string; kind: ExpenseKind; value: number; noncash?: boolean; month?: string }
+/** รายได้อื่น: ครั้งเดียว (month = เดือนที่ได้) · รายเดือน (month = เริ่มเดือน) เช่น Subscription เปิดเมมเบอร์ สปอนเซอร์ โฆษณา */
+export interface FinIncome { id: string; name: string; kind: IncomeKind; value: number; month?: string }
 export interface FinItem { id: string; name: string; amount: number }
 export interface FinancePlan {
   capital: number;
@@ -15,7 +19,8 @@ export interface FinancePlan {
   services: FinService[];
   /** จำนวนรอบต่อเดือน: months["M4"][serviceId] */
   months: Record<string, Record<string, number>>;
-  expenses: FinExpense[];        // ค่าใช้จ่ายรายเดือน
+  expenses: FinExpense[];        // ค่าใช้จ่าย: ครั้งเดียว / รายเดือน / % (รวมเงินลงทุนแล้ว)
+  incomes?: FinIncome[];         // รายได้อื่น ครั้งเดียว / รายเดือน
   pending: FinItem[];            // รายการที่ต้องตั้งงบเพิ่ม (0 = ยังไม่ใส่งบ)
   target: { profit: number; days: number; serviceId: string };
   extraPerRound?: number;        // รายได้อื่นต่อรอบ เช่น ค่าคอมสินค้า Vendor (Excel กิ๊ฟ ฿157.50)
@@ -42,15 +47,11 @@ export function monthLabel(m: string, lang: "th" | "en" = "th") {
   const d = new Date(Date.UTC(MONTH_START.year, MONTH_START.month + i, 1));
   return d.toLocaleDateString(lang === "th" ? "th-TH" : "en-US", { month: "short", year: "2-digit", timeZone: "UTC" });
 }
-export const KIND_LABEL: Record<ExpenseKind, string> = { fixed: "บาท/เดือน", pctRevenue: "% ของรายได้บริษัท", pctGross: "% ของยอดลูกค้าจ่าย" };
+export const KIND_LABEL: Record<ExpenseKind, string> = { once: "ครั้งเดียว", fixed: "บาท/เดือน", pctRevenue: "% ของรายได้บริษัท", pctGross: "% ของยอดลูกค้าจ่าย" };
 
 export const DEFAULT_PLAN: FinancePlan = {
   capital: 6_000_000,
-  startup: [
-    { id: "app", name: "พัฒนาแอป", amount: 900_000 },
-    { id: "audition", name: "Audition 3 จังหวัด", amount: 1_200_000 },
-    { id: "legal", name: "กฎหมาย (สมมติ)", amount: 500_000 },
-  ],
+  startup: [],
   companyShare: 0.5,
   providerFee: 0.03,
   pgFee: 0.025,
@@ -63,6 +64,8 @@ export const DEFAULT_PLAN: FinancePlan = {
   ],
   months: { M4: { eat: 200, "eat-top": 100, massage: 125, "massage-top": 50, secret: 25 } },
   expenses: [
+    { id: "app", name: "พัฒนาแอป", kind: "once", value: 900_000, month: "M1" },
+    { id: "legal", name: "กฎหมาย (สมมติ)", kind: "once", value: 500_000, month: "M1" },
     { id: "salary", name: "เงินเดือนและที่ปรึกษา", kind: "fixed", value: 300_000 },
     { id: "marketing", name: "การตลาด", kind: "fixed", value: 100_000 },
     { id: "software", name: "Software", kind: "fixed", value: 20_000 },
@@ -79,6 +82,17 @@ export const DEFAULT_PLAN: FinancePlan = {
 };
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
+/** แผนเก่า: "เงินทุนใช้กับอะไร" (startup) → ค่าใช้จ่ายครั้งเดียว ลงเดือน startupMonth (หรือ M1) */
+export function migratePlan(p: FinancePlan): FinancePlan {
+  if (!p.startup?.length) return { ...p, startup: [], startupMonth: "" };
+  const once: FinExpense[] = p.startup.map((i) => ({ id: "one-" + i.id, name: i.name, kind: "once", value: i.amount, month: p.startupMonth || "M1" }));
+  return { ...p, expenses: [...once, ...p.expenses.filter((e) => !once.some((o) => o.id === e.id))], startup: [], startupMonth: "" };
+}
+const monthIdx = (m: string) => Number(/^M(\d+)$/.exec(m)?.[1] ?? 0);
+/** รายได้อื่นของเดือนนี้ */
+export function otherIncomeLines(p: FinancePlan, month: string) {
+  return (p.incomes ?? []).map((i) => ({ ...i, amount: i.kind === "once" ? ((i.month || "M1") === month ? i.value : 0) : monthIdx(month) >= monthIdx(i.month || "M1") ? i.value : 0 }));
+}
 export const svcLabel = (s: FinService) => (s.level ? `${s.name} · ${s.level}` : s.name);
 
 /** ต่อ 1 รอบของบริการราคา price */
@@ -126,23 +140,24 @@ export function monthSummary(p: FinancePlan, month: string) {
   const fee = provider * p.providerFee;
   const extra = totalRounds * (p.extraPerRound ?? 0);
   const entry = entryFeeOf(p, month);
-  const revenue = company + fee + extra + entry;
+  const incomeLines = otherIncomeLines(p, month);
+  const other = incomeLines.reduce((t, i) => t + i.amount, 0);
+  const revenue = company + fee + extra + entry + other;
   const pg = gross * p.pgFee;
   const lines = [
-    ...p.expenses.map((e) => ({ id: e.id, name: e.name, kind: e.kind, value: e.value, noncash: !!e.noncash, amount: e.kind === "fixed" ? e.value : e.kind === "pctRevenue" ? revenue * e.value : gross * e.value })),
+    ...p.expenses.filter((e) => e.kind !== "once" || (e.month || "M1") === month).map((e) => ({ id: e.id, name: e.name, kind: e.kind, value: e.value, noncash: !!e.noncash, amount: e.kind === "fixed" || e.kind === "once" ? e.value : e.kind === "pctRevenue" ? revenue * e.value : gross * e.value })),
     { id: "_pg", name: `ค่าภาษี ภ.ง.ด. ${fmtPct(p.pgFee)} ของยอดลูกค้า`, kind: "pctGross" as ExpenseKind, value: p.pgFee, noncash: false, amount: pg },
     ...p.pending.filter((i) => i.amount > 0).map((i) => ({ id: i.id, name: i.name, kind: "fixed" as ExpenseKind, value: i.amount, noncash: false, amount: i.amount })),
-    // เงินลงทุนครั้งเดียว (ทนาย/แอป) ลง P&L เดือนที่เลือก — ตาม Excel ของกิ๊ฟ/SIRI
-    ...(p.startupMonth && p.startupMonth === month ? p.startup.filter((i) => i.amount > 0).map((i) => ({ id: "_one_" + i.id, name: i.name, kind: "fixed" as ExpenseKind, value: i.amount, noncash: false, amount: i.amount })) : []),
   ];
   const expenses = lines.reduce((t, l) => t + l.amount, 0);
   const noncash = lines.filter((l) => l.noncash).reduce((t, l) => t + l.amount, 0);
   const profit = revenue - expenses;
   return {
-    rows, totalRounds, gross: r2(gross), company: r2(company), provider: r2(provider), fee: r2(fee), extra: r2(extra), entry: r2(entry), revenue: r2(revenue), pg: r2(pg),
+    rows, totalRounds, gross: r2(gross), company: r2(company), provider: r2(provider), fee: r2(fee), extra: r2(extra), entry: r2(entry), other: r2(other), incomeLines, otherIncome: r2(extra + entry + other), revenue: r2(revenue), pg: r2(pg),
     lines: lines.map((l) => ({ ...l, amount: r2(l.amount) })), expenses: r2(expenses), profit: r2(profit), cash: r2(profit + noncash),
     margin: revenue > 0 ? profit / revenue : 0,
-    variable: r2(pg + lines.filter((l) => l.kind !== "fixed" && l.id !== "_pg").reduce((t, l) => t + l.amount, 0)),
+    costAll: r2(provider - fee + expenses), // ค่าใช้จ่ายทั้งหมดรวมส่วนแบ่งผู้ให้บริการ → กำไร = ยอดลูกค้าจ่าย + รายได้อื่น − costAll
+    variable: r2(pg + lines.filter((l) => l.kind !== "fixed" && l.kind !== "once" && l.id !== "_pg").reduce((t, l) => t + l.amount, 0)),
   };
 }
 
@@ -212,16 +227,18 @@ export function cleanPlan(raw: unknown): Omit<FinancePlan, "history"> {
   const t = (b.target ?? {}) as Record<string, unknown>;
   return {
     capital: num(b.capital, 0, 1e10, "ทุนเริ่มต้น"),
-    startup: list(b.startup, 30, (x) => ({ id: id(x.id), name: txt(x.name, "รายการเงินทุน"), amount: num(x.amount, 0, 1e10, "จำนวนเงิน") })),
+    startup: list(b.startup ?? [], 30, (x) => ({ id: id(x.id), name: txt(x.name, "รายการเงินทุน"), amount: num(x.amount, 0, 1e10, "จำนวนเงิน") })),
     companyShare: num(b.companyShare, 0, 1, "ส่วนแบ่งบริษัท"),
     providerFee: num(b.providerFee, 0, 0.5, "ค่าธรรมเนียมผู้ให้บริการ"),
     pgFee: num(b.pgFee, 0, 0.2, "ค่าภาษี ภ.ง.ด."),
     services,
     months,
-    expenses: list(b.expenses, 40, (x) => {
-      const kind: ExpenseKind = x.kind === "pctRevenue" || x.kind === "pctGross" ? x.kind : "fixed";
-      return { id: id(x.id), name: txt(x.name, "ค่าใช้จ่าย"), kind, value: kind === "fixed" ? num(x.value, 0, 1e10, "ค่าใช้จ่าย") : num(x.value, 0, 1, "เปอร์เซ็นต์"), ...(x.noncash ? { noncash: true } : {}) };
+    expenses: list(b.expenses, 60, (x) => {
+      const kind: ExpenseKind = x.kind === "pctRevenue" || x.kind === "pctGross" || x.kind === "once" ? x.kind : "fixed";
+      const pct = kind === "pctRevenue" || kind === "pctGross";
+      return { id: id(x.id), name: txt(x.name, "ค่าใช้จ่าย"), kind, value: pct ? num(x.value, 0, 1, "เปอร์เซ็นต์") : num(x.value, 0, 1e10, "ค่าใช้จ่าย"), ...(x.noncash ? { noncash: true } : {}), ...(kind === "once" ? { month: ml.includes(String(x.month)) ? String(x.month) : "M1" } : {}) };
     }),
+    incomes: list(b.incomes ?? [], 40, (x) => ({ id: id(x.id), name: txt(x.name, "รายได้"), kind: (x.kind === "once" ? "once" : "monthly") as IncomeKind, value: num(x.value, 0, 1e10, "รายได้"), month: ml.includes(String(x.month)) ? String(x.month) : "M1" })),
     pending: list(b.pending, 20, (x) => ({ id: id(x.id), name: txt(x.name, "รายการ"), amount: num(x.amount, 0, 1e10, "งบ") })),
     monthCount,
     cashTargets,
@@ -238,17 +255,19 @@ export function cleanPlan(raw: unknown): Omit<FinancePlan, "history"> {
 export const PRESET_V4: FinancePlan = {
   ...DEFAULT_PLAN,
   capital: 10_000_000, // บอส: คำนวณที่ 10 ล้าน (ระดมจริง 6 ล้าน)
-  startup: [{ id: "lawyer", name: "ค่าทนาย / จัดตั้ง", amount: 500_000 }, { id: "app", name: "พัฒนาแอป", amount: 900_000 }],
-  startupMonth: "M1",
+  startup: [], startupMonth: "",
   companyShare: 0.6, providerFee: 0, pgFee: 0.025, extraPerRound: 157.5,
   months: Object.fromEntries([0, 100, ...Array(16).fill(750)].map((n, i) => [`M${i + 1}`, n ? { eat: n } : {}]).filter(([, v]) => Object.keys(v as object).length)),
   expenses: [
+    { id: "lawyer", name: "ค่าทนาย / จัดตั้ง", kind: "once", value: 500_000, month: "M1" },
+    { id: "app", name: "พัฒนาแอป", kind: "once", value: 900_000, month: "M1" },
     { id: "salary", name: "เงินเดือนพนักงาน + ที่ปรึกษา", kind: "fixed", value: 300_000 },
     { id: "marketing", name: "การตลาด", kind: "fixed", value: 100_000 },
     { id: "server", name: "Server / ระบบ (ประมาณการ)", kind: "fixed", value: 30_000 },
   ],
   pending: [],
   entryFee: { perJob: 500, cap: 10_000, people: 50 },
+  incomes: [],
   monthCount: 18, cashTargets: {},
   target: { profit: 100_000, days: 15, serviceId: "eat" },
   history: [],
