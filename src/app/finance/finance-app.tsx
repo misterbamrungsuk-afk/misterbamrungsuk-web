@@ -4,7 +4,7 @@ import Link from "next/link";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { ExportBtn } from "./export-image";
 import {
-  MAX_MONTHS, PRESET_V4, cashTargetOf, fixedTotal, monthsOf, fmt, fmt2, fmtPct, monthLabel, monthSummary, perRound, targetFor, targetMix,
+  MAX_MONTHS, cashTargetOf, fixedTotal, monthsOf, fmt, fmt2, fmtPct, monthLabel, monthSummary, perRound, targetFor, targetMix,
   type ExpenseKind, type FinExpense, type FinIncome, type IncomeKind, type FinItem, type FinService, type FinancePlan, LABELS, labelOf, type LabelKey, dropFirstMonths } from "@/lib/finance/plan";
 
 // หลังบ้านการเงิน — ดีไซน์ตามสไลด์ Canva "Update MB" หน้า 8 · 9 · 10 (โทนม่วงอ่อน) · 2 ภาษา ไทย/EN
@@ -116,12 +116,7 @@ export function FinanceApp({ view, initial, who }: { view: View; initial: Financ
                 <button type="button" aria-pressed={lang === "th"} className={lang === "th" ? "on" : ""} onClick={() => pickLang("th")}>ไทย</button>
                 <button type="button" aria-pressed={lang === "en"} className={lang === "en" ? "on" : ""} onClick={() => pickLang("en")}>EN</button>
               </div>
-              <button type="button" className="fin-exp" title={t("เติมตัวเลข Forecast v4 (Excel กิ๊ฟ + SIRI 8 พ.ย.) — ยังไม่บันทึกจนกว่าจะกดบันทึก", "Fill in Forecast v4 numbers — not saved until you press Save")}
-                onClick={() => { if (window.confirm(t("แทนตัวเลขทั้งหมดด้วยชุด Forecast v4 (Excel กิ๊ฟ + SIRI 8 พ.ย. 2569)?\nยังไม่บันทึกจนกว่าจะกด \"บันทึก\" — กด \"ยกเลิกที่แก้\" เพื่อย้อนกลับได้", "Replace all numbers with the Forecast v4 set?\nNothing is saved until you press Save."))) { setPlan({ ...PRESET_V4, history: plan.history }); setMonth("M3"); setMsg({ ok: true, text: t("ใส่ตัวเลข Forecast v4 แล้ว — ตรวจแล้วกดบันทึก", "Forecast v4 loaded — review, then Save") }); } }}>
-                {t("ใช้ตัวเลข Forecast v4", "Load Forecast v4")}
-              </button>
               <ExportBtn kind={view} file={`MB-finance-${view}-${month}`} ctx={{ plan, month, lang, dn: (n) => (lang === "en" ? NAME_EN[n] ?? n : n), sl: (s) => { const n = lang === "en" ? NAME_EN[s.name] ?? s.name : s.name; return s.level ? `${n} · ${s.level}` : n; } }} />
-              <span className="fin-chip hidden sm:inline-block">{t("แผนจำลอง · ไม่กระทบเงินจริง", "Plan only · no real money moved")}</span>
             </div>
           </header>
           {view === "overview" && <Overview plan={plan} up={up} month={month} setMonth={setMonth} save={save} dirty={dirty} busy={busy} />}
