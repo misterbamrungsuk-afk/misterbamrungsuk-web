@@ -870,7 +870,6 @@ const CSS = `
 .fin-xi .fin-sel{padding:0 6px 0 10px}
 .fin-root .fin-in.fin-big{background:#fff;border:1px solid #ddd5ee}
 .fin-xi-f{display:flex;flex-direction:column;gap:3px;min-width:0}.fin-xi-c{font-size:12.5px;color:var(--fm);padding-left:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fin-xi-txt{display:flex;align-items:center;height:38px;font-size:14.5px;color:var(--ft2);padding:0 4px}
-@media (max-width:639px){.fin-root .fin-xi-g{grid-template-columns:minmax(0,1fr) minmax(0,1fr);row-gap:8px}.fin-root .fin-xi-amt{grid-column:1/-1}.fin-root .fin-xi .pr-9{padding-right:0}}
 .fin-add-o{margin-top:2px;padding:7px 22px;border-radius:12px;border:1.5px solid #8b5cf6;color:var(--fp);font-weight:700;font-size:14.5px;background:#fff}.fin-add-o:hover{background:var(--fpl)}
 .fin-in.fin-big{height:44px;border-radius:12px}.fin-in.fin-big input{font-size:18px;font-weight:600}
 .fin-sum{border:1px solid var(--fl);border-radius:16px;padding:12px 14px 14px;box-shadow:0 2px 10px rgba(60,30,120,.05)}
