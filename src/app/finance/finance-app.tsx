@@ -125,7 +125,7 @@ export function FinanceApp({ view, initial, who }: { view: View; initial: Financ
               <span className="fin-chip hidden sm:inline-block">{t("แผนจำลอง · ไม่กระทบเงินจริง", "Plan only · no real money moved")}</span>
             </div>
           </header>
-          {view === "overview" && <Overview plan={plan} up={up} month={month} setMonth={setMonth} />}
+          {view === "overview" && <Overview plan={plan} up={up} month={month} setMonth={setMonth} save={save} dirty={dirty} busy={busy} />}
           {view === "costs" && <Costs plan={plan} up={up} month={month} setMonth={setMonth} />}
           {view === "target" && <Target plan={plan} up={up} month={month} setMonth={setMonth} />}
         </main>
@@ -144,7 +144,7 @@ export function FinanceApp({ view, initial, who }: { view: View; initial: Financ
   );
 }
 
-type P = { plan: FinancePlan; up: (p: Partial<FinancePlan>) => void; month: string; setMonth: (m: string) => void };
+type P = { plan: FinancePlan; up: (p: Partial<FinancePlan>) => void; month: string; setMonth: (m: string) => void; save?: () => void; dirty?: boolean; busy?: boolean };
 
 // ─── ช่องกรอก ───
 function Num({ value, onChange, pct, w = "w-[120px]", label, blankZero }: { value: number; onChange: (n: number) => void; pct?: boolean; w?: string; label: string; blankZero?: boolean }) {
@@ -171,12 +171,13 @@ function Del({ onClick, label }: { onClick: () => void; label: string }) {
   const { t } = useT();
   return <button type="button" onClick={onClick} aria-label={label} title={t("ลบ", "Delete")} className="fin-x">×</button>;
 }
-const Card = ({ n, title, tone = "violet", children, right }: { n?: number; title: string; tone?: "violet" | "blue" | "orange" | "green"; children: React.ReactNode; right?: React.ReactNode }) => (
+const Card = ({ n, title, sub, tone = "violet", children, right }: { n?: number; title: string; sub?: string; tone?: "violet" | "blue" | "orange" | "green"; children: React.ReactNode; right?: React.ReactNode }) => (
   <section className={`fin-card t-${tone}`}>
     <div className="flex items-center gap-2 mb-3 flex-wrap">
       {n && <span className="fin-num">{n}</span>}
       <h2 className="m-0 text-[16px] sm:text-[17px] font-bold flex-1 min-w-[11rem] leading-snug">{title}</h2>
       {right}
+      {sub && <p className="m-0 w-full text-[13px] text-[var(--fm)] leading-snug">{sub}</p>}
     </div>
     {children}
   </section>
@@ -253,20 +254,23 @@ function ExpenseEditor({ plan, up, showNoncash }: { plan: FinancePlan; up: P["up
   return (
     <>
       {plan.expenses.map((e, i) => (
-        <div key={e.id} className="fin-tile py-2 border-b border-[var(--fl)]">
+        <div key={e.id} className={`fin-xi k-${e.kind === "once" ? "once" : e.kind === "fixed" ? "fixed" : "pct"}`}>
           <div className="flex items-center gap-2">
             {lang === "en" && NAME_EN[e.name]
-              ? <span className="flex-1 min-w-0 text-[14px] px-1 font-semibold">{dn(e.name)}</span>
+              ? <span className="flex-1 min-w-0 text-[15px] px-1 font-semibold">{dn(e.name)}</span>
               : <Txt label={t("ชื่อค่าใช้จ่าย", "Expense name")} value={e.name} onChange={(name) => setExp(i, { name })} />}
             <Del label={`${t("ลบ", "Delete")} ${dn(e.name)}`} onClick={() => up({ expenses: plan.expenses.filter((_, k) => k !== i) })} />
           </div>
-          <div className="mt-1.5 grid grid-cols-3 gap-2 items-center pr-9">
+          <div className="fin-xi-h fin-xi-g pr-9" aria-hidden>
+            <span>{t("ประเภทการจ่าย", "Payment type")}</span><span>{t("ช่วงเวลา", "When")}</span><span>{e.kind === "pctRevenue" || e.kind === "pctGross" ? t("สัดส่วน (%)", "Share (%)") : t("จำนวนเงิน (บาท)", "Amount (THB)")}</span>
+          </div>
+          <div className="fin-xi-g items-center pr-9">
             <select aria-label={`${t("ประเภท", "Type")} ${dn(e.name)}`} className="fin-sel w-full min-w-0" value={e.kind} onChange={(ev) => { const kind = ev.target.value as ExpenseKind; const pct = kind === "pctRevenue" || kind === "pctGross"; const wasPct = e.kind === "pctRevenue" || e.kind === "pctGross"; setExp(i, { kind, value: pct === wasPct ? e.value : pct ? 0.1 : 0, ...(kind === "once" ? { month: e.month || "M1" } : {}) }); }}>
               {(Object.keys(KIND) as ExpenseKind[]).map((k) => <option key={k} value={k}>{t(...KIND[k])}</option>)}
             </select>
             {e.kind === "once"
               ? <MonthSel plan={plan} value={e.month || "M1"} onChange={(month) => setExp(i, { month })} label={`${t("เดือนที่จ่าย", "Month paid")} ${dn(e.name)}`} />
-              : <span className="text-[12.5px] text-[var(--fm)] px-1">{e.kind === "fixed" ? t("ทุกเดือน", "every month") : t("ตามยอดของเดือน", "follows the month")}</span>}
+              : <span className="text-[14.5px] text-[var(--ft2)] px-1">{e.kind === "fixed" ? t("ทุกเดือน", "Every month") : t("ตามยอดของเดือน", "Follows the month")}</span>}
             <Num label={`${t("จำนวนเงิน", "Amount")} ${dn(e.name)}`} w="w-full" pct={e.kind === "pctRevenue" || e.kind === "pctGross"} value={e.value} onChange={(value) => setExp(i, { value })} />
           </div>
           {e.kind === "fixed" && (showNoncash || e.noncash) && (
@@ -276,7 +280,7 @@ function ExpenseEditor({ plan, up, showNoncash }: { plan: FinancePlan; up: P["up
           )}
         </div>
       ))}
-      <button type="button" className="fin-add" onClick={() => up({ expenses: [...plan.expenses, { id: uid(), name: t("ค่าใช้จ่ายใหม่", "New expense"), kind: "fixed", value: 0 }] })}>{t("+ เพิ่มค่าใช้จ่าย", "+ Add expense")}</button>
+      <div><button type="button" className="fin-add-o" onClick={() => up({ expenses: [...plan.expenses, { id: uid(), name: t("ค่าใช้จ่ายใหม่", "New expense"), kind: "fixed", value: 0 }] })}>{t("+ เพิ่มค่าใช้จ่าย", "+ Add expense")}</button></div>
     </>
   );
 }
@@ -307,7 +311,7 @@ function IncomeEditor({ plan, up }: { plan: FinancePlan; up: P["up"] }) {
 }
 
 // ─── หน้า 8: ภาพรวม ───
-function Overview({ plan, up, month, setMonth }: P) {
+function Overview({ plan, up, month, setMonth, save, dirty, busy }: P) {
   const { t, lang } = useT();
   const dn = useName();
   const svcLabel = useSvcLabel();
@@ -382,19 +386,28 @@ function Overview({ plan, up, month, setMonth }: P) {
           </div>
         </Card>
 
-        <Card n={2} title={t("ค่าใช้จ่าย (ครั้งเดียว / รายเดือน)", "Expenses (one-time / monthly)")} tone="orange">
-          <Row l={t("ทุนเริ่มต้น", "Starting capital")} r={<Num label={t("ทุนเริ่มต้น", "Starting capital")} value={plan.capital} onChange={(v) => up({ capital: v })} />} />
-          <div className="mt-2"><ExpenseEditor plan={plan} up={up} /></div>
-          <div className="mt-4 pt-3 border-t border-[var(--fl)]">
-            <div className="flex justify-between text-[12.5px] font-semibold text-[var(--fm)] pb-1"><span>{t(`เดือนนี้ (${ml})`, `This month (${ml})`)}</span><span>{t("จำนวนเงิน (บาท)", "Amount (THB)")}</span></div>
-            {m.lines.map((l) => <Row key={l.id} l={<>{lineName(l)}{l.kind === "once" && <span className="fin-pill ml-1">{t("ครั้งเดียว", "one-time")}</span>}{l.kind === "pctRevenue" && ` (${fmtPct(l.value)} ${t("ของรายได้", "of revenue")})`}{l.noncash && <span className="fin-pill ml-1">{t("ไม่ใช่เงินสด", "non-cash")}</span>}</>} r={fmt(l.amount, 2)} />)}
-            <div className="fin-total t-orange"><span>{t("รวมเดือนนี้", "Total this month")}</span><b>{fmt(m.expenses, 2)} {t("บาท", "THB")}</b></div>
+        <Card n={2} title={t("ค่าใช้จ่าย (ครั้งเดียว / รายเดือน)", "Expenses (one-time / monthly)")} sub={t("แก้ไขชื่อ ประเภทการจ่าย เดือน และจำนวนเงินได้ทุกรายการ", "Edit the name, payment type, month and amount of every item")} tone="orange">
+          <div className="flex items-center justify-between gap-3 pb-3 mb-3 border-b border-[var(--fl)]">
+            <span className="text-[16px] font-semibold">{t("ทุนเริ่มต้น", "Starting capital")}</span>
+            <Num label={t("ทุนเริ่มต้น", "Starting capital")} w="w-[150px] fin-big" value={plan.capital} onChange={(v) => up({ capital: v })} />
           </div>
-          <div className="fin-hero t-blue mt-3">
-            <div className="text-[14px] font-semibold">{t("ทุนเหลือหลังจ่ายครั้งเดียว", "Capital left after one-time costs")}</div>
-            <div className="text-[26px] font-bold text-[var(--fb)] tabular-nums">{fmt(plan.capital - onceSum)} <span className="text-[15px]">{t("บาท", "THB")}</span></div>
+          <ExpenseEditor plan={plan} up={up} />
+          <div className="fin-sum mt-4">
+            <div className="fin-sum-h"><b>{t("เดือนนี้", "This month")} <span>({ml})</span></b><span>{t("จำนวนเงิน (บาท)", "Amount (THB)")}</span></div>
+            {m.lines.map((l) => (
+              <div key={l.id} className="fin-sum-r">
+                <span>{lineName(l)}{l.kind === "once" && <span className="fin-pill ml-1">{t("ครั้งเดียว", "one-time")}</span>}{l.kind === "pctRevenue" && ` (${fmtPct(l.value)} ${t("ของรายได้", "of revenue")})`}{l.noncash && <span className="fin-pill ml-1">{t("ไม่ใช่เงินสด", "non-cash")}</span>}</span>
+                <b>{fmt(l.amount, 2)}</b>
+              </div>
+            ))}
+            <div className="fin-sum-t"><span>{t("รวมเดือนนี้", "Total this month")}</span><b>{fmt(m.expenses, 2)} {t("บาท", "THB")}</b></div>
           </div>
-          {plan.pending.every((i) => !i.amount) && <p className="fin-warn">{t("ยังไม่รวมรีครูท โบนัส ภาษี และรายการรอตั้งงบ", "Excludes recruit fees, bonuses, tax and items still to be budgeted")}</p>}
+          <div className="flex items-center justify-between gap-3 mt-3 px-1 text-[14px]">
+            <span className="text-[var(--ft2)]">{t("ทุนเหลือหลังจ่ายครั้งเดียว", "Capital left after one-time costs")}</span>
+            <b className="tabular-nums text-[var(--fb)] text-[16px]">{fmt(plan.capital - onceSum)} {t("บาท", "THB")}</b>
+          </div>
+          {plan.pending.every((i) => !i.amount) && <p className="fin-note">{t("ยังไม่รวมรีครูท โบนัส ภาษี และรายการรอตั้งงบ", "Excludes recruit fees, bonuses, tax and items still to be budgeted")}</p>}
+          {save && <button type="button" className="fin-btn w-full mt-4" disabled={!dirty || busy} onClick={save}>{busy ? t("กำลังบันทึก…", "Saving…") : dirty ? t("บันทึก", "Save") : t("บันทึกแล้ว ✓", "Saved ✓")}</button>}
         </Card>
       </div>
 
@@ -809,6 +822,21 @@ const CSS = `
 .fin-eq{display:flex;flex-direction:column;align-items:center;border-radius:14px;padding:8px 18px;flex:1;min-width:150px}
 .fin-eq span{font-size:13px;font-weight:600}.fin-eq b{font-size:22px;font-variant-numeric:tabular-nums}
 .fin-eq.t-violet{background:var(--fpl)}.fin-eq.t-violet b{color:var(--fp)}.fin-eq.t-orange{background:var(--fol)}.fin-eq.t-orange b{color:var(--fo)}.fin-eq.t-green{background:var(--fgl)}.fin-eq.t-green b{color:var(--fg)}.fin-eq.t-red{background:var(--frl)}.fin-eq.t-red b{color:var(--fr)}
+.fin-xi{position:relative;border-radius:14px;padding:10px 12px 12px 14px;margin-bottom:10px;border-left:5px solid #2f7cf6;background:#ecf3fe}
+.fin-xi.k-fixed{border-left-color:#13a07a;background:#e9f7f1}.fin-xi.k-pct{border-left-color:#8b5cf6;background:#f3effd}
+.fin-xi .fin-in,.fin-xi .fin-sel{background:#fff!important;border:1px solid #d6dbe8!important;height:38px}
+.fin-xi .fin-in input{font-size:15.5px}.fin-xi .fin-in.n input{font-weight:700;font-size:16px}
+.fin-xi > .fin-xi-g > select.fin-sel:first-child{font-weight:700;color:#1d5fd6}.fin-xi.k-fixed > .fin-xi-g > select.fin-sel:first-child{color:#0f7f60}.fin-xi.k-pct > .fin-xi-g > select.fin-sel:first-child{color:var(--fp)}
+.fin-xi-g{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr);gap:8px}
+.fin-xi .fin-sel{padding:0 6px 0 10px}
+.fin-root .fin-in.fin-big{background:#fff;border:1px solid #ddd5ee}
+.fin-xi-h{margin:8px 0 3px;font-size:12.5px;color:var(--fm)}.fin-xi-h span{padding-left:2px}
+.fin-add-o{margin-top:2px;padding:7px 22px;border-radius:12px;border:1.5px solid #8b5cf6;color:var(--fp);font-weight:700;font-size:14.5px;background:#fff}.fin-add-o:hover{background:var(--fpl)}
+.fin-in.fin-big{height:44px;border-radius:12px}.fin-in.fin-big input{font-size:18px;font-weight:600}
+.fin-sum{border:1px solid var(--fl);border-radius:16px;padding:12px 14px 14px;box-shadow:0 2px 10px rgba(60,30,120,.05)}
+.fin-sum-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding-bottom:6px}.fin-sum-h b{font-size:16.5px}.fin-sum-h b span{font-weight:500}.fin-sum-h > span{font-size:13px;color:var(--fm)}
+.fin-sum-r{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--fl);font-size:14.5px}.fin-sum-r b{font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap}
+.fin-sum-t{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;padding:12px 16px;border-radius:12px;background:#fde9d6;font-weight:800;font-size:16.5px}.fin-sum-t b{color:#e8590c;font-size:19px;font-variant-numeric:tabular-nums}
 .fin-note{margin:8px 0 0;font-size:12.5px;color:var(--fm)}
 .fin-warn{margin:10px 0 0;font-size:13px;color:#a16207;background:#fff7e0;border:1px solid #f6d58a;border-radius:10px;padding:8px 12px}
 .fin-t{width:100%;border-collapse:collapse;font-size:14px}
@@ -847,6 +875,8 @@ const CSS = `
   .fin-root .fin-pill{font-size:11px}
   .fin-root .fin-warn{font-size:12.5px;padding:7px 10px}
   .fin-root .fin-add{font-size:13px}
+  .fin-root .fin-xi{padding:9px 10px 10px 11px}
+  .fin-root .fin-xi .fin-in.n input{font-size:15px}
   .fin-root .flex-col.gap-4{gap:12px}
   .fin-root .fin-exp-menu{left:0;right:auto}
   .fin-root .fin-tile{background:#f8f6fc;border-radius:14px;padding:10px 12px;margin-bottom:8px}
