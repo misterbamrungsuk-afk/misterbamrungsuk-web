@@ -88,7 +88,7 @@ const seats = async (g) => J(await fetch(B + '/api/join/seats' + (g ? '?g=' + g 
   // กลุ่ม LINE ตามช่องทางที่สมัคร (28 ต.ค. 2569): แอดมินเปลี่ยนเป็น Secret ทีหลัง ≠ ย้ายกลุ่ม · หลังบ้านมีหน้า /admin/line-groups
   await fetch(B + '/api/admin/applicants/' + idm, { method: 'PATCH', headers: ADM, body: JSON.stringify({ tier: 'secret' }) });
   const mh3 = await (await fetch(B + `/join/profile/${man.mb_code}?t=${encodeURIComponent(tok(man.mb_code))}`)).text();
-  ok('promoted to Secret later stays in MBM01 (group by signup channel)', mh3.includes('data-line-group="man"') && !mh3.includes('HWVAy7kW9g'));
+  ok('promoted to Secret later stays in MBM01 (group by signup channel)', mh3.includes('data-line-group="man"') && !mh3.includes('ywn9KbssQr'));
   await fetch(B + '/api/admin/applicants/' + idm, { method: 'PATCH', headers: ADM, body: JSON.stringify({ tier: 'silver' }) });
   const lg = (await (await fetch(B + '/admin/line-groups', { headers: ADM })).text()).replace(/<!-- -->/g, '');
   ok('admin LINE groups page: 11 groups + join buttons', (lg.match(/data-line-group-row="/g) || []).length === 11 && lg.includes('data-line-join="mgmt"') && lg.includes('หาเด็กผู้ชาย') && lg.includes('ลิงก์ซ้ำกับกลุ่มอื่น'));

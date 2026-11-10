@@ -121,11 +121,10 @@ export const lineAddUrl = () => "https://lin.ee/rnqFY2n";
  *  pt = กลุ่มของ Part-Time (ปุ่มในโปรไฟล์/หน้าสมัครเสร็จ ตามหมวด + ระดับ) · team = ทีมงานภายใน · other = กลุ่มอื่น */
 export type LineGroup = { key: string; label: string; url: string; kind: "pt" | "team" | "other"; note?: string };
 export const LINE_GROUP_LIST: LineGroup[] = [
-  { key: "secret_man", label: "Secret MBMS (หนุ่มหล่อ)", url: "https://line.me/ti/g/HWVAy7kW9g", kind: "pt", note: "สมัครผ่านลิงก์เชิญ Secret · หนุ่มหล่อ" },
-  { key: "secret_tom", label: "Secret MBTS (ทอมหล่อ)", url: "https://line.me/ti/g/yt9XSYW_xA", kind: "pt", note: "สมัครผ่านลิงก์เชิญ Secret · ทอมหล่อ" },
-  { key: "man", label: "กลุ่ม หนุ่มหล่อ MBM01", url: "https://line.me/ti/g/Fmv_gqJQmF", kind: "pt", note: "หนุ่มหล่อที่สมัครทางอื่น (สมัครเอง · ลิงก์เชิญ TOP · Recruit)" },
-  // ลิงก์ในสไลด์เหมือน MBM01 ทุกตัวอักษร — รอบอสยืนยันลิงก์ทอมหล่อ
-  { key: "tom", label: "กลุ่ม ทอมหล่อ MBT01", url: "https://line.me/ti/g/Fmv_gqJQmF", kind: "pt", note: "ทอมหล่อที่สมัครทางอื่น (สมัครเอง · ลิงก์เชิญ TOP · Recruit)" },
+  { key: "secret_man", label: "Secret MBMS (หนุ่มหล่อ)", url: "https://line.me/ti/g/ywn9KbssQr", kind: "pt", note: "สมัครผ่านลิงก์เชิญ Secret · หนุ่มหล่อ" },
+  { key: "secret_tom", label: "Secret MBTS (ทอมหล่อ)", url: "https://line.me/ti/g/WxQmBTketx", kind: "pt", note: "สมัครผ่านลิงก์เชิญ Secret · ทอมหล่อ" },
+  { key: "man", label: "กลุ่ม หนุ่มหล่อ MBM01", url: "https://line.me/ti/g/t2xMQBRyuN", kind: "pt", note: "หนุ่มหล่อที่สมัครทางอื่น (สมัครเอง · ลิงก์เชิญ TOP · Recruit)" },
+  { key: "tom", label: "กลุ่ม ทอมหล่อ MBT01", url: "https://line.me/ti/g/XAyQXejkUc", kind: "pt", note: "ทอมหล่อที่สมัครทางอื่น (สมัครเอง · ลิงก์เชิญ TOP · Recruit)" },
   { key: "tom_premium", label: "The tom พรีเมี่ยม", url: "https://line.me/ti/g/PK4djenHv2", kind: "other" },
   { key: "find_boys", label: "หาเด็กผู้ชาย", url: "https://line.me/ti/g/zA8kNb8was", kind: "other" },
   { key: "mkt", label: "MKT & Consult", url: "https://line.me/ti/g/fm4uNS54tx", kind: "team" },
