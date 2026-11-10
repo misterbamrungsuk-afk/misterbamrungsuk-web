@@ -57,13 +57,13 @@ async function diff(a, b, box) {
 
   const up = await J(await fetch(B + '/api/join/photos', { method: 'POST', body: form({ mb, t: T }, { file: new File([img], 'p.jpg', { type: 'image/jpeg' }) }) }));
   ok('profile photo added', up.ok, JSON.stringify(up));
-  // รูปสาธารณะเบลอ (กรอบหน้า default x50 y28 r24) · นอกกรอบเหมือนเดิม
+  // รูปสาธารณะเบลอ: ยังไม่ได้ตั้งจุดเบลอของรูปนี้ → เบลอทั้งรูป (กันหน้าหลุด · 11 พ.ย. 2569)
   const pid = publicId(mb);
   const P = () => fetch(B + `/api/public/pt-photo?id=${pid}&i=0`).then((x) => x.arrayBuffer()).then((x) => Buffer.from(x));
   const blurred = await P();
   const face = [0.4, 0.2, 0.6, 0.36], corner = [0.0, 0.85, 0.15, 1.0];
   const dFace = await diff(img, blurred, face), dCorner = await diff(img, blurred, corner);
-  ok('public photo: face area blurred, corner untouched', dFace > 6 && dCorner < 4, `face ${dFace.toFixed(1)} corner ${dCorner.toFixed(1)}`);
+  ok('public photo without a saved blur spot: whole photo blurred', dFace > 2 && dCorner > 2, `face ${dFace.toFixed(1)} corner ${dCorner.toFixed(1)}`);
   h = await (await fetch(B + '/')).text();
   const v1 = new RegExp(`pt-photo\\?id=${pid}&amp;i=0&amp;v=([0-9a-f]{8})`).exec(h)?.[1];
   ok('home card URL carries version', !!v1, String(v1));

@@ -17,7 +17,7 @@ const STATUSES: ApplicantStatus[] = ["pending_slip", "verified", "rejected", "re
 
 type Body = {
   listed?: boolean; status?: ApplicantStatus; sync?: boolean; cohort?: string | null; line_joined?: boolean;
-  package?: "A" | "B"; group?: "man" | "tom"; photo_privacy?: "show" | "face" | "whole"; active?: boolean; resign_reason?: string; resigned_at?: string; tier?: "top" | "silver" | "secret"; secret_price?: number | null; reason?: string;
+  package?: "A" | "B"; group?: "man" | "tom"; photo_privacy?: "show" | "face" | "whole"; blur_level?: 1 | 2 | 3; active?: boolean; resign_reason?: string; resigned_at?: string; tier?: "top" | "silver" | "secret"; secret_price?: number | null; reason?: string;
   kyc_status?: "approved" | "rejected"; kyc_reason?: Partial<Record<string, string>> | null;
 };
 
@@ -101,6 +101,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     } else {
       await saveProfile(cur.id, { inactive: null, active_log: [{ active: true, reason: String(body.resign_reason ?? "กลับมาทำงาน").trim().slice(0, 300) || "กลับมาทำงาน", at: now.slice(0, 10), by, set_at: now }, ...log].slice(0, 30) });
     }
+    const row = await getById(id);
+    return row ? NextResponse.json({ ok: true, row: { ...row, ...extraOf(row) } }) : NextResponse.json({ ok: false }, { status: 404 });
+  }
+  if (body.blur_level !== undefined) {
+    const l = Number(body.blur_level);
+    if (l !== 1 && l !== 2 && l !== 3) return NextResponse.json({ ok: false }, { status: 400 });
+    await saveProfile(id, { blur_level: l });
     const row = await getById(id);
     return row ? NextResponse.json({ ok: true, row: { ...row, ...extraOf(row) } }) : NextResponse.json({ ok: false }, { status: 404 });
   }

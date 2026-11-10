@@ -3,7 +3,7 @@ import { fileHeaders } from "@/lib/file-guard";
 import { findLiveByPublicId, photoPaths } from "@/lib/home/live";
 import { extraOf } from "@/lib/join/store";
 import { CACHE_LONG, CACHE_SHORT, parseWidth, thumb } from "@/lib/thumb";
-import { blurFace, blurOn, blurWhole, blurWholeOn, boxFor, pubVer } from "@/lib/join/face-blur";
+import { blurFace, blurOn, blurWhole, boxFor, levelOf, pubVer, wholeFor } from "@/lib/join/face-blur";
 
 export const runtime = "nodejs";
 
@@ -25,7 +25,7 @@ export async function GET(req: Request) {
   // ไม่เปิดเผยใบหน้า → เบลอก่อนส่ง (เบลอไม่ได้ = ไม่ส่งรูปเดิม)
   let src = f;
   if (blurOn(x)) {
-    try { src = blurWholeOn(x) ? await blurWhole(f.data) : await blurFace(f.data, boxFor(x, path)); } catch (e) { console.error("face blur failed", (e as Error).message); return new Response("unavailable", { status: 503 }); }
+    try { src = wholeFor(x, path) ? await blurWhole(f.data, levelOf(x)) : await blurFace(f.data, boxFor(x, path), levelOf(x)); } catch (e) { console.error("face blur failed", (e as Error).message); return new Response("unavailable", { status: 503 }); }
   }
   const out = await thumb(`${path}|${pubVer(path, x)}`, src, w);
   const v = u.searchParams.get("v");

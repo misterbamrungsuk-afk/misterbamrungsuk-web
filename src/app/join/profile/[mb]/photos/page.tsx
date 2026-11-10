@@ -15,5 +15,5 @@ export default async function PhotosPage({ params, searchParams }: { params: Pro
   const row = await getByMb(mb);
   if (!row) notFound();
   const x = extraOf(row);
-  return <PhotosClient mb={mb} t={t ?? ""} initial={x.photos ?? []} disclose={x.disclose ?? null} boxes={x.face_blur ?? {}} mode={x.blur_mode ?? null} />;
+  return <PhotosClient mb={mb} t={t ?? ""} initial={x.photos ?? []} disclose={x.disclose ?? null} boxes={x.face_blur ?? {}} mode={x.blur_mode ?? null} level={x.blur_level ?? null} />;
 }
