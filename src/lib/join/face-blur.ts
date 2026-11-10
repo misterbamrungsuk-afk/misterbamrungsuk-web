@@ -23,7 +23,7 @@ export function cleanBox(v: unknown): FaceBox | null {
   return x === null || y === null || r === null ? null : { x, y, r };
 }
 /** รุ่นของรูปสาธารณะ: path + การตั้งค่าเบลอ (เปลี่ยนจุดเบลอ/เปิดปิดเบลอ = URL ใหม่ → แคชเก่าไม่ค้าง) */
-export const pubVer = (path: string, x: Ext) => createHash("sha256").update(path + (!blurOn(x) ? "" : `|L${levelOf(x)}|` + (wholeFor(x, path) ? "whole" : JSON.stringify(boxFor(x, path))))).digest("hex").slice(0, 8);
+export const pubVer = (path: string, x: Ext) => createHash("sha256").update(path + (!blurOn(x) ? "" : `|v2|L${levelOf(x)}|` + (wholeFor(x, path) ? "whole" : JSON.stringify(boxFor(x, path))))).digest("hex").slice(0, 8);
 
 type Sharp = (typeof import("sharp"))["default"];
 const g = globalThis as unknown as { __mbSharpBlur?: Promise<Sharp> };
@@ -35,7 +35,7 @@ export async function blurWhole(data: Buffer, level: 1 | 2 | 3 = 2): Promise<{ t
   const base = await sharp(data, { failOn: "error" }).rotate().jpeg({ quality: 90 }).toBuffer();
   const { width = 0 } = await sharp(base).metadata();
   if (!width) throw new Error("bad image");
-  const out = await sharp(base).blur(Math.max(3, Math.round(width / ({ 1: 170, 2: 110, 3: 55 } as const)[level]))).jpeg({ quality: 84 }).toBuffer();
+  const out = await sharp(base).blur(Math.max(3, Math.round(width / ({ 1: 110, 2: 60, 3: 32 } as const)[level]))).jpeg({ quality: 84 }).toBuffer();
   return { type: "image/jpeg", data: out };
 }
 
