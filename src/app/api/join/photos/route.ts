@@ -40,6 +40,12 @@ export async function POST(req: Request) {
     await saveProfile(row.id, { disclose: v, blur_ack: v === "no" });
     return NextResponse.json({ ok: true, photos, disclose: v });
   }
+  if (action === "blur_mode") {
+    const m = extra.value === "whole" ? "whole" : extra.value === "face" ? "face" : null;
+    if (!m) return bad("เลือกแบบเบลอ");
+    await saveProfile(row.id, { blur_mode: m });
+    return NextResponse.json({ ok: true, photos, blur_mode: m });
+  }
   if (action === "blur") {
     if (!(index >= 0 && index < photos.length)) return bad("ไม่พบรูป");
     const box = cleanBox(extra.box) ?? DEFAULT_BOX;

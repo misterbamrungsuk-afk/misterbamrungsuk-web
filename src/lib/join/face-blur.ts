@@ -6,9 +6,11 @@ import { createHash } from "node:crypto";
 // จุดเบลอ (วงกลม) ตั้งเองต่อรูปในหน้า "รูปโปรไฟล์": x,y = จุดกึ่งกลาง (% ของกว้าง/สูง) · r = รัศมี (% ของความกว้าง)
 export type FaceBox = { x: number; y: number; r: number };
 export const DEFAULT_BOX: FaceBox = { x: 50, y: 28, r: 24 };
-type Ext = { disclose?: "yes" | "no" | null; face_blur?: Record<string, FaceBox> | null };
+type Ext = { disclose?: "yes" | "no" | null; face_blur?: Record<string, FaceBox> | null; blur_mode?: "face" | "whole" | null };
 
 export const blurOn = (x: Ext) => x.disclose === "no";
+/** เบลอทั้งรูปแบบอ่อน (SIRI 11 พ.ย. 2569: ไม่ต้องเบลอจนมองไม่เห็น พอเห็นรูปร่าง) */
+export const blurWholeOn = (x: Ext) => blurOn(x) && x.blur_mode === "whole";
 export const boxFor = (x: Ext, path: string): FaceBox => x.face_blur?.[path] ?? DEFAULT_BOX;
 export function cleanBox(v: unknown): FaceBox | null {
   const b = (v ?? {}) as Record<string, unknown>;
@@ -17,11 +19,21 @@ export function cleanBox(v: unknown): FaceBox | null {
   return x === null || y === null || r === null ? null : { x, y, r };
 }
 /** รุ่นของรูปสาธารณะ: path + การตั้งค่าเบลอ (เปลี่ยนจุดเบลอ/เปิดปิดเบลอ = URL ใหม่ → แคชเก่าไม่ค้าง) */
-export const pubVer = (path: string, x: Ext) => createHash("sha256").update(path + (blurOn(x) ? JSON.stringify(boxFor(x, path)) : "")).digest("hex").slice(0, 8);
+export const pubVer = (path: string, x: Ext) => createHash("sha256").update(path + (blurWholeOn(x) ? "|whole" : blurOn(x) ? JSON.stringify(boxFor(x, path)) : "")).digest("hex").slice(0, 8);
 
 type Sharp = (typeof import("sharp"))["default"];
 const g = globalThis as unknown as { __mbSharpBlur?: Promise<Sharp> };
 const loadSharp = () => (g.__mbSharpBlur ??= import("sharp").then((m) => (m.default ?? (m as unknown as Sharp))));
+
+/** เบลอทั้งรูปแบบอ่อน — เห็นรูปร่าง/บรรยากาศ แต่จำหน้าไม่ได้ (JPEG) */
+export async function blurWhole(data: Buffer): Promise<{ type: string; data: Buffer }> {
+  const sharp = await loadSharp();
+  const base = await sharp(data, { failOn: "error" }).rotate().jpeg({ quality: 90 }).toBuffer();
+  const { width = 0 } = await sharp(base).metadata();
+  if (!width) throw new Error("bad image");
+  const out = await sharp(base).blur(Math.max(5, Math.round(width / 110))).jpeg({ quality: 84 }).toBuffer();
+  return { type: "image/jpeg", data: out };
+}
 
 /** คืนรูปที่เบลอวงกลมตาม box (JPEG) — โยน error ถ้าทำไม่ได้ (ผู้เรียกต้องไม่ส่งรูปเดิมแทน) */
 export async function blurFace(data: Buffer, box: FaceBox): Promise<{ type: string; data: Buffer }> {

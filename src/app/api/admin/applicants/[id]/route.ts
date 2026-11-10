@@ -17,7 +17,7 @@ const STATUSES: ApplicantStatus[] = ["pending_slip", "verified", "rejected", "re
 
 type Body = {
   listed?: boolean; status?: ApplicantStatus; sync?: boolean; cohort?: string | null; line_joined?: boolean;
-  package?: "A" | "B"; group?: "man" | "tom"; active?: boolean; resign_reason?: string; resigned_at?: string; tier?: "top" | "silver" | "secret"; secret_price?: number | null; reason?: string;
+  package?: "A" | "B"; group?: "man" | "tom"; photo_privacy?: "show" | "face" | "whole"; active?: boolean; resign_reason?: string; resigned_at?: string; tier?: "top" | "silver" | "secret"; secret_price?: number | null; reason?: string;
   kyc_status?: "approved" | "rejected"; kyc_reason?: Partial<Record<string, string>> | null;
 };
 
@@ -101,6 +101,14 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     } else {
       await saveProfile(cur.id, { inactive: null, active_log: [{ active: true, reason: String(body.resign_reason ?? "กลับมาทำงาน").trim().slice(0, 300) || "กลับมาทำงาน", at: now.slice(0, 10), by, set_at: now }, ...log].slice(0, 30) });
     }
+    const row = await getById(id);
+    return row ? NextResponse.json({ ok: true, row: { ...row, ...extraOf(row) } }) : NextResponse.json({ ok: false }, { status: 404 });
+  }
+  // รูปสาธารณะ: เปิดหน้า / เบลอหน้า / เบลอทั้งรูป (แอดมินตั้งแทน Part-Time ได้)
+  if (body.photo_privacy !== undefined) {
+    const v = body.photo_privacy;
+    if (v !== "show" && v !== "face" && v !== "whole") return NextResponse.json({ ok: false }, { status: 400 });
+    await saveProfile(id, v === "show" ? { disclose: "yes" } : { disclose: "no", blur_ack: true, blur_mode: v });
     const row = await getById(id);
     return row ? NextResponse.json({ ok: true, row: { ...row, ...extraOf(row) } }) : NextResponse.json({ ok: false }, { status: 404 });
   }

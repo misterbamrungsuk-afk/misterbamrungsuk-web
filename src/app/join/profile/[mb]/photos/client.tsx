@@ -14,14 +14,16 @@ const BlurSpot = ({ b, ratio }: { b: Box; ratio: number }) => (
   <span aria-hidden="true" className="absolute pointer-events-none rounded-[50%]" style={{ left: `${b.x}%`, top: `${b.y}%`, width: `${b.r * 2}%`, height: `${b.r * 2.4 * ratio}%`, transform: "translate(-50%, -50%)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", boxShadow: "0 0 0 2px rgba(232,196,114,.85)" }} />
 );
 
-export function PhotosClient({ mb, t, initial, disclose: disclose0 = null, boxes: boxes0 = {} }: { mb: string; t: string; initial: string[]; disclose?: "yes" | "no" | null; boxes?: Record<string, Box> }) {
+export function PhotosClient({ mb, t, initial, disclose: disclose0 = null, boxes: boxes0 = {}, mode: mode0 = null }: { mb: string; t: string; initial: string[]; disclose?: "yes" | "no" | null; boxes?: Record<string, Box>; mode?: "face" | "whole" | null }) {
   const [photos, setPhotos] = useState<string[]>(initial);
   const [disclose, setDisclose] = useState(disclose0);
   const [boxes, setBoxes] = useState<Record<string, Box>>(boxes0);
   const [askNo, setAskNo] = useState(false);
   const [ack, setAck] = useState(false);
   const [edit, setEdit] = useState<{ i: number; b: Box; ratio: number } | null>(null);
+  const [mode, setModeS] = useState<"face" | "whole">(mode0 === "whole" ? "whole" : "face");
   const blur = disclose === "no";
+  const faceBlur = blur && mode === "face";
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [saved, setSaved] = useState(false);
@@ -41,6 +43,14 @@ export function PhotosClient({ mb, t, initial, disclose: disclose0 = null, boxes
     const data = (await res?.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
     setBusy(false);
     if (data?.ok) { setDisclose(value); setAskNo(false); setSaved(true); } else setErr(data?.error ?? "บันทึกไม่สำเร็จ");
+  };
+  const setMode = async (m: "face" | "whole") => {
+    if (m === mode) return;
+    setBusy(true); setErr(""); setSaved(false);
+    const res = await fetch("/api/join/photos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mb, t, action: "blur_mode", value: m }) }).catch(() => null);
+    const data = (await res?.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+    setBusy(false);
+    if (data?.ok) { setModeS(m); setEdit(null); setSaved(true); } else setErr(data?.error ?? "บันทึกไม่สำเร็จ");
   };
   const saveBox = async () => {
     if (!edit) return;
@@ -85,8 +95,8 @@ export function PhotosClient({ mb, t, initial, disclose: disclose0 = null, boxes
                   {p ? (
                     <>
                       <button type="button" onClick={() => i > 0 && call({ action: "main", index: i })} aria-label={i === 0 ? "รูปหลัก" : `ตั้งรูปที่ ${i + 1} เป็นรูปหลัก`} className="absolute inset-0 p-0 bg-transparent"><img src={url(p)} alt="" className="w-full h-full object-cover block" /></button>
-                      {blur && <BlurSpot b={boxes[p] ?? DEF} ratio={3 / 4} />}
-                      {blur && <button type="button" data-edit-blur={i} onClick={() => setEdit({ i, b: boxes[p] ?? DEF, ratio: 3 / 4 })} aria-label={`ปรับจุดเบลอรูปที่ ${i + 1}`} className="absolute left-1 bottom-1 h-9 px-2.5 rounded-full text-[12px] font-semibold text-[#1b130b]" style={{ background: "#e8c472" }}>ปรับเบลอ</button>}
+                      {faceBlur && <BlurSpot b={boxes[p] ?? DEF} ratio={3 / 4} />}
+                      {faceBlur && <button type="button" data-edit-blur={i} onClick={() => setEdit({ i, b: boxes[p] ?? DEF, ratio: 3 / 4 })} aria-label={`ปรับจุดเบลอรูปที่ ${i + 1}`} className="absolute left-1 bottom-1 h-9 px-2.5 rounded-full text-[12px] font-semibold text-[#1b130b]" style={{ background: "#e8c472" }}>ปรับเบลอ</button>}
                       <span className="absolute left-1.5 top-1.5 min-w-[22px] h-[22px] px-[7px] rounded-full text-[12px] font-bold grid place-items-center" style={{ background: i === 0 ? "#e8c472" : "rgba(23,18,17,0.8)", color: i === 0 ? "#1b130b" : "#f3ead9" }}>{i === 0 ? "รูปหลัก" : i + 1}</span>
                       <button type="button" onClick={() => call({ action: "remove", index: i })} aria-label="ลบรูป" className="absolute right-1 bottom-1 w-10 h-10 rounded-full text-[#f3ead9] text-[18px] leading-none grid place-items-center" style={{ background: "rgba(23,18,17,0.85)" }}>×</button>
                     </>
@@ -112,7 +122,12 @@ export function PhotosClient({ mb, t, initial, disclose: disclose0 = null, boxes
               <label className="flex items-start gap-3 cursor-pointer"><input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} className="mt-0.5 w-5 h-5 shrink-0 accent-[#e8c472]" /><span className="text-[14px]">รับทราบว่าการเบลอหน้าจะมีผลต่อจำนวนงานที่จะเข้ามา</span></label>
               <button type="button" disabled={busy || !ack} onClick={() => setDisc("no")} className="min-h-11 rounded-xl font-semibold text-[#1b130b] bg-[#e8c472] disabled:opacity-40">ยืนยันเบลอหน้า</button>
             </div>}
-            {blur && <span className="text-[13px] text-[#d9c9b4]">ลูกค้าเห็นรูปที่เบลอวงกลมตามกรอบ · กด &quot;ปรับเบลอ&quot; ที่รูปเพื่อเลื่อนวงให้ตรงใบหน้า</span>}
+            {blur && <div data-blur-mode className="grid grid-cols-2 gap-2">
+              <button type="button" disabled={busy} aria-pressed={mode === "face"} onClick={() => setMode("face")} className="min-h-11 rounded-xl text-[13.5px] font-semibold" style={{ background: mode === "face" ? "#f3ead9" : "#251d1b", color: mode === "face" ? "#1b130b" : "#f3ead9" }}>เบลอเฉพาะหน้า</button>
+              <button type="button" disabled={busy} aria-pressed={mode === "whole"} onClick={() => setMode("whole")} className="min-h-11 rounded-xl text-[13.5px] font-semibold" style={{ background: mode === "whole" ? "#f3ead9" : "#251d1b", color: mode === "whole" ? "#1b130b" : "#f3ead9" }}>เบลอทั้งรูป (อ่อน)</button>
+            </div>}
+            {faceBlur && <span className="text-[13px] text-[#d9c9b4]">ลูกค้าเห็นรูปที่เบลอวงกลมตามกรอบ · กด &quot;ปรับเบลอ&quot; ที่รูปเพื่อเลื่อนวงให้ตรงใบหน้า</span>}
+            {blur && mode === "whole" && <span className="text-[13px] text-[#d9c9b4]">ลูกค้าเห็นทุกรูปเบลอทั้งภาพแบบอ่อน ๆ — พอเห็นรูปร่างและบรรยากาศ แต่จำหน้าไม่ได้ · ไม่ต้องปรับจุดเบลอ</span>}
           </div>
           {edit && photos[edit.i] && (
             <div role="dialog" aria-label="ปรับจุดเบลอ" data-blur-editor className="flex flex-col gap-2 rounded-2xl bg-[#211a18]" style={{ padding: 14, border: "1.5px solid #e8c472" }}>
