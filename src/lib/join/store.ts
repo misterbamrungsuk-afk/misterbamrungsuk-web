@@ -426,6 +426,10 @@ export async function addProfilePhoto(id: string, f: File) {
   return putKycFile(id, "profile", f);
 }
 /** แอดมินกำหนดระดับ TOP / Silver / Secret → ราคาบนการ์ดโปรไฟล์ (Secret: ราคา 3 ชม. รายคน) */
+/** แอดมินย้ายหมวด หนุ่มหล่อ ↔ ทอมหล่อ (รหัส MB เดิม) */
+export async function setGroup(id: string, group: "man" | "tom") {
+  return patchApplicant(id, group === "tom" ? { group: "tom" } : { group: null, trans: null });
+}
 export async function setTier(id: string, tier: PtTier, secret_price?: number | null) {
   return patchApplicant(id, { tier, ...(secret_price !== undefined ? { secret_price } : {}) });
 }

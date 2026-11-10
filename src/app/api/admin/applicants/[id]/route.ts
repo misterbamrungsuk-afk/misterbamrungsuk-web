@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ensureReceiptNo, extraOf, getById, listApplicants, saveProfile, setKyc, setTier, updateApplicant, updateExtra, type Applicant, type ApplicantStatus, type KycReason } from "@/lib/join/store";
+import { ensureReceiptNo, extraOf, getById, listApplicants, saveProfile, setGroup, setKyc, setTier, updateApplicant, updateExtra, type Applicant, type ApplicantStatus, type KycReason } from "@/lib/join/store";
 import { listCohorts } from "@/lib/join/cohorts";
 import { appendToSheet } from "@/lib/join/sheets";
 import { FIX_KEYS } from "@/lib/join/fixes";
@@ -17,7 +17,7 @@ const STATUSES: ApplicantStatus[] = ["pending_slip", "verified", "rejected", "re
 
 type Body = {
   listed?: boolean; status?: ApplicantStatus; sync?: boolean; cohort?: string | null; line_joined?: boolean;
-  package?: "A" | "B"; active?: boolean; resign_reason?: string; resigned_at?: string; tier?: "top" | "silver" | "secret"; secret_price?: number | null; reason?: string;
+  package?: "A" | "B"; group?: "man" | "tom"; active?: boolean; resign_reason?: string; resigned_at?: string; tier?: "top" | "silver" | "secret"; secret_price?: number | null; reason?: string;
   kyc_status?: "approved" | "rejected"; kyc_reason?: Partial<Record<string, string>> | null;
 };
 
@@ -102,6 +102,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       await saveProfile(cur.id, { inactive: null, active_log: [{ active: true, reason: String(body.resign_reason ?? "กลับมาทำงาน").trim().slice(0, 300) || "กลับมาทำงาน", at: now.slice(0, 10), by, set_at: now }, ...log].slice(0, 30) });
     }
     const row = await getById(id);
+    return row ? NextResponse.json({ ok: true, row: { ...row, ...extraOf(row) } }) : NextResponse.json({ ok: false }, { status: 404 });
+  }
+  // ย้ายหมวด หนุ่มหล่อ ↔ ทอมหล่อ (แอดมิน) — รหัส MB เดิมไม่เปลี่ยน · หน้าแรกย้ายแท็บตาม · กลุ่ม LINE ตามหมวดใหม่
+  if (body.group !== undefined) {
+    if (body.group !== "man" && body.group !== "tom") return NextResponse.json({ ok: false }, { status: 400 });
+    const row = await setGroup(id, body.group);
     return row ? NextResponse.json({ ok: true, row: { ...row, ...extraOf(row) } }) : NextResponse.json({ ok: false }, { status: 404 });
   }
   // ย้ายสาย A ↔ B (แอดมิน · เช่น ลิงก์เชิญที่ลงสาย A ผิด) — ไม่เปลี่ยนยอดที่จ่ายแล้ว

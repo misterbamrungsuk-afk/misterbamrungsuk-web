@@ -1,6 +1,6 @@
 import "server-only";
 import { MASSAGE_SKILL, isMassage } from "@/lib/join/pt-ui";
-import { SECRET_SILHOUETTES } from "./people";
+
 import { pubVer } from "@/lib/join/face-blur";
 import { tierPrice } from "@/lib/join/config";
 import { createHash } from "crypto";
@@ -58,8 +58,6 @@ export async function getLivePeople(): Promise<Person[]> {
       acts: acts.length ? acts : ["eat"], free: 0, bio: x.listing?.title || a.intro || "Part-Time ที่ผ่านการอบรมมาตรฐาน Mister Bamrungsuk",
       ...(x.group === "tom" ? { group: "tom" as const } : {}),
       review: ["", ""], real: true, trained: coreDone(att.get(a.id) ?? {}), checked: a.criminal_check === "passed", boost: boosts.has(a.id), price: tierPrice(x, svc), ...(secret ? { secret: true } : {}), ...(!top && !a.amount ? { basic: true } : {}), photos: Math.min(9, photoPaths(a).length), pos: mainPos(a),
-      // Secret: ไม่โชว์หน้า → รูปเงา/หันหลังแทน (เลือกตามรหัส ให้คงที่) · ไม่เปิดแกลเลอรีรูปจริง
-      ...(secret ? { img: SECRET_SILHOUETTES[x.group === "tom" ? "tom" : "man"][[...id].reduce((n, c) => n + c.charCodeAt(0), 0) % 2], photos: 0, pos: undefined } : {}),
     } satisfies Person;
   });
 }

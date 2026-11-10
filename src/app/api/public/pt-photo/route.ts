@@ -19,8 +19,6 @@ export async function GET(req: Request) {
   const a = await findLiveByPublicId(id);
   const path = a ? photoPaths(a)[i] : undefined;
   if (!a || !path) return new Response("not found", { status: 404 });
-  // Secret ไม่เปิดรูปจริงต่อสาธารณะ (หน้าแรก/โปรไฟล์ใช้รูปเงาแทน)
-  if (extraOf(a).tier === "secret") return new Response("not found", { status: 404 });
   const f = await readFile(path);
   if (!f) return new Response("not found", { status: 404 });
   const x = extraOf(a);
