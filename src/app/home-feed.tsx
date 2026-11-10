@@ -123,7 +123,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
     };
     return people.filter((p) => (grp === "tom") === (p.group === "tom")).filter((p) => acts.every((a) => p.acts.includes(a)) && (!f.reg || PROV[provOf(p)] === f.reg) && (!f.prov || provOf(p) === f.prov)
       && (!spot || p.area.includes(spot) || spot.includes(p.area) || placeT(p.area, lang).toLowerCase().includes(spot.toLowerCase())) && (!f.type || (f.type === "massage") === p.acts.includes("massage"))
-      && (!f.tier || (f.tier === "top") === p.top) && (!f.act || p.acts.includes(f.act as Act)) && ageOf(p) >= lo && ageOf(p) <= hi).sort((a, b) => (b.real ? 1 : 0) - (a.real ? 1 : 0) || (b.secret ? 1 : 0) - (a.secret ? 1 : 0) || by[sort](a, b)); // คนจริงขึ้นก่อนตัวอย่างเสมอ · Secret ก่อน TOP (ทุกการเรียง)
+      && (!f.tier || (f.tier === "top") === p.top) && (!f.act || p.acts.includes(f.act as Act)) && (ageOf(p) ? ageOf(p) >= lo && ageOf(p) <= hi : !(+f.aMin || +f.aMax))).sort((a, b) => (b.real ? 1 : 0) - (a.real ? 1 : 0) || (b.secret ? 1 : 0) - (a.secret ? 1 : 0) || by[sort](a, b)); // คนจริงขึ้นก่อนตัวอย่างเสมอ · Secret ก่อน TOP (ทุกการเรียง)
   }, [people, grp, acts, sort, f.reg, f.prov, spot, f.type, f.tier, f.act, lo, hi, lang]);
   const nF = acts.length + [f.reg, f.prov, spot, MZ ? "" : f.type, f.tier, f.act].filter(Boolean).length + (lo !== 20 || hi !== 50 ? 1 : 0);
   const provOpts = Object.keys(PROV).filter((k) => !f.reg || PROV[k] === f.reg).sort((a, b) => a.localeCompare(b, "th"));
@@ -140,7 +140,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
         <div className="absolute left-[10px] bottom-2 text-[13px] font-light text-[#f3ead9]">{pl(p.prov ? `${p.area} · ${p.prov}` : p.area)}</div>
       </div>
       <div style={{ padding: "9px 10px 11px" }}>
-        <div className="flex justify-between items-center"><span className="font-semibold text-[15px]" style={p.boost ? { color: "#f3d27e" } : undefined}>{sampleNick(p, lang)}, {p.age}</span><span className="text-[13px] text-[#e8c472] font-normal">★ {p.rating}</span></div>
+        <div className="flex justify-between items-center"><span className="font-semibold text-[15px]" style={p.boost ? { color: "#f3d27e" } : undefined}>{sampleNick(p, lang)}{p.age ? `, ${p.age}` : ""}</span><span className="text-[13px] text-[#e8c472] font-normal">★ {p.rating}</span></div>
         <div className="text-[13px] mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis font-thin">{p.acts.map(labelOf).join(" · ")}</div>
         <div className="font-semibold text-[#e8c472] mt-1.5 text-[15px]">{p.priceTBD ? "฿xx,xxx" : `฿${price(p).toLocaleString("en-US")}`} <span className="font-thin text-[11.5px] text-[#b5a596]">{C.per3h}</span></div>
       </div>
