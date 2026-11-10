@@ -46,6 +46,10 @@ export default function RegisterPage() {
   const steps = smsOff ? ["บัญชี", "เสร็จสิ้น"] : ["บัญชี", "ยืนยัน OTP", "เสร็จสิ้น"];
   const idx = smsOff ? (step === "done" ? 1 : 0) : { form: 0, otp: 1, done: 2 }[step];
 
+  // กดจองก่อนมีบัญชี → /login?next=/book/xxx → สมัคร → กลับไปหน้าจองคนนั้นเลย (ไม่ต้องค้นหาใหม่)
+  const [next, setNext] = useState("");
+  useEffect(() => { const n = new URLSearchParams(window.location.search).get("next"); if (n && n.startsWith("/") && !n.startsWith("//")) setNext(n); }, []);
+  const loginHref = next ? `/login?next=${encodeURIComponent(next)}` : "/login";
   useEffect(() => {
     fetch("/api/otp/verify", { cache: "no-store" }).then((r) => r.json()).then((d: { required?: boolean }) => setSmsOff(d.required === false)).catch(() => {});
   }, []);
@@ -63,7 +67,9 @@ export default function RegisterPage() {
   const register = async () => {
     const { d } = await post("/api/auth/register", { name: f.name.trim(), phone, email: f.email.trim(), password: f.password, accept_terms: true });
     if (!d.ok) { setError(d.error || "สมัครไม่สำเร็จ"); setBusy(false); if (/อีเมล/.test(d.error ?? "")) setStep("form"); return; }
-    setBusy(false); setStep("done");
+    setBusy(false);
+    if (next) { router.replace(next); router.refresh(); return; }
+    setStep("done");
   };
 
   const sendOtp = async () => {
@@ -111,7 +117,7 @@ export default function RegisterPage() {
     <div className="mb-v7 min-h-dvh" style={{ background: "#171211", color: "#f3ead9" }}>
       <main className="mx-auto w-full max-w-[480px] md:max-w-[520px] md:pt-8 pb-8">
         <div className="flex items-center gap-2" style={{ padding: "12px 14px 0" }}>
-          <Link href={step === "otp" ? "#" : "/login"} onClick={(e) => { if (step === "otp") { e.preventDefault(); setStep("form"); setError(""); } }} aria-label="ย้อนกลับ"
+          <Link href={step === "otp" ? "#" : loginHref} onClick={(e) => { if (step === "otp") { e.preventDefault(); setStep("form"); setError(""); } }} aria-label="ย้อนกลับ"
             className="w-11 h-11 rounded-full grid place-items-center bg-[#211a18] text-[#e8c472] hover:text-[#e8c472]" style={{ border: `1px solid ${LN}` }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>
           </Link>
@@ -149,7 +155,7 @@ export default function RegisterPage() {
               {error && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{error}</p>}
               <button type="submit" disabled={busy || !agree || cool > 0} className={cta}>{busy ? "กำลังดำเนินการ…" : smsOff ? "สมัครสมาชิก" : cool > 0 ? `ส่งรหัสใหม่ได้ใน ${mmss}` : "ส่งรหัส OTP"}</button>
               <Link href="/auth/forgot" className="min-h-11 grid place-items-center text-[13px] font-light text-[#e8c472]">ลืมรหัสผ่าน?</Link>
-              <div className="text-center text-[13px] font-light text-[#d9c9b4]">มีบัญชีแล้ว? <Link href="/login" className="tap px-1 text-[#e8c472]">เข้าสู่ระบบ</Link></div>
+              <div className="text-center text-[13px] font-light text-[#d9c9b4]">มีบัญชีแล้ว? <Link href={loginHref} className="tap px-1 text-[#e8c472]">เข้าสู่ระบบ</Link></div>
             </form>
           )}
 

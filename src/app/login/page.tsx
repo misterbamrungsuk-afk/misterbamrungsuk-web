@@ -1,7 +1,7 @@
 "use client";
 
 // บอร์ด C-Login — รูปเต็มบน · โลโก้ (กดกลับหน้าแรก) · หัวข้อ · อีเมล + รหัสผ่าน (ไม่มี Google ตามที่สั่งตัดออก) · การ์ดสมัคร Part-Time
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -14,6 +14,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  // ปลายทางหลังล็อกอิน/สมัคร (เช่น /book/xxx ตอนกดจองก่อนมีบัญชี) — ส่งต่อไปหน้าสมัครด้วย
+  const [nextQ, setNextQ] = useState("");
+  useEffect(() => { const n = new URLSearchParams(window.location.search).get("next"); if (n && n.startsWith("/") && !n.startsWith("//")) setNextQ(`?next=${encodeURIComponent(n)}`); }, []);
   const nextUrl = () => {
     const n = new URLSearchParams(window.location.search).get("next") || "/";
     return n.startsWith("/") && !n.startsWith("//") ? n : "/";
@@ -66,7 +69,7 @@ export default function LoginPage() {
             <Link href="/auth/forgot" className="self-end tap px-1 text-[13px] text-[#e8c472] font-light">ลืมรหัสผ่าน?</Link>
             {error && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{error}</p>}
             <button type="submit" disabled={!ok || busy} className="h-[54px] rounded-full bg-[#e8c472] text-[#1b130b] font-semibold text-[15px] disabled:opacity-45" style={{ border: `1.5px solid ${GOLD}` }}>{busy ? "กำลังเข้าสู่ระบบ…" : "เข้าสู่ระบบ"}</button>
-            <Link href="/auth/register" className="self-center min-h-10 flex items-center text-[13px] text-[#d9c9b4] font-light">ยังไม่มีบัญชี?&nbsp;<span className="text-[#e8c472]">สมัครสมาชิก</span></Link>
+            <Link href={`/auth/register${nextQ}`} className="self-center min-h-10 flex items-center text-[13px] text-[#d9c9b4] font-light">ยังไม่มีบัญชี?&nbsp;<span className="text-[#e8c472]">สมัครสมาชิก</span></Link>
           </form>
 
           <Link href="/join" className="flex items-center gap-3 rounded-[18px] bg-[#211a18] text-inherit hover:text-inherit" style={{ padding: "12px 14px", border: "1px solid rgba(212,175,55,.4)" }}>
