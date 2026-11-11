@@ -86,23 +86,23 @@ export function JoinSalePage({ showEarnings = true, invite, group = null, secret
             <span className="text-[13.5px] font-light text-[#d9c9b4] leading-[1.6]">รับงานเพื่อนกินเที่ยว และนวดผ่อนคลายได้ (แนบใบรับรองการนวดในใบสมัคร) · สมัครฟรี ไม่มีค่าสมัคร</span>
           </div>}
           {!invite && !tom && (
-          <div className={`grid gap-[18px] md:gap-6 ${tom ? "max-w-[560px] w-full mx-auto" : "md:grid-cols-2"}`} role="radiogroup" aria-label="เลือกสายงาน">
+          <div data-track-pick className={`grid gap-2.5 md:gap-6 items-center ${tom ? "max-w-[560px] w-full mx-auto" : "grid-cols-2"}`} role="radiogroup" aria-label="เลือกสายงาน">
               {/* ทอมหล่อมีสายเดียว: เพื่อนกินเที่ยว ที่มีความสามารถในการนวด (B) · สมัครฟรี */}
               {((tom ? ["B"] : ["B", "A"]) as PackageKey[]).map((k) => {
                 const on = pick === k, T = TR[k];
                 return (
-                  <button key={k} type="button" role="radio" aria-checked={on} onClick={() => setPick(k)} className="w-full text-left flex flex-col"
-                    style={{ padding: 18, borderRadius: 16, gap: 16, background: T.bg, boxShadow: on ? T.sh : "none", opacity: on ? 1 : 0.8, transform: on ? "scale(1.02)" : "scale(.98)", transition: "all .3s ease", color: "#fff8ea" }}>
-                    <span className="flex items-center gap-3">
-                      <span className="shrink-0 w-6 h-6 rounded-full grid place-items-center" style={{ background: "rgba(243,234,217,0.08)" }}><span className="w-3 h-3 rounded-full" style={{ background: on ? "#e8c472" : "transparent" }} /></span>
-                      <span className="flex flex-col min-w-0" style={{ gap: 2 }}><span className="font-semibold text-[18px] leading-[1.35]">เพื่อนกินเที่ยว</span><span className="font-medium text-[15px] leading-[1.4]" style={{ opacity: 0.85 }}>{T.name2}</span></span>
+                  <button key={k} type="button" role="radio" aria-checked={on} onClick={() => setPick(k)} data-track={k} data-on={on ? "1" : "0"} className="w-full min-w-0 text-left flex flex-col gap-2.5 md:gap-4 p-3 md:p-[18px] rounded-[14px] md:rounded-2xl"
+                    style={{ background: T.bg, boxShadow: on ? T.sh : "none", opacity: on ? 1 : 0.5, filter: on ? "none" : "saturate(.35) brightness(.85)", transform: on ? "scale(1.04)" : "scale(.9)", transition: "transform .35s cubic-bezier(.2,.9,.3,1.2), opacity .3s ease, filter .3s ease, box-shadow .3s ease", color: "#fff8ea", zIndex: on ? 1 : 0, position: "relative" }}>
+                    <span className="flex items-start md:items-center gap-2 md:gap-3">
+                      <span className="shrink-0 mt-0.5 md:mt-0 w-5 h-5 md:w-6 md:h-6 rounded-full grid place-items-center" style={{ background: "rgba(243,234,217,0.08)", boxShadow: on ? "0 0 0 2px #e8c472" : "none" }}><span className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full" style={{ background: on ? "#e8c472" : "transparent" }} /></span>
+                      <span className="flex flex-col min-w-0" style={{ gap: 2 }}><span className="font-semibold text-[15px] md:text-[18px] leading-[1.35]">เพื่อนกินเที่ยว</span><span className="font-medium text-[12.5px] md:text-[15px] leading-[1.4]" style={{ opacity: 0.85 }}>{T.name2}</span></span>
                     </span>
-                    <span className="flex flex-col gap-1.5">
-                      {T.lines.map(([kk, v]) => <span key={kk} className="flex justify-between gap-[10px] text-[#fff7e8]"><span className="whitespace-nowrap shrink-0" style={{ color: T.kc }}>{kk}</span><span className="font-semibold text-right min-w-0">{v}</span></span>)}
+                    <span className="flex flex-col gap-1 md:gap-1.5 text-[12px] md:text-[15px]">
+                      {T.lines.map(([kk, v]) => <span key={kk} className="flex flex-col md:flex-row md:justify-between md:gap-[10px] text-[#fff7e8] leading-[1.4]"><span className="md:whitespace-nowrap md:shrink-0" style={{ color: T.kc }}>{kk}</span><span className="font-semibold md:text-right min-w-0">{v}</span></span>)}
                     </span>
-                    <span className="flex flex-col gap-1 rounded-xl" style={{ padding: "12px 14px", background: "rgba(0,0,0,.32)" }}>
-                      <span className="flex justify-between gap-[10px] text-[#fff7e8]"><span className="text-[#e8c472] font-semibold">ค่าสมัคร (รวมอบรม)</span><span className="font-bold text-[17px] text-[#fff1c9]" data-fee={k}>{SIGNUP_FREE || invite || tom ? "ฟรี" : T.fee}</span></span>
-                      <span className="text-[13px] leading-[1.6] text-[#fff7e8] font-light">{FEE_INCLUDES(k).slice(1, 3).join(" · ")}<br />{!invite && tom ? "ทอมหล่อ: สมัครฟรี · หักค่าสมัครจากงาน งานละ ฿500 จนครบ ฿10,000" : invite ? "✦ คำเชิญพิเศษ: ไม่ต้องชำระตอนสมัคร · ได้ระดับ TOP · หักค่าสมัครจากงาน งานละ ฿500 จนครบ ฿10,000" : SIGNUP_FREE ? "สมัครฟรี · หักค่าสมัครจากงาน งานละ ฿500 จนครบ ฿10,000" : "ไม่คืนเงินทุกกรณี"}</span>
+                    <span className="flex flex-col gap-1 rounded-[10px] md:rounded-xl px-2.5 py-2 md:px-3.5 md:py-3" style={{ background: "rgba(0,0,0,.32)" }}>
+                      <span className="flex flex-col md:flex-row md:justify-between md:gap-[10px] text-[#fff7e8]"><span className="text-[#e8c472] font-semibold text-[11.5px] md:text-[15px]">ค่าสมัคร (รวมอบรม)</span><span className="font-bold text-[15px] md:text-[17px] text-[#fff1c9]" data-fee={k}>{SIGNUP_FREE || invite || tom ? "ฟรี" : T.fee}</span></span>
+                      <span className="hidden md:block text-[13px] leading-[1.6] text-[#fff7e8] font-light">{FEE_INCLUDES(k).slice(1, 3).join(" · ")}<br />{!invite && tom ? "ทอมหล่อ: สมัครฟรี · หักค่าสมัครจากงาน งานละ ฿500 จนครบ ฿10,000" : invite ? "✦ คำเชิญพิเศษ: ไม่ต้องชำระตอนสมัคร · ได้ระดับ TOP · หักค่าสมัครจากงาน งานละ ฿500 จนครบ ฿10,000" : SIGNUP_FREE ? "สมัครฟรี · หักค่าสมัครจากงาน งานละ ฿500 จนครบ ฿10,000" : "ไม่คืนเงินทุกกรณี"}</span>
                     </span>
                   </button>
                 );
