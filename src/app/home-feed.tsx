@@ -272,25 +272,22 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
         ) : (
           <>
           {/* การ์ดเดียว (บอส 11 พ.ย. 2569): โรงแรม & สปา | สินค้าผลิตภัณฑ์ (เฉพาะล็อกอินแล้ว) + ปุ่มกลาง "ร่วมงานกับเรา" */}
-          <section data-home-hub className="rounded-[22px] text-[#1b130b] overflow-hidden" style={{ margin: "14px 18px 0", background: "linear-gradient(160deg, #f6eedf 0%, #efe3cc 100%)", boxShadow: "0 8px 22px rgba(0,0,0,.25), inset 0 0 0 1px rgba(143,94,0,.14)" }}>
+          <section data-home-hub className="rounded-[24px] text-[#1b130b]" style={{ margin: "14px 18px 0", padding: 12, background: "radial-gradient(120% 140% at 50% 0%, #fbf5e8 0%, #f1e5cd 60%, #e9d8b5 100%)", boxShadow: "0 10px 26px rgba(0,0,0,.28), inset 0 0 0 1px rgba(168,120,31,.22)" }}>
             {me && (
-              <nav aria-label={H.shopNav} className="grid grid-cols-2">
-                {([["/stay", ...H.shop[0], "M3 21V8l9-5 9 5v13M9 21v-6h6v6M3 21h18"], ["/market", ...H.shop[1], "M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"]] as const).map(([h, t, sub, d], k) => (
-                  <Link key={h} href={h} className="group flex items-center gap-2 sm:gap-3 text-[#1b130b] hover:text-[#1b130b] active:bg-[rgba(143,94,0,.08)] hover:bg-[rgba(143,94,0,.05)] transition-colors px-2.5 sm:px-3.5" style={{ paddingTop: 13, paddingBottom: 13, borderLeft: k ? "1px solid rgba(143,94,0,.16)" : undefined }}>
-                    <span className="grid place-items-center w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl shrink-0" style={{ background: "linear-gradient(135deg, #fff6e1, #ecd9ae)", color: "#8f5e00", boxShadow: "inset 0 0 0 1px rgba(143,94,0,.18)" }}><Svg d={d} size={21} /></span>
-                    <span className="min-w-0 flex-1 leading-[1.3]"><span className="block font-semibold text-[14px] sm:text-[15px] whitespace-nowrap">{t}</span><span className="block text-[12px] text-[#6a5649] truncate">{sub}</span></span>
-                    <span className="hidden sm:inline shrink-0 text-[#a8781f] text-[18px] leading-none transition-transform group-hover:translate-x-0.5" aria-hidden="true">›</span>
+              <nav aria-label={H.shopNav} className="grid grid-cols-2 gap-2.5 sm:gap-3">
+                {([["/stay", ...H.shop[0], "M3 21V8l9-5 9 5v13M9 21v-6h6v6M3 21h18"], ["/market", ...H.shop[1], "M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"]] as const).map(([h, t, sub, d]) => (
+                  <Link key={h} href={h} className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3.5 rounded-[18px] text-center sm:text-left text-[#1b130b] hover:text-[#1b130b] active:scale-[.98] hover:-translate-y-px transition-transform"
+                    style={{ padding: "16px 10px", background: "linear-gradient(180deg, #fffdf7 0%, #f7eedb 100%)", boxShadow: "0 3px 10px rgba(120,82,20,.12), inset 0 0 0 1px rgba(168,120,31,.18)" }}>
+                    <span className="grid place-items-center w-12 h-12 rounded-full shrink-0" style={{ background: "linear-gradient(140deg, #f3d27e 0%, #c99a3c 100%)", color: "#3a260c", boxShadow: "0 4px 12px rgba(168,120,31,.35), inset 0 1px 0 rgba(255,255,255,.5)" }}><Svg d={d} size={22} /></span>
+                    <span className="min-w-0 leading-[1.3]"><span className="block font-bold text-[15px] sm:text-[16.5px] whitespace-nowrap">{t}</span><span className="block mt-0.5 text-[12px] sm:text-[12.5px] text-[#7a6352]">{sub}</span></span>
                   </Link>
                 ))}
               </nav>
             )}
-            <div className="flex justify-center" style={{ padding: me ? "4px 14px 14px" : "14px", borderTop: me ? "1px solid rgba(143,94,0,.12)" : undefined, paddingTop: me ? 12 : 14 }}>
-              <Link href="/work-with-us" data-join-cta className="inline-flex items-center gap-2.5 h-11 pl-2 pr-5 rounded-full text-[#f3ead9] hover:text-[#f3ead9] text-[14.5px] font-semibold active:scale-[.98] transition-transform" style={{ background: "linear-gradient(135deg, #2a1d17, #1b130b)", boxShadow: "0 6px 16px rgba(27,19,11,.35), inset 0 0 0 1px rgba(232,196,114,.35)" }}>
-                <span className="grid place-items-center w-8 h-8 rounded-full" style={{ background: "#e8c472", color: "#1b130b" }}>
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m11 17 2 2a1 1 0 1 0 3-3" /><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4" /><path d="m21 3 1 11h-2" /><path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3" /><path d="M3 4h8" /></svg>
-                </span>
+            <div className="flex justify-center" style={{ paddingTop: me ? 12 : 2, paddingBottom: 2 }}>
+              <Link href="/work-with-us" data-join-cta className="inline-flex items-center justify-center gap-2.5 h-12 min-w-[220px] px-6 rounded-full text-[#f3ead9] hover:text-[#f3ead9] text-[15px] font-semibold active:scale-[.98] transition-transform" style={{ background: "linear-gradient(135deg, #32231a 0%, #1b130b 100%)", boxShadow: "0 8px 18px rgba(27,19,11,.35), inset 0 0 0 1px rgba(232,196,114,.45)" }}>
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#e8c472" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m11 17 2 2a1 1 0 1 0 3-3" /><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4" /><path d="m21 3 1 11h-2" /><path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3" /><path d="M3 4h8" /></svg>
                 {H.work}
-                <span aria-hidden="true" className="text-[#e8c472]">→</span>
               </Link>
             </div>
           </section>
