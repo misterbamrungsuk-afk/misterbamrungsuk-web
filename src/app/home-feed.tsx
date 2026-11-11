@@ -3,6 +3,7 @@
 
 // หน้าแรก · ดูเพื่อนในระบบ (บอร์ด Benefits + ป๊อปอัป BenefitsPopup) — ถอดตามบอร์ด
 // มือถือ = ตามบอร์ด 390 · md+ การ์ด 3 คอลัมน์ · กดการ์ด → โปรไฟล์ตัวอย่าง /p/[id] (บอร์ด C-Profile) → แชทตัวอย่าง (บอร์ด C-ChatRoom)
+import { PhotoFade } from "@/components/photo-fade";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { readConsent } from "@/lib/consent";
 import { EARNINGS, PACKAGES } from "@/lib/join/config";
@@ -133,7 +134,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
   const card = (p: P, i = 0) => (
     <Link key={p.id} href={sample && !p.real ? `/p/${p.id}?ex=1` : `/p/${p.id}`} data-secret={p.secret ? "1" : undefined} style={{ order: i * 2, ...(p.secret ? SECRET_CARD : { background: p.boost ? "linear-gradient(180deg, #5a2a1c 0%, #3a1a14 100%)" : CARD_BG, border: p.boost ? "2px solid #e8c472" : CARD_BD, boxShadow: p.boost ? "0 0 0 1px rgba(255,241,201,.35), 0 10px 30px rgba(232,196,114,.28)" : undefined }) }} className={`block rounded-[18px] overflow-hidden text-inherit hover:text-inherit${p.secret ? " secret-glow" : ""}`}>
       <div className="relative h-[176px] md:h-auto md:aspect-[4/5] lg:aspect-square">
-        <img src={sized(p.img, 480)} alt={p.nick} loading="lazy" className="w-full h-full object-cover block" style={p.pos ? { objectPosition: p.pos } : undefined} />
+        {p.imgs && p.imgs.length > 1 ? <PhotoFade srcs={p.imgs.map((u) => sized(u, 480))} alt={p.nick} pos={p.pos} delay={(i % 4) * 1000} /> : <img src={sized(p.img, 480)} alt={p.nick} loading="lazy" className="w-full h-full object-cover block" style={p.pos ? { objectPosition: p.pos } : undefined} />}
         <div className="absolute inset-0" style={{ background: p.secret ? "linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(8,6,12,0.96))" : "linear-gradient(180deg, rgba(251,251,251,0) 55%, rgba(55,21,29,0.95))" }} />
         {p.boost && <span className="absolute top-2 right-2 rounded-full text-[11.5px] font-semibold text-[#1b130b]" style={{ padding: "2px 9px", background: "linear-gradient(135deg, #fff1c9, #e8c472)", boxShadow: "0 2px 8px rgba(0,0,0,.35)" }}>{H.featured}</span>}
         {p.secret ? <div className="absolute top-2 left-2 flex"><span style={SECRET_BADGE}>SECRET</span></div> : p.top && <div className="absolute top-2 left-2 flex"><span style={{ display: "inline-flex", alignItems: "center", height: 18, padding: "0 7px", borderRadius: 4, background: "linear-gradient(135deg, #fff1c9 0%, #e8c472 45%, #a8781f 100%)", color: "#1b130b", fontWeight: 700, fontSize: 9.5, letterSpacing: ".2em", boxShadow: "inset 0 0 0 1px rgba(255,241,201,.5), 0 2px 6px rgba(0,0,0,.35)" }}>TOP</span></div>}

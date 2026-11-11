@@ -23,6 +23,8 @@ export type Person = {
   price?: number;
   /** จำนวนรูป (คนจริง) */
   photos?: number;
+  /** URL รูปทั้งหมดของ Part-Time จริง (การ์ดหน้าแรกเลื่อนแบบจาง) */
+  imgs?: string[];
   /** ตำแหน่งรูปหลักในกรอบ (CSS object-position) ที่ Part-Time ปรับเอง */
   pos?: string;
 };
