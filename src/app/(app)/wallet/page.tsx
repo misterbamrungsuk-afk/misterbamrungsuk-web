@@ -122,6 +122,8 @@ export default function WalletPage() {
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; t: string } | null>(null);
+  // มาจากปุ่ม "เติมเงิน" ในหน้าบัญชี (?topup=1) → เปิดฟอร์มเติมเงินทันที
+  useEffect(() => { if (new URLSearchParams(window.location.search).get("topup")) setOpen(true); }, []);
 
   const load = useCallback(async () => {
     const r = await fetch("/api/wallet", { cache: "no-store" }).catch(() => null);
