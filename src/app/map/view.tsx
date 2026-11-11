@@ -15,7 +15,10 @@ import { placeT, sampleNick } from "@/i18n/site";
 export type MapPerson = { id: string; nick: string; age: number; img: string; pos?: string; rating: string; top: boolean; acts: Act[]; area: string; price: number; priceTBD?: boolean; free: number; lat: number; lng: number; real: boolean };
 export type MapVenue = { id: string; name: string; area: string; lat: number; lng: number; sample?: boolean };
 
-const ACT_IDS: Act[] = ["eat", "massage", "cafe", "photo", "movie", "gym", "chill"];
+// หมวดบนแผนที่ (บอส 11 พ.ย. 2569) — ภาษาไทยใช้คำตามที่บอสกำหนด
+const ACT_IDS: Act[] = ["eat", "massage", "gym", "cafe", "movie", "dinner", "drive"];
+const TH_CAT: Partial<Record<Act, string>> = { eat: "เพื่อนกินเที่ยว", massage: "นวด", gym: "ออกกำลังกาย", cafe: "คาเฟ่", movie: "ดูหนัง", dinner: "ดินเนอร์", drive: "ขับรถ" };
+type Place = { name: string; full: string; lat: number; lng: number };
 const baht = (n: number) => "฿" + n.toLocaleString("en-US");
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 const SPA = "M12 21c-5 0-8-3-8-7 3 0 6 1 8 4 2-3 5-4 8-4 0 4-3 7-8 7zM12 18c-2-3-2-7 0-11 2 4 2 8 0 11z";
@@ -35,10 +38,32 @@ export function MapView({ people: people0, venues: venues0, sample }: { people: 
   const [show, setShow] = useState<"all" | "p" | "v">("all");
   const [sel, setSel] = useState<Sel>(null);
   const [me, setMe] = useState<[number, number] | null>(null);
+  // ค้นหาสถานที่ (พิมพ์ชื่อสถานที่ → เลือกพิกัด → เรียงเพื่อนใกล้ที่สุดก่อน)
+  const [hits, setHits] = useState<Place[]>([]);
+  const [finding, setFinding] = useState(false);
+  const [noHit, setNoHit] = useState(false);
+  const [origin, setOrigin] = useState<Place | null>(null);
+  useEffect(() => {
+    const t = q.trim();
+    if (t.length < 2 || (origin && t === origin.name)) { setHits([]); setNoHit(false); return; }
+    setFinding(true);
+    const ctl = new AbortController();
+    const id = setTimeout(() => {
+      fetch(`/api/public/geocode?q=${encodeURIComponent(t)}`, { signal: ctl.signal }).then((r) => r.json()).then((d: { hits?: Place[] }) => { setHits(d.hits ?? []); setNoHit(!(d.hits ?? []).length); }).catch(() => {}).finally(() => setFinding(false));
+    }, 450);
+    return () => { clearTimeout(id); ctl.abort(); };
+  }, [q, origin]);
+  const pickPlace = (h: Place) => { setOrigin(h); setQ(h.name); setHits([]); setSel(null); map.current?.flyTo([h.lat, h.lng], 13, { duration: 0.7 }); };
+  const clearPlace = () => { setOrigin(null); setQ(""); setHits([]); };
+  // จุดอ้างอิงระยะทาง: สถานที่ที่ค้นหา > ตำแหน่งของฉัน
+  const ref0 = origin ? { lat: origin.lat, lng: origin.lng } : me ? { lat: me[0], lng: me[1] } : null;
 
-  const hit = (...xs: string[]) => { const t = q.trim().toLowerCase(); return !t || xs.some((x) => x.toLowerCase().includes(t)); };
-  const ps = useMemo(() => show === "v" ? [] : people.filter((p) => acts.every((a) => p.acts.includes(a)) && hit(p.area, p.area0, p.nick)), [people, acts, q, show]); // eslint-disable-line react-hooks/exhaustive-deps
-  const vs = useMemo(() => show === "p" ? [] : venues.filter((v) => hit(v.area, v.area0, v.name)), [venues, q, show]); // eslint-disable-line react-hooks/exhaustive-deps
+  const ps = useMemo(() => {
+    if (show === "v") return [];
+    const list = people.filter((p) => acts.every((a) => p.acts.includes(a)));
+    return ref0 ? [...list].sort((a, b) => km(ref0, a) - km(ref0, b)) : list;
+  }, [people, acts, show, ref0?.lat, ref0?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
+  const vs = useMemo(() => show === "p" ? [] : venues, [venues, show]);
 
   // สร้างแผนที่ครั้งเดียว
   useEffect(() => {
@@ -93,6 +118,13 @@ export function MapView({ people: people0, venues: venues0, sample }: { people: 
     return () => mk?.remove();
   }, [me]);
 
+  useEffect(() => {
+    if (!origin || !map.current) return;
+    let mk: { remove: () => void } | null = null;
+    (async () => { const L = (await import("leaflet")).default; mk = L.marker([origin.lat, origin.lng], { icon: L.divIcon({ className: "hamoo-pin", html: '<div class="mbo"></div>', iconSize: [26, 34], iconAnchor: [13, 32] }), zIndexOffset: 2000 }).addTo(map.current!); })();
+    return () => mk?.remove();
+  }, [origin]);
+
   const sp = sel?.kind === "p" ? people.find((p) => p.id === sel.id) : null;
   const sv = sel?.kind === "v" ? venues.find((v) => v.id === sel.id) : null;
   const glass = { background: "rgba(23,18,17,.82)", backdropFilter: "blur(10px)", border: "1px solid rgba(243,234,217,0.1)" };
@@ -108,6 +140,7 @@ export function MapView({ people: people0, venues: venues0, sample }: { people: 
         .mbp.on{transform:scale(1.18)} .mbp.on .ring{background:#fff1c9;box-shadow:0 0 0 5px rgba(232,196,114,.35),0 8px 20px rgba(0,0,0,.5)}
         .mbv{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:#241c29;color:#e8c472;border:1.5px solid #e8c472;box-shadow:0 6px 14px rgba(0,0,0,.45);cursor:pointer}
         .mbv.on{background:#e8c472;color:#1b130b}
+        .mbo{width:26px;height:34px;background:#e2384d;clip-path:path('M13 0C5.8 0 0 5.6 0 12.6 0 22 13 34 13 34s13-12 13-21.4C26 5.6 20.2 0 13 0z');box-shadow:0 6px 14px rgba(0,0,0,.5)}
         .mbme{width:18px;height:18px;border-radius:50%;background:#4ea1ff;border:3px solid #fff;box-shadow:0 0 0 8px rgba(78,161,255,.25)}
         .leaflet-container{background:#171211;font-family:inherit}
       `}</style>
@@ -119,12 +152,24 @@ export function MapView({ people: people0, venues: venues0, sample }: { people: 
           <Link href="/" aria-label={C.back} className="w-11 h-11 shrink-0 rounded-full grid place-items-center text-[#f3ead9] hover:text-[#f3ead9]" style={glass}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg></Link>
           <label className="flex-1 min-w-0 h-11 rounded-full flex items-center gap-2 px-4" style={glass}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b5a596" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={M.search} aria-label={M.searchLbl} className="flex-1 min-w-0 bg-transparent outline-none text-[14px] text-[#f3ead9] placeholder:text-[#b5a596]" />
+            <input value={q} onChange={(e) => { setQ(e.target.value); if (origin) setOrigin(null); }} onKeyDown={(e) => { if (e.key === "Enter" && hits[0]) pickPlace(hits[0]); }} placeholder={M.search} aria-label={M.searchLbl} enterKeyHint="search" className="flex-1 min-w-0 bg-transparent outline-none text-[14px] text-[#f3ead9] placeholder:text-[#b5a596]" />
+            {q && <button type="button" onClick={clearPlace} aria-label={C.close} className="w-7 h-7 -mr-1 rounded-full grid place-items-center text-[#b5a596]">✕</button>}
           </label>
           <LangSwitch className="shrink-0 backdrop-blur-[10px]" />
         </div>
+        {(hits.length > 0 || (q.trim().length >= 2 && !origin && (finding || noHit))) && (
+          <div data-place-hits className="pointer-events-auto max-w-[640px] w-full mx-auto rounded-2xl overflow-hidden" style={{ ...glass, background: "rgba(33,26,24,.97)" }}>
+            {hits.length ? hits.map((h) => (
+              <button key={`${h.lat},${h.lng}`} type="button" onClick={() => pickPlace(h)} className="w-full flex items-start gap-2.5 px-4 py-2.5 text-left border-b border-[rgba(243,234,217,.06)] last:border-b-0">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e2384d" strokeWidth="2" className="mt-0.5 shrink-0" aria-hidden="true"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z" /><circle cx="12" cy="9" r="2.5" /></svg>
+                <span className="min-w-0"><span className="block text-[14px] font-semibold text-[#f3ead9] truncate">{h.name}</span><span className="block text-[12px] font-light text-[#b5a596] truncate">{h.full}</span></span>
+              </button>
+            )) : <div className="px-4 py-3 text-[13px] font-light text-[#d9c9b4]">{finding ? M.finding : M.noPlace}</div>}
+          </div>
+        )}
+        {origin && <div className="pointer-events-auto max-w-[640px] w-full mx-auto"><span className="inline-flex items-center gap-2 h-8 pl-3 pr-1 rounded-full text-[12.5px] font-semibold" style={{ background: "#e2384d", color: "#fff" }}>{M.near(origin.name)}<button type="button" onClick={clearPlace} aria-label={C.close} className="w-6 h-6 rounded-full grid place-items-center" style={{ background: "rgba(0,0,0,.2)" }}>✕</button></span></div>}
         <div className="flex gap-2 overflow-x-auto no-scrollbar pointer-events-auto max-w-[640px] w-full mx-auto">
-          {ACT_IDS.map((id) => { const label = LABEL[id]; const on = acts.includes(id); return <button key={id} type="button" aria-pressed={on} onClick={() => setActs((a) => (on ? a.filter((x) => x !== id) : [...a, id]))} className="shrink-0 h-9 px-3.5 rounded-full text-[13px] font-medium" style={chip(on)}>{label}</button>; })}
+          {ACT_IDS.map((id) => { const label = (lang === "th" ? TH_CAT[id] : undefined) ?? LABEL[id]; const on = acts.includes(id); return <button key={id} type="button" aria-pressed={on} onClick={() => setActs((a) => (on ? a.filter((x) => x !== id) : [...a, id]))} className="shrink-0 h-9 px-3.5 rounded-full text-[13px] font-medium" style={chip(on)}>{label}</button>; })}
         </div>
         <div className="flex justify-between items-center gap-2 pointer-events-auto max-w-[640px] w-full mx-auto">
           <div className="flex rounded-full p-1" style={glass}>
@@ -148,8 +193,8 @@ export function MapView({ people: people0, venues: venues0, sample }: { people: 
               <img src={sized(sp.img, 240)} alt={sp.nick} className="w-[84px] h-[104px] rounded-2xl object-cover shrink-0" style={sp.pos ? { objectPosition: sp.pos } : undefined} />
               <div className="min-w-0 flex-1 flex flex-col gap-1">
                 <div className="flex justify-between items-center gap-2"><b className="text-[18px] font-semibold">{sp.nick}{sp.age ? `, ${sp.age}` : ""}</b><span className="text-[13px] text-[#e8c472]">★ {sp.rating}</span></div>
-                <div className="text-[12.5px] font-light text-[#d9c9b4]">{sp.area}{me ? M.away(kmText(km({ lat: me[0], lng: me[1] }, sp))) : ""}</div>
-                <div className="flex flex-wrap gap-1">{sp.acts.slice(0, 3).map((a) => <span key={a} className="text-[11.5px] font-light rounded-full px-2 py-0.5" style={{ border: "1px solid rgba(243,234,217,0.12)" }}>{LABEL[a]}</span>)}</div>
+                <div className="text-[12.5px] font-light text-[#d9c9b4]">{sp.area}{ref0 ? M.away(kmText(km(ref0, sp))) : ""}</div>
+                <div className="flex flex-wrap gap-1">{sp.acts.slice(0, 3).map((a) => <span key={a} className="text-[11.5px] font-light rounded-full px-2 py-0.5" style={{ border: "1px solid rgba(243,234,217,0.12)" }}>{(lang === "th" ? TH_CAT[a] : undefined) ?? LABEL[a]}</span>)}</div>
                 <div className="font-semibold text-[#e8c472]">{sp.priceTBD ? "฿xx,xxx" : baht(sp.price)} <span className="text-[11px] font-light text-[#b5a596]">{C.per3h}</span></div>
               </div>
             </div>
@@ -169,7 +214,7 @@ export function MapView({ people: people0, venues: venues0, sample }: { people: 
             {ps.map((p) => (
               <button key={p.id} type="button" onClick={() => focus(p.lat, p.lng, { kind: "p", id: p.id })} className="shrink-0 w-[220px] rounded-2xl flex gap-2.5 p-2 text-left text-[#f3ead9]" style={{ ...glass, background: "rgba(33,26,24,.94)" }}>
                 <img src={sized(p.img, 240)} alt="" className="w-[64px] h-[80px] rounded-xl object-cover shrink-0" style={p.pos ? { objectPosition: p.pos } : undefined} />
-                <span className="min-w-0 flex flex-col gap-0.5"><b className="font-semibold text-[14px] truncate">{p.nick}{p.age ? `, ${p.age}` : ""}</b><span className="text-[11.5px] font-light text-[#d9c9b4] truncate">★ {p.rating} · {me ? `~${kmText(km({ lat: me[0], lng: me[1] }, p))}` : p.area}</span><span className="text-[13px] font-semibold text-[#e8c472] mt-auto">{p.priceTBD ? "฿xx,xxx" : baht(p.price)}<span className="text-[11.5px] font-light text-[#b5a596]"> {C.per3h}</span></span></span>
+                <span className="min-w-0 flex flex-col gap-0.5"><b className="font-semibold text-[14px] truncate">{p.nick}{p.age ? `, ${p.age}` : ""}</b><span className="text-[11.5px] font-light text-[#d9c9b4] truncate">★ {p.rating} · {ref0 ? `~${kmText(km(ref0, p))}` : p.area}</span><span className="text-[13px] font-semibold text-[#e8c472] mt-auto">{p.priceTBD ? "฿xx,xxx" : baht(p.price)}<span className="text-[11.5px] font-light text-[#b5a596]"> {C.per3h}</span></span></span>
               </button>
             ))}
           </div>

@@ -1,7 +1,7 @@
 // เพื่อนตัวอย่าง (mockup) บนหน้าแรก + หน้าโปรไฟล์ /p/[id] + ตัวอย่างแชท — รูป AI ชุดเดียวกับ canvas (public/brand/home)
 // แอปลูกค้ายังไม่เปิด: ข้อมูลทั้งหมดเป็นตัวอย่าง ไม่ใช่ Part-Time จริง
 
-export type Act = "eat" | "massage" | "cafe" | "photo" | "movie" | "gym" | "chill";
+export type Act = "eat" | "massage" | "cafe" | "photo" | "movie" | "gym" | "chill" | "dinner" | "drive";
 export type Person = {
   id: string; nick: string; age: number; img: string; top: boolean; rating: string; reviews: number; jobs: number; years: number;
   area: string; prov?: string; /** ย่านที่ Part-Time ตั้งเอง (ช่อง ~1 กม.) — มีแล้วใช้แทนพิกัดจากชื่อเขต */ geo?: [number, number]; acts: Act[]; free: number; height: number; langs: string; bio: string; review: [string, string];

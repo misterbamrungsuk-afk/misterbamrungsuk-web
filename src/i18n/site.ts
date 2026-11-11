@@ -8,7 +8,7 @@ export type SiteLang = "th" | "en" | "zh";
 const th = {
   intl: "th-TH",
   common: { home: "หน้าแรก", map: "แผนที่", login: "เข้าสู่ระบบ", register: "สมัครทันที", myAccount: "บัญชีของฉัน", myBookings: "นัดของฉัน", notifications: "การแจ้งเตือน", close: "ปิด", later: "ไว้ทีหลัง", details: "ดูรายละเอียด", ad: "โฆษณา", advertise: "โฆษณากับเรา ›", per3h: "/ 3 ชม.", back: "ย้อนกลับ", lang: "ภาษา", soon: "ตัวอย่าง · เปิดให้บริการเร็ว ๆ นี้", years: (n: number) => `${n} ปี`, cm: (n: number) => `${n} ซม.`, people: (n: number) => `${n} คน` },
-  acts: { eat: "กิน & เที่ยว", massage: "นวดผ่อนคลาย", cafe: "คาเฟ่", photo: "ถ่ายรูป", movie: "ดูหนัง", gym: "ออกกำลัง", chill: "นั่งชิล" } as Record<Act, string>,
+  acts: { eat: "กิน & เที่ยว", massage: "นวดผ่อนคลาย", cafe: "คาเฟ่", photo: "ถ่ายรูป", movie: "ดูหนัง", gym: "ออกกำลัง", chill: "นั่งชิล", dinner: "ดินเนอร์", drive: "ขับรถพาเที่ยว" } as Record<Act, string>,
   home: {
     metaTitle: "Mister Bamrungsuk — เลือกเพื่อนของคุณ",
     navHome: "หน้าแรก", navSample: [["/join/showcase", "ดูเพื่อน"], ["/map", "แผนที่"], ["/join/earnings", "รายได้"], ["/policy", "กฎเกณฑ์"], ["/work-with-us", "ร่วมทีม"]] as [string, string][],
@@ -19,7 +19,7 @@ const th = {
     sampleCta: "อยากเป็นเพื่อนกินเที่ยวแบบนี้?", sampleFee: (p: string) => `ค่าสมัครเริ่มต้น ${p} (รวมอบรม) · เลือกวันเวลาเอง`,
     shop: [["โรงแรม · สปา", "ราคาสมาชิก"], ["สินค้า", "ส่งถึงบ้าน"]] as [string, string][], shopNav: "ซื้อบริการและสินค้า",
     work: "ร่วมงานกับเรา", apply: "สมัคร →",
-    search: "ค้นหาชื่อ ย่าน หรือกิจกรรม", searchLbl: "ค้นหา", onMap: "ดูบนแผนที่", filters: "ตัวกรอง",
+    search: "ค้นหาชื่อ ย่าน หรือกิจกรรม", searchLbl: "ค้นหา", onMap: "ดูบนแผนที่", pickMap: "เลือกเพื่อนจากแผนที่", filters: "ตัวกรอง",
     sorts: { top: "แนะนำ · TOP ก่อน", rate: "คะแนนสูงสุด", price: "ราคา" },
     friends: "เพื่อนในระบบ", groupTabs: "หมวด", man: "หนุ่มหล่อ", tom: "ทอมหล่อ", found: (n: number) => `พบ ${n} คน`,
     featured: "★ แนะนำ",
@@ -69,7 +69,7 @@ const th = {
     hShort: (h: number) => `${h} ชม.`, chat: "แชท", chatWith: (n: string) => `แชทกับ${n}`, book: "จองเลย",
   },
   map: {
-    metaTitle: "แผนที่ — Mister Bamrungsuk", aria: "แผนที่เพื่อนและสถานที่พาร์ทเนอร์", search: "ค้นหาย่าน เช่น อโศก, ทองหล่อ", searchLbl: "ค้นหาย่าน",
+    metaTitle: "แผนที่ — Mister Bamrungsuk", aria: "แผนที่เพื่อนและสถานที่พาร์ทเนอร์", search: "พิมพ์สถานที่ เช่น สยามพารากอน, อโศก", searchLbl: "ค้นหาสถานที่", near: (p: string) => `ใกล้ ${p}`, finding: "กำลังค้นหาสถานที่…", noPlace: "ไม่พบสถานที่นี้ ลองพิมพ์ชื่ออื่น",
     layers: { all: "ทั้งหมด", p: "เพื่อน", v: "พาร์ทเนอร์" }, count: (p: number, v: number) => [`${p}`, " เพื่อน · ", `${v}`, " พาร์ทเนอร์"] as [string, string, string, string],
     locate: "ไปที่ตำแหน่งของฉัน", fit: "ดูหมุดทั้งหมด", away: (d: string) => ` · ห่างประมาณ ${d}`, profile: "ดูโปรไฟล์",
     venue: (s: boolean) => `สถานที่พาร์ทเนอร์ · สปา${s ? " (ตัวอย่าง)" : ""}`, venueNote: "นัดเพื่อนมาที่นี่ได้ (เปิดให้จองเร็ว ๆ นี้)",
@@ -111,7 +111,7 @@ export type SiteDict = typeof th;
 const en: SiteDict = {
   intl: "en-SG",
   common: { home: "Home", map: "Map", login: "Log in", register: "Sign up", myAccount: "My account", myBookings: "My bookings", notifications: "Notifications", close: "Close", later: "Maybe later", details: "View details", ad: "Promo", advertise: "Partner with us ›", per3h: "/ 3 hrs", back: "Back", lang: "Language", soon: "Preview · Launching soon", years: (n) => `${n} yrs`, cm: (n) => `${n} cm`, people: (n) => `${n} people` },
-  acts: { eat: "Dining & outings", massage: "Relaxing massage", cafe: "Cafés", photo: "Photography", movie: "Movies", gym: "Fitness", chill: "Chill & lounge" },
+  acts: { eat: "Dining & outings", massage: "Relaxing massage", cafe: "Cafés", photo: "Photography", movie: "Movies", gym: "Fitness", chill: "Chill & lounge", dinner: "Dinner", drive: "Drives you around" },
   home: {
     metaTitle: "Mister Bamrungsuk — Choose your companion",
     navHome: "Home", navSample: [["/join/showcase", "Companions"], ["/map", "Map"], ["/join/earnings", "Earnings"], ["/policy", "Rules"], ["/work-with-us", "Join us"]],
@@ -122,7 +122,7 @@ const en: SiteDict = {
     sampleCta: "Want to be a companion like this?", sampleFee: (p) => `Sign-up from ${p} (training included) · choose your own schedule`,
     shop: [["Hotels · Spas", "Member rates"], ["Shop", "Home delivery"]], shopNav: "Services and products",
     work: "Work with us", apply: "Apply →",
-    search: "Search name, area or activity", searchLbl: "Search", onMap: "View on map", filters: "Filters",
+    search: "Search name, area or activity", searchLbl: "Search", onMap: "View on map", pickMap: "Choose companions on the map", filters: "Filters",
     sorts: { top: "Recommended · TOP first", rate: "Top rated", price: "Price" },
     friends: "Companions", groupTabs: "Category", man: "Gentlemen", tom: "Handsome Toms", found: (n) => `${n} found`,
     featured: "★ Featured",
@@ -171,7 +171,7 @@ const en: SiteDict = {
     hShort: (h) => `${h} hrs`, chat: "Chat", chatWith: (n) => `Chat with ${n}`, book: "Book now",
   },
   map: {
-    metaTitle: "Map — Mister Bamrungsuk", aria: "Map of companions and partner venues", search: "Search an area, e.g. Asok, Thong Lo", searchLbl: "Search area",
+    metaTitle: "Map — Mister Bamrungsuk", aria: "Map of companions and partner venues", search: "Type a place, e.g. Siam Paragon, Asok", searchLbl: "Search a place", near: (p) => `Near ${p}`, finding: "Searching…", noPlace: "Place not found — try another name",
     layers: { all: "All", p: "Companions", v: "Partners" }, count: (p, v) => [`${p}`, " companions · ", `${v}`, " partners"],
     locate: "Go to my location", fit: "Show all pins", away: (d) => ` · about ${d} away`, profile: "View profile",
     venue: (s) => `Partner venue · Spa${s ? " (sample)" : ""}`, venueNote: "Meet your companion here (booking opens soon)",
@@ -211,7 +211,7 @@ const en: SiteDict = {
 const zh: SiteDict = {
   intl: "zh-SG",
   common: { home: "首页", map: "地图", login: "登录", register: "立即注册", myAccount: "我的账户", myBookings: "我的预约", notifications: "通知", close: "关闭", later: "稍后再说", details: "查看详情", ad: "推广", advertise: "商务合作 ›", per3h: "/ 3小时", back: "返回", lang: "语言", soon: "预览 · 即将上线", years: (n) => `${n}岁`, cm: (n) => `${n}厘米`, people: (n) => `${n}人` },
-  acts: { eat: "美食出游", massage: "放松按摩", cafe: "咖啡馆", photo: "摄影", movie: "看电影", gym: "健身", chill: "休闲小坐" },
+  acts: { eat: "美食出游", massage: "放松按摩", cafe: "咖啡馆", photo: "摄影", movie: "看电影", gym: "健身", chill: "休闲小坐", dinner: "晚餐", drive: "开车出游" },
   home: {
     metaTitle: "Mister Bamrungsuk — 选择您的社交伙伴",
     navHome: "首页", navSample: [["/join/showcase", "浏览伙伴"], ["/map", "地图"], ["/join/earnings", "收入"], ["/policy", "规则"], ["/work-with-us", "加入我们"]],
@@ -222,7 +222,7 @@ const zh: SiteDict = {
     sampleCta: "想成为这样的伙伴吗？", sampleFee: (p) => `报名费 ${p} 起（含培训）· 时间自由安排`,
     shop: [["酒店 · 水疗", "会员价"], ["商品", "送货上门"]], shopNav: "服务与商品",
     work: "与我们合作", apply: "报名 →",
-    search: "搜索姓名、区域或活动", searchLbl: "搜索", onMap: "在地图上查看", filters: "筛选",
+    search: "搜索姓名、区域或活动", searchLbl: "搜索", onMap: "在地图上查看", pickMap: "在地图上选择伙伴", filters: "筛选",
     sorts: { top: "推荐 · TOP优先", rate: "评分最高", price: "价格" },
     friends: "平台伙伴", groupTabs: "类别", man: "帅气男士", tom: "帅气Tom", found: (n) => `共${n}位`,
     featured: "★ 推荐",
@@ -271,7 +271,7 @@ const zh: SiteDict = {
     hShort: (h) => `${h}小时`, chat: "聊天", chatWith: (n) => `与${n}聊天`, book: "立即预约",
   },
   map: {
-    metaTitle: "地图 — Mister Bamrungsuk", aria: "伙伴与合作场所地图", search: "搜索区域，如 阿速、通罗", searchLbl: "搜索区域",
+    metaTitle: "地图 — Mister Bamrungsuk", aria: "伙伴与合作场所地图", search: "输入地点，如 暹罗百丽宫、阿速", searchLbl: "搜索地点", near: (p) => `${p} 附近`, finding: "正在搜索…", noPlace: "未找到该地点，请换个名称",
     layers: { all: "全部", p: "伙伴", v: "合作方" }, count: (p, v) => [`${p}`, " 位伙伴 · ", `${v}`, " 家合作方"],
     locate: "前往我的位置", fit: "查看全部", away: (d) => ` · 约 ${d}`, profile: "查看资料",
     venue: (s) => `合作场所 · 水疗${s ? "（示例）" : ""}`, venueNote: "可约伙伴来此见面（即将开放预约）",

@@ -7,7 +7,7 @@ import { priceOf, type Act, type Person } from "@/lib/home/people";
 
 const GOLD = "#e8c472";
 const LN = "rgba(243,234,217,0.07)";
-const LABEL: Record<Act, string> = { eat: "กิน & เที่ยว", massage: "นวดผ่อนคลาย", cafe: "คาเฟ่", photo: "ถ่ายรูป", movie: "ดูหนัง", gym: "ออกกำลัง", chill: "นั่งชิล" };
+const LABEL: Record<Act, string> = { eat: "กิน & เที่ยว", massage: "นวดผ่อนคลาย", cafe: "คาเฟ่", photo: "ถ่ายรูป", movie: "ดูหนัง", gym: "ออกกำลัง", dinner: "ดินเนอร์", drive: "ขับรถพาเที่ยว", chill: "นั่งชิล" };
 const SORT: [string, string][] = [["top", "แนะนำ"], ["rating", "คะแนนสูงสุด"], ["price", "ราคาต่ำสุด"]];
 type F = { acts: Act[]; pmin: number; pmax: number; amin: number; amax: number; prov: string; r45: boolean; top: boolean };
 

@@ -16,7 +16,7 @@ import type { Act, Person } from "./people";
 // Part-Time จริงบนหน้าแรก — เงื่อนไข: ชำระแล้ว (verified) · KYC ผ่าน · มีรูป · แอดมินเปิด "แสดงบนหน้าแรก" · ไม่พักงาน · ไม่ขอลบบัญชี
 // id สาธารณะ = r + hash สั้นของรหัส (ไม่เปิดเผยรหัสผู้สมัคร)
 
-const ACT_OF: Record<string, Act> = { "กิน & เที่ยว": "eat", "ดินเนอร์": "eat", "คาเฟ่": "cafe", "ช่างภาพ": "photo", "ถ่ายรูป": "photo", "ดูหนัง": "movie", "ออกกำลัง": "gym", "ฟิตเนส": "gym", "นั่งชิล": "chill" };
+const ACT_OF: Record<string, Act> = { "กิน & เที่ยว": "eat", "ดินเนอร์": "dinner", "ขับรถ": "drive", "ขับรถพาเที่ยว": "drive", "คาเฟ่": "cafe", "ช่างภาพ": "photo", "ถ่ายรูป": "photo", "ดูหนัง": "movie", "ออกกำลัง": "gym", "ฟิตเนส": "gym", "นั่งชิล": "chill" };
 
 export const publicId = (mb: string) => "r" + createHash("sha256").update(`mb-public:${mb}`).digest("hex").slice(0, 10);
 
@@ -47,7 +47,7 @@ export async function getLivePeople(): Promise<Person[]> {
     const svc = a.package === "B" ? cfg.price3h.massage : cfg.price3h.eat;
     // นวดผ่อนคลาย: สายนวด (B) หรือสายอื่นที่แนบใบรับรอง + เลือกสกิล/กิจกรรมนวด (เช่น ลิงก์เชิญที่นวดได้)
     const massage = a.package === "B" || (!!a.docs.cert_doc && (!!x.card?.skills?.includes(MASSAGE_SKILL) || !!x.card?.activities?.some(isMassage)));
-    const acts = [...new Set([...(massage ? ["massage" as Act] : []), ...(x.card?.activities ?? []).map((t) => ACT_OF[t]).filter(Boolean)])] as Act[];
+    const acts = [...new Set([...(massage ? ["massage" as Act] : []), ...(x.card?.skills?.includes("drive") ? ["drive" as Act] : []), ...(x.card?.activities ?? []).map((t) => ACT_OF[t]).filter(Boolean)])] as Act[];
     const area = (x.areas ?? [])[0]?.split(" › ") ?? [];
     return {
       id, nick: a.nickname, age: a.birthdate ? ageFrom(a.birthdate) ?? 0 : 0, img: `/api/public/pt-photo?id=${id}&i=0${photoPaths(a)[0] ? `&v=${pubVer(photoPaths(a)[0], x)}` : ""}`, top, rating: st?.count ? st.avg.toFixed(1) : "ใหม่",

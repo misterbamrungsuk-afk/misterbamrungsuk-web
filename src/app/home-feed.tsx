@@ -74,7 +74,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
   // 3 ภาษา (ไทย · EN · 中文) — ข้อความจาก src/i18n/site.ts · ชื่อเล่น/แนะนำตัวของคนจริงแสดงตามที่กรอก
   const { s: S, lang } = useI18n();
   const H = S.home, C = S.common;
-  const labelOf = (id: Act) => S.acts[id] ?? "";
+  const labelOf = (id: string) => (S.acts as Record<string, string>)[id] ?? "";
   const pl = (x: string) => placeT(x, lang);
   const slider = useRef<HTMLDivElement>(null);
   const [slide, setSlide] = useState(0);
@@ -315,14 +315,16 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
             <input value={f.spot} onChange={set("spot")} placeholder={H.search} aria-label={H.searchLbl} className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[#f3ead9] placeholder:text-[#b5a596]" style={{ fontSize: 14 }} />
           </label>
-          <Link href="/map" aria-label={H.onMap} className="grid place-items-center w-12 h-12 shrink-0 rounded-[14px] text-[#e8c472] hover:text-[#e8c472]" style={{ background: "rgba(232,196,114,0.24)" }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" /></svg>
-          </Link>
           <button type="button" onClick={() => setFOpen(true)} aria-label={H.filters} className="relative grid place-items-center w-12 h-12 shrink-0 rounded-[14px] text-[#e8c472] p-0" style={{ background: "rgba(232,196,114,0.24)" }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0" /><circle cx="16" cy="6" r="2" /><circle cx="10" cy="12" r="2" /><circle cx="18" cy="18" r="2" /></svg>
             {nF > 0 && <span className="absolute grid place-items-center rounded-full bg-[#b0182c] text-white font-bold" style={{ top: -6, right: -6, minWidth: 18, height: 18, padding: "0 5px", fontSize: 11.5 }}>{nF}</span>}
           </button>
         </div>
+        {/* ปุ่มเลือกเพื่อนจากแผนที่ (บอส 11 พ.ย. 2569) — พิมพ์สถานที่แล้วเห็นเพื่อนใกล้เคียง */}
+        <Link href="/map" data-pick-map className="flex items-center justify-center gap-2 h-12 rounded-[14px] text-[15px] font-semibold text-[#1b130b] hover:text-[#1b130b]" style={{ margin: "10px 18px 0", background: "linear-gradient(135deg, #f3d27e, #e8c472)" }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z" /><circle cx="12" cy="9" r="2.5" /></svg>
+          {H.pickMap}
+        </Link>
 
         {/* กิจกรรม */}
         {!MZ && <div className="flex gap-2 overflow-x-auto no-scrollbar" style={{ padding: "14px 18px 0" }}>
