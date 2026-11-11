@@ -4,6 +4,8 @@
 // หน้าแรก · ดูเพื่อนในระบบ (บอร์ด Benefits + ป๊อปอัป BenefitsPopup) — ถอดตามบอร์ด
 // มือถือ = ตามบอร์ด 390 · md+ การ์ด 3 คอลัมน์ · กดการ์ด → โปรไฟล์ตัวอย่าง /p/[id] (บอร์ด C-Profile) → แชทตัวอย่าง (บอร์ด C-ChatRoom)
 import { PhotoFade } from "@/components/photo-fade";
+import { km, kmText } from "@/lib/geo";
+import { coordsOf } from "@/lib/home/geo";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { readConsent } from "@/lib/consent";
 import { EARNINGS, PACKAGES } from "@/lib/join/config";
@@ -94,6 +96,31 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
   const [ad, setAd] = useState(false);
   const [fOpen, setFOpen] = useState(false);
   const [f, setF] = useState({ reg: "", prov: "", spot: "", type: svc as string, tier: "", act: "", aMin: "20", aMax: "50" });
+  // ค้นหาสถานที่ (บอส 11 พ.ย. 2569): พิมพ์สถานที่ → เลือก/กดค้นหา → เรียงเพื่อนใกล้สุดก่อน + การ์ดบอกระยะห่างจากสถานที่
+  type Place = { name: string; full: string; lat: number; lng: number };
+  const [pq, setPq] = useState("");
+  const [hits, setHits] = useState<Place[]>([]);
+  const [finding, setFinding] = useState(false);
+  const [noPlace, setNoPlace] = useState(false);
+  const [origin, setOrigin] = useState<Place | null>(null);
+  const geocode = (t: string, signal?: AbortSignal) => fetch(`/api/public/geocode?q=${encodeURIComponent(t)}`, { signal }).then((r) => r.json()).then((d: { hits?: Place[] }) => d.hits ?? []);
+  useEffect(() => {
+    const t = pq.trim();
+    if (t.length < 2 || (origin && t === origin.name)) { setHits([]); setNoPlace(false); return; }
+    const ctl = new AbortController();
+    const id = setTimeout(() => { setFinding(true); geocode(t, ctl.signal).then((h) => { setHits(h); setNoPlace(!h.length); }).catch(() => {}).finally(() => setFinding(false)); }, 450);
+    return () => { clearTimeout(id); ctl.abort(); };
+  }, [pq, origin]);
+  const pickPlace = (h: Place) => { setOrigin(h); setPq(h.name); setHits([]); setNoPlace(false); document.getElementById("friends")?.scrollIntoView({ behavior: "smooth", block: "start" }); };
+  const findPlace = async () => {
+    const t = pq.trim(); if (t.length < 2) return;
+    if (hits[0]) return pickPlace(hits[0]);
+    setFinding(true);
+    const h = await geocode(t).catch(() => [] as Place[]);
+    setFinding(false);
+    if (h[0]) pickPlace(h[0]); else setNoPlace(true);
+  };
+  const clearPlace = () => { setOrigin(null); setPq(""); setHits([]); setNoPlace(false); };
   const listRef = useRef<HTMLDivElement>(null);
   // เลือกบริการ (เพื่อนกินเพื่อนเที่ยว / หมอนวด) = ตัวกรอง "ประเภท" เดิม · กดซ้ำ = ดูทั้งหมด · จำใน URL (?svc=) ให้แชร์ลิงก์ได้
   const pickSvc = (k: "eat" | "massage") => {
@@ -126,6 +153,14 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
       && (!spot || p.area.includes(spot) || spot.includes(p.area) || placeT(p.area, lang).toLowerCase().includes(spot.toLowerCase())) && (!f.type || (f.type === "massage") === p.acts.includes("massage"))
       && (!f.tier || (f.tier === "top") === p.top) && (!f.act || p.acts.includes(f.act as Act)) && (ageOf(p) ? ageOf(p) >= lo && ageOf(p) <= hi : lo <= 20 && hi >= 50)).sort((a, b) => (b.real ? 1 : 0) - (a.real ? 1 : 0) || (b.secret ? 1 : 0) - (a.secret ? 1 : 0) || by[sort](a, b)); // คนจริงขึ้นก่อนตัวอย่างเสมอ · Secret ก่อน TOP (ทุกการเรียง)
   }, [people, grp, acts, sort, f.reg, f.prov, spot, f.type, f.tier, f.act, lo, hi, lang]);
+  // ระยะจากสถานที่ที่ค้นหา (พิกัดย่านที่ Part-Time ตั้ง หรือเขต/จังหวัดตอนสมัคร — โดยประมาณ)
+  const dist = useMemo(() => {
+    const m = new Map<string, number>();
+    if (!origin) return m;
+    for (const p of people) { const [lat, lng] = p.geo ?? coordsOf(p.prov, p.area); m.set(p.id, km(origin, { lat, lng })); }
+    return m;
+  }, [people, origin]);
+  const shown = useMemo(() => (origin ? [...list].sort((a, b) => (dist.get(a.id) ?? 1e9) - (dist.get(b.id) ?? 1e9)) : list), [list, origin, dist]);
   const nF = acts.length + [f.reg, f.prov, spot, MZ ? "" : f.type, f.tier, f.act].filter(Boolean).length + (lo !== 20 || hi !== 50 ? 1 : 0);
   const provOpts = Object.keys(PROV).filter((k) => !f.reg || PROV[k] === f.reg).sort((a, b) => a.localeCompare(b, "th"));
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF((x) => ({ ...x, [k]: e.target.value }));
@@ -138,7 +173,9 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
         <div className="absolute inset-0 pointer-events-none" style={{ background: p.secret ? "linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(8,6,12,0.96))" : "linear-gradient(180deg, rgba(251,251,251,0) 55%, rgba(55,21,29,0.95))" }} />
         {p.boost && <span className="absolute top-2 right-2 rounded-full text-[11.5px] font-semibold text-[#1b130b]" style={{ padding: "2px 9px", background: "linear-gradient(135deg, #fff1c9, #e8c472)", boxShadow: "0 2px 8px rgba(0,0,0,.35)" }}>{H.featured}</span>}
         {p.secret ? <div className="absolute top-2 left-2 flex"><span style={SECRET_BADGE}>SECRET</span></div> : p.top && <div className="absolute top-2 left-2 flex"><span style={{ display: "inline-flex", alignItems: "center", height: 18, padding: "0 7px", borderRadius: 4, background: "linear-gradient(135deg, #fff1c9 0%, #e8c472 45%, #a8781f 100%)", color: "#1b130b", fontWeight: 700, fontSize: 9.5, letterSpacing: ".2em", boxShadow: "inset 0 0 0 1px rgba(255,241,201,.5), 0 2px 6px rgba(0,0,0,.35)" }}>TOP</span></div>}
-        <div className="absolute left-[10px] bottom-2 text-[13px] font-light text-[#f3ead9] pointer-events-none">{pl(p.prov ? `${p.area} · ${p.prov}` : p.area)}</div>
+        {origin && dist.has(p.id)
+          ? <div data-km className="absolute left-[8px] bottom-2 max-w-[calc(100%-56px)] rounded-xl px-2 py-1 text-[11.5px] leading-[1.25] font-semibold text-[#1b130b] pointer-events-none" style={{ background: "rgba(232,196,114,.95)", boxShadow: "0 2px 8px rgba(0,0,0,.3)" }}>{H.kmFrom(kmText(dist.get(p.id)!), origin.name)}</div>
+          : <div className="absolute left-[10px] bottom-2 text-[13px] font-light text-[#f3ead9] pointer-events-none">{pl(p.prov ? `${p.area} · ${p.prov}` : p.area)}</div>}
       </div>
       <div style={{ padding: "9px 10px 11px" }}>
         <div className="flex justify-between items-center"><span className="font-semibold text-[15px]" style={p.boost ? { color: "#f3d27e" } : undefined}>{sampleNick(p, lang)}{p.age ? `, ${p.age}` : ""}</span><span className="text-[13px] text-[#e8c472] font-normal">★ {p.rating}</span></div>
@@ -311,22 +348,34 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
           </div>
         )}
 
-        {/* ค้นหา + ตัวกรอง */}
-        <div className="flex gap-[10px]" style={{ margin: "14px 18px 0" }}>
-          <label className="flex-1 min-w-0 h-12 rounded-[14px] bg-[#3d1922] border border-[rgba(232,196,114,.22)] flex items-center gap-[10px] px-[14px] text-[#b5a596] text-[14px]">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
-            <input value={f.spot} onChange={set("spot")} placeholder={H.search} aria-label={H.searchLbl} className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[#f3ead9] placeholder:text-[#b5a596]" style={{ fontSize: 14 }} />
-          </label>
-          <button type="button" onClick={() => setFOpen(true)} aria-label={H.filters} className="relative grid place-items-center w-12 h-12 shrink-0 rounded-[14px] text-[#e8c472] p-0" style={{ background: "rgba(232,196,114,0.24)" }}>
+        {/* แถวค้นหา (บอส 11 พ.ย. 2569): หมุด = เปิดแผนที่เพื่อนใกล้เคียง · ช่องค้นหาสถานที่ + ปุ่มค้นหา · ตัวกรอง */}
+        <div className="relative" style={{ margin: "14px 18px 0" }}>
+          <form onSubmit={(e) => { e.preventDefault(); findPlace(); }} className="flex gap-2">
+            <Link href="/map" aria-label={H.pickMap} title={H.pickMap} data-pick-map className="grid place-items-center w-12 h-12 shrink-0 rounded-[14px] text-[#1b130b] hover:text-[#1b130b]" style={{ background: "linear-gradient(135deg, #f3d27e, #e8c472)", boxShadow: "0 4px 12px rgba(232,196,114,.25)" }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z" /><circle cx="12" cy="9" r="2.5" /></svg>
+            </Link>
+            <label className="flex-1 min-w-0 h-12 rounded-[14px] bg-[#3d1922] border border-[rgba(232,196,114,.22)] flex items-center gap-[10px] pl-[14px] pr-1.5 text-[#b5a596] text-[14px]">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+              <input value={pq} onChange={(e) => { setPq(e.target.value); setNoPlace(false); if (origin) setOrigin(null); }} placeholder={H.placeSearch} aria-label={H.placeSearch} enterKeyHint="search" className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[#f3ead9] placeholder:text-[#b5a596]" style={{ fontSize: 14 }} />
+              {pq && <button type="button" onClick={clearPlace} aria-label="ล้าง" className="w-8 h-8 shrink-0 rounded-full grid place-items-center text-[#b5a596]">✕</button>}
+              <button type="submit" disabled={pq.trim().length < 2 || finding} className="shrink-0 h-9 px-3.5 rounded-[10px] text-[13.5px] font-semibold text-[#1b130b] disabled:opacity-50" style={{ background: "#e8c472" }}>{finding ? "…" : H.findBtn}</button>
+            </label>
+            <button type="button" onClick={() => setFOpen(true)} aria-label={H.filters} className="relative grid place-items-center w-12 h-12 shrink-0 rounded-[14px] text-[#e8c472] p-0" style={{ background: "rgba(232,196,114,0.24)" }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0" /><circle cx="16" cy="6" r="2" /><circle cx="10" cy="12" r="2" /><circle cx="18" cy="18" r="2" /></svg>
             {nF > 0 && <span className="absolute grid place-items-center rounded-full bg-[#b0182c] text-white font-bold" style={{ top: -6, right: -6, minWidth: 18, height: 18, padding: "0 5px", fontSize: 11.5 }}>{nF}</span>}
           </button>
+          </form>
+          {(hits.length > 0 || noPlace) && !origin && (
+            <div data-place-hits className="absolute left-0 right-0 top-[54px] z-20 rounded-2xl overflow-hidden" style={{ background: "#2a1d1f", border: "1px solid rgba(232,196,114,.25)", boxShadow: "0 12px 30px rgba(0,0,0,.45)" }}>
+              {hits.length ? hits.map((h) => (
+                <button key={`${h.lat},${h.lng}`} type="button" onClick={() => pickPlace(h)} className="w-full flex items-start gap-2.5 px-4 py-2.5 text-left border-b border-[rgba(243,234,217,.06)] last:border-b-0 hover:bg-[rgba(232,196,114,.08)]">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e2384d" strokeWidth="2" className="mt-0.5 shrink-0" aria-hidden="true"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z" /><circle cx="12" cy="9" r="2.5" /></svg>
+                  <span className="min-w-0"><span className="block text-[14px] font-semibold text-[#f3ead9] truncate">{h.name}</span><span className="block text-[12px] font-light text-[#b5a596] truncate">{h.full}</span></span>
+                </button>
+              )) : <div className="px-4 py-3 text-[13px] font-light text-[#d9c9b4]">{finding ? H.finding : H.noPlace}</div>}
+            </div>
+          )}
         </div>
-        {/* ปุ่มเลือกเพื่อนจากแผนที่ (บอส 11 พ.ย. 2569) — พิมพ์สถานที่แล้วเห็นเพื่อนใกล้เคียง */}
-        <Link href="/map" data-pick-map className="flex items-center justify-center gap-2 h-12 rounded-[14px] text-[15px] font-semibold text-[#1b130b] hover:text-[#1b130b]" style={{ margin: "10px 18px 0", background: "linear-gradient(135deg, #f3d27e, #e8c472)" }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z" /><circle cx="12" cy="9" r="2.5" /></svg>
-          {H.pickMap}
-        </Link>
 
         {/* กิจกรรม */}
         {!MZ && <div className="flex gap-2 overflow-x-auto no-scrollbar" style={{ padding: "14px 18px 0" }}>
@@ -349,6 +398,7 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
           })}
         </div>
 
+        <span id="friends" aria-hidden="true" style={{ display: "block", scrollMarginTop: 12 }} />
         <div ref={listRef} className="flex justify-between items-baseline" style={{ padding: "18px 18px 10px", scrollMarginTop: 12 }}>
           <div className="flex items-center gap-3 min-w-0">
             <div className="font-semibold text-[19px] shrink-0">{MZ ? H.mzList : H.friends}</div>
@@ -358,15 +408,24 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
               ))}
             </div>}
           </div>
-          <div className="text-[13px] font-light" aria-live="polite"><span className="text-[#b5a596]">●</span> {H.found(list.length)}</div>
+          <div className="text-[13px] font-light" aria-live="polite"><span className="text-[#b5a596]">●</span> {H.found(shown.length)}</div>
         </div>
+        {origin && (
+          <div data-near-bar className="flex items-center gap-2" style={{ margin: "-2px 18px 12px" }}>
+            <span className="inline-flex items-center gap-1.5 min-w-0 h-9 pl-3 pr-1 rounded-full text-[13px] font-semibold" style={{ background: "rgba(226,56,77,.16)", color: "#ff9aa6", border: "1px solid rgba(226,56,77,.45)" }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z" /><circle cx="12" cy="9" r="2.5" /></svg>
+              <span className="truncate">{H.nearHead(origin.name)}</span>
+              <button type="button" onClick={clearPlace} aria-label="ล้างสถานที่" className="w-7 h-7 shrink-0 rounded-full grid place-items-center text-[#f3ead9]" style={{ background: "rgba(0,0,0,.25)" }}>✕</button>
+            </span>
+          </div>
+        )}
 
-        {list.length > 0 ? (
+        {shown.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4" style={{ padding: "0 18px" }}>
-            {list.map((x, i) => card(x, i))}
+            {shown.map((x, i) => card(x, i))}
             {/* โฆษณาคั่นกลาง: ทุก ๆ AD_EVERY คน (มือถือ/แท็บเล็ต 6 คน · จอคอม 4 คอลัมน์ 8 คน) วนตามรายการ MID_ADS เลื่อนไปเรื่อย ๆ */}
             {[{ n: AD_EVERY, cls: "xl:hidden" }, { n: AD_EVERY_XL, cls: "hidden xl:grid" }].flatMap(({ n, cls }) =>
-              Array.from({ length: Math.floor((list.length - 1) / n) }, (_, k) => {
+              Array.from({ length: Math.floor((shown.length - 1) / n) }, (_, k) => {
                 const ad = { ...MID_ADS[k % MID_ADS.length], ...H.midAds[k % MID_ADS.length] };
                 return (
                   <Link key={`${n}-${k}`} href={ad.href} style={{ gridTemplateColumns: "112px 1fr", order: (k + 1) * n * 2 - 1, background: "#2c1a1f", border: CARD_BD }} className={`${cls === "xl:hidden" ? "grid xl:hidden" : cls} col-span-full relative gap-3 items-center p-[10px] rounded-2xl text-[#f3ead9] hover:text-[#f3ead9]`}>
