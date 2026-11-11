@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { FileTypeError } from "@/lib/file-guard";
 import { limited as dbLimited } from "@/lib/rate-limit";
-import { CLOSE_AT, PACKAGES, type PackageKey, SIGNUP_FREE } from "@/lib/join/config";
+import { PACKAGES, type PackageKey, SIGNUP_FREE } from "@/lib/join/config";
 import { codeNo, createApplicant, getByEmail, nextDocNo, saveProfile, updateApplicant, type DocKind } from "@/lib/join/store";
 import { consumeInvite, findInvite } from "@/lib/join/invites";
 import { appendToSheet } from "@/lib/join/sheets";
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "local";
   if (limited(ip)) return bad("ส่งบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่", 429);
 
-  if (Date.now() > Date.parse(CLOSE_AT)) return bad("ปิดรับสมัครแล้ว", 410);
+  // รับสมัครตลอด (บอส 11 พ.ย. 2569) — ไม่มีวันปิดรับ ไม่จำกัดที่นั่ง
 
   let form: FormData;
   try {
@@ -58,7 +58,6 @@ export async function POST(req: Request) {
   const pkg = (s("group") === "tom" || s("invite", 12) ? "B" : s("package")) as PackageKey;
   // หมวดทอมหล่อ (/join/tom) — ที่นั่งอบรมแยกโควตาจากหนุ่มหล่อ
   const group = s("group") === "tom" ? "tom" : null;
-  if ((await (await import("@/lib/join/cohorts")).nextCohortSeats(group)).full) return bad("รับครบจำนวนแล้ว", 410);
   // ตัดทุกอย่างที่ไม่ใช่ตัวเลขก่อน (วาง "abc081-234-5678" ก็ได้ 0812345678) แล้วตรวจ 10 หลักด้านล่าง
   const tel = s("tel").replace(/\D/g, "");
 

@@ -15,7 +15,8 @@ const TR: Record<PackageKey, { name2: string; fee: string; lines: [string, strin
   B: { name2: "ที่มีความสามารถในการนวด", fee: fmtB(PACKAGES.B.price), lines: [["รับฟรี", "Uniform + Oil นวด 1 ชุด"], ["การให้บริการต่อครั้ง", "3–5 ชม."]],
     bg: "linear-gradient(160deg, #6a1a28, #3a0d16)", kc: "#f0d6d0", sh: "0 0 0 4px rgba(232,196,114,.18), 0 14px 32px rgba(200,16,46,.35)" },
 };
-const TIMELINE: [string, string][] = [["20 ต.ค. – 10 พ.ย.", "เปิดรับสมัคร"], ["ไม่เกินต้น พ.ย.", "ประกาศกฎเกณฑ์การทำงาน"], ["ภายใน 20 พ.ย.", "อบรมกลุ่ม 1"], ["30 พ.ย.", "พร้อมเปิดให้บริการ"], ["30 พ.ย. – ต้น ธ.ค.", "อบรมกลุ่ม 2"]];
+// ขั้นตอนสมัคร (บอส 11 พ.ย. 2569: รับสมัครตลอด · ไม่บอกวันอบรม/วันเปิดใช้งาน)
+const STEPS: [string, string][] = [["สร้างโปรไฟล์", "เลือกสายงาน กรอกข้อมูล อัปรูปของคุณ"], ["ยืนยันตัวตน", "ส่งบัตรประชาชน · เซ็นสัญญาออนไลน์"], ["อบรมกับทีมงาน", "ทีมงานแจ้งวันอบรมทางกลุ่ม LINE"], ["เริ่มรับงาน", "เปิดโปรไฟล์ เลือกวันเวลาว่างเอง"]];
 const FAQ_INVITE: [string, string] = ["คำเชิญพิเศษต่างจากสมัครปกติอย่างไร?", "ผู้ได้รับคำเชิญไม่ต้องชำระค่าสมัคร และได้ระดับ TOP ทันที แค่กรอกข้อมูลสมัคร · เมื่อเริ่มรับงาน ระบบหักค่าสมัครจากรายได้งานละ ฿500 จนครบ ฿10,000 แล้วเลิกหัก"];
 const FAQ_SECRET: [string, string] = ["คำเชิญ Secret คืออะไร?", "ลิงก์นี้สำหรับผู้ได้รับเชิญเป็น Secret เท่านั้น · ไม่ต้องชำระค่าสมัคร · โปรไฟล์แสดงเป็นระดับ Secret ขึ้นก่อน TOP · ราคาต่อครั้งทีมงานกำหนดให้รายคน · เมื่อเริ่มรับงาน ระบบหักค่าสมัครจากรายได้งานละ ฿500 จนครบ ฿10,000 แล้วเลิกหัก"];
 const FAQ_TOM: [string, string] = ["ทอมหล่อต้องจ่ายค่าสมัครไหม?", "ไม่ต้องจ่าย สมัครฟรี ทอมหล่อรับเฉพาะสายเพื่อนกินเที่ยวที่มีความสามารถในการนวด · เมื่อเริ่มรับงาน ระบบหักค่าสมัครจากรายได้งานละ ฿500 จนครบ ฿10,000 แล้วเลิกหัก"];
@@ -31,7 +32,7 @@ export type Seats = { left: number; quota: number; cohort: string; closed: boole
 const h2: React.CSSProperties = { margin: 0, fontWeight: 600, fontSize: 20 };
 
 /** invite = รหัสลิงก์เชิญ (บอร์ด JoinInvite): ค่าสมัครเท่ากัน · ไม่มีแถบที่นั่ง · ปุ่ม "เริ่มสร้างโปรไฟล์" */
-export function JoinSalePage({ seats, showEarnings = true, invite, group = null, secret = false }: { seats: Seats; showEarnings?: boolean; invite?: string; group?: "tom" | null; secret?: boolean }) {
+export function JoinSalePage({ showEarnings = true, invite, group = null, secret = false }: { seats: Seats; showEarnings?: boolean; invite?: string; group?: "tom" | null; secret?: boolean }) {
   // ลิงก์เชิญ: เลือกหนุ่มหล่อ / ทอมหล่อ ในหน้านี้ (ไม่มีหน้าแยก) · สมัครปกติ: แยกหน้า /join กับ /join/tom
   const [invGroup, setInvGroup] = useState<"man" | "tom">("man");
   const tom = invite ? invGroup === "tom" : group === "tom";
@@ -100,19 +101,21 @@ export function JoinSalePage({ seats, showEarnings = true, invite, group = null,
               })}
             </div>
           )}
-          <div className="w-full max-w-[560px] mx-auto flex flex-col" style={{ gap: 18 }}>
-            <div className="self-center flex gap-5"><Link href="/join/terms" className="tap text-[14px] text-[#e8c472]">อ่านสัญญา</Link><Link href="/join/showcase" className="tap text-[14px] text-[#e8c472]">ดูหน้าตัวอย่างแอป ›</Link></div>
-            {!invite && <div className="flex justify-between items-center rounded-xl text-[13px] font-light" style={{ padding: "10px 14px", background: "rgba(232,196,114,0.10)" }}>
-              <span>{seats.closed ? "ปิดรับสมัครรอบนี้แล้ว" : "กลุ่มอบรม"}</span>
-              <span className="text-[#e8c472] font-semibold">{seats.closed ? "เต็มแล้ว" : `เหลือ ${seats.left} ที่`}</span>
-            </div>}
-            {showEarnings && !invite && <Link href="/join/earnings" className="min-h-12 rounded-[14px] text-[#e8c472] font-semibold grid place-items-center text-center hover:text-[#e8c472]" style={{ background: "rgba(232,196,114,0.16)" }}>ดูรายได้และส่วนแบ่ง · คำนวณรายได้ต่อเดือน</Link>}
-            {seats.closed
-              ? <span aria-disabled="true" className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center" style={{ marginTop: 6, opacity: 0.45 }}>ปิดรับสมัครแล้ว</span>
-              : <Link href={invite ? `/join/pay?pkg=B&invite=${invite}${g}` : tom ? "/join/pay?pkg=B&g=tom" : `/join/pay?pkg=${pick}${g}`} className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[18px] grid place-items-center hover:text-[#1b130b]" style={{ marginTop: 6 }}>{SIGNUP_FREE || invite || tom ? "เริ่มสร้างโปรไฟล์" : "ชำระเงินและรับรหัสสมัคร"}</Link>}
-            {!invite && (tom || SIGNUP_FREE) && <p className="m-0 text-[13px] text-center text-[#b5a596] font-light" data-tom-free>สมัครฟรี · หักค่าสมัครจากงาน งานละ ฿500 จนครบ ฿10,000</p>}
-            {invite && <p className="m-0 text-[13px] text-center text-[#b5a596] font-light">ลิงก์ส่วนตัว กรุณาอย่าเผยแพร่</p>}
-            <Link href="/join/me" data-pt-login className="min-h-12 rounded-2xl border-[1.5px] border-[#e8c472] text-[#e8c472] font-semibold text-[16px] grid place-items-center text-center px-4 hover:text-[#e8c472] hover:bg-[rgba(232,196,114,0.08)]">สมัครแล้ว? เข้าสู่ระบบ Part-Time</Link>
+          {/* กล่องสมัคร: มือถือเรียงลง · จอใหญ่ข้อความซ้าย ปุ่มขวา (เต็มกว้างเท่าการ์ดสายงาน) */}
+          <div data-join-cta className={`w-full ${!invite && !tom ? "" : "max-w-[720px] mx-auto "}flex flex-col md:flex-row md:items-center gap-5 md:gap-8 rounded-[20px] p-[18px] md:px-7 md:py-6`} style={{ background: "#211a18", border: "1px solid rgba(232,196,114,0.18)" }}>
+            <div className="flex-1 min-w-0 flex flex-col gap-2">
+              <span className="inline-flex self-start items-center gap-1.5 rounded-full text-[12.5px] font-semibold" style={{ padding: "3px 11px", background: "rgba(74,222,128,.12)", color: "#9fe0b4" }}><span className="w-1.5 h-1.5 rounded-full bg-[#4ade80]" />เปิดรับสมัครตลอด</span>
+              <h2 className="m-0 font-semibold text-[19px] md:text-[22px] leading-[1.35]">{invite ? "พร้อมแล้ว เริ่มสร้างโปรไฟล์ได้เลย" : tom ? "ทอมหล่อ สมัครฟรี เริ่มได้เลย" : `สมัครสาย${pick === "B" ? "นวด" : "เพื่อนกินเที่ยว"} · ใช้เวลาไม่ถึง 10 นาที`}</h2>
+              {!invite && (tom || SIGNUP_FREE) ? <p className="m-0 text-[13.5px] text-[#d9c9b4] font-light" data-tom-free>สมัครฟรี · หักค่าสมัครจากงาน งานละ ฿500 จนครบ ฿10,000</p>
+                : invite ? <p className="m-0 text-[13.5px] text-[#d9c9b4] font-light">ลิงก์ส่วนตัว กรุณาอย่าเผยแพร่</p>
+                : <p className="m-0 text-[13.5px] text-[#d9c9b4] font-light">ค่าสมัครรวมค่าอบรมแล้ว · ไม่คืนเงินทุกกรณี</p>}
+              <div className="flex flex-wrap gap-x-5 gap-y-1 mt-1"><Link href="/join/terms" className="tap text-[14px] text-[#e8c472]">อ่านสัญญา</Link><Link href="/join/showcase" className="tap text-[14px] text-[#e8c472]">ดูหน้าตัวอย่างแอป ›</Link></div>
+            </div>
+            <div className="flex flex-col gap-2.5 w-full md:w-[340px] shrink-0">
+              <Link href={invite ? `/join/pay?pkg=B&invite=${invite}${g}` : tom ? "/join/pay?pkg=B&g=tom" : `/join/pay?pkg=${pick}${g}`} data-join-start className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[17px] grid place-items-center hover:text-[#1b130b]" style={{ boxShadow: "0 8px 22px rgba(232,196,114,.22)" }}>{SIGNUP_FREE || invite || tom ? "เริ่มสร้างโปรไฟล์" : "ชำระเงินและรับรหัสสมัคร"}</Link>
+              {showEarnings && !invite && <Link href="/join/earnings" className="min-h-12 rounded-[14px] text-[#e8c472] font-semibold text-[14.5px] grid place-items-center text-center px-3 hover:text-[#e8c472]" style={{ background: "rgba(232,196,114,0.12)" }}>ดูรายได้และส่วนแบ่ง · คำนวณรายได้</Link>}
+              <Link href="/join/me" data-pt-login className="min-h-12 rounded-[14px] border-[1.5px] border-[rgba(232,196,114,.6)] text-[#e8c472] font-semibold text-[14.5px] grid place-items-center text-center px-3 hover:text-[#e8c472] hover:bg-[rgba(232,196,114,0.08)]">สมัครแล้ว? เข้าสู่ระบบ Part-Time</Link>
+            </div>
           </div>
         </section>
 
@@ -139,29 +142,16 @@ export function JoinSalePage({ seats, showEarnings = true, invite, group = null,
             </div>
           </section>
 
-          <section className="flex flex-col" style={{ gap: 18 }}>
-            <h2 className="text-center" style={h2}>กำหนดการ</h2>
-            {/* จอคอม: เส้นเวลาแนวนอน 5 ช่อง */}
-            <ol className="hidden md:grid grid-cols-5 m-0 p-0 list-none">
-              {TIMELINE.map(([date, text], i) => (
-                <li key={text} className="flex flex-col items-center text-center gap-2">
-                  <span className="relative w-full h-3 grid place-items-center">
-                    <span className="absolute top-1/2 h-0.5 -translate-y-1/2" style={{ left: i ? 0 : "50%", right: i === TIMELINE.length - 1 ? "50%" : 0, background: "rgba(232,196,114,0.35)" }} />
-                    <span className="relative w-3 h-3 rounded-full bg-[#e8c472]" />
-                  </span>
-                  <span className="text-[13px] text-[#e8c472] font-light">{date}</span>
-                  <span className="text-[15px] px-2">{text}</span>
+          <section data-join-steps className="flex flex-col" style={{ gap: 16 }}>
+            <h2 className="text-center" style={h2}>ขั้นตอนการสมัคร</h2>
+            <ol className="m-0 p-0 list-none grid gap-2.5 md:grid-cols-4 md:gap-4">
+              {STEPS.map(([t, d], i) => (
+                <li key={t} className="flex md:flex-col gap-3.5 md:gap-2.5 items-start rounded-2xl bg-[#211a18] border border-[rgba(243,234,217,0.07)]" style={{ padding: "14px 16px" }}>
+                  <span className="shrink-0 w-9 h-9 rounded-full grid place-items-center font-semibold text-[15px] text-[#1b130b] bg-[#e8c472]">{i + 1}</span>
+                  <span className="flex flex-col min-w-0"><span className="font-semibold text-[15px] leading-[1.45]">{t}</span><span className="text-[13.5px] text-[#d9c9b4] font-light leading-[1.55]">{d}</span></span>
                 </li>
               ))}
             </ol>
-            <div className="flex flex-col pl-1 md:hidden">
-              {TIMELINE.map(([date, text]) => (
-                <div key={text} className="flex gap-[14px]">
-                  <span className="flex flex-col items-center"><span className="w-3 h-3 rounded-full bg-[#e8c472]" style={{ marginTop: 7 }} /><span className="flex-1 w-0.5" style={{ background: "rgba(232,196,114,0.35)" }} /></span>
-                  <span className="flex flex-col pb-4"><span className="text-[13px] text-[#e8c472] font-light">{date}</span><span>{text}</span></span>
-                </div>
-              ))}
-            </div>
           </section>
         </div>
 

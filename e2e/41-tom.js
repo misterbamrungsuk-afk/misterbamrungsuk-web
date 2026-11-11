@@ -24,7 +24,7 @@ const seats = async (g) => J(await fetch(B + '/api/join/seats' + (g ? '?g=' + g 
   h = await (await fetch(B + '/join')).text();
   ok('/join has หนุ่มหล่อ | ทอมหล่อ switch', h.includes('data-group-tab="หนุ่มหล่อ"') && h.includes('href="/join/tom"'));
 
-  ok('/join seat counter = เหลือ N ที่, no group name', /เหลือ \d+ ที่/.test(h.replace(/<!-- -->/g, '')) && !h.includes('กลุ่มอบรมถัดไป'));
+  ok('/join always open: no seat counter, no dates', h.includes('เปิดรับสมัครตลอด') && !/เหลือ \d+ ที่/.test(h.replace(/<!-- -->/g, '')) && !h.includes('กำหนดการ') && !h.includes('ภายใน 20 พ.ย.'));
   const men0 = await seats(), tom0 = await seats('tom');
   ok('quota 50 · taken counted', men0.quota === 50 && men0.taken === 50 - men0.left, JSON.stringify(men0));
   ok('separate quota (same capacity)', tom0.quota === men0.quota && tom0.left === tom0.quota, JSON.stringify({ men0, tom0 }));

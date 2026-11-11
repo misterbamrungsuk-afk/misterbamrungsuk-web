@@ -1,6 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import { CLOSE_AT } from "@/lib/join/config";
 import { nextCohortSeats } from "@/lib/join/cohorts";
 import { findInvite } from "@/lib/join/invites";
 import { JoinSalePage } from "../../join-sale";
@@ -39,5 +38,5 @@ export default async function InvitePage({ params }: { params: Promise<{ code: s
     );
   }
   const s = await nextCohortSeats().catch(() => ({ cohort: "", left: 0, quota: 0, taken: 0, full: true }));
-  return <JoinSalePage seats={{ left: s.left, quota: s.quota, cohort: s.cohort, closed: s.full || Date.now() > Date.parse(CLOSE_AT) }} invite={code} secret={invite?.kind === "secret"} />;
+  return <JoinSalePage seats={{ left: s.left, quota: s.quota, cohort: s.cohort, closed: false }} invite={code} secret={invite?.kind === "secret"} />;
 }
