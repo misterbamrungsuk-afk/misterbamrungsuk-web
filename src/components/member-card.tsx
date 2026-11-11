@@ -3,10 +3,8 @@
 import { useI18n } from "@/i18n/provider";
 // บัตรสมาชิกดิจิทัล — Gold = แดงเลือดหมู-ทอง · Black = ดำ-ทอง · ใช้ในหน้าเมมเบอร์ / บัญชี / ป๊อปอัปหน้าแรก (ตัวอย่าง)
 export type CardTier = "gold" | "black";
-export const TIER_LOOK: Record<CardTier, { bg: string; ring: string; label: string; text: string }> = {
-  gold: { bg: "linear-gradient(135deg, #8d1424 0%, #5c0c18 45%, #2e050b 100%)", ring: "#e8c472", label: "GOLD MEMBER", text: "#f6dc9a" },
-  black: { bg: "linear-gradient(135deg, #2c2622 0%, #141110 50%, #050404 100%)", ring: "#d9b25c", label: "BLACK MEMBER", text: "#f3e3b5" },
-};
+import { TIER_LOOK } from "./member-look";
+export { TIER_LOOK };
 
 export function MemberCard({ tier, name, no, since, points, sample = false, className = "" }: { tier: CardTier; name: string; no?: string | null; since?: string | null; points?: number; sample?: boolean; className?: string }) {
   const L = TIER_LOOK[tier];

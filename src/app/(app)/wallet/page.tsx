@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { TopBar } from "@/components/shell";
+import { MemberOffers, TierBadge, skinOf, type MemberTier, type OfferTier } from "@/components/member-offers";
 import { BANK } from "@/lib/join/config";
 import { promptPayPayload } from "@/lib/join/promptpay";
 
@@ -124,6 +125,10 @@ export default function WalletPage() {
   const [msg, setMsg] = useState<{ ok: boolean; t: string } | null>(null);
   // มาจากปุ่ม "เติมเงิน" ในหน้าบัญชี (?topup=1) → เปิดฟอร์มเติมเงินทันที
   useEffect(() => { if (new URLSearchParams(window.location.search).get("topup")) setOpen(true); }, []);
+  // ระดับเมม → หน้าตาการ์ด + ข้อเสนอเปิดเมมในฟอร์มเติมเงิน
+  const [mem, setMem] = useState<{ tier: MemberTier; tiers: Record<"gold" | "black", OfferTier> } | null>(null);
+  useEffect(() => { fetch("/api/membership").then((r) => r.json()).then((d: { tiers?: Record<"gold" | "black", OfferTier>; me?: { tier?: MemberTier } | null }) => { if (d.tiers) setMem({ tier: d.me?.tier ?? null, tiers: d.tiers }); }).catch(() => {}); }, []);
+  const skin = skinOf(mem?.tier ?? null);
 
   const load = useCallback(async () => {
     const r = await fetch("/api/wallet", { cache: "no-store" }).catch(() => null);
@@ -159,7 +164,8 @@ export default function WalletPage() {
       <TopBar back="/profile" title="กระเป๋าเงิน" />
       <main className="flex flex-col gap-4" style={{ padding: "16px 16px 0" }}>
         {err && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{err}</p>}
-        <section className="rounded-2xl flex flex-col gap-2" style={{ padding: 18, background: "linear-gradient(160deg, #3a2a15, #211a18 70%)", border: "1px solid rgba(232,196,114,.35)" }}>
+        <section data-wallet-card className="rounded-[22px] flex flex-col gap-2" style={{ padding: 18, background: skin.bg, border: `1px solid ${skin.border}`, boxShadow: skin.glow }}>
+          {mem?.tier && <div><TierBadge tier={mem.tier} tiers={mem.tiers} /></div>}
           <span className="text-[13px] font-light text-[#d9c9b4]">ยอดใช้ได้</span>
           <span className="font-semibold text-[34px] leading-none tabular-nums" style={{ color: GOLD }}>{w ? baht(w.available) : "—"}</span>
           {w && w.held > 0 && <span className="text-[13px] font-light text-[#d9c9b4]">กันไว้ระหว่างรอเพื่อนตอบรับ {baht(w.held)}</span>}
@@ -168,8 +174,10 @@ export default function WalletPage() {
         </section>
         {msg && <p role="status" className="m-0 rounded-xl text-[13px]" style={{ padding: "10px 14px", background: msg.ok ? "rgba(60,170,110,.14)" : "rgba(201,40,61,.16)", color: msg.ok ? "#7fd6a3" : "#ff8a9a" }}>{msg.t}</p>}
 
+        {open && mem && <MemberOffers tier={mem.tier} tiers={mem.tiers} title={mem.tier ? "อัปเกรดเมมเบอร์ ได้เครดิตเพิ่ม" : "เติมเงินแบบเปิดเมม ได้เครดิตเพิ่ม"} />}
         {open && (
           <section className="flex flex-col gap-3 rounded-2xl bg-[#211a18]" style={{ padding: 16, border: `1px solid ${LN}` }}>
+            <b className="text-[15px] font-semibold">{mem && mem.tier !== "black" ? "หรือเติมเงินปกติ · เติมเท่าไหร่ได้เท่านั้น" : "เติมเงิน · เติมเท่าไหร่ได้เท่านั้น"}</b>
             <span className="text-[13px] font-light text-[#d9c9b4]">จำนวนเงิน</span>
             <div className="grid grid-cols-4 gap-2">
               {CHIPS.map((c) => <button key={c} type="button" onClick={() => setAmount(c)} aria-pressed={amount === c} className="min-h-10 rounded-full text-[13px] font-semibold" style={{ background: amount === c ? "rgba(232,196,114,0.14)" : "#251d1b", color: amount === c ? GOLD : "#f3ead9" }}>฿{c.toLocaleString()}</button>)}

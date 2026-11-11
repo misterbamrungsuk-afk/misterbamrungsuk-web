@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import { TIER_LOOK, MemberCard } from "@/components/member-card";
+import { MemberCard } from "@/components/member-card";
+import { TIER_LOOK } from "@/components/member-look";
 import { pointsOf } from "@/lib/member/store";
 import { redirect } from "next/navigation";
 import { currentCustomer } from "@/lib/customer/auth";
@@ -12,7 +13,8 @@ import { PEOPLE } from "@/lib/home/people";
 import { LogoutLink } from "./logout";
 import { AvatarView } from "@/components/avatar-editor";
 import { getAvatar } from "@/lib/avatar";
-import { getMemberSettings } from "@/lib/member/tiers";
+import { getMemberSettings, DEFAULT_MEMBER } from "@/lib/member/tiers";
+import { MemberOffers, TierBadge, skinOf } from "@/components/member-offers";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "บัญชีของฉัน — Mister Bamrungsuk" };
@@ -38,8 +40,8 @@ export default async function AccountPage() {
   const mcfg = await getMemberSettings().catch(() => null);
   const avail = (bal.available ?? 0) / 100, held = (bal.held ?? 0) / 100;
   const fmt = (n: number) => "฿" + n.toLocaleString("en-US", { maximumFractionDigits: 2 });
-  // เมมที่ยังเปิดได้: ยังไม่เป็นเมม = Gold + Black · Gold = อัปเป็น Black · Black = ไม่แสดง
-  const offers = mcfg?.enabled === false ? [] : (["gold", "black"] as const).filter((k) => !tier || (tier === "gold" && k === "black")).map((k) => ({ k, ...(mcfg?.tiers[k] ?? { name: k === "gold" ? "Gold" : "Black", pay: k === "gold" ? 50000 : 100000, credit: k === "gold" ? 70000 : 150000 }) }));
+  const mt = { gold: (mcfg ?? DEFAULT_MEMBER).tiers.gold, black: (mcfg ?? DEFAULT_MEMBER).tiers.black };
+  const skin = skinOf(tier);
   const since = new Date(p.created_at).toLocaleDateString("th-TH", { timeZone: "Asia/Bangkok", month: "short", year: "numeric" });
   const menu: [string, string, string, React.ReactNode?][] = [
     ["/orders", "M12 7v5l3 2M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z", "นัดของฉัน"],
@@ -62,11 +64,12 @@ export default async function AccountPage() {
         <Link href="/work-with-us" className="h-10 px-4 rounded-full text-[13px] font-light grid place-items-center hover:text-[#e8c472]" style={{ border: `1px solid ${GOLD}`, color: GOLD }}>สมัครเป็นเพื่อน</Link>
       </div>
       {/* กระเป๋าเงิน: ยอดเด่น ๆ + เติมเงิน (เติมเท่าไหร่ได้เท่านั้น) — บอส 11 พ.ย. 2569 */}
-      <section data-wallet-card className="relative overflow-hidden rounded-[22px]" style={{ margin: "14px 16px 0", padding: "18px 18px 16px", background: "radial-gradient(110% 130% at 100% 0%, rgba(232,196,114,.28), transparent 55%), radial-gradient(90% 120% at 0% 100%, rgba(176,24,44,.35), transparent 60%), linear-gradient(135deg, #3b2716, #24191a 55%, #34121a)", border: "1px solid rgba(232,196,114,.5)", boxShadow: "0 14px 34px rgba(0,0,0,.35)" }}>
+      <section data-wallet-card className="relative overflow-hidden rounded-[22px]" style={{ margin: "14px 16px 0", padding: "18px 18px 16px", background: skin.bg, border: `1px solid ${skin.border}`, boxShadow: skin.glow }}>
         <div className="flex items-center justify-between gap-3">
           <span className="inline-flex items-center gap-2 text-[14px] text-[#f1e3c8]"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 7h18v12H3zM16 13h2M3 7l3-3h12l3 3" /></svg>กระเป๋าเงินของฉัน</span>
           <Link href="/wallet" className="text-[12.5px] font-light hover:text-[#e8c472]" style={{ color: GOLD }}>ประวัติ ›</Link>
         </div>
+        {tier && <div className="mt-2"><TierBadge tier={tier} tiers={mt} /></div>}
         <div className="mt-1.5 text-[12.5px] font-light text-[#d9c9b4]">ยอดที่ใช้ได้</div>
         <div data-wallet-balance className="font-semibold leading-[1.15] text-[40px] [font-variant-numeric:tabular-nums]" style={{ color: "#fff1c9", textShadow: "0 2px 18px rgba(232,196,114,.25)" }}>{fmt(avail)}</div>
         {held > 0 && <div className="text-[12.5px] font-light text-[#d9c9b4]">กันไว้รอเพื่อนตอบรับ {fmt(held)}</div>}
@@ -80,26 +83,7 @@ export default async function AccountPage() {
       </section>
 
       {/* เปิดเมมเบอร์: จ่ายครั้งเดียว ได้เครดิตเพิ่ม (ส่วนต่าง = Givouche) */}
-      {offers.length > 0 && (
-        <section data-member-offers style={{ margin: "14px 16px 0" }}>
-          <div className="flex items-end justify-between gap-3 mb-2"><b className="font-semibold text-[16px]">{tier ? "อัปเกรดเมมเบอร์" : "เปิดเมมเบอร์ คุ้มกว่าเติมเงิน"}</b><Link href="/membership" className="text-[12.5px] font-light hover:text-[#e8c472]" style={{ color: GOLD }}>รายละเอียด ›</Link></div>
-          <div className={`grid gap-2.5 ${offers.length > 1 ? "grid-cols-2" : ""}`}>
-            {offers.map((o) => {
-              const black = o.k === "black";
-              return (
-                <Link key={o.k} href={`/membership?tier=${o.k}`} data-offer={o.k} className="relative overflow-hidden rounded-[18px] flex flex-col gap-1 hover:-translate-y-0.5 transition" style={{ padding: "14px 14px 12px", color: "#f3ead9", background: black ? "linear-gradient(150deg,#262222,#0d0b0b 70%)" : "linear-gradient(150deg,#5a1422,#2a0d13 70%)", border: `1px solid ${black ? "rgba(232,196,114,.55)" : "rgba(232,196,114,.35)"}` }}>
-                  <span className="text-[12px] font-bold tracking-[.2em]" style={{ color: GOLD }}>{o.name.toUpperCase()}</span>
-                  <span className="text-[12.5px] font-light text-[#d9c9b4]">จ่าย {fmt(o.pay)}</span>
-                  <span className="text-[13px] text-[#f1e3c8]">ได้เครดิต</span>
-                  <b className="text-[24px] leading-tight font-semibold [font-variant-numeric:tabular-nums]" style={{ color: "#fff1c9" }}>{fmt(o.credit)}</b>
-                  <span className="self-start mt-1 rounded-full text-[11.5px] font-semibold" style={{ padding: "3px 9px", background: "rgba(127,214,163,.16)", color: "#9fe0b4" }}>+{fmt(o.credit - o.pay)} Givouche</span>
-                  <span className="mt-2 h-10 rounded-[12px] grid place-items-center text-[13.5px] font-semibold" style={{ background: black ? GOLD : "rgba(232,196,114,.16)", color: black ? "#1b130b" : GOLD }}>เปิดเมม {o.name}</span>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-      )}
+      <div style={{ margin: "14px 16px 0" }}><MemberOffers tier={tier} tiers={mt} /></div>
       <p data-cancel-note className="m-0 flex gap-2 items-start rounded-[14px] text-[12.5px] leading-[1.55] text-[#f3c2c9]" style={{ margin: "12px 16px 0", padding: "10px 12px", background: "rgba(224,36,60,.08)", border: "1px solid rgba(224,36,60,.28)" }}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 mt-0.5" aria-hidden="true"><path d="M12 3 2 20h20zM12 10v4M12 17h0" /></svg>
         <span><b className="font-semibold">หมายเหตุ:</b> ถ้าลูกค้ายกเลิกนัดเอง ระบบไม่มีการคืนเงินทุกกรณี</span>
