@@ -110,7 +110,19 @@ export function JoinSalePage({ showEarnings = true, invite, group = null, secret
             </div>
           )}
           {/* กล่องสมัคร: มือถือเรียงลง · จอใหญ่ข้อความซ้าย ปุ่มขวา (เต็มกว้างเท่าการ์ดสายงาน) */}
-          <div data-join-cta className={`w-full ${!invite && !tom ? "" : "max-w-[720px] mx-auto "}flex flex-col md:flex-row md:items-center gap-5 md:gap-8 rounded-[20px] p-[18px] md:px-7 md:py-6`} style={{ background: "linear-gradient(120deg, #3a2614, #241b17 50%, #33121a)", border: "1px solid rgba(232,196,114,0.45)", boxShadow: "0 14px 34px rgba(0,0,0,.28)" }}>
+          <div data-join-cta className={`w-full ${!invite && !tom ? "" : "max-w-[720px] mx-auto "}flex flex-col md:flex-row md:items-center gap-5 md:gap-8 rounded-[20px] p-[18px] md:px-7 md:py-6`} style={{ position: "relative", overflow: "hidden", background: "radial-gradient(120% 140% at 0% 0%, rgba(232,196,114,.22), transparent 55%), radial-gradient(90% 120% at 100% 100%, rgba(200,16,46,.28), transparent 60%), linear-gradient(120deg, #3d2815, #241b17 50%, #3a121c)", border: "1px solid rgba(232,196,114,0.6)", boxShadow: "0 18px 44px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,241,201,.12)" }}>
+            {/* ปุ่มสมัคร: ทองไล่สี + แสงวิ่งผ่าน + เรืองเป็นจังหวะ + ลูกศรขยับ (บอส 11 พ.ย. 2569) · ลดการเคลื่อนไหว = นิ่ง */}
+            <style>{`
+              @keyframes mbShine{0%{transform:translateX(-120%) skewX(-20deg)}55%,100%{transform:translateX(260%) skewX(-20deg)}}
+              @keyframes mbGlow{0%,100%{box-shadow:0 8px 24px rgba(232,196,114,.30),0 0 0 0 rgba(232,196,114,.45)}50%{box-shadow:0 10px 32px rgba(232,196,114,.45),0 0 0 7px rgba(232,196,114,0)}}
+              @keyframes mbNudge{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}
+              .mb-start{position:relative;overflow:hidden;background:linear-gradient(135deg,#fff1c9 0%,#f0d38a 35%,#e2b75a 70%,#c99a3c 100%);animation:mbGlow 2.4s ease-in-out infinite;transition:transform .2s ease,filter .2s ease}
+              .mb-start::after{content:"";position:absolute;top:0;bottom:0;left:0;width:40%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);animation:mbShine 3.2s ease-in-out infinite;pointer-events:none}
+              .mb-start:hover{transform:translateY(-2px) scale(1.015);filter:brightness(1.06)}
+              .mb-start:active{transform:translateY(1px) scale(.98)}
+              .mb-start .mb-arr{display:inline-block;animation:mbNudge 1.2s ease-in-out infinite}
+              @media (prefers-reduced-motion: reduce){.mb-start,.mb-start::after,.mb-start .mb-arr{animation:none}}
+            `}</style>
             <div className="flex-1 min-w-0 flex flex-col gap-2">
               <span className="inline-flex self-start items-center gap-1.5 rounded-full text-[12.5px] font-semibold" style={{ padding: "3px 11px", background: "rgba(74,222,128,.12)", color: "#9fe0b4" }}><span className="w-1.5 h-1.5 rounded-full bg-[#4ade80]" />เปิดรับสมัครตลอด</span>
               <h2 className="m-0 font-semibold text-[19px] md:text-[22px] leading-[1.35]">{invite ? "พร้อมแล้ว เริ่มสร้างโปรไฟล์ได้เลย" : tom ? "ทอมหล่อ สมัครฟรี เริ่มได้เลย" : `สมัครสาย${pick === "B" ? "นวด" : "เพื่อนกินเที่ยว"} · ใช้เวลาไม่ถึง 10 นาที`}</h2>
@@ -120,7 +132,7 @@ export function JoinSalePage({ showEarnings = true, invite, group = null, secret
               <div className="flex flex-wrap gap-x-5 gap-y-1 mt-1"><Link href="/join/terms" className="tap text-[14px] text-[#e8c472]">อ่านสัญญา</Link><Link href="/join/showcase" className="tap text-[14px] text-[#e8c472]">ดูหน้าตัวอย่างแอป ›</Link></div>
             </div>
             <div className="flex flex-col gap-2.5 w-full md:w-[340px] shrink-0">
-              <Link href={invite ? `/join/pay?pkg=B&invite=${invite}${g}` : tom ? "/join/pay?pkg=B&g=tom" : `/join/pay?pkg=${pick}${g}`} data-join-start className="min-h-14 rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[17px] grid place-items-center hover:text-[#1b130b]" style={{ boxShadow: "0 8px 22px rgba(232,196,114,.22)" }}>{SIGNUP_FREE || invite || tom ? "เริ่มสร้างโปรไฟล์" : "ชำระเงินและรับรหัสสมัคร"}</Link>
+              <Link href={invite ? `/join/pay?pkg=B&invite=${invite}${g}` : tom ? "/join/pay?pkg=B&g=tom" : `/join/pay?pkg=${pick}${g}`} data-join-start className="mb-start min-h-[60px] rounded-2xl text-[#1b130b] font-bold text-[18px] flex items-center justify-center gap-2.5 hover:text-[#1b130b]"><span>{SIGNUP_FREE || invite || tom ? "เริ่มสร้างโปรไฟล์" : "ชำระเงินและรับรหัสสมัคร"}</span><span className="mb-arr w-7 h-7 rounded-full grid place-items-center" style={{ background: "rgba(27,19,11,.12)" }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span></Link>
               {showEarnings && !invite && <Link href="/join/earnings" className="min-h-12 rounded-[14px] text-[#e8c472] font-semibold text-[14.5px] grid place-items-center text-center px-3 hover:text-[#e8c472]" style={{ background: "rgba(232,196,114,0.12)" }}>ดูรายได้และส่วนแบ่ง · คำนวณรายได้</Link>}
               <Link href="/join/me" data-pt-login className="min-h-12 rounded-[14px] border-[1.5px] border-[rgba(232,196,114,.6)] text-[#e8c472] font-semibold text-[14.5px] grid place-items-center text-center px-3 hover:text-[#e8c472] hover:bg-[rgba(232,196,114,0.08)]">สมัครแล้ว? เข้าสู่ระบบ Part-Time</Link>
             </div>
