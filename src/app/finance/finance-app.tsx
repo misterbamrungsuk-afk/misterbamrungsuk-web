@@ -616,7 +616,7 @@ function CasesGrid({ plan, up, month, setMonth }: P) {
           <button type="button" className="fin-btn ghost sm" disabled={n >= MAX_MONTHS} onClick={() => setCount(n + 1)}>{t("+ เพิ่มเดือน", "+ Add month")}</button>
         </span>
       }>
-      <p className="fin-note -mt-1 mb-2">{t("จำนวนรอบที่ขายได้/คาดว่าจะขายต่อเดือน แยกตามบริการ — แตะชื่อเดือนเพื่อเลือกเดือน", "Bookings sold / expected per month by service — tap a month to select it")}</p>
+      <p className="fin-note -mt-1 mb-2">{t("จำนวนรอบที่ขายได้/คาดว่าจะขายต่อเดือน แยกตามบริการ — แตะชื่อเดือนเพื่อเลือกเดือน · กำไร = ยอดสุทธิ + รายได้อื่น − จ่ายผู้ให้บริการ − ค่าใช้จ่ายบริษัท", "Bookings sold / expected per month by service — tap a month to select it · Profit = net sales + other income − paid to providers − company expenses")}</p>
       <div className="overflow-x-auto">
         <table className="fin-t grid18">
           <thead>
@@ -646,7 +646,9 @@ function CasesGrid({ plan, up, month, setMonth }: P) {
               return (<>
                 {row(t("ยอดสุทธิ (ราคา × เคส)", "Net sales (price × cases)"), S.map((x) => x.gross), () => "text-[var(--fb)]", "", true)}
                 {showOther && row(t("รายได้อื่น", "Other income"), S.map((x) => x.otherIncome), () => "text-[#0d9488]", "+")}
-                {row(t("ค่าใช้จ่าย (รวมส่วนแบ่งผู้ให้บริการ)", "Costs (incl. provider share)"), S.map((x) => x.costAll), () => "text-[var(--fo)]", "−")}
+                {/* แยกให้เห็นว่าเงินไปไหน (เดิมรวมเป็นแถวเดียว "ค่าใช้จ่าย (รวมส่วนแบ่งผู้ให้บริการ)" — อ่านแล้วงงว่าทำไมเป็นล้าน) */}
+                {row(t(`จ่ายผู้ให้บริการ ${fmtPct(1 - plan.companyShare)}${plan.providerFee ? ` (หักค่าธรรมเนียม ${fmtPct(plan.providerFee)})` : ""}`, `Paid to providers ${fmtPct(1 - plan.companyShare)}${plan.providerFee ? ` (less ${fmtPct(plan.providerFee)} fee)` : ""}`), S.map((x) => x.provider - x.fee), () => "text-[#3b5bb5]", "−")}
+                {row(t("ค่าใช้จ่ายบริษัท (รายเดือน · ครั้งเดียว · ภ.ง.ด.)", "Company expenses (monthly · one-time · tax)"), S.map((x) => x.expenses), () => "text-[var(--fo)]", "−")}
                 {row(t("กำไร/เดือน", "Profit / month"), S.map((x) => x.profit), (v) => (v >= 0 ? "text-[var(--fg)]" : "text-[var(--fr)]"), "", true)}
               </>);
             })()}
