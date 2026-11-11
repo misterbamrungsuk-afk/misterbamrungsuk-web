@@ -201,7 +201,7 @@ const setPw = (d, o) => d.req('/api/join/password', { method: 'POST', headers: J
   // ── หน้า ──
   h = await (await fetch(B + '/join/me')).text();
   ok('/join/me has login + forgot + LINE fallback', h.includes('Part-Time เข้าสู่ระบบ') && h.includes('ลืมรหัสผ่าน? ส่งลิงก์ไปอีเมล') && h.includes('ขอลิงก์ใหม่ทาง LINE'));
-  h = await (await fetch(B + '/login')).text(); ok('/login has Part-Time login button', h.includes('href="/join/me"') && h.includes('Part-Time เข้าสู่ระบบ'));
+  h = await (await fetch(B + '/login')).text(); ok('/login has account-type chooser with Part-Time', h.includes('data-as="pt"') && h.includes('data-as="customer"'));
   h = await (await fetch(B + '/join')).text(); ok('/join sale page has PT login link', h.includes('สมัครแล้ว? เข้าสู่ระบบ Part-Time'));
   h = await (await fetch(B + '/work-with-us')).text(); ok('/work-with-us links to PT login', h.includes('href="/join/me"') && h.includes('เข้าสู่ระบบ'));
   r = await fetch(B + '/api/admin/demo-outbox'); ok('demo outbox needs admin', r.status === 401 || r.status === 404, String(r.status));

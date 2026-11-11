@@ -6,7 +6,7 @@ import { Turnstile } from "@/components/turnstile";
 
 const inCls = "w-full min-h-12 rounded-xl bg-[#211a18] text-[#f3ead9] px-[14px] text-[15px] placeholder:text-[#b5a596] outline-none border border-transparent focus:border-[#e8c472]";
 
-export function PtLoginForm() {
+export function PtLoginForm({ plain = false }: { plain?: boolean } = {}) {
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [show, setShow] = useState(false);
@@ -29,8 +29,8 @@ export function PtLoginForm() {
   };
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-3 rounded-2xl bg-[#251d1b] text-left" style={{ padding: 18 }} aria-labelledby="lg-h">
-      <h2 id="lg-h" className="m-0 font-semibold text-[17px] text-[#e8c472]">Part-Time เข้าสู่ระบบ</h2>
+    <form onSubmit={submit} className={plain ? "flex flex-col gap-3 text-left" : "flex flex-col gap-3 rounded-2xl bg-[#251d1b] text-left"} style={plain ? undefined : { padding: 18 }} aria-labelledby="lg-h">
+      <h2 id="lg-h" className={plain ? "sr-only" : "m-0 font-semibold text-[17px] text-[#e8c472]"}>Part-Time เข้าสู่ระบบ</h2>
       <input className={inCls} type="email" inputMode="email" autoComplete="email" autoCapitalize="off" spellCheck={false} placeholder="อีเมลที่ใช้สมัคร" aria-label="อีเมล" value={email} onChange={(e) => { setEmail(e.target.value.replace(/\s/g, "")); setErr(""); }} />
       <div className="relative">
         <input className={inCls + " pr-[76px]"} type={show ? "text" : "password"} autoComplete="current-password" placeholder="รหัสผ่าน" aria-label="รหัสผ่าน" value={pw} onChange={(e) => { setPw(e.target.value); setErr(""); }} />
