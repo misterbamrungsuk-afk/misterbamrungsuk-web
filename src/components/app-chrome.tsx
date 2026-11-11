@@ -25,6 +25,8 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
   }, [path, full]);
   return (
     <div className={`app-frame mb-v7 mb-c ${full ? "" : "safe-bottom"}`}>
+      {/* กันพื้นที่ใต้แถบบนของมือถือ/เบราว์เซอร์ (viewport-fit=cover ทำให้หน้าเลื่อนเข้าไปใต้แถบ) — ติดบนตลอด ไม่ให้เนื้อหาโดนบัง */}
+      <div aria-hidden="true" className="sticky top-0 z-[35]" style={{ height: "env(safe-area-inset-top, 0px)", background: "#171211" }} />
       {children}
       <IncomingCallWatcher />
       {!full && <TabBar unread={unread} />}

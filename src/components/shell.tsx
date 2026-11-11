@@ -82,7 +82,7 @@ export function TabBar({ unread = 0 }: { unread?: number }) {
 export function TopBar({ title, back, right, notis = 0 }: { title?: ReactNode; back?: string; right?: ReactNode; notis?: number }) {
   // หัวหน้าตามบอร์ด C-* : พื้น #251d1b สูง 64 · ปุ่มกลับ 44px · ไม่มีตัวสลับภาษา
   return (
-    <header className="sticky top-0 z-30" style={{ background: "#251d1b" }}>
+    <header className="sticky z-30" style={{ top: "env(safe-area-inset-top, 0px)", background: "#251d1b" }}>
       <div className="flex items-center gap-3 px-4 h-16">
         {back ? (
           <SmartBack href={back} className="w-11 h-11 shrink-0 rounded-full bg-[#211a18] grid place-items-center text-[#f3ead9] hover:text-[#f3ead9]">
