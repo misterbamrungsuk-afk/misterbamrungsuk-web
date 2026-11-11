@@ -21,10 +21,14 @@ export function PhotosClient({ mb, t, initial, disclose: disclose0 = null, boxes
   const [askNo, setAskNo] = useState(false);
   const [ack, setAck] = useState(false);
   const [edit, setEdit] = useState<{ i: number; b: Box; ratio: number } | null>(null);
+  // ค่าที่บันทึกแล้ว (saved*) กับค่าที่กำลังเลือก — กด "บันทึก" ถึงจะส่ง (บอส 11 พ.ย. 2569)
+  const [savedMode, setSavedMode] = useState<"face" | "whole">(mode0 === "whole" ? "whole" : "face");
   const [mode, setModeS] = useState<"face" | "whole">(mode0 === "whole" ? "whole" : "face");
+  const [savedLevel, setSavedLevel] = useState<1 | 2 | 3>(level0 === 1 || level0 === 3 ? level0 : 2);
   const [level, setLevelS] = useState<1 | 2 | 3>(level0 === 1 || level0 === 3 ? level0 : 2);
+  const blurDirty = mode !== savedMode || level !== savedLevel;
   const blur = disclose === "no";
-  const faceBlur = blur && mode === "face";
+  const faceBlur = blur && savedMode === "face";
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [saved, setSaved] = useState(false);
@@ -45,21 +49,16 @@ export function PhotosClient({ mb, t, initial, disclose: disclose0 = null, boxes
     setBusy(false);
     if (data?.ok) { setDisclose(value); setAskNo(false); setSaved(true); } else setErr(data?.error ?? "บันทึกไม่สำเร็จ");
   };
-  const setMode = async (m: "face" | "whole") => {
-    if (m === mode) return;
+  const setMode = (m: "face" | "whole") => { setModeS(m); setSaved(false); };
+  const setLevel = (l: 1 | 2 | 3) => { setLevelS(l); setSaved(false); };
+  const saveBlur = async () => {
     setBusy(true); setErr(""); setSaved(false);
-    const res = await fetch("/api/join/photos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mb, t, action: "blur_mode", value: m }) }).catch(() => null);
-    const data = (await res?.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+    const post = (action: string, value: unknown) => fetch("/api/join/photos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mb, t, action, value }) }).then((r) => r.json()).catch(() => null) as Promise<{ ok?: boolean; error?: string } | null>;
+    let d: { ok?: boolean; error?: string } | null = { ok: true };
+    if (mode !== savedMode) { d = await post("blur_mode", mode); if (d?.ok) { setSavedMode(mode); setEdit(null); } }
+    if (d?.ok && level !== savedLevel) { d = await post("blur_level", level); if (d?.ok) setSavedLevel(level); }
     setBusy(false);
-    if (data?.ok) { setModeS(m); setEdit(null); setSaved(true); } else setErr(data?.error ?? "บันทึกไม่สำเร็จ");
-  };
-  const setLevel = async (l: 1 | 2 | 3) => {
-    if (l === level) return;
-    setBusy(true); setErr(""); setSaved(false);
-    const res = await fetch("/api/join/photos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mb, t, action: "blur_level", value: l }) }).catch(() => null);
-    const data = (await res?.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
-    setBusy(false);
-    if (data?.ok) { setLevelS(l); setSaved(true); } else setErr(data?.error ?? "บันทึกไม่สำเร็จ");
+    if (d?.ok) setSaved(true); else setErr(d?.error ?? "บันทึกไม่สำเร็จ");
   };
   const saveBox = async () => {
     if (!edit) return;
@@ -136,8 +135,12 @@ export function PhotosClient({ mb, t, initial, disclose: disclose0 = null, boxes
               <button type="button" disabled={busy} aria-pressed={mode === "whole"} onClick={() => setMode("whole")} className="min-h-11 rounded-xl text-[13.5px] font-semibold" style={{ background: mode === "whole" ? "#f3ead9" : "#251d1b", color: mode === "whole" ? "#1b130b" : "#f3ead9" }}>เบลอทั้งรูป (อ่อน)</button>
             </div>}
             {blur && <div data-blur-level className="flex items-center gap-2"><span className="text-[13px] text-[#d9c9b4] shrink-0">ความแรง</span><div className="grid grid-cols-3 gap-2 flex-1">{([1, 2, 3] as const).map((l) => <button key={l} type="button" disabled={busy} aria-pressed={level === l} onClick={() => setLevel(l)} className="min-h-10 rounded-xl text-[13.5px] font-semibold" style={{ background: level === l ? "#f3ead9" : "#251d1b", color: level === l ? "#1b130b" : "#f3ead9" }}>{l === 1 ? "อ่อน" : l === 2 ? "กลาง" : "เข้ม"}</button>)}</div></div>}
+            {blur && blurDirty && <div data-blur-save className="grid grid-cols-[1fr_auto] gap-2">
+              <button type="button" disabled={busy} onClick={saveBlur} className="min-h-11 rounded-xl font-semibold text-[#1b130b] bg-[#e8c472] disabled:opacity-40">{busy ? "กำลังบันทึก…" : "บันทึก"}</button>
+              <button type="button" disabled={busy} onClick={() => { setModeS(savedMode); setLevelS(savedLevel); }} className="min-h-11 px-4 rounded-xl font-semibold text-[#f3ead9] bg-[#251d1b]">ยกเลิก</button>
+            </div>}
             {faceBlur && <span className="text-[13px] text-[#d9c9b4]">ลูกค้าเห็นรูปที่เบลอวงกลมตามกรอบ · กด &quot;ปรับเบลอ&quot; ที่รูปเพื่อเลื่อนวงให้ตรงใบหน้า · รูปที่ยังไม่ได้กดบันทึกจุดเบลอ ระบบจะเบลอทั้งรูปให้ก่อน</span>}
-            {blur && mode === "whole" && <span className="text-[13px] text-[#d9c9b4]">ลูกค้าเห็นทุกรูปเบลอทั้งภาพแบบอ่อน ๆ — พอเห็นรูปร่างและบรรยากาศ แต่จำหน้าไม่ได้ · ไม่ต้องปรับจุดเบลอ</span>}
+            {blur && savedMode === "whole" && <span className="text-[13px] text-[#d9c9b4]">ลูกค้าเห็นทุกรูปเบลอทั้งภาพแบบอ่อน ๆ — พอเห็นรูปร่างและบรรยากาศ แต่จำหน้าไม่ได้ · ไม่ต้องปรับจุดเบลอ</span>}
           </div>
           {edit && photos[edit.i] && (
             <div role="dialog" aria-label="ปรับจุดเบลอ" data-blur-editor className="flex flex-col gap-2 rounded-2xl bg-[#211a18]" style={{ padding: 14, border: "1.5px solid #e8c472" }}>

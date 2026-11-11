@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LINE_GROUP_LIST, PACKAGES, QUOTA, feeBreakdown, ptLineGroupKey, type PackageKey } from "@/lib/join/config";
 import type { Applicant as ApplicantBase, ApplicantStatus, CriminalCheck, Extra } from "@/lib/join/store";
@@ -42,16 +42,16 @@ const isTodo = (r: Applicant) => r.status === "pending_slip" || r.kyc_status ===
 const match = (r: Applicant, f: Filter) => f === "all" ? true : f === "inactive" ? !!r.inactive : f === "todo" ? isTodo(r) : f === "fix" ? r.kyc_status === "rejected" : r.status === f;
 const FILTERS: [Filter, string][] = [["todo", "รอตรวจ"], ["fix", "ตีกลับ · รอแก้"], ["verified", "ชำระแล้ว"], ["pending_slip", "รอตรวจสลิป"], ["rejected", "ปฏิเสธ"], ["refunded", "คืนเงินแล้ว"], ["inactive", "Non Active"], ["all", "ทั้งหมด"]];
 const PKG_TABS: [Pkg, string, string][] = [["all", "ทั้งหมด", "ผู้สมัครทุกสาย"], ["A", "สาย A", PACKAGES.A.name], ["B", "สาย B", PACKAGES.B.name]];
-/** สมัครมาแบบไหน (บอสขอ 24 ต.ค. 2569 · ดูง่าย ป้ายเดียวต่อคน) — จ่ายเงิน / คำเชิญ TOP / Secret / ทอมหล่อฟรี */
+/** สมัครมาแบบไหน (บอสขอ 24 ต.ค. 2569 · ดูง่าย ป้ายเดียวต่อคน) — จ่ายเงิน / คำเชิญ TOP / Secret / สมัครฟรี (ป้ายบอกหมวดจริง หนุ่มหล่อ/ทอมหล่อ) */
 type Ch = "paid" | "invite" | "secret" | "tom";
 const chOf = (r: Applicant): Ch => (r.tier === "secret" ? "secret" : r.invite ? "invite" : r.amount ? "paid" : "tom");
 const CH: Record<Ch, { label: string; c: string; bg: string }> = {
   paid: { label: "จ่ายเงิน", c: "#2f7a46", bg: "#e4f3e8" },
   invite: { label: "✦ คำเชิญ TOP", c: "#8a6516", bg: "#f6ecd2" },
   secret: { label: "✦ Secret", c: "#5b3fb0", bg: "#ece6fb" },
-  tom: { label: "ทอมหล่อ · ฟรี", c: "#c0577e", bg: "#fbe4ec" },
+  tom: { label: "สมัครฟรี", c: "#c0577e", bg: "#fbe4ec" },
 };
-const ChPill = ({ r }: { r: Applicant }) => { const k = chOf(r), t = CH[k]; return <span data-ch={k} className="inline-flex items-center h-7 px-3 rounded-full text-[12.5px] font-semibold whitespace-nowrap" style={{ color: t.c, background: t.bg }}>{t.label}{k === "paid" ? ` ${fmt(r.amount)}` : ""}</span>; };
+const ChPill = ({ r }: { r: Applicant }) => { const k = chOf(r), t = k === "tom" ? { ...CH.tom, label: `${r.group === "tom" ? "ทอมหล่อ" : "หนุ่มหล่อ"} · ฟรี`, ...(r.group === "tom" ? {} : { c: "#3b5bb5", bg: "#e8eefc" }) } : CH[k]; return <span data-ch={k} className="inline-flex items-center h-7 px-3 rounded-full text-[12.5px] font-semibold whitespace-nowrap" style={{ color: t.c, background: t.bg }}>{t.label}{k === "paid" ? ` ${fmt(r.amount)}` : ""}</span>; };
 type Grp = "all" | "man" | "tom";
 const GRP_TABS: [Grp, string][] = [["all", "ทั้งหมด"], ["man", "หนุ่มหล่อ"], ["tom", "ทอมหล่อ"]];
 const inGrp = (g: Grp) => (r: Applicant) => g === "all" || (g === "tom") === (r.group === "tom");
@@ -110,6 +110,31 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role, initia
   };
   /** แจ้งผล: 401 = เซสชันหมดอายุ · ไม่สำเร็จใช้ข้อความจาก API */
   const say = (d: { ok?: boolean; error?: string; res: Response | null }, okText: string, failText = "บันทึกไม่สำเร็จ") => fromRes(d.res, d.ok ? okText : d.error ?? failText, !!d.ok);
+  // ร่างการแก้ในแผง "จัดการ" (สายงาน · รูปบนเว็บ · ความแรงเบลอ · หมวด) — กด "บันทึก" ถึงจะส่ง
+  type Dr = { package?: "A" | "B"; photo_privacy?: "show" | "face" | "whole"; blur_level?: 1 | 2 | 3; group?: "man" | "tom" };
+  const [dr, setDr] = useState<Dr>({});
+  const [drBusy, setDrBusy] = useState(false);
+  const selId = sel?.id;
+  useEffect(() => { setDr({}); }, [selId]);
+  const privOf = (r: Applicant) => (r.disclose === "no" ? (r.blur_mode === "whole" ? "whole" : "face") : "show");
+  const drDiff = (r: Applicant): Dr => {
+    const o: Dr = {};
+    if (dr.group && dr.group !== (r.group === "tom" ? "tom" : "man")) o.group = dr.group;
+    if (dr.package && dr.package !== r.package) o.package = dr.package;
+    if (dr.photo_privacy && dr.photo_privacy !== privOf(r)) o.photo_privacy = dr.photo_privacy;
+    if (dr.blur_level && dr.blur_level !== (r.blur_level ?? 2)) o.blur_level = dr.blur_level;
+    return o;
+  };
+  const drDirty = (r: Applicant) => Object.keys(drDiff(r)).length > 0;
+  const saveDr = async (r: Applicant) => {
+    const ch = drDiff(r);
+    setDrBusy(true);
+    let last: Awaited<ReturnType<typeof patch>> | null = null;
+    for (const [k, v] of Object.entries(ch)) { last = await patch(r.id, { [k]: v }); if (!last.ok) break; }
+    setDrBusy(false);
+    if (last) say(last, "บันทึกการแก้ไขแล้ว");
+    if (last?.ok) { setDr({}); router.refresh(); }
+  };
   const act = async (id: string, body: { status?: ApplicantStatus; sync?: boolean; reason?: string }) => {
     const d = await patch(id, body);
     if (body.sync) { say(d, "sync ชีตสำเร็จ", "sync ชีตไม่สำเร็จ ตรวจการตั้งค่า Google Sheet"); if (d.ok) setRows((r) => r.map((x) => (x.id === id ? { ...x, sheet_synced: true } : x))); }
@@ -384,18 +409,23 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role, initia
             <div className="h-px" style={{ background: LINE_BD }} />
             <b className="text-[14px] -mb-1">จัดการ</b>
             {sel.invite && <p className="m-0 text-[12.5px]" style={{ color: "#8a6516" }}>✦ สมัครผ่านลิงก์เชิญ ({sel.invite}) · ไม่มีค่าสมัคร · ระดับ {sel.tier === "secret" ? "Secret" : "TOP"}</p>}
+            {/* แก้แล้วกด "บันทึก" ทีเดียว (บอส 11 พ.ย. 2569) — ก่อนบันทึกยังไม่เปลี่ยนจริง */}
             <div className="flex justify-between items-center gap-2"><span style={{ color: "#6b5d58" }}>สายงาน</span>
-              <span className="flex gap-1">{(["A", "B"] as const).map((k) => { const on = sel.package === k; return <button key={k} data-set-package={k} onClick={async () => { if (on) return; const d = await patch(sel.id, { package: k }); say(d, `ย้ายไปสาย ${k} · ${PACKAGES[k].name} แล้ว`); }} aria-pressed={on} title={PACKAGES[k].name} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={on ? { borderColor: INK, background: INK, color: "#fff" } : { borderColor: LINE_BD, color: "#5c4f48" }}>{k === "A" ? "A · กินเที่ยว" : "B · พร้อมนวด"}</button>; })}</span>
+              <span className="flex gap-1">{(["A", "B"] as const).map((k) => { const on = (dr.package ?? sel.package) === k; return <button key={k} data-set-package={k} onClick={() => setDr((d) => ({ ...d, package: k }))} aria-pressed={on} title={PACKAGES[k].name} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={on ? { borderColor: INK, background: INK, color: "#fff" } : { borderColor: LINE_BD, color: "#5c4f48" }}>{k === "A" ? "A · กินเที่ยว" : "B · พร้อมนวด"}</button>; })}</span>
             </div>
             <div className="flex justify-between items-center gap-2"><span style={{ color: "#6b5d58" }}>รูปบนเว็บ</span>
-              <span className="flex gap-1">{(["show", "face", "whole"] as const).map((k) => { const cur = sel.disclose === "no" ? (sel.blur_mode === "whole" ? "whole" : "face") : "show"; const on = cur === k; return <button key={k} data-set-photo-privacy={k} onClick={async () => { if (on) return; const d = await patch(sel.id, { photo_privacy: k }); say(d, k === "show" ? "เปิดหน้าในรูปแล้ว" : k === "face" ? "ตั้งเบลอเฉพาะหน้าแล้ว" : "ตั้งเบลอทั้งรูปแล้ว"); }} aria-pressed={on} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={on ? { borderColor: INK, background: INK, color: "#fff" } : { borderColor: LINE_BD, color: "#5c4f48" }}>{k === "show" ? "เปิดหน้า" : k === "face" ? "เบลอหน้า" : "เบลอทั้งรูป"}</button>; })}</span>
+              <span className="flex gap-1">{(["show", "face", "whole"] as const).map((k) => { const on = (dr.photo_privacy ?? privOf(sel)) === k; return <button key={k} data-set-photo-privacy={k} onClick={() => setDr((d) => ({ ...d, photo_privacy: k }))} aria-pressed={on} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={on ? { borderColor: INK, background: INK, color: "#fff" } : { borderColor: LINE_BD, color: "#5c4f48" }}>{k === "show" ? "เปิดหน้า" : k === "face" ? "เบลอหน้า" : "เบลอทั้งรูป"}</button>; })}</span>
             </div>
-            {sel.disclose === "no" && <div className="flex justify-between items-center gap-2"><span style={{ color: "#6b5d58" }}>ความแรงเบลอ</span>
-              <span className="flex gap-1">{([1, 2, 3] as const).map((l) => { const on = (sel.blur_level ?? 2) === l; return <button key={l} data-set-blur-level={l} onClick={async () => { if (on) return; const d = await patch(sel.id, { blur_level: l }); say(d, `ตั้งเบลอระดับ${l === 1 ? "อ่อน" : l === 2 ? "กลาง" : "เข้ม"}แล้ว`); }} aria-pressed={on} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={on ? { borderColor: INK, background: INK, color: "#fff" } : { borderColor: LINE_BD, color: "#5c4f48" }}>{l === 1 ? "อ่อน" : l === 2 ? "กลาง" : "เข้ม"}</button>; })}</span>
+            {(dr.photo_privacy ?? privOf(sel)) !== "show" && <div className="flex justify-between items-center gap-2"><span style={{ color: "#6b5d58" }}>ความแรงเบลอ</span>
+              <span className="flex gap-1">{([1, 2, 3] as const).map((l) => { const on = (dr.blur_level ?? sel.blur_level ?? 2) === l; return <button key={l} data-set-blur-level={l} onClick={() => setDr((d) => ({ ...d, blur_level: l }))} aria-pressed={on} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={on ? { borderColor: INK, background: INK, color: "#fff" } : { borderColor: LINE_BD, color: "#5c4f48" }}>{l === 1 ? "อ่อน" : l === 2 ? "กลาง" : "เข้ม"}</button>; })}</span>
             </div>}
             <div className="flex justify-between items-center gap-2"><span style={{ color: "#6b5d58" }}>หมวด</span>
-              <span className="flex gap-1">{(["man", "tom"] as const).map((g) => { const on = (sel.group === "tom" ? "tom" : "man") === g; return <button key={g} data-set-group={g} onClick={async () => { if (on) return; const d = await patch(sel.id, { group: g }); say(d, `ย้ายไปหมวด ${g === "tom" ? "ทอมหล่อ" : "หนุ่มหล่อ"} แล้ว`); }} aria-pressed={on} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={on ? { borderColor: g === "tom" ? "#c0577e" : INK, background: g === "tom" ? "#c0577e" : INK, color: "#fff" } : { borderColor: LINE_BD, color: "#5c4f48" }}>{g === "tom" ? "ทอมหล่อ" : "หนุ่มหล่อ"}</button>; })}</span>
+              <span className="flex gap-1">{(["man", "tom"] as const).map((g) => { const on = (dr.group ?? (sel.group === "tom" ? "tom" : "man")) === g; return <button key={g} data-set-group={g} onClick={() => setDr((d) => ({ ...d, group: g }))} aria-pressed={on} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={on ? { borderColor: g === "tom" ? "#c0577e" : INK, background: g === "tom" ? "#c0577e" : INK, color: "#fff" } : { borderColor: LINE_BD, color: "#5c4f48" }}>{g === "tom" ? "ทอมหล่อ" : "หนุ่มหล่อ"}</button>; })}</span>
             </div>
+            {drDirty(sel) && <div data-manage-save className="flex gap-2">
+              <button type="button" disabled={drBusy} onClick={() => saveDr(sel)} className="flex-1 h-10 rounded-full text-[13.5px] font-bold disabled:opacity-50" style={{ background: INK, color: "#fff" }}>{drBusy ? "กำลังบันทึก…" : "บันทึก"}</button>
+              <button type="button" disabled={drBusy} onClick={() => setDr({})} className="h-10 px-4 rounded-full border text-[13px] font-semibold" style={{ borderColor: LINE_BD, color: "#5c4f48" }}>ยกเลิก</button>
+            </div>}
             <div className="flex justify-between items-center gap-2"><span style={{ color: "#6b5d58" }}>ระดับ</span>
               <span className="flex gap-1">{(["silver", "top", "secret"] as const).map((t) => { const on = (sel.tier ?? "silver") === t; const sc = t === "secret"; return <button key={t} data-set-tier={t} onClick={() => setTier(sel.id, t)} aria-pressed={on} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={sc ? { borderColor: "#cbbdf2", background: on ? "#1c1530" : "#fff", color: on ? "#e9e1ff" : "#5b3fb0", boxShadow: on ? "0 0 10px rgba(124,92,214,.45)" : "none" } : on ? { borderColor: GOLD, background: GOLD, color: "#1a1206" } : { borderColor: LINE_BD, color: "#5c4f48" }}>{sc ? "Secret" : t === "top" ? "TOP" : "Silver"}</button>; })}</span>
             </div>
