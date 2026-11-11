@@ -47,7 +47,7 @@ async function register(pkg, extra = {}) {
   // ── หน้าสาธารณะ: ราคาใหม่ · ไม่มีการันตี ──
   let h = await (await fetch(B + '/join')).text();
   ok('/join: free signup (28 ต.ค. 2569)', h.includes('ฟรี') && h.includes('เริ่มสร้างโปรไฟล์') && !h.includes('ชำระเงินและรับรหัสสมัคร'));
-  ok('/join has no guarantee wording', NO_GUARANTEE(h), (/.{20}(การันตี|เงินประกัน).{20}/.exec(h) || [])[0]);
+  ok('/join has no guarantee wording (except FAQ ค่าการันตีแบรนด์ · บอส 11 พ.ย. 2569)', NO_GUARANTEE(h.replace(/ค่าการันตีแบรนด์/g, '')), (/.{20}(การันตี|เงินประกัน).{20}/.exec(h) || [])[0]);
   ok('/join explains job-fee deduction', h.includes('หักค่าสมัครจากงาน') && h.includes('฿10,000'));
   h = await (await fetch(B + '/join/terms')).text();
   ok('/join/terms: free signup + job fee, non-refundable, no guarantee', h.includes('สมัครฟรีทุกสาย') && h.includes('10,000 บาท') && h.includes('ไม่คืนเงินทุกกรณี') && NO_GUARANTEE(h));
