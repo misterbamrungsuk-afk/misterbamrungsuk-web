@@ -28,6 +28,14 @@ const FAQ: [string, string][] = [
   ["ต้องตรวจประวัติอะไรบ้าง?", "ยืนยันตัวตนด้วยบัตรประชาชน และยินยอมให้ตรวจประวัติอาชญากรรมก่อนเปิดบัญชี"],
 ];
 
+/** สีประจำการ์ด (หม่น ๆ บนพื้นเข้ม): [พื้นไล่สี, ขอบ, สีไอคอน/ตัวเลข, พื้นวงไอคอน] */
+const TINTS: [string, string, string, string][] = [
+  ["linear-gradient(155deg, #4a1a24, #241a1a 75%)", "rgba(214,120,138,.28)", "#f0a3b1", "rgba(214,120,138,.16)"],
+  ["linear-gradient(155deg, #1d3a33, #1c1d1a 75%)", "rgba(110,190,160,.26)", "#9ad7bf", "rgba(110,190,160,.15)"],
+  ["linear-gradient(155deg, #1e2c45, #1b1b20 75%)", "rgba(125,160,225,.26)", "#a9c2f0", "rgba(125,160,225,.15)"],
+  ["linear-gradient(155deg, #3a2448, #1f1a20 75%)", "rgba(180,140,220,.28)", "#cdb0ec", "rgba(180,140,220,.16)"],
+];
+
 export type Seats = { left: number; quota: number; cohort: string; closed: boolean; taken?: number };
 const h2: React.CSSProperties = { margin: 0, fontWeight: 600, fontSize: 20 };
 
@@ -102,7 +110,7 @@ export function JoinSalePage({ showEarnings = true, invite, group = null, secret
             </div>
           )}
           {/* กล่องสมัคร: มือถือเรียงลง · จอใหญ่ข้อความซ้าย ปุ่มขวา (เต็มกว้างเท่าการ์ดสายงาน) */}
-          <div data-join-cta className={`w-full ${!invite && !tom ? "" : "max-w-[720px] mx-auto "}flex flex-col md:flex-row md:items-center gap-5 md:gap-8 rounded-[20px] p-[18px] md:px-7 md:py-6`} style={{ background: "#211a18", border: "1px solid rgba(232,196,114,0.18)" }}>
+          <div data-join-cta className={`w-full ${!invite && !tom ? "" : "max-w-[720px] mx-auto "}flex flex-col md:flex-row md:items-center gap-5 md:gap-8 rounded-[20px] p-[18px] md:px-7 md:py-6`} style={{ background: "linear-gradient(120deg, #3a2614, #241b17 50%, #33121a)", border: "1px solid rgba(232,196,114,0.45)", boxShadow: "0 14px 34px rgba(0,0,0,.28)" }}>
             <div className="flex-1 min-w-0 flex flex-col gap-2">
               <span className="inline-flex self-start items-center gap-1.5 rounded-full text-[12.5px] font-semibold" style={{ padding: "3px 11px", background: "rgba(74,222,128,.12)", color: "#9fe0b4" }}><span className="w-1.5 h-1.5 rounded-full bg-[#4ade80]" />เปิดรับสมัครตลอด</span>
               <h2 className="m-0 font-semibold text-[19px] md:text-[22px] leading-[1.35]">{invite ? "พร้อมแล้ว เริ่มสร้างโปรไฟล์ได้เลย" : tom ? "ทอมหล่อ สมัครฟรี เริ่มได้เลย" : `สมัครสาย${pick === "B" ? "นวด" : "เพื่อนกินเที่ยว"} · ใช้เวลาไม่ถึง 10 นาที`}</h2>
@@ -122,22 +130,22 @@ export function JoinSalePage({ showEarnings = true, invite, group = null, secret
         <section className="flex flex-col gap-[14px]">
           <h2 style={h2}>สิ่งที่คุณได้รับ</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-[10px]">
-            {PERKS.map((k) => (
-              <div key={k.t} className="flex flex-col gap-2 rounded-[14px] bg-[#251d1b]" style={{ padding: 14 }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e8c472" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={k.icon} /></svg>
+            {PERKS.map((k, i) => { const [bg, bd, fg, ring] = TINTS[i % TINTS.length]; return (
+              <div key={k.t} data-perk className="flex flex-col gap-2.5 rounded-[16px]" style={{ padding: 16, background: bg, border: `1px solid ${bd}` }}>
+                <span className="w-10 h-10 rounded-xl grid place-items-center" style={{ background: ring }}><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke={fg} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={k.icon} /></svg></span>
                 <span className="font-semibold leading-[1.4]" style={{ fontSize: 14.5 }}>{k.t}</span>
                 <span className="leading-[1.5] text-[#d9c9b4]" style={{ fontSize: 13.5 }}>{k.d}</span>
               </div>
-            ))}
+            ); })}
           </div>
         </section>
 
         <div className="flex flex-col gap-[26px] md:gap-10">
-          <section className="rounded-2xl bg-[#2c1a1f] md:!px-7 md:!py-6" style={{ padding: "18px 20px" }}>
+          <section className="rounded-2xl md:!px-7 md:!py-6" style={{ padding: "18px 20px", background: "linear-gradient(120deg, #3b1620, #261a1c 60%, #2a2116)", border: "1px solid rgba(232,196,114,.22)" }}>
             <h2 className="font-semibold text-[16px] text-[#f3ead9]" style={{ margin: "0 0 8px" }}>คุณสมบัติที่เรามองหา</h2>
             <div className="flex flex-col gap-1.5 text-[14px] leading-[1.5] md:grid md:grid-cols-3 md:gap-6 md:text-[15px]">
               {looking.map((x) => (
-                <div key={x} className="flex gap-[10px] items-start"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e8c472" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0 mt-0.5"><path d="M5 12l5 5 9-10" /></svg><span>{x}</span></div>
+                <div key={x} className="flex gap-[10px] items-start"><span className="shrink-0 mt-0.5 w-[22px] h-[22px] rounded-full grid place-items-center" style={{ background: "rgba(232,196,114,.18)" }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#e8c472" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10" /></svg></span><span>{x}</span></div>
               ))}
             </div>
           </section>
@@ -145,12 +153,12 @@ export function JoinSalePage({ showEarnings = true, invite, group = null, secret
           <section data-join-steps className="flex flex-col" style={{ gap: 16 }}>
             <h2 className="text-center" style={h2}>ขั้นตอนการสมัคร</h2>
             <ol className="m-0 p-0 list-none grid gap-2.5 md:grid-cols-4 md:gap-4">
-              {STEPS.map(([t, d], i) => (
-                <li key={t} className="flex md:flex-col gap-3.5 md:gap-2.5 items-start rounded-2xl bg-[#211a18] border border-[rgba(243,234,217,0.07)]" style={{ padding: "14px 16px" }}>
-                  <span className="shrink-0 w-9 h-9 rounded-full grid place-items-center font-semibold text-[15px] text-[#1b130b] bg-[#e8c472]">{i + 1}</span>
+              {STEPS.map(([t, d], i) => { const [bg, bd, fg] = TINTS[i % TINTS.length]; return (
+                <li key={t} data-step className="flex md:flex-col gap-3.5 md:gap-2.5 items-start rounded-2xl" style={{ padding: "14px 16px", background: bg, border: `1px solid ${bd}` }}>
+                  <span className="shrink-0 w-9 h-9 rounded-full grid place-items-center font-bold text-[15px] text-[#1b130b]" style={{ background: fg }}>{i + 1}</span>
                   <span className="flex flex-col min-w-0"><span className="font-semibold text-[15px] leading-[1.45]">{t}</span><span className="text-[13.5px] text-[#d9c9b4] font-light leading-[1.55]">{d}</span></span>
                 </li>
-              ))}
+              ); })}
             </ol>
           </section>
         </div>
