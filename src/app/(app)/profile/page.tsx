@@ -14,7 +14,7 @@ import { LogoutLink } from "./logout";
 import { AvatarView } from "@/components/avatar-editor";
 import { getAvatar } from "@/lib/avatar";
 import { getMemberSettings, DEFAULT_MEMBER } from "@/lib/member/tiers";
-import { MemberOffers, TierBadge, skinOf } from "@/components/member-offers";
+import { TierBadge, skinOf } from "@/components/member-offers";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "บัญชีของฉัน — Mister Bamrungsuk" };
@@ -49,7 +49,6 @@ export default async function AccountPage() {
     ["/profile/edit", "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1.5-4 4.5-6 8-6s6.5 2 8 6", "แก้ไขโปรไฟล์ · ผู้ติดต่อฉุกเฉิน"],
     ["/favorites", "M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z", "เพื่อนที่ถูกใจ"],
     ["/jobs", "M4 5h16v11H8l-4 4zM8 9h8M8 12h5", "โพสต์หาเพื่อน"],
-    ["/membership", "M3 8h18v13H3zM3 12h18M12 8v13M12 8S10 3 7 4.5 9 8 12 8zm0 0s2-5 5-3.5S15 8 12 8z", p.member_tier ? "เมมเบอร์ · แต้ม · ของขวัญ" : "เปิดเมมเบอร์ · ของขวัญ", p.member_tier ? undefined : <span key="m" className="text-[12px] font-semibold rounded-full px-2 py-0.5 bg-[#e8c472] text-[#1b130b]">โปร</span>],
     ["/profile/addresses", "M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z", "ที่อยู่ที่บันทึก"],
     ["/profile/blocked", "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM5.6 5.6l12.8 12.8", "ผู้ใช้ที่บล็อก"],
     ["/page/terms", "M9.5 9a2.5 2.5 0 0 1 5 0c0 1.7-2.5 2-2.5 4M12 17h0M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z", "ช่วยเหลือและนโยบาย"],
@@ -83,7 +82,27 @@ export default async function AccountPage() {
       </section>
 
       {/* เปิดเมมเบอร์: จ่ายครั้งเดียว ได้เครดิตเพิ่ม (ส่วนต่าง = Givouche) */}
-      <div style={{ margin: "14px 16px 0" }}><MemberOffers tier={tier} tiers={mt} /></div>
+      {/* ปุ่มเดียวใต้กระเป๋า (บอส 11 พ.ย. 2569): เปิดเมมเบอร์คุ้มกว่า → หน้าเปิดเมม · Black แล้วไม่แสดง */}
+      {tier !== "black" && (
+        <Link href={tier === "gold" ? "/membership?tier=black" : "/membership"} data-member-cta className="mb-mem-cta relative overflow-hidden flex items-center gap-3 rounded-[18px] text-[#1b130b] hover:text-[#1b130b]" style={{ margin: "12px 16px 0", padding: "12px 14px" }}>
+          <style>{`
+            @keyframes mbMemShine{0%{transform:translateX(-130%) skewX(-20deg)}60%,100%{transform:translateX(330%) skewX(-20deg)}}
+            @keyframes mbMemPulse{0%,100%{box-shadow:0 8px 22px rgba(232,196,114,.28),0 0 0 0 rgba(232,196,114,.4)}50%{box-shadow:0 10px 28px rgba(232,196,114,.42),0 0 0 6px rgba(232,196,114,0)}}
+            .mb-mem-cta{background:linear-gradient(120deg,#fff1c9 0%,#f0d38a 38%,#e2b75a 72%,#c99a3c 100%);animation:mbMemPulse 2.6s ease-in-out infinite;transition:transform .2s ease}
+            .mb-mem-cta::after{content:"";position:absolute;inset:0 auto 0 0;width:35%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent);animation:mbMemShine 3.4s ease-in-out infinite;pointer-events:none}
+            .mb-mem-cta:active{transform:scale(.98)}
+            @media (prefers-reduced-motion: reduce){.mb-mem-cta,.mb-mem-cta::after{animation:none}}
+          `}</style>
+          <span className="w-11 h-11 rounded-[13px] grid place-items-center shrink-0" style={{ background: "rgba(27,19,11,.12)" }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 8h18v13H3zM3 12h18M12 8v13M12 8S10 3 7 4.5 9 8 12 8zm0 0s2-5 5-3.5S15 8 12 8z" /></svg>
+          </span>
+          <span className="flex-1 min-w-0 flex flex-col leading-tight">
+            <b className="text-[17px] font-bold">{tier === "gold" ? "อัปเกรดเป็น Black คุ้มกว่า" : "เปิดเมมเบอร์คุ้มกว่า"}</b>
+            <span className="text-[12.5px] font-medium" style={{ color: "#5a3d12" }}>{tier === "gold" ? `จ่าย ฿${mt.black.pay.toLocaleString("en-US")} ได้ ฿${mt.black.credit.toLocaleString("en-US")}` : `ได้เครดิตเพิ่มสูงสุด +฿${(mt.black.credit - mt.black.pay).toLocaleString("en-US")} Givouche`}</span>
+          </span>
+          <span className="w-8 h-8 rounded-full grid place-items-center shrink-0" style={{ background: "#1b130b", color: "#e8c472" }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span>
+        </Link>
+      )}
       <p data-cancel-note className="m-0 flex gap-2 items-start rounded-[14px] text-[12.5px] leading-[1.55] text-[#f3c2c9]" style={{ margin: "12px 16px 0", padding: "10px 12px", background: "rgba(224,36,60,.08)", border: "1px solid rgba(224,36,60,.28)" }}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 mt-0.5" aria-hidden="true"><path d="M12 3 2 20h20zM12 10v4M12 17h0" /></svg>
         <span><b className="font-semibold">หมายเหตุ:</b> ถ้าลูกค้ายกเลิกนัดเอง ระบบไม่มีการคืนเงินทุกกรณี</span>
