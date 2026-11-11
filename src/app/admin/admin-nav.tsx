@@ -85,14 +85,17 @@ export function AdminNav({ email, role }: { email: string; role: AdminRole }) {
   const systems = NAV_SYSTEMS.map((sy) => ({ ...sy, sections: sy.sections.map((sec) => ({ ...sec, tabs: sec.hrefs.map((h) => byHref.get(h)).filter((t): t is AdminTab => !!t) })).filter((sec) => sec.tabs.length) })).filter((sy) => sy.sections.length);
   const activeKey = systems.find((sy) => sy.sections.some((sec) => sec.tabs.some(isOn)))?.key ?? null;
   const [open, setOpen] = useState<string | null>(activeKey);
+  const [menu, setMenu] = useState(false);
+  const cur = tabs.find(isOn);
+  useEffect(() => { setMenu(false); }, [path]);
   useEffect(() => { if (activeKey) setOpen(activeKey); }, [activeKey]);
   // มือถือ: เลื่อนแท็บที่เปิดอยู่ให้อยู่ในจอ (แท็บท้าย ๆ เช่น "รูปหน้าปก" ไม่หลุดขอบขวา)
   const chips = useRef<HTMLElement>(null);
   useEffect(() => {
     // เลื่อนเฉพาะแถบแท็บเอง — scrollIntoView ลากทั้งหน้าให้เลื่อนข้างได้บนจอแคบ (iPhone SE)
     const nav = chips.current, el = nav?.querySelector<HTMLElement>("[aria-current=page]");
-    if (nav && el) nav.scrollLeft = Math.max(0, el.offsetLeft - (nav.clientWidth - el.offsetWidth) / 2);
-  }, [path]);
+    if (nav && el) nav.scrollTop = Math.max(0, el.offsetTop - nav.clientHeight / 3);
+  }, [path, menu]);
 
   return (
     <>
@@ -156,28 +159,45 @@ export function AdminNav({ email, role }: { email: string; role: AdminRole }) {
         </div>
       </nav>
 
-      {/* มือถือ/แท็บเล็ต: หัว + แท็บเลื่อนแนวนอน */}
-      <header className="lg:hidden sticky top-0 z-30 bg-[#f6f0e7]/95 backdrop-blur-xl border-b border-[var(--al-line)]">
-        <div className="flex items-center gap-3 px-4 h-14">
-          <Link href="/" aria-label="กลับหน้าแอป" className="w-10 h-10 -ml-1 rounded-full border border-ink-600 grid place-items-center text-xl leading-none">‹</Link>
-          <Logo size={26} />
-          <span className="text-[11px] font-semibold tracking-[0.15em] text-[#a8781f]">ADMIN</span>
-          <span className="ml-auto text-[11px] text-ink-300 truncate max-w-[90px]">{ROLE_LABEL[role]}</span>
-          <button onClick={logout} className="text-xs text-crimson-200 min-h-9 px-2">ออก</button>
+      {/* มือถือ/แท็บเล็ต (บอส 11 พ.ย. 2569): หัวบรรทัดเดียว · ☰ เปิดเมนูทั้งหมด (สลับโหมด + ทุกหน้า) — ไม่กินที่จอ */}
+      <header className="lg:hidden sticky top-0 z-30 bg-[#2a1d1a] text-[#f6f0e7]">
+        <div className="flex items-center gap-2 px-2.5 h-12">
+          <button type="button" onClick={() => setMenu(true)} aria-label="เปิดเมนูแอดมิน" aria-expanded={menu} data-admin-menu className="w-10 h-10 rounded-xl grid place-items-center">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+          </button>
+          <b className="flex-1 min-w-0 truncate text-[15px] font-semibold">{(cur ? (NAV_LABEL[cur.href] ?? cur.label) : "แอดมิน").split(" · ")[0]}</b>
+          <span className="shrink-0 text-[11.5px] font-semibold text-[#e8c472]">{ROLE_LABEL[role]}</span>
+          <button onClick={logout} className="shrink-0 text-[12.5px] text-[#f3c2c9] h-10 px-2">ออก</button>
         </div>
-        <div className="px-4 pb-2.5 flex items-center gap-2"><div className="flex-1 min-w-0"><ModeSwitch /></div><Link href="/" className="shrink-0 text-[12px] text-[#ffd76a] min-h-9 px-1 inline-flex items-center">กลับหน้าแอป</Link></div>
-        <nav ref={chips} aria-label="เมนูแอดมิน (มือถือ)" className="relative flex gap-2 overflow-x-auto overscroll-x-contain no-scrollbar max-w-full min-w-0 px-4 pb-3">
-          {tabs.map((t, i) => (
-            <Fragment key={t.href}>
-            {t.group && t.group !== tabs[i - 1]?.group && <span className="shrink-0 self-center text-[11px] font-semibold text-[#a8781f] whitespace-nowrap pl-1">{t.group}</span>}
-            <Link href={t.href} aria-current={isOn(t) ? "page" : undefined} className={`chip whitespace-nowrap h-9 px-3.5 inline-flex items-center gap-1.5 ${isOn(t) ? "!bg-[#2a1d1a] !text-white !border-[#2a1d1a]" : ""}`}>
-              {t.label}
-              {"badge" in t && t.badge ? <span className="min-w-4 h-4 px-1 rounded-full bg-crimson-500 text-white text-[10px] grid place-items-center">{t.badge}</span> : null}
-            </Link>
-            </Fragment>
-          ))}
-        </nav>
       </header>
+      {menu && (
+        <div className="lg:hidden fixed inset-0 z-50 flex" role="dialog" aria-modal="true" aria-label="เมนูแอดมิน">
+          <div className="w-[min(86vw,340px)] h-full bg-[#f6f0e7] flex flex-col shadow-[0_0_40px_rgba(0,0,0,.35)]" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+            <div className="flex items-center gap-2 px-4 h-14 shrink-0 border-b border-[var(--al-line)]">
+              <Logo size={26} />
+              <span className="text-[11px] font-semibold tracking-[0.15em] text-[#a8781f]">ADMIN</span>
+              <button type="button" onClick={() => setMenu(false)} aria-label="ปิดเมนู" className="ml-auto w-10 h-10 rounded-full grid place-items-center text-[20px] text-[var(--al-text)]">✕</button>
+            </div>
+            <div className="px-4 py-3 shrink-0"><ModeSwitch /></div>
+            <nav ref={chips} aria-label="เมนูแอดมิน (มือถือ)" className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 pb-4">
+              {tabs.map((t, i) => (
+                <Fragment key={t.href}>
+                  {t.group && t.group !== tabs[i - 1]?.group && <div className="px-2 pt-3 pb-1 text-[11.5px] font-semibold text-[#a8781f]">{t.group}</div>}
+                  <Link href={t.href} onClick={() => setMenu(false)} aria-current={isOn(t) ? "page" : undefined} className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-[14px] ${isOn(t) ? "bg-[#2a1d1a] text-white font-semibold" : "text-[var(--al-text)]"}`}>
+                    <span className="flex-1">{t.label}</span>
+                    {"badge" in t && t.badge ? <span className="min-w-5 h-5 px-1.5 rounded-full bg-crimson-500 text-white text-[11px] grid place-items-center">{t.badge}</span> : null}
+                  </Link>
+                </Fragment>
+              ))}
+            </nav>
+            <div className="shrink-0 border-t border-[var(--al-line)] px-4 py-3 flex items-center gap-2" style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
+              <p className="flex-1 min-w-0 m-0 text-[12px] text-[var(--al-muted)] truncate">{email}</p>
+              <Link href="/" className="shrink-0 text-[12.5px] text-[#a8781f]">← กลับหน้าแอป</Link>
+            </div>
+          </div>
+          <button type="button" aria-label="ปิดเมนู" onClick={() => setMenu(false)} className="flex-1 h-full bg-black/45" />
+        </div>
+      )}
     </>
   );
 }

@@ -36,11 +36,14 @@ const thTime = (iso: string) => new Date(iso).toLocaleString("th-TH", { timeZone
 const ageOf = (b: string | null) => { if (!b) return null; const d = new Date(b); if (isNaN(+d)) return null; const n = new Date(); let a = n.getFullYear() - d.getFullYear(); if (n < new Date(n.getFullYear(), d.getMonth(), d.getDate())) a--; return a; };
 
 type Pkg = "all" | PackageKey;
-type Filter = ApplicantStatus | "all" | "todo" | "fix" | "inactive";
+type Filter = ApplicantStatus | "all" | "todo" | "fix" | "inactive" | "unlisted" | "nodoc" | "noline";
 /** รอแอดมิน = สลิปยังไม่ตรวจ หรือเอกสารส่งมารอตรวจ */
 const isTodo = (r: Applicant) => r.status === "pending_slip" || r.kyc_status === "submitted";
-const match = (r: Applicant, f: Filter) => f === "all" ? true : f === "inactive" ? !!r.inactive : f === "todo" ? isTodo(r) : f === "fix" ? r.kyc_status === "rejected" : r.status === f;
+const match = (r: Applicant, f: Filter) => f === "all" ? true : f === "unlisted" ? !r.listed || !!r.inactive : f === "nodoc" ? r.kyc_status !== "approved" : f === "noline" ? !r.line_joined : f === "inactive" ? !!r.inactive : f === "todo" ? isTodo(r) : f === "fix" ? r.kyc_status === "rejected" : r.status === f;
 const FILTERS: [Filter, string][] = [["todo", "รอตรวจ"], ["fix", "ตีกลับ · รอแก้"], ["verified", "ชำระแล้ว"], ["pending_slip", "รอตรวจสลิป"], ["rejected", "ปฏิเสธ"], ["refunded", "คืนเงินแล้ว"], ["inactive", "Non Active"], ["all", "ทั้งหมด"]];
+/** ปุ่มกรองลัดบนมือถือ (บอส 11 พ.ย. 2569) */
+const QUICK: [Filter, string][] = [["all", "ทั้งหมด"], ["todo", "รอตรวจ"], ["unlisted", "ยังไม่ขึ้นหน้าแรก"], ["nodoc", "ขาดเอกสาร"], ["noline", "ไม่เข้า LINE"], ["inactive", "Non Active"]];
+const filterLabel = (f: Filter) => (FILTERS.find(([k]) => k === f) ?? QUICK.find(([k]) => k === f))?.[1];
 const PKG_TABS: [Pkg, string, string][] = [["all", "ทั้งหมด", "ผู้สมัครทุกสาย"], ["A", "สาย A", PACKAGES.A.name], ["B", "สาย B", PACKAGES.B.name]];
 /** สมัครมาแบบไหน (บอสขอ 24 ต.ค. 2569 · ดูง่าย ป้ายเดียวต่อคน) — จ่ายเงิน / คำเชิญ TOP / Secret / สมัครฟรี (ป้ายบอกหมวดจริง หนุ่มหล่อ/ทอมหล่อ) */
 type Ch = "paid" | "invite" | "secret" | "tom";
@@ -100,6 +103,20 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role, initia
   const sel = (inShown ?? (pin && pin === open ? rows.find((r) => r.id === pin) : undefined) ?? shown[0]) ?? null;
   const movedTo = sel && !inShown && sel.id === pin ? FILTERS.find(([k]) => k !== "all" && match(sel, k))?.[1] ?? "ทั้งหมด" : null;
   const pick = (id: string | null) => { setOpen(id); setPin(null); setShowDocs(false); setRejecting(false); setReason(""); };
+  // มือถือ: แตะการ์ด = เปิดแผ่นแก้ไขจากด้านล่าง (จอใหญ่ยังเป็นแผงขวาเหมือนเดิม)
+  const [sheet, setSheet] = useState(false);
+  // จอมือถือ: ไม่ไฮไลต์การ์ดที่เลือก (ใช้แผ่นแก้ไขแทน)
+  const [sheetish, setSheetish] = useState(false);
+  useEffect(() => { const m = window.matchMedia("(max-width: 767px)"); const f = () => setSheetish(m.matches); f(); m.addEventListener("change", f); return () => m.removeEventListener("change", f); }, []);
+  const openCard = (id: string) => { pick(id); if (window.matchMedia("(max-width: 767px)").matches) setSheet(true); };
+  useEffect(() => {
+    if (!sheet) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setSheet(false); };
+    window.addEventListener("keydown", esc);
+    return () => { document.body.style.overflow = prev; window.removeEventListener("keydown", esc); };
+  }, [sheet]);
 
   const patch = async (id: string, body: Record<string, unknown>) => {
     setPin(id); setOpen(id);
@@ -183,7 +200,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role, initia
   const docTag = (r: Applicant) => { const n = nDocs(r); return r.kyc_status === "approved" ? <Tag t="ok">✓ เอกสาร {n}/3</Tag> : r.kyc_status === "rejected" ? <Tag t="bad">! เอกสารตีกลับ</Tag> : <Tag t="warn">! เอกสาร {n}/3</Tag>; };
   const avatar = (r: Applicant) => r.photos?.[0] ? file(r.photos[0]) : r.docs.photo ? file(r.docs.photo) : "";
   const SubChip = ({ on, onClick, children, n, tone = "gold" }: { on: boolean; onClick: () => void; children: React.ReactNode; n?: number; tone?: "gold" | "red" }) => (
-    <button role="tab" aria-selected={on} onClick={onClick} className="h-8 px-3 rounded-full text-[12.5px] font-semibold flex items-center gap-1.5 border transition"
+    <button role="tab" aria-selected={on} onClick={onClick} className="shrink-0 whitespace-nowrap h-8 px-3 rounded-full text-[12.5px] font-semibold flex items-center gap-1.5 border transition"
       style={on ? { background: INK, borderColor: INK, color: "#fff" } : { background: "#fff", borderColor: LINE_BD, color: "#5c4f48" }}>
       {children}{n != null && <span className="min-w-5 h-5 px-1.5 rounded-full text-[11px] grid place-items-center" style={{ background: on ? "rgba(255,255,255,.18)" : tone === "red" && n ? "#b42335" : "#f1ebe3", color: on ? "#fff" : tone === "red" && n ? "#fff" : MUTED }}>{n}</span>}
     </button>
@@ -193,37 +210,40 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role, initia
     <div className="flex flex-col xl:flex-row gap-6 items-start" style={{ color: INK }}>
       <div className="flex-1 min-w-0 w-full flex flex-col gap-4">
         <div className="flex flex-wrap gap-3 justify-between items-start">
-          <div>
-            <h1 className="font-lux font-bold text-[34px] leading-tight m-0">ผู้สมัคร</h1>
-            <p className="m-0 mt-1 text-[14px]" style={{ color: MUTED }}>แตะที่การ์ดเพื่อดูรายละเอียด</p>
+          <div className="hidden md:block">
+            <h1 className="hidden md:block font-lux font-bold text-[34px] leading-tight m-0">ผู้สมัคร</h1>
+            <p className="hidden md:block m-0 mt-1 text-[14px]" style={{ color: MUTED }}>แตะที่การ์ดเพื่อดูรายละเอียด</p>
           </div>
-          <div className="flex gap-2 items-center">
-            <input value={q} onChange={(e) => { setQ(e.target.value); setPin(null); }} placeholder="ค้นหาชื่อ หรือรหัส MB" aria-label="ค้นหาผู้สมัคร" className="h-12 w-72 max-w-full rounded-2xl bg-white px-4 text-[14px] outline-none border border-transparent focus:border-[#c9a24a] shadow-[0_2px_10px_rgba(90,60,20,.06)]" style={{ color: INK }} />
-            <button onClick={exportCsv} aria-label="ส่งออกไฟล์ Excel / CSV" title="ส่งออกไฟล์ Excel / CSV" className="w-12 h-12 rounded-2xl bg-white grid place-items-center shadow-[0_2px_10px_rgba(90,60,20,.06)] hover:text-[#a8781f]" style={{ color: INK }}>
+          <div className="flex gap-2 items-center w-full md:w-auto">
+            <input value={q} onChange={(e) => { setQ(e.target.value); setPin(null); }} placeholder="ค้นหาชื่อ หรือรหัส MB" aria-label="ค้นหาผู้สมัคร" className="h-11 md:h-12 flex-1 min-w-0 md:flex-none md:w-72 max-w-full rounded-2xl bg-white px-4 text-[14px] outline-none border border-transparent focus:border-[#c9a24a] shadow-[0_2px_10px_rgba(90,60,20,.06)]" style={{ color: INK }} />
+            <button onClick={exportCsv} aria-label="ส่งออกไฟล์ Excel / CSV" title="ส่งออกไฟล์ Excel / CSV" className="shrink-0 w-11 h-11 md:w-12 md:h-12 rounded-2xl bg-white grid place-items-center shadow-[0_2px_10px_rgba(90,60,20,.06)] hover:text-[#a8781f]" style={{ color: INK }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
             </button>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="inline-flex gap-1 rounded-[18px] p-1.5" role="tablist" aria-label="หมวด" style={{ background: "#ece3d6" }}>
+          <div className="flex md:inline-flex w-full md:w-auto gap-1 rounded-[14px] md:rounded-[18px] p-1 md:p-1.5" role="tablist" aria-label="หมวด" style={{ background: "#ece3d6" }}>
             {GRP_TABS.map(([k, l]) => {
               const on = grp === k;
               const n = rows.filter(inGrp(k)).length;
-              return <button key={k} role="tab" aria-selected={on} data-admin-group={k} onClick={() => { setGrp(k); setPin(null); }} className="h-11 px-5 rounded-[14px] text-[15px] font-bold flex items-center gap-1.5 transition"
+              return <button key={k} role="tab" aria-selected={on} data-admin-group={k} onClick={() => { setGrp(k); setPin(null); }} className="flex-1 md:flex-none justify-center h-9 md:h-11 px-2 md:px-5 rounded-[11px] md:rounded-[14px] text-[13.5px] md:text-[15px] font-bold flex items-center gap-1.5 transition"
                 style={on ? { background: "#fff", color: INK, boxShadow: "0 2px 8px rgba(90,60,20,.1)" } : { color: "#8a6516" }}>{l} <span className="font-semibold" style={{ color: on ? INK : "#8a6516" }}>{n}</span></button>;
             })}
           </div>
-          <div className="flex flex-wrap gap-x-6 gap-y-1 text-[14px]" style={{ color: "#5c4f48" }}>
+          <div className="flex flex-wrap gap-x-4 md:gap-x-6 gap-y-1 text-[12.5px] md:text-[14px]" style={{ color: "#5c4f48" }}>
             <span>ค่าสมัครรวม <b className="text-[15px]" style={{ color: "#8a6516" }}>{fmt(sumAmt(paid.filter(inPkg(pkg))))}</b></span>
             <span>ยังไม่เข้ากลุ่ม LINE <b className="text-[15px]" style={{ color: "#c2610f" }}>{notLine} คน</b></span>
           </div>
         </div>
 
+        <div data-quick-filter className="md:hidden flex gap-1.5 overflow-x-auto no-scrollbar -mx-4 px-4" role="tablist" aria-label="กรองลัด">
+          {QUICK.map(([k, l]) => <span key={k} className="contents"><SubChip on={filter === k} tone={k === "all" ? "gold" : "red"} n={gRows.filter((r) => (pkg === "all" || r.package === pkg) && match(r, k) && hit(r, t)).length} onClick={() => { setFilter(k); setPin(null); }}>{l}</SubChip></span>)}
+        </div>
         <details className="group rounded-2xl bg-white/70 border px-4 py-2.5" style={{ borderColor: LINE_BD }}>
           <summary className="cursor-pointer list-none flex items-center gap-2 text-[13px] font-semibold" style={{ color: "#5c4f48" }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M3 5h18M6 12h12M10 19h4" /></svg>
-            ตัวกรอง · สถานะ {FILTERS.find(([k]) => k === filter)?.[1]}{ch !== "all" ? ` · ${CH[ch].label}` : ""}{pkg !== "all" ? ` · สาย ${pkg}` : ""}
+            ตัวกรอง · สถานะ {filterLabel(filter)}{ch !== "all" ? ` · ${CH[ch].label}` : ""}{pkg !== "all" ? ` · สาย ${pkg}` : ""}
             <span className="ml-auto text-[12px] font-normal" style={{ color: MUTED }}>รอตรวจ {gRows.filter((r) => isTodo(r)).length} · รอสลิป {fmt(sumAmt(waiting.filter(inPkg(pkg))))}</span>
           </summary>
           <div className="flex flex-col gap-2.5 pt-3 pb-1">
@@ -245,15 +265,38 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role, initia
         {note && <p className="m-0 rounded-xl border px-3 py-2 text-xs" style={{ borderColor: LINE_BD, color: "#6b5d58" }}>{note}</p>}
         <FlashMsg msg={msg} />
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 gap-2 md:gap-4">
           {shown.map((r) => {
             const on = sel?.id === r.id;
             const off = !!r.inactive;
             const img = avatar(r);
             return (
-              <button key={r.id} onClick={() => pick(r.id)} data-applicant-card className="text-left rounded-[22px] bg-white p-4 flex flex-col gap-3.5 transition hover:-translate-y-0.5"
-                style={{ border: on ? "2.5px solid #c9a24a" : "2.5px solid transparent", boxShadow: on ? "0 10px 28px rgba(168,120,31,.18)" : "0 4px 18px rgba(90,60,20,.06)", opacity: off ? 0.72 : 1 }}>
-                <span className="flex gap-3.5 items-start">
+              <button key={r.id} onClick={() => openCard(r.id)} data-applicant-card className="text-left rounded-[14px] md:rounded-[22px] bg-white p-2.5 md:p-4 flex flex-col gap-3.5 transition md:hover:-translate-y-0.5"
+                style={{ border: on && !sheetish ? "2.5px solid #c9a24a" : "2.5px solid transparent", boxShadow: on && !sheetish ? "0 10px 28px rgba(168,120,31,.18)" : "0 4px 18px rgba(90,60,20,.06)", opacity: off ? 0.72 : 1 }}>
+                {/* มือถือ: แถวเล็ก (รูป · ชื่อ · ป้ายสั้น) — จอเดียวเห็นหลายคน */}
+                <span data-card-compact className="md:hidden flex gap-2.5 items-center">
+                  <span className="relative shrink-0 w-11 h-11 rounded-[11px] overflow-hidden grid place-items-center" style={{ background: AVA_BG[chOf(r)] }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    {img ? <img src={img} alt="" loading="lazy" className="w-full h-full object-cover" style={{ filter: off ? "grayscale(1)" : undefined }} /> : <span className="font-lux font-bold text-[17px]" style={{ color: CH[chOf(r)].c }}>{(r.nickname || r.first_name || "?").slice(0, 1)}</span>}
+                    <span className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full border-[1.5px] border-white" style={{ background: off ? "#cfc2b1" : "#2f7a46" }} />
+                  </span>
+                  <span className="min-w-0 flex-1 flex flex-col gap-1">
+                    <span className="flex items-baseline gap-1.5 min-w-0">
+                      <b className="text-[14.5px] leading-tight truncate" style={{ color: off ? MUTED : INK }}>{r.first_name}{r.nickname && <span className="font-semibold" style={{ color: "#8a6516" }}> ({r.nickname})</span>}</b>
+                      <span className="shrink-0 text-[11px]" style={{ color: MUTED }}>{r.mb_code}</span>
+                    </span>
+                    <span className="flex flex-nowrap overflow-hidden gap-1 items-center">
+                      <Mini c={CH[chOf(r)].c} bg={CH[chOf(r)].bg} k={chOf(r) === "tom" ? (r.group === "tom" ? "tom" : "man") : chOf(r)}>{chOf(r) === "secret" ? "Secret" : chOf(r) === "invite" ? "TOP" : r.group === "tom" ? "ทอม" : "หนุ่ม"}</Mini>
+                      {off ? <Mini {...TONE_M.warn}>Non Active</Mini> : !r.listed && <Mini {...TONE_M.info}>ยังไม่ขึ้นหน้าแรก</Mini>}
+                      {r.status === "pending_slip" && <Mini {...TONE_M.warn}>รอสลิป</Mini>}
+                      <Mini {...(r.kyc_status === "approved" ? TONE_M.ok : r.kyc_status === "rejected" ? TONE_M.bad : TONE_M.warn)}>เอกสาร {nDocs(r)}/3</Mini>
+                      <Mini {...(r.line_joined ? TONE_M.ok : TONE_M.warn)}>LINE</Mini>
+                      <Mini {...TONE_M.info}>{r.photos?.length ?? 0} รูป</Mini>
+                    </span>
+                  </span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b8a995" strokeWidth="2" aria-hidden="true" className="shrink-0"><path d="m9 6 6 6-6 6" /></svg>
+                </span>
+                <span className="hidden md:flex gap-3.5 items-start">
                   <span className="relative shrink-0 w-[68px] h-[68px] rounded-[18px] overflow-hidden grid place-items-center" style={{ background: AVA_BG[chOf(r)] }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     {img ? <img src={img} alt="" className="w-full h-full object-cover" style={{ filter: off ? "grayscale(1)" : undefined }} /> : <span className="font-lux font-bold text-[24px]" style={{ color: CH[chOf(r)].c }}>{(r.nickname || r.first_name || "?").slice(0, 1)}</span>}
@@ -268,7 +311,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role, initia
                     <span className="flex flex-wrap gap-1.5 items-center mt-0.5"><ChPill r={r} />{r.group === "tom" && r.trans && <Tag t="info">Trans</Tag>}{r.sales_ref && <span data-sales-ref className="text-[12px]" style={{ color: MUTED }}>Recruit {r.sales_ref.code}</span>}{r.disclose === "no" && <span data-face-blur className="text-[12px]" style={{ color: MUTED }}>· เบลอหน้า</span>}</span>
                   </span>
                 </span>
-                <span className="flex flex-wrap gap-1.5">
+                <span className="hidden md:flex flex-wrap gap-1.5">
                   {feeTag(r)}{docTag(r)}
                   {r.line_joined ? <Tag t="ok">✓ LINE</Tag> : <Tag t="warn">! LINE</Tag>}
                   <Tag t="info">{r.photos?.length ?? 0} รูป</Tag>
@@ -280,23 +323,36 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role, initia
         </div>
       </div>
 
-      <aside className="w-full xl:w-[360px] shrink-0 rounded-[26px] bg-white p-5 flex flex-col gap-4 [&>*]:shrink-0 text-[13.5px] xl:sticky xl:top-7 max-h-[calc(100dvh-56px)] overflow-y-auto shadow-[0_8px_30px_rgba(90,60,20,.08)]" style={{ color: INK }}>
+      {sheet && <button type="button" aria-label="ปิด" onClick={() => setSheet(false)} className="md:hidden fixed inset-0 z-40 bg-black/45" />}
+      <aside data-applicant-sheet={sheet ? "open" : "closed"} className={`${sheet ? "flex fixed inset-x-0 bottom-0 top-[7dvh] z-50 rounded-t-[22px] pb-[max(20px,env(safe-area-inset-bottom))] overscroll-contain" : "hidden"} md:flex md:static md:z-auto md:rounded-[26px] md:pb-5 w-full xl:w-[360px] shrink-0 bg-white p-5 flex-col gap-4 [&>*]:shrink-0 text-[13.5px] xl:sticky xl:top-7 md:max-h-[calc(100dvh-56px)] overflow-y-auto shadow-[0_8px_30px_rgba(90,60,20,.08)]`} style={{ color: INK }}>
         {sel ? (
           <>
+            {/* มือถือ: หัวแผ่นแก้ไข (ลากจับ + ปิด) ติดบนเวลาเลื่อน */}
+            <div className="md:hidden sticky -top-5 z-10 -mx-5 -mt-5 px-4 pt-2 pb-2 bg-white flex flex-col items-center gap-1.5 border-b" style={{ borderColor: "#f1ebe3" }}>
+              <span className="w-10 h-1 rounded-full" style={{ background: "#d9cdb8" }} />
+              <span className="w-full flex items-center gap-2">
+                <b className="flex-1 min-w-0 truncate text-[14px]">{sel.first_name}{sel.nickname ? ` (${sel.nickname})` : ""} · {sel.mb_code}</b>
+                <button type="button" data-sheet-edit onClick={() => document.getElementById("adm-manage")?.scrollIntoView({ behavior: "smooth", block: "start" })} className="h-9 px-3 rounded-full text-[12.5px] font-semibold" style={{ background: INK, color: "#fff" }}>แก้ไข ↓</button>
+                <button type="button" data-sheet-close onClick={() => setSheet(false)} aria-label="ปิด" className="w-9 h-9 rounded-full grid place-items-center text-[16px]" style={{ background: "#f1ebe3" }}>✕</button>
+              </span>
+            </div>
+            <div className="md:hidden empty:hidden"><FlashMsg msg={msg} /></div>
             {movedTo && (
               <p role="status" className="m-0 rounded-xl px-3 py-2 text-[12.5px] flex justify-between gap-2 items-center" style={{ background: "#f6ecd2", color: "#8a6516" }}>
                 <span>ย้ายไปแท็บ “{movedTo}” แล้ว · แผงนี้ยังเป็นคนเดิม</span>
                 <button type="button" onClick={() => pick(shown[0]?.id ?? null)} className="shrink-0 underline">คนถัดไป</button>
               </p>
             )}
-            <div className={`w-full ${avatar(sel) ? "aspect-square" : "h-36"} rounded-[22px] overflow-hidden grid place-items-center`} style={{ background: AVA_BG[chOf(sel)] }}>
+            <div className="flex flex-col gap-4 max-md:flex-row max-md:items-center max-md:gap-3">
+            <div className={`w-full ${avatar(sel) ? "aspect-square" : "h-36"} max-md:!w-24 max-md:!h-24 max-md:shrink-0 rounded-[22px] max-md:rounded-[16px] overflow-hidden grid place-items-center`} style={{ background: AVA_BG[chOf(sel)] }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               {avatar(sel) ? <img src={avatar(sel)} alt="" className="w-full h-full object-cover" style={{ filter: sel.inactive ? "grayscale(1)" : undefined }} /> : <span className="font-lux font-bold text-[64px]" style={{ color: CH[chOf(sel)].c }}>{(sel.nickname || sel.first_name || "?").slice(0, 1)}</span>}
             </div>
             <div className="flex flex-col gap-1.5">
               <div data-drawer-ch><ChPill r={sel} /></div>
-              <div className="font-lux font-bold text-[24px] leading-tight">{sel.first_name} {sel.last_name}{sel.nickname && <span className="text-[18px]" style={{ color: "#8a6516" }}> ({sel.nickname})</span>}</div>
-              <div className="text-[13.5px]" style={{ color: MUTED }}>{sel.mb_code} · สาย {sel.package} · {sel.group === "tom" ? (sel.trans ? "ทอม (Trans)" : "ทอมหล่อ") : "หนุ่มหล่อ"}{sel.inv_no ? ` · ${sel.inv_no}` : ""}{sel.ri_no ? ` · ${sel.ri_no}` : ""}</div>
+              <div className="font-lux font-bold text-[19px] md:text-[24px] leading-tight">{sel.first_name} {sel.last_name}{sel.nickname && <span className="text-[16px] md:text-[18px]" style={{ color: "#8a6516" }}> ({sel.nickname})</span>}</div>
+              <div className="text-[12.5px] md:text-[13.5px]" style={{ color: MUTED }}>{sel.mb_code} · สาย {sel.package} · {sel.group === "tom" ? (sel.trans ? "ทอม (Trans)" : "ทอมหล่อ") : "หนุ่มหล่อ"}{sel.inv_no ? ` · ${sel.inv_no}` : ""}{sel.ri_no ? ` · ${sel.ri_no}` : ""}</div>
+            </div>
             </div>
 
             {/* สถานะ Part-Time: Active / Non Active — สวิตช์ · ปิด = ฟอร์มเหตุผล + วันที่ลาออก */}
@@ -407,7 +463,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role, initia
             )}
 
             <div className="h-px" style={{ background: LINE_BD }} />
-            <b className="text-[14px] -mb-1">จัดการ</b>
+            <b id="adm-manage" className="text-[14px] -mb-1 scroll-mt-16">จัดการ</b>
             {sel.invite && <p className="m-0 text-[12.5px]" style={{ color: "#8a6516" }}>✦ สมัครผ่านลิงก์เชิญ ({sel.invite}) · ไม่มีค่าสมัคร · ระดับ {sel.tier === "secret" ? "Secret" : "TOP"}</p>}
             {/* แก้แล้วกด "บันทึก" ทีเดียว (บอส 11 พ.ย. 2569) — ก่อนบันทึกยังไม่เปลี่ยนจริง */}
             <div className="flex justify-between items-center gap-2"><span style={{ color: "#6b5d58" }}>สายงาน</span>
@@ -422,7 +478,7 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role, initia
             <div className="flex justify-between items-center gap-2"><span style={{ color: "#6b5d58" }}>หมวด</span>
               <span className="flex gap-1">{(["man", "tom"] as const).map((g) => { const on = (dr.group ?? (sel.group === "tom" ? "tom" : "man")) === g; return <button key={g} data-set-group={g} onClick={() => setDr((d) => ({ ...d, group: g }))} aria-pressed={on} className="h-8 px-3 rounded-full border text-[12px] font-semibold" style={on ? { borderColor: g === "tom" ? "#c0577e" : INK, background: g === "tom" ? "#c0577e" : INK, color: "#fff" } : { borderColor: LINE_BD, color: "#5c4f48" }}>{g === "tom" ? "ทอมหล่อ" : "หนุ่มหล่อ"}</button>; })}</span>
             </div>
-            {drDirty(sel) && <div data-manage-save className="flex gap-2">
+            {drDirty(sel) && <div data-manage-save className="flex gap-2 max-md:sticky max-md:-bottom-5 max-md:z-10 max-md:-mx-5 max-md:px-5 max-md:py-3 max-md:bg-white max-md:border-t max-md:border-[#f1ebe3]">
               <button type="button" disabled={drBusy} onClick={() => saveDr(sel)} className="flex-1 h-10 rounded-full text-[13.5px] font-bold disabled:opacity-50" style={{ background: INK, color: "#fff" }}>{drBusy ? "กำลังบันทึก…" : "บันทึก"}</button>
               <button type="button" disabled={drBusy} onClick={() => setDr({})} className="h-10 px-4 rounded-full border text-[13px] font-semibold" style={{ borderColor: LINE_BD, color: "#5c4f48" }}>ยกเลิก</button>
             </div>}
@@ -505,6 +561,13 @@ export function ApplicantList({ initial, cohorts, initialPkg, note, role, initia
       {confirmUi}
     </div>
   );
+}
+
+const TONE_M = { ok: { c: TONE.ok[0], bg: TONE.ok[1] }, warn: { c: TONE.warn[0], bg: TONE.warn[1] }, bad: { c: TONE.bad[0], bg: TONE.bad[1] }, info: { c: TONE.info[0], bg: TONE.info[1] } };
+/** ป้ายเล็กบนการ์ดมือถือ */
+function Mini({ c, bg, k, children }: { c: string; bg: string; k?: string; children: React.ReactNode }) {
+  const man = k === "man";
+  return <span data-mini={k} className="inline-flex items-center h-[20px] px-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap" style={{ color: man ? "#3b5bb5" : c, background: man ? "#e8eefc" : bg }}>{children}</span>;
 }
 
 const INFO_ICON: Record<string, [string, string, string]> = { clock: ["◷", "#8a7b75", "#efe8df"], ok: ["✓", "#2f7a46", "#e4f3e8"], warn: ["!", "#c2610f", "#fdebd9"] };
