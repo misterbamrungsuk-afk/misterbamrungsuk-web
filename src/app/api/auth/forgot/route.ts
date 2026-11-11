@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { siteUrl } from "@/lib/site-url";
 import { clientIp, customersEnabled, findCustomer, isEmail, signReset } from "@/lib/customer/auth";
 import { emailEnabled, sendEmail } from "@/lib/email";
+import { getByEmail } from "@/lib/join/store";
+import { emailProfileLink, linkable } from "@/lib/join/link-mail";
 
 export const runtime = "nodejs";
 
@@ -24,6 +26,11 @@ export async function POST(req: Request) {
           to: email, subject: "ตั้งรหัสผ่านใหม่ · Mister Bamrungsuk",
           html: `<div style="font-family:'Noto Sans Thai',Tahoma,sans-serif;max-width:520px;margin:auto;padding:24px;border:1px solid #e6c97a;border-radius:16px;color:#1a1206"><p style="margin:0;font-size:12px;color:#8f5e00">MISTER BAMRUNGSUK</p><h2 style="margin:6px 0 12px">ตั้งรหัสผ่านใหม่</h2><p style="font-size:14px">กดปุ่มด้านล่างเพื่อตั้งรหัสผ่านใหม่ ลิงก์ใช้ได้ 30 นาที และใช้ได้ครั้งเดียว</p><p><a href="${link}" style="display:inline-block;padding:12px 20px;border-radius:12px;background:#e8c472;color:#1b130b;font-weight:600;text-decoration:none">ตั้งรหัสผ่านใหม่</a></p><p style="font-size:12px;color:#6b6152">ถ้าคุณไม่ได้ขอ ไม่ต้องทำอะไร รหัสผ่านเดิมยังใช้ได้</p></div>`,
         });
+      } else {
+        // ไม่มีบัญชีลูกค้า แต่เป็นอีเมลของ Part-Time → ส่งลิงก์เข้าโปรไฟล์ Part-Time แทน (ในโปรไฟล์ตั้งรหัสผ่านใหม่ได้)
+        const pt = (await getByEmail(email)).find(linkable);
+        if (pt && !(await limited(`jlinkreq-mb:${pt.mb_code}`, 3, 3600_000))) { await emailProfileLink(req, pt, "คุณขอลิงก์จากหน้า \"ลืมรหัสผ่าน\" · บัญชีนี้เป็นบัญชี Part-Time"); console.info(`[forgot] pt link mb=${pt.mb_code}`); }
+        else console.info("[forgot] no account for email");
       }
     } catch (e) { console.error("forgot failed", e); }
   }
