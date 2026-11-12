@@ -24,7 +24,30 @@ const INV_KEY = "mb_join_invite";
 const box: CSSProperties = { padding: 20, borderRadius: 16, minWidth: 0, overflowWrap: "anywhere" };
 const cta = "min-h-14 w-full rounded-2xl bg-[#e8c472] text-[#1b130b] font-semibold text-[17px] grid place-items-center text-center px-4";
 const ghost = "min-h-12 w-full rounded-[14px] text-[#e8c472] text-[15px] font-semibold grid place-items-center";
-const inCls = "w-full min-h-12 rounded-xl bg-[#211a18] text-[#f3ead9] px-[14px] text-[15px] placeholder:text-[#b5a596] outline-none border border-transparent focus:border-[#e8c472]";
+// ช่องกรอกตัดกับพื้นการ์ดชัด ๆ (บอส 12 พ.ย. 2569: เดิมสีเดียวกันหมด ลายตา) · 16px กัน iPhone ซูม
+const inCls = "w-full min-h-12 rounded-xl bg-[#100c0b] text-[#f3ead9] px-[14px] text-[16px] placeholder:text-[#7d6f66] outline-none border border-[rgba(243,234,217,.14)] focus:border-[#e8c472] focus:shadow-[0_0_0_3px_rgba(232,196,114,.18)] transition";
+/** สีประจำส่วน (หม่น ๆ): [พื้นหัวการ์ด, ขอบ, สีเลข/ไอคอน] */
+const TINT = {
+  wine: ["linear-gradient(180deg, rgba(160,40,60,.22), rgba(160,40,60,0) 70%)", "rgba(214,120,138,.28)", "#f0a3b1"],
+  indigo: ["linear-gradient(180deg, rgba(90,120,200,.20), rgba(90,120,200,0) 70%)", "rgba(125,160,225,.26)", "#a9c2f0"],
+  jade: ["linear-gradient(180deg, rgba(70,160,130,.18), rgba(70,160,130,0) 70%)", "rgba(110,190,160,.26)", "#9ad7bf"],
+  plum: ["linear-gradient(180deg, rgba(150,100,200,.20), rgba(150,100,200,0) 70%)", "rgba(180,140,220,.28)", "#cdb0ec"],
+} as const;
+function Sec({ n, title, sub, tint, children }: { n: number | string; title: string; sub?: string; tint: keyof typeof TINT; children: React.ReactNode }) {
+  const [bg, bd, fg] = TINT[tint];
+  return (
+    <section className="rounded-[18px] min-w-0" style={{ background: `${bg}, #1f1917`, border: `1px solid ${bd}` }}>
+      <div className="flex items-center gap-3" style={{ padding: "16px 18px 4px" }}>
+        <span className="w-8 h-8 rounded-full grid place-items-center font-bold text-[14px] text-[#1b130b] shrink-0" style={{ background: fg }}>{n}</span>
+        <div className="min-w-0 leading-tight"><div className="font-semibold text-[16.5px]">{title}</div>{sub && <div className="text-[12.5px] font-light text-[#c9b9a6] mt-0.5">{sub}</div>}</div>
+      </div>
+      <div className="flex flex-col gap-3.5" style={{ padding: "12px 18px 18px" }}>{children}</div>
+    </section>
+  );
+}
+const Label = ({ t, opt, children }: { t: string; opt?: boolean; children: React.ReactNode }) => (
+  <label className="flex flex-col gap-1.5 min-w-0"><span className="text-[13px] font-medium text-[#e6d6c4]">{t}{opt ? <span className="font-light text-[#9c8d82]"> (ไม่บังคับ)</span> : <span className="text-[#e8c472]"> *</span>}</span>{children}</label>
+);
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
 const baht = (n: number) => "฿" + n.toLocaleString("en-US");
 
@@ -179,6 +202,18 @@ function PayInner() {
   const mm = String(Math.floor(sec / 60)).padStart(2, "0"), ss = String(sec % 60).padStart(2, "0");
   const expired = sec === 0;
   const ready = (!!slip || free) && agree && phoneOk && EMAIL_RE.test(who.email.trim()) && pw.a.length >= 8 && pw.a === pw.b && !busy;
+  // รายการที่ต้องกรอก → แถบความคืบหน้า + "ยังขาด: …" ใต้ปุ่มส่ง
+  const todo: [string, boolean][] = [
+    ["ชื่อ-นามสกุล", !!who.first_name.trim() && !!who.last_name.trim()],
+    ["ชื่อเล่น", !!who.nickname.trim()],
+    [otpOff ? "เบอร์มือถือ" : "ยืนยันเบอร์มือถือ", otpOff ? /^0\d{9}$/.test(who.tel) : phoneOk],
+    ["อีเมล", EMAIL_RE.test(who.email.trim())],
+    ["รหัสผ่าน 8 ตัวขึ้นไปและตรงกัน", pw.a.length >= 8 && pw.a === pw.b],
+    ...(free ? [] : [["สลิปการโอน", !!slip] as [string, boolean]]),
+    ["ติ๊กยอมรับ 3 ข้อ", agree],
+  ];
+  const doneN = todo.filter(([, ok]) => ok).length;
+  const missing = todo.filter(([, ok]) => !ok).map(([t]) => t);
 
   return (
     <div className="mb-v7 min-h-dvh relative" style={{ background: "#171211", color: "#f3ead9", fontSize: 15, lineHeight: 1.7 }}>
@@ -192,57 +227,76 @@ function PayInner() {
         </div>
 
         {inviteErr && <p role="alert" className="m-0 mx-5 mt-2 rounded-xl text-[13.5px] text-[#ff8a9a]" style={{ padding: "10px 14px", background: "rgba(255,138,154,0.1)" }}>{inviteErr} · ยอดด้านล่างเป็นราคาสมัครปกติ</p>}
-        <div className="grid min-w-0 md:grid-cols-2 md:items-start" style={{ padding: "24px 20px 40px", gap: 31 }}>
-          <div className="flex flex-col min-w-0" style={{ gap: 31 }}>
-            <div className="flex flex-col gap-3 bg-[#251d1b]" style={box}>
-              <div className="font-semibold text-[17px]">ผู้สมัคร</div>
+
+        {/* ความคืบหน้า: เห็นว่าเหลืออีกกี่อย่าง */}
+        <div className="mx-5 mt-1 flex flex-col gap-1.5" data-pay-progress>
+          <div className="flex justify-between text-[12.5px]"><span className="text-[#d9c9b4]">กรอกแล้ว {doneN}/{todo.length} ข้อ · ใช้เวลาประมาณ 3 นาที</span><span className="font-semibold" style={{ color: GOLD }}>{Math.round((doneN / todo.length) * 100)}%</span></div>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: "rgba(243,234,217,.08)" }}><span className="block h-full rounded-full" style={{ width: `${(doneN / todo.length) * 100}%`, background: "linear-gradient(90deg,#f0d38a,#e2b75a)", transition: "width .35s ease" }} /></div>
+        </div>
+
+        <div className="grid min-w-0 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] md:items-start gap-4 md:gap-6" style={{ padding: "18px 20px 40px" }}>
+          <div className="flex flex-col min-w-0 gap-4">
+            <Sec n={1} tint="wine" title="ข้อมูลผู้สมัคร" sub="ชื่อจริงตามบัตรประชาชน">
               <div className="grid grid-cols-2 gap-[10px]">
-                <input className={inCls} autoComplete="given-name" placeholder="ชื่อจริง" aria-label="ชื่อจริง" value={who.first_name} onChange={(e) => setW("first_name", e.target.value)} />
-                <input className={inCls} autoComplete="family-name" placeholder="นามสกุล" aria-label="นามสกุล" value={who.last_name} onChange={(e) => setW("last_name", e.target.value)} />
+                <Label t="ชื่อจริง"><input className={inCls} autoComplete="given-name" placeholder="เช่น สมชาย" value={who.first_name} onChange={(e) => setW("first_name", e.target.value)} /></Label>
+                <Label t="นามสกุล"><input className={inCls} autoComplete="family-name" placeholder="เช่น ใจดี" value={who.last_name} onChange={(e) => setW("last_name", e.target.value)} /></Label>
               </div>
-              <input className={inCls} placeholder="ชื่อเล่น" aria-label="ชื่อเล่น" value={who.nickname} onChange={(e) => setW("nickname", e.target.value)} />
-              {otpOff
-                ? <input className={inCls} inputMode="tel" autoComplete="tel" placeholder="เบอร์มือถือ 08x-xxx-xxxx" aria-label="เบอร์โทรศัพท์" value={who.tel} onChange={(e) => setW("tel", e.target.value.replace(/\D/g, "").slice(0, 10))} />
-                : <OtpStep phone={who.tel} onPhone={(v) => { setW("tel", v.replace(/\D/g, "").slice(0, 10)); setPhoneOk(false); }} verified={phoneOk} onVerified={() => { setPhoneOk(true); setErr(""); }} inputCls={inCls} />}
-              {phoneOk && !otpOff && <div className="text-[13px] text-[#7fd6a3]">✓ ยืนยันเบอร์แล้ว</div>}
-              <div className="flex flex-col gap-1">
-                <input className={inCls} type="email" inputMode="email" autoComplete="email" autoCapitalize="off" spellCheck={false} placeholder="อีเมล เช่น name@gmail.com" aria-label="อีเมล" aria-describedby="emailHelp" value={who.email} onChange={(e) => setW("email", e.target.value.replace(/\s/g, ""))} />
-                <div id="emailHelp" className="text-[12.5px] font-light text-[#d9c9b4]">ใช้รับลิงก์เข้าโปรไฟล์และใบเสร็จ · เปิดโปรไฟล์จากเครื่องอื่นได้</div>
+              <Label t="ชื่อเล่น"><input className={inCls} placeholder="ชื่อที่ลูกค้าจะเห็น" value={who.nickname} onChange={(e) => setW("nickname", e.target.value)} /></Label>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[13px] font-medium text-[#e6d6c4]">เบอร์มือถือ<span className="text-[#e8c472]"> *</span></span>
+                {otpOff
+                  ? <input className={inCls} inputMode="tel" autoComplete="tel" placeholder="08x-xxx-xxxx" aria-label="เบอร์โทรศัพท์" value={who.tel} onChange={(e) => setW("tel", e.target.value.replace(/\D/g, "").slice(0, 10))} />
+                  : <OtpStep phone={who.tel} onPhone={(v) => { setW("tel", v.replace(/\D/g, "").slice(0, 10)); setPhoneOk(false); }} verified={phoneOk} onVerified={() => { setPhoneOk(true); setErr(""); }} inputCls={inCls} />}
+                {phoneOk && !otpOff && <div className="text-[13px] text-[#7fd6a3]">✓ ยืนยันเบอร์แล้ว</div>}
               </div>
-              <div className="flex flex-col gap-[10px]">
-                <div className="relative">
-                  <input className={inCls + " pr-[76px]"} type={showPw ? "text" : "password"} autoComplete="new-password" placeholder="ตั้งรหัสผ่าน (อย่างน้อย 8 ตัว)" aria-label="ตั้งรหัสผ่าน" value={pw.a} onChange={(e) => { setPw((x) => ({ ...x, a: e.target.value })); setErr(""); }} />
-                  <button type="button" onClick={() => setShowPw((v) => !v)} aria-pressed={showPw} className="absolute right-1 top-1/2 -translate-y-1/2 min-h-10 px-3 rounded-lg text-[13px] text-[#e8c472]">{showPw ? "ซ่อน" : "แสดง"}</button>
-                </div>
-                <input className={inCls} type={showPw ? "text" : "password"} autoComplete="new-password" placeholder="ยืนยันรหัสผ่านอีกครั้ง" aria-label="ยืนยันรหัสผ่าน" value={pw.b} onChange={(e) => { setPw((x) => ({ ...x, b: e.target.value })); setErr(""); }} />
-                {pw.b && pw.a !== pw.b && <div className="text-[12.5px] text-[#ff8a9a]">รหัสผ่านยังไม่ตรงกัน</div>}
-                <div className="text-[12.5px] font-light text-[#d9c9b4]">ใช้อีเมลกับรหัสผ่านนี้ เข้าสู่ระบบ Part-Time จากเครื่องไหนก็ได้</div>
+            </Sec>
+
+            <Sec n={2} tint="indigo" title="บัญชีเข้าสู่ระบบ" sub="ใช้อีเมลกับรหัสผ่านนี้ เข้าระบบ Part-Time จากเครื่องไหนก็ได้">
+              <Label t="อีเมล"><input className={inCls} type="email" inputMode="email" autoComplete="email" autoCapitalize="off" spellCheck={false} placeholder="name@gmail.com" aria-describedby="emailHelp" value={who.email} onChange={(e) => setW("email", e.target.value.replace(/\s/g, ""))} /></Label>
+              <div id="emailHelp" className="-mt-2 text-[12.5px] font-light text-[#c9b9a6]">ใช้รับลิงก์เข้าโปรไฟล์และใบเสร็จ</div>
+              <div className="grid sm:grid-cols-2 gap-[10px]">
+                <Label t="ตั้งรหัสผ่าน">
+                  <div className="relative">
+                    <input className={inCls + " pr-[64px]"} type={showPw ? "text" : "password"} autoComplete="new-password" placeholder="อย่างน้อย 8 ตัว" value={pw.a} onChange={(e) => { setPw((x) => ({ ...x, a: e.target.value })); setErr(""); }} />
+                    <button type="button" onClick={(e) => { e.preventDefault(); setShowPw((v) => !v); }} aria-pressed={showPw} className="absolute right-1 top-1/2 -translate-y-1/2 min-h-10 px-3 rounded-lg text-[13px] text-[#e8c472]">{showPw ? "ซ่อน" : "แสดง"}</button>
+                  </div>
+                </Label>
+                <Label t="ยืนยันรหัสผ่าน"><input className={inCls} type={showPw ? "text" : "password"} autoComplete="new-password" placeholder="พิมพ์ซ้ำอีกครั้ง" value={pw.b} onChange={(e) => { setPw((x) => ({ ...x, b: e.target.value })); setErr(""); }} /></Label>
               </div>
-              <div className="flex flex-col gap-1" data-recruit-field>
-                <input className={inCls + " uppercase tracking-[.08em]"} autoCapitalize="characters" autoComplete="off" spellCheck={false} placeholder="เลขแนะนำจาก Recruit (ถ้ามี)" aria-label="เลขแนะนำจาก Recruit" aria-describedby="refHelp" value={ref} onChange={(e) => { setRef(e.target.value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 12)); setErr(""); }} />
-                <div id="refHelp" className="text-[12.5px] font-light" style={{ color: !ref.trim() ? "#d9c9b4" : refInfo?.code !== ref.trim().toUpperCase() ? "#d9c9b4" : refInfo.ok ? "#7fd6a3" : "#ff8a9a" }}>
-                  {!ref.trim() ? "มีคนแนะนำมา? กรอกเลขแนะนำของเขา · ไม่มีเว้นว่างได้" : refInfo?.code !== ref.trim().toUpperCase() ? "กำลังตรวจเลขแนะนำ…" : refInfo.ok ? `✓ แนะนำโดย ${refInfo.name ?? refInfo.code}` : "ไม่พบเลขแนะนำนี้"}
-                </div>
+              {pw.a.length > 0 && pw.a.length < 8 && <div className="-mt-1.5 text-[12.5px] text-[#f0b26c]">รหัสผ่านยังไม่ถึง 8 ตัว</div>}
+              {pw.b && pw.a !== pw.b && <div className="-mt-1.5 text-[12.5px] text-[#ff8a9a]">รหัสผ่านยังไม่ตรงกัน</div>}
+              {pw.a.length >= 8 && pw.a === pw.b && <div className="-mt-1.5 text-[12.5px] text-[#7fd6a3]">✓ รหัสผ่านตรงกัน</div>}
+            </Sec>
+
+            <Sec n={3} tint="jade" title="ผู้แนะนำ" sub="มีคนแนะนำมา? กรอกเลขแนะนำของเขา · ไม่มีเว้นว่างได้">
+              <div className="flex flex-col gap-1.5" data-recruit-field>
+                <Label t="เลขแนะนำจาก Recruit" opt><input className={inCls + " uppercase tracking-[.08em]"} autoCapitalize="characters" autoComplete="off" spellCheck={false} placeholder="เช่น 288LMJ" aria-describedby="refHelp" value={ref} onChange={(e) => { setRef(e.target.value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 12)); setErr(""); }} /></Label>
+                {!!ref.trim() && <div id="refHelp" className="text-[12.5px] font-medium" style={{ color: refInfo?.code !== ref.trim().toUpperCase() ? "#d9c9b4" : refInfo.ok ? "#7fd6a3" : "#ff8a9a" }}>
+                  {refInfo?.code !== ref.trim().toUpperCase() ? "กำลังตรวจเลขแนะนำ…" : refInfo.ok ? `✓ แนะนำโดย ${refInfo.name ?? refInfo.code}` : "ไม่พบเลขแนะนำนี้"}
+                </div>}
               </div>
-            </div>
-            <div className="flex flex-col bg-[#251d1b]" style={{ ...box, gap: 13 }}>
-              {summary.map(([n, v]) => <div key={n} className="flex justify-between gap-4 min-w-0"><span className="whitespace-nowrap shrink-0">{n}</span><span className="text-right min-w-0">{v}</span></div>)}
-              <div style={{ height: 1, background: "rgba(243,234,217,0.07)", margin: "4px 0" }} />
-              {items.map(([n, v]) => <div key={n} className="flex justify-between items-baseline gap-4 min-w-0"><span className="min-w-0">{n}</span><span className="whitespace-nowrap shrink-0 font-semibold text-[18px] text-[#e8c472]">{free ? "ฟรี" : baht(v)}</span></div>)}
-              {items.length > 1 && <div className="flex justify-between items-baseline gap-4 min-w-0 pt-2 border-t border-[rgba(243,234,217,0.07)]"><span className="min-w-0 font-semibold">รวมที่ต้องโอน</span><span className="whitespace-nowrap shrink-0 font-bold text-[20px] text-[#e8c472]" data-total="1">{baht(amount)}</span></div>}
-              <div className="text-[13px] font-light">{!invite && free ? "สมัครฟรี · เมื่อเริ่มรับงาน ระบบหักค่าสมัครจากรายได้งานละ ฿500 จนครบ ฿10,000 แล้วเลิกหัก" : invite ? `✦ คำเชิญพิเศษ: ไม่ต้องชำระค่าสมัครตอนนี้ · ได้ระดับ ${invTier} ทันที · เมื่อเริ่มรับงาน ระบบหักค่าสมัครจากรายได้งานละ ฿500 จนครบ ฿10,000 แล้วเลิกหัก` : FEE_NOTE}</div>
-            </div>
-            <div className="flex flex-col gap-2 bg-[#2c1a1f]" style={box}>
-              <div className="font-semibold text-[17px]">ค่าสมัครรวม</div>
-              {perks.map((t) => <div key={t} className="flex gap-[10px]"><span className="text-[#e8c472]">✓</span><span>{t}</span></div>)}
-            </div>
+            </Sec>
           </div>
 
-          <div className="flex flex-col min-w-0" style={{ gap: 26 }}>
+          <div className="flex flex-col min-w-0 gap-4 md:sticky md:top-4">
+            {/* สรุปการสมัคร + ค่าสมัครรวมอะไรบ้าง (รวมเป็นการ์ดเดียว) */}
+            <section data-pay-summary className="rounded-[18px] flex flex-col gap-3" style={{ padding: 18, background: "radial-gradient(120% 120% at 100% 0%, rgba(232,196,114,.18), transparent 55%), linear-gradient(150deg,#33241a,#1f1917 65%)", border: "1px solid rgba(232,196,114,.45)" }}>
+              <div className="font-semibold text-[16.5px]">สรุปการสมัคร</div>
+              {summary.map(([n, v]) => <div key={n} className="flex justify-between gap-4 min-w-0 text-[14px]"><span className="whitespace-nowrap shrink-0 text-[#c9b9a6]">{n}</span><span className="text-right min-w-0">{v}</span></div>)}
+              <div className="flex justify-between items-center gap-4 min-w-0 rounded-xl" style={{ padding: "10px 12px", background: "rgba(0,0,0,.25)" }}>
+                <span className="min-w-0 text-[14px]">{items[0][0]}</span>
+                {free ? <span className="shrink-0 rounded-full font-bold text-[15px]" style={{ padding: "3px 14px", background: "rgba(127,214,163,.16)", color: "#9fe0b4" }}>ฟรี</span> : <span className="whitespace-nowrap shrink-0 font-bold text-[20px] text-[#e8c472]" data-total="1">{baht(amount)}</span>}
+              </div>
+              <div className="text-[12.5px] font-light leading-[1.6] text-[#d9c9b4]">{!invite && free ? "เมื่อเริ่มรับงาน ระบบหักค่าสมัครจากรายได้ งานละ ฿500 จนครบ ฿10,000 แล้วเลิกหัก (ค่าการันตีแบรนด์ ไม่สามารถขอคืนได้)" : invite ? `✦ คำเชิญพิเศษ: ไม่ต้องชำระตอนนี้ · ได้ระดับ ${invTier} ทันที · เมื่อเริ่มรับงาน หักงานละ ฿500 จนครบ ฿10,000 แล้วเลิกหัก` : FEE_NOTE}</div>
+              <div className="h-px" style={{ background: "rgba(243,234,217,0.08)" }} />
+              <div className="text-[13px] font-semibold text-[#e8c472]">สิ่งที่ได้รับ</div>
+              {perks.map((t) => <div key={t} className="flex gap-2.5 text-[13.5px]"><span className="w-5 h-5 rounded-full grid place-items-center shrink-0 mt-0.5 text-[11px] font-bold" style={{ background: "rgba(232,196,114,.18)", color: GOLD }}>✓</span><span>{t}</span></div>)}
+            </section>
+
             {!free && !invChecking && <>
             {!promptPayPayload(BANK.promptPayId, amount) ? <div className="flex flex-col items-center gap-3 bg-[#272013]" style={box}><BankTransfer amount={amount} /></div> : (
             <div className="flex flex-col items-center gap-3 bg-[#272013]" style={box}>
-              <div className="flex justify-between gap-2 flex-wrap w-full text-[14px]"><span className="text-[#e8c472] font-semibold">PromptPay</span><span>QR หมดอายุใน <b style={{ color: sec < 120 ? "#ff8a9a" : GOLD }}>{mm}:{ss}</b></span></div>
+              <div className="flex justify-between gap-2 flex-wrap w-full text-[14px]"><span className="text-[#e8c472] font-semibold">PromptPay</span><span>QR หมดอายุใน <b style={{ color: sec < 120 ? "#ff8a97" : GOLD }}>{mm}:{ss}</b></span></div>
               <div className="rounded-xl" style={{ padding: 12, background: "#000", lineHeight: 0, opacity: expired ? 0.2 : 1 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 {qr ? <img src={qr} alt={`QR พร้อมเพย์ ยอด ${baht(amount)}`} width={175} height={175} className="w-[175px] h-[175px] block bg-white" /> : <div className="w-[175px] h-[175px] bg-white" />}
@@ -259,22 +313,27 @@ function PayInner() {
               </label>
             </div>
             </>}
-            <div className="flex flex-col gap-1" role="group" aria-label="ข้อตกลงและความยินยอม">
-              {[
-                <>ยอมรับ<a href="/join/terms" target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} className="text-[#e8c472]">ข้อกำหนดการสมัคร</a> และรับทราบว่าค่าสมัครไม่คืนเงิน</>,
-                <>ให้ความยินยอมเก็บ ใช้ และเปิดเผยข้อมูลส่วนบุคคลตาม<a href="/join/consent" target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} className="text-[#e8c472]">หนังสือให้ความยินยอม</a> และ<a href="/join/privacy" target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} className="text-[#e8c472]">ประกาศความเป็นส่วนตัว</a></>,
-                <>ให้ความยินยอมตรวจสอบประวัติอาชญากรรม และข้อมูลผลตรวจสุขภาพ (ข้อมูลอ่อนไหว)</>,
-              ].map((label, i) => (
-                <button key={i} type="button" role="checkbox" aria-checked={ticks[i]} data-consent={i} onClick={() => { setTicks((t) => t.map((v, j) => (j === i ? !v : v))); setErr(""); }} className="flex gap-3 items-start text-left bg-transparent text-[14px] leading-[1.6] text-[#f3ead9] min-h-11 py-1.5">
-                  <span className="shrink-0 grid place-items-center rounded-md font-bold text-[13px] text-[#1b130b]" style={{ width: 22, height: 22, marginTop: 2, background: ticks[i] ? GOLD : "transparent", boxShadow: ticks[i] ? "none" : "inset 0 0 0 1.5px rgba(232,196,114,0.6)" }}>{ticks[i] ? "✓" : ""}</span>
-                  <span>{label}</span>
-                </button>
-              ))}
-              <button type="button" onClick={() => setTicks([true, true, true])} className="self-start min-h-10 text-[13px] text-[#e8c472] underline underline-offset-2">ยอมรับทั้งหมด</button>
-            </div>
-            <Turnstile key={tsKey} onToken={setTs} />
-            {err && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{err}{loginHint && <> · <Link href="/join/me" className="text-[#e8c472] underline">เข้าสู่ระบบ Part-Time</Link></>}</p>}
-            <button type="button" onClick={submit} disabled={busy} aria-busy={busy} className={cta} style={{ opacity: ready ? 1 : 0.45 }}>{free ? (busy ? "กำลังส่งใบสมัคร…" : "ส่งใบสมัคร") : busy ? "กำลังส่งสลิปเพื่อตรวจสอบ…" : "ส่งสลิปเพื่อตรวจสอบ"}</button>
+
+            <Sec n={4} tint="plum" title="ยืนยันและส่งใบสมัคร" sub="ติ๊กยอมรับครบ 3 ข้อ">
+              <div className="flex flex-col gap-1.5" role="group" aria-label="ข้อตกลงและความยินยอม">
+                {[
+                  <>ยอมรับ<a href="/join/terms" target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} className="text-[#e8c472] underline underline-offset-2">ข้อกำหนดการสมัคร</a> และรับทราบว่าค่าสมัครไม่คืนเงิน</>,
+                  <>ให้ความยินยอมเก็บ ใช้ และเปิดเผยข้อมูลส่วนบุคคลตาม<a href="/join/consent" target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} className="text-[#e8c472] underline underline-offset-2">หนังสือให้ความยินยอม</a> และ<a href="/join/privacy" target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} className="text-[#e8c472] underline underline-offset-2">ประกาศความเป็นส่วนตัว</a></>,
+                  <>ให้ความยินยอมตรวจสอบประวัติอาชญากรรม และข้อมูลผลตรวจสุขภาพ (ข้อมูลอ่อนไหว)</>,
+                ].map((label, i) => (
+                  <button key={i} type="button" role="checkbox" aria-checked={ticks[i]} data-consent={i} onClick={() => { setTicks((t) => t.map((v, j) => (j === i ? !v : v))); setErr(""); }}
+                    className="flex gap-3 items-start text-left text-[13.5px] leading-[1.6] text-[#f3ead9] min-h-11 rounded-xl transition" style={{ padding: "10px 12px", background: ticks[i] ? "rgba(232,196,114,.10)" : "rgba(0,0,0,.22)", border: `1px solid ${ticks[i] ? "rgba(232,196,114,.45)" : "rgba(243,234,217,.08)"}` }}>
+                    <span className="shrink-0 grid place-items-center rounded-md font-bold text-[13px] text-[#1b130b]" style={{ width: 22, height: 22, marginTop: 1, background: ticks[i] ? GOLD : "transparent", boxShadow: ticks[i] ? "none" : "inset 0 0 0 1.5px rgba(232,196,114,0.6)" }}>{ticks[i] ? "✓" : ""}</span>
+                    <span>{label}</span>
+                  </button>
+                ))}
+                {!agree && <button type="button" onClick={() => setTicks([true, true, true])} className="self-start min-h-10 text-[13px] font-semibold text-[#e8c472] underline underline-offset-2">✓ ยอมรับทั้งหมด</button>}
+              </div>
+              <Turnstile key={tsKey} onToken={setTs} />
+              {err && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{err}{loginHint && <> · <Link href="/join/me" className="text-[#e8c472] underline">เข้าสู่ระบบ Part-Time</Link></>}</p>}
+              {!ready && !busy && missing.length > 0 && <p data-pay-missing className="m-0 text-[12.5px] leading-[1.6] text-[#f0b26c]">ยังขาด: {missing.join(" · ")}</p>}
+              <button type="button" onClick={submit} disabled={busy} aria-busy={busy} className={cta + " transition"} style={ready ? { background: "linear-gradient(135deg,#fff1c9,#e8c472 55%,#d1a54c)", boxShadow: "0 10px 26px rgba(232,196,114,.3)" } : { opacity: 0.45 }}>{free ? (busy ? "กำลังส่งใบสมัคร…" : "ส่งใบสมัคร") : busy ? "กำลังส่งสลิปเพื่อตรวจสอบ…" : "ส่งสลิปเพื่อตรวจสอบ"}</button>
+            </Sec>
           </div>
         </div>
       </div>
