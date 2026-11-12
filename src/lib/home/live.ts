@@ -51,11 +51,11 @@ export async function getLivePeople(): Promise<Person[]> {
     const area = (x.areas ?? [])[0]?.split(" › ") ?? [];
     return {
       id, nick: a.nickname, age: a.birthdate ? ageFrom(a.birthdate) ?? 0 : 0, img: `/api/public/pt-photo?id=${id}&i=0${photoPaths(a)[0] ? `&v=${pubVer(photoPaths(a)[0], x)}` : ""}`, top, rating: st?.count ? st.avg.toFixed(1) : "ใหม่",
-      reviews: st?.count ?? 0, jobs: 0, years: 0, height: a.height || 0, langs: "TH",
+      reviews: st?.count ?? 0, jobs: 0, years: 0, height: a.height || 0, ...(a.weight ? { weight: a.weight } : {}), ...(a.intro?.trim() ? { intro: a.intro.trim().slice(0, 160) } : {}), langs: "TH",
       // แสดงระดับเขต/อำเภอ (ไม่ลงถึงแขวง) · จังหวัดแสดงเมื่อไม่ใช่กรุงเทพฯ
       area: x.geo ? `แถว${x.geo.label}` : area[1] || area[0] || "กรุงเทพฯ", prov: x.geo ? undefined : area[1] && area[0] !== "กรุงเทพฯ" ? area[0] : undefined,
       ...(x.geo ? { geo: [x.geo.lat, x.geo.lng] as [number, number] } : {}),
-      acts: acts.length ? acts : ["eat"], free: 0, bio: x.listing?.title || a.intro || "Part-Time ที่ผ่านการอบรมมาตรฐาน Mister Bamrungsuk",
+      acts: acts.length ? acts : ["eat"], free: 0, bio: a.intro?.trim() || x.listing?.title || "Part-Time ที่ผ่านการอบรมมาตรฐาน Mister Bamrungsuk",
       ...(x.group === "tom" ? { group: "tom" as const } : {}),
       review: ["", ""], real: true, trained: coreDone(att.get(a.id) ?? {}), checked: a.criminal_check === "passed", boost: boosts.has(a.id), price: tierPrice(x, svc), ...(secret ? { secret: true } : {}), ...(!top && !a.amount ? { basic: true } : {}), photos: Math.min(9, photoPaths(a).length), pos: mainPos(a), imgs: photoPaths(a).slice(0, 6).map((p, i) => `/api/public/pt-photo?id=${id}&i=${i}&v=${pubVer(p, x)}`),
     } satisfies Person;

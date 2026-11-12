@@ -14,7 +14,30 @@ import { CERT_MSG, GATE_MSG, GATE_SHORT, KYC_PAY_MSG, MASSAGE_SKILL, isMassage }
 import type { Tier } from "@/lib/join/earnings-shared";
 import { EstimateCard, PromoCard, SaveLinkCard } from "./hub-cards";
 
+/** สีประจำส่วน (บอส 12 พ.ย. 2569: เดิมสีเดียวกันหมด ลายตา) — [พื้นหัว, ขอบ, สีไอคอน] */
+const TINT = {
+  wine: ["linear-gradient(180deg, rgba(160,40,60,.24), rgba(160,40,60,0) 120px)", "rgba(214,120,138,.28)", "#f0a3b1"],
+  indigo: ["linear-gradient(180deg, rgba(90,120,200,.22), rgba(90,120,200,0) 120px)", "rgba(125,160,225,.26)", "#a9c2f0"],
+  jade: ["linear-gradient(180deg, rgba(70,160,130,.20), rgba(70,160,130,0) 120px)", "rgba(110,190,160,.26)", "#9ad7bf"],
+  plum: ["linear-gradient(180deg, rgba(150,100,200,.22), rgba(150,100,200,0) 120px)", "rgba(180,140,220,.28)", "#cdb0ec"],
+  gold: ["linear-gradient(180deg, rgba(232,196,114,.20), rgba(232,196,114,0) 120px)", "rgba(232,196,114,.35)", "#e8c472"],
+} as const;
+function Sec({ tint, icon, title, right, children }: { tint: keyof typeof TINT; icon: React.ReactNode; title: string; right?: React.ReactNode; children: React.ReactNode }) {
+  const [bg, bd, fg] = TINT[tint];
+  return (
+    <section className="rounded-[18px] min-w-0 flex flex-col gap-3" style={{ padding: 16, background: `${bg}, #1f1917`, border: `1px solid ${bd}` }}>
+      <div className="flex items-center gap-2.5">
+        <span className="w-8 h-8 rounded-[10px] grid place-items-center shrink-0" style={{ background: `${fg}26`, color: fg }}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{icon}</svg></span>
+        <span className="flex-1 min-w-0 font-semibold text-[15.5px]">{title}</span>{right}
+      </div>
+      {children}
+    </section>
+  );
+}
+
 export type HubData = {
+  /** Bio + ส่วนสูง/น้ำหนัก (แสดงบนการ์ดหน้าแรก) */
+  bio: string; height: number | null; weight: number | null;
   /** สมัครผ่านลิงก์เชิญ (ป้าย) */
   invite: boolean;
   /** หมวดทอมหล่อ (ป้าย) */
@@ -62,6 +85,10 @@ export function ProfileHub({ d }: { d: HubData }) {
   const [pspa, setPspa] = useState<string[]>(d.card.partner_spas);
   const [skills, setSkills] = useState<string[]>(d.card.skills);
   const [saved, setSaved] = useState<"" | "busy" | "ok" | "err">("");
+  const [saveErr, setSaveErr] = useState("");
+  const [bio, setBio] = useState(d.bio);
+  const [height, setHeight] = useState(d.height ? String(d.height) : "");
+  const [weight, setWeight] = useState(d.weight ? String(d.weight) : "");
   const [mainBusy, setMainBusy] = useState(false);
   const [certWarn, setCertWarn] = useState("");
   const [delAt, setDelAt] = useState(d.deleteRequested);
@@ -91,8 +118,10 @@ export function ProfileHub({ d }: { d: HubData }) {
     fd.set("mb", d.mb); if (d.t) fd.set("t", d.t); fd.set("step", "card");
     picked.forEach((x) => fd.append("activities", x)); places.forEach((x) => fd.append("places", x));
     pspa.forEach((x) => fd.append("partner_spas", x)); skills.forEach((x) => fd.append("skills", x));
+    fd.set("bio", bio); fd.set("height", height); fd.set("weight", weight);
     const res = await fetch("/api/join/profile", { method: "POST", body: fd }).catch(() => null);
-    const j = (await res?.json().catch(() => null)) as { card?: ProfileCard; warning?: string } | null;
+    const j = (await res?.json().catch(() => null)) as { card?: ProfileCard; warning?: string; error?: string } | null;
+    setSaveErr(res?.ok ? "" : j?.error ?? "");
     // เซิร์ฟเวอร์ตัดกิจกรรม/สกิลนวดออกถ้ายังไม่มีใบรับรอง → แสดงตามที่บันทึกจริง
     if (res?.ok && j?.card) { setPicked(j.card.activities); setSkills(j.card.skills); }
     setCertWarn(j?.warning ?? "");
@@ -106,7 +135,7 @@ export function ProfileHub({ d }: { d: HubData }) {
     if (res?.ok) router.refresh();
   };
 
-  const chip = (on: boolean): React.CSSProperties => ({ background: on ? "rgba(232,196,114,0.12)" : "rgba(42,33,30,0.9)", color: on ? GOLD : "#f3ead9" });
+  const chip = (on: boolean): React.CSSProperties => ({ background: on ? "rgba(110,190,160,0.2)" : "rgba(0,0,0,0.25)", color: on ? "#bfeedd" : "#f3ead9", border: `1px solid ${on ? "rgba(110,190,160,.5)" : "rgba(243,234,217,.1)"}` });
   const skillLine = skills.length ? "สกิลพิเศษ: " + SKILLS.filter(([id]) => skills.includes(id)).map(([, l]) => l.replace(" (แนบใบรับรอง)", "")).join(" · ") : "ยังไม่ได้เลือกสกิลพิเศษ";
 
   return (
@@ -149,21 +178,21 @@ export function ProfileHub({ d }: { d: HubData }) {
               <Ico size={22} d="M12 4C7 4 3 7.2 3 11c0 3.4 3 6.2 7.2 6.9L10 21l3.6-3.1C18 17.4 21 14.5 21 11c0-3.8-4-7-9-7z" />{d.lineGroup.label}
             </a>}
             <div className="grid grid-cols-2 gap-[10px]">
-              <Link href={`/join/profile/${d.mb}/jobs${q}`} className="rounded-2xl bg-[#211a18] flex flex-col gap-0.5 min-w-0 hover:text-inherit" style={{ padding: 14 }}><span className="text-[12px] font-light text-[#b5a596]">งานถัดไป</span>
+              <Link href={`/join/profile/${d.mb}/jobs${q}`} className="rounded-2xl flex flex-col gap-0.5 min-w-0 hover:text-inherit" style={{ padding: 14, background: `${TINT.indigo[0]}, #1f1917`, border: `1px solid ${TINT.indigo[1]}` }}><span className="text-[12px] font-semibold" style={{ color: TINT.indigo[2] }}>📅 งานถัดไป</span>
                 {d.next
                   ? <><span className="font-semibold text-[14px] leading-[1.35]">{d.next.when}</span><span className="text-[12px] font-light text-[#d9c9b4] line-clamp-2">{d.next.place} · {d.next.hours} ชม.</span></>
                   : <><span className="font-semibold">ยังไม่มีนัด</span><span className="text-[12px] font-light text-[#d9c9b4]">{d.pendingJobs ? `มีงานรอตอบรับ ${d.pendingJobs} งาน ›` : d.listed ? "เปิดรับงานอยู่ · รอลูกค้าจอง" : "เริ่มรับงานหลังทีมงานอนุมัติ"}</span></>}
               </Link>
-              <Link href={`/join/profile/${d.mb}/reviews${q}`} className="rounded-2xl bg-[#211a18] flex flex-col gap-0.5 hover:text-inherit" style={{ padding: 14 }}><span className="text-[12px] font-light text-[#b5a596]">รีวิวของฉัน</span><span className="font-semibold text-[#e8c472]">{d.rating ? `★ ${d.rating.avg.toFixed(1)}` : "—"}</span><span className="text-[12px] font-light text-[#d9c9b4]">{d.rating ? `${d.rating.count} รีวิว` : "ยังไม่มีรีวิว"}</span></Link>
+              <Link href={`/join/profile/${d.mb}/reviews${q}`} className="rounded-2xl flex flex-col gap-0.5 hover:text-inherit" style={{ padding: 14, background: `${TINT.jade[0]}, #1f1917`, border: `1px solid ${TINT.jade[1]}` }}><span className="text-[12px] font-semibold" style={{ color: TINT.jade[2] }}>★ รีวิวของฉัน</span><span className="font-semibold text-[#e8c472]">{d.rating ? `★ ${d.rating.avg.toFixed(1)}` : "—"}</span><span className="text-[12px] font-light text-[#d9c9b4]">{d.rating ? `${d.rating.count} รีวิว` : "ยังไม่มีรีวิว"}</span></Link>
             </div>
 
             {/* กระเป๋าเงิน */}
-            <div id="pt-wallet" className="flex flex-col gap-3 rounded-[18px] scroll-mt-3" style={{ padding: 16, background: "linear-gradient(150deg, #3a2a17 0%, #251d1b 70%)", boxShadow: "0 10px 24px rgba(0,0,0,0.35)" }}>
+            <div id="pt-wallet" className="flex flex-col gap-3 rounded-[18px] scroll-mt-3" style={{ padding: 16, background: "radial-gradient(110% 130% at 100% 0%, rgba(232,196,114,.24), transparent 55%), linear-gradient(150deg, #3d2a16 0%, #241b18 70%)", border: "1px solid rgba(232,196,114,.45)", boxShadow: "0 10px 24px rgba(0,0,0,0.35)" }}>
               <div className="flex justify-between items-center gap-2">
                 <span className="flex items-center gap-2 text-[14px] font-semibold text-[#e8c472]"><Ico><path d="M3 7a2 2 0 0 1 2-2h13v4" /><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z" /><circle cx="16" cy="14.5" r="1.3" /></Ico>กระเป๋าเงิน</span>
                 <Link href={`/join/profile/${d.mb}/earnings${q}`} className="tap text-[13px] text-[#e8c472] font-light">เช็คเรทรายได้ ›</Link>
               </div>
-              <div><div className="text-[13px] text-[#d9c9b4] font-light">ยอดใช้ได้</div><div className="font-semibold text-[32px] leading-[1.15]">{baht(d.wallet.available)}</div><div className="text-[13px] text-[#d9c9b4] mt-0.5 font-light">รอปล่อยเงิน {baht(d.wallet.pending)} · รายได้เดือนนี้ {baht(d.wallet.month)}{d.wallet.bond != null && <> · เงินประกันงาน {baht(d.wallet.bond)}</>}</div></div>
+              <div><div className="text-[13px] text-[#d9c9b4] font-light">ยอดใช้ได้</div><div className="font-semibold text-[34px] leading-[1.15]" style={{ color: "#fff1c9" }}>{baht(d.wallet.available)}</div><div className="text-[13px] text-[#d9c9b4] mt-0.5 font-light">รอปล่อยเงิน {baht(d.wallet.pending)} · รายได้เดือนนี้ {baht(d.wallet.month)}{d.wallet.bond != null && <> · เงินประกันงาน {baht(d.wallet.bond)}</>}</div></div>
               {/* ยังไม่อนุมัติ/ยังไม่เปิดโปรไฟล์ → ยังไม่ใช่ Part-Time ที่ทำงานจริง: ซ่อนถอน/โปรโมท/ชวนเปิดเมม (API ก็ตอบ 409) */}
               {!d.active && <p className="m-0 rounded-xl text-[13px] text-[#f6c38e] font-light leading-[1.5]" style={{ padding: "8px 12px", background: "rgba(240,163,90,.1)" }}>ถอนเงิน · โปรโมทโปรไฟล์ · ชวนเปิดเมม {GATE_SHORT}<span className="block text-[12px] text-[#d9c9b4]">{GATE_MSG}</span></p>}
               {d.active && !d.kycApproved && <Link data-kyc-pay-warn href={`/join/kyc/${d.mb}${q}`} className="rounded-xl text-[13px] text-[#f6c38e] font-light leading-[1.5] hover:text-[#f6c38e]" style={{ padding: "8px 12px", background: "rgba(240,163,90,.1)" }}>⚠ {KYC_PAY_MSG}<span className="block text-[12px] text-[#e8c472]">ส่งเอกสารให้ครบ ›</span></Link>}
@@ -195,7 +224,7 @@ export function ProfileHub({ d }: { d: HubData }) {
             )}
 
             {/* กรอกรายละเอียดใบสมัคร */}
-            <div className="flex flex-col gap-[10px] rounded-2xl bg-[#2c1a1f]" style={{ padding: 14 }}>
+            <div className="flex flex-col gap-[10px] rounded-2xl" style={{ padding: 14, background: `${TINT.wine[0]}, #1f1917`, border: `1px solid ${TINT.wine[1]}` }}>
               <div className="flex justify-between items-baseline gap-2"><span className="font-semibold text-[16px]">กรอกรายละเอียดใบสมัคร</span><span className="text-[13px] text-[#e8c472] font-light">ครบ {nDone}/{d.steps.length}</span></div>
               <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(243,234,217,0.12)" }}><div className="h-full bg-[#e8c472]" style={{ width: `${(nDone / d.steps.length) * 100}%` }} /></div>
               {allDone
@@ -225,8 +254,7 @@ export function ProfileHub({ d }: { d: HubData }) {
 
             {tab === "edit" ? (
               <div className="flex flex-col" style={{ gap: 21 }}>
-                <div>
-                  <p className="text-[13px] m-0 mb-1.5">รูปโปรไฟล์ (แตะเพื่อตั้งเป็นรูปหลัก · {d.photos.length}/9 รูป)</p>
+                <Sec tint="wine" icon={<><rect x="3" y="5" width="18" height="14" rx="2" /><circle cx="9" cy="11" r="2" /><path d="m21 16-5-5-8 8" /></>} title="รูปโปรไฟล์" right={<span className="text-[12.5px] font-light text-[#d9c9b4]">{d.photos.length}/9 · แตะเพื่อตั้งรูปหลัก</span>}>
                   <div className="grid grid-cols-3 gap-2">
                     {d.photos.map((src, i) => (
                       <button key={src} type="button" onClick={() => setMain(i)} aria-label={i === 0 ? "รูปหลัก" : `ตั้งรูปที่ ${i + 1} เป็นรูปหลัก`} className="relative p-0 h-[120px] rounded-xl overflow-hidden" style={{ background: "rgba(232,196,114,0.16)" }}>
@@ -240,16 +268,34 @@ export function ProfileHub({ d }: { d: HubData }) {
                       </Link>
                     )}
                   </div>
-                </div>
+                </Sec>
 
-                <div>
-                  <p className="text-[13px] m-0 mb-1.5">กิจกรรมที่รับ · เลือกแล้ว {picked.length}</p>
-                  <div className="flex flex-wrap gap-2 mb-[10px]">
-                    {picked.map((label) => (
-                      <button key={label} type="button" aria-label={`ลบ ${label}`} onClick={() => { setPicked(picked.filter((x) => x !== label)); dirty(); }} className="min-h-10 rounded-full text-[13px] text-[#e8c472] flex items-center gap-1.5 font-light" style={{ padding: "0 10px 0 14px", background: "rgba(232,196,114,0.12)" }}>{label}<span className="text-[16px] leading-none">×</span></button>
+                {/* Bio + ส่วนสูง / น้ำหนัก (ใหม่) — แสดงบนการ์ดหน้าแรก */}
+                <Sec tint="plum" icon={<><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z" /></>} title="แนะนำตัว (Bio)" right={<span className="text-[12px] font-light text-[#d9c9b4]">โชว์บนการ์ดหน้าแรก</span>}>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-[12.5px] text-[#e6d6c4]">ข้อความแนะนำตัวสั้น ๆ</span>
+                    <textarea data-bio-input value={bio} maxLength={160} rows={3} onChange={(e) => { setBio(e.target.value); dirty(); }} placeholder="เช่น ชอบคาเฟ่ ถ่ายรูปเก่ง คุยสนุก ดูแลตลอดนัด" className="w-full rounded-xl bg-[#100c0b] text-[#f3ead9] text-[15px] leading-[1.6] px-3.5 py-2.5 outline-none border border-[rgba(243,234,217,.14)] focus:border-[#cdb0ec] resize-none placeholder:text-[#7d6f66]" />
+                    <span className="flex justify-between text-[11.5px] font-light text-[#a99a8e]"><span>ห้ามใส่เบอร์ LINE หรือช่องทางติดต่อ</span><span>{bio.length}/160</span></span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {([["ส่วนสูง", "ซม.", height, setHeight, "175"], ["น้ำหนัก", "กก.", weight, setWeight, "68"]] as const).map(([l, u, v, set, ph]) => (
+                      <label key={l} className="flex flex-col gap-1.5"><span className="text-[12.5px] text-[#e6d6c4]">{l}</span>
+                        <span className="flex items-center rounded-xl bg-[#100c0b] border border-[rgba(243,234,217,.14)] focus-within:border-[#cdb0ec] pr-3">
+                          <input data-body-input={u} inputMode="numeric" value={v} placeholder={ph} onChange={(e) => { set(e.target.value.replace(/\D/g, "").slice(0, 3)); dirty(); }} className="flex-1 min-w-0 h-12 bg-transparent px-3.5 text-[16px] text-[#f3ead9] outline-none placeholder:text-[#7d6f66]" />
+                          <span className="text-[13px] text-[#a99a8e]">{u}</span>
+                        </span>
+                      </label>
                     ))}
                   </div>
-                  <label className="h-12 rounded-xl bg-[#251d1b] flex items-center gap-2 px-[14px]">
+                </Sec>
+
+                <Sec tint="indigo" icon={<><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z" /></>} title="กิจกรรมที่รับ" right={<span className="text-[12.5px] font-light text-[#d9c9b4]">เลือกแล้ว {picked.length}</span>}>
+                  <div className="flex flex-wrap gap-2 mb-[10px]">
+                    {picked.map((label) => (
+                      <button key={label} type="button" aria-label={`ลบ ${label}`} onClick={() => { setPicked(picked.filter((x) => x !== label)); dirty(); }} className="min-h-10 rounded-full text-[13px] text-[#c9d8f6] flex items-center gap-1.5" style={{ padding: "0 10px 0 14px", background: "rgba(125,160,225,0.18)", border: "1px solid rgba(125,160,225,.35)" }}>{label}<span className="text-[16px] leading-none">×</span></button>
+                    ))}
+                  </div>
+                  <label className="h-12 rounded-xl bg-[#100c0b] border border-[rgba(243,234,217,.14)] focus-within:border-[#a9c2f0] flex items-center gap-2 px-[14px]">
                     <Ico><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></Ico>
                     <input value={query} onChange={(e) => setQuery(e.target.value.slice(0, 30))} placeholder="พิมพ์กิจกรรม เช่น ดูหนัง, ตีกอล์ฟ…" aria-label="ค้นหากิจกรรม" className="flex-1 min-w-0 h-11 bg-transparent border-0 outline-none text-[#f3ead9] placeholder:text-[#b5a596] text-[14px]" />
                   </label>
@@ -257,36 +303,35 @@ export function ProfileHub({ d }: { d: HubData }) {
                     <span>ลองพิมพ์:</span>
                     {QP.map((v) => <button key={v || "clear"} type="button" onClick={() => setQuery(v)} className="h-10 px-3 rounded-full text-[13px] font-light" style={{ background: "rgba(232,196,114,0.16)", color: query === v ? GOLD : "#f3ead9" }}>{v || "ล้าง"}</button>)}
                   </div>
-                  <div className="mt-2 rounded-xl bg-[#1b2322] overflow-hidden flex flex-col">
-                    {sugg.map((label) => <button key={label} type="button" onClick={() => addPick(label)} className="min-h-11 px-[14px] bg-transparent border-b border-[rgba(243,234,217,0.07)] text-[#f3ead9] text-[13.5px] flex justify-between items-center text-left">{label}<span className="text-[#e8c472] text-[13px] font-light">+ เลือก</span></button>)}
+                  <div className="mt-2 rounded-xl overflow-hidden flex flex-col" style={{ background: "rgba(0,0,0,.25)", border: "1px solid rgba(125,160,225,.18)" }}>
+                    {sugg.map((label) => <button key={label} type="button" onClick={() => addPick(label)} className="min-h-11 px-[14px] bg-transparent border-b border-[rgba(243,234,217,0.07)] text-[#f3ead9] text-[13.5px] flex justify-between items-center text-left">{label}<span className="text-[#a9c2f0] text-[13px] font-semibold">+ เลือก</span></button>)}
                     {!!query && !sugg.length && <div className="text-[13px] font-light" style={{ padding: "10px 14px" }}>ไม่พบในรายการแนะนำ</div>}
                     {showCustom && <button type="button" onClick={() => addPick(query)} className="min-h-11 px-[14px] text-[#e8c472] text-[13.5px] font-semibold text-left" style={{ background: "rgba(232,196,114,0.16)" }}>+ เพิ่ม “{query}”</button>}
                   </div>
-                </div>
+                </Sec>
 
-                <div>
-                  <p className="text-[13px] m-0 mb-1.5">สถานที่ที่รับนัด · เลือกแล้ว {places.length}</p>
+                <Sec tint="jade" icon={<><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z" /><circle cx="12" cy="10" r="2.5" /></>} title="สถานที่ที่รับนัด" right={<span className="text-[12.5px] font-light text-[#d9c9b4]">เลือกแล้ว {places.length}</span>}>
                   <div className="flex flex-wrap gap-2">
                     {PLACES.map((label) => { const on = places.includes(label); return <button key={label} type="button" aria-pressed={on} onClick={() => { setPlaces(on ? places.filter((x) => x !== label) : [...places, label]); dirty(); }} className="min-h-11 px-[14px] rounded-full text-[13px] font-light" style={chip(on)}>{label}</button>; })}
                   </div>
                   <p className="text-[13px] m-0 mt-3 mb-1.5">สปา / สถานที่พาร์ทเนอร์</p>
                   <div className="flex flex-col gap-1.5">
                     {PSPA.map(([name, area]) => { const on = pspa.includes(name); return (
-                      <button key={name} type="button" role="checkbox" aria-checked={on} onClick={() => { setPspa(on ? pspa.filter((x) => x !== name) : [...pspa, name]); dirty(); }} className="min-h-12 px-3 rounded-xl flex items-center gap-[10px] text-left text-[#f3ead9]" style={{ background: "rgba(232,196,114,0.16)" }}>
-                        <span className="w-5 h-5 rounded-md grid place-items-center text-[13px] font-bold text-[#1b130b]" style={{ background: on ? GOLD : "transparent", boxShadow: on ? "none" : "inset 0 0 0 1.5px rgba(232,196,114,0.38)" }}>{on ? "✓" : ""}</span>
+                      <button key={name} type="button" role="checkbox" aria-checked={on} onClick={() => { setPspa(on ? pspa.filter((x) => x !== name) : [...pspa, name]); dirty(); }} className="min-h-12 px-3 rounded-xl flex items-center gap-[10px] text-left text-[#f3ead9]" style={{ background: on ? "rgba(110,190,160,0.14)" : "rgba(0,0,0,.25)", border: `1px solid ${on ? "rgba(110,190,160,.45)" : "rgba(243,234,217,.08)"}` }}>
+                        <span className="w-5 h-5 rounded-md grid place-items-center text-[13px] font-bold text-[#0f2a20]" style={{ background: on ? "#9ad7bf" : "transparent", boxShadow: on ? "none" : "inset 0 0 0 1.5px rgba(110,190,160,0.5)" }}>{on ? "✓" : ""}</span>
                         <span className="flex-1 text-[13.5px]">{name}</span><span className="text-[13px] font-light">{area}</span>
                       </button>
                     ); })}
                   </div>
-                </div>
+                </Sec>
 
-                <div className="flex flex-col gap-2 rounded-2xl bg-[#241c29]" style={{ padding: 14 }}>
+                <div className="flex flex-col gap-2 rounded-2xl" style={{ padding: 14, background: `${TINT.gold[0]}, #1f1917`, border: `1px solid ${TINT.gold[1]}` }}>
                   <div className="flex justify-between items-center"><span className="text-[14px] flex items-center gap-1.5">ราคา 3 ชม. <TierBadge tier={d.tier} basic={d.basic} /></span><span className="font-semibold text-[19px] text-[#e8c472]">{baht(d.price)}</span></div>
                   <div className="text-[13px] flex items-center gap-1.5 font-light"><Ico size={14}><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></Ico>กำหนดโดยทีมงานตามระดับ · แก้ไขเองไม่ได้</div>
                 </div>
 
-                <div className="flex flex-col rounded-2xl bg-[#251d1b]" style={{ padding: 14, gap: 13 }}>
-                  <span className="text-[14px]">สกิลพิเศษ (เลือกได้หลายข้อ)</span>
+                <div className="flex flex-col rounded-2xl" style={{ padding: 14, gap: 13, background: `${TINT.plum[0]}, #1f1917`, border: `1px solid ${TINT.plum[1]}` }}>
+                  <span className="text-[15px] font-semibold">✦ สกิลพิเศษ <span className="text-[12.5px] font-light text-[#d9c9b4]">(เลือกได้หลายข้อ)</span></span>
                   <div className="flex flex-wrap gap-2">
                     {SKILLS.map(([id, label]) => { const on = skills.includes(id); const locked = id === MASSAGE_SKILL && !d.hasCert && !on; return <button key={id} type="button" aria-pressed={on} disabled={locked} aria-describedby={locked ? "cert-why" : undefined} onClick={() => { setSkills(on ? skills.filter((x) => x !== id) : [...skills, id]); dirty(); }} className="min-h-10 px-[14px] rounded-full text-[13px] font-light disabled:opacity-45" style={{ background: on ? "rgba(232,196,114,0.12)" : "transparent", color: on ? GOLD : "#f3ead9", boxShadow: on ? "none" : "inset 0 0 0 1px rgba(232,196,114,0.38)" }}>{locked ? "🔒 " : ""}{label}</button>; })}
                   </div>
@@ -296,8 +341,8 @@ export function ProfileHub({ d }: { d: HubData }) {
                 </div>
 
                 {certWarn && <p role="status" className="m-0 text-[13px] text-[#f6c38e]">{certWarn}</p>}
-                {saved === "err" && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">บันทึกไม่สำเร็จ กรุณาลองใหม่</p>}
-                <button type="button" onClick={save} disabled={saved === "busy"} className="h-[52px] rounded-[14px] bg-[#e8c472] text-[#1b130b] text-[15px] font-semibold w-full">{saved === "ok" ? "บันทึกแล้ว · ทีมงานจะตรวจรูปให้" : saved === "busy" ? "กำลังบันทึก…" : "บันทึกการเปลี่ยนแปลง"}</button>
+                {saved === "err" && <p role="alert" className="m-0 text-[13px] text-[#ff8a9a]">{saveErr || "บันทึกไม่สำเร็จ กรุณาลองใหม่"}</p>}
+                <button type="button" onClick={save} disabled={saved === "busy"} className="h-[52px] rounded-[14px] text-[#1b130b] text-[15.5px] font-semibold w-full lg:sticky lg:bottom-4 z-10" style={{ background: saved === "ok" ? "#9ad7bf" : "linear-gradient(135deg,#fff1c9,#e8c472 55%,#d1a54c)", boxShadow: "0 10px 24px rgba(0,0,0,.4)" }}>{saved === "ok" ? "บันทึกแล้ว · ทีมงานจะตรวจรูปให้" : saved === "busy" ? "กำลังบันทึก…" : "บันทึกการเปลี่ยนแปลง"}</button>
               </div>
             ) : (
               <div className="flex flex-col gap-4">
@@ -309,6 +354,8 @@ export function ProfileHub({ d }: { d: HubData }) {
                       <span className="flex items-center gap-1.5"><span className="font-semibold text-[20px]">{d.nickname}{d.age ? ` · ${d.age} ปี` : ""}</span><TierBadge tier={d.tier} basic={d.basic} /></span>
                       <span className="text-[13px] text-[#e8c472] font-light">{d.rating ? `★ ${d.rating.avg.toFixed(1)} (${d.rating.count})` : "ยังไม่มีรีวิว"}</span>
                     </div>
+                    {(height || weight) && <div className="flex gap-1.5">{height && <span className="rounded-full text-[12px] text-[#f1e3c8]" style={{ padding: "2px 9px", background: "rgba(232,196,114,.14)" }}>{height} ซม.</span>}{weight && <span className="rounded-full text-[12px] text-[#f1e3c8]" style={{ padding: "2px 9px", background: "rgba(232,196,114,.14)" }}>{weight} กก.</span>}</div>}
+                    {bio.trim() && <div className="text-[13.5px] leading-[1.55] italic font-light text-[#d9c9b4]">“{bio.trim()}”</div>}
                     <div className="flex flex-wrap gap-1.5">{picked.map((a) => <span key={a} className="text-[13px] rounded-full font-light" style={{ padding: "4px 10px", background: "rgba(243,234,217,0.07)" }}>{a}</span>)}</div>
                     <div className="flex justify-between text-[13px] pt-2 border-t border-[rgba(243,234,217,0.07)] font-light"><span>3 ชม. <b className="text-[#e8c472]">{baht(d.price)}</b></span><span>{d.trackShort}{d.area ? ` · ${d.area}` : ""}</span></div>
                     <div className="text-[13px] font-light">{skillLine}</div>

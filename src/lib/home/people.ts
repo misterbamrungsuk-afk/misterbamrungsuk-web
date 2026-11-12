@@ -4,7 +4,7 @@
 export type Act = "eat" | "massage" | "cafe" | "photo" | "movie" | "gym" | "chill" | "dinner" | "drive";
 export type Person = {
   id: string; nick: string; age: number; img: string; top: boolean; rating: string; reviews: number; jobs: number; years: number;
-  area: string; prov?: string; /** ย่านที่ Part-Time ตั้งเอง (ช่อง ~1 กม.) — มีแล้วใช้แทนพิกัดจากชื่อเขต */ geo?: [number, number]; acts: Act[]; free: number; height: number; langs: string; bio: string; review: [string, string];
+  area: string; prov?: string; /** ย่านที่ Part-Time ตั้งเอง (ช่อง ~1 กม.) — มีแล้วใช้แทนพิกัดจากชื่อเขต */ geo?: [number, number]; acts: Act[]; free: number; height: number; /** น้ำหนัก (กก.) — Part-Time ตั้งเอง */ weight?: number; /** Bio ที่ Part-Time เขียนเอง (แสดงบนการ์ดหน้าแรก) */ intro?: string; langs: string; bio: string; review: [string, string];
   /** true = Part-Time จริงจากระบบสมัคร (ยังไม่มีสถิติ/รีวิว) */
   real?: boolean;
   /** หมวด: "tom" = ทอมหล่อ · ไม่มี = หนุ่มหล่อ */

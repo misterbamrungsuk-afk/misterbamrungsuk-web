@@ -183,7 +183,22 @@ export async function POST(req: Request) {
     if (step === "card") {
       // นวดผ่อนคลายขึ้นการ์ดได้เมื่อมีใบรับรองการนวด (cert_doc) เท่านั้น — ไม่มี = ตัดออกก่อนบันทึก แล้วบอกหน้าเว็บว่าตัดอะไร
       const { card, dropped } = dropMassage({ activities: uniq(form.getAll("activities"), 20, 40), places: uniq(form.getAll("places"), 10, 40), partner_spas: uniq(form.getAll("partner_spas"), 10, 60), skills: uniq(form.getAll("skills"), 10, 40) }, !!row.docs.cert_doc);
-      await saveProfile(row.id, { card });
+      // Bio + ส่วนสูง + น้ำหนัก (บอส 12 พ.ย. 2569) — แสดงบนการ์ดหน้าแรก · ห้ามใส่ช่องทางติดต่อ
+      const cols: Record<string, unknown> = { card };
+      if (form.has("bio")) {
+        const bio = String(form.get("bio") ?? "").replace(/\s+/g, " ").trim().slice(0, 160);
+        if (hasContact(bio)) return bad(CONTACT_MSG, 400, ["bio"]);
+        cols.intro = bio;
+      }
+      for (const [k, lo, hi] of [["height", 140, 210], ["weight", 35, 150]] as const) {
+        if (!form.has(k)) continue;
+        const raw = String(form.get(k) ?? "").trim();
+        if (!raw) continue;
+        const n = Math.round(Number(raw));
+        if (!Number.isFinite(n) || n < lo || n > hi) return bad(k === "height" ? "ส่วนสูง 140–210 ซม." : "น้ำหนัก 35–150 กก.", 400, [k]);
+        cols[k] = n;
+      }
+      await saveProfile(row.id, cols);
       return NextResponse.json({ ok: true, card, dropped, ...(dropped.length ? { warning: CERT_MSG } : {}) });
     }
     return bad("ไม่รู้จักขั้นตอนนี้");

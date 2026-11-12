@@ -102,7 +102,7 @@ export function ProfileView({ p, reviews = [], vers = [], free = null, preview =
                 : p.top && <span className="inline-flex items-center h-[18px] rounded text-[9.5px] font-bold tracking-[.2em] text-[#1b130b]" style={{ padding: "0 7px", background: "linear-gradient(135deg, #fff1c9 0%, #e8c472 45%, #a8781f 100%)" }}>TOP</span>}
               {(!p.real || p.checked) && <span className="h-[26px] rounded-full text-[12px] font-light text-[#e8c472] flex items-center" style={{ padding: "0 10px", border: "1px solid rgba(212,175,55,.6)" }}>{T.verified}</span>}
             </div>
-            <div className="text-[13px] text-[#d9c9b4] mt-1 font-light">{[p.age ? C.years(p.age) : "", p.height ? C.cm(p.height) : "", where].filter(Boolean).join(" · ")}</div>
+            <div className="text-[13px] text-[#d9c9b4] mt-1 font-light">{[p.age ? C.years(p.age) : "", p.height ? C.cm(p.height) : "", p.weight ? C.kg(p.weight) : "", where].filter(Boolean).join(" · ")}</div>
           </div>
 
           <div className="grid grid-cols-4 text-center" style={{ borderTop: line, borderBottom: line, padding: "12px 0" }}>

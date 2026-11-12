@@ -180,6 +180,9 @@ export function HomeFeed({ showEarnings = true, people = PEOPLE, mode = "home", 
       <div style={{ padding: "9px 10px 11px" }}>
         <div className="flex justify-between items-center"><span className="font-semibold text-[15px]" style={p.boost ? { color: "#f3d27e" } : undefined}>{sampleNick(p, lang)}{p.age ? `, ${p.age}` : ""}</span><span className="text-[13px] text-[#e8c472] font-normal">★ {p.rating}</span></div>
         <div className="text-[13px] mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis font-thin">{p.acts.map(labelOf).join(" · ")}</div>
+        {/* ส่วนสูง · น้ำหนัก + Bio ที่ Part-Time เขียนเอง (บอส 12 พ.ย. 2569) */}
+        {(p.real && (p.height > 0 || !!p.weight)) && <div data-body className="mt-1 flex flex-wrap gap-1">{p.height > 0 && <span className="rounded-full text-[11px] text-[#f1e3c8]" style={{ padding: "1px 7px", background: "rgba(232,196,114,.14)" }}>{C.cm(p.height)}</span>}{!!p.weight && <span className="rounded-full text-[11px] text-[#f1e3c8]" style={{ padding: "1px 7px", background: "rgba(232,196,114,.14)" }}>{C.kg(p.weight)}</span>}</div>}
+        {p.intro && <div data-bio className="mt-1 text-[12px] leading-[1.45] font-light italic text-[#d9c9b4] line-clamp-2">“{p.intro}”</div>}
         <div className="font-semibold text-[#e8c472] mt-1.5 text-[15px]">{p.priceTBD ? "฿xx,xxx" : `฿${price(p).toLocaleString("en-US")}`} <span className="font-thin text-[11.5px] text-[#b5a596]">{C.per3h}</span></div>
       </div>
     </Link>

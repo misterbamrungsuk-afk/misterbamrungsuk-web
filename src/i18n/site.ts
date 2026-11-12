@@ -7,7 +7,7 @@ export type SiteLang = "th" | "en" | "zh";
 
 const th = {
   intl: "th-TH",
-  common: { home: "หน้าแรก", map: "แผนที่", login: "เข้าสู่ระบบ", register: "สมัครทันที", myAccount: "บัญชีของฉัน", myBookings: "นัดของฉัน", notifications: "การแจ้งเตือน", close: "ปิด", later: "ไว้ทีหลัง", details: "ดูรายละเอียด", ad: "โฆษณา", advertise: "โฆษณากับเรา ›", per3h: "/ 3 ชม.", back: "ย้อนกลับ", lang: "ภาษา", soon: "ตัวอย่าง · เปิดให้บริการเร็ว ๆ นี้", years: (n: number) => `${n} ปี`, cm: (n: number) => `${n} ซม.`, people: (n: number) => `${n} คน` },
+  common: { home: "หน้าแรก", map: "แผนที่", login: "เข้าสู่ระบบ", register: "สมัครทันที", myAccount: "บัญชีของฉัน", myBookings: "นัดของฉัน", notifications: "การแจ้งเตือน", close: "ปิด", later: "ไว้ทีหลัง", details: "ดูรายละเอียด", ad: "โฆษณา", advertise: "โฆษณากับเรา ›", per3h: "/ 3 ชม.", back: "ย้อนกลับ", lang: "ภาษา", soon: "ตัวอย่าง · เปิดให้บริการเร็ว ๆ นี้", years: (n: number) => `${n} ปี`, cm: (n: number) => `${n} ซม.`, kg: (n: number) => `${n} กก.`, people: (n: number) => `${n} คน` },
   acts: { eat: "กิน & เที่ยว", massage: "นวดผ่อนคลาย", cafe: "คาเฟ่", photo: "ถ่ายรูป", movie: "ดูหนัง", gym: "ออกกำลัง", chill: "นั่งชิล", dinner: "ดินเนอร์", drive: "ขับรถพาเที่ยว" } as Record<Act, string>,
   home: {
     metaTitle: "Mister Bamrungsuk — เลือกเพื่อนของคุณ",
@@ -110,7 +110,7 @@ export type SiteDict = typeof th;
 
 const en: SiteDict = {
   intl: "en-SG",
-  common: { home: "Home", map: "Map", login: "Log in", register: "Sign up", myAccount: "My account", myBookings: "My bookings", notifications: "Notifications", close: "Close", later: "Maybe later", details: "View details", ad: "Promo", advertise: "Partner with us ›", per3h: "/ 3 hrs", back: "Back", lang: "Language", soon: "Preview · Launching soon", years: (n) => `${n} yrs`, cm: (n) => `${n} cm`, people: (n) => `${n} people` },
+  common: { home: "Home", map: "Map", login: "Log in", register: "Sign up", myAccount: "My account", myBookings: "My bookings", notifications: "Notifications", close: "Close", later: "Maybe later", details: "View details", ad: "Promo", advertise: "Partner with us ›", per3h: "/ 3 hrs", back: "Back", lang: "Language", soon: "Preview · Launching soon", years: (n) => `${n} yrs`, cm: (n) => `${n} cm`, kg: (n) => `${n} kg`, people: (n) => `${n} people` },
   acts: { eat: "Dining & outings", massage: "Relaxing massage", cafe: "Cafés", photo: "Photography", movie: "Movies", gym: "Fitness", chill: "Chill & lounge", dinner: "Dinner", drive: "Drives you around" },
   home: {
     metaTitle: "Mister Bamrungsuk — Choose your companion",
@@ -210,7 +210,7 @@ const en: SiteDict = {
 
 const zh: SiteDict = {
   intl: "zh-SG",
-  common: { home: "首页", map: "地图", login: "登录", register: "立即注册", myAccount: "我的账户", myBookings: "我的预约", notifications: "通知", close: "关闭", later: "稍后再说", details: "查看详情", ad: "推广", advertise: "商务合作 ›", per3h: "/ 3小时", back: "返回", lang: "语言", soon: "预览 · 即将上线", years: (n) => `${n}岁`, cm: (n) => `${n}厘米`, people: (n) => `${n}人` },
+  common: { home: "首页", map: "地图", login: "登录", register: "立即注册", myAccount: "我的账户", myBookings: "我的预约", notifications: "通知", close: "关闭", later: "稍后再说", details: "查看详情", ad: "推广", advertise: "商务合作 ›", per3h: "/ 3小时", back: "返回", lang: "语言", soon: "预览 · 即将上线", years: (n) => `${n}岁`, cm: (n) => `${n}厘米`, kg: (n) => `${n}公斤`, people: (n) => `${n}人` },
   acts: { eat: "美食出游", massage: "放松按摩", cafe: "咖啡馆", photo: "摄影", movie: "看电影", gym: "健身", chill: "休闲小坐", dinner: "晚餐", drive: "开车出游" },
   home: {
     metaTitle: "Mister Bamrungsuk — 选择您的社交伙伴",
